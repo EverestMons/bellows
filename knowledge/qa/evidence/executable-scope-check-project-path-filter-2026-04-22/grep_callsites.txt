@@ -1,0 +1,2 @@
+267:        files_changed = _parse_diff_stat(post_diff, pre_diff, project_path)
+325:            files_changed = _parse_diff_stat(post_diff, pre_diff, project_path)

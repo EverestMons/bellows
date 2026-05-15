@@ -1,0 +1,3 @@
+75904fd docs(planner): Rule 26 evidence-path tightening, v4.37
+a109e47 feat(governance): Rule 20 single-source canonical block — v4.35 → v4.36
+2a6f69b docs(planner): Phase 1.5 v4.35 — add Source D (LESSONS.md) with bounded scope

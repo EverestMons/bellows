@@ -1,0 +1,2 @@
+verdict: stop
+Step 1 gate-failed and the substantive `bellows.py` edit it produced introduces a regression of Phase 8.1 semantics for header-less diagnostics (3 test failures: test_diagnostic_auto_close_moves_to_done, test_clean_diagnostic_no_header_posts_verdict, test_clean_diagnostic_auto_close_true_moves_to_done). Halting this plan rather than continuing to Step 2 (QA) which would also fail. A corrective executable plan with the right fix shape (narrow override only when total_steps==0) will be deposited next. CEO-authorized via Path C in conversation 2026-05-03.

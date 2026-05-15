@@ -1,0 +1,2 @@
+524:    If project_path has no project-local .git (directory or file), worktree
+530:        print(f"Bellows: ⚠ {project_name} has no project-local .git — running in-place without worktree isolation")

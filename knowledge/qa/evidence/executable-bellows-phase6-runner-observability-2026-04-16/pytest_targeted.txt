@@ -1,0 +1,20 @@
+============================= test session starts ==============================
+platform darwin -- Python 3.9.6, pytest-8.4.2, pluggy-1.6.0 -- /Applications/Xcode.app/Contents/Developer/usr/bin/python3
+cachedir: .pytest_cache
+rootdir: /Users/marklehn/Desktop/GitHub/bellows
+plugins: anyio-4.12.1, cov-7.0.0
+collecting ... collected 11 items
+
+tests/test_runner.py::test_configurable_timeout_passed_to_subprocess PASSED [  9%]
+tests/test_runner.py::test_default_timeout_is_600 PASSED                 [ 18%]
+tests/test_runner.py::test_timeout_returns_cost_none PASSED              [ 27%]
+tests/test_runner.py::test_generic_exception_returns_cost_none PASSED    [ 36%]
+tests/test_runner.py::test_generic_exception_message_contains_actual_error PASSED [ 45%]
+tests/test_runner.py::test_timeout_writes_log_file PASSED                [ 54%]
+tests/test_runner.py::test_success_writes_log_file PASSED                [ 63%]
+tests/test_runner.py::test_generic_exception_writes_log_file PASSED      [ 72%]
+tests/test_runner.py::test_stderr_printed_on_success PASSED              [ 81%]
+tests/test_runner.py::test_json_decode_error_returns_blocked PASSED      [ 90%]
+tests/test_runner.py::test_json_decode_error_writes_log_with_raw_output PASSED [100%]
+
+============================== 11 passed in 0.02s ==============================

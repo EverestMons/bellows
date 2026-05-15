@@ -1,0 +1,16 @@
+817:        active_slugs = set()
+818-        for decisions_path in self.config.get("watched_projects", []):
+819-            if not os.path.isdir(decisions_path):
+820-                continue
+--
+828:                    active_slugs.add(verdict.slug_from_path(stripped))
+829-                elif is_runnable_plan(fname):
+830:                    active_slugs.add(verdict.slug_from_path(fname))
+831-        pending_dir = BELLOWS_ROOT / "verdicts" / "pending"
+832-        orphaned_removed = []
+833-        if pending_dir.is_dir():
+--
+838:                    if extracted_slug not in active_slugs:
+839-                        (pending_dir / pf).unlink()
+840-                        orphaned_removed.append(pf)
+841-        if orphaned_removed:

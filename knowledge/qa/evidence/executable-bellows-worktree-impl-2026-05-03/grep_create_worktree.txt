@@ -1,0 +1,1 @@
+518:def _create_worktree(project_path: str, slug: str) -> str:

@@ -1,0 +1,58 @@
+=== (a) _slug_from_path count (expect 0 across all) ===
+bellows.py:0
+verdict.py:0
+gates.py:0
+parser.py:0
+tests/test_runner_parser.py:0
+tests/test_phase4_parser.py:0
+tests/test_planner.py:0
+tests/test_phase4_planner_retry.py:0
+tests/test_rule_26_deposit_parser.py:0
+tests/test_runner.py:0
+tests/test_bellows.py:0
+tests/test_cleanup_verdicts.py:0
+tests/test_verdict.py:0
+tests/test_gates.py:0
+tests/test_notifier_server.py:0
+tests/test_extract_primary_deposit_blocks.py:0
+
+=== (b) slug_from_path in verdict.py (expect >= 1) ===
+2
+
+=== (c) verdict.slug_from_path in bellows.py (expect >= 4) ===
+5
+
+=== (d) plan_slug in bellows.py (expect >= 10 distinct lines) ===
+50:            plan_slug TEXT
+63:        "plan_slug": "TEXT",
+150:    plan_slug: str,
+163:            plan_slug TEXT
+167:        "INSERT INTO runs (timestamp, plan_path, project, session_id, step, status, cost, plan_slug) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+168:        (datetime.now().isoformat(), plan_path, project, session_id, step, status, cost, plan_slug),
+174:def _get_last_completed_step(db_path: str, plan_slug: str) -> Optional[int]:
+175:    """Return the highest step number marked Complete for this plan_slug, or None."""
+180:                "SELECT MAX(step) FROM runs WHERE plan_slug = ? AND status = 'Complete'",
+181:                (plan_slug,),
+233:        plan_slug = verdict.slug_from_path(base_filename)
+243:            last_step = _get_last_completed_step(db_path, plan_slug)
+299:            parsed["receipt_status"], parsed["cost_usd"], plan_slug,
+335:                           parsed.get("session_id", ""), current_step, "VerdictPending", parsed["cost_usd"], plan_slug)
+357:                parsed["receipt_status"], parsed["cost_usd"], plan_slug,
+393:                       parsed.get("session_id", ""), current_step, "VerdictPending", parsed["cost_usd"], plan_slug)
+656:            plan_slug = match.group(1)
+660:            pending_req_file = BELLOWS_ROOT / "verdicts" / "pending" / f"verdict-request-{plan_slug}-step-{step_number}.md"
+680:            verdict_result = verdict.check_verdict(plan_slug, step_number)
+694:                    if pname.startswith("verdict-pending-") and plan_slug in pname:
+723:                                _cleanup_verdicts_for_slug(plan_slug)
+741:                            _cleanup_verdicts_for_slug(plan_slug)
+753:                pending_file = BELLOWS_ROOT / "verdicts" / "pending" / f"verdict-request-{plan_slug}-step-{step_number}.md"
+766:                            if plan_slug in dname:
+774:                    print(f"Bellows: ⚠️  stale verdict for {plan_slug} step {step_number} — plan already in Done/, moving to processed")
+776:                    print(f"Bellows: ⚠️  no verdict-pending plan found for {plan_slug} step {step_number} — leaving in resolved/ for retry")
+
+=== (e) _get_last_completed_step in bellows.py (expect >= 2) ===
+174:def _get_last_completed_step(db_path: str, plan_slug: str) -> Optional[int]:
+243:            last_step = _get_last_completed_step(db_path, plan_slug)
+
+=== (f) test names in test_bellows.py (expect >= 5) ===
+5

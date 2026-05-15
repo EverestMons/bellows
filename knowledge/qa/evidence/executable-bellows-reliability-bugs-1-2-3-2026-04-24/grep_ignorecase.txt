@@ -1,0 +1,5 @@
+86:def extract_total_steps(plan_text: str) -> int:
+87:    case_insensitive_count = len(re.findall(r"^## STEP\s+\d+", plan_text, re.MULTILINE | re.IGNORECASE))
+222:        total_steps = extract_total_steps(metadata_text)
+674:                                    total_steps_c = extract_total_steps(shadow_text_c)
+680:                                    total_steps_c = extract_total_steps(plan_text_c)

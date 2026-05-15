@@ -1,0 +1,31 @@
+def _module_fingerprints() -> dict:
+    """Return a dict mapping each core module filename to its fingerprint string.
+
+    Fingerprint is git:<short-sha> when git is available, mtime:<timestamp> as
+    fallback, or literal "unknown" on unexpected error.
+    """
+    modules = ["bellows.py", "gates.py", "verdict.py", "parser.py", "runner.py"]
+    bellows_dir = os.path.dirname(os.path.abspath(__file__))
+    fingerprints = {}
+    for mod in modules:
+        try:
+            mod_path = os.path.join(bellows_dir, mod)
+            try:
+                result = subprocess.run(
+                    ["git", "--no-pager", "log", "-1", "--format=%h", "--", mod_path],
+                    cwd=bellows_dir,
+                    capture_output=True,
+                    text=True,
+                    timeout=5,
+                )
+                if result.returncode == 0 and result.stdout.strip():
+                    fingerprints[mod] = f"git:{result.stdout.strip()}"
+                    continue
+            except Exception:
+                pass
+            mtime = os.path.getmtime(mod_path)
+            ts = datetime.fromtimestamp(mtime).strftime("%Y-%m-%d %H:%M:%S")
+            fingerprints[mod] = f"mtime:{ts}"
+        except Exception:
+            fingerprints[mod] = "unknown"
+    return fingerprints

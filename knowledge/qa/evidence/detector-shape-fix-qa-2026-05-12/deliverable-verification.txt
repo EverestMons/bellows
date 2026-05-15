@@ -1,0 +1,28 @@
+# Deliverable Verification — Grep Evidence
+# Date: 2026-05-12
+# Plan: executable-detector-shape-fix-2026-05-12, Step 2
+
+## Anchor 1: decisions.py reads event.get("message", {}).get("content", [])
+$ grep 'event\.get("message", {})\.get("content", \[\])' decisions.py
+94:        content = event.get("message", {}).get("content", [])
+
+## Anchor 2: test_decisions.py fixtures use "message": {"content" wrapping
+$ grep -c '"message": {"content"' tests/test_decisions.py
+4 occurrences
+
+$ grep -n '"message": {"content"' tests/test_decisions.py
+13:    return {"type": "assistant", "message": {"content": [{"type": "text", "text": text}]}}
+131:            "message": {"content": [
+181:            {"type": "assistant", "message": {"content": [{"type": "text", "text": "No match here."}]}},
+182:            {"type": "assistant", "message": {"content": [{"type": "text", "text": "I decided to act."}]}},
+
+## Anchor 3: bellows.py::_module_fingerprints() includes decisions.py
+$ grep 'decisions.py' bellows.py
+855:    modules = ["bellows.py", "gates.py", "verdict.py", "parser.py", "runner.py", "decisions.py"]
+
+## Anchor 4: test_bellows.py expects 6 modules from fingerprint function
+$ grep -A3 'test_module_fingerprints_returns_all_six_modules' tests/test_bellows.py
+2952:def test_module_fingerprints_returns_all_six_modules():
+2953:    fps = bellows._module_fingerprints()
+2954:    expected_keys = {"bellows.py", "gates.py", "verdict.py", "parser.py", "runner.py", "decisions.py"}
+2955:    assert set(fps.keys()) == expected_keys

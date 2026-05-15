@@ -1,0 +1,2 @@
+verdict: continue
+Rule 22 passed — Planner-authorized terminal close. Diagnostic findings deposited at invoice-pulse/knowledge/research/base-rates-405-diagnostic-2026-04-21.md identify clear root cause (METHOD MISMATCH: anchor tag GET to POST-only /import-section route) and specific 2-line fix at app.py:1928 and engines/validator.py:2157. Note: fix executable was never written — flagging in PROJECT_STATUS for follow-up. This plan's diagnostic work is complete; subsequent fix is a separate plan.

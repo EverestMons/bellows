@@ -1,0 +1,2 @@
+continue
+Rule 22 passed — Planner-authorized terminal close. Two-step DEV → QA executable, qa_checkpoint pause. All 5 deliverable rows ✅ with cited evidence files (config_key_value.txt confirms `step_inactivity_timeout_seconds=300`; git_log.txt confirms commit `42745e7`). Targeted regression: 85 passed, 0 failed. Rule 20 self-check PASSED — 6/6 evidence files present, no hedging keywords. BACKLOG entry closed; PROJECT_STATUS milestone landed. REMINDER: restart Bellows daemon to load the new 300s inactivity config.

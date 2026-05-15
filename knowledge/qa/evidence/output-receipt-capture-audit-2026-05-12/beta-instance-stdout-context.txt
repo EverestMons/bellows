@@ -1,0 +1,27 @@
+β-A: Substantive leak — corrective action on evidence file
+Plan: deposit-exists-prose-canary-2026-04-28, step 2
+File: 20260428-190113-step.json
+Phrase: "let me fix" + "found the issue" + "seems empty"
+
+Raw stdout context (verbatim from assistant text blocks):
+
+---
+Both deposits verified — findings file exists with correct content (read above),
+dev log exists with Status: Complete. Now let me generate the evidence files.
+Let me verify the evidence files were created correctly.
+The grep evidence file seems empty. Let me fix that — the working directory might
+be wrong.
+Found the issue — the phrase uses capital letters. Let me write the evidence file
+properly.
+Good — evidence files are both populated. Now let me write the QA report.
+---
+
+This sequence shows:
+1. Agent generates evidence files
+2. Agent verifies — finds grep evidence file is empty
+3. Agent diagnoses: "working directory might be wrong"
+4. Agent finds root cause: "the phrase uses capital letters"
+5. Agent regenerates the file
+6. Agent confirms fix: "evidence files are both populated"
+
+None of these 6 steps appear in the Output Receipt.

@@ -1,0 +1,5 @@
+6751528 docs: PLANNER_TEMPLATE lessons — config-read recurrence + Rule 13 test-anchoring gap (2026-05-01)
+4302d51 docs: session wrap 2026-05-01 — PROJECT_STATUS + 2 BACKLOG entries
+df65440 qa: session-end full suite 2026-05-01
+c674ba7 qa: cleanup slug normalization verified + close BACKLOG #3
+bc09bb5 fix: normalize cleanup slug in _consume_verdicts + remove Done/ exclusion from startup sweep (BACKLOG #3)

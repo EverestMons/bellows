@@ -1,0 +1,42 @@
+Source: bellows.py lines 25-54
+
+# --- Terminal output infrastructure ---
+_last_plan_event_time = 0.0
+_plan_event_lock = threading.Lock()
+
+
+def _log(level: str, message: str, slug: Optional[str] = None, suppress_timer_update: bool = False) -> None:
+    """Emit a log line: HH:MM:SS [LEVEL] [slug] message
+
+    level: one of EVENT, INFO, WARN, ERROR, PAUSE
+    message: the message text
+    slug: optional plan slug for plan-related events
+    suppress_timer_update: if True, skip _last_plan_event_time update (for runner heartbeats)
+    """
+    global _last_plan_event_time
+    valid_levels = {"EVENT", "INFO", "WARN", "ERROR", "PAUSE"}
+    if level not in valid_levels:
+        raise ValueError(f"Invalid log level '{level}', must be one of {valid_levels}")
+    ts = datetime.now().strftime('%H:%M:%S')
+    if slug:
+        formatted = f"{ts} [{level}] [{slug}] {message}"
+    else:
+        formatted = f"{ts} [{level}] {message}"
+    logger = logging.getLogger("bellows")
+    if logger.handlers:
+        logger.info(formatted)
+    else:
+        print(formatted)
+    if not suppress_timer_update and level in {"EVENT", "WARN", "ERROR", "PAUSE"} and slug is not None:
+        with _plan_event_lock:
+            _last_plan_event_time = time.time()
+
+Verification:
+- Signature: _log(level, message, slug=None, suppress_timer_update=False) ✓
+- Format with slug: "HH:MM:SS [LEVEL] [slug] message" ✓
+- Format without slug: "HH:MM:SS [LEVEL] message" ✓
+- Validates level against 5-level whitelist {EVENT, INFO, WARN, ERROR, PAUSE} ✓
+- Raises ValueError on invalid level ✓
+- Updates _last_plan_event_time when level in {EVENT, WARN, ERROR, PAUSE} and slug provided ✓
+- suppress_timer_update=True skips _last_plan_event_time update ✓
+- Thread-safe via _plan_event_lock ✓

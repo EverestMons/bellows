@@ -1,0 +1,1 @@
+126:def _resolve_deposit_path(path, project_path):

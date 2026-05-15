@@ -1,0 +1,9 @@
+commit f3c414f7b73c2d60337d1cda7e1cc4b2ba73a826
+Author: Mark Lehn <marklehn@icloud.com>
+Date:   Fri May 1 16:14:57 2026 -0500
+
+    docs: dev log for PLANNER_TEMPLATE v4.30 verdict content spec fix
+    
+    Co-Authored-By: Claude Opus 4.6 <noreply@anthropic.com>
+
+bellows/knowledge/development/rule-25-verdict-content-spec-fix-dev-log-2026-05-01.md

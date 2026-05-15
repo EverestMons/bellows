@@ -1,0 +1,16 @@
+/Users/marklehn/Library/Python/3.9/lib/python/site-packages/urllib3/__init__.py:35: NotOpenSSLWarning: urllib3 v2 only supports OpenSSL 1.1.1+, currently the 'ssl' module is compiled with 'LibreSSL 2.8.3'. See: https://github.com/urllib3/urllib3/issues/3020
+  warnings.warn(
+Returned dict:
+  bellows.py: git:6411054
+  gates.py: git:0fab609
+  parser.py: git:1d1dabf
+  runner.py: git:1256879
+  verdict.py: git:0fab609
+
+Module count: 5
+All 5 present: True
+  bellows.py prefix ok (git:/mtime:): True
+  gates.py prefix ok (git:/mtime:): True
+  verdict.py prefix ok (git:/mtime:): True
+  parser.py prefix ok (git:/mtime:): True
+  runner.py prefix ok (git:/mtime:): True

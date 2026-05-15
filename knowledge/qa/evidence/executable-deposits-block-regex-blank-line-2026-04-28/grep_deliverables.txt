@@ -1,0 +1,17 @@
+# Deliverable Verification (Rule 17) — grep evidence
+
+## (a) verdict.py — DEPOSITS_BLOCK_RE contains (?:[> ]*\n)*
+$ grep -n "DEPOSITS_BLOCK_RE = re.compile" bellows/verdict.py
+14:DEPOSITS_BLOCK_RE = re.compile(r'[> ]*\*\*Deposits:\*\*\s*\n(?:[> ]*\n)*((?:[> ]*-\s+.*\n?)+)')
+
+## (b) gates.py — inline regex contains (?:[> ]*\n)*
+$ grep -n "block_match = re.search" bellows/gates.py
+175:    block_match = re.search(r'[> ]*\*\*Deposits:\*\*\s*\n(?:[> ]*\n)*((?:[> ]*-\s+.*\n?)+)', step_text)
+
+## (c) test_extract_primary_deposit_blocks.py — 3 new test functions
+$ grep -c "test_block_with_blank_quoted_line\|test_block_with_multiple_blank_quoted_lines\|test_block_does_not_span_paragraphs" bellows/tests/test_extract_primary_deposit_blocks.py
+3
+
+## (d) test_rule_26_deposit_parser.py — 3 new test functions
+$ grep -c "test_extract_plan_required_deposits_blank_quoted_line\|test_extract_plan_required_deposits_multiple_blank_quoted_lines\|test_extract_plan_required_deposits_does_not_span_paragraphs" bellows/tests/test_rule_26_deposit_parser.py
+3

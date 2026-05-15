@@ -1,0 +1,7 @@
+PASS | H2_CEO_Flag_paragraph | expected=['Pattern-to-chunk linking does not distinguish failure chunks.'] | actual=['Pattern-to-chunk linking does not distinguish failure chunks.']
+PASS | Bold_CEO_Flag | expected=['RAISED — architectural decision required'] | actual=['RAISED — architectural decision required']
+PASS | H3_Flags_for_CEO_bulleted | expected=['Flag one', 'Flag two'] | actual=['Flag one', 'Flag two']
+PASS | H3_Flags_for_CEO_None | expected=[] | actual=[]
+PASS | H2_CEO_Flag_None_paragraph | expected=[] | actual=[]
+
+Overall: ALL PASS

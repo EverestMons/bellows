@@ -1,0 +1,1 @@
+745:            print(f"Bellows: startup cleanup — {len(orphaned_removed)} orphaned verdict requests removed")

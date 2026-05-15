@@ -1,0 +1,22 @@
+PASS | gates.py exists | 
+PASS | verdict.py exists | 
+PASS | gates.py has check() function | 
+PASS | gates.py has _gate_receipt_status | 
+PASS | gates.py has _gate_ceo_flags | 
+PASS | gates.py has _gate_no_errors | 
+PASS | gates.py has _gate_no_permission_denials | 
+PASS | gates.py has _gate_deposit_exists | 
+PASS | gates.py has _gate_is_qa_step | 
+PASS | gates.py has _gate_file_change_audit | 
+PASS | gates.py has _gate_scope_check | 
+PASS | verdict.py has post_verdict_request | 
+PASS | verdict.py has check_verdict | 
+PASS | verdict.py has log_to_ledger | 
+PASS | bellows.py does NOT import planner | 'import planner' found: False
+PASS | bellows.py imports gates | 
+PASS | bellows.py imports verdict | 
+PASS | notifier.py has notify_verdict_request | 
+PASS | verdicts/pending/ exists | 
+PASS | verdicts/resolved/ exists | 
+PASS | tests/test_gates.py exists | 
+PASS | tests/test_verdict.py exists | 

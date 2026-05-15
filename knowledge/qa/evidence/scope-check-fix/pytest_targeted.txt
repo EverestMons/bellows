@@ -1,0 +1,22 @@
+============================= test session starts ==============================
+platform darwin -- Python 3.9.6, pytest-8.4.2, pluggy-1.6.0 -- /Applications/Xcode.app/Contents/Developer/usr/bin/python3
+cachedir: .pytest_cache
+rootdir: /Users/marklehn/Desktop/GitHub/bellows
+plugins: anyio-4.12.1, cov-7.0.0
+collecting ... collected 92 items / 85 deselected / 7 selected
+
+tests/test_gates.py::test_scope_check_passes_when_files_in_plan PASSED   [ 14%]
+tests/test_gates.py::test_scope_check_fails_when_file_not_in_plan PASSED [ 28%]
+tests/test_gates.py::test_scope_check_allowlist PASSED                   [ 42%]
+tests/test_gates.py::test_scope_check_prefix_allowlist_in_progress PASSED [ 57%]
+tests/test_gates.py::test_scope_check_prefix_allowlist_verdict_pending PASSED [ 71%]
+tests/test_gates.py::test_scope_check_prefix_allowlist_halted PASSED     [ 85%]
+tests/test_gates.py::test_scope_check_prefix_allowlist_does_not_suppress_real_violations PASSED [100%]
+
+=============================== warnings summary ===============================
+../../../Library/Python/3.9/lib/python/site-packages/urllib3/__init__.py:35
+  /Users/marklehn/Library/Python/3.9/lib/python/site-packages/urllib3/__init__.py:35: NotOpenSSLWarning: urllib3 v2 only supports OpenSSL 1.1.1+, currently the 'ssl' module is compiled with 'LibreSSL 2.8.3'. See: https://github.com/urllib3/urllib3/issues/3020
+    warnings.warn(
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+================= 7 passed, 85 deselected, 1 warning in 0.11s ==================

@@ -1,0 +1,27 @@
+# Real-Data Behavioral Detection Test
+# Date: 2026-05-12
+# Plan: executable-detector-shape-fix-2026-05-12, Step 2
+
+## Test Setup
+- Loaded 44 phrases from INTERMEDIATE_DECISION_PHRASES.md
+- Called decisions.extract_decision_blocks(raw_output, phrases) on real step.json files
+
+## File 1: logs/20260512-103456-step.json (production data — expected matches)
+  raw_output length: 1428320
+  Detection results: 6 blocks matched
+    event_idx=97, phrases=['let me fix'], text=Python 3.9 doesn't support `X | None` type union syntax. Let me fix the type ann...
+    event_idx=110, phrases=['i need to update'], text=These 3 tests mock `notifier.push` and assert it was called. Since auto-close no...
+    event_idx=113, phrases=['instead of'], text=I need to change all 3 tests to assert on `notifier.notify_plan_complete` instea...
+    event_idx=118, phrases=["i'll update", 'instead of'], text=All 3 tests follow the same pattern: they mock `notifier.push` and assert it was...
+    event_idx=125, phrases=['let me also'], text=Now let me also check if there are tests in test_notifier_server.py that referen...
+    event_idx=140, phrases=['had to'], text=Now I need to run the full test suite to make sure all tests pass. I had to updat...
+  RESULT: 6 matches (expected: >0) — PASS
+
+## File 2: logs/20260512-184339-step.json (canary — negative control)
+  raw_output length: 225794
+  Detection results: 0 blocks matched
+  RESULT: 0 matches (expected: 0) — PASS
+
+## Summary
+Primary file: PASS (6 non-empty matches confirm end-to-end detection on real wrapped NDJSON)
+Canary file: PASS (0 matches confirms negative control — canary step had assistant text but no phrase-matched narration)

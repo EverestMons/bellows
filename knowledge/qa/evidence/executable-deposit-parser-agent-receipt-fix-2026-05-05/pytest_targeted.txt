@@ -1,0 +1,47 @@
+============================= test session starts ==============================
+platform darwin -- Python 3.9.6, pytest-8.4.2, pluggy-1.6.0 -- /Applications/Xcode.app/Contents/Developer/usr/bin/python3
+cachedir: .pytest_cache
+rootdir: /Users/marklehn/Desktop/GitHub/bellows
+plugins: anyio-4.12.1, cov-7.0.0
+collecting ... collected 38 items
+
+tests/test_gates.py::test_all_gates_pass_on_clean_parsed PASSED          [  2%]
+tests/test_gates.py::test_receipt_status_blocked PASSED                  [  5%]
+tests/test_gates.py::test_receipt_status_partial PASSED                  [  7%]
+tests/test_gates.py::test_ceo_flags_nonempty PASSED                      [ 10%]
+tests/test_gates.py::test_is_error_true PASSED                           [ 13%]
+tests/test_gates.py::test_permission_denials_nonempty PASSED             [ 15%]
+tests/test_gates.py::test_permission_denials_read_class_only_passes PASSED [ 18%]
+tests/test_gates.py::test_permission_denials_write_class_fails PASSED    [ 21%]
+tests/test_gates.py::test_permission_denials_mixed_read_write_fails PASSED [ 23%]
+tests/test_gates.py::test_permission_denials_missing_tool_name_fails PASSED [ 26%]
+tests/test_gates.py::test_permission_denials_none_tool_name_fails PASSED [ 28%]
+tests/test_gates.py::test_permission_denials_unknown_tool_fails PASSED   [ 31%]
+tests/test_gates.py::test_permission_denials_string_form_fails PASSED    [ 34%]
+tests/test_gates.py::test_deposit_path_missing PASSED                    [ 36%]
+tests/test_gates.py::test_qa_step_detection PASSED                       [ 39%]
+tests/test_gates.py::test_file_change_audit_populates PASSED             [ 42%]
+tests/test_gates.py::test_scope_check_passes_when_files_in_plan PASSED   [ 44%]
+tests/test_gates.py::test_scope_check_fails_when_file_not_in_plan PASSED [ 47%]
+tests/test_gates.py::test_scope_check_allowlist PASSED                   [ 50%]
+tests/test_gates.py::test_no_deposit_section_passes PASSED               [ 52%]
+tests/test_gates.py::test_parse_plan_header_empty PASSED                 [ 55%]
+tests/test_gates.py::test_parse_plan_header_basic PASSED                 [ 57%]
+tests/test_gates.py::test_parse_plan_header_malformed PASSED             [ 60%]
+tests/test_gates.py::test_scope_check_prefix_allowlist_in_progress PASSED [ 63%]
+tests/test_gates.py::test_scope_check_prefix_allowlist_verdict_pending PASSED [ 65%]
+tests/test_gates.py::test_scope_check_prefix_allowlist_halted PASSED     [ 68%]
+tests/test_gates.py::test_scope_check_prefix_allowlist_does_not_suppress_real_violations PASSED [ 71%]
+tests/test_gates.py::test_verdict_requested_from_parsed_dict PASSED      [ 73%]
+tests/test_gates.py::test_verdict_requested_defaults_when_key_missing PASSED [ 76%]
+tests/test_gates.py::test_resolve_deposit_path_directory_as_is PASSED    [ 78%]
+tests/test_gates.py::test_resolve_deposit_path_directory_project_relative PASSED [ 81%]
+tests/test_gates.py::test_resolve_deposit_path_directory_parent_relative PASSED [ 84%]
+tests/test_gates.py::test_resolve_deposit_path_nonexistent PASSED        [ 86%]
+tests/test_gates.py::test_gate_deposit_exists_directory_in_deposits_block PASSED [ 89%]
+tests/test_gates.py::test_deposit_exists_extracts_path_from_backtick_with_description PASSED [ 92%]
+tests/test_gates.py::test_deposit_exists_extracts_path_from_backtick_only PASSED [ 94%]
+tests/test_gates.py::test_deposit_exists_extracts_path_from_bare_path_without_backticks PASSED [ 97%]
+tests/test_gates.py::test_deposit_exists_still_fails_on_genuinely_missing_path_with_new_format PASSED [100%]
+
+============================== 38 passed in 0.02s ==============================

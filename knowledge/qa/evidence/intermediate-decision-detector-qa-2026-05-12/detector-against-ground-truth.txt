@@ -1,0 +1,26 @@
+Detector Against Ground Truth — Behavioral Verification Part A
+Date: 2026-05-12
+
+Loaded 44 phrases from INTERMEDIATE_DECISION_PHRASES.md
+Ground truth: 6 S-class blocks, 171 T-class blocks
+
+=== S-CLASS VERIFICATION (all 6 must match) ===
+
+PASS | plan=deposit-exists-prose-canary-2026-04-28, step=2, block_idx=7 | matched: ['let me fix', 'seems empty']
+PASS | plan=deposit-exists-prose-canary-2026-04-28, step=2, block_idx=8 | matched: ['found the issue']
+PASS | plan=bellows-worktree-impl-2026-05-03, step=1, block_idx=9 | matched: ['need to fix', 'wait,']
+PASS | plan=bellows-worktree-impl-2026-05-03, step=1, block_idx=26 | matched: ['let me fix']
+PASS | plan=terminal-capture-2026-05-12, step=1, block_idx=11 | matched: ['let me fix']
+PASS | plan=terminal-capture-2026-05-12, step=1, block_idx=23 | matched: ['let me fix']
+
+Result: 6/6 S-class blocks matched — PASS
+
+=== T-CLASS SAMPLE (5 entries, should NOT all be flagged) ===
+
+idx=0  flagged=False | block_idx=1  | text=Let me read the plan first.
+idx=5  flagged=False | block_idx=8  | text=Step 1 is complete. Here's what was done...
+idx=10 flagged=False | block_idx=13 | text=Now I have all the information I need...
+idx=15 flagged=False | block_idx=1  | text=Let me execute this diagnostic...
+idx=20 flagged=False | block_idx=9  | text=Now let me commit and handle the verdict request...
+
+Result: 0/5 T-class samples flagged — PASS (expected: not all flagged)

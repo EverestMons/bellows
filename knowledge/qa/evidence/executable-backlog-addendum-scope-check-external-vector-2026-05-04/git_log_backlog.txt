@@ -1,0 +1,3 @@
+eb0e8ad docs: backlog — broaden scope_check diff-collision entry with external-vector reproduction
+9f04b59 docs: backlog — close 2026-05-04 monorepo-worktree-at-governance-root entry
+4c056db docs: backlog — capture monorepo-worktree-at-governance-root structural fix item

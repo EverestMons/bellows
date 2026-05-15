@@ -1,0 +1,2 @@
+verdict: continue
+Rule 22 deposit verification complete. Findings file `invoice-pulse/knowledge/research/tier-display-test-failure-diagnostic-2026-05-06.md` exists, is well-formed, contains verdict (BACKLOG entry stale — all tests pass), pytest evidence, and git-history reasoning. BACKLOG entry already moved to Closed via session-wrap commit `5b37b786`. Gate failure was a `deposit_exists` false positive (Pattern X).

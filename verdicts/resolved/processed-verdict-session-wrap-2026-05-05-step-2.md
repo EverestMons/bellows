@@ -1,0 +1,2 @@
+verdict: continue
+Rule 22 passed — Planner-authorized terminal close. Step 2 QA: 4/4 ✅, evidence files verified, no hedging. Rule 20 self-check stdout deviated from canonical format (agent reformatted to [PASS]-tagged style) but substance correct: all 4 evidence files exist and non-empty, no hedging keywords detected, "SELF-CHECK PASSED" line present. Override on format divergence; work is correct. Note for future: canonical Rule 20 block should be quoted verbatim into QA prompts to prevent agent reformatting.

@@ -1,0 +1,9 @@
+commit b705e4836adce759c49725ea68ff3612352010dc
+Author: Mark Lehn <marklehn@icloud.com>
+Date:   Fri May 1 16:14:47 2026 -0500
+
+    docs(planner): v4.30 — correct verdict content spec in 3 places (verdict: prefix required by Bellows parser)
+    
+    Co-Authored-By: Claude Opus 4.6 <noreply@anthropic.com>
+
+PLANNER_TEMPLATE.md

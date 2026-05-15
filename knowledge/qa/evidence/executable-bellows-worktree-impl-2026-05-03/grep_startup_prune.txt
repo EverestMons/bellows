@@ -1,0 +1,19 @@
+626-        )
+627-        if result.returncode != 0:
+628:            print(f"Bellows: \u26a0 worktree removal failed for {slug}: {result.stderr.strip()} — next startup prune will clean it")
+629-    except Exception as e:
+630:        print(f"Bellows: \u26a0 worktree removal failed for {slug}: {e} — next startup prune will clean it")
+631-
+632-
+633-def _source_sha() -> str:
+--
+731-            try:
+732-                subprocess.run(
+733:                    ["git", "--no-pager", "worktree", "prune"],
+734-                    cwd=project_root, capture_output=True, text=True, timeout=10,
+735-                )
+736-            except Exception as e:
+737:                print(f"Bellows: \u26a0 worktree prune failed for {project_root}: {e}")
+738-
+739-    def _run_tracked(self, path: str, resume_step: Optional[int] = None):
+740-        with self._active_lock:

@@ -1,0 +1,1 @@
+19:def extract_primary_deposit(step_text: str) -> Optional[str]:

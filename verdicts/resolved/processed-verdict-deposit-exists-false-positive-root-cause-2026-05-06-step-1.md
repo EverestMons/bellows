@@ -1,0 +1,2 @@
+verdict: continue
+Rule 22 deposit verification complete. Findings file `bellows/knowledge/research/deposit-exists-false-positive-root-cause-2026-05-06.md` exists, well-formed, contains explicit "Root Cause: (b) path resolution drift" verdict line, full Task 1-6 evidence sections with file:line citations and code excerpts, ruled out hypotheses (a), (c), (d) with evidence, and ranked confirmed root cause. Rule 20 self-check PASSED. No hedging. Fix executable for BACKLOG #1 dispatching next.

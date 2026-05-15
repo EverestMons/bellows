@@ -1,0 +1,5 @@
+451-
+452-    def _handle(self, path: str, from_rescan: bool = False):
+453:        path_parent = str(Path(path).parent)
+454-        watched = self.orchestrator.config.get("watched_projects", [])
+455-        if path_parent not in watched:

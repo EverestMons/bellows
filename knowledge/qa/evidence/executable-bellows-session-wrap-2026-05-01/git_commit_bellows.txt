@@ -1,0 +1,11 @@
+commit 20dae661c8e9dbac24f7981fb3d21720ab98169e
+Author: Mark Lehn <marklehn@icloud.com>
+Date:   Fri May 1 16:44:48 2026 -0500
+
+    docs: 2026-05-01 session wrap (PROJECT_STATUS x6 + BACKLOG cleanup_verdicts_for_slug gap)
+    
+    Co-Authored-By: Claude Opus 4.6 <noreply@anthropic.com>
+
+bellows/PROJECT_STATUS.md
+bellows/knowledge/BACKLOG.md
+bellows/knowledge/development/bellows-session-wrap-dev-log-2026-05-01.md

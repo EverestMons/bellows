@@ -1,0 +1,6 @@
+134:    matches = list(pending_dir.glob(f"verdict-request-{slug}-step-*.md"))
+670:            lookup_slug = plan_slug
+672:                if lookup_slug.startswith(prefix):
+673:                    lookup_slug = lookup_slug[len(prefix):]
+675:            pending_req_file = BELLOWS_ROOT / "verdicts" / "pending" / f"verdict-request-{lookup_slug}-step-{step_number}.md"
+775:                pending_file = BELLOWS_ROOT / "verdicts" / "pending" / f"verdict-request-{cleanup_slug}-step-{step_number}.md"

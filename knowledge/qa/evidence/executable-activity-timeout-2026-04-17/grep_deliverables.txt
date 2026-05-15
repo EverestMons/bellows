@@ -1,0 +1,42 @@
+# QA Evidence — executable-activity-timeout-2026-04-17
+# Generated: 2026-04-17
+
+## (a) runner.py — Popen (replaces subprocess.run)
+runner.py:48:        proc = subprocess.Popen(
+
+## (a) runner.py — threading (concurrent read)
+runner.py:6:import threading
+runner.py:79:    lock = threading.Lock()
+runner.py:91:    stdout_thread = threading.Thread(target=_read_stream, args=(proc.stdout, stdout_buf), daemon=True)
+runner.py:92:    stderr_thread = threading.Thread(target=_read_stream, args=(proc.stderr, stderr_buf), daemon=True)
+
+## (a) runner.py — inactivity / last_output (timer reset logic)
+runner.py:78:    last_output_time = time.monotonic()
+runner.py:82:        nonlocal last_output_time
+runner.py:87:                    last_output_time = time.monotonic()
+runner.py:106:            age = now - last_output_time
+runner.py:115:            print(f"Bellows: runner — inactivity timeout ({timeout}s with no output), killing process", flush=True)
+runner.py:138:        timeout_type = "wall_clock_cap" if wall_clock_hit else "inactivity"
+
+## (a) runner.py — proc.kill (timeout kill)
+runner.py:116:            proc.kill()
+runner.py:123:            proc.kill()
+
+## (a) runner.py — stderr_partial (partial capture on timeout)
+runner.py:144:            "stderr_partial": result_stderr[:5000],
+
+## (b) bellows.py — step_inactivity_timeout_seconds (new config field name)
+bellows.py:238:                                  timeout=config.get("step_inactivity_timeout_seconds",
+bellows.py:296:                timeout=config.get("step_inactivity_timeout_seconds",
+
+## (c) Backward compat — both field names checked
+bellows.py:238:                                  timeout=config.get("step_inactivity_timeout_seconds",
+bellows.py:239:                                                     config.get("step_timeout_seconds", 300)))
+bellows.py:296:                timeout=config.get("step_inactivity_timeout_seconds",
+bellows.py:297:                                   config.get("step_timeout_seconds", 300)),
+
+## (d) Hard wall-clock cap
+runner.py:45:    max_wall_clock = timeout * 10
+runner.py:121:        if elapsed >= max_wall_clock:
+runner.py:122:            print(f"Bellows: runner — hard wall-clock cap reached ({max_wall_clock}s), killing process", flush=True)
+runner.py:138:        timeout_type = "wall_clock_cap" if wall_clock_hit else "inactivity"

@@ -1,0 +1,2 @@
+verdict: continue
+Rule 22 deposit verification complete. Dev log `invoice-pulse/knowledge/development/backlog-hygiene-lanes-csrf-close-2026-05-06.md` exists, well-formed, documents the BACKLOG.md edit with exact removed/inserted lines, confirms the verifying diagnostic was read and 3 commit hashes match. BACKLOG.md edited correctly (entry moved Open → Closed with hygiene annotation). Rule 20 self-check PASSED, no hedging. First clean run after the worktree-aware deposit_exists fix shipped — gate passed without false positive on a worktree-isolated invoice-pulse plan.

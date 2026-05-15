@@ -1,0 +1,9 @@
+=== Lifecycle-Prefix Silent Skip Harness ===
+in-progress-foo.md stdout: ''
+  -> No warning for in-progress-foo.md: PASS
+verdict-pending-foo.md stdout: ''
+  -> No warning for verdict-pending-foo.md: PASS
+halted-foo.md stdout: ''
+  -> No warning for halted-foo.md: PASS
+
+Overall: ALL PASSED

@@ -1,0 +1,4 @@
+verdict: continue
+Rule 22 verification passed on Step 2 terminal deposits. QA report shows 11/11 verifications passed, Rule 20 self-check PASSED, evidence directory contains all 5 required files. Implementation summary: `_log()` helper deployed with 5-level taxonomy, 63 print() calls migrated across 3 files, 11 legitimate print() remaining (8 banner + 3 _rotate_logs), logging configured with dual handlers, heartbeat redesigned to 300s/state-bearing/suppression-during-activity, runner heartbeats carry plan identity via slug+step, log rotation 14d/30d/10MB. Commit b11ecc4. Tests 268/269 passed (1 pre-existing failure in test_run_step_timeout, structural test/code mismatch unrelated to this work). Plan moved to Done/. Plan 1 of 2 complete; Plan 2 (notification coalescing) remains.
+
+Behavioral change to note: notifier errors previously went to stderr, now go to stdout via `_log("ERROR")`. Single call site, only fires on Pushover API failure. Acceptable.

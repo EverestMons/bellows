@@ -1,0 +1,29 @@
+Bellows diff (HEAD~1 vs HEAD):
+$ cd /Users/marklehn/Desktop/GitHub/bellows && git --no-pager diff HEAD~1 HEAD --name-only
+bellows/knowledge/decisions/in-progress-executable-stranded-verdict-cleanup-2026-05-12.md
+bellows/knowledge/research/agent-prompt-feedback.md
+
+Invoice-pulse diff (HEAD~1 vs HEAD):
+$ cd /Users/marklehn/Desktop/GitHub/invoice-pulse && git --no-pager diff HEAD~1 HEAD --name-only
+knowledge/decisions/Done/archived-stale-verdict-pending-executable-action-queue-aggregation-2026-05-07.md
+knowledge/decisions/Done/archived-stale-verdict-pending-executable-session-wrap-2026-05-08.md
+knowledge/decisions/Done/diagnostic-action-queue-200-and-contract-code-2026-05-08 2.md
+knowledge/decisions/Done/diagnostic-action-queue-200-and-contract-code-2026-05-08.md
+knowledge/decisions/Done/diagnostic-action-queue-aggregation-2026-05-07.md
+knowledge/decisions/Done/diagnostic-aggregated-queue-carrier-customer-display-2026-05-07 2.md
+knowledge/decisions/Done/diagnostic-aggregated-queue-carrier-customer-display-2026-05-07.md
+knowledge/decisions/Done/executable-action-queue-aggregation-2026-05-07 2.md
+knowledge/decisions/Done/executable-action-queue-aggregation-2026-05-07.md
+knowledge/decisions/Done/executable-action-queue-limit-and-contract-name-2026-05-08 2.md
+knowledge/decisions/Done/executable-action-queue-limit-and-contract-name-2026-05-08.md
+knowledge/decisions/Done/executable-aggregated-queue-customer-display-2026-05-07 2.md
+knowledge/decisions/Done/executable-aggregated-queue-customer-display-2026-05-07.md
+knowledge/decisions/Done/executable-qa-report-rule-20-banner-fix-2026-05-07.md
+knowledge/decisions/Done/executable-session-wrap-action-queue-aggregation-2026-05-07 2.md
+knowledge/decisions/Done/executable-session-wrap-action-queue-aggregation-2026-05-07.md
+knowledge/decisions/Done/qa-action-queue-limit-and-contract-name-2026-05-08 2.md
+knowledge/decisions/Done/qa-action-queue-limit-and-contract-name-2026-05-08.md
+
+Verification: Zero .py files in either diff. All paths are documentation/knowledge files.
+Bellows: 2 files under knowledge/ (plan claim + feedback).
+Invoice-pulse: 18 files under knowledge/decisions/Done/ (2 archived-stale + 16 previously untracked).

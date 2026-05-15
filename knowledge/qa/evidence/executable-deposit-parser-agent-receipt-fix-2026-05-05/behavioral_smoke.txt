@@ -1,0 +1,3 @@
+PASSED — gate passed with zero deposit_exists failures
+  result['passed'] = True
+  deposit_exists failures = []

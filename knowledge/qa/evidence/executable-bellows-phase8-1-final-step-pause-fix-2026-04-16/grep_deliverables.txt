@@ -1,0 +1,5 @@
+PASS | bellows.py final-step block has verdict_requested check | should appear in both while-loop and final-step
+PASS | bellows.py final-step block has header_says_pause check | should appear in while-loop, final-step, and auto-close
+PASS | bellows.py final-step block has effective_auto_close check | definition + auto-close branch + NEW final-step
+PASS | test_clean_diagnostic_no_header_posts_verdict present | 
+PASS | test_clean_diagnostic_auto_close_true_moves_to_done present | 

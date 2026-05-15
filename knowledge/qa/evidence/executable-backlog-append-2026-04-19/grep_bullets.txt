@@ -1,0 +1,10 @@
+=== grep -c results for BACKLOG bullet verification ===
+
+$ grep -c "2026-04-19: scope_check false-positive" knowledge/BACKLOG.md
+1
+
+$ grep -c "2026-04-19: deposit parser gap" knowledge/BACKLOG.md
+1
+
+$ grep -c "2026-04-19: single-step diagnostic generates" knowledge/BACKLOG.md
+1

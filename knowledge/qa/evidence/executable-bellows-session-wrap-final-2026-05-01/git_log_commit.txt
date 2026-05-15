@@ -1,0 +1,7 @@
+commit 8eb6939bcf68f84093e4e91bff7518caa8f6d255
+Author: Mark Lehn <marklehn@icloud.com>
+Date:   Sat May 2 11:13:01 2026 -0500
+
+    docs: session wrap final 2026-05-01 — Phase 3b/3c diag + F3 removal entries
+
+bellows/PROJECT_STATUS.md

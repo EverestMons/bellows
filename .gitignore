@@ -1,0 +1,13 @@
+bellows.db
+*.db-shm
+*.db-wal
+logs/
+.DS_Store
+__pycache__/
+*.pyc
+.venv/
+config.json
+.env
+verdicts/ledger.jsonl
+.bellows-cache/
+.bellows-worktrees/

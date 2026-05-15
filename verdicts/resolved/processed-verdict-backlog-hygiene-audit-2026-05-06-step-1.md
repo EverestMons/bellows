@@ -1,0 +1,2 @@
+verdict: continue
+Rule 22 deposit verification complete. Findings file `invoice-pulse/knowledge/research/backlog-hygiene-audit-2026-05-06.md` exists, is well-formed, and contains all 9 audited items with evidence and verdict per spec. Gate failure was a `deposit_exists` false positive (Pattern X — see verdict-pending audit 2026-05-06). Real work shipped; 7 closes + 1 reword + 1 close-with-flag drove rounds 2 and 3 of BACKLOG hygiene successfully.

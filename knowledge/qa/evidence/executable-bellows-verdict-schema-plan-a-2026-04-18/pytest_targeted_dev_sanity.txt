@@ -1,0 +1,63 @@
+============================= test session starts ==============================
+platform darwin -- Python 3.9.6, pytest-8.4.2, pluggy-1.6.0 -- /Applications/Xcode.app/Contents/Developer/usr/bin/python3
+cachedir: .pytest_cache
+rootdir: /Users/marklehn/Desktop/GitHub/bellows
+plugins: anyio-4.12.1, cov-7.0.0
+collecting ... collected 48 items
+
+tests/test_verdict.py::test_post_verdict_request_creates_file PASSED     [  2%]
+tests/test_verdict.py::test_check_verdict_not_found PASSED               [  4%]
+tests/test_verdict.py::test_check_verdict_continue PASSED                [  6%]
+tests/test_verdict.py::test_check_verdict_stop PASSED                    [  8%]
+tests/test_verdict.py::test_pause_reason_gate_failure_renders_gate_failures_section PASSED [ 10%]
+tests/test_verdict.py::test_pause_reason_qa_checkpoint PASSED            [ 12%]
+tests/test_verdict.py::test_pause_reason_agent_verdict_request PASSED    [ 14%]
+tests/test_verdict.py::test_pause_reason_header_pause PASSED             [ 16%]
+tests/test_verdict.py::test_pause_reason_auto_close_disabled PASSED      [ 18%]
+tests/test_verdict.py::test_old_fallback_string_never_appears PASSED     [ 20%]
+tests/test_verdict.py::test_log_to_ledger_appends_json PASSED            [ 22%]
+tests/test_bellows.py::test_load_config PASSED                           [ 25%]
+tests/test_bellows.py::test_is_final_step PASSED                         [ 27%]
+tests/test_bellows.py::test_is_runnable_plan_diagnostic PASSED           [ 29%]
+tests/test_bellows.py::test_is_runnable_plan_parallel_prefix PASSED      [ 31%]
+tests/test_bellows.py::test_extract_parallel_group_match PASSED          [ 33%]
+tests/test_bellows.py::test_extract_parallel_group_no_match PASSED       [ 35%]
+tests/test_bellows.py::test_is_plan_stranded_returns_true_when_inprogress_exists PASSED [ 37%]
+tests/test_bellows.py::test_is_plan_stranded_returns_true_when_done_missing PASSED [ 39%]
+tests/test_bellows.py::test_is_plan_stranded_returns_false_on_happy_path PASSED [ 41%]
+tests/test_bellows.py::test_rescan_preserves_seen PASSED                 [ 43%]
+tests/test_bellows.py::test_source_sha_returns_string PASSED             [ 45%]
+tests/test_bellows.py::test_diagnostic_auto_close_moves_to_done PASSED   [ 47%]
+tests/test_bellows.py::test_clean_diagnostic_no_header_posts_verdict PASSED [ 50%]
+tests/test_bellows.py::test_clean_diagnostic_auto_close_true_moves_to_done PASSED [ 52%]
+tests/test_bellows.py::test_handle_parallel_group_stagger PASSED         [ 54%]
+tests/test_bellows.py::test_verdict_continue_at_final_step_moves_to_done PASSED [ 56%]
+tests/test_bellows.py::test_parse_diff_stat_preexisting_unchanged_returns_empty PASSED [ 58%]
+tests/test_bellows.py::test_parse_diff_stat_new_file_only_in_post PASSED [ 60%]
+tests/test_bellows.py::test_parse_diff_stat_preexisting_changed_stat_is_reported PASSED [ 62%]
+tests/test_bellows.py::test_parse_diff_stat_summary_line_ignored PASSED  [ 64%]
+tests/test_bellows.py::test_parse_diff_stat_empty_inputs_return_empty PASSED [ 66%]
+tests/test_bellows.py::test_run_plan_resume_step_uses_correct_prompt PASSED [ 68%]
+tests/test_bellows.py::test_consume_verdicts_continue_calls_handle_new_plan_with_resume_step PASSED [ 70%]
+tests/test_bellows.py::test_consume_verdicts_deletes_pending_file PASSED [ 72%]
+tests/test_bellows.py::test_consume_verdicts_pending_cleanup_safe_when_file_missing PASSED [ 75%]
+tests/test_bellows.py::test_consume_verdicts_scopes_to_project_from_pending_file PASSED [ 77%]
+tests/test_bellows.py::test_consume_verdicts_fallback_to_all_watched_when_pending_missing PASSED [ 79%]
+tests/test_bellows.py::test_consume_verdicts_break_prevents_double_consumption PASSED [ 81%]
+tests/test_bellows.py::test_handle_parallel_from_watchdog_adds_pending_not_dispatched PASSED [ 83%]
+tests/test_bellows.py::test_rescan_dispatches_pending_group_after_settle PASSED [ 85%]
+tests/test_bellows.py::test_rescan_does_not_dispatch_pending_group_within_settle PASSED [ 87%]
+tests/test_bellows.py::test_nonparallel_plan_dispatches_immediately_from_handle PASSED [ 89%]
+tests/test_bellows.py::test_two_parallel_siblings_collected_as_one_group PASSED [ 91%]
+tests/test_bellows.py::test_run_plan_claims_file_before_runner_runs PASSED [ 93%]
+tests/test_bellows.py::test_run_plan_skips_claim_if_already_inprogress PASSED [ 95%]
+tests/test_bellows.py::test_run_plan_bootstrap_prompt_uses_inprogress_path PASSED [ 97%]
+tests/test_bellows.py::test_is_runnable_plan_inprogress_executable_returns_false PASSED [100%]
+
+=============================== warnings summary ===============================
+../../../Library/Python/3.9/lib/python/site-packages/urllib3/__init__.py:35
+  /Users/marklehn/Library/Python/3.9/lib/python/site-packages/urllib3/__init__.py:35: NotOpenSSLWarning: urllib3 v2 only supports OpenSSL 1.1.1+, currently the 'ssl' module is compiled with 'LibreSSL 2.8.3'. See: https://github.com/urllib3/urllib3/issues/3020
+    warnings.warn(
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+======================== 48 passed, 1 warning in 0.17s =========================

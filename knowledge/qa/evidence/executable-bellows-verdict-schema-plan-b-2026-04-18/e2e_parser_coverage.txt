@@ -1,0 +1,12 @@
+  [PASS] case 1: '**Deposit:** `freight-kb/knowledge/design/foo.md`'
+  [PASS] case 2: '**Deposit:** Write the full schema blueprint to `ai-career-digest/knowledge/arch'
+  [PASS] case 3: '**Deposit dev log** to `bellows/knowledge/development/baz.md`'
+  [PASS] case 4: '**WRITE THE QA REPORT** to `bellows/knowledge/qa/caps.md`'
+  [PASS] case 5: '**Write QA report** to `BrewBuddy/knowledge/qa/bb.md`'
+  [PASS] case 6: 'Deposit QA report to `anvil/knowledge/qa/anv.md`'
+  [PASS] case 7: 'deposit as `forge/knowledge/research/forge.md`'
+  [PASS] case 8: '**Deposit:** QA report to `/Users/marklehn/Desktop/GitHub/forge/knowledge/qa/abs'
+  [PASS] case 9: 'Standard prompt feedback protocol → `bellows/knowledge/research/agent-prompt-fee'
+  [PASS] case 10: 'This step has no primary deposit.'
+
+OVERALL: PASS (10/10)

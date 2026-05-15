@@ -1,0 +1,76 @@
+============================= test session starts ==============================
+platform darwin -- Python 3.9.6, pytest-8.4.2, pluggy-1.6.0 -- /Applications/Xcode.app/Contents/Developer/usr/bin/python3
+cachedir: .pytest_cache
+rootdir: /Users/marklehn/Desktop/GitHub/bellows
+plugins: anyio-4.12.1, cov-7.0.0
+collecting ... collected 61 items
+
+tests/test_gates.py::test_all_gates_pass_on_clean_parsed PASSED          [  1%]
+tests/test_gates.py::test_receipt_status_blocked PASSED                  [  3%]
+tests/test_gates.py::test_receipt_status_partial PASSED                  [  4%]
+tests/test_gates.py::test_ceo_flags_nonempty PASSED                      [  6%]
+tests/test_gates.py::test_is_error_true PASSED                           [  8%]
+tests/test_gates.py::test_permission_denials_nonempty PASSED             [  9%]
+tests/test_gates.py::test_permission_denials_read_class_only_passes PASSED [ 11%]
+tests/test_gates.py::test_permission_denials_write_class_fails PASSED    [ 13%]
+tests/test_gates.py::test_permission_denials_mixed_read_write_fails PASSED [ 14%]
+tests/test_gates.py::test_permission_denials_missing_tool_name_fails PASSED [ 16%]
+tests/test_gates.py::test_permission_denials_none_tool_name_fails PASSED [ 18%]
+tests/test_gates.py::test_permission_denials_unknown_tool_fails PASSED   [ 19%]
+tests/test_gates.py::test_permission_denials_string_form_fails PASSED    [ 21%]
+tests/test_gates.py::test_deposit_path_missing PASSED                    [ 22%]
+tests/test_gates.py::test_qa_step_detection PASSED                       [ 24%]
+tests/test_gates.py::test_file_change_audit_populates PASSED             [ 26%]
+tests/test_gates.py::test_scope_check_passes_when_files_in_plan PASSED   [ 27%]
+tests/test_gates.py::test_scope_check_fails_when_file_not_in_plan PASSED [ 29%]
+tests/test_gates.py::test_scope_check_allowlist PASSED                   [ 31%]
+tests/test_gates.py::test_no_deposit_section_passes PASSED               [ 32%]
+tests/test_gates.py::test_parse_plan_header_empty PASSED                 [ 34%]
+tests/test_gates.py::test_parse_plan_header_basic PASSED                 [ 36%]
+tests/test_gates.py::test_parse_plan_header_malformed PASSED             [ 37%]
+tests/test_gates.py::test_parse_plan_header_pipe_format_with_pause_for_verdict PASSED [ 39%]
+tests/test_gates.py::test_parse_plan_header_pipe_format_without_pause_for_verdict PASSED [ 40%]
+tests/test_gates.py::test_parse_plan_header_yaml_still_works PASSED      [ 42%]
+tests/test_gates.py::test_parse_plan_header_no_format_returns_empty PASSED [ 44%]
+tests/test_gates.py::test_parse_plan_header_pipe_format_always PASSED    [ 45%]
+tests/test_gates.py::test_parse_plan_header_pipe_format_key_normalization PASSED [ 47%]
+tests/test_gates.py::test_pipe_header_pause_for_verdict_after_step_1_causes_pause PASSED [ 49%]
+tests/test_gates.py::test_pipe_header_pause_for_verdict_always_causes_pause PASSED [ 50%]
+tests/test_gates.py::test_pipe_header_no_pause_for_verdict_no_pause PASSED [ 52%]
+tests/test_gates.py::test_scope_check_prefix_allowlist_in_progress PASSED [ 54%]
+tests/test_gates.py::test_scope_check_prefix_allowlist_verdict_pending PASSED [ 55%]
+tests/test_gates.py::test_scope_check_prefix_allowlist_halted PASSED     [ 57%]
+tests/test_gates.py::test_scope_check_prefix_allowlist_does_not_suppress_real_violations PASSED [ 59%]
+tests/test_gates.py::test_verdict_requested_from_parsed_dict PASSED      [ 60%]
+tests/test_gates.py::test_verdict_requested_defaults_when_key_missing PASSED [ 62%]
+tests/test_gates.py::test_resolve_deposit_path_directory_as_is PASSED    [ 63%]
+tests/test_gates.py::test_resolve_deposit_path_directory_project_relative PASSED [ 65%]
+tests/test_gates.py::test_resolve_deposit_path_directory_parent_relative PASSED [ 67%]
+tests/test_gates.py::test_resolve_deposit_path_nonexistent PASSED        [ 68%]
+tests/test_gates.py::test_gate_deposit_exists_directory_in_deposits_block PASSED [ 70%]
+tests/test_gates.py::test_deposit_exists_extracts_path_from_backtick_with_description PASSED [ 72%]
+tests/test_gates.py::test_deposit_exists_extracts_path_from_backtick_only PASSED [ 73%]
+tests/test_gates.py::test_deposit_exists_extracts_path_from_bare_path_without_backticks PASSED [ 75%]
+tests/test_gates.py::test_deposit_exists_still_fails_on_genuinely_missing_path_with_new_format PASSED [ 77%]
+tests/test_gates.py::test_rule_20_self_check_passes_with_valid_banner_and_passed_line PASSED [ 78%]
+tests/test_gates.py::test_rule_20_self_check_fails_when_banner_missing PASSED [ 80%]
+tests/test_gates.py::test_rule_20_self_check_fails_when_banner_without_passed_line PASSED [ 81%]
+tests/test_gates.py::test_rule_20_self_check_fails_when_deposit_unreadable PASSED [ 83%]
+tests/test_gates.py::test_rule_20_self_check_skipped_on_non_qa_step PASSED [ 85%]
+tests/test_gates.py::test_rule_20_self_check_passes_when_passed_line_after_banner_in_multi_section_report PASSED [ 86%]
+tests/test_gates.py::test_resolve_deposit_path_returns_absolute_path_when_found PASSED [ 88%]
+tests/test_gates.py::test_resolve_deposit_path_returns_none_when_not_found PASSED [ 90%]
+tests/test_gates.py::test_resolve_deposit_path_finds_file_in_worktree PASSED [ 91%]
+tests/test_gates.py::test_resolve_deposit_path_finds_file_in_worktree_form_a PASSED [ 93%]
+tests/test_gates.py::test_resolve_deposit_path_bellows_self_no_wt_path_drift PASSED [ 95%]
+tests/test_gates.py::test_resolve_deposit_path_no_wt_path_backward_compat PASSED [ 96%]
+tests/test_gates.py::test_gate_deposit_exists_threads_wt_path PASSED     [ 98%]
+tests/test_gates.py::test_gate_deposit_exists_fails_when_file_truly_missing PASSED [100%]
+
+=============================== warnings summary ===============================
+tests/test_gates.py::test_pipe_header_pause_for_verdict_after_step_1_causes_pause
+  /Users/marklehn/Library/Python/3.9/lib/python/site-packages/urllib3/__init__.py:35: NotOpenSSLWarning: urllib3 v2 only supports OpenSSL 1.1.1+, currently the 'ssl' module is compiled with 'LibreSSL 2.8.3'. See: https://github.com/urllib3/urllib3/issues/3020
+    warnings.warn(
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+======================== 61 passed, 1 warning in 0.10s =========================

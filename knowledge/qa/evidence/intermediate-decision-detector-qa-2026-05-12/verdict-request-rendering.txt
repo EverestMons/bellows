@@ -1,0 +1,17 @@
+Verdict Request Rendering — Behavioral Verification Part B
+Date: 2026-05-12
+
+=== Test 1: Section rendered when decisions are present ===
+PASS | Section header present ("## Intermediate Decisions Detected")
+PASS | Block count text ("2 phrase-matched blocks")
+PASS | Event 3 rendered ("**Event 3:**")
+PASS | Event 7 rendered ("**Event 7:**")
+PASS | Phrase annotation ("_(matched: decided to)_")
+
+=== Test 2: Section omitted when empty list ===
+PASS | Section omitted when empty
+
+=== Test 3: Section omitted when None (default) ===
+PASS | Section omitted when None
+
+Result: 7/7 checks passed — PASS

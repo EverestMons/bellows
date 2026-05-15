@@ -1,0 +1,15 @@
+Architecture Verification — bellows.py run_plan() + _rescan()
+
+Read bellows.py run_plan() end-to-end (lines 127-252) and _consume_verdicts() (lines 399-447). Confirmed:
+
+(a) planner.consult() is no longer called anywhere in bellows.py — the `import planner` statement was removed and replaced with `import gates` and `import verdict` at line 24-25. A grep for "planner" in bellows.py returns zero matches.
+
+(b) gates.check() is called after every step dispatch: once after the bootstrap step at line 180 (with pre/post git diff capture at 163 and 178), and once inside the while loop at line 223 after each subsequent runner.run_step() call at 206.
+
+(c) verdict.post_verdict_request() is invoked at line 187 (inside the while loop) and at line 229 (after final step) when `not gate_result["passed"] or gate_result["is_qa_step"]`. Both sites also call notifier.notify_verdict_request() for Pushover.
+
+(d) When a verdict is posted, the plan is renamed from in-progress-* to verdict-pending-* via shutil.move at lines 194 and 235. The run records "VerdictPending" status to bellows.db and returns from run_plan() — the plan pauses until the verdict arrives.
+
+(e) Verdict consumption logic lives in Bellows._consume_verdicts(), called from _rescan() on every 30s cycle (line 392). It scans verdicts/resolved/, parses each verdict file, renames verdict-pending-* back to in-progress-* on "continue" (and re-dispatches via handle_new_plan), or renames to halted-* on "stop" (with Pushover notification). is_runnable_plan() was updated to reject verdict-pending- and halted- prefixes so paused/halted plans don't get picked up by the watcher.
+
+Flow summary: step dispatched → git diff captured pre/post → gates.check() runs all 8 gates → passed + non-QA continues autonomously → fail or QA posts verdict request and pauses plan → on next 30s rescan, _consume_verdicts picks up resolved verdicts and resumes or halts.

@@ -1,0 +1,25 @@
+$ grep -n "print(" bellows.py runner.py notifier.py
+
+bellows.py:51:        print(formatted)
+bellows.py:71:    """Age-based cleanup at startup. Logs deletions via print() (logger not yet configured)."""
+bellows.py:79:                print(f"Bellows: rotated terminal log {fname} (>14 days)")
+bellows.py:88:                print(f"Bellows: rotated step JSON {fname} (>30 days)")
+bellows.py:95:        print(f"Bellows: rotated planner-consultation.jsonl (>10MB)")
+bellows.py:1253:        print("=" * 50)
+bellows.py:1254:        print("  🔥 Bellows is running")
+bellows.py:1255:        print(f"  Source: bellows.py @ {_source_sha()}")
+bellows.py:1256:        print(f"  Watching {len(self.config.get('watched_projects', []))} projects")
+bellows.py:1257:        print(f"  Rescan interval: 30s")
+bellows.py:1258:        print(f"  Callback: http://{self.config.get('tailscale_ip','localhost')}:{self.config.get('callback_port',5000)}/respond")
+bellows.py:1260:            print(f"  Module: {mod_name} @ {fp}")
+bellows.py:1261:        print("=" * 50)
+
+Summary:
+- bellows.py: 11 print() calls (1 fallback in _log(), 3 in _rotate_logs(), 8 in startup banner) — 1 docstring mention
+- runner.py: 0 print() calls
+- notifier.py: 0 print() calls
+
+All remaining print() calls are legitimate:
+- Line 51: _log() fallback for test compatibility (no handlers → print)
+- Lines 79, 88, 95: _rotate_logs() runs before logger is configured
+- Lines 1253-1261: startup banner, pre-logger decorative output

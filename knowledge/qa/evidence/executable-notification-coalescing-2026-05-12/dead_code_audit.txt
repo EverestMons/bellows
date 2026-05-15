@@ -1,0 +1,5 @@
+$ grep -rn "notify_escalation\|notify_complete" bellows/notifier.py bellows/bellows.py
+(no output — 0 matches)
+
+Searched: bellows/notifier.py, bellows/bellows.py
+Result: 0 matches. Both notify_escalation() and notify_complete() have been deleted.

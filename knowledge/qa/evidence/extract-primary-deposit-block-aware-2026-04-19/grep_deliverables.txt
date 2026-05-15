@@ -1,0 +1,16 @@
+=== (a) DEPOSITS_BLOCK_RE constant ===
+14:DEPOSITS_BLOCK_RE = re.compile(r'[> ]*\*\*Deposits:\*\*\s*\n((?:[> ]*-\s+.*\n?)+)')
+
+=== (b) BLOCK_BULLET_RE constant ===
+15:BLOCK_BULLET_RE = re.compile(r'-\s+`([^`]+)`')
+
+=== (c) DEPOSITS_BLOCK_RE.search in extract_primary_deposit ===
+38:    block_match = DEPOSITS_BLOCK_RE.search(step_text)
+
+=== (d) Test function names in test_extract_primary_deposit_blocks.py ===
+11:def test_block_single_md_path_returned():
+26:def test_block_multiple_md_first_returned():
+38:def test_block_none_bullet_returns_none():
+49:def test_block_directory_only_returns_none():
+64:def test_no_block_falls_back_to_legacy():
+74:def test_block_with_blockquote_prefix_still_matches():

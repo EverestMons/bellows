@@ -1,0 +1,3 @@
+340:                    gate_result["failures"].append({"gate": "worktree_teardown", "evidence": str(e)})
+405:                gate_result["failures"].append({"gate": "worktree_teardown", "evidence": str(e)})
+433:                gate_result["failures"].append({"gate": "worktree_teardown", "evidence": str(e)})

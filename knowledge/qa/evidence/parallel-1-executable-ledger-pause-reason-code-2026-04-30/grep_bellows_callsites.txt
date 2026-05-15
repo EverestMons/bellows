@@ -1,0 +1,6 @@
+415:                                  pause_reason_code="auto_close")
+672:            pause_reason_code_from_request = None
+690:                        pause_reason_code_from_request = req_line.split(":**", 1)[1].strip() or None
+732:                                                      pause_reason_code=pause_reason_code_from_request)
+744:                                                      pause_reason_code=pause_reason_code_from_request)
+753:                                                  pause_reason_code=pause_reason_code_from_request)

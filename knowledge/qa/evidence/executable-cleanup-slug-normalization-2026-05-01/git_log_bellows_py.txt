@@ -1,0 +1,9 @@
+commit bc09bb53fc75e722a443174190de73a4838ee6d8
+Author: Mark Lehn <marklehn@icloud.com>
+Date:   Fri May 1 18:45:06 2026 -0500
+
+    fix: normalize cleanup slug in _consume_verdicts + remove Done/ exclusion from startup sweep (BACKLOG #3)
+    
+    Co-Authored-By: Claude Opus 4.6 <noreply@anthropic.com>
+
+bellows/bellows.py

@@ -1,0 +1,2 @@
+verdict: continue
+Rule 22 verification PASSED on Step 2 QA deposit at forge/knowledge/qa/qa-fix-lessons-md-heading-level-2026-05-13.md. Deliverable verification table shows 4/4 ✅: regex updated to ^## 20\d\d (line 25), live parse returns 24 entries, 24/24 tests pass, only src/lessons_forge.py + src/test_lessons_forge.py modified. Rule 20 self-check banner present with PASSED status, 4 evidence files verified. Plan complete; authorize move to Done.

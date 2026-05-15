@@ -1,0 +1,1 @@
+57620b0 chore(backlog): hygiene-close 2026-04-19 plan-fixing-bug-X entry (partial supersession by v4.38)

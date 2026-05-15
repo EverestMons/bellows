@@ -1,0 +1,34 @@
+gates.py:36:def check(parsed, plan_text, step_number, project_path, files_changed=None, wt_path=None):
+gates.py:63:    _gate_deposit_exists(parsed, failures, project_path, plan_text=plan_text, step_number=step_number, wt_path=wt_path)
+gates.py:128:def _resolve_deposit_path(path, project_path, wt_path=None):
+gates.py:133:      0. worktree-first (if wt_path provided and differs from project_path)
+gates.py:138:    # Strategy 0 (worktree-first): if wt_path is provided AND differs from project_path,
+gates.py:140:    if wt_path is not None and wt_path != project_path:
+gates.py:143:            wt_candidate = os.path.join(wt_path, path[len(project_basename) + 1:])
+gates.py:145:            wt_candidate = os.path.join(wt_path, path)
+gates.py:160:def _gate_deposit_exists(parsed, failures, project_path, plan_text=None, step_number=None, wt_path=None):
+gates.py:176:                if _resolve_deposit_path(path, project_path, wt_path=wt_path) is None:
+gates.py:184:                if path not in agent_declared and _resolve_deposit_path(path, project_path, wt_path=wt_path) is None:
+bellows.py:282:            wt_path = _create_worktree(project_path, plan_slug)
+bellows.py:296:        pre_diff = _capture_git_diff(wt_path)
+bellows.py:298:        parsed = runner.run_step(bootstrap_prompt, wt_path, model,
+bellows.py:329:        post_diff = _capture_git_diff(wt_path)
+bellows.py:331:        gate_result = gates.check(parsed, plan_text, current_step, project_path, files_changed=files_changed, wt_path=wt_path)
+bellows.py:360:                    _teardown_worktree(project_path, wt_path, plan_slug)
+bellows.py:381:            pre_diff = _capture_git_diff(wt_path)
+bellows.py:384:                default_next_prompt, wt_path, model,
+bellows.py:414:            post_diff = _capture_git_diff(wt_path)
+bellows.py:416:            gate_result = gates.check(parsed, plan_text, current_step, project_path, files_changed=files_changed, wt_path=wt_path)
+bellows.py:446:                _teardown_worktree(project_path, wt_path, plan_slug)
+bellows.py:472:                _teardown_worktree(project_path, wt_path, plan_slug)
+bellows.py:570:    wt_path == project_path as the sentinel for "no worktree created".
+bellows.py:577:    wt_path = os.path.join(project_path, ".bellows-worktrees", slug)
+bellows.py:582:        cmd = ["git", "--no-pager", "worktree", "add", wt_path, "HEAD", "--detach"]
+bellows.py:592:        return wt_path
+bellows.py:600:def _teardown_worktree(project_path: str, wt_path: str, slug: str) -> None:
+bellows.py:604:    No-op when wt_path == project_path (in-place execution, no worktree was created).
+bellows.py:606:    if wt_path == project_path:
+bellows.py:630:            cwd=wt_path, capture_output=True, text=True, timeout=30,
+bellows.py:657:            cwd=wt_path, capture_output=True, text=True, timeout=10,
+bellows.py:670:            src = os.path.join(wt_path, filename)
+bellows.py:681:            ["git", "--no-pager", "worktree", "remove", wt_path, "--force"],

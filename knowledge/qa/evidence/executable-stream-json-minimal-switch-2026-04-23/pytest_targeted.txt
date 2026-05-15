@@ -1,0 +1,23 @@
+============================= test session starts ==============================
+platform darwin -- Python 3.9.6, pytest-8.4.2, pluggy-1.6.0 -- /Applications/Xcode.app/Contents/Developer/usr/bin/python3
+cachedir: .pytest_cache
+rootdir: /Users/marklehn/Desktop/GitHub/bellows
+plugins: anyio-4.12.1, cov-7.0.0
+collecting ... collected 14 items
+
+tests/test_runner.py::test_configurable_timeout_respected PASSED         [  7%]
+tests/test_runner.py::test_timeout_returns_cost_none PASSED              [ 14%]
+tests/test_runner.py::test_timeout_writes_log_file PASSED                [ 21%]
+tests/test_runner.py::test_generic_exception_returns_cost_none PASSED    [ 28%]
+tests/test_runner.py::test_generic_exception_message_contains_actual_error PASSED [ 35%]
+tests/test_runner.py::test_generic_exception_writes_log_file PASSED      [ 42%]
+tests/test_runner.py::test_success_writes_log_file PASSED                [ 50%]
+tests/test_runner.py::test_stderr_printed_on_success PASSED              [ 57%]
+tests/test_runner.py::test_no_result_event_returns_blocked PASSED        [ 64%]
+tests/test_runner.py::test_no_result_event_writes_log_with_raw_output PASSED [ 71%]
+tests/test_runner.py::test_ndjson_parse_valid_stream PASSED              [ 78%]
+tests/test_runner.py::test_ndjson_parse_malformed_line_skipped PASSED    [ 85%]
+tests/test_runner.py::test_ndjson_parse_missing_result_event PASSED      [ 92%]
+tests/test_runner.py::test_resume_session_flag_in_command PASSED         [100%]
+
+============================== 14 passed in 0.04s ==============================

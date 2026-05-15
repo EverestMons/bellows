@@ -1,0 +1,1 @@
+docs: close 2026-04-18 BACKLOG entry, add parallel-dispatch documentation gap

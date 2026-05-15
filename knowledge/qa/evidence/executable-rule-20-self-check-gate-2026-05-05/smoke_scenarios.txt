@@ -1,0 +1,6 @@
+Scenario i (banner+PASSED): passed=True, rule_20_failures=0
+Scenario ii (banner no PASSED): passed=False, evidence=banner present but PASSED line missing in knowledge/qa/qa-re
+Scenario iii (no banner): passed=False, evidence=no QA deposit contains Rule 20 self-check banner
+Scenario iv (DEV step): passed=False, rule_20_failures=0
+
+ALL 4 SMOKE SCENARIOS PASSED

@@ -1,0 +1,18 @@
+== Deliverable Verification: smoke-test-infra-2026-04-17 ==
+Date: 2026-04-17
+
+--- (a) Research file exists and contains "Infrastructure Verification" ---
+File: bellows/knowledge/research/smoke-test-infra-2026-04-17.md
+Grep result:
+1:# Smoke Test — Infrastructure Verification
+
+PASS ✓
+
+--- (b) Commit exists in git log ---
+git log --oneline --grep="smoke test":
+3337d87 test: smoke test — bellows infrastructure verification
+
+PASS ✓
+
+--- Summary ---
+All deliverables verified.

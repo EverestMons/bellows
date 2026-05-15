@@ -1,0 +1,5 @@
+File: knowledge/decisions/in-progress-executable-pipe-header-parser-and-comprehensive-qa-2026-05-08.md
+Parsed header: {'date': '2026-05-08', 'tier': 'Small', 'test_scope': 'targeted + full-suite', 'execution': 'Step 1 (DEV) → Step 2 (QA)', 'pause_for_verdict': 'after_step_1'}
+pause_for_verdict: after_step_1 — PASS
+
+This plan self-test PASSED.

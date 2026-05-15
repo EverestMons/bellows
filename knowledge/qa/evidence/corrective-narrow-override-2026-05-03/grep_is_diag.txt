@@ -1,0 +1,5 @@
+226:        is_diagnostic = os.path.basename(plan_path).startswith("diagnostic-")
+234:        if total_steps == 0 and is_diagnostic:
+263:        if is_diagnostic:
+696:                            is_diag = original_name.startswith("diagnostic-")
+709:                            if total_steps_c == 0 and is_diag:

@@ -1,0 +1,12 @@
+============================= test session starts ==============================
+platform darwin -- Python 3.9.6, pytest-8.4.2, pluggy-1.6.0 -- /Applications/Xcode.app/Contents/Developer/usr/bin/python3
+cachedir: .pytest_cache
+rootdir: /Users/marklehn/Desktop/GitHub/bellows
+plugins: cov-7.0.0
+collecting ... collected 3 items
+
+tests/test_runner_parser.py::test_parse_clean_output PASSED              [ 33%]
+tests/test_runner_parser.py::test_parse_blocked_output PASSED            [ 66%]
+tests/test_runner_parser.py::test_run_step_timeout PASSED                [100%]
+
+============================== 3 passed in 0.01s ===============================

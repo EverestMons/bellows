@@ -1,0 +1,8 @@
+$ git --no-pager diff --stat 0fba5a18d72e1a39e3fd0487e1866572365a5fc8 HEAD
+
+ bellows/bellows.py            |  10 ++-
+ bellows/tests/test_bellows.py | 192 ++++++++++++++++++++++++++++++++++++++++--
+ 2 files changed, 193 insertions(+), 9 deletions(-)
+
+Only bellows.py and tests/test_bellows.py were modified. Both are blueprint-authorized files.
+No unexpected file modifications detected.

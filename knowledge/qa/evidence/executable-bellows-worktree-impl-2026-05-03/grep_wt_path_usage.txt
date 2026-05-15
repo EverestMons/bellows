@@ -1,0 +1,18 @@
+282:            wt_path = _create_worktree(project_path, plan_slug)
+296:        pre_diff = _capture_git_diff(wt_path)
+298:        parsed = runner.run_step(bootstrap_prompt, wt_path, model,
+312:        post_diff = _capture_git_diff(wt_path)
+337:                    _teardown_worktree(project_path, wt_path, plan_slug)
+358:            pre_diff = _capture_git_diff(wt_path)
+361:                default_next_prompt, wt_path, model,
+376:            post_diff = _capture_git_diff(wt_path)
+402:                _teardown_worktree(project_path, wt_path, plan_slug)
+428:                _teardown_worktree(project_path, wt_path, plan_slug)
+524:    wt_path = os.path.join(project_path, ".bellows-worktrees", slug)
+529:        cmd = ["git", "--no-pager", "worktree", "add", wt_path, "HEAD", "--detach"]
+539:        return wt_path
+547:def _teardown_worktree(project_path: str, wt_path: str, slug: str) -> None:
+573:            cwd=wt_path, capture_output=True, text=True, timeout=30,
+600:            cwd=wt_path, capture_output=True, text=True, timeout=10,
+613:            src = os.path.join(wt_path, filename)
+624:            ["git", "--no-pager", "worktree", "remove", wt_path, "--force"],

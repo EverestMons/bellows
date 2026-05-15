@@ -1,0 +1,1 @@
+SUCCESS — pause_reason_code round-trips correctly: {'timestamp': '2026-04-30T15:48:00.106671', 'plan_path': '/tmp/test-plan.md', 'step': 1, 'gate_failures': [], 'files_changed': [], 'verdict': 'continue', 'reason': 'smoke test', 'pause_reason_code': 'qa_checkpoint'}

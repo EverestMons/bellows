@@ -1,0 +1,14 @@
+=== CHECK 1: Multi-line bold fixture ===
+Result: {'project': 'bellows', 'date': '2026-05-10', 'author': 'Planner', 'tier': 'Small', 'total_steps': '2', 'pause_for_verdict': 'after_step_1'}
+Keys present: ['author', 'date', 'pause_for_verdict', 'project', 'tier', 'total_steps']
+CHECK 1: PASSED - all 6 fields returned
+
+=== CHECK 2: Single-line pipe fixture ===
+Result: {'project': 'bellows', 'date': '2026-05-10', 'author': 'Planner', 'tier': 'Small', 'total_steps': '2', 'pause_for_verdict': 'after_step_1'}
+Keys (6): ['author', 'date', 'pause_for_verdict', 'project', 'tier', 'total_steps']
+CHECK 2: PASSED - 6 keys returned, identical behavior
+
+=== CHECK 13: End-to-end with incident plan ===
+Result keys: ['author', 'date', 'pause_for_verdict', 'project', 'tier', 'total_steps']
+pause_for_verdict: after_step_1
+CHECK 13: PASSED - pause_for_verdict=after_step_1 correctly parsed from incident plan

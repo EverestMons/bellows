@@ -1,0 +1,9 @@
+commit 3030402d3ff723665f2993e1c39b7c906d6721dc
+Author: Mark Lehn <marklehn@icloud.com>
+Date:   Fri May 1 16:31:13 2026 -0500
+
+    docs(planner): v4.31 — Lessons rows for verdict format, verdict semantics, stranded plans audit
+    
+    Co-Authored-By: Claude Opus 4.6 <noreply@anthropic.com>
+
+PLANNER_TEMPLATE.md

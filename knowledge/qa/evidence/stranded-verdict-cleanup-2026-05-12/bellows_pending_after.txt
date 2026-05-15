@@ -1,0 +1,12 @@
+$ ls -1 /Users/marklehn/Desktop/GitHub/bellows/verdicts/pending/
+archived
+
+Verification: The three archived verdict-request files are NOT present:
+- verdict-request-action-queue-aggregation-2026-05-07-step-1.md — ABSENT (archived)
+- verdict-request-action-queue-aggregation-2026-05-07-step-3.md — ABSENT (archived)
+- verdict-request-session-wrap-2026-05-08-step-1.md — ABSENT (archived)
+
+Note: The directory contains only the archived/ subdirectory and .DS_Store.
+The plan expected verdict-request-bellows-self-exposure-disposition-2026-05-12-step-1.md
+to remain, but it is not present — likely processed/moved by another operation.
+No verdict-request-* or verdict-* files remain in pending/.

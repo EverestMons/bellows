@@ -1,0 +1,1 @@
+716:                        cleanup_slug = verdict.slug_from_path(original_name)

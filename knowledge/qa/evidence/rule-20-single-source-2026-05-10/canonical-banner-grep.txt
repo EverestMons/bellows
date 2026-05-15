@@ -1,0 +1,6 @@
+4
+---full grep output---
+5:**Authority:** PLANNER_TEMPLATE.md Rule 20 (governance) and `bellows/gates.py::_gate_rule_20_self_check` (enforcement). Banner string `Rule 20 — QA Self-Check Results` is enforced byte-for-byte. Do not paraphrase, substitute, or reformat.
+88:print("Rule 20 — QA Self-Check Results")
+106:The line `print("Rule 20 — QA Self-Check Results")` MUST appear verbatim — including the em-dash (—, U+2014, not a hyphen) and the spaces. `bellows/gates.py::_gate_rule_20_self_check` matches the banner string by byte. Any substitution (`RULE 20 SELF-CHECK`, `Rule 20 Self-Check`, `Rule 20 -- QA Self-Check`, etc.) will cause the gate to fail.
+115:- Banner string changes: REQUIRES a coordinated gate-update plan. The banner is enforced in `bellows/gates.py` lines ~289–290 (`banner = "Rule 20 — QA Self-Check Results"` and the `PASSED — SELF-CHECK PASSED` startswith check). Do not change the banner without updating the gate.

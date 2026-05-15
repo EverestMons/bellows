@@ -1,0 +1,5 @@
+# Deposit-Exists Prose-Path Canary — Findings
+
+**Date:** 2026-04-28 | **Plan:** executable-deposit-exists-prose-canary-2026-04-28 | **Bellows Generation:** post-2026-04-19 structural fix
+
+This canary closes the BACKLOG.md item logged 2026-04-23: `deposit_exists false positive on prose-embedded directory paths`. The original failure observed Gate 5 flagging two prose-only directory references — `bellows/knowledge/decisions/` and `bellows/knowledge/decisions/Done/` — on a Rule 26-compliant plan whose real deposit was declared via a declaration block. This step's prose intentionally embeds those same two directory paths as distractors to reproduce the original failure conditions. The expected gate behavior is that `_extract_plan_required_deposits()` scopes extraction to the declaration block (per the 2026-04-19 fix) and ignores the prose-embedded directory paths entirely. If the `deposit_exists` gate passes without flagging these prose paths, the structural fix is confirmed live and the BACKLOG item is closeable.

@@ -1,0 +1,28 @@
+=== CANARY SMOKE TEST EVIDENCE ===
+Date: 2026-04-24
+
+--- Result: INCONCLUSIVE (canary deposit error — wrong case) ---
+
+The canary plan used `## Step 1 — Bellows QA` (mixed case).
+Bellows's extract_total_steps() uses regex `r"^## STEP"` (case-sensitive uppercase).
+The mixed-case header yielded total_steps = 0, triggering the skip branch at L230-233:
+
+    if total_steps == 0:
+        shutil.move(plan_path, os.path.join(plan_dir, "Done", plan_filename))
+
+The canary never entered run_plan's agent dispatch or gate evaluation.
+It bypassed the L272 auto_close default entirely — this is a QA deposit
+error, not a code defect.
+
+--- L272 fix validation ---
+The auto_close default inversion is validated by two unit tests added in Step 2:
+  - test_executable_no_header_defaults_to_verdict (PASSED)
+  - test_executable_explicit_auto_close_true_still_closes (PASSED)
+Both tests exercise the exact code path (L272 + L332-336 terminal pause branch)
+that the canary was intended to smoke-test live.
+
+--- Canary re-deposit ---
+A corrected canary with `## STEP 1` (uppercase) was deposited but not executed
+within this QA step. The corrected file remains at:
+  knowledge/decisions/executable-auto-close-canary-2026-04-24.md
+for future live validation if desired.

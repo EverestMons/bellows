@@ -1,0 +1,3 @@
+verdict: continue
+
+Rule 22 verification passed on Step 2's deposits — QA report exists with PASSED Rule 20 self-check, both evidence files present and non-empty, no hedging keywords in positive-status rows. The single failure flagged was scope_check on LESSONS.md — same BACKLOG #4 false-positive class observed on Step 1 (LESSONS.md mtime confirms agent did not modify it; the noise comes from git diff scoping when bellows runs without its own .git in a nested governance-root repo). Canary's structural test passed: deposit_exists did not trip on prose paths in either step. BACKLOG #1 (deposit_exists false-positive on prose-embedded paths) closeable. Approving terminal close.

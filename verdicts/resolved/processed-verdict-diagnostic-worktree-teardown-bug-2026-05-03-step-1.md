@@ -1,0 +1,2 @@
+verdict: continue
+Rule 22 passed — Planner-authorized terminal close. Findings file at bellows/knowledge/research/worktree-teardown-bug-diagnosis-2026-05-03.md verified directly. 3 of 4 failure sites enumerated by agent; 4th site (line ~318 in _create_worktree failure path) carried forward into fix plan. Plan was stranded at in-progress- after agent reported Complete (Bellows wedged mid-teardown — root cause is the bug being diagnosed). Manual recovery via Planner-owned Done/ move pattern.

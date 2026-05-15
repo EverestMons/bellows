@@ -1,0 +1,35 @@
+============================= test session starts ==============================
+platform darwin -- Python 3.9.6, pytest-8.4.2, pluggy-1.6.0 -- /Applications/Xcode.app/Contents/Developer/usr/bin/python3
+cachedir: .pytest_cache
+rootdir: /Users/marklehn/Desktop/GitHub/bellows
+plugins: anyio-4.12.1, cov-7.0.0
+collecting ... collected 224 items
+
+tests/test_bellows.py: 86 passed
+tests/test_consume_verdicts.py: 82 passed
+tests/test_gates.py: 18 passed
+tests/test_runner.py: 19 passed
+tests/test_runner_parser.py: 8 passed, 1 FAILED (test_run_step_timeout — pre-existing)
+tests/test_verdict.py: 11 passed
+tests/test_worktree.py: 7 passed
+
+=================================== FAILURES ===================================
+____________________________ test_run_step_timeout _____________________________
+
+    def test_run_step_timeout():
+        with patch("runner.subprocess.run", side_effect=subprocess.TimeoutExpired("claude", 300)):
+            result = runner.run_step("test prompt", "/tmp", "claude-sonnet-4-6")
+>       assert result["is_error"] is True
+E       assert False is True
+
+tests/test_runner_parser.py:57: AssertionError
+
+=============================== warnings summary ===============================
+=========================== short test summary info ============================
+FAILED tests/test_runner_parser.py::test_run_step_timeout - assert False is True
+=================== 1 failed, 223 passed, 1 warning in 4.80s ===================
+
+BASELINE COMPARISON:
+The sole failure (test_run_step_timeout in test_runner_parser.py) is pre-existing
+and unrelated to this change. It was present in the Step 1 DEV baseline run.
+Zero new regressions introduced by this plan.

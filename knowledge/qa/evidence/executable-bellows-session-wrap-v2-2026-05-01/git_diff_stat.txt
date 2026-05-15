@@ -1,0 +1,5 @@
+ PLANNER_TEMPLATE.md                                 |  2 ++
+ bellows/PROJECT_STATUS.md                           |  1 +
+ bellows/knowledge/BACKLOG.md                        |  4 ++++
+ bellows/knowledge/research/agent-prompt-feedback.md | 20 ++++++++++++++++++++
+ 4 files changed, 27 insertions(+)

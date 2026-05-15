@@ -1,0 +1,32 @@
+============================= test session starts ==============================
+platform darwin -- Python 3.9.6, pytest-8.4.2, pluggy-1.6.0 -- /Applications/Xcode.app/Contents/Developer/usr/bin/python3
+cachedir: .pytest_cache
+rootdir: /Users/marklehn/Desktop/GitHub/bellows
+plugins: anyio-4.12.1, cov-7.0.0
+collecting ... collected 17 items
+
+tests/test_runner.py::test_configurable_timeout_respected PASSED         [  5%]
+tests/test_runner.py::test_timeout_returns_cost_none PASSED              [ 11%]
+tests/test_runner.py::test_timeout_writes_log_file PASSED                [ 17%]
+tests/test_runner.py::test_generic_exception_returns_cost_none PASSED    [ 23%]
+tests/test_runner.py::test_generic_exception_message_contains_actual_error PASSED [ 29%]
+tests/test_runner.py::test_generic_exception_writes_log_file PASSED      [ 35%]
+tests/test_runner.py::test_success_writes_log_file PASSED                [ 41%]
+tests/test_runner.py::test_stderr_printed_on_success PASSED              [ 47%]
+tests/test_runner.py::test_no_result_event_returns_blocked PASSED        [ 52%]
+tests/test_runner.py::test_no_result_event_writes_log_with_raw_output PASSED [ 58%]
+tests/test_runner.py::test_ndjson_parse_valid_stream PASSED              [ 64%]
+tests/test_runner.py::test_ndjson_parse_malformed_line_skipped PASSED    [ 70%]
+tests/test_runner.py::test_ndjson_parse_missing_result_event PASSED      [ 76%]
+tests/test_runner.py::test_resume_session_flag_in_command PASSED         [ 82%]
+tests/test_runner.py::test_append_system_prompt_flag_in_command PASSED   [ 88%]
+tests/test_runner.py::test_run_step_retries_on_transient_401 PASSED      [ 94%]
+tests/test_runner.py::test_run_step_does_not_retry_on_non_transient_error PASSED [100%]
+
+=============================== warnings summary ===============================
+../../../Library/Python/3.9/lib/python/site-packages/urllib3/__init__.py:35
+  /Users/marklehn/Library/Python/3.9/lib/python/site-packages/urllib3/__init__.py:35: NotOpenSSLWarning: urllib3 v2 only supports OpenSSL 1.1.1+, currently the 'ssl' module is compiled with 'LibreSSL 2.8.3'. See: https://github.com/urllib3/urllib3/issues/3020
+    warnings.warn(
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+======================== 17 passed, 1 warning in 0.12s =========================

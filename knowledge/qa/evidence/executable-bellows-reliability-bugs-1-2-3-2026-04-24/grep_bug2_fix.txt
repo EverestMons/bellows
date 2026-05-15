@@ -1,0 +1,8 @@
+207:        base_filename = plan_filename
+209:            if base_filename.startswith(prefix):
+210:                base_filename = base_filename[len(prefix):]
+212:        inprogress_path = os.path.join(plan_dir, f"in-progress-{base_filename}")
+243:            shutil.move(plan_path, os.path.join(plan_dir, "Done", base_filename))
+304:                verdict_pending_path = os.path.join(plan_dir, f"verdict-pending-{base_filename}")
+362:            verdict_pending_path = os.path.join(plan_dir, f"verdict-pending-{base_filename}")
+382:            done_path = os.path.join(done_dir, base_filename)

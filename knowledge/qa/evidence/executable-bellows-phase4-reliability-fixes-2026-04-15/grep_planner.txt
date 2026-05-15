@@ -1,0 +1,15 @@
+=== planner.py: retry logic (sleep 5) ===
+146:                    time.sleep(5)
+153:                    time.sleep(5)
+
+=== planner.py: consultation log path ===
+88:    """Append consultation result to logs/planner-consultation.jsonl."""
+89:    log_path = BELLOWS_ROOT / "logs" / "planner-consultation.jsonl"
+
+=== planner.py: auth error detection ===
+103:def _is_auth_error(raw: dict) -> bool:
+150:            if _is_auth_error(raw):
+
+=== planner.py: fallback to continue ===
+167:                fallback = {"decision": "continue", "reason": "Planner response was not valid JSON — defaulting to continue", "next_step_prompt": None}
+172:        fallback = {"decision": "continue", "reason": f"Planner unavailable — defaulting to continue ({last_error})", "next_step_prompt": None}

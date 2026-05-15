@@ -1,0 +1,4 @@
+254:                notifier.push(app_key, user_key, "Bellows — Plan Modified", f"Plan {plan_name} content changed since step {resume_step - 1}. Resuming at step {resume_step} with modified plan.")
+---
+250:            shadow_hash = hashlib.sha256(shadow_text.encode()).hexdigest()[:12]
+251:            current_hash = hashlib.sha256(plan_text.encode()).hexdigest()[:12]

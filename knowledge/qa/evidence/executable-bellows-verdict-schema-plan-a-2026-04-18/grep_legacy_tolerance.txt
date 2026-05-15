@@ -1,0 +1,1 @@
+589:                    # Legacy tolerance: pre-2026-04-18 verdict files may contain literal "None".

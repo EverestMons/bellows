@@ -1,0 +1,10 @@
+commit 4c056db5d2b4429cb5c92fb582e937999aa736e7
+Author: Mark Lehn <marklehn@icloud.com>
+Date:   Mon May 4 13:12:02 2026 -0500
+
+    docs: backlog — capture monorepo-worktree-at-governance-root structural fix item
+    
+    Co-Authored-By: Claude Opus 4.6 (1M context) <noreply@anthropic.com>
+
+ bellows/knowledge/BACKLOG.md | 2 ++
+ 1 file changed, 2 insertions(+)

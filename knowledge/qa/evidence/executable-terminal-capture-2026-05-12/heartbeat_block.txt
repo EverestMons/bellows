@@ -1,0 +1,38 @@
+Source: bellows.py lines 1284-1310
+
+        last_heartbeat = time.time()
+        heartbeat_counter = 0
+        try:
+            while True:
+                time.sleep(1)
+                if time.time() - last_rescan >= rescan_interval:
+                    self._rescan(handler)
+                    last_rescan = time.time()
+                if time.time() - last_heartbeat >= 300:
+                    with _plan_event_lock:
+                        _plan_event_age = time.time() - _last_plan_event_time
+                    if _plan_event_age >= 120:
+                        with self._active_lock:
+                            n_in_flight = self._active_count
+                        n_pending = 0
+                        for d in self.config.get("watched_projects", []):
+                            if os.path.isdir(d):
+                                n_pending += sum(1 for f in os.listdir(d) if f.startswith("verdict-pending-"))
+                        if n_in_flight > 0 or n_pending > 0:
+                            _log("INFO", f"heartbeat: {n_in_flight} in-flight, {n_pending} awaiting verdict")
+                        else:
+                            _log("INFO", "heartbeat: idle")
+                        if heartbeat_counter % MODULE_FINGERPRINT_HEARTBEAT_INTERVAL == 0:
+                            for mod_name, fp in sorted(_module_fingerprints().items()):
+                                _log("INFO", f"  Module: {mod_name} @ {fp}")
+                        heartbeat_counter += 1
+                    last_heartbeat = time.time()
+
+Verification:
+- Cadence: 300s (was 60s) ✓
+- Suppression: _plan_event_age >= 120 ✓ (heartbeat skipped if plan event within last 120s)
+- State-bearing format:
+  - Active: "heartbeat: {n_in_flight} in-flight, {n_pending} awaiting verdict" ✓
+  - Idle: "heartbeat: idle" ✓
+- Module fingerprint: every MODULE_FINGERPRINT_HEARTBEAT_INTERVAL (=10) heartbeats = 50 min ✓
+- last_heartbeat resets unconditionally (line 1310) — timer keeps ticking even when suppressed ✓

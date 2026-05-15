@@ -1,0 +1,7 @@
+2026-05-12 — backlog sweep — 0 Open items classified: 0 shipped-but-not-closed, 0 verified-still-open, 0 needs-investigation
+2026-05-12 — output receipt capture audit — 30 plans, 37 stdout decision instances, 1α / 36β, capture rate 2.7%
+2026-05-12 — intermediate decision detection design — 225 blocks labeled (6S/48B/171T), best detector A (phrase-grep) at F1=0.706
+2026-05-12 — intermediate decision detector shipped — detector module + verdict section + Vexp exemption, test count 292→292
+2026-05-12 — planner-authored contract validation audit — 7 artifacts enumerated, 2A / 0B / 7C recommendations
+2026-05-12 — governance Lessons entry for verdict-format silent-skip — appended to PLANNER_TEMPLATE.md
+2026-05-12 — detector NDJSON shape fix shipped — wrapped event.message.content path + fixtures rewritten + decisions.py added to module fingerprints, test count 292→292

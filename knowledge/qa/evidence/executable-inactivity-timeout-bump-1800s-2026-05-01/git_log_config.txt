@@ -1,0 +1,9 @@
+commit 7e17c096d6ca27241e5f5744e0733294c9b37547
+Author: Mark Lehn <marklehn@icloud.com>
+Date:   Fri May 1 17:49:03 2026 -0500
+
+    config: raise step_inactivity_timeout_seconds 300→1800 (BACKLOG operational unblock)
+    
+    Co-Authored-By: Claude Opus 4.6 <noreply@anthropic.com>
+
+bellows/config.json

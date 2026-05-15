@@ -1,0 +1,5 @@
+418:**Status:** OPEN. Identified 2026-05-04, observed in 2 of 6 session feedback entries.
+434:**Status:** OPEN. Identified 2026-05-04 from `diagnostic-monorepo-worktree-fix-canary-2026-05-04` feedback.
+450:**Status:** OPEN. Identified 2026-05-04, reinforced across multiple session entries.
+466:**Status:** OPEN. Identified 2026-05-04, reinforced ~10 times across 2026-05-04 and 2026-05-05 sessions.
+483:**Status:** OPEN. Identified 2026-05-05 from `diagnostic-deposit-parser-prose-failure-2026-05-05` feedback.

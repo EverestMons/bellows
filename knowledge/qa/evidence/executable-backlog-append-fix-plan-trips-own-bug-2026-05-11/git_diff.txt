@@ -1,0 +1,32 @@
+$ git --no-pager diff HEAD~1 -- bellows/knowledge/BACKLOG.md
+diff --git a/bellows/knowledge/BACKLOG.md b/bellows/knowledge/BACKLOG.md
+index 5fdc21d..0762760 100644
+--- a/bellows/knowledge/BACKLOG.md
++++ b/bellows/knowledge/BACKLOG.md
+@@ -6,6 +6,26 @@
+
+ ## Open
+
++### 2026-05-11: Bellows-side parser fix-plans trip the bug they fix until daemon restart
++
++**Observed behavior:** When a fix-plan modifies a Bellows-side parser that operates on plan text (e.g., `_extract_step_text`, `_gate_is_qa_step`, `extract_total_steps`, `strip_fenced_code_blocks`), the fix-plan's own prose is subject to the pre-fix bug while the daemon executes it. Bellows has no hot-reload, so the running daemon continues to execute pre-fix code through the entire fix-plan's lifecycle. The fix-plan's QA step prose often contains test-fixture descriptions or inline references that match the pattern the fix is correcting, tripping the very gate the fix repairs.
++
++**Two confirmed reproductions, 2026-05-11:**
++  - `executable-fence-strip-plan-text-parsers-2026-05-11` (commit `4d57fd3`) — gate failure on Step 2 (`rule_20_self_check`: "no QA deposit contains Rule 20 self-check banner"). Root cause: the unfixed daemon's `_extract_step_text` on Step 2 returned wrong step text because of inline `## STEP 2` references in Step 1's prose. CEO override via continue verdict.
++  - `executable-step-header-line-anchor-2026-05-11` (commit `0fab609`) — identical gate failure on Step 2, identical root cause. CEO override via continue verdict.
++
++**Operational impact:** Each occurrence requires CEO/Planner Rule 22 verification of the QA report, explicit override with reasoning, manual continue verdict deposit, and manual `Done/` move. Adds ~3-5 minutes of CEO attention per affected fix-plan. The override is correct (the fix is verifiably good), but the gate failure produces friction at exactly the moment the work is ready to ship.
++
++**Candidate fix shapes:**
++  1. **Planner-side mitigation (governance, no code).** Add a Planner-side rule: when authoring a Bellows-side fix-plan that modifies a plan-text parser, include an explicit warning in the plan header noting that the plan itself may trip the bug it fixes, and pre-document the override pattern in the plan. CEO knows what to expect; override happens faster.
++  2. **Code-side mitigation: scope-aware gate skip.** When Bellows dispatches a plan whose declared deposits include a Bellows source file (`bellows.py`, `gates.py`, `verdict.py`, `parser.py`), and the failing gate's evaluation depends on the code that plan is modifying, the gate is downgraded to advisory for that plan only. Risky — opens a self-exemption vector; agents could abuse it by claiming to modify Bellows code.
++  3. **Restart-before-shipping discipline.** Author fix-plans as DEV-only (no QA), commit the fix, restart Bellows, then dispatch a separate QA executable on the restarted daemon. Doubles the plan count for every Bellows-side fix.
++  4. **No code fix; document the pattern.** Accept the override pattern as a known cost of Bellows-side parser work. Add to the Bellows Restart Discipline subsection of PLANNER_TEMPLATE that fix-plans for plan-text parsers should expect a self-trip and pre-approve the override.
++
++**Recommended:** Combination of (1) + (4). (1) makes the failure expected; (4) makes the mitigation discoverable in governance.
++
++**Cross-reference:** LESSONS.md 2026-05-11 ("Bait-laden canaries verify Bellows-side fixes from both directions") for the post-restart verification side of this. Today's two false-positive overrides are the pre-restart side. The full lifecycle of a Bellows-side parser fix involves: (a) fix-plan trips own bug at QA step (this BACKLOG entry), (b) override + Done/ move, (c) daemon restart, (d) bait-laden canary verifies fix loaded (LESSONS.md entry).
++
+ - 2026-05-11: **Daemon code-version observability gap — no mechanism to detect code-vs-runtime drift.** Bellows does not hot-reload Python modules; code changes to `bellows.py`, `gates.py`, `verdict.py`, `parser.py`, `runner.py`, or any other module require manual daemon restart by the CEO. Today's `deposit_exists` audit (`bellows/knowledge/research/deposit-exists-false-positive-audit-2026-05-11.md`) found three post-fix reproductions on 2026-05-07/08 where the daemon ran pre-fix code despite commit `2016d02` (worktree-first resolution fix) having shipped 2026-05-06. The fix existed on disk but wasn't loaded into memory. The 2026-04-19 Lessons entry already documents the restart-discipline requirement, and the Rule-26-live-gate-smoke-test pattern catches stale-code scenarios reactively. But there is no proactive observability: the running daemon does not log its loaded-code version, mtime, or hash anywhere visible to the operator. Without this, "is the daemon running the latest code?" requires a process restart to verify positively — restart kills in-flight plans, so the check is operationally expensive. **Fix shape:** at daemon startup, log the mtime (or git HEAD short SHA, if running inside a git repo) of `gates.py`, `verdict.py`, `parser.py`, `runner.py`, and `bellows.py` itself. A single info-level log line on startup. Optionally, surface the same data in the periodic heartbeat (every Nth heartbeat) so a long-running daemon's loaded version remains visible without rolling back to startup logs. Scope: ~10-15 LOC + 1-2 unit tests verifying the startup-log format. Operational impact while open: detecting daemon-running-stale-code requires inferring from gate-failure patterns + commit timestamps (the audit pattern used today). Priority: low — workaround exists (daemon restart + Rule 26 canary), and the Rule 26 governance fix shipped today reduces the class of failures that would surface this gap. Reference: today's audit findings file, 2026-04-19 Bellows-hot-reload Lessons entry.
+
+Analysis: Only the new 20-line entry was added. No existing lines modified or removed. The diff shows pure insertion (+20 lines, 0 removals) between ## Open and the first existing entry.

@@ -1,0 +1,3 @@
+Pause Reason Code: header_pause
+Source: verdicts/resolved/processed-verdict-canary-step-header-parser-fixes-2026-05-11-step-1.md
+Gate Result Passed: True

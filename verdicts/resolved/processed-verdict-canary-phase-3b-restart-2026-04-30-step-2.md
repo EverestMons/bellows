@@ -1,0 +1,2 @@
+continue
+Rule 22 passed — Planner-authorized terminal close. Phase 3b daemon-load validated: PRAGMA confirms plan_slug column on runs table, canary's run row populated with non-NULL plan_slug, _get_last_completed_step returns 1. Test regression clean (70/70 in test_bellows.py). Implicit triple-validation also confirmed: BACKLOG #2 read-class permission fix is live (Step 1 read sources without permission denial gate trip), BACKLOG #4 monorepo scope_check fix is live (Step 2 commits scoped to bellows/ subtree, scope_check passed).

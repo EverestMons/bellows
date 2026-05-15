@@ -1,0 +1,5 @@
+fbdce4e docs: dev log for verdict lifecycle coupling (BACKLOG #9)
+cf2c68a test(bellows): unit tests for _cleanup_verdicts_for_slug
+a028c53 feat(bellows): one-time startup sweep for orphaned verdict requests
+7a6c5dc feat(bellows): sweep stranded verdict requests on terminal-state transitions
+c5c7742 feat(bellows): add _cleanup_verdicts_for_slug helper

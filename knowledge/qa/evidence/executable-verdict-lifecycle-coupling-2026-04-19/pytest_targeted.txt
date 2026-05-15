@@ -1,0 +1,19 @@
+============================= test session starts ==============================
+platform darwin -- Python 3.9.6, pytest-8.4.2, pluggy-1.6.0 -- /Applications/Xcode.app/Contents/Developer/usr/bin/python3
+cachedir: .pytest_cache
+rootdir: /Users/marklehn/Desktop/GitHub/bellows
+plugins: anyio-4.12.1, cov-7.0.0
+collecting ... collected 4 items
+
+tests/test_cleanup_verdicts.py::TestCleanupVerdictsForSlug::test_cleanup_removes_all_step_files_for_slug PASSED [ 25%]
+tests/test_cleanup_verdicts.py::TestCleanupVerdictsForSlug::test_cleanup_noop_when_no_matches PASSED [ 50%]
+tests/test_cleanup_verdicts.py::TestCleanupVerdictsForSlug::test_cleanup_respects_slug_boundary PASSED [ 75%]
+tests/test_cleanup_verdicts.py::TestCleanupVerdictsForSlug::test_cleanup_ignores_resolved_directory PASSED [100%]
+
+=============================== warnings summary ===============================
+../../../Library/Python/3.9/lib/python/site-packages/urllib3/__init__.py:35
+  /Users/marklehn/Library/Python/3.9/lib/python/site-packages/urllib3/__init__.py:35: NotOpenSSLWarning: urllib3 v2 only supports OpenSSL 1.1.1+, currently the 'ssl' module is compiled with 'LibreSSL 2.8.3'. See: https://github.com/urllib3/urllib3/issues/3020
+    warnings.warn(
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+========================= 4 passed, 1 warning in 0.07s =========================

@@ -1,0 +1,6 @@
+$ ls -1 /Users/marklehn/Desktop/GitHub/bellows/verdicts/pending/archived/ | grep -E "(action-queue-aggregation-2026-05-07|session-wrap-2026-05-08)"
+verdict-request-action-queue-aggregation-2026-05-07-step-1.md
+verdict-request-action-queue-aggregation-2026-05-07-step-3.md
+verdict-request-session-wrap-2026-05-08-step-1.md
+
+Verification: Exactly 3 matching lines confirmed.

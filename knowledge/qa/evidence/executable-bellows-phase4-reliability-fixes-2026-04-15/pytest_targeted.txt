@@ -1,0 +1,36 @@
+============================= test session starts ==============================
+platform darwin -- Python 3.9.6, pytest-8.4.2, pluggy-1.6.0 -- /Applications/Xcode.app/Contents/Developer/usr/bin/python3
+cachedir: .pytest_cache
+rootdir: /Users/marklehn/Desktop/GitHub/bellows
+plugins: anyio-4.12.1, cov-7.0.0
+collecting ... collected 21 items
+
+tests/test_bellows.py::test_load_config PASSED                           [  4%]
+tests/test_bellows.py::test_is_final_step PASSED                         [  9%]
+tests/test_bellows.py::test_is_runnable_plan_diagnostic PASSED           [ 14%]
+tests/test_bellows.py::test_is_runnable_plan_parallel_prefix PASSED      [ 19%]
+tests/test_bellows.py::test_extract_parallel_group_match PASSED          [ 23%]
+tests/test_bellows.py::test_extract_parallel_group_no_match PASSED       [ 28%]
+tests/test_bellows.py::test_is_plan_stranded_returns_true_when_inprogress_exists PASSED [ 33%]
+tests/test_bellows.py::test_is_plan_stranded_returns_true_when_done_missing PASSED [ 38%]
+tests/test_bellows.py::test_is_plan_stranded_returns_false_on_happy_path PASSED [ 42%]
+tests/test_bellows.py::test_rescan_preserves_seen PASSED                 [ 47%]
+tests/test_bellows.py::test_source_sha_returns_string PASSED             [ 52%]
+tests/test_bellows.py::test_handle_parallel_group_stagger PASSED         [ 57%]
+tests/test_notifier_server.py::test_push_success PASSED                  [ 61%]
+tests/test_notifier_server.py::test_push_failure PASSED                  [ 66%]
+tests/test_notifier_server.py::test_server_respond PASSED                [ 71%]
+tests/test_planner.py::test_build_consult_file PASSED                    [ 76%]
+tests/test_planner.py::test_consult_bad_json PASSED                      [ 80%]
+tests/test_planner.py::test_consult_timeout PASSED                       [ 85%]
+tests/test_runner_parser.py::test_parse_clean_output PASSED              [ 90%]
+tests/test_runner_parser.py::test_parse_blocked_output PASSED            [ 95%]
+tests/test_runner_parser.py::test_run_step_timeout PASSED                [100%]
+
+=============================== warnings summary ===============================
+../../../Library/Python/3.9/lib/python/site-packages/urllib3/__init__.py:35
+  /Users/marklehn/Library/Python/3.9/lib/python/site-packages/urllib3/__init__.py:35: NotOpenSSLWarning: urllib3 v2 only supports OpenSSL 1.1.1+, currently the 'ssl' module is compiled with 'LibreSSL 2.8.3'. See: https://github.com/urllib3/urllib3/issues/3020
+    warnings.warn(
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+======================== 21 passed, 1 warning in 0.65s =========================

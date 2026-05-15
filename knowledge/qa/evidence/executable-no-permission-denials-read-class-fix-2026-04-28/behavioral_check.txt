@@ -1,0 +1,7 @@
+Real production denial (Grep against governance root):
+  no_permission_denials gate fired: False
+  Expected: False (read-class denial should be filtered)
+
+Write-class denial (Edit):
+  no_permission_denials gate fired: True
+  Expected: True (write-class denial should still trip gate)

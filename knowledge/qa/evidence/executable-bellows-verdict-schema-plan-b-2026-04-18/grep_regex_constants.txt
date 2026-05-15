@@ -1,0 +1,6 @@
+verdict.py:13:STRICT_DEPOSIT_RE = re.compile(r'\*\*Deposits?:\*\*\s+(?:.*?\s+)?`([^`]+\.md)`')
+verdict.py:14:BOLD_NOUN_DEPOSIT_RE = re.compile(r'\*\*(?:Deposit|Write)[^*]+\*\*\s+(?:to|at)\s+`([^`]+\.md)`', re.IGNORECASE)
+verdict.py:15:INLINE_DEPOSIT_RE = re.compile(r'[Dd]eposit(?:ing)?\s+(?:[\w]+\s+)*(?:to:?|at|as)\s+`([^`]+\.md)`')
+verdict.py:16:FEEDBACK_EXCLUSION_RE = re.compile(r'[Ss]tandard prompt feedback protocol')
+verdict.py:22:        if FEEDBACK_EXCLUSION_RE.search(line):
+verdict.py:24:        for pattern in (STRICT_DEPOSIT_RE, BOLD_NOUN_DEPOSIT_RE, INLINE_DEPOSIT_RE):

@@ -1,0 +1,2 @@
+verdict: continue
+Rule 22 passed — Planner-authorized terminal close on single-step diagnostic. Findings file at bellows/knowledge/research/plan-handler-seen-retry-cache-2026-05-11.md addresses all six questions with substantive evidence; recommendation lands on Option (B) (move _seen ownership to Bellows) on Layer 1 invariant grounds. No hedging keywords. Executable follow-up authored separately.

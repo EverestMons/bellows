@@ -1,0 +1,2 @@
+verdict: continue
+Rule 22 passed — Planner-authorized terminal close. All 6 verification checks PASS, Rule 20 self-check PASSED, both PLANNER_TEMPLATE lessons landed verbatim (config-read recurrence + Rule 13 anchoring gap), both BACKLOG entries added (Phase 3b slug-collision + inline sweep test indirection), PROJECT_STATUS updated, session-end full suite clean (180 passed + 1 pre-existing unrelated failure). Split-commit pattern executed correctly (project files + governance-root commits separated).

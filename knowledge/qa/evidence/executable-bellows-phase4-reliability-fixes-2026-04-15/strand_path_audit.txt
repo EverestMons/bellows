@@ -1,0 +1,29 @@
+Strand Path Audit — Fix 2a Verification
+========================================
+
+BEFORE (pre-fix):
+  Line 195: `return`  (inside while loop, escalation timeout path)
+  Control flow:
+    planner.consult() → decision="escalate" → wait_for_response(3600)
+      → response is None → return  ← BYPASSES strand check at lines 218-223
+      → plan file stays as in-progress-* with NO notification (silent strand)
+
+AFTER (post-fix):
+  Line 196: `break`  (inside while loop, escalation timeout path)
+  Control flow:
+    planner.consult() → decision="escalate" → wait_for_response(3600)
+      → response is None → break  ← EXITS while loop
+      → falls through to line 219: strand check runs
+      → _is_plan_stranded() detects in-progress file still exists
+      → STRANDED notification sent via Pushover + terminal output
+
+VERIFIED: No early `return` exists between the escalation path (line 196)
+and the strand check (line 220). The `break` at line 196 exits the while
+loop at line 175, and execution continues at line 219 (strand check).
+
+Lines 175-226 of bellows.py confirmed:
+  - Line 175: `while not is_final_step(current_step, total_steps):`
+  - Line 196: `break` (inside escalation handler)
+  - Line 219: `expected_done_path = os.path.join(plan_dir, "Done", plan_filename)`
+  - Line 220: `if _is_plan_stranded(inprogress_path, expected_done_path):`
+  - No `return` between lines 196 and 220.

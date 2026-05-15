@@ -1,0 +1,9 @@
+    # Gate 6b: Rule 20 self-check verification (blocking, QA steps only)
+    _gate_rule_20_self_check(is_qa_step, plan_text, step_number, project_path, parsed, failures)
+    # Gate 7: file change audit (informational)
+    _gate_file_change_audit(files_changed)
+--
+
+def _gate_rule_20_self_check(is_qa_step, plan_text, step_number, project_path, parsed, failures):
+    """Verify QA-deposited reports contain a Rule 20 self-check banner with PASSED status."""
+    if not is_qa_step:

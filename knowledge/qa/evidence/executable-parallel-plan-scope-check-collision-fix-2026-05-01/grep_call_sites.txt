@@ -1,0 +1,3 @@
+439:    Returns {} on any subprocess or filesystem exception (defensive, matches _capture_git_diff semantics).
+492:def _capture_git_diff(project_path: str) -> str:
+513:def _parse_diff_stat(post_diff: str, pre_diff: str, project_path: Optional[str] = None) -> list:

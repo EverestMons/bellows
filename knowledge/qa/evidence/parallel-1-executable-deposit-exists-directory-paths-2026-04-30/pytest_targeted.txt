@@ -1,0 +1,9 @@
+============================= test session starts ==============================
+platform darwin -- Python 3.9.6, pytest-8.4.2, pluggy-1.6.0
+rootdir: /Users/marklehn/Desktop/GitHub/bellows
+plugins: anyio-4.12.1, cov-7.0.0
+collected 34 items
+
+tests/test_gates.py ..................................                   [100%]
+
+============================== 34 passed in 0.02s ==============================

@@ -1,0 +1,4 @@
+337:                    _teardown_worktree(project_path, wt_path, plan_slug)
+402:                _teardown_worktree(project_path, wt_path, plan_slug)
+428:                _teardown_worktree(project_path, wt_path, plan_slug)
+547:def _teardown_worktree(project_path: str, wt_path: str, slug: str) -> None:

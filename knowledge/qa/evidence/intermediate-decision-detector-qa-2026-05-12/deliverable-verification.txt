@@ -1,0 +1,12 @@
+Deliverable Verification — Intermediate Decision Detector + Vexp Exemption
+Date: 2026-05-12
+
+| # | Deliverable | Expected | Status | Evidence |
+|---|-------------|----------|--------|----------|
+| 1 | INTERMEDIATE_DECISION_PHRASES.md | 33 bulleted phrase lines at governance root | ✅ | grep -c '^- ' returned 33 |
+| 2 | bellows/decisions.py | load_phrases() and extract_decision_blocks() defined | ✅ | grep found both at lines 17, 53 |
+| 3 | bellows/verdict.py | Renders "Intermediate Decisions Detected" section | ✅ | grep found at line 147 |
+| 4 | bellows/runner.py | Calls extract_decision_blocks() | ✅ | grep found at line 257 |
+| 5 | bellows/gates.py | mcp__vexp__run_pipeline in READ_CLASS_TOOLS | ✅ | grep found at line 30: READ_CLASS_TOOLS = {"Grep", "Glob", "Read", "mcp__vexp__run_pipeline"} |
+| 6 | tests/test_decisions.py | 6-S-block ground-truth test present | ✅ | grep found test_s_class_blocks_from_ground_truth at line 66 |
+| 7 | tests/test_gates.py | Vexp exemption regression test present | ✅ | grep found test_permission_denials_vexp_run_pipeline_exempt at line 874 |

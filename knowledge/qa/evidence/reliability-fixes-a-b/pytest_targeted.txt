@@ -1,0 +1,26 @@
+============================= test session starts ==============================
+platform darwin -- Python 3.9.6, pytest-8.4.2, pluggy-1.6.0 -- /Applications/Xcode.app/Contents/Developer/usr/bin/python3
+cachedir: .pytest_cache
+rootdir: /Users/marklehn/Desktop/GitHub/bellows
+plugins: anyio-4.12.1, cov-7.0.0
+collecting ... collected 11 items
+
+tests/test_bellows.py::test_load_config PASSED                           [  9%]
+tests/test_bellows.py::test_is_final_step PASSED                         [ 18%]
+tests/test_bellows.py::test_is_runnable_plan_diagnostic PASSED           [ 27%]
+tests/test_bellows.py::test_is_runnable_plan_parallel_prefix PASSED      [ 36%]
+tests/test_bellows.py::test_extract_parallel_group_match PASSED          [ 45%]
+tests/test_bellows.py::test_extract_parallel_group_no_match PASSED       [ 54%]
+tests/test_bellows.py::test_is_plan_stranded_returns_true_when_inprogress_exists PASSED [ 63%]
+tests/test_bellows.py::test_is_plan_stranded_returns_true_when_done_missing PASSED [ 72%]
+tests/test_bellows.py::test_is_plan_stranded_returns_false_on_happy_path PASSED [ 81%]
+tests/test_bellows.py::test_rescan_preserves_seen PASSED                 [ 90%]
+tests/test_bellows.py::test_handle_parallel_group_stagger PASSED         [100%]
+
+=============================== warnings summary ===============================
+../../../Library/Python/3.9/lib/python/site-packages/urllib3/__init__.py:35
+  /Users/marklehn/Library/Python/3.9/lib/python/site-packages/urllib3/__init__.py:35: NotOpenSSLWarning: urllib3 v2 only supports OpenSSL 1.1.1+, currently the 'ssl' module is compiled with 'LibreSSL 2.8.3'. See: https://github.com/urllib3/urllib3/issues/3020
+    warnings.warn(
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+======================== 11 passed, 1 warning in 0.07s =========================

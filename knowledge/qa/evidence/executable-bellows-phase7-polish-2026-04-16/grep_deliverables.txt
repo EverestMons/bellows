@@ -1,0 +1,7 @@
+PASS | parser.py handles ## CEO Flag heading | 
+PASS | parser.py handles paragraph flag form | checks for None exclusion + stripping
+PASS | bellows.py has diagnostic auto-close branch | 
+PASS | bellows.py auto-close logs ledger entry | 
+PASS | bellows.py auto-close moves plan to Done | 
+PASS | tests/test_runner_parser.py has new flag format tests | found 4 flag format markers
+PASS | tests/test_bellows.py has auto-close test | 

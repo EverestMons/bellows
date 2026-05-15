@@ -1,0 +1,5 @@
+799f908 docs: dev log for corrective narrow override fix
+9786e87 fix(bellows): narrow is_diagnostic step-count override to total_steps==0
+dc4730d research: step1 phase-skip investigation
+2810683 research: parallel-plan scope_check collision diagnostic — incident timeline + candidate evaluation
+b8690b2 qa: session wrap final verified — 6 plans this session, 4 closed cleanly

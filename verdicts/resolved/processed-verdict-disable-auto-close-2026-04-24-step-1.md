@@ -1,0 +1,2 @@
+verdict: continue
+Rule 22 passed on SA blueprint — re-run idempotency verified (21198 bytes unchanged from 10:31:36). Gate failure is known false positive: no_permission_denials on Grep against cross-project PLANNER_TEMPLATE.md. This is the second override for the same root cause — plan authoring required the SA to grep cross-project governance files and Grep denials cascade through every re-run. Proceed to Step 2.

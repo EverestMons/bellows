@@ -1,0 +1,5 @@
+e95cf4e docs: agent prompt feedback for revert-snapshot-fix Step 2 (Documentation Analyst)
+ba82fbe docs(backlog): re-open parallel-plan scope_check collision entry after failed close
+3ade925 docs: dev log + prompt feedback for revert of snapshot fix (Step 1)
+7e1d157 Revert "fix(gates): file-checksum snapshot for parallel-plan scope_check immunity"
+58e875b qa: parallel-plan scope_check collision fix verified — 9/9 checks pass, Rule 20 PASSED

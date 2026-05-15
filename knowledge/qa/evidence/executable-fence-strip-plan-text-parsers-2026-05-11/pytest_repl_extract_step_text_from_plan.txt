@@ -1,0 +1,4 @@
+_extract_step_text_from_plan(fixture, 2) result:
+'## STEP 2 — Real QA Step\nReal step 2 body with correct deposit paths.\n'
+
+PASS — bug is fixed, returns real step text not in-fence content

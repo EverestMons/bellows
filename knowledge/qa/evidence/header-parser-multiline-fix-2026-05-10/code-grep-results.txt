@@ -1,0 +1,18 @@
+=== CHECK 8: Warning extension (bellows.py) ===
+290:            print(f"Bellows: ⚠️  {plan_name} has {total_steps} steps but parsed header is missing: {sorted(missing_keys)}. Parsed keys: {sorted(header.keys())}. If pause_for_verdict was missing, the defensive default has set it to after_step_1.")
+291-        if model != config["default_model"]:
+292-            print(f"Bellows: using model override: {model}")
+
+=== CHECK 9: Defensive default (bellows.py) ===
+266:            print(f"Bellows: ⚠️  sparse header ({prev_len} keys) for {total_steps}-step plan — defaulting pause_for_verdict to after_step_1 (safe-pause)")
+267-        model = header.get("Model", header.get("model", config["default_model"]))
+268-
+269-        # Claim the plan atomically before calling the runner.
+
+=== CHECK 10: Strategy 2 extension (gates.py) ===
+54:            # Collect all consecutive bold-Markdown header lines after title.
+55-            # Handles both single-line pipe-format (one line of **key:** val | **key:** val)
+56-            # and multi-line bold (each **key:** val on its own line, separated by blanks).
+57-            # The collected lines are joined with " | " so the existing pipe-separator
+58-            # regex below parses them uniformly. Closes BACKLOG 2026-05-10
+59-            # multi-line bold header parser gap.

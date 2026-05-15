@@ -1,0 +1,28 @@
+============================= test session starts ==============================
+platform darwin -- Python 3.9.6, pytest-8.4.2, pluggy-1.6.0 -- /Applications/Xcode.app/Contents/Developer/usr/bin/python3
+cachedir: .pytest_cache
+rootdir: /Users/marklehn/Desktop/GitHub/bellows
+plugins: anyio-4.12.1, cov-7.0.0
+collecting ... collected 13 items
+
+tests/test_worktree.py::test_create_worktree_returns_valid_path_with_tracked_files PASSED [  7%]
+tests/test_worktree.py::test_worktree_isolation_git_diff PASSED          [ 15%]
+tests/test_worktree.py::test_teardown_removes_worktree_directory PASSED  [ 23%]
+tests/test_worktree.py::test_teardown_cherry_picks_commits PASSED        [ 30%]
+tests/test_worktree.py::test_teardown_copies_uncommitted_files PASSED    [ 38%]
+tests/test_worktree.py::test_teardown_aborts_on_cherry_pick_conflict PASSED [ 46%]
+tests/test_worktree.py::test_create_worktree_retries_once_on_failure PASSED [ 53%]
+tests/test_bellows.py::test_run_plan_creates_worktree_before_pre_diff PASSED [ 61%]
+tests/test_bellows.py::test_run_plan_passes_wt_path_to_capture_and_runner PASSED [ 69%]
+tests/test_bellows.py::test_run_plan_tears_down_worktree_after_final_gate PASSED [ 76%]
+tests/test_bellows.py::test_run_plan_strict_pause_on_creation_failure PASSED [ 84%]
+tests/test_bellows.py::test_run_plan_pauses_on_cherry_pick_conflict PASSED [ 92%]
+tests/test_bellows.py::test_bellows_init_runs_worktree_prune PASSED      [100%]
+
+=============================== warnings summary ===============================
+../../../Library/Python/3.9/lib/python/site-packages/urllib3/__init__.py:35
+  /Users/marklehn/Library/Python/3.9/lib/python/site-packages/urllib3/__init__.py:35: NotOpenSSLWarning: urllib3 v2 only supports OpenSSL 1.1.1+, currently the 'ssl' module is compiled with 'LibreSSL 2.8.3'. See: https://github.com/urllib3/urllib3/issues/3020
+    warnings.warn(
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+======================== 13 passed, 1 warning in 0.94s =========================

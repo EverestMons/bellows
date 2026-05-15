@@ -1,0 +1,3 @@
+e24ebe8 docs: session wrap 2026-05-05 — PROJECT_STATUS header, NEXT_SESSION refresh, BACKLOG deposit-parser entry
+8e46310 docs(qa): backlog-1 close and lessons capture verification 2026-05-05
+1708ef4 docs(planner): v4.33 — Lessons Learned entry on hypothesis-from-memory and population audit technique

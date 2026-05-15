@@ -1,0 +1,9 @@
+=== Skip-Logging Dedup Harness ===
+First call stdout:
+'Bellows: ⚠️  skipped unknown-foo.md — prefix not in dispatch whitelist\n'
+  -> Warning appeared exactly once: PASS
+Second call stdout:
+''
+  -> Warning did NOT repeat: PASS
+
+Overall: ALL PASSED

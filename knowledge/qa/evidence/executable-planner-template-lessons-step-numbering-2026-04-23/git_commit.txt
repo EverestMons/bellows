@@ -1,0 +1,14 @@
+commit 4741765af10253f0b4b9b4ef469179c6b87fb716
+Author: Mark Lehn <marklehn@icloud.com>
+Date:   Fri May 1 15:45:32 2026 -0500
+
+    qa: close stranded planner-template-lessons-step-numbering plan (9-day-late re-verification)
+    
+    Co-Authored-By: Claude Opus 4.6 <noreply@anthropic.com>
+
+bellows/knowledge/qa/close-stranded-lessons-step-numbering-qa-2026-05-01.md
+bellows/knowledge/qa/evidence/executable-close-stranded-lessons-step-numbering-2026-05-01/adjacency_check.txt
+bellows/knowledge/qa/evidence/executable-close-stranded-lessons-step-numbering-2026-05-01/grep_anchor_preserved.txt
+bellows/knowledge/qa/evidence/executable-close-stranded-lessons-step-numbering-2026-05-01/grep_new_row.txt
+bellows/knowledge/qa/evidence/session-2026-04-30/pytest_session_end.txt
+bellows/knowledge/research/agent-prompt-feedback.md

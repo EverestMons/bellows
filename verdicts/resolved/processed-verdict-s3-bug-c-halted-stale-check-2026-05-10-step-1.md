@@ -1,0 +1,2 @@
+verdict: continue
+Rule 22 verification PASSED on Step 1. 6 LOC halted-* detection added at bellows.py:1033-1058 inside the existing stale-check `else` branch, mirroring the Done/ search logic. Comment and print message updated to reflect broader detection scope. New regression test `test_consume_verdicts_marks_resolved_processed_when_plan_halted` added to tests/test_consume_verdicts.py and passing. Full suite 246 passed (delta +1 from 245), 1 pre-existing test_run_step_timeout failure unchanged. No other functions touched, no other test files touched. Proceed to Step 2 QA.

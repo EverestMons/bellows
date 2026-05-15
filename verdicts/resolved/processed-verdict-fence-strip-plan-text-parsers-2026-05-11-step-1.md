@@ -1,0 +1,2 @@
+verdict: continue
+Rule 22 verification passed on Step 1 dev log. Utility function shipped (duplicated in 3 files per circular-import avoidance — same pattern as _extract_step_text duplication), 4 call sites patched, 5 new tests added (181→186), all passing. DEV's decision to apply strip inside each parser function rather than at external call sites is accepted (specialist authority, defensible: protects all future callers, negligible performance cost). Proceed to Step 2 QA.

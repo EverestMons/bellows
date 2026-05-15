@@ -1,0 +1,27 @@
+============================= test session starts ==============================
+platform darwin -- Python 3.9.6, pytest-8.4.2, pluggy-1.6.0 -- /Applications/Xcode.app/Contents/Developer/usr/bin/python3
+cachedir: .pytest_cache
+rootdir: /Users/marklehn/Desktop/GitHub/bellows
+plugins: anyio-4.12.1, cov-7.0.0
+collecting ... collected 88 items / 76 deselected / 12 selected
+
+tests/test_notifier_server.py::test_push_success PASSED                  [  8%]
+tests/test_notifier_server.py::test_push_passes_timeout PASSED           [ 16%]
+tests/test_notifier_server.py::test_push_timeout_exception_handled_gracefully PASSED [ 25%]
+tests/test_notifier_server.py::test_no_stranded_check_in_run_plan PASSED [ 33%]
+tests/test_notifier_server.py::test_push_failure PASSED                  [ 41%]
+tests/test_notifier_server.py::test_server_respond PASSED                [ 50%]
+tests/test_planner.py::test_consult_timeout PASSED                       [ 58%]
+tests/test_runner.py::test_configurable_timeout_passed_to_subprocess PASSED [ 66%]
+tests/test_runner.py::test_default_timeout_is_600 PASSED                 [ 75%]
+tests/test_runner.py::test_timeout_returns_cost_none PASSED              [ 83%]
+tests/test_runner.py::test_timeout_writes_log_file PASSED                [ 91%]
+tests/test_runner_parser.py::test_run_step_timeout PASSED                [100%]
+
+=============================== warnings summary ===============================
+../../../Library/Python/3.9/lib/python/site-packages/urllib3/__init__.py:35
+  /Users/marklehn/Library/Python/3.9/lib/python/site-packages/urllib3/__init__.py:35: NotOpenSSLWarning: urllib3 v2 only supports OpenSSL 1.1.1+, currently the 'ssl' module is compiled with 'LibreSSL 2.8.3'. See: https://github.com/urllib3/urllib3/issues/3020
+    warnings.warn(
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+================= 12 passed, 76 deselected, 1 warning in 0.62s =================

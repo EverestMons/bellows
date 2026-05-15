@@ -1,0 +1,13 @@
+commit 06aa938b5453de856ae9923f9c105a1d35b77611
+Author: Mark Lehn <marklehn@icloud.com>
+Date:   Mon May 4 13:19:38 2026 -0500
+
+    fix: skip worktree creation when project_path has no .git (bellows-self monorepo trap)
+    
+    Co-Authored-By: Claude Opus 4.6 (1M context) <noreply@anthropic.com>
+
+ bellows/bellows.py                                 | 13 +++++
+ .../monorepo-worktree-fix-dev-log-2026-05-04.md    | 55 ++++++++++++++++++++++
+ .../knowledge/research/agent-prompt-feedback.md    | 53 +++++++++++++++++++++
+ bellows/tests/test_bellows.py                      | 51 ++++++++++++++++++++
+ 4 files changed, 172 insertions(+)

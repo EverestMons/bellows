@@ -1,0 +1,16 @@
+$ git --no-pager log -1 --stat bellows/knowledge/BACKLOG.md
+commit a3306e0cdbc1d80a259fde2021b8618ec596be90
+Author: Mark Lehn <marklehn@icloud.com>
+Date:   Mon May 11 14:34:24 2026 -0500
+
+    docs: BACKLOG — fix-plan-trips-own-bug pattern (2026-05-11)
+
+    Two confirmed reproductions: executable-fence-strip-plan-text-parsers-2026-05-11
+    (commit 4d57fd3) and executable-step-header-line-anchor-2026-05-11 (commit 0fab609).
+    Both tripped rule_20_self_check gate because running daemon executed pre-fix parser
+    code against fix-plan prose containing the triggering pattern.
+
+    Co-Authored-By: Claude Opus 4.6 <noreply@anthropic.com>
+
+ bellows/knowledge/BACKLOG.md | 20 ++++++++++++++++++++
+ 1 file changed, 20 insertions(+)

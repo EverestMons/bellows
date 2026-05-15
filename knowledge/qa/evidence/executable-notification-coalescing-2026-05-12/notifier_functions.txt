@@ -1,0 +1,18 @@
+Named notification function signatures in notifier.py (post-Plan 2):
+
+Line 167: def notify_plan_complete(plan_name: str, total_cost: float) -> bool:
+Line 174: def notify_plan_halted(plan_name: str) -> bool:
+Line 181: def notify_plan_skipped(plan_name: str) -> bool:
+Line 188: def notify_queue_empty() -> bool:
+Line 195: def notify_failure(app_key: str, user_key: str, plan_name: str, step: int, error: str) -> bool:
+Line 208: def notify_verdict_request(app_key: str, user_key: str, plan_name: str, step: int, gate_failures: list) -> bool:
+
+Supporting functions:
+Line 29:  def init_notifications(config: dict) -> None:
+Line 37:  def _notifications_enabled() -> bool:
+Line 41:  def _event_enabled(event_name: str) -> bool:
+Line 48:  def _coalesce_window() -> int:
+Line 55:  def push(app_key, user_key, title, message, url="", url_title="", priority=0, sound=None) -> bool:
+Line 83:  def _enqueue_deferred(event_type: str, **payload) -> None:
+Line 103: def _flush_buffer() -> None:
+Line 159: def _flush_buffer_immediate() -> None:

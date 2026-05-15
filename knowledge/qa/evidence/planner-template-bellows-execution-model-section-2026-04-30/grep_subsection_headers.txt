@@ -1,0 +1,60 @@
+18:### Planning
+26:### Session Wrap (end of conversation)
+37:### Phase 1 — Specialist Context First
+51:### Phase 1.5 — Recent Knowledge Scan (Mandatory)
+79:### Phase 2 — Project State
+85:### Phase 3 — Source Code (Selective)
+104:### What the Planner CAN read
+112:### What the Planner CAN write
+118:### What the Planner CANNOT read
+123:### What the Planner CANNOT write
+131:### Investigation rule (unchanged)
+134:### Tool capabilities and gaps
+141:### 1. Understand the Goal
+144:### 2. Load Context (Following the Protocol Above)
+147:### 3. Surface CEO Decisions
+152:### 4. Produce the Execution Plan
+161:### Small (1-2 files, known pattern, no architecture change)
+168:### Medium (3-6 files, new component, single subsystem)
+173:### Large (new pipeline, architecture change, multiple subsystems, learning science implications)
+179:### Agent Utilization
+205:### Diagnostic Prompts (Planner → Agent → Planner)
+267:### Fix Prompts (after diagnosis)
+296:### Why this matters
+312:### Compression Principles
+325:### Plan File Structure
+378:### File Naming Convention
+417:### 1. Every step must be agent-routed
+420:### 2. Every step must specify reads, deposits, and dependencies
+427:### 3. Plans follow the org handoff chain
+434:### 4. Plans must identify parallel lanes
+437:### 5. Dense prompts, no narrative
+440:### 6. Plans deposit to `knowledge/decisions/` with type prefix
+443:### 7. No generalist steps
+446:### 8. Final step moves plan to Done and updates PROJECT_STATUS.md
+457:### 9. Live DB schema verification for database changes
+460:### 10. Separate investigation from implementation in prompts
+463:### 11. Scale prompt detail inversely to blueprint completeness
+466:### 12. Phrase uncertain fixes as verify-first
+469:### 13. Anchor prompts with concrete reference points
+472:### 14. Enumerate complete scope with per-item status tracking
+475:### 15. Every step after Step 1 verifies the prior step's Output Receipt
+485:### 16. Skip specialist file and glossary reads for mechanical tasks
+488:### 17. Post-execution deliverable verification
+491:### 18. QA evidence file requirement
+494:### 19. Hedging keywords auto-invalidate
+497:### 20. Mandatory QA self-check Python block
+590:### 21. Test scope must be declared in the plan header
+623:### 22. Planner verification of deposited files (BOTH diagnostic AND executable plans)
+647:### 23. End-of-plan housekeeping must use anchored edits, enumerated sub-steps, and the order: feedback → commit
+659:### 24. Atomic plan deposit to Bellows-watched directories
+683:### 25. Planner polling of Bellows verdict requests
+724:### 26. Deposits field convention
+752:### Diagnostic Prompt Engineering
+808:### What Bellows Is
+816:### Plan Lifecycle States
+838:### The Eight Gates
+855:### The Verdict Cycle
+865:### The Disable-Auto-Close Model
+873:### Atomic Deposit
+877:### Planner Discipline (Cross-References)

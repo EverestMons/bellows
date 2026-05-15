@@ -1,0 +1,1 @@
+400:def _parse_diff_stat(post_diff: str, pre_diff: str, project_path: Optional[str] = None) -> list:

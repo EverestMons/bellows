@@ -1,0 +1,16 @@
+Vexp Exemption Gate Test — Behavioral Verification Part C
+Date: 2026-05-12
+
+=== Test 1: mcp__vexp__run_pipeline denial exempted ===
+Constructed synthetic parsed output with single mcp__vexp__run_pipeline permission denial.
+Gate passed: True
+Permission denial failures: 0
+PASS | mcp__vexp__run_pipeline denial does NOT trip no_permission_denials gate
+
+=== Test 2: Non-exempt tool still fails (control check) ===
+Constructed synthetic parsed output with single Edit permission denial.
+Gate passed: False
+Permission denial failures: 1
+PASS | Edit denial correctly trips gate
+
+Result: 2/2 checks passed — PASS

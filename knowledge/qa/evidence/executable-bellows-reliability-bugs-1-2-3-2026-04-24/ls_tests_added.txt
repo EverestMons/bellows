@@ -1,0 +1,10 @@
+1473:def test_consume_verdicts_no_match_leaves_in_resolved():
+1510:def test_consume_verdicts_stale_verdict_plan_in_done_moves_to_processed():
+1549:def test_consume_verdicts_match_still_moves_to_processed():
+1596:def test_run_plan_inprogress_entry_renames_to_verdict_pending():
+1646:def test_run_plan_inprogress_entry_no_double_prefix():
+1705:def test_extract_total_steps_mixed_case():
+1710:def test_extract_total_steps_lowercase():
+1715:def test_extract_total_steps_uppercase_unchanged():
+1720:def test_extract_total_steps_requires_number():
+1725:def test_extract_total_steps_case_mismatch_warning(capsys):

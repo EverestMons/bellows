@@ -1,0 +1,78 @@
+diff --git a/bellows/gates.py b/bellows/gates.py
+index 05d2288..fc0f80e 100644
+--- a/bellows/gates.py
++++ b/bellows/gates.py
+@@ -33,7 +33,7 @@ def _parse_plan_header(plan_text):
+     return result
+ 
+ 
+-def check(parsed, plan_text, step_number, project_path, files_changed=None):
++def check(parsed, plan_text, step_number, project_path, files_changed=None, wt_path=None):
+     """Run all gates and return a result dict.
+ 
+     Returns:
+@@ -60,7 +60,7 @@ def check(parsed, plan_text, step_number, project_path, files_changed=None):
+     # Gate 4: no permission denials
+     _gate_no_permission_denials(parsed, failures)
+     # Gate 5: deposit exists
+-    _gate_deposit_exists(parsed, failures, project_path, plan_text=plan_text, step_number=step_number)
++    _gate_deposit_exists(parsed, failures, project_path, plan_text=plan_text, step_number=step_number, wt_path=wt_path)
+     # Gate 6: QA step detection (informational)
+     is_qa_step = _gate_is_qa_step(plan_text, step_number)
+     # Gate 6b: Rule 20 self-check verification (blocking, QA steps only)
+@@ -125,15 +125,27 @@ def _gate_no_permission_denials(parsed, failures):
+         })
+ 
+ 
+-def _resolve_deposit_path(path, project_path):
++def _resolve_deposit_path(path, project_path, wt_path=None):
+     """Check if a deposit path exists, trying multiple path resolution strategies.
+ 
+     Returns the resolved absolute path string if the path exists (as a file or
+     directory) at any of the following, or None if not found:
++      0. worktree-first (if wt_path provided and differs from project_path)
+       1. path as-is (absolute or CWD-relative)
+       2. os.path.join(project_path, path) — relative to project root
+       3. os.path.join(os.path.dirname(project_path), path) — path includes project dir name
+     """
++    # Strategy 0 (worktree-first): if wt_path is provided AND differs from project_path,
++    # try resolving against the worktree first — this is where the agent just wrote files
++    if wt_path is not None and wt_path != project_path:
++        project_basename = os.path.basename(project_path)
++        if path.startswith(project_basename + os.sep):
++            wt_candidate = os.path.join(wt_path, path[len(project_basename) + 1:])
++        else:
++            wt_candidate = os.path.join(wt_path, path)
++        if os.path.isfile(wt_candidate) or os.path.isdir(wt_candidate):
++            return wt_candidate
++
+     if os.path.isfile(path) or os.path.isdir(path):
+         return os.path.abspath(path)
+     p2 = os.path.join(project_path, path)
+@@ -145,7 +157,7 @@ def _resolve_deposit_path(path, project_path):
+     return None
+ 
+ 
+-def _gate_deposit_exists(parsed, failures, project_path, plan_text=None, step_number=None):
++def _gate_deposit_exists(parsed, failures, project_path, plan_text=None, step_number=None, wt_path=None):
+     result_text = parsed.get("result_text", "")
+     match = re.search(r"### Files Deposited\s*\n(.*?)(?:\n###|\Z)", result_text, re.DOTALL)
+ 
+@@ -161,7 +173,7 @@ def _gate_deposit_exists(parsed, failures, project_path, plan_text=None, step_nu
+             path = m.group(1) if m else line[2:].strip().strip("`")
+             if path:
+                 agent_declared.add(path)
+-                if _resolve_deposit_path(path, project_path) is None:
++                if _resolve_deposit_path(path, project_path, wt_path=wt_path) is None:
+                     failures.append({"gate": "deposit_exists", "evidence": f"missing: {path}"})
+ 
+     # Plan-aware: detect deposits the plan requires but the agent didn't declare
+@@ -169,7 +181,7 @@ def _gate_deposit_exists(parsed, failures, project_path, plan_text=None, step_nu
+         step_text = _extract_step_text(plan_text, step_number)
+         if step_text:
+             for path in _extract_plan_required_deposits(step_text):
+-                if path not in agent_declared and _resolve_deposit_path(path, project_path) is None:
++                if path not in agent_declared and _resolve_deposit_path(path, project_path, wt_path=wt_path) is None:
+                     failures.append({"gate": "deposit_exists", "evidence": f"plan-required deposit missing (not declared by agent): {path}"})
+ 
+ 

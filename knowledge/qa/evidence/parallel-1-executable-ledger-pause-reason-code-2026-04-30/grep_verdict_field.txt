@@ -1,0 +1,2 @@
+166:def log_to_ledger(plan_path, step_number, gate_result, verdict, reason, pause_reason_code: Optional[str] = None):
+179:        "pause_reason_code": pause_reason_code,

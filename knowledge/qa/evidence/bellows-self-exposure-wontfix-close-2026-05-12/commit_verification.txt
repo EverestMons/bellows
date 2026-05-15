@@ -1,0 +1,13 @@
+ca8eb8fe31a72d9aa9a875c1441671c8b24db601 docs: close bellows-self exposure as won't-fix per 2026-05-12 disposition diagnostic
+
+commit ca8eb8fe31a72d9aa9a875c1441671c8b24db601
+Author: Mark Lehn <marklehn@icloud.com>
+Date:   Tue May 12 13:40:36 2026 -0500
+
+    docs: close bellows-self exposure as won't-fix per 2026-05-12 disposition diagnostic
+
+    Co-Authored-By: Claude Opus 4.6 <noreply@anthropic.com>
+
+ bellows/PROJECT_STATUS.md    | 3 ++-
+ bellows/knowledge/BACKLOG.md | 4 +++-
+ 2 files changed, 5 insertions(+), 2 deletions(-)

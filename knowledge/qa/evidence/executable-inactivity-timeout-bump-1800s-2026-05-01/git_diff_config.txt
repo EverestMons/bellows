@@ -1,0 +1,13 @@
+diff --git a/bellows/config.json b/bellows/config.json
+index e9c6930..c6550be 100644
+--- a/bellows/config.json
++++ b/bellows/config.json
+@@ -15,7 +15,7 @@
+     "app_key": "abkvra22nmscanz89d61vhcxtrw1ju",
+     "user_key": "u1bce5ht5finkriqfv38oooxq2eyj7"
+   },
+-  "step_inactivity_timeout_seconds": 300,
++  "step_inactivity_timeout_seconds": 1800,
+   "step_timeout_seconds": 2400,
+   "callback_port": 5000,
+   "tailscale_ip": "100.79.204.47"

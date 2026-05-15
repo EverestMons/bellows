@@ -1,0 +1,2 @@
+1:# Deposit-Exists Prose-Path Canary — Findings
+3:**Date:** 2026-04-28 | **Plan:** executable-deposit-exists-prose-canary-2026-04-28 | **Bellows Generation:** post-2026-04-19 structural fix

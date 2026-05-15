@@ -1,0 +1,9 @@
+/Users/marklehn/Library/Python/3.9/lib/python/site-packages/urllib3/__init__.py:35: NotOpenSSLWarning: urllib3 v2 only supports OpenSSL 1.1.1+, currently the 'ssl' module is compiled with 'LibreSSL 2.8.3'. See: https://github.com/urllib3/urllib3/issues/3020
+  warnings.warn(
+Bellows: ⏳ RUNNING — in-progress-executable-smoke-bug2-2026-04-24.md
+Bellows: plan has 2 steps
+Bellows: gates for in-progress-executable-smoke-bug2-2026-04-24.md step 1: passed=False, is_qa=False, failures=1
+Bellows: ⏸️  PAUSED — in-progress-executable-smoke-bug2-2026-04-24.md step 1 — waiting for CEO verdict
+Correct verdict-pending file exists: True
+Wrong double-prefix file exists: False
+PASS: plan renamed to verdict-pending-{base_name} without double prefix

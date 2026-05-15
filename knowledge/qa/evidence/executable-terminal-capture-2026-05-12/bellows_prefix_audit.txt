@@ -1,0 +1,17 @@
+$ grep -n "Bellows:" bellows.py runner.py notifier.py
+
+bellows.py:79:                print(f"Bellows: rotated terminal log {fname} (>14 days)")
+bellows.py:88:                print(f"Bellows: rotated step JSON {fname} (>30 days)")
+bellows.py:95:        print(f"Bellows: rotated planner-consultation.jsonl (>10MB)")
+bellows.py:960:class Bellows:
+
+Summary:
+- Lines 79, 88, 95: _rotate_logs() pre-logger print fallbacks — legitimate (runs before logger init)
+- Line 960: class Bellows: — Python class declaration, not a prefix
+- runner.py: 0 matches
+- notifier.py: 0 matches
+
+$ grep -n "\[runner\]" bellows.py runner.py notifier.py
+(no matches)
+
+VERDICT: No legacy "Bellows:" prefix in any migrated _log() call site. No "[runner]" prefix anywhere.

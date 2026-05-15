@@ -1,0 +1,25 @@
+$ git diff HEAD~1 -- config.example.json
+
+diff --git a/bellows/config.example.json b/bellows/config.example.json
+index bcb07c2..1a40f12 100644
+--- a/bellows/config.example.json
++++ b/bellows/config.example.json
+@@ -10,5 +10,17 @@
+   },
+   "callback_port": 5000,
+   "tailscale_ip": "",
+-  "step_timeout_seconds": 600
++  "step_timeout_seconds": 600,
++  "notifications": {
++    "enabled": true,
++    "events": {
++      "verdict_needed": true,
++      "failure": true,
++      "plan_complete": true,
++      "plan_halted": true,
++      "plan_skipped": true,
++      "queue_empty": true
++    },
++    "coalesce_window_seconds": 30
++  }
+ }

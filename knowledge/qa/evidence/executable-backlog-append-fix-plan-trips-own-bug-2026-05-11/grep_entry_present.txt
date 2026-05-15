@@ -1,0 +1,2 @@
+$ grep -n "2026-05-11: Bellows-side parser fix-plans trip" bellows/knowledge/BACKLOG.md
+9:### 2026-05-11: Bellows-side parser fix-plans trip the bug they fix until daemon restart

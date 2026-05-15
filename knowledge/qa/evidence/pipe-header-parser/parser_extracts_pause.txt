@@ -1,0 +1,5 @@
+after_step_1: PASS — got {'date': '2026-05-08', 'tier': 'Small', 'pause_for_verdict': 'after_step_1'}
+always: PASS — got {'date': '2026-05-08', 'tier': 'Small', 'pause_for_verdict': 'always'}
+after_qa_step: PASS — got {'date': '2026-05-08', 'tier': 'Small', 'pause_for_verdict': 'after_qa_step'}
+
+All 3 pipe-format pause_for_verdict extractions PASSED.

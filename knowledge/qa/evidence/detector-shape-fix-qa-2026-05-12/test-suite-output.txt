@@ -1,0 +1,19 @@
+# Test Suite Output
+# Date: 2026-05-12
+# Plan: executable-detector-shape-fix-2026-05-12, Step 2
+
+## Command: python3 -m pytest tests/ -v --tb=short
+
+## Result: 292 passed, 1 failed, 1 warning in 6.98s
+
+## Only Failure (pre-existing, out of scope):
+FAILED tests/test_runner_parser.py::test_run_step_timeout - assert False is True
+
+## Warning:
+NotOpenSSLWarning: urllib3 v2 only supports OpenSSL 1.1.1+, currently the 'ssl' module is compiled with 'LibreSSL 2.8.3'
+
+## Test Count Comparison:
+- Step 1 pre-edit: 292 passed, 1 failed
+- Step 1 post-edit: 292 passed, 1 failed
+- Step 2 run: 292 passed, 1 failed
+- Delta: 0 (consistent across all runs)

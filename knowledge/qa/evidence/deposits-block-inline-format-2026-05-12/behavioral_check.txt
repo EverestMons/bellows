@@ -1,0 +1,5 @@
+Command:
+cd /Users/marklehn/Desktop/GitHub/bellows && python3 -c "from gates import _extract_plan_required_deposits; result = _extract_plan_required_deposits('## STEP 2\n\nfoo bar\n\n**Deposits:** \`- /Users/marklehn/path/a.md\`, \`- /Users/marklehn/path/b/\`.\n'); print(sorted(result))"
+
+Output:
+['/Users/marklehn/path/a.md', '/Users/marklehn/path/b/']

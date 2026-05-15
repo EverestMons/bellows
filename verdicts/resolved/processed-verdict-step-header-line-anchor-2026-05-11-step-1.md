@@ -1,0 +1,2 @@
+verdict: continue
+Rule 22 verification passed on Step 1. Spot-check of bellows/gates.py confirms _extract_step_text now uses rf"^## STEP {step_number}\b.*?(?=^## STEP |\Z)" with re.DOTALL | re.MULTILINE (line 261), _gate_is_qa_step uses rf"^## STEP {step_number}\b[^\n]*" with re.MULTILINE (line 340). 3 regression tests added (89→92 tests). Dev log Output Receipt minimal but accurate. Proceed to Step 2 QA.

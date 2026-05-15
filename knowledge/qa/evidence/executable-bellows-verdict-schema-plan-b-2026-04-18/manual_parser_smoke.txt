@@ -1,0 +1,7 @@
+PASS: Cluster A | got='bellows/knowledge/research/foo.md' expected='bellows/knowledge/research/foo.md'
+PASS: Cluster B bold-noun | got='bellows/knowledge/development/bar.md' expected='bellows/knowledge/development/bar.md'
+PASS: Cluster B ALL-CAPS | got='bellows/knowledge/qa/baz.md' expected='bellows/knowledge/qa/baz.md'
+PASS: Cluster C inline | got='bellows/knowledge/qa/qux.md' expected='bellows/knowledge/qa/qux.md'
+PASS: Feedback exclusion | got=None expected=None
+
+OVERALL: PASS

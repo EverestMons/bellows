@@ -1,0 +1,18 @@
+395:# _parse_diff_stat — project_path filter (BACKLOG #2 point fix)
+398:def test_parse_diff_stat_no_project_path_returns_all():
+399:    """No project_path arg → returns all changed files unchanged (backward compat)."""
+411:def test_parse_diff_stat_project_path_all_inside():
+412:    """project_path provided, all changed files inside → returns all."""
+420:    result = bellows._parse_diff_stat(post, pre, project_path="/some/project")
+424:def test_parse_diff_stat_project_path_filters_dotdot():
+425:    """project_path provided, some files have ../ prefix → those are filtered out."""
+433:    result = bellows._parse_diff_stat(post, pre, project_path="/some/project")
+437:def test_parse_diff_stat_project_path_filters_sibling_project():
+438:    """project_path provided, file in sibling project (../anvil/foo.py) → filtered out."""
+441:    result = bellows._parse_diff_stat(post, pre, project_path="/some/project")
+445:def test_parse_diff_stat_project_path_filters_repo_root():
+446:    """project_path provided, file at repo root (../LESSONS.md) → filtered out."""
+449:    result = bellows._parse_diff_stat(post, pre, project_path="/some/project")
+453:def test_parse_diff_stat_project_path_keeps_deep_paths():
+454:    """project_path provided, files inside project at any depth → returned."""
+462:    result = bellows._parse_diff_stat(post, pre, project_path="/some/project")

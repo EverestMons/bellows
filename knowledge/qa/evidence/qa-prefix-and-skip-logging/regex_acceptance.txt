@@ -1,0 +1,11 @@
+=== Regex Acceptance Harness ===
+  qa-foo-2026-05-08.md -> True [PASS]
+  parallel-1-qa-foo-2026-05-08.md -> True [PASS]
+  executable-foo-2026-05-08.md -> True [PASS]
+  diagnostic-foo-2026-05-08.md -> True [PASS]
+  roadmap-foo-2026-05-08.md -> False [PASS]
+  _staging-foo-2026-05-08.md -> False [PASS]
+  random-foo.md -> False [PASS]
+  qa-foo.txt -> False [PASS]
+
+Overall: ALL PASSED

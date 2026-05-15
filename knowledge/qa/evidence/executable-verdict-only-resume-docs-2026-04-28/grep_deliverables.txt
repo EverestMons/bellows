@@ -1,0 +1,14 @@
+=== (a) Resume Protocol subsection exists ===
+860:### Resume Protocol (Verdict-Only)
+
+=== (b) Version 4.28 exists ===
+5:**Version:** 4.28
+
+=== (c) Lessons entry count ===
+1
+
+=== (d) Governance-root commit ===
+7b51217 docs(planner): add Resume Protocol (Verdict-Only) subsection — BACKLOG #4 Phase 3a (v4.28)
+
+=== (e) Bellows dev log commit ===
+f113525 docs(dev): verdict-only resume docs Phase 3a dev log

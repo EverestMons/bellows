@@ -1,0 +1,33 @@
+=== Smoke Test Verification ===
+
+Substep A — Marker file:
+  EXISTS: SMOKE_OK
+
+Substep B — Feedback append:
+  Content:
+## Original entry
+Existing feedback content.
+
+---
+
+## 2026-04-15 — Smoke test
+
+Smoke test entry appended by agent.
+
+Substep C — Git commit:
+8801f49 test: smoke
+494c59b init: smoke test
+
+Substep D — Plan in Done:
+  In Done/: diagnostic-smoke-test.md
+  Original: NO
+  In-progress: NO
+
+=== JSON output ===
+stop_reason=end_turn
+result=Complete. All four substeps executed:
+
+- **A** — Wrote `SMOKE_OK` to `research/smoke-marker.md`
+- **B** — Appended smoke test section to `research/agent-prompt-feedback.md`, preserving existing content
+- **C** — Committed both files (`8801f49`, message: `test: smoke`)
+- **D** — Moved plan to `decisi

@@ -1,0 +1,7 @@
+commit 2354327ce1b4bef7f481eccc2c7b2a7ac2d5b1e1
+Author: Mark Lehn <marklehn@icloud.com>
+Date:   Thu Apr 30 15:47:14 2026 -0500
+
+    feat(verdict): persist pause_reason_code in ledger entries (BACKLOG #12)
+
+bellows/verdict.py

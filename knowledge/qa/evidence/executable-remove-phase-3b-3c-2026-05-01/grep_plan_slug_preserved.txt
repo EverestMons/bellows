@@ -1,0 +1,18 @@
+50:            plan_slug TEXT
+63:        "plan_slug": "TEXT",
+150:    plan_slug: str,
+163:            plan_slug TEXT
+167:        "INSERT INTO runs (timestamp, plan_path, project, session_id, step, status, cost, plan_slug) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+168:        (datetime.now().isoformat(), plan_path, project, session_id, step, status, cost, plan_slug),
+217:        plan_slug = verdict.slug_from_path(base_filename)
+277:            parsed["receipt_status"], parsed["cost_usd"], plan_slug,
+313:                           parsed.get("session_id", ""), current_step, "VerdictPending", parsed["cost_usd"], plan_slug)
+335:                parsed["receipt_status"], parsed["cost_usd"], plan_slug,
+371:                       parsed.get("session_id", ""), current_step, "VerdictPending", parsed["cost_usd"], plan_slug)
+635:            plan_slug = match.group(1)
+640:            lookup_slug = plan_slug
+668:            verdict_result = verdict.check_verdict(plan_slug, step_number)
+682:                    if pname.startswith("verdict-pending-") and plan_slug in pname:
+758:                            if plan_slug in dname:
+766:                    print(f"Bellows: ⚠️  stale verdict for {plan_slug} step {step_number} — plan already in Done/, moving to processed")
+768:                    print(f"Bellows: ⚠️  no verdict-pending plan found for {plan_slug} step {step_number} — leaving in resolved/ for retry")

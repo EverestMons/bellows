@@ -1,0 +1,3 @@
+134:    if os.path.isfile(path) or os.path.isdir(path):
+137:    if os.path.isfile(p2) or os.path.isdir(p2):
+140:    if os.path.isfile(p3) or os.path.isdir(p3):

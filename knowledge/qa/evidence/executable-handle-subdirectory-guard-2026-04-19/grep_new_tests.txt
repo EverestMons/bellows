@@ -1,0 +1,3 @@
+1059:def test_on_moved_dispatches_for_top_level_dest():
+1076:def test_on_moved_rejects_subdirectory_dest():
+1094:def test_on_moved_dispatches_same_directory_rename():

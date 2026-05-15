@@ -1,0 +1,2 @@
+verdict: continue
+Rule 22 verification passed on canary QA report. Pause code qa_checkpoint, gates clean. The bait-laden prose in both Step 1 and Step 2 (fenced and inline `## STEP N` references) did not trip rule_20_self_check, deposit_exists, scope_check, or _gate_is_qa_step. Both 2026-05-11 fixes (commits 4d57fd3 + 0fab609) confirmed live in the running daemon. Planner-authorized terminal close.

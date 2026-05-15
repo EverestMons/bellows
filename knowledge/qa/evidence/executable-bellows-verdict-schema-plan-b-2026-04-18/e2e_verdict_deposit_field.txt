@@ -1,0 +1,1 @@
+PASS — Deposit field correctly populated with extracted path

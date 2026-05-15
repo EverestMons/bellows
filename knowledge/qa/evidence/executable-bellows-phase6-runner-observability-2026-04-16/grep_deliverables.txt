@@ -1,0 +1,50 @@
+PASS | Fix 1: configurable timeout in runner.py
+  Evidence: 18:    """Write a JSON log file. Called on every code path (success, timeout, error)."""
+30:    timeout: int = 600,
+51:            timeout=timeout,
+57:            "error": "timeout",
+63:            "error": "timeout",
+67:            "ceo_flags": [f"Step timed out after {timeout}s"],
+69:            "
+
+PASS | Fix 1b: step_timeout_seconds in config.example.json
+  Evidence: {
+  "watched_projects": [
+    "/absolute/path/to/project/knowledge/decisions"
+  ],
+  "default_model": "claude-sonnet-4-6",
+  "planner_model": "claude-sonnet-4-6",
+  "pushover": {
+    "app_key": "",
+    "user_key": ""
+  },
+  "callback_port": 5000,
+  "tailscale_ip": "",
+  "step_timeout_seconds": 600
+}
+
+PASS | Fix 2: cost_usd: None in runner.py error paths
+  Evidence: 68:            "cost_usd": None,
+86:            "cost_usd": None,
+113:            "cost_usd": None,
+136:            "cost_usd": None,
+
+
+PASS | Fix 3: log writing helper called multiple times
+  Evidence: 8
+
+
+PASS | Fix 4: result.stderr referenced in runner.py
+  Evidence: 93:    if result.stderr:
+94:        print(f"[runner] stderr from claude -p: {result.stderr[:500]}", flush=True)
+104:            "stderr": result.stderr[:5000],
+127:            "stderr": result.stderr[:5000],
+146:        "stderr": result.stderr,
+
+
+PASS | Fix 5: JSONDecodeError handler in runner.py
+  Evidence: 99:    except json.JSONDecodeError as e:
+102:            "error": "json_decode_error",
+108:            "error": f"json_decode_error: {str(e)[:200]}",
+
+

@@ -1,0 +1,28 @@
+== QA Evidence: executable-model-override-backtick-fix-2026-04-17 ==
+== Generated: 2026-04-17 ==
+
+--- (a) bellows.py: Model header extraction ---
+Line 203: header = gates._parse_plan_header(metadata_text)
+Line 204: model = header.get("Model", header.get("model", config["default_model"]))
+
+--- (a) bellows.py: model override print ---
+Line 225: print(f"Bellows: using model override: {model}")
+
+--- (a) bellows.py: model passed to runner.run_step ---
+Line 237: parsed = runner.run_step(bootstrap_prompt, project_path, model, ...)
+Line 293: parsed = runner.run_step(default_next_prompt, project_path, model, ...)
+
+--- (b) runner.py: model parameter in claude -p command ---
+Line 36: "--model", model,
+(Not hardcoded. Uses the `model` parameter received by run_step.)
+
+--- (c) gates.py: strip calls on deposit paths ---
+Line 26: key = key.strip().strip("*")           # strips ** from header keys
+Line 27: result[key] = value.strip().strip("*").strip()  # strips ** from header values
+Line 140: path = line[2:].strip().strip("`")     # agent-declared paths: strips backticks both ends
+Line 171: candidate = m.group(1).strip().rstrip('.,;)').strip('`')  # plan-required deposits: strips backticks
+
+--- (d) Manual backtick test ---
+Input:  '`invoice-pulse/knowledge/foo.md'
+Output: 'invoice-pulse/knowledge/foo.md'
+PASS: Leading backtick correctly stripped by Python str.strip('`').

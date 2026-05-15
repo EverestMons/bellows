@@ -1,0 +1,7 @@
+commit fb1d5f374698da137898659a14be8530ceef2263
+Author: Mark Lehn <marklehn@icloud.com>
+Date:   Sun Apr 19 19:29:54 2026 -0500
+
+    fix: guard _handle against subdirectory dispatch (on_moved re-run cascade)
+
+    Co-Authored-By: Claude Opus 4.6 <noreply@anthropic.com>

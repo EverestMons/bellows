@@ -1,0 +1,3 @@
+| 2026-03-25 | diagnostic prompt scope | — | — | 3 confirmed patterns applied to Rule 13: enumerate target directories with file counts, specify output deposit format, specify read depth | Applied in v4.5 |
+| 2026-03-26 | diagnostic prompt engineering | — | — | 4 diagnostic patterns consolidated into dedicated section; Rule 13 updated to Forge's exact phrasing; parallel implementation check added as net-new rule | Applied in v4.6 |
+| 2026-03-27 | glossary read optimization | — | — | 174 reinforcements across 5 projects (invoice-pulse, forge, BrewBuddy, SimpleScreen, _governance); read-skipping pattern promoted from guidance table to Rule 16 | Applied in v4.8 |

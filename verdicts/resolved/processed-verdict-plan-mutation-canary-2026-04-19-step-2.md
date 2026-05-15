@@ -1,0 +1,2 @@
+verdict: continue
+Override-pass. Canary served its purpose: sentinel file `_canary-step2-2026-04-19.txt` written correctly, plan landed in Done/, watcher log captured 11 clean events with zero content mutation on the plan file. scope_check false-positive on LESSONS.md and BACKLOG.md — those changes originated from yesterday's verdict-lifecycle-coupling commits (HEAD~3 range), not from the canary's Step 2 work. Gate failure noted; no corrective action needed for the canary itself. Scope_check over-wide git range logged as new BACKLOG item.

@@ -1,0 +1,277 @@
+============================= test session starts ==============================
+platform darwin -- Python 3.9.6, pytest-8.4.2, pluggy-1.6.0 -- /Applications/Xcode.app/Contents/Developer/usr/bin/python3
+cachedir: .pytest_cache
+rootdir: /Users/marklehn/Desktop/GitHub/bellows
+plugins: anyio-4.12.1, cov-7.0.0
+collecting ... collected 125 items
+
+tests/test_bellows.py::test_load_config PASSED                           [  0%]
+tests/test_bellows.py::test_is_final_step PASSED                         [  1%]
+tests/test_bellows.py::test_is_runnable_plan_diagnostic PASSED           [  2%]
+tests/test_bellows.py::test_is_runnable_plan_parallel_prefix PASSED      [  3%]
+tests/test_bellows.py::test_extract_parallel_group_match PASSED          [  4%]
+tests/test_bellows.py::test_extract_parallel_group_no_match PASSED       [  4%]
+tests/test_bellows.py::test_is_plan_stranded_returns_true_when_inprogress_exists PASSED [  5%]
+tests/test_bellows.py::test_is_plan_stranded_returns_true_when_done_missing PASSED [  6%]
+tests/test_bellows.py::test_is_plan_stranded_returns_false_on_happy_path PASSED [  7%]
+tests/test_bellows.py::test_rescan_preserves_seen PASSED                 [  8%]
+tests/test_bellows.py::test_source_sha_returns_string PASSED             [  8%]
+tests/test_bellows.py::test_diagnostic_auto_close_moves_to_done PASSED   [  9%]
+tests/test_bellows.py::test_clean_diagnostic_no_header_posts_verdict PASSED [ 10%]
+tests/test_bellows.py::test_clean_diagnostic_auto_close_true_moves_to_done PASSED [ 11%]
+tests/test_bellows.py::test_handle_parallel_group_stagger PASSED         [ 12%]
+tests/test_bellows.py::test_verdict_continue_at_final_step_moves_to_done PASSED [ 12%]
+tests/test_bellows.py::test_parse_diff_stat_preexisting_unchanged_returns_empty PASSED [ 13%]
+tests/test_bellows.py::test_parse_diff_stat_new_file_only_in_post PASSED [ 14%]
+tests/test_bellows.py::test_parse_diff_stat_preexisting_changed_stat_is_reported PASSED [ 15%]
+tests/test_bellows.py::test_parse_diff_stat_summary_line_ignored PASSED  [ 16%]
+tests/test_bellows.py::test_parse_diff_stat_empty_inputs_return_empty PASSED [ 16%]
+tests/test_bellows.py::test_run_plan_resume_step_uses_correct_prompt PASSED [ 17%]
+tests/test_bellows.py::test_consume_verdicts_continue_calls_handle_new_plan_with_resume_step PASSED [ 18%]
+tests/test_bellows.py::test_consume_verdicts_deletes_pending_file PASSED [ 19%]
+tests/test_bellows.py::test_consume_verdicts_pending_cleanup_safe_when_file_missing PASSED [ 20%]
+tests/test_bellows.py::test_consume_verdicts_scopes_to_project_from_pending_file PASSED [ 20%]
+tests/test_bellows.py::test_consume_verdicts_fallback_to_all_watched_when_pending_missing PASSED [ 21%]
+tests/test_bellows.py::test_consume_verdicts_break_prevents_double_consumption PASSED [ 22%]
+tests/test_bellows.py::test_handle_parallel_from_watchdog_adds_pending_not_dispatched PASSED [ 23%]
+tests/test_bellows.py::test_rescan_dispatches_pending_group_after_settle PASSED [ 24%]
+tests/test_bellows.py::test_rescan_does_not_dispatch_pending_group_within_settle PASSED [ 24%]
+tests/test_bellows.py::test_nonparallel_plan_dispatches_immediately_from_handle PASSED [ 25%]
+tests/test_bellows.py::test_two_parallel_siblings_collected_as_one_group PASSED [ 26%]
+tests/test_bellows.py::test_run_plan_claims_file_before_runner_runs PASSED [ 27%]
+tests/test_bellows.py::test_run_plan_skips_claim_if_already_inprogress PASSED [ 28%]
+tests/test_bellows.py::test_run_plan_bootstrap_prompt_uses_inprogress_path PASSED [ 28%]
+tests/test_bellows.py::test_on_moved_dispatches_for_non_directory_event PASSED [ 29%]
+tests/test_bellows.py::test_on_moved_ignores_directory_events PASSED     [ 30%]
+tests/test_bellows.py::test_on_moved_dispatches_for_top_level_dest PASSED [ 31%]
+tests/test_bellows.py::test_on_moved_rejects_subdirectory_dest PASSED    [ 32%]
+tests/test_bellows.py::test_on_moved_dispatches_same_directory_rename PASSED [ 32%]
+tests/test_bellows.py::test_is_runnable_plan_inprogress_executable_returns_false PASSED [ 33%]
+tests/test_cleanup_verdicts.py::TestCleanupVerdictsForSlug::test_cleanup_removes_all_step_files_for_slug PASSED [ 34%]
+tests/test_cleanup_verdicts.py::TestCleanupVerdictsForSlug::test_cleanup_noop_when_no_matches PASSED [ 35%]
+tests/test_cleanup_verdicts.py::TestCleanupVerdictsForSlug::test_cleanup_respects_slug_boundary PASSED [ 36%]
+tests/test_cleanup_verdicts.py::TestCleanupVerdictsForSlug::test_cleanup_ignores_resolved_directory PASSED [ 36%]
+tests/test_extract_primary_deposit_blocks.py::test_block_single_md_path_returned PASSED [ 37%]
+tests/test_extract_primary_deposit_blocks.py::test_block_multiple_md_first_returned PASSED [ 38%]
+tests/test_extract_primary_deposit_blocks.py::test_block_none_bullet_returns_none PASSED [ 39%]
+tests/test_extract_primary_deposit_blocks.py::test_block_directory_only_returns_none PASSED [ 40%]
+tests/test_extract_primary_deposit_blocks.py::test_no_block_falls_back_to_legacy PASSED [ 40%]
+tests/test_extract_primary_deposit_blocks.py::test_block_with_blockquote_prefix_still_matches PASSED [ 41%]
+tests/test_gates.py::test_all_gates_pass_on_clean_parsed PASSED          [ 42%]
+tests/test_gates.py::test_receipt_status_blocked PASSED                  [ 43%]
+tests/test_gates.py::test_receipt_status_partial PASSED                  [ 44%]
+tests/test_gates.py::test_ceo_flags_nonempty PASSED                      [ 44%]
+tests/test_gates.py::test_is_error_true PASSED                           [ 45%]
+tests/test_gates.py::test_permission_denials_nonempty PASSED             [ 46%]
+tests/test_gates.py::test_deposit_path_missing PASSED                    [ 47%]
+tests/test_gates.py::test_qa_step_detection PASSED                       [ 48%]
+tests/test_gates.py::test_file_change_audit_populates PASSED             [ 48%]
+tests/test_gates.py::test_scope_check_passes_when_files_in_plan PASSED   [ 49%]
+tests/test_gates.py::test_scope_check_fails_when_file_not_in_plan PASSED [ 50%]
+tests/test_gates.py::test_scope_check_allowlist PASSED                   [ 51%]
+tests/test_gates.py::test_no_deposit_section_passes PASSED               [ 52%]
+tests/test_gates.py::test_parse_plan_header_empty PASSED                 [ 52%]
+tests/test_gates.py::test_parse_plan_header_basic PASSED                 [ 53%]
+tests/test_gates.py::test_parse_plan_header_malformed PASSED             [ 54%]
+tests/test_gates.py::test_scope_check_prefix_allowlist_in_progress PASSED [ 55%]
+tests/test_gates.py::test_scope_check_prefix_allowlist_verdict_pending PASSED [ 56%]
+tests/test_gates.py::test_scope_check_prefix_allowlist_halted PASSED     [ 56%]
+tests/test_gates.py::test_scope_check_prefix_allowlist_does_not_suppress_real_violations PASSED [ 57%]
+tests/test_gates.py::test_verdict_requested_from_parsed_dict PASSED      [ 58%]
+tests/test_gates.py::test_verdict_requested_defaults_when_key_missing PASSED [ 59%]
+tests/test_notifier_server.py::test_push_success PASSED                  [ 60%]
+tests/test_notifier_server.py::test_push_passes_timeout PASSED           [ 60%]
+tests/test_notifier_server.py::test_push_timeout_exception_handled_gracefully PASSED [ 61%]
+tests/test_notifier_server.py::test_no_stranded_check_in_run_plan PASSED [ 62%]
+tests/test_notifier_server.py::test_push_failure PASSED                  [ 63%]
+tests/test_notifier_server.py::test_server_respond PASSED                [ 64%]
+tests/test_phase4_parser.py::test_parser_returns_complete_for_end_turn PASSED [ 64%]
+tests/test_phase4_parser.py::test_parser_returns_blocked_for_error PASSED [ 65%]
+tests/test_phase4_parser.py::test_parser_returns_partial_for_max_tokens PASSED [ 66%]
+tests/test_phase4_planner_retry.py::test_planner_retries_on_auth_failure PASSED [ 67%]
+tests/test_phase4_planner_retry.py::test_planner_falls_back_to_continue_on_persistent_failure PASSED [ 68%]
+tests/test_planner.py::test_build_consult_file PASSED                    [ 68%]
+tests/test_planner.py::test_consult_bad_json PASSED                      [ 69%]
+tests/test_planner.py::test_consult_timeout PASSED                       [ 70%]
+tests/test_rule_26_deposit_parser.py::test_extract_plan_required_deposits_prefers_declared_block PASSED [ 71%]
+tests/test_rule_26_deposit_parser.py::test_extract_plan_required_deposits_falls_back_to_legacy_when_no_block PASSED [ 72%]
+tests/test_rule_26_deposit_parser.py::test_extract_plan_required_deposits_handles_none_bullet PASSED [ 72%]
+tests/test_rule_26_deposit_parser.py::test_extract_plan_required_deposits_ignores_paths_in_code_fences_when_block_present PASSED [ 73%]
+tests/test_rule_26_deposit_parser.py::test_extract_primary_deposit_scoping_in_post_verdict_request PASSED [ 74%]
+tests/test_rule_26_deposit_parser.py::test_extract_step_text_helper_gates_py PASSED [ 75%]
+tests/test_runner.py::test_configurable_timeout_passed_to_subprocess FAILED [ 76%]
+tests/test_runner.py::test_default_timeout_is_600 FAILED                 [ 76%]
+tests/test_runner.py::test_timeout_returns_cost_none FAILED              [ 77%]
+tests/test_runner.py::test_generic_exception_returns_cost_none FAILED    [ 78%]
+tests/test_runner.py::test_generic_exception_message_contains_actual_error FAILED [ 79%]
+tests/test_runner.py::test_timeout_writes_log_file FAILED                [ 80%]
+tests/test_runner.py::test_success_writes_log_file PASSED                [ 80%]
+tests/test_runner.py::test_generic_exception_writes_log_file FAILED      [ 81%]
+tests/test_runner.py::test_stderr_printed_on_success FAILED              [ 82%]
+tests/test_runner.py::test_json_decode_error_returns_blocked FAILED      [ 83%]
+tests/test_runner.py::test_json_decode_error_writes_log_with_raw_output FAILED [ 84%]
+tests/test_runner_parser.py::test_parse_clean_output PASSED              [ 84%]
+tests/test_runner_parser.py::test_parse_blocked_output PASSED            [ 85%]
+tests/test_runner_parser.py::test_run_step_timeout FAILED                [ 86%]
+tests/test_runner_parser.py::test_parse_paragraph_form_no_longer_extracted PASSED [ 87%]
+tests/test_runner_parser.py::test_parse_h3_flags_for_ceo_bulleted_regression PASSED [ 88%]
+tests/test_runner_parser.py::test_parse_h3_flags_for_ceo_none_regression PASSED [ 88%]
+tests/test_runner_parser.py::test_parse_verdict_requested_present PASSED [ 89%]
+tests/test_runner_parser.py::test_parse_verdict_requested_absent PASSED  [ 90%]
+tests/test_runner_parser.py::test_parse_verdict_requested_mid_text PASSED [ 91%]
+tests/test_verdict.py::test_post_verdict_request_creates_file PASSED     [ 92%]
+tests/test_verdict.py::test_check_verdict_not_found PASSED               [ 92%]
+tests/test_verdict.py::test_check_verdict_continue PASSED                [ 93%]
+tests/test_verdict.py::test_check_verdict_stop PASSED                    [ 94%]
+tests/test_verdict.py::test_pause_reason_gate_failure_renders_gate_failures_section PASSED [ 95%]
+tests/test_verdict.py::test_pause_reason_qa_checkpoint PASSED            [ 96%]
+tests/test_verdict.py::test_pause_reason_agent_verdict_request PASSED    [ 96%]
+tests/test_verdict.py::test_pause_reason_header_pause PASSED             [ 97%]
+tests/test_verdict.py::test_pause_reason_auto_close_disabled PASSED      [ 98%]
+tests/test_verdict.py::test_old_fallback_string_never_appears PASSED     [ 99%]
+tests/test_verdict.py::test_log_to_ledger_appends_json PASSED            [100%]
+
+=================================== FAILURES ===================================
+________________ test_configurable_timeout_passed_to_subprocess ________________
+
+    def test_configurable_timeout_passed_to_subprocess():
+        with patch("runner.subprocess.run", return_value=_make_completed_process()) as mock_run:
+            runner.run_step("test", "/tmp", "claude-sonnet-4-6", timeout=10)
+>       _, kwargs = mock_run.call_args
+E       TypeError: cannot unpack non-iterable NoneType object
+
+tests/test_runner.py:37: TypeError
+_________________________ test_default_timeout_is_600 __________________________
+
+    def test_default_timeout_is_600():
+        with patch("runner.subprocess.run", return_value=_make_completed_process()) as mock_run:
+            runner.run_step("test", "/tmp", "claude-sonnet-4-6")
+>       _, kwargs = mock_run.call_args
+E       TypeError: cannot unpack non-iterable NoneType object
+
+tests/test_runner.py:44: TypeError
+________________________ test_timeout_returns_cost_none ________________________
+
+    def test_timeout_returns_cost_none():
+        with patch("runner.subprocess.run", side_effect=subprocess.TimeoutExpired("claude", 600)):
+            result = runner.run_step("test", "/tmp", "claude-sonnet-4-6")
+>       assert result["cost_usd"] is None
+E       assert 0.0052715999999999996 is None
+
+tests/test_runner.py:53: AssertionError
+___________________ test_generic_exception_returns_cost_none ___________________
+
+    def test_generic_exception_returns_cost_none():
+        with patch("runner.subprocess.run", side_effect=OSError("disk full")):
+            result = runner.run_step("test", "/tmp", "claude-sonnet-4-6")
+>       assert result["cost_usd"] is None
+E       assert 0.0053466 is None
+
+tests/test_runner.py:59: AssertionError
+_____________ test_generic_exception_message_contains_actual_error _____________
+
+    def test_generic_exception_message_contains_actual_error():
+        with patch("runner.subprocess.run", side_effect=OSError("disk full")):
+            result = runner.run_step("test", "/tmp", "claude-sonnet-4-6")
+>       assert "disk full" in result["ceo_flags"][0]
+E       IndexError: list index out of range
+
+tests/test_runner.py:65: IndexError
+_________________________ test_timeout_writes_log_file _________________________
+
+tmp_path = PosixPath('/private/var/folders/vf/8nw0z7hj1m34w6z48l5dp54w0000gn/T/pytest-of-marklehn/pytest-2133/test_timeout_writes_log_file0')
+
+    def test_timeout_writes_log_file(tmp_path):
+        with patch("runner.LOGS_DIR", tmp_path), \
+             patch("runner.subprocess.run", side_effect=subprocess.TimeoutExpired("claude", 600)):
+            runner.run_step("test", "/tmp", "claude-sonnet-4-6")
+        log_files = list(tmp_path.glob("*.json"))
+        assert len(log_files) == 1
+        data = json.loads(log_files[0].read_text())
+>       assert data["success"] is False
+E       assert True is False
+
+tests/test_runner.py:78: AssertionError
+____________________ test_generic_exception_writes_log_file ____________________
+
+tmp_path = PosixPath('/private/var/folders/vf/8nw0z7hj1m34w6z48l5dp54w0000gn/T/pytest-of-marklehn/pytest-2133/test_generic_exception_writes_0')
+
+    def test_generic_exception_writes_log_file(tmp_path):
+        with patch("runner.LOGS_DIR", tmp_path), \
+             patch("runner.subprocess.run", side_effect=OSError("disk full")):
+            runner.run_step("test", "/tmp", "claude-sonnet-4-6")
+        log_files = list(tmp_path.glob("*.json"))
+        assert len(log_files) == 1
+        data = json.loads(log_files[0].read_text())
+>       assert data["success"] is False
+E       assert True is False
+
+tests/test_runner.py:99: AssertionError
+________________________ test_stderr_printed_on_success ________________________
+
+capsys = <_pytest.capture.CaptureFixture object at 0x10b4d6b80>
+
+    def test_stderr_printed_on_success(capsys):
+        proc = _make_completed_process(stderr="warning: something")
+        with patch("runner.subprocess.run", return_value=proc):
+            runner.run_step("test", "/tmp", "claude-sonnet-4-6")
+        captured = capsys.readouterr()
+>       assert "warning: something" in captured.out
+E       AssertionError: assert 'warning: something' in ''
+E        +  where '' = CaptureResult(out='', err='').out
+
+tests/test_runner.py:110: AssertionError
+____________________ test_json_decode_error_returns_blocked ____________________
+
+    def test_json_decode_error_returns_blocked():
+        proc = _make_completed_process(stdout="NOT JSON")
+        with patch("runner.subprocess.run", return_value=proc):
+            result = runner.run_step("test", "/tmp", "claude-sonnet-4-6")
+>       assert result["is_error"] is True
+E       assert False is True
+
+tests/test_runner.py:119: AssertionError
+______________ test_json_decode_error_writes_log_with_raw_output _______________
+
+tmp_path = PosixPath('/private/var/folders/vf/8nw0z7hj1m34w6z48l5dp54w0000gn/T/pytest-of-marklehn/pytest-2133/test_json_decode_error_writes_0')
+
+    def test_json_decode_error_writes_log_with_raw_output(tmp_path):
+        proc = _make_completed_process(stdout="NOT JSON AT ALL")
+        with patch("runner.LOGS_DIR", tmp_path), \
+             patch("runner.subprocess.run", return_value=proc):
+            runner.run_step("test", "/tmp", "claude-sonnet-4-6")
+        log_files = list(tmp_path.glob("*.json"))
+        assert len(log_files) == 1
+        data = json.loads(log_files[0].read_text())
+>       assert data["success"] is False
+E       assert True is False
+
+tests/test_runner.py:133: AssertionError
+____________________________ test_run_step_timeout _____________________________
+
+    def test_run_step_timeout():
+        with patch("runner.subprocess.run", side_effect=subprocess.TimeoutExpired("claude", 300)):
+            result = runner.run_step("test prompt", "/tmp", "claude-sonnet-4-6")
+>       assert result["is_error"] is True
+E       assert False is True
+
+tests/test_runner_parser.py:57: AssertionError
+=============================== warnings summary ===============================
+../../../Library/Python/3.9/lib/python/site-packages/urllib3/__init__.py:35
+  /Users/marklehn/Library/Python/3.9/lib/python/site-packages/urllib3/__init__.py:35: NotOpenSSLWarning: urllib3 v2 only supports OpenSSL 1.1.1+, currently the 'ssl' module is compiled with 'LibreSSL 2.8.3'. See: https://github.com/urllib3/urllib3/issues/3020
+    warnings.warn(
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED tests/test_runner.py::test_configurable_timeout_passed_to_subprocess
+FAILED tests/test_runner.py::test_default_timeout_is_600 - TypeError: cannot ...
+FAILED tests/test_runner.py::test_timeout_returns_cost_none - assert 0.005271...
+FAILED tests/test_runner.py::test_generic_exception_returns_cost_none - asser...
+FAILED tests/test_runner.py::test_generic_exception_message_contains_actual_error
+FAILED tests/test_runner.py::test_timeout_writes_log_file - assert True is False
+FAILED tests/test_runner.py::test_generic_exception_writes_log_file - assert ...
+FAILED tests/test_runner.py::test_stderr_printed_on_success - AssertionError:...
+FAILED tests/test_runner.py::test_json_decode_error_returns_blocked - assert ...
+FAILED tests/test_runner.py::test_json_decode_error_writes_log_with_raw_output
+FAILED tests/test_runner_parser.py::test_run_step_timeout - assert False is True
+================== 11 failed, 114 passed, 1 warning in 42.33s ==================

@@ -1,0 +1,7 @@
+PASS: 'not gate_result["passed"]'
+PASS: 'gate_result["is_qa_step"]'
+PASS: 'verdict_requested'
+PASS: 'header_says_pause(header'
+PASS: 'not effective_auto_close'
+
+Overall: ALL CLAUSES PRESENT

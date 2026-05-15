@@ -1,0 +1,13 @@
+=== bellows.py: Fix 2c logging ===
+184:            print(f"Bellows: Planner decision for {plan_name} step {current_step}: {decision} — {reason}")
+
+=== bellows.py: Fix 2a escalation path (break, not return) ===
+                response = response_server.wait_for_response(timeout=3600)
+                if response is None or response.get("decision") == "stop":
+                    print(f"Bellows: escalation resolved with stop — halting plan {plan_name}")
+                    break
+                if response.get("instruction"):
+
+=== bellows.py: strand check location ===
+122:def _is_plan_stranded(inprogress_path: str, expected_done_path: str) -> bool:
+220:        if _is_plan_stranded(inprogress_path, expected_done_path):

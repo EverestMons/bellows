@@ -1,0 +1,75 @@
+# Shadow Copy Cache — QA Grep Evidence
+# Generated: 2026-04-17
+
+## (a) .bellows-cache/ directory creation
+# grep bellows.py for 'bellows-cache' and 'mkdir'
+
+bellows.py:18:SHADOW_CACHE_DIR = BELLOWS_ROOT / ".bellows-cache"
+bellows.py:103:    SHADOW_CACHE_DIR.mkdir(exist_ok=True)
+
+VERDICT: SHADOW_CACHE_DIR defined at line 18, mkdir(exist_ok=True) at line 103 inside _write_shadow.
+
+## (b) Shadow write — .pristine written after plan claim
+# grep bellows.py for '.pristine'
+
+bellows.py:98:    return SHADOW_CACHE_DIR / f"{canonical}.pristine"
+
+# In run_plan (lines 208-212):
+#   208: if not plan_filename.startswith("in-progress-"):
+#   209:     shutil.move(plan_path, inprogress_path)
+#   210:     plan_path = inprogress_path
+#   211:     # Write shadow copy immediately after claim — preserves pristine content
+#   212:     _write_shadow(plan_filename, plan_text)
+
+VERDICT: Shadow write at line 212, immediately after shutil.move claim at line 209. Correct ordering.
+
+## (c) Shadow read — in both run_plan and _consume_verdicts
+# run_plan (lines 191-196):
+#   191: shadow_text = _read_shadow(plan_filename)
+#   192: if shadow_text is not None:
+#   193:     metadata_text = shadow_text
+#   194: else:
+#   195:     metadata_text = plan_text
+#
+# metadata_text used for extract_total_steps (line 199), _parse_plan_header (line 203)
+
+# _consume_verdicts (lines 618-627):
+#   618: # Fallback chain: shadow -> verdict metadata -> load_file
+#   619: shadow_text_c = _read_shadow(original_name)
+#   620: if shadow_text_c is not None:
+#   621:     total_steps_c = extract_total_steps(shadow_text_c)
+#   623: elif total_steps_from_request is not None:
+#   624:     total_steps_c = total_steps_from_request
+#   625: else:
+#   626:     plan_text_c = load_file(full_plan_path)
+#   627:     total_steps_c = extract_total_steps(plan_text_c)
+
+VERDICT: Shadow read in run_plan (line 192) and _consume_verdicts (line 619). Both prefer shadow over on-disk.
+
+## (d) Shadow cleanup — unlink/.pristine at plan close
+# grep bellows.py for 'unlink' on '.pristine'
+
+bellows.py:120:        path.unlink()    # inside _delete_shadow()
+
+# _delete_shadow called at:
+#   line 221: SKIPPED (0 steps) -> Done
+#   line 361: auto-close -> Done
+#   line 637: continue-to-done via verdict
+#   line 654: halt via verdict
+
+VERDICT: Cleanup via _delete_shadow at all four plan-close paths. No stale files.
+
+## (e) .gitignore
+# .gitignore contents include:
+
+.bellows-cache/
+
+VERDICT: .bellows-cache/ is listed in .gitignore (line 12).
+
+## (f) Fallback chain: shadow -> verdict metadata -> load_file
+# _consume_verdicts lines 618-627 (quoted above in section c)
+
+VERDICT: Three-tier fallback chain confirmed:
+  1. _read_shadow(original_name)
+  2. total_steps_from_request (verdict metadata)
+  3. load_file(full_plan_path) as last resort

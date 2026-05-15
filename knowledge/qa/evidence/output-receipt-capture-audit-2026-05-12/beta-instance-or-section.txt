@@ -1,0 +1,31 @@
+β-A: Output Receipt section — expected to capture the decision
+Plan: deposit-exists-prose-canary-2026-04-28, step 2
+File: 20260428-190113-step.json
+
+Output Receipt (result_text, verbatim):
+
+---
+**Step 2 complete.** Commit `326dca6`.
+
+Summary of what was done:
+- Verified Step 1's Output Receipt status = Complete
+- Confirmed both Step 1 deposits exist with correct content
+- Generated evidence files: `canary-expected-scope.txt`, `canary-grep-evidence.txt`,
+  `verdict-confirmation.txt`
+- Wrote QA report at `knowledge/qa/deposit-exists-prose-canary-qa-2026-04-28.md`
+- Updated PROJECT_STATUS.md with Closed milestone entry
+- Rule 20 self-check: evidence files present, no hedging keywords
+- Appended prompt feedback
+
+### Flags for CEO
+- None
+
+### Flags for Next Step
+- None
+---
+
+The bullet "Generated evidence files" is the only line that covers the evidence
+creation. It implies a clean single-pass generation. The intermediate
+detect-diagnose-fix sequence (empty file → case-sensitivity root cause →
+regeneration) is absent. The Planner inspecting this receipt would conclude
+evidence generation was uneventful.

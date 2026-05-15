@@ -1,0 +1,3 @@
+8db0adc fix(scope_check): scope git diff to project subtree via --relative -- .
+c7f69f3 fix(bellows): reliability bugs 1-3 — verdict consume gate, pause-rename canonical path, case-insensitive step count
+7c1f4ee feat: disable auto-close default — terminal steps always pause for Planner

@@ -1,0 +1,5 @@
+$ grep -n "notifier.push(" bellows/bellows.py
+(no output — 0 matches)
+
+Result: 0 direct notifier.push() calls remain in bellows.py.
+All notification intent flows through named functions.

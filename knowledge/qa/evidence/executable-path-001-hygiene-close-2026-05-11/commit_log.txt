@@ -1,0 +1,11 @@
+commit d742f888d5bb0b7a0fe892b10186c1801b135383
+Author: Mark Lehn <marklehn@icloud.com>
+Date:   Mon May 11 18:09:28 2026 -0500
+
+    docs(backlog): close PATH-001 as hygiene — structurally fixed by 2026-05-10 Rule 20 single-source migration
+    
+    Co-Authored-By: Claude Opus 4.6 <noreply@anthropic.com>
+
+ bellows/knowledge/BACKLOG.md                        | 4 ++--
+ bellows/knowledge/research/agent-prompt-feedback.md | 3 ++-
+ 2 files changed, 4 insertions(+), 3 deletions(-)

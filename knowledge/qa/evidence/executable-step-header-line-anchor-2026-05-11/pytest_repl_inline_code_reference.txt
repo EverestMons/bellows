@@ -1,0 +1,25 @@
+============================================================
+Behavioral Regression: Inline Code Reference Fixture
+============================================================
+
+--- Fixture ---
+'## STEP 1 — Developer\n\nThis step references `## STEP 2` and also `## STEP 2 — Bellows QA` inline.\nThese inline references must NOT confuse the parsers.\nActual step 1 body content here.\n\n## STEP 2 — Be'...
+
+[1] _extract_step_text(plan_text, 2):
+    Return value: '## STEP 2 — Bellows QA\n\nThis is the REAL Step 2 body.\nIt should be returned by all parsers.\n'...
+    Contains REAL Step 2 body: True
+    RESULT: PASS
+
+[2] _extract_step_text_from_plan(plan_text, 2):
+    Return value: '## STEP 2 — Bellows QA\n\nThis is the REAL Step 2 body.\nIt should be returned by all parsers.\n'...
+    Contains REAL Step 2 body: True
+    RESULT: PASS
+
+[3] _gate_is_qa_step(plan_text, 2):
+    Return value: True
+    Correctly identifies real Step 2 as QA: True
+    RESULT: PASS
+
+============================================================
+Overall: ALL PASS
+============================================================

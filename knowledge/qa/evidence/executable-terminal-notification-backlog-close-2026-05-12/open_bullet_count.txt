@@ -1,0 +1,2 @@
+$ sed -n '1,/^## Closed/p' bellows/knowledge/BACKLOG.md | grep -c "^- 20"
+2

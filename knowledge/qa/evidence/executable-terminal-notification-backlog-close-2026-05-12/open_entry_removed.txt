@@ -1,0 +1,2 @@
+$ grep -n "2026-04-19: terminal output redesign" bellows/knowledge/BACKLOG.md
+(no output — 0 matches)

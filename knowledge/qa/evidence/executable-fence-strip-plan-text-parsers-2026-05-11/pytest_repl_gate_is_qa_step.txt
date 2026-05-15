@@ -1,0 +1,3 @@
+_gate_is_qa_step(fixture, 2) result: False
+Expected: False (step 2 is Developer, not QA)
+PASS — bug is fixed, in-fence QA header correctly ignored

@@ -1,0 +1,8 @@
+$ grep -n "^### " bellows/knowledge/BACKLOG.md
+9:### 2026-05-11: Bellows-side parser fix-plans trip the bug they fix until daemon restart
+
+$ grep -n "^## Open\|^## Closed" bellows/knowledge/BACKLOG.md
+7:## Open
+47:## Closed
+
+Analysis: The new entry at line 9 is the first ### header after ## Open (line 7) and before ## Closed (line 47). Position confirmed correct.

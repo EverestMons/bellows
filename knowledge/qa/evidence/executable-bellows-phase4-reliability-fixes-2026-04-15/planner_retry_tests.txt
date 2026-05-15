@@ -1,0 +1,11 @@
+============================= test session starts ==============================
+platform darwin -- Python 3.9.6, pytest-8.4.2, pluggy-1.6.0 -- /Applications/Xcode.app/Contents/Developer/usr/bin/python3
+cachedir: .pytest_cache
+rootdir: /Users/marklehn/Desktop/GitHub/bellows
+plugins: anyio-4.12.1, cov-7.0.0
+collecting ... collected 2 items
+
+tests/test_phase4_planner_retry.py::test_planner_retries_on_auth_failure PASSED [ 50%]
+tests/test_phase4_planner_retry.py::test_planner_falls_back_to_continue_on_persistent_failure PASSED [100%]
+
+============================== 2 passed in 0.01s ===============================

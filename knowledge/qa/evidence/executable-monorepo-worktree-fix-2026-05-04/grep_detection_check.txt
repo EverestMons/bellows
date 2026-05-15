@@ -1,0 +1,1 @@
+528:    if not os.path.exists(os.path.join(project_path, ".git")):

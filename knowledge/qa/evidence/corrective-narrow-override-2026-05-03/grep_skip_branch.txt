@@ -1,0 +1,1 @@
+252:            print(f"Bellows: ⚠️  SKIPPED — {plan_name} has no ## STEP headers — not a standard executable")

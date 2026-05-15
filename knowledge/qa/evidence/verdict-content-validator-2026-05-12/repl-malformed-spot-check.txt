@@ -1,0 +1,10 @@
+/Users/marklehn/Library/Python/3.9/lib/python/site-packages/urllib3/__init__.py:35: NotOpenSSLWarning: urllib3 v2 only supports OpenSSL 1.1.1+, currently the 'ssl' module is compiled with 'LibreSSL 2.8.3'. See: https://github.com/urllib3/urllib3/issues/3020
+  warnings.warn(
+19:49:00 [WARN] verdict file malformed: /var/folders/vf/8nw0z7hj1m34w6z48l5dp54w0000gn/T/tmp69yxv0du/verdicts/resolved/verdict-spotcheck-malformed-step-1.md — first line: 'garbage line' — expected pattern: 'continue', 'stop', 'verdict: continue', or 'verdict: stop' (case-insensitive)
+=== Behavioral Spot-Check #1: Malformed Verdict ===
+Return value: {'found': False}
+Expected:     {"found": False}
+Match: True
+
+Pushover mock called: True
+Pushover call count: 1

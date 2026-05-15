@@ -1,0 +1,1 @@
+401:**Status:** CLOSED 2026-05-11. First identified pre-2026-05-04. Reinforced 4 times in 2026-05-04 session feedback (Backlog Capture DEV, Backlog Capture QA, Monorepo Fix QA, Canary DEV).

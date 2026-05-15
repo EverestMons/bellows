@@ -1,0 +1,4 @@
+434:def _snapshot_file_state(project_path: str) -> dict:
+474:def _diff_file_state(pre: dict, post: dict) -> list:
+493:    """DEPRECATED 2026-05-01: superseded by _snapshot_file_state for parallel-collision immunity. Retained pending full removal after a stability period.
+514:    """DEPRECATED 2026-05-01: superseded by _snapshot_file_state for parallel-collision immunity. Retained pending full removal after a stability period.

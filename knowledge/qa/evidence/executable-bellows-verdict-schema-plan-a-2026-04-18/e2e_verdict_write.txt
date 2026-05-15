@@ -1,0 +1,6 @@
+  PASS: **Project:** /fake/project
+  PASS: **Pause Reason Code:** auto_close_disabled
+  PASS: **Gate Result Passed:** True
+  PASS: **Total Steps:** 1
+
+RESULT: PASS

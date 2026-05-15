@@ -1,0 +1,5 @@
+7acf5df docs: dev log for worktree implementation
+36b2bba fix(bellows): per-plan git worktree for parallel-collision isolation
+605279d qa: verify corrective narrow override fix
+799f908 docs: dev log for corrective narrow override fix
+9786e87 fix(bellows): narrow is_diagnostic step-count override to total_steps==0

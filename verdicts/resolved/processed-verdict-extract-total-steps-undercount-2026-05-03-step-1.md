@@ -1,0 +1,2 @@
+verdict: continue
+Rule 22 verification passed — cause identified with literal evidence: hardcoded `is_diagnostic` override at bellows.py:228-229 and 690-692 forces total_steps=1 for any plan starting with "diagnostic-" prefix. Regex itself works correctly (Phase 2 confirms count of 2 and 3 for the two failing plans). Control case (Phase 3) confirms executable plans count correctly because the override doesn't apply. Shadow cache ruled out (Phase 5). The 2026-04-24 fix (re.IGNORECASE) works as designed; this is a separate bug class. Planner-authorized terminal close.

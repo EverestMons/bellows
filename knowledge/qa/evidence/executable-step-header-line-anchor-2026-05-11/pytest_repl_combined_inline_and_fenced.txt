@@ -1,0 +1,25 @@
+============================================================
+Complementary Class: Combined Fenced + Inline Fixture
+============================================================
+
+--- Fixture (both fenced + inline references in Step 1) ---
+'## STEP 1 — Developer\n\nThis step has inline `## STEP 2` references.\n\nIt also has fenced code blocks referencing Step 2:\n\n```\n## STEP 2 — Bellows QA (fenced)\nThis is inside a fenced code block.\n```\n\nMore prose mentioning `## STEP 2 — Bellows QA` inlin'...
+
+[1] _extract_step_text(plan_text, 2):
+    Return value: '## STEP 2 — Bellows QA\n\nThis is the REAL Step 2 body.\nCombined fixture verifies both inline and fenced references are skipped.\n'...
+    Contains REAL Step 2 body: True
+    RESULT: PASS
+
+[2] _extract_step_text_from_plan(plan_text, 2):
+    Return value: '## STEP 2 — Bellows QA\n\nThis is the REAL Step 2 body.\nCombined fixture verifies both inline and fenced references are skipped.\n'...
+    Contains REAL Step 2 body: True
+    RESULT: PASS
+
+[3] _gate_is_qa_step(plan_text, 2):
+    Return value: True
+    Correctly identifies real Step 2 as QA: True
+    RESULT: PASS
+
+============================================================
+Overall: ALL PASS
+============================================================

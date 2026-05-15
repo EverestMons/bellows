@@ -1,0 +1,9 @@
+Grep for {plan_path} and {inprogress_path} in bellows/bellows.py prompt f-strings:
+
+$ rg '\{plan_path\}|\{inprogress_path\}' bellows/bellows.py
+No matches found
+
+All four prompt construction sites (lines 243, 245, 247, 303) now use {shadow_prompt_path}.
+shadow_prompt_path is set at line 240: shadow_prompt_path = str(_shadow_path(plan_filename))
+
+Confirmed: zero occurrences of mutable path in prompt f-strings.

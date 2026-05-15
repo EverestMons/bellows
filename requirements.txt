@@ -1,0 +1,4 @@
+anthropic
+watchdog
+flask
+requests

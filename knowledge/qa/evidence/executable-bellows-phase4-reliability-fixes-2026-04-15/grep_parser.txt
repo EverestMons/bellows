@@ -1,0 +1,16 @@
+=== parser.py: stop_reason logic ===
+9:    stop_reason = raw.get("stop_reason", "")
+14:    # Infer receipt_status from stop_reason (Phase 4 fix — text scan was unreliable)
+17:    elif stop_reason == "end_turn":
+19:    elif stop_reason == "max_tokens":
+38:        "stop_reason": stop_reason,
+51:        and parsed["stop_reason"] == "end_turn"
+
+=== parser.py: old text-scan loop (should be absent) ===
+(not found — confirmed removed)
+
+=== parser.py: is_error logic ===
+8:    is_error = bool(raw.get("is_error", False))
+15:    if is_error:
+33:    escalate = receipt_status == "Blocked" or bool(ceo_flags) or is_error
+37:        "is_error": is_error,

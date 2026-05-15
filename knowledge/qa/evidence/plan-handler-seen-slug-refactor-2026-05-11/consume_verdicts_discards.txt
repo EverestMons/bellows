@@ -1,0 +1,2 @@
+1030:                                self._seen.discard(cleanup_slug)
+1051:                            self._seen.discard(cleanup_slug)

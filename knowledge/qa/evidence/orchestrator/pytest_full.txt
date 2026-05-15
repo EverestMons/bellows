@@ -1,0 +1,25 @@
+============================= test session starts ==============================
+platform darwin -- Python 3.9.6, pytest-8.4.2, pluggy-1.6.0 -- /Applications/Xcode.app/Contents/Developer/usr/bin/python3
+cachedir: .pytest_cache
+rootdir: /Users/marklehn/Desktop/GitHub/bellows
+plugins: anyio-4.12.1, cov-7.0.0
+collecting ... collected 10 items
+
+tests/test_bellows.py::test_load_config PASSED                           [ 10%]
+tests/test_bellows.py::test_is_final_step PASSED                         [ 20%]
+tests/test_notifier_server.py::test_push_success PASSED                  [ 30%]
+tests/test_notifier_server.py::test_push_failure PASSED                  [ 40%]
+tests/test_notifier_server.py::test_server_respond PASSED                [ 50%]
+tests/test_planner.py::test_consult_continue PASSED                      [ 60%]
+tests/test_planner.py::test_consult_bad_json PASSED                      [ 70%]
+tests/test_runner_parser.py::test_parse_clean_output PASSED              [ 80%]
+tests/test_runner_parser.py::test_parse_blocked_output PASSED            [ 90%]
+tests/test_runner_parser.py::test_run_step_timeout PASSED                [100%]
+
+=============================== warnings summary ===============================
+../../../Library/Python/3.9/lib/python/site-packages/urllib3/__init__.py:35
+  /Users/marklehn/Library/Python/3.9/lib/python/site-packages/urllib3/__init__.py:35: NotOpenSSLWarning: urllib3 v2 only supports OpenSSL 1.1.1+, currently the 'ssl' module is compiled with 'LibreSSL 2.8.3'. See: https://github.com/urllib3/urllib3/issues/3020
+    warnings.warn(
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+======================== 10 passed, 1 warning in 0.77s =========================

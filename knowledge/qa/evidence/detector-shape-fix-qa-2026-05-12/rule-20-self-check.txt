@@ -1,0 +1,6 @@
+============================================================
+Rule 20 — QA Self-Check Results
+============================================================
+PASSED — SELF-CHECK PASSED — all evidence files present, no hedging keywords found.
+Evidence folder: /Users/marklehn/Desktop/GitHub/bellows/knowledge/qa/evidence/detector-shape-fix-qa-2026-05-12/
+Files verified: 3

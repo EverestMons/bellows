@@ -1,0 +1,6 @@
+ bellows/bellows.py                                 |  20 +--
+ ...leanup-slug-normalization-dev-log-2026-05-01.md | 101 ++++++++++++
+ .../knowledge/research/agent-prompt-feedback.md    |  23 +++
+ bellows/tests/test_bellows.py                      |   2 +-
+ bellows/tests/test_consume_verdicts.py             | 180 +++++++++++++++++++++
+ 5 files changed, 316 insertions(+), 10 deletions(-)

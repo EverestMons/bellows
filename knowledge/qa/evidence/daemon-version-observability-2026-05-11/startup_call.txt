@@ -1,0 +1,2 @@
+1179:        for mod_name, fp in sorted(_module_fingerprints().items()):
+1212:                        for mod_name, fp in sorted(_module_fingerprints().items()):

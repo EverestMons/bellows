@@ -1,0 +1,21 @@
+26-class WorktreeTeardownError(Exception):
+27:    """Raised when worktree teardown fails (e.g. cherry-pick conflict)."""
+28-    pass
+29-
+30-from watchdog.observers import Observer
+--
+549-
+550:    Raises WorktreeTeardownError on cherry-pick conflict (worktree left alive for manual resolution).
+551-    """
+552-    # (a) Detect main branch
+553-    main_branch = "main"
+--
+588-            subprocess.run(
+589:                ["git", "--no-pager", "cherry-pick", "--abort"],
+590-                cwd=project_path, capture_output=True, text=True, timeout=10,
+591-            )
+592-            raise WorktreeTeardownError(
+593:                f"cherry-pick conflict on {sha} for slug {slug}: {result.stderr.strip()}"
+594-            )
+595-
+596-    # (d) Copy uncommitted dirty files back

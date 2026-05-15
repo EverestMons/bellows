@@ -1,0 +1,2 @@
+extract_primary_deposit: bellows/knowledge/research/permission-prompt-substrate-2026-04-23.md
+_extract_plan_required_deposits: {'bellows/knowledge/research/permission-prompt-substrate-2026-04-23.md'}

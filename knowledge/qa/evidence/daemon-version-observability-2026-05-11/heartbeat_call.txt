@@ -1,0 +1,11 @@
+DB_PATH = str(BELLOWS_ROOT / "bellows.db")
+SHADOW_CACHE_DIR = BELLOWS_ROOT / ".bellows-cache"
+MODULE_FINGERPRINT_HEARTBEAT_INTERVAL = 10
+
+
+--
+                if time.time() - last_heartbeat >= 60:
+                    print(f"Bellows: heartbeat — {datetime.now().strftime('%H:%M:%S')}")
+                    if heartbeat_counter % MODULE_FINGERPRINT_HEARTBEAT_INTERVAL == 0:
+                        for mod_name, fp in sorted(_module_fingerprints().items()):
+                            print(f"  Module: {mod_name} @ {fp}")

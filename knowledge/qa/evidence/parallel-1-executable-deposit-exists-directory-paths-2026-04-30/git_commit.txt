@@ -1,0 +1,9 @@
+commit e609ad3643b1577b63120618138604efb310119b
+Author: Mark Lehn <marklehn@icloud.com>
+Date:   Thu Apr 30 15:46:15 2026 -0500
+
+    fix(gates): _resolve_deposit_path accepts directory paths (BACKLOG #11)
+    
+    Co-Authored-By: Claude Opus 4.6 <noreply@anthropic.com>
+
+bellows/gates.py

@@ -1,0 +1,57 @@
+===== GOVERNANCE EDITS APPLIED — disable-auto-close-2026-04-24 Step 3 =====
+Date: 2026-04-24
+File: /Users/marklehn/Desktop/GitHub/PLANNER_TEMPLATE.md
+Version bumped: 4.26 → 4.27, Last Updated: 2026-04-20 → 2026-04-24
+
+===== EDIT 2.1 — Rule 8, Final-Step Ordering (L447) =====
+APPLIED. Changed "four things" to "three things", removed "(4) move the plan file to Done", removed "move plan to Done" from ordering sequence, added "The agent does NOT move the plan to Done — the Planner performs that move after Rule 22 verification passes", changed "does NOT move to Done" to "does NOT close".
+
+Post-edit text (L447):
+The last step in every executable plan (always the QA step) must do three things in order: (1) **deliverable verification** (Rule 17), (2) deposit the QA report, (3) update `PROJECT_STATUS.md` with a summary of all changes made across the plan. The QA agent has the full picture of what was implemented — it is the right agent to write the status update. The ordering within the final step's prompt must be: **deliverable verification → QA deposit → PROJECT_STATUS.md update → feedback append → final commit.** The agent does NOT move the plan to Done — the Planner performs that move after Rule 22 verification passes. If any deliverable verification item is ❌ MISSING, the plan does NOT close — the agent attempts to fix the missing items or flags as blocked.
+
+===== EDIT 2.2 — Rule 8, PROJECT_STATUS.md Update Instruction (L451) =====
+APPLIED. Removed "Then move this plan to Done" instruction, added "STOP. Do NOT move this plan to Done/. Per the disable-auto-close model, the Planner performs the terminal move after Rule 22 verification passes."
+
+Post-edit text (L451):
+**PROJECT_STATUS.md update instruction (include in final QA step):** `**Final:** Update PROJECT_STATUS.md — add a completed milestone entry summarizing all changes from this plan (features added, files changed, tests added). Commit with descriptive message. **STOP.** Do NOT move this plan to Done/. Per the disable-auto-close model, the Planner performs the terminal move after Rule 22 verification passes.`
+
+===== EDIT 2.3 — Rule 8, Housekeeping Ordering Paragraph (L453) =====
+APPLIED. Removed "→ move-to-Done — move-to-Done is always the absolute last operation" from ordering. Replaced entire rationale paragraph with Failure 3 context.
+
+Post-edit text (L453):
+**Per Rule 23 (housekeeping discipline), the order is feedback append → final commit.** The final commit is the absolute last agent operation. The Planner performs the move-to-Done after Rule 22 verification passes — this is a Planner responsibility, not an agent responsibility. If feedback append fails, the plan correctly strands and the failure is visible. If commit fails, same thing. Separating the agent's final commit from the Planner's move-to-Done eliminates the Failure 3 ordering issue where agents moved plans to Done/ before Bellows evaluated gates, producing stranded verdict requests for already-shipped work.
+
+===== EDIT 2.4 — Rule 8, Diagnostic Plans Paragraph Final Sentence (L455) =====
+APPLIED. Removed "→ move plan to Done" from ordering sequence, added "The agent does NOT move the plan to Done. The Planner performs the terminal move after Rule 22 verification passes — the same pattern diagnostic plans already follow."
+
+Post-edit text (L455, final sentence):
+Rule 8 (this rule) continues to govern executable plans only: the final QA step in every executable does deliverable verification → QA deposit → PROJECT_STATUS.md update → feedback append → final commit, in that order (per Rule 23). The agent does NOT move the plan to Done. The Planner performs the terminal move after Rule 22 verification passes — the same pattern diagnostic plans already follow.
+
+===== EDIT 2.5 — Rule 23, Title (L647) =====
+APPLIED. Removed "→ move-to-Done" from title.
+
+Post-edit text (L647):
+### 23. End-of-plan housekeeping must use anchored edits, enumerated sub-steps, and the order: feedback → commit
+
+===== EDIT 2.6 — Rule 23, Paragraph (c) (L655) =====
+APPLIED. Replaced entire paragraph (c) with new text removing agent move-to-Done responsibility.
+
+Post-edit text (L655):
+**(c) Ordering: feedback → commit.** The final commit is the absolute last agent operation. The Planner performs the move-to-Done after Rule 22 verification passes — this is a Planner responsibility, not an agent responsibility. If feedback append fails, the plan correctly strands and the failure is visible. If commit fails, same thing. The agent never moves the plan to Done; the Planner does, via `Filesystem:move_file`, after verifying the deposited files pass Rule 22's (a)–(e) checks.
+
+===== EDIT 2.7 — Rule 25, Terminal-Step Resolution Insert (after L703) =====
+APPLIED. Inserted two new paragraphs between "Rule 22 routing on auto-proceed codes" and "Gate-failure guard" paragraphs:
+1. "Terminal-step resolution and Planner-owned Done/ move" — 4-step resolution sequence
+2. "Non-terminal steps with `auto_close_disabled`" — clarification that mid-plan steps use existing routing
+
+Post-edit text (L705-714):
+**Terminal-step resolution and Planner-owned Done/ move:** When a verdict request has `auto_close_disabled` as its Pause Reason Code AND the step is the terminal step (step number equals total steps as declared in the verdict request's `**Total Steps:**` field), a clean Rule 22 pass authorizes the Planner to perform the terminal move. The resolution sequence is:
+
+1. Perform Rule 22 (a)–(e) verification on all deposits declared in the plan's `**Deposits:**` block for that step.
+2. If Rule 22 passes: move the plan file from `[project]/knowledge/decisions/verdict-pending-[slug].md` (or `in-progress-[slug].md`) to `[project]/knowledge/decisions/Done/[slug].md` via `Filesystem:move_file`, stripping the lifecycle prefix (`in-progress-`, `verdict-pending-`). Tool call pattern: `Filesystem:move_file(source: "[project]/knowledge/decisions/verdict-pending-executable-[name].md", destination: "[project]/knowledge/decisions/Done/executable-[name].md")`.
+3. Resolve the Bellows verdict by depositing a verdict file to `bellows/verdicts/resolved/verdict-[slug]-step-[N].md` with content `continue\nRule 22 passed — Planner-authorized terminal close.`
+4. Report the resolution to the CEO.
+
+This stays within the Planner's declared filesystem access scope: file renames within `[project]/knowledge/decisions/` are explicitly allowed (see "What the Planner CAN write" — "File renames within `[project]/knowledge/decisions/`"). The `Done/` subdirectory is inside `knowledge/decisions/`.
+
+**Non-terminal steps with `auto_close_disabled`:** For mid-plan steps (step < total steps), the existing Rule 25 routing applies unchanged: auto-proceed to Rule 22 verification, report result to CEO, CEO resolves the verdict. The Planner does NOT perform a Done/ move for non-terminal steps.

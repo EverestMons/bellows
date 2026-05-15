@@ -1,0 +1,11 @@
+commit ebdc544fa7678d6a13c3703259f882963e9cb36a
+Author: Mark Lehn <marklehn@icloud.com>
+Date:   Thu Apr 30 15:46:21 2026 -0500
+
+    docs: BACKLOG hygiene sweep — close 3 carried items reverified against live code
+    
+    Co-Authored-By: Claude Opus 4.6 <noreply@anthropic.com>
+
+bellows/PROJECT_STATUS.md
+bellows/knowledge/BACKLOG.md
+bellows/knowledge/development/backlog-hygiene-sweep-dev-log-2026-04-30.md

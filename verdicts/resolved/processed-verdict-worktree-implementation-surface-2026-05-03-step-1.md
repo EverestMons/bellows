@@ -1,0 +1,2 @@
+verdict: continue
+Rule 22 verification passed — Phase A1-A8 surface map complete with literal line numbers, code excerpts, and elimination of PID-filtering candidate (e) on macOS-with-SIP grounds. Bellows parsed plan as 1-step despite three ## STEP headers in the file (parser bug, captured in BACKLOG). Step 2 and Step 3 of the original three-step plan will be authored as separate 1-step plans citing this Step 1's deposit as input. Planner-authorized terminal close.

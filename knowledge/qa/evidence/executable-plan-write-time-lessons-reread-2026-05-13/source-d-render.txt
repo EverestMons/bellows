@@ -1,0 +1,28 @@
+Source D Live Render Check — PLANNER_TEMPLATE.md lines 60–100
+Captured: 2026-05-13
+Plan: executable-plan-write-time-lessons-reread-2026-05-13, Step 2 (QA)
+
+---
+
+Lines 74–81 (Source D section with new paragraph):
+
+74: **Source D — Cross-project lessons:**
+75: - `/Users/marklehn/Desktop/GitHub/LESSONS.md`
+76: (blank)
+77: Bounded scope to keep read cost cheap as the file grows:
+78: - **All entries from the last ~14 days** (catches recent lessons before they fade)
+79: - **All entries tagged `planner-discipline`** regardless of age (catches discipline rules permanently)
+80: (blank)
+81: **Plan-write-time discipline (re-read trigger):** The session-start read of `planner-discipline` entries is insufficient on its own. Captured lessons fade under task-specific cognitive load. Before authoring any plan that involves housekeeping operations — PROJECT_STATUS edits, verdict file deposits, plan moves to Done/, governance-file edits, multi-step commit orderings, or any Bellows-side artifact with a strict contract (verdict response, deposit block reference, plan header, Rule 20 banner) — the Planner re-reads the 5 most recent `planner-discipline`-tagged entries from `/Users/marklehn/Desktop/GitHub/LESSONS.md`. This is a targeted re-read, not a full Phase 1.5 refresh. The read is mechanical: open the file, scan for the tag, read the last 5 entries with that tag, note any whose mitigation guidance applies to the plan being drafted. Cost: ~30 seconds. Prevents the recurrence pattern captured 2026-05-13 (third reproduction of the `pending/` vs `resolved/` verdict-directory error within three days; the originating lesson was in context at session start but not consulted at the decision point).
+
+---
+
+Render assessment:
+- Bold header **Plan-write-time discipline (re-read trigger):** renders correctly
+- Inline backticks (`planner-discipline`, `LESSONS.md`, `pending/`, `resolved/`) all properly delimited
+- Em-dashes (—) used correctly, no accidental hyphens
+- No broken markdown, no accidentally-escaped backticks
+- Paragraph flows cleanly after the existing bullet point at line 79
+- Subsequent paragraphs (lines 82–89) unaffected by the insertion
+
+Verdict: CLEAN — no rendering issues detected.

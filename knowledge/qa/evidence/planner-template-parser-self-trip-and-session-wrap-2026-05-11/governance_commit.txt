@@ -1,0 +1,2 @@
+4e54c02 docs(planner): v4.38 -- parser self-trip warning, session-wrap hygiene
+75904fd docs(planner): Rule 26 evidence-path tightening, v4.37

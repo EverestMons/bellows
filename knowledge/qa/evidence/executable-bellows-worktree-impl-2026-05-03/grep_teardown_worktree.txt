@@ -1,0 +1,1 @@
+547:def _teardown_worktree(project_path: str, wt_path: str, slug: str) -> None:

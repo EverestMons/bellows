@@ -1,0 +1,15 @@
+=== (a) grep -n READ_CLASS_TOOLS gates.py ===
+20:READ_CLASS_TOOLS = {"Grep", "Glob", "Read"}
+112:            if tool_name in READ_CLASS_TOOLS:
+
+=== (b) grep -n blocking gates.py ===
+108:    blocking = []
+114:            blocking.append(d)
+116:            # String-form denial (legacy) has no tool_name — default to blocking
+117:            blocking.append(d)
+118:    if blocking:
+119:        first = blocking[0] if isinstance(blocking[0], str) else str(blocking[0])
+122:            "evidence": f"{len(blocking)} blocking denial(s): {first}",
+
+=== (c) grep -c test_permission_denials_ tests/test_gates.py ===
+8

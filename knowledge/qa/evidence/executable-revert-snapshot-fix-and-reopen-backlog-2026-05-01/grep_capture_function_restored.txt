@@ -1,0 +1,5 @@
+295:        pre_diff = _capture_git_diff(project_path)
+311:        post_diff = _capture_git_diff(project_path)
+351:            pre_diff = _capture_git_diff(project_path)
+369:            post_diff = _capture_git_diff(project_path)
+434:def _capture_git_diff(project_path: str) -> str:

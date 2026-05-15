@@ -1,0 +1,4 @@
+716:                        cleanup_slug = verdict.slug_from_path(original_name)
+743:                                _cleanup_verdicts_for_slug(cleanup_slug)
+763:                            _cleanup_verdicts_for_slug(cleanup_slug)
+775:                pending_file = BELLOWS_ROOT / "verdicts" / "pending" / f"verdict-request-{cleanup_slug}-step-{step_number}.md"

@@ -1,0 +1,3 @@
+PASS: Open section at line 7, Closed at line 27
+PASS: New Open entry at line 9 (correctly in Open section)
+PASS: New Closed entry at line 29 (correctly in Closed section)

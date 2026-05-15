@@ -1,0 +1,1 @@
+491:def test_capture_git_diff_uses_relative_pathspec():

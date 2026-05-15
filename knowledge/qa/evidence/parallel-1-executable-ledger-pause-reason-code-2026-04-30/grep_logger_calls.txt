@@ -1,0 +1,4 @@
+413:            verdict.log_to_ledger(plan_path, current_step, gate_result, "auto-close",
+729:                                verdict.log_to_ledger(full_plan_path, step_number, gate_result,
+743:                                verdict.log_to_ledger(full_plan_path, step_number, gate_result, v, reason,
+752:                            verdict.log_to_ledger(full_plan_path, step_number, gate_result, v, reason,

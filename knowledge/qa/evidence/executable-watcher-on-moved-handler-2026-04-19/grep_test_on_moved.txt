@@ -1,0 +1,7 @@
+1017:# on_moved handler — BACKLOG #4 watcher reliability fix
+1020:def test_on_moved_dispatches_for_non_directory_event():
+1021:    """on_moved must call _handle with event.dest_path for non-directory events."""
+1031:        handler.on_moved(event)
+1036:def test_on_moved_ignores_directory_events():
+1037:    """on_moved must NOT call _handle for directory events."""
+1047:        handler.on_moved(event)

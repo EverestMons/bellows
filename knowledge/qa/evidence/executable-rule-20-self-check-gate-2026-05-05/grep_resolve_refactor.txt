@@ -1,0 +1,21 @@
+def _resolve_deposit_path(path, project_path):
+    """Check if a deposit path exists, trying multiple path resolution strategies.
+
+    Returns the resolved absolute path string if the path exists (as a file or
+    directory) at any of the following, or None if not found:
+      1. path as-is (absolute or CWD-relative)
+      2. os.path.join(project_path, path) — relative to project root
+      3. os.path.join(os.path.dirname(project_path), path) — path includes project dir name
+    """
+    if os.path.isfile(path) or os.path.isdir(path):
+        return os.path.abspath(path)
+    p2 = os.path.join(project_path, path)
+    if os.path.isfile(p2) or os.path.isdir(p2):
+        return os.path.abspath(p2)
+    p3 = os.path.join(os.path.dirname(project_path), path)
+    if os.path.isfile(p3) or os.path.isdir(p3):
+        return os.path.abspath(p3)
+    return None
+
+
+def _gate_deposit_exists(parsed, failures, project_path, plan_text=None, step_number=None):

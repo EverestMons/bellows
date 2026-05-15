@@ -1,0 +1,3 @@
+2952:def test_module_fingerprints_returns_all_five_modules():
+2958:def test_module_fingerprints_handles_git_failure():
+2971:def test_module_fingerprints_fallback_to_unknown_on_unexpected_error():

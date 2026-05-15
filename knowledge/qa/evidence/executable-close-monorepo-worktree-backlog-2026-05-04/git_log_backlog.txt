@@ -1,0 +1,5 @@
+9f04b59 docs: backlog — close 2026-05-04 monorepo-worktree-at-governance-root entry
+4c056db docs: backlog — capture monorepo-worktree-at-governance-root structural fix item
+f2b1a50 docs: session wrap 2026-05-03 — PROJECT_STATUS, BACKLOG OP-001 closed, feedback log OP-001 marked CLOSED
+f7eae84 docs(backlog): remove stale Open entry for step-count regression (cherry-pick added Closed but didn't remove Open)
+b20e2e6 docs(backlog): close 2026-05-03 step-count regression — fixed by 9786e87

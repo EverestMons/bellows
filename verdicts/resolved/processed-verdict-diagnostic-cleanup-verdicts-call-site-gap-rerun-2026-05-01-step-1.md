@@ -1,0 +1,2 @@
+verdict: continue
+Rule 22 passed — Planner-authorized terminal close. Diagnostic deposited 51-file characterization table identifying slug normalization mismatch as root cause (not the call-site gap the BACKLOG entry hypothesized). Q3 traces the bug end-to-end through 7 steps; Q4 recommends slug normalization in _consume_verdicts via slug_from_path(original_name) plus removing Done/ exclusion from startup sweep. End-to-end trace confirms fix prevents the observed bug; second-order check confirms fix is robust to both Planner verdict-filename conventions.

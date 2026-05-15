@@ -1,0 +1,21 @@
+=== (a) gates.py contains def _extract_step_text ===
+155:def _extract_step_text(plan_text: str, step_number: int):
+
+=== (b) _gate_deposit_exists calls _extract_step_text ===
+148:        step_text = _extract_step_text(plan_text, step_number)
+155:def _extract_step_text(plan_text: str, step_number: int):
+220:    step_text = _extract_step_text(plan_text, step_number)
+
+=== (c) _gate_scope_check calls _extract_step_text (expect 2 matches from (b)+(c)) ===
+3
+(count above should be 2)
+
+=== (d) _extract_plan_required_deposits contains Deposits: pattern ===
+169:    If a **Deposits:** block (Rule 26 convention) is present, extracts only the
+173:    # Rule 26: prefer declared **Deposits:** block when present
+174:    block_match = re.search(r'\*\*Deposits:\*\*\s*\n((?:\s*-\s+.*\n?)+)', step_text)
+
+=== (e) verdict.py contains scoping fix ===
+19:def _extract_step_text_from_plan(plan_text: str, step_number: int):
+97:    current_step_text = _extract_step_text_from_plan(step_text, step_number) or step_text
+108:        f"**Deposit:** {extract_primary_deposit(current_step_text) or 'none'}\n"

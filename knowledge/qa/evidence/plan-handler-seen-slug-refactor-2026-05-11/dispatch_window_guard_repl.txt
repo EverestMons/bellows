@@ -1,0 +1,15 @@
+/Users/marklehn/Library/Python/3.9/lib/python/site-packages/urllib3/__init__.py:35: NotOpenSSLWarning: urllib3 v2 only supports OpenSSL 1.1.1+, currently the 'ssl' module is compiled with 'LibreSSL 2.8.3'. See: https://github.com/urllib3/urllib3/issues/3020
+  warnings.warn(
+=== Dispatch-Window Guard Regression ===
+
+Test path: /tmp/test-decisions/executable-test-plan-2026-05-11.md
+Slug: test-plan-2026-05-11
+Added slug to _seen. _seen = {'test-plan-2026-05-11'}
+handle_new_plan called: False
+Guard held (expected True): True
+
+Testing _rescan double-dispatch protection...
+handle_new_plan called on rescan: False
+Rescan guard held (expected True): True
+
+RESULT: PASS — dispatch-window guard blocks double-dispatch via both _handle and _rescan

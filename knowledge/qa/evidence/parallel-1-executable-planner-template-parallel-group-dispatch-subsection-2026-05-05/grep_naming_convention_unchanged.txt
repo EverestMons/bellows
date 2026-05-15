@@ -1,0 +1,7 @@
+385:**Parallel plan groups** use a numbered prefix to signal they are safe to run simultaneously:
+386-- `parallel-1-executable-[feature-A]-[YYYY-MM-DD].md`
+387-- `parallel-1-executable-[feature-B]-[YYYY-MM-DD].md`
+388-- `parallel-1-executable-[feature-C]-[YYYY-MM-DD].md`
+389-
+390-All plans sharing the same `parallel-N-` number belong to the same parallel group and can be run at the same time. The number identifies the group, not the execution order — `parallel-1-` means "group 1", not "run first". The Planner is responsible for verifying no file-level conflicts exist before assigning the parallel prefix — if two plans both modify the same source file, template, or schema, they cannot share a group number and must be sequential. The parallel prefix is a guarantee, not a suggestion: a user seeing matching group numbers should be able to run them simultaneously without risk of conflict.
+391-

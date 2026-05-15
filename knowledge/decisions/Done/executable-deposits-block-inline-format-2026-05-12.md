@@ -1,0 +1,58 @@
+# Bellows — Fix `_extract_plan_required_deposits` Inline-Format Support
+**Date:** 2026-05-12 | **Tier:** Executable | **Test Scope:** targeted — single-function change in `_extract_plan_required_deposits`, one new regression test, no cross-bucket regression risk | **Execution:** Step 1 (DEV) → Step 2 (QA) | **pause_for_verdict:** after_step_1
+
+## How to Run This Plan
+
+Paste the bootstrap prompt into Claude Code. The agent reads the full plan file and executes Step 1 ONLY. After completing Step 1, the agent STOPS and waits for CEO confirmation ("ok") before proceeding to Step 2. The agent must never skip steps, auto-chain, or move the plan to Done — the Planner performs Rule 22 verification and the Done/ move.
+
+## CEO Context
+
+SA findings at `bellows/knowledge/architecture/rule-20-gate-false-positive-2026-05-12.md` identified the root cause of the 2026-05-12 `rule_20_self_check` false positive: `_extract_plan_required_deposits` in `gates.py` (line 274) requires a newline after `**Deposits:**` before scanning for bullet lines. When the Planner emits an inline format with bullets on the same line as the `**Deposits:**` marker (e.g., `` **Deposits:** `- /path/a`, `- /path/b`. ``), the block regex returns no match, all three legacy fallback patterns also fail, and the function returns an empty deposit set. Downstream gates (`rule_20_self_check`, `deposit_exists`) then conclude no deposits were declared and report failure.
+
+Fix: extend the block regex (or add a second branch) to also handle the inline format. The parser should be robust to either Planner output shape because the Planner is generative and may produce either. Code change is ~5–8 production LOC plus one new regression test.
+
+The SA's population audit confirmed the failure is specific to this plan — every prior bellows plan uses multi-line format. The fix is forward-looking robustness, not a fix for an active regression elsewhere.
+
+Test Scope: targeted — single function in `gates.py`, one new regression test in `test_gates.py`. The fix does not touch plan-text parsers (`_extract_step_text`, `_gate_is_qa_step`, `extract_total_steps`, `_extract_step_text_from_plan`, `strip_fenced_code_blocks`) so the Restart Discipline parser self-trip pattern does NOT apply. This plan uses multi-line Deposits format below, so it will not trip its own bug during close.
+
+### Out of Scope (explicit)
+
+- Do NOT modify the banner search path in `_gate_rule_20_self_check` (lines ~315-348 of `gates.py`). The SA flagged a latent fragility — if `strip_fenced_code_blocks()` were ever added to the banner search path, ALL historical QA reports would false-negative because banners always sit inside fenced code blocks. Leave the banner search path alone.
+- Do NOT modify other call sites of `_extract_plan_required_deposits` (e.g., `extract_primary_deposit` in `verdict.py`).
+- Do NOT modify the three legacy prose fallback patterns at lines 286, 290, 296. They are not the failure surface.
+- Do NOT add or remove gates. Do NOT modify gate composition in `gates.check()`.
+
+---
+---
+
+## STEP 1 — DEV
+
+---
+
+> **FIRST — before doing anything else, claim this plan:** `import shutil; shutil.move("/Users/marklehn/Desktop/GitHub/bellows/knowledge/decisions/executable-deposits-block-inline-format-2026-05-12.md", "/Users/marklehn/Desktop/GitHub/bellows/knowledge/decisions/in-progress-executable-deposits-block-inline-format-2026-05-12.md")`.
+>
+> You are the Bellows Developer. Read your specialist file at `bellows/agents/BELLOWS_DEVELOPER.md` first. Skip the domain glossary — Bellows has no glossary. **Task:** extend `_extract_plan_required_deposits` in `bellows/gates.py` (function at lines 265-298, block regex at line 274) to handle the inline-format `**Deposits:**` block in addition to the existing multi-line format. The inline format places bullets on the same line as the `**Deposits:**` marker, comma-separated, each path individually backtick-wrapped: `` **Deposits:** `- /path/a`, `- /path/b`. ``. The current block regex `r'[> ]*\*\*Deposits:\*\*\s*\n(?:[> ]*\n)*((?:[> ]*-\s+.*\n?)+)'` requires `\s*\n` after `**Deposits:**` and does not match the inline shape. Fix shape (your choice within these constraints): either (a) modify the block regex to optionally accept inline content before the newline, OR (b) add a second branch that runs only when the block regex fails — searches the same line as `**Deposits:**` for backtick-wrapped path tokens via a separate regex. Either approach should: (i) extract paths from inline format using the same path-extraction logic the block branch uses (regex `r'-\s+\`([^\`]+)\`'` or equivalent backtick-token extraction), (ii) feed extracted paths through the existing post-extraction filter (`p.endswith(".md")` check happens downstream — leave that alone), (iii) NOT alter behavior for the existing multi-line format. Read the function in full before editing to understand the legacy fallback patterns and ensure the new branch precedes the legacy patterns (so inline-format plans don't accidentally hit a legacy match). **Test:** add ONE regression test to `bellows/tests/test_gates.py` named `test_extract_plan_required_deposits_inline_format` (or similar). The test should construct a step-text fixture containing `` **Deposits:** `- /Users/marklehn/path/a.md`, `- /Users/marklehn/path/b/`. `` (matching the actual format used by the 2026-05-12 wontfix-close plan, including the trailing period and the directory-trailing-slash variant), call `_extract_plan_required_deposits` against it, and assert the returned set contains both paths. Also include an existing-format regression test if one doesn't already exist — if `test_gates.py` already covers the multi-line case, do NOT add a duplicate; if it doesn't, add `test_extract_plan_required_deposits_multiline_format` to lock the current behavior. **Run targeted tests:** `cd /Users/marklehn/Desktop/GitHub/bellows && python3 -m pytest tests/test_gates.py -v`. All tests must pass. Capture the output. **Commit:** `cd /Users/marklehn/Desktop/GitHub/bellows && git --no-pager add gates.py tests/test_gates.py && git --no-pager commit -m "fix(gates): _extract_plan_required_deposits handles inline **Deposits:** format"`. Do NOT push. **Dev log:** write a brief dev log to `/Users/marklehn/Desktop/GitHub/bellows/knowledge/development/deposits-block-inline-format-dev-log-2026-05-12.md` capturing: which fix shape you chose (a or b), the exact lines changed in `gates.py` with line numbers, the new test names, the commit SHA, and an Output Receipt.
+>
+> **Deposits:**
+> - `/Users/marklehn/Desktop/GitHub/bellows/knowledge/development/deposits-block-inline-format-dev-log-2026-05-12.md`
+>
+> Standard prompt feedback protocol → `bellows/knowledge/research/agent-prompt-feedback.md`.
+>
+> **STOP. Do NOT proceed to Step 2. Do NOT move the plan to Done. Wait for CEO confirmation before continuing.**
+
+---
+---
+
+## STEP 2 — QA
+
+---
+
+> Before starting, read `/Users/marklehn/Desktop/GitHub/bellows/knowledge/decisions/in-progress-executable-deposits-block-inline-format-2026-05-12.md` and check the Output Receipt status from Step 1. If status is not Complete, stop and report the blocker before proceeding.
+>
+> You are the Bellows QA Analyst. Read your specialist file at `bellows/agents/BELLOWS_QA.md` first. Skip the domain glossary. **Verify the parser fix lands cleanly.** **Check 1 — Targeted test suite passes.** Run `cd /Users/marklehn/Desktop/GitHub/bellows && python3 -m pytest tests/test_gates.py -v` and confirm zero failures. Write output to `/Users/marklehn/Desktop/GitHub/bellows/knowledge/qa/evidence/deposits-block-inline-format-2026-05-12/pytest_targeted.txt`. **Check 2 — New regression test present and passes.** Grep the pytest output from Check 1 for `test_extract_plan_required_deposits_inline_format` (or the closest matching name from the dev log) — confirm exactly one PASS line. Write the matched line to `/Users/marklehn/Desktop/GitHub/bellows/knowledge/qa/evidence/deposits-block-inline-format-2026-05-12/new_test_passed.txt`. **Check 3 — Behavioral regression via direct Python.** Construct the actual inline fixture from the 2026-05-12 wontfix-close plan and verify the parser now extracts both paths. Run: `cd /Users/marklehn/Desktop/GitHub/bellows && python3 -c "from gates import _extract_plan_required_deposits; result = _extract_plan_required_deposits('## STEP 2\n\nfoo bar\n\n**Deposits:** \`- /Users/marklehn/path/a.md\`, \`- /Users/marklehn/path/b/\`.\n'); print(sorted(result))"`. Confirm output contains both `/Users/marklehn/path/a.md` and `/Users/marklehn/path/b/`. Write command and output to `/Users/marklehn/Desktop/GitHub/bellows/knowledge/qa/evidence/deposits-block-inline-format-2026-05-12/behavioral_check.txt`. **Check 4 — Multi-line format still works.** Run: `cd /Users/marklehn/Desktop/GitHub/bellows && python3 -c "from gates import _extract_plan_required_deposits; result = _extract_plan_required_deposits('## STEP 2\n\nfoo bar\n\n**Deposits:**\n- \`/Users/marklehn/path/a.md\`\n- \`/Users/marklehn/path/b/\`\n'); print(sorted(result))"`. Confirm output contains both paths. Write to `/Users/marklehn/Desktop/GitHub/bellows/knowledge/qa/evidence/deposits-block-inline-format-2026-05-12/multiline_regression.txt`. **Check 5 — Commit shipped with exact subject and only intended files.** Run `cd /Users/marklehn/Desktop/GitHub/bellows && git --no-pager log -1 --format="%H %s%n%n%b"` and confirm subject is exactly `fix(gates): _extract_plan_required_deposits handles inline **Deposits:** format`. Run `cd /Users/marklehn/Desktop/GitHub/bellows && git --no-pager log -1 --stat` and confirm exactly two files in diff: `gates.py` and `tests/test_gates.py`. Concatenate both outputs and write to `/Users/marklehn/Desktop/GitHub/bellows/knowledge/qa/evidence/deposits-block-inline-format-2026-05-12/commit_verification.txt`. **Write the QA report** to `/Users/marklehn/Desktop/GitHub/bellows/knowledge/qa/deposits-block-inline-format-qa-2026-05-12.md` with a verification table covering all 5 checks, each citing its evidence file path; the report header must declare `plan_slug: executable-deposits-block-inline-format-2026-05-12`, `qa_report_path: /Users/marklehn/Desktop/GitHub/bellows/knowledge/qa/deposits-block-inline-format-qa-2026-05-12.md`, `evidence_dir: /Users/marklehn/Desktop/GitHub/bellows/knowledge/qa/evidence/deposits-block-inline-format-2026-05-12/`, `required_evidence_files: pytest_targeted.txt, new_test_passed.txt, behavioral_check.txt, multiline_regression.txt, commit_verification.txt`. **Rule 20 self-check.** Read `/Users/marklehn/Desktop/GitHub/RULE_20_SELF_CHECK_BLOCK.md`, copy the canonical Python block, fill in the four placeholders with the values above, run it, include the literal stdout in the QA report. If FAILED, stop and report; if PASSED, proceed. **Housekeeping in order.** Step A — feedback append to `bellows/knowledge/research/agent-prompt-feedback.md` per standard protocol. Step B — final commit: `cd /Users/marklehn/Desktop/GitHub/bellows && git --no-pager add knowledge/qa/deposits-block-inline-format-qa-2026-05-12.md knowledge/qa/evidence/deposits-block-inline-format-2026-05-12/ knowledge/research/agent-prompt-feedback.md && git --no-pager commit -m "qa: deposits-block inline-format fix verification + feedback"`. The Planner performs the Done/ move after Rule 22 verification — do NOT move this plan to Done yourself.
+>
+> **Deposits:**
+> - `/Users/marklehn/Desktop/GitHub/bellows/knowledge/qa/deposits-block-inline-format-qa-2026-05-12.md`
+> - `/Users/marklehn/Desktop/GitHub/bellows/knowledge/qa/evidence/deposits-block-inline-format-2026-05-12/`
+
+---

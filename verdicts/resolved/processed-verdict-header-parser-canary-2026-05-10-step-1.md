@@ -1,0 +1,2 @@
+verdict: continue
+Canary Step 1 verified. Marker file exists at expected path (35 bytes, 23:09:54). Header parse worked correctly post-restart — pause_reason_code is header_pause, not auto_close_disabled. All four assertions hold: (1) plan has 2 steps, (2) no "no pause_for_verdict header" warning, (3) no "sparse header" defensive default warning, (4) clean pause after Step 1. Parser fix is live. Dispatching Step 2.

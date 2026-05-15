@@ -1,0 +1,6 @@
+ bellows/bellows.py                                 |  30 ------
+ .../remove-phase-3b-3c-dev-log-2026-05-01.md       |  72 +++++++++++++
+ .../knowledge/research/agent-prompt-feedback.md    |  18 ++++
+ bellows/tests/test_bellows.py                      | 114 ---------------------
+ bellows/tests/test_consume_verdicts.py             |  94 +++++++++++++++++
+ 5 files changed, 184 insertions(+), 144 deletions(-)

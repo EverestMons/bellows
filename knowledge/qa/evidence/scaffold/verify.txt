@@ -1,0 +1,28 @@
+Bellows Scaffold — QA Verification
+Date: 2026-04-13
+Step 1 commit: 64b78f7 chore: scaffold bellows repo
+
+--- File / Directory Checks ---
+OK | bellows.py
+OK | runner.py
+OK | parser.py
+OK | planner.py
+OK | notifier.py
+OK | config.json
+OK | requirements.txt
+OK | CLAUDE.md
+OK | PROJECT_STATUS.md
+OK | .gitignore
+OK | knowledge/decisions/Done/
+OK | knowledge/architecture/
+OK | knowledge/development/
+OK | knowledge/qa/
+OK | knowledge/research/
+
+--- Structural Checks ---
+OK | config.json valid JSON
+OK | bellows.db has runs table
+Tables: [('runs',)]
+
+--- Result ---
+ALL CHECKS PASSED

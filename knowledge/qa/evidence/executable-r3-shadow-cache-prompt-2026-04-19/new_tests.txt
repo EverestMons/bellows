@@ -1,0 +1,36 @@
+New/modified test functions in bellows/tests/test_bellows.py:
+
+1. RENAMED: test_run_plan_bootstrap_prompt_uses_shadow_path (was test_run_plan_bootstrap_prompt_uses_inprogress_path)
+   - Asserts ".bellows-cache/" in bootstrap prompt
+   - Asserts ".pristine" in bootstrap prompt
+   - Asserts "in-progress-" NOT in bootstrap prompt
+
+2. UPDATED: test_run_plan_resume_step_uses_correct_prompt
+   - Updated with shadow path assertions
+
+3. NEW: test_run_plan_continuation_prompt_uses_shadow_path
+   - 2-step plan, captures second prompt (continuation)
+   - Asserts ".bellows-cache/" in continuation prompt
+   - Asserts ".pristine" in continuation prompt
+   - Asserts "in-progress-" NOT in continuation prompt
+   - Asserts "Step 2" in continuation prompt
+
+4. NEW: test_run_plan_diagnostic_prompt_uses_shadow_path
+   - Diagnostic plan (diagnostic- prefix)
+   - Asserts "Read the diagnostic at" in bootstrap
+   - Asserts ".bellows-cache/" in diagnostic prompt
+   - Asserts ".pristine" in diagnostic prompt
+
+5. NEW: test_run_plan_resume_prompt_uses_shadow_path
+   - Exercises verdict-continue resume path (resume_step=2)
+   - Asserts ".bellows-cache/" in resume prompt
+   - Asserts ".pristine" in resume prompt
+   - Asserts "Step 2" in resume prompt
+
+6. NEW: test_shadow_path_resolves_after_claim
+   - Verifies shadow file exists with pristine content during runner execution
+   - Captures shadow file state inside fake_run_step callback
+
+All 6 tests cover the four prompt variants (diagnostic, resume, fresh, continuation) plus shadow file resolution.
+Test assertions verify: (i) shadow path present, (ii) in-progress path absent.
+No B4 housekeeping fallback was needed per blueprint, so no dedicated test for that.

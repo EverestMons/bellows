@@ -1,0 +1,24 @@
+284:            print(f"Bellows: ❌ worktree creation failed for {plan_slug}: {e}")
+285-            log_path = str(BELLOWS_ROOT / "logs")
+286-            gate_result = {"failures": [f"worktree_creation_failed: {e}"], "files_changed": [], "passed": False, "is_qa_step": False}
+287-            verdict.post_verdict_request(plan_path, project_path, 1, log_path, gate_result,
+288-                                         pause_reason="gate_failure", total_steps=total_steps, step_text=plan_text)
+289-            verdict_pending_path = os.path.join(plan_dir, f"verdict-pending-{base_filename}")
+--
+292:            print(f"Bellows: ⏸️  PAUSED — {plan_name} — worktree creation failed, awaiting CEO verdict")
+293-            return
+294-
+295-        # Capture pre-step file state
+296-        pre_diff = _capture_git_diff(wt_path)
+297-
+--
+533:            print(f"Bellows: \u26a0 worktree creation failed for {slug}, retrying in 2s: {result.stderr.strip()}")
+534-            time.sleep(2)
+535-            result = subprocess.run(cmd, cwd=project_path, capture_output=True, text=True, timeout=60)
+536-            if result.returncode != 0:
+537:                raise WorktreeCreationError(f"worktree creation failed after retry for {slug}: {result.stderr.strip()}")
+538-
+539-        return wt_path
+540-
+541-    except subprocess.TimeoutExpired as e:
+542-        raise WorktreeCreationError(f"worktree creation timed out for {slug}: {e}") from e

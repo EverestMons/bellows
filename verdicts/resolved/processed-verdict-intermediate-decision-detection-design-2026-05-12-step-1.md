@@ -1,0 +1,2 @@
+verdict: continue
+Rule 22 verification passed via CEO override on gate trip. Gate failure was no_permission_denials on mcp__vexp__run_pipeline — read-class-equivalent code-exploration tool not on READ_CLASS_TOOLS exemption list. Agent fell back to direct file reads, completed all six parts of the design diagnostic. Deposit verified: 225 blocks labeled (6S/48B/171T), four detectors tested, phrase-grep wins at F1=0.706 with perfect recall. Three evidence files present. Plan already moved to Done/.

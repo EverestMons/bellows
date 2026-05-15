@@ -1,0 +1,10 @@
+commit d3f2a601dc3b0302e99c848b0bec067a7585ef42
+Author: Mark Lehn <marklehn@icloud.com>
+Date:   Tue May 5 22:19:45 2026 -0500
+
+    docs: PLANNER_TEMPLATE v4.34 — Rule 22 (e) tightening for Rule 20 banner verification
+    
+    Co-Authored-By: Claude Opus 4.6 <noreply@anthropic.com>
+
+ PLANNER_TEMPLATE.md | 7 ++++---
+ 1 file changed, 4 insertions(+), 3 deletions(-)

@@ -1,0 +1,8 @@
+Grep for shadow write code in bellows/bellows.py around lines 224-225:
+
+bellows.py:222:            shutil.move(plan_path, inprogress_path)
+bellows.py:223:            plan_path = inprogress_path
+bellows.py:224:            # Write shadow copy immediately after claim — preserves pristine content
+bellows.py:225:            _write_shadow(plan_filename, plan_text)
+
+Confirmed: shadow write code is UNCHANGED by this plan. Only the read-side prompt construction was modified.

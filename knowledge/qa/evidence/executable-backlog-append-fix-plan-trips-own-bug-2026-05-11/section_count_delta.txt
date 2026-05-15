@@ -1,0 +1,12 @@
+$ git --no-pager show HEAD~1:bellows/knowledge/BACKLOG.md | awk '/^## Open/,/^## Closed/' | grep -c "^### "
+0
+
+$ awk '/^## Open/,/^## Closed/' bellows/knowledge/BACKLOG.md | grep -c "^### "
+1
+
+Before: 0
+After: 1
+Delta: +1
+
+Note: The existing Open entries use bullet-list format (- 2026-...) rather than ### headers.
+The new entry is the only ### header in the Open section. Delta is exactly +1 as expected.

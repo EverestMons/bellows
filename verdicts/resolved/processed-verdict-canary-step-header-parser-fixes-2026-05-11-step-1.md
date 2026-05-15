@@ -1,0 +1,2 @@
+verdict: continue
+Canary Step 1 passed. Pause Reason Code: header_pause (NOT gate_failure). Gate Result Passed: True. Deposit field correctly resolved to the canary's actual Step 1 deposit (bellows/knowledge/documentation/canary-step-header-parser-fixes-2026-05-11.md), confirming _extract_step_text correctly anchored to line-start and strip_fenced_code_blocks removed the bait fence. Both 2026-05-11 fixes (commits 4d57fd3 + 0fab609) are live in the running daemon. Proceed to Step 2 QA.

@@ -1,0 +1,2 @@
+continue
+Rule 22 passed — Planner-authorized terminal close. QA report at bellows/knowledge/qa/qa-backlog-close-2026-04-18-integration-protocol-2026-05-01.md verified all four deliverables (3 BACKLOG edits + commit). Independent spot-check of BACKLOG.md confirmed the new 2026-05-01 entry at top of Open, the closure entry at top of Closed, and the original 2026-04-18 Open entry removed. PROJECT_STATUS.md updated. Rule 20 self-check PASSED. Plan moved to Done.

@@ -1,0 +1,7 @@
+792:                if verdict.slug_from_path(full_path) not in self.orchestrator._seen:
+805:                    and verdict.slug_from_path(path) not in self.orchestrator._seen):
+807:                self.orchestrator._seen.add(verdict.slug_from_path(path))
+809:        if verdict.slug_from_path(path) in self.orchestrator._seen:
+824:            all_paths = [p for p in siblings if verdict.slug_from_path(p) not in self.orchestrator._seen]
+825:            [self.orchestrator._seen.add(verdict.slug_from_path(p)) for p in all_paths]
+829:            self.orchestrator._seen.add(verdict.slug_from_path(path))

@@ -1,0 +1,1 @@
+bb00f87 docs: PLANNER_TEMPLATE v4.32 — add Parallel Group Dispatch subsection to Bellows Execution Model

@@ -1,0 +1,18 @@
+=== REPL Mixed-Files Spot-Check ===
+Date: 2026-05-12
+Agent: Bellows QA
+
+Setup:
+  - tmp pending/ directory with:
+    1. verdict-test-slug-step-1.md (misplaced — should be in resolved/)
+    2. verdict-request-test-slug-step-1.md (legitimate — belongs in pending/)
+  - Called _scan_misplaced_verdicts(pending)
+
+Captured stdout:
+  19:49:03 [WARN] verdict file in wrong directory: /var/folders/vf/8nw0z7hj1m34w6z48l5dp54w0000gn/T/tmpga2sf5bi/pending/verdict-test-slug-step-1.md — expected location: verdicts/resolved/ — file will be silently ignored by verdict consumption until moved
+
+Assertions:
+  (a) misplaced file triggers WARN containing filename — PASS
+  (b) request file does NOT trigger WARN — PASS
+
+Result: PASSED

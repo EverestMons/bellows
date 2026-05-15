@@ -1,0 +1,6 @@
+1824:def test_run_plan_creates_worktree_before_pre_diff():
+1870:def test_run_plan_passes_wt_path_to_capture_and_runner():
+1910:def test_run_plan_tears_down_worktree_after_final_gate():
+1958:def test_run_plan_strict_pause_on_creation_failure():
+1997:def test_run_plan_pauses_on_cherry_pick_conflict():
+2043:def test_bellows_init_runs_worktree_prune():

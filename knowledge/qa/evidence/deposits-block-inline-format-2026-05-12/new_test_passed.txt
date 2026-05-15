@@ -1,0 +1,1 @@
+tests/test_gates.py::test_extract_plan_required_deposits_inline_format PASSED [ 72%]

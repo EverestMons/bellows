@@ -1,0 +1,22 @@
+diff --git a/bellows/bellows.py b/bellows/bellows.py
+index 37c6d9d..f85621d 100644
+--- a/bellows/bellows.py
++++ b/bellows/bellows.py
+@@ -328,7 +328,7 @@ def run_plan(plan_path: str, config: dict, response_server: server.ResponseServe
+         # Capture post-step file state and run gates
+         post_diff = _capture_git_diff(wt_path)
+         files_changed = _parse_diff_stat(post_diff, pre_diff, project_path)
+-        gate_result = gates.check(parsed, plan_text, current_step, project_path, files_changed=files_changed)
++        gate_result = gates.check(parsed, plan_text, current_step, project_path, files_changed=files_changed, wt_path=wt_path)
+         if mode_a_detected:
+             gate_result["failures"].append({
+                 "gate": "unauthorized_done_move",
+@@ -413,7 +413,7 @@ def run_plan(plan_path: str, config: dict, response_server: server.ResponseServe
+             # Capture post-step file state and run gates
+             post_diff = _capture_git_diff(wt_path)
+             files_changed = _parse_diff_stat(post_diff, pre_diff, project_path)
+-            gate_result = gates.check(parsed, plan_text, current_step, project_path, files_changed=files_changed)
++            gate_result = gates.check(parsed, plan_text, current_step, project_path, files_changed=files_changed, wt_path=wt_path)
+             if mode_a_detected:
+                 gate_result["failures"].append({
+                     "gate": "unauthorized_done_move",

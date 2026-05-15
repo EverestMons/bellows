@@ -1,0 +1,39 @@
+{
+  "best_detector": "A",
+  "best_f1": 0.706,
+  "false_negatives_S": [],
+  "false_positives_T": [
+    {
+      "plan": "terminal-capture-2026-05-12",
+      "step": 1,
+      "block_idx": 16,
+      "text": "Now I need to update the `runner.run_step()` call sites in bellows.py to pass plan_slug and step_num."
+    }
+  ],
+  "false_positives_B": [
+    {
+      "plan": "deposit-exists-prose-canary-2026-04-28",
+      "step": 2,
+      "block_idx": 14,
+      "text": "Now let me verify the self-check claims are accurate (evidence files actually exist and are non-empty)."
+    },
+    {
+      "plan": "deposit-exists-prose-canary-2026-04-28",
+      "step": 3,
+      "block_idx": 4,
+      "text": "Let me read the key test cases and get the full Q6 output, and re-run the Q3 experiment (b) and (d) more carefully."
+    },
+    {
+      "plan": "bellows-worktree-impl-2026-05-03",
+      "step": 2,
+      "block_idx": 5,
+      "text": "All 10 checks pass. Let me verify the counts:\n\n- Check 1: `.bellows-worktrees/` in `.gitignore` \u2014 1 match \u2705\n- Check 2: `_create_worktree` defined \u2014 1 match \u2705\n- Check 3: `_teardown_worktree` defined \u2014 1 match \u2705\n- Check 4: Exception classes \u2014 2 matches \u2705\n- Check 5: Retry pattern \u2014 matches showing retry with sleep \u2705\n- Check 6: Cherry-pick abort \u2014 `cherry-pick --abort` present \u2705\n- Check 7: Startup prune \u2014 `worktree prune` at line 733, inside `__init__` \u2705\n- Check 8: `wt_path` usage \u2014 20 matches (6 in `run_plan` cwd swaps + creation + teardowns + helper internals) \u2705\n- Check 9: Teardown calls \u2014 4 matches (1 def + 3 call sites) \u2705\n- Check 10: Top two commits match expected messages \u2705\n\nAlso confirming `time.sleep(2)` is in the retry pattern:"
+    },
+    {
+      "plan": "terminal-capture-2026-05-12",
+      "step": 1,
+      "block_idx": 18,
+      "text": "Stage 6 prefix audit passes:\n- `Bellows:` prefix: only in `_rotate_logs()` (3 print calls, pre-logger) and startup banner (8 prints) \u2014 all legitimate\n- `[runner]` prefix: 0 matches \u2713\n- `print()` in runner.py: 0 \u2713\n- `print()` in notifier.py: 0 \u2713  \n- `print()` in bellows.py: 11 remaining (3 `_rotate_logs` + 8 banner) \u2014 all legitimate\n\nLet me verify no `_log()` calls accidentally contain `Bellows:` in the message."
+    }
+  ]
+}
