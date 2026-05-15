@@ -10,7 +10,7 @@ from datetime import datetime
 
 BELLOWS_ROOT = pathlib.Path(__file__).parent.resolve()
 
-GOVERNANCE_ROOT = "/Users/marklehn/Desktop/GitHub"
+GOVERNANCE_ROOT = "/Users/marklehn/Developer/GitHub"
 PLANNER_TEMPLATE_PATH = f"{GOVERNANCE_ROOT}/PLANNER_TEMPLATE.md"
 COMPANY_MD_PATH = f"{GOVERNANCE_ROOT}/COMPANY.md"
 

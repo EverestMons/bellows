@@ -57,8 +57,8 @@ def extract_primary_deposit(step_text: str) -> Optional[str]:
         for m in BLOCK_BULLET_RE.finditer(block_match.group(1)):
             path = m.group(1)
             if path.endswith('.md'):
-                if '/Desktop/GitHub/' in path:
-                    parts = path.split('/Desktop/GitHub/')
+                if '/Developer/GitHub/' in path:
+                    parts = path.split('/Developer/GitHub/')
                     if len(parts) == 2:
                         path = parts[1]
                 return path
@@ -71,8 +71,8 @@ def extract_primary_deposit(step_text: str) -> Optional[str]:
             match = pattern.search(line)
             if match:
                 path = match.group(1)
-                if '/Desktop/GitHub/' in path:
-                    parts = path.split('/Desktop/GitHub/')
+                if '/Developer/GitHub/' in path:
+                    parts = path.split('/Developer/GitHub/')
                     if len(parts) == 2:
                         path = parts[1]
                 return path
