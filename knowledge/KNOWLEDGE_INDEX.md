@@ -137,6 +137,7 @@ Index of knowledge base files deposited by Bellows plans, organized by category.
 
 ## Documentation (`knowledge/documentation/`)
 
+- `post-relocation-restart-canary-2026-05-15.md` — Canary confirmation: Bellows daemon dispatched and executed successfully post-Desktop/GitHub→Developer/GitHub relocation; captured `cwd` confirmed worktree creation works in submodule arrangement (closes Q2/Fix-b)
 - `session-wrap-log-2026-05-10.md` — Session wrap summary log for 2026-05-10 late evening (three back-to-back closures + live smoke canary)
 - `session-wrap-log-2026-05-08.md` — Session wrap summary log for 2026-05-08 reliability triple-ship
 
@@ -144,4 +145,4 @@ Index of knowledge base files deposited by Bellows plans, organized by category.
 
 ## Cross-References (Governance Root)
 
-- `/Users/marklehn/Desktop/GitHub/RULE_20_SELF_CHECK_BLOCK.md` — Canonical Rule 20 self-check Python block (single-source as of 2026-05-10). Referenced by PLANNER_TEMPLATE.md Rule 20, `bellows/agents/BELLOWS_QA.md`, `invoice-pulse/agents/INVOICE_SECURITY_TESTING_ANALYST.md`.
+- `/Users/marklehn/Developer/GitHub/RULE_20_SELF_CHECK_BLOCK.md` — Canonical Rule 20 self-check Python block (single-source as of 2026-05-10). Referenced by PLANNER_TEMPLATE.md Rule 20, `bellows/agents/BELLOWS_QA.md`, `invoice-pulse/agents/INVOICE_SECURITY_TESTING_ANALYST.md`.
