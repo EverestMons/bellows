@@ -262,8 +262,18 @@ def _extract_step_text(plan_text: str, step_number: int):
     return match.group(0) if match else None
 
 
+def _filter_transient_paths(paths):
+    """Drop paths whose basename starts with `_staging_` — these are transient
+    atomic-deposit filenames that exist only between write and move and are not
+    deliverables. Per LESSONS 2026-05-18 strike-4 entry."""
+    return {p for p in paths if not os.path.basename(p).startswith("_staging_")}
+
+
 def _extract_plan_required_deposits(step_text):
     """Extract file paths explicitly required by deposit instructions in the plan step text.
+
+    Filters out `_staging_*` basenames (transient atomic-deposit filenames mentioned in
+    step prose as part of describing the deposit mechanism, never persistent on disk).
 
     If a **Deposits:** block (Rule 26 convention) is present, extracts only the
     backtick-quoted paths from its bullet list and ignores legacy prose patterns.
@@ -278,7 +288,7 @@ def _extract_plan_required_deposits(step_text):
         for m in re.finditer(r'-\s+`([^`]+)`', block_text):
             paths.add(m.group(1))
         # Explicit "- none" means no deposits required
-        return paths
+        return _filter_transient_paths(paths)
 
     # Inline format: **Deposits:** `- /path/a`, `- /path/b`.
     # Handles plans where the Planner emits deposits on the same line as the marker
@@ -289,7 +299,7 @@ def _extract_plan_required_deposits(step_text):
         for m in re.finditer(r'`-\s+([^`]+)`', inline_text):
             paths.add(m.group(1))
         if paths:
-            return paths
+            return _filter_transient_paths(paths)
 
     # Legacy fallback: prose-matching regexes
     paths = set()
@@ -306,7 +316,7 @@ def _extract_plan_required_deposits(step_text):
     # Pattern 3: with open("path.md", "w") canonical Python write
     for m in re.finditer(r'with open\(["\']([^"\']+\.md)["\'],\s*["\']w["\']', step_text):
         paths.add(m.group(1).strip())
-    return paths
+    return _filter_transient_paths(paths)
 
 
 def _gate_rule_20_self_check(is_qa_step, plan_text, step_number, project_path, parsed, failures, wt_path=None):
@@ -343,12 +353,16 @@ def _gate_rule_20_self_check(is_qa_step, plan_text, step_number, project_path, p
         if banner not in content:
             continue
 
-        # Banner found — check for PASSED line after the banner position
+        # Banner found — scan ALL remaining content for the PASSED line, tolerating
+        # whitespace, decoration lines, and fenced-block indentation.
+        # Per LESSONS 2026-05-17 strike-3 and 2026-05-18 strike-5 entries.
         banner_pos = content.index(banner)
-        lines_after_banner = content[banner_pos:].splitlines()
-        for line in lines_after_banner:
-            if line.startswith("PASSED — SELF-CHECK PASSED"):
-                return  # Gate passes
+        remaining = content[banner_pos:]
+        # The PASSED line may be anywhere in the remaining content, optionally
+        # preceded by whitespace on its line. Use re.MULTILINE so ^ matches each
+        # line start, and \s* tolerates leading indentation/whitespace.
+        if re.search(r'^\s*PASSED\s+—\s+SELF-CHECK\s+PASSED', remaining, re.MULTILINE):
+            return  # Gate passes
         banner_found_path = dep_path
 
     if banner_found_path:

@@ -900,3 +900,162 @@ def test_gate_deposit_exists_fails_when_file_truly_missing(tmp_path):
     gates._gate_deposit_exists(parsed, failures, str(project_path), plan_text=plan_text, step_number=1, wt_path=str(wt_path))
     assert len(failures) > 0
     assert any(f["gate"] == "deposit_exists" for f in failures)
+
+
+# --- Gate 2c: _staging_ filter tests (strike 4) ---
+
+def test_extract_deposits_filters_staging_prefix():
+    """Strike 4: step text mentioning both a real deposit and a _staging_* path returns only the real one."""
+    step_text = (
+        "## STEP 1\n\n"
+        "Deposit the results to `knowledge/research/report.md`.\n"
+        "The mechanism writes to `_staging_report.md` first, then moves it.\n"
+    )
+    result = gates._extract_plan_required_deposits(step_text)
+    assert "knowledge/research/report.md" in result
+    assert not any("_staging_" in p for p in result)
+
+
+def test_extract_deposits_filters_staging_in_structured_block():
+    """Strike 4: structured **Deposits:** block with a _staging_* path filters it out."""
+    step_text = (
+        "## STEP 1 — DEV\n\n"
+        "> Do the work.\n>\n"
+        "> **Deposits:**\n"
+        "> - `knowledge/research/report.md`\n"
+        "> - `_staging_diagnostic-canary.md`\n"
+    )
+    result = gates._extract_plan_required_deposits(step_text)
+    assert "knowledge/research/report.md" in result
+    assert "_staging_diagnostic-canary.md" not in result
+    assert len(result) == 1
+
+
+def test_extract_deposits_filters_staging_in_inline_format():
+    """Strike 4: inline **Deposits:** format with a _staging_* path filters it out."""
+    step_text = (
+        "## STEP 1\n\n"
+        "**Deposits:** `- knowledge/qa/qa-report.md`, `- _staging_qa-report.md`.\n"
+    )
+    result = gates._extract_plan_required_deposits(step_text)
+    assert "knowledge/qa/qa-report.md" in result
+    assert "_staging_qa-report.md" not in result
+    assert len(result) == 1
+
+
+def test_extract_deposits_filters_staging_in_legacy_prose():
+    """Strike 4: legacy prose 'Deposit ... to `_staging_foo.md`' is filtered."""
+    step_text = (
+        "## STEP 1\n\n"
+        "Deposit the dev log to `knowledge/development/dev-log.md`.\n"
+        "The atomic deposit mechanism writes to `_staging_dev-log.md` first.\n"
+    )
+    result = gates._extract_plan_required_deposits(step_text)
+    assert "knowledge/development/dev-log.md" in result
+    assert not any("_staging_" in p for p in result)
+
+
+# --- Gate 2c: tolerant rule_20 banner matching tests (strikes 3 & 5) ---
+
+def test_rule_20_banner_in_fenced_block(tmp_path):
+    """Strike 5: banner inside a fenced code block — gate should still pass."""
+    report = tmp_path / "bellows" / "knowledge" / "qa" / "qa-report.md"
+    report.parent.mkdir(parents=True)
+    report.write_text(
+        "# QA Report\n\n"
+        "```\n"
+        "Rule 20 — QA Self-Check Results\n"
+        "PASSED — SELF-CHECK PASSED — all evidence files present, no hedging keywords found.\n"
+        "```\n"
+    )
+    parsed = _clean_parsed()
+    result = gates.check(parsed, QA_PLAN_TEXT, 2, str(tmp_path))
+    assert not any(f["gate"] == "rule_20_self_check" for f in result["failures"])
+
+
+def test_rule_20_banner_with_decoration(tmp_path):
+    """Strike 5: banner with === decoration lines bracketing it inside fence — gate passes."""
+    report = tmp_path / "bellows" / "knowledge" / "qa" / "qa-report.md"
+    report.parent.mkdir(parents=True)
+    report.write_text(
+        "# QA Report\n\n"
+        "```\n"
+        "============================================================\n"
+        "Rule 20 — QA Self-Check Results\n"
+        "============================================================\n"
+        "PASSED — SELF-CHECK PASSED — all evidence files present, no hedging keywords found.\n"
+        "```\n"
+    )
+    parsed = _clean_parsed()
+    result = gates.check(parsed, QA_PLAN_TEXT, 2, str(tmp_path))
+    assert not any(f["gate"] == "rule_20_self_check" for f in result["failures"])
+
+
+def test_rule_20_banner_with_shell_prompt_prefix(tmp_path):
+    """Strike 3: $ python3 -c '...' line above banner inside fence — gate passes."""
+    report = tmp_path / "bellows" / "knowledge" / "qa" / "qa-report.md"
+    report.parent.mkdir(parents=True)
+    report.write_text(
+        "# QA Report\n\n"
+        "```\n"
+        '$ python3 -c "import os; ..."\n'
+        "Rule 20 — QA Self-Check Results\n"
+        "PASSED — SELF-CHECK PASSED — all evidence files present, no hedging keywords found.\n"
+        "```\n"
+    )
+    parsed = _clean_parsed()
+    result = gates.check(parsed, QA_PLAN_TEXT, 2, str(tmp_path))
+    assert not any(f["gate"] == "rule_20_self_check" for f in result["failures"])
+
+
+def test_rule_20_passed_line_with_indentation(tmp_path):
+    """Strike 5 variant: PASSED line has leading whitespace from indented code block."""
+    report = tmp_path / "bellows" / "knowledge" / "qa" / "qa-report.md"
+    report.parent.mkdir(parents=True)
+    report.write_text(
+        "# QA Report\n\n"
+        "    Rule 20 — QA Self-Check Results\n"
+        "    PASSED — SELF-CHECK PASSED — all evidence files present.\n"
+    )
+    parsed = _clean_parsed()
+    result = gates.check(parsed, QA_PLAN_TEXT, 2, str(tmp_path))
+    assert not any(f["gate"] == "rule_20_self_check" for f in result["failures"])
+
+
+def test_rule_20_no_banner(tmp_path):
+    """Strike 6 detection: deposit without banner — gate should fail."""
+    report = tmp_path / "bellows" / "knowledge" / "qa" / "qa-report.md"
+    report.parent.mkdir(parents=True)
+    report.write_text(
+        "# QA Report\n\n"
+        "All 10 checks passed.\n"
+        "No issues found.\n"
+    )
+    parsed = _clean_parsed()
+    result = gates.check(parsed, QA_PLAN_TEXT, 2, str(tmp_path))
+    assert result["passed"] is False
+    r20 = [f for f in result["failures"] if f["gate"] == "rule_20_self_check"]
+    assert len(r20) == 1
+    assert "no QA deposit contains Rule 20 self-check banner" in r20[0]["evidence"]
+
+
+def test_rule_20_banner_without_passed(tmp_path):
+    """Banner present but no PASSED line anywhere — gate should fail."""
+    report = tmp_path / "bellows" / "knowledge" / "qa" / "qa-report.md"
+    report.parent.mkdir(parents=True)
+    report.write_text(
+        "# QA Report\n\n"
+        "```\n"
+        "============================================================\n"
+        "Rule 20 — QA Self-Check Results\n"
+        "============================================================\n"
+        "FAILED — SELF-CHECK FAILED — 2 issue(s):\n"
+        "  - CRITICAL: evidence file missing\n"
+        "```\n"
+    )
+    parsed = _clean_parsed()
+    result = gates.check(parsed, QA_PLAN_TEXT, 2, str(tmp_path))
+    assert result["passed"] is False
+    r20 = [f for f in result["failures"] if f["gate"] == "rule_20_self_check"]
+    assert len(r20) == 1
+    assert "banner present but PASSED line missing" in r20[0]["evidence"]
