@@ -1,0 +1,2 @@
+verdict: continue
+Rule 22 verification PASS on canary findings deposit at lessons-forge/knowledge/research/canary-lessons-forge-bellows-watch-2026-05-18.md. All three flags reported verbatim with correct values: cwd under lessons-forge/.bellows-worktrees/ (worktree creation works in submodule arrangement), watched_count=9, lessons_forge_watched=True. Gates passed. Authorize close to lessons-forge/knowledge/decisions/Done/.
