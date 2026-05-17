@@ -1,0 +1,11 @@
+============================= test session starts ==============================
+platform darwin -- Python 3.9.6, pytest-8.4.2, pluggy-1.6.0 -- /Applications/Xcode.app/Contents/Developer/usr/bin/python3
+cachedir: .pytest_cache
+rootdir: /Users/marklehn/Developer/GitHub/bellows/.bellows-worktrees/rule-20-bold-tolerance-qa-recovery-2026-05-17
+plugins: anyio-4.12.1, cov-7.0.0
+collecting ... collected 2 items
+
+tests/test_gates.py::test_rule_20_gate_tolerates_bold_passed_line PASSED [ 50%]
+tests/test_gates.py::test_rule_20_gate_tolerates_single_asterisk_passed_line PASSED [100%]
+
+============================== 2 passed in 0.07s ===============================

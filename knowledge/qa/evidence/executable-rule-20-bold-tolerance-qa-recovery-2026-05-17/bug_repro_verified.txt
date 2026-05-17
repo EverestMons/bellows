@@ -1,0 +1,16 @@
+=== Reverse Repro: Old vs New Regex ===
+
+Input: '**PASSED — SELF-CHECK PASSED**'
+  OLD regex match: False
+  NEW regex match: True
+
+Input: '*PASSED — SELF-CHECK PASSED*'
+  OLD regex match: False
+  NEW regex match: True
+
+Input: 'PASSED — SELF-CHECK PASSED'
+  OLD regex match: True
+  NEW regex match: True
+
+VERIFIED: Old regex fails on bold line, new regex succeeds.
+Bug repro confirmed — fix is correct.
