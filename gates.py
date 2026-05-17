@@ -371,7 +371,7 @@ def _gate_rule_20_self_check(is_qa_step, plan_text, step_number, project_path, p
         # The PASSED line may be anywhere in the remaining content, optionally
         # preceded by whitespace on its line. Use re.MULTILINE so ^ matches each
         # line start, and \s* tolerates leading indentation/whitespace.
-        if re.search(r'^\s*PASSED\s+—\s+SELF-CHECK\s+PASSED', remaining, re.MULTILINE):
+        if re.search(r'^\s*\*{0,2}\s*PASSED\s+—\s+SELF-CHECK\s+PASSED', remaining, re.MULTILINE):
             return  # Gate passes
         banner_found_path = dep_path
 

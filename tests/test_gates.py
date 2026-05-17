@@ -1111,6 +1111,38 @@ def test_gate_deposit_exists_uses_frontmatter_when_present_and_passes_when_file_
     assert deposit_failures == [], f"unexpected deposit_exists failures: {deposit_failures}"
 
 
+def test_rule_20_gate_tolerates_bold_passed_line(tmp_path):
+    """Bold **PASSED — SELF-CHECK PASSED** should not trip the rule_20_self_check gate."""
+    report = tmp_path / "bellows" / "knowledge" / "qa" / "qa-report.md"
+    report.parent.mkdir(parents=True)
+    report.write_text(
+        "# QA Report\n\n"
+        "============================================================\n"
+        "Rule 20 — QA Self-Check Results\n"
+        "============================================================\n"
+        "**PASSED — SELF-CHECK PASSED**\n"
+    )
+    parsed = _clean_parsed()
+    result = gates.check(parsed, QA_PLAN_TEXT, 2, str(tmp_path))
+    assert not any(f["gate"] == "rule_20_self_check" for f in result["failures"])
+
+
+def test_rule_20_gate_tolerates_single_asterisk_passed_line(tmp_path):
+    """Italic *PASSED — SELF-CHECK PASSED* should not trip the rule_20_self_check gate."""
+    report = tmp_path / "bellows" / "knowledge" / "qa" / "qa-report.md"
+    report.parent.mkdir(parents=True)
+    report.write_text(
+        "# QA Report\n\n"
+        "============================================================\n"
+        "Rule 20 — QA Self-Check Results\n"
+        "============================================================\n"
+        "*PASSED — SELF-CHECK PASSED*\n"
+    )
+    parsed = _clean_parsed()
+    result = gates.check(parsed, QA_PLAN_TEXT, 2, str(tmp_path))
+    assert not any(f["gate"] == "rule_20_self_check" for f in result["failures"])
+
+
 def test_gate_deposit_exists_uses_frontmatter_and_ignores_staging_in_prose():
     """Frontmatter is authoritative; prose mentioning _staging_* is ignored (strike 4 defense)."""
     fixture_path = os.path.join(os.path.dirname(__file__), "fixtures", "sample.md")
