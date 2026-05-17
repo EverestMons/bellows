@@ -1,7 +1,12 @@
 """Mechanical validation gates. Runs after each step and flags anomalies."""
 
+import logging
 import os
 import re
+
+import yaml
+
+logger = logging.getLogger(__name__)
 
 
 def strip_fenced_code_blocks(text: str) -> str:
@@ -43,14 +48,14 @@ def _parse_plan_header(plan_text):
     # Strategy 1: YAML frontmatter
     match = re.search(r"\A---\n(.*?)\n---\n", plan_text, re.DOTALL)
     if match:
-        result = {}
-        for line in match.group(1).splitlines():
-            if ":" in line:
-                key, _, value = line.partition(":")
-                key = key.strip().strip("*")
-                result[key] = value.strip().strip("*").strip()
-        if result:
-            return result
+        try:
+            result = yaml.safe_load(match.group(1))
+            if isinstance(result, dict) and result:
+                return result
+        except yaml.YAMLError as e:
+            logger.warning("YAML frontmatter parse failed, falling through to bold-Markdown: %s", e)
+        # YAML block found but didn't produce a usable dict — strip it for Strategy 2
+        plan_text = plan_text[match.end():]
 
     # Strategy 2: Pipe-separated bold-Markdown header
     # Expects: line 1 = "# Title", line 2 = "**Key:** value | **Key:** value | ..."
@@ -115,6 +120,7 @@ def check(parsed, plan_text, step_number, project_path, files_changed=None, wt_p
         files_changed = []
 
     failures = []
+    header = _parse_plan_header(plan_text)
 
     # Gate 1: receipt status
     _gate_receipt_status(parsed, failures)
@@ -125,7 +131,7 @@ def check(parsed, plan_text, step_number, project_path, files_changed=None, wt_p
     # Gate 4: no permission denials
     _gate_no_permission_denials(parsed, failures)
     # Gate 5: deposit exists
-    _gate_deposit_exists(parsed, failures, project_path, plan_text=plan_text, step_number=step_number, wt_path=wt_path)
+    _gate_deposit_exists(parsed, failures, project_path, plan_text=plan_text, step_number=step_number, wt_path=wt_path, plan_header=header)
     # Gate 6: QA step detection (informational)
     is_qa_step = _gate_is_qa_step(plan_text, step_number)
     # Gate 6b: Rule 20 self-check verification (blocking, QA steps only)
@@ -134,8 +140,6 @@ def check(parsed, plan_text, step_number, project_path, files_changed=None, wt_p
     _gate_file_change_audit(files_changed)
     # Gate 8: scope check
     _gate_scope_check(plan_text, step_number, files_changed, failures)
-
-    header = _parse_plan_header(plan_text)
     vr = parsed.get("verdict_requested", {})
     requested = vr.get("requested", False)
     request_body = vr.get("reason")
@@ -222,7 +226,7 @@ def _resolve_deposit_path(path, project_path, wt_path=None):
     return None
 
 
-def _gate_deposit_exists(parsed, failures, project_path, plan_text=None, step_number=None, wt_path=None):
+def _gate_deposit_exists(parsed, failures, project_path, plan_text=None, step_number=None, wt_path=None, plan_header=None):
     result_text = parsed.get("result_text", "")
     match = re.search(r"### Files Deposited\s*\n(.*?)(?:\n###|\Z)", result_text, re.DOTALL)
 
@@ -241,8 +245,14 @@ def _gate_deposit_exists(parsed, failures, project_path, plan_text=None, step_nu
                 if _resolve_deposit_path(path, project_path, wt_path=wt_path) is None:
                     failures.append({"gate": "deposit_exists", "evidence": f"missing: {path}"})
 
-    # Plan-aware: detect deposits the plan requires but the agent didn't declare
-    if plan_text and step_number is not None:
+    # Frontmatter-first: if plan_header provides a deposits list, use it as authoritative
+    frontmatter_deposits = plan_header.get("deposits") if plan_header is not None else None
+    if frontmatter_deposits is not None and isinstance(frontmatter_deposits, list):
+        for path in frontmatter_deposits:
+            if path not in agent_declared and _resolve_deposit_path(path, project_path, wt_path=wt_path) is None:
+                failures.append({"gate": "deposit_exists", "evidence": f"plan-required deposit missing (frontmatter): {path}"})
+    elif plan_text and step_number is not None:
+        # Prose fallback: extract deposits from step text
         step_text = _extract_step_text(plan_text, step_number)
         if step_text:
             for path in _extract_plan_required_deposits(step_text):

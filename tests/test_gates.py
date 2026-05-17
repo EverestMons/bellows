@@ -205,7 +205,7 @@ def test_parse_plan_header_basic():
     plan_text = "---\npause_for_verdict: after_step_1\nauto_close: false\n---\n# Title\nrest of plan"
     header = gates._parse_plan_header(plan_text)
     assert header.get("pause_for_verdict") == "after_step_1"
-    assert header.get("auto_close") == "false"
+    assert header.get("auto_close") is False
 
 
 def test_parse_plan_header_malformed():
@@ -236,7 +236,7 @@ def test_parse_plan_header_yaml_still_works():
     plan_text = "---\npause_for_verdict: after_step_1\nauto_close: false\n---\n# Title\nrest"
     header = gates._parse_plan_header(plan_text)
     assert header.get("pause_for_verdict") == "after_step_1"
-    assert header.get("auto_close") == "false"
+    assert header.get("auto_close") is False
 
 
 def test_parse_plan_header_no_format_returns_empty():
@@ -1059,3 +1059,72 @@ def test_rule_20_banner_without_passed(tmp_path):
     r20 = [f for f in result["failures"] if f["gate"] == "rule_20_self_check"]
     assert len(r20) == 1
     assert "banner present but PASSED line missing" in r20[0]["evidence"]
+
+
+# --- YAML frontmatter prototype tests (ADR-structured-plan-metadata-2026-05-20) ---
+
+def test_parse_plan_header_yaml_frontmatter_returns_deposits_list():
+    """YAML frontmatter with deposits list returns a Python list."""
+    plan_text = "---\ndeposits:\n  - foo.md\n  - bar.md\n---\n# Title\n"
+    header = gates._parse_plan_header(plan_text)
+    assert header["deposits"] == ["foo.md", "bar.md"]
+
+
+def test_parse_plan_header_yaml_frontmatter_returns_nested_qa_dict():
+    """YAML frontmatter with nested qa block returns a nested dict."""
+    plan_text = "---\nqa:\n  self_check_required: true\n  evidence_dir: knowledge/qa/evidence/\n---\n# Title\n"
+    header = gates._parse_plan_header(plan_text)
+    assert header["qa"]["self_check_required"] is True
+    assert header["qa"]["evidence_dir"] == "knowledge/qa/evidence/"
+
+
+def test_parse_plan_header_malformed_yaml_falls_through_to_bold_markdown():
+    """Malformed YAML frontmatter falls through to bold-Markdown header parsing."""
+    plan_text = (
+        "---\n"
+        "deposits:\n"
+        "  - foo.md\n"
+        "  badly: indented: nested\n"
+        "---\n"
+        "# Title\n"
+        "**Date:** 2026-05-20\n"
+    )
+    header = gates._parse_plan_header(plan_text)
+    assert header.get("date") == "2026-05-20"
+
+
+def test_gate_deposit_exists_uses_frontmatter_when_present_and_passes_when_file_exists():
+    """Frontmatter deposits list is used when present; file exists → gate passes."""
+    fixture_path = os.path.join(os.path.dirname(__file__), "fixtures", "sample.md")
+    assert os.path.isfile(fixture_path), f"fixture missing: {fixture_path}"
+
+    plan_text = (
+        f"---\ndeposits:\n  - {fixture_path}\n---\n"
+        "# Title\n\n"
+        "## STEP 1 — DEV\n\n"
+        "> Do the work.\n"
+    )
+    parsed = _clean_parsed()
+    # Agent receipt does NOT declare any deposits
+    result = gates.check(parsed, plan_text, 1, "/tmp")
+    deposit_failures = [f for f in result["failures"] if f["gate"] == "deposit_exists"]
+    assert deposit_failures == [], f"unexpected deposit_exists failures: {deposit_failures}"
+
+
+def test_gate_deposit_exists_uses_frontmatter_and_ignores_staging_in_prose():
+    """Frontmatter is authoritative; prose mentioning _staging_* is ignored (strike 4 defense)."""
+    fixture_path = os.path.join(os.path.dirname(__file__), "fixtures", "sample.md")
+    assert os.path.isfile(fixture_path), f"fixture missing: {fixture_path}"
+
+    plan_text = (
+        f"---\ndeposits:\n  - {fixture_path}\n---\n"
+        "# Title\n\n"
+        "## STEP 1 — DEV\n\n"
+        "> Do the work.\n>\n"
+        "> **Deposits:**\n"
+        "> - `_staging_anything.md`\n"
+    )
+    parsed = _clean_parsed()
+    result = gates.check(parsed, plan_text, 1, "/tmp")
+    deposit_failures = [f for f in result["failures"] if f["gate"] == "deposit_exists"]
+    assert deposit_failures == [], f"unexpected deposit_exists failures: {deposit_failures}"
