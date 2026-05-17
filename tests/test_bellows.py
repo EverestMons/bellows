@@ -2974,3 +2974,102 @@ def test_module_fingerprints_fallback_to_unknown_on_unexpected_error():
         fps = bellows._module_fingerprints()
     for mod, fp in fps.items():
         assert fp == "unknown", f"{mod} should be 'unknown', got {fp}"
+
+
+def test_auto_close_yaml_bool_does_not_crash():
+    """YAML frontmatter can return auto_close as Python bool True.
+    Verify str() coercion prevents AttributeError on .lower()."""
+    with tempfile.TemporaryDirectory() as tmp:
+        decisions_dir = os.path.join(tmp, "proj", "knowledge", "decisions")
+        os.makedirs(decisions_dir)
+        plan_filename = "executable-yaml-bool-true-2026-05-17.md"
+        plan_path = os.path.join(decisions_dir, plan_filename)
+        with open(plan_path, "w") as f:
+            f.write("## STEP 1\nDo stuff.\n")
+
+        config = {
+            "default_model": "claude-sonnet-4-6",
+            "pushover": {"app_key": "", "user_key": ""},
+            "callback_port": 5999,
+            "step_timeout_seconds": 600,
+        }
+
+        clean_parsed = _make_fake_run_step_result()
+        # Simulate YAML-parsed bool True (not string "true")
+        clean_gates = {
+            "passed": True,
+            "failures": [],
+            "is_qa_step": False,
+            "files_changed": [],
+            "plan_header": {"auto_close": True},  # Python bool from pyyaml
+            "verdict_requested": {"requested": False, "body": None},
+        }
+
+        with patch("bellows.runner.run_step", return_value=clean_parsed), \
+             patch("bellows.gates.check", return_value=clean_gates), \
+             patch("bellows.notifier.notify_plan_complete") as mock_notify, \
+             patch("bellows.verdict.log_to_ledger") as mock_ledger, \
+             patch("bellows._capture_git_diff", return_value=""), \
+             patch("bellows._create_worktree", return_value="/tmp/wt"), \
+             patch("bellows._teardown_worktree"), \
+             patch("bellows.record_run"):
+            response_server = MagicMock()
+            # This must NOT raise AttributeError
+            bellows.run_plan(plan_path, config, response_server)
+
+        # effective_auto_close should be True — plan moves to Done
+        done_path = os.path.join(decisions_dir, "Done", plan_filename)
+        assert os.path.isfile(done_path), f"plan not moved to Done/ with bool True: {done_path}"
+        mock_ledger.assert_called_once()
+        assert mock_ledger.call_args[0][3] == "auto-close"
+
+
+def test_auto_close_yaml_bool_false():
+    """YAML frontmatter can return auto_close as Python bool False.
+    Verify str() coercion prevents AttributeError and resolves to False."""
+    with tempfile.TemporaryDirectory() as tmp:
+        decisions_dir = os.path.join(tmp, "proj", "knowledge", "decisions")
+        os.makedirs(decisions_dir)
+        plan_filename = "executable-yaml-bool-false-2026-05-17.md"
+        plan_path = os.path.join(decisions_dir, plan_filename)
+        with open(plan_path, "w") as f:
+            f.write("## STEP 1\nDo stuff.\n")
+
+        config = {
+            "default_model": "claude-sonnet-4-6",
+            "pushover": {"app_key": "", "user_key": ""},
+            "callback_port": 5999,
+            "step_timeout_seconds": 600,
+        }
+
+        clean_parsed = _make_fake_run_step_result()
+        # Simulate YAML-parsed bool False (not string "false")
+        clean_gates = {
+            "passed": True,
+            "failures": [],
+            "is_qa_step": False,
+            "files_changed": [],
+            "plan_header": {"auto_close": False},  # Python bool from pyyaml
+            "verdict_requested": {"requested": False, "body": None},
+        }
+
+        with patch("bellows.runner.run_step", return_value=clean_parsed), \
+             patch("bellows.gates.check", return_value=clean_gates), \
+             patch("bellows.notifier.push"), \
+             patch("bellows.notifier.notify_verdict_request") as mock_notify_verdict, \
+             patch("bellows.verdict.post_verdict_request") as mock_post_verdict, \
+             patch("bellows.verdict.log_to_ledger") as mock_ledger, \
+             patch("bellows._capture_git_diff", return_value=""), \
+             patch("bellows._create_worktree", return_value="/tmp/wt"), \
+             patch("bellows._teardown_worktree"), \
+             patch("bellows.record_run"):
+            response_server = MagicMock()
+            # This must NOT raise AttributeError
+            bellows.run_plan(plan_path, config, response_server)
+
+        # effective_auto_close should be False — plan pauses for verdict
+        done_path = os.path.join(decisions_dir, "Done", plan_filename)
+        assert not os.path.exists(done_path), "plan should NOT auto-close with bool False"
+        mock_post_verdict.assert_called_once()
+        for call in mock_ledger.call_args_list:
+            assert call[0][3] != "auto-close", "auto-close should not fire"

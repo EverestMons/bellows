@@ -455,7 +455,7 @@ def run_plan(plan_path: str, config: dict, response_server: server.ResponseServe
         _log("EVENT", f"gates step {current_step}: passed={gate_result['passed']}, failures={len(gate_result['failures'])}", slug=slug_for(plan_name))
 
         header = gate_result.get("plan_header", {})
-        effective_auto_close = header.get("auto_close", "false").lower() == "true"
+        effective_auto_close = str(header.get("auto_close", "false")).lower() == "true"
 
         while not is_final_step(current_step, total_steps):
             # Check gates: if failed, QA step, verdict-request file, or header says pause
