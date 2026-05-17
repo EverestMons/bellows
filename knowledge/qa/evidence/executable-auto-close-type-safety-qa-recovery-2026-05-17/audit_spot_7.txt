@@ -1,0 +1,4 @@
+391:        return "qa" in match.group(0).lower()
+--- Disposition verification ---
+gates.py:391 — "qa" in match.group(0).lower() — .lower() on regex match group (always str), not header.get().
+Disposition 'no fix needed' is CORRECT.

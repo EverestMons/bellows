@@ -1,0 +1,10 @@
+d5945cf docs: deposit DEV log for auto_close type-safety fix
+9e79e4d fix(bellows): str-coerce header values before .lower() to tolerate YAML bool
+f130573 fix(gates): rule_20_self_check tolerates 0-2 leading asterisks on PASSED line
+5ebc2df fix(gates): rule_20_self_check tolerates 0-2 leading asterisks on PASSED line
+cc09dbc chore: archive session 2026-05-17 plans + verdicts (Track D ADR + frontmatter prototype + canary)
+f9297fc qa: frontmatter prototype verification (89/89 tests, canary pass, zero regression)
+d95c2bf feat: YAML frontmatter parsing for deposit_exists gate (Phase 1 prototype)
+10f1bcb arch: ADR for structured plan metadata (YAML frontmatter for gate consumption)
+2b57bc6 docs: redirect bellows/NEXT_SESSION.md to governance-root canonical (was stale 2026-05-05)
+2b3e823 session: gate 2c plan artifacts + processed verdicts from session 2026-05-19

@@ -1,0 +1,13 @@
+281:    """Return True if plan header's pause_for_verdict field matches current step."""
+282:    pv = header.get("pause_for_verdict", "")
+295:    If header parse returned < 3 keys for a multi-step plan and pause_for_verdict
+299:        if not header.get("pause_for_verdict", "").strip():
+300:            header["pause_for_verdict"] = "after_step_1"
+357:        if "pause_for_verdict" in header and len(header) > prev_len:
+358:            _log("WARN", f"⚠️ sparse header ({prev_len} keys) for {total_steps}-step plan — defaulting pause_for_verdict to after_step_1 (safe-pause)", slug=slug_for(plan_name))
+379:        expected_keys = {"project", "date", "author", "total_steps", "pause_for_verdict"}
+382:            _log("WARN", f"⚠️ {total_steps} steps but parsed header is missing: {sorted(missing_keys)}. Parsed keys: {sorted(header.keys())}. If pause_for_verdict was missing, the defensive default has set it to after_step_1.", slug=slug_for(plan_name))
+--- Disposition verification ---
+bellows.py:282 — pv = header.get("pause_for_verdict", "") — no .lower() called on result.
+The value is compared directly via == against string literals ("always", "after_step_1", etc.).
+Disposition 'no fix needed' is CORRECT.

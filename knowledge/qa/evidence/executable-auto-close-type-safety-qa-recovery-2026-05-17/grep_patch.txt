@@ -1,0 +1,5 @@
+458:        effective_auto_close = str(header.get("auto_close", "false")).lower() == "true"
+545:        # pause conditions plus `not effective_auto_close` so single-step plans
+551:                or not effective_auto_close):
+582:        # effective_auto_close is True. Diagnostics default to NOT auto-close (pause for
+588:                and effective_auto_close):

@@ -1,0 +1,4 @@
+100:        key = m.group(1).strip().lower().replace(" ", "_")
+--- Disposition verification ---
+gates.py:100 — key = m.group(1).strip().lower() — .lower() on regex match group (always str), not header.get().
+Disposition 'no fix needed' is CORRECT.
