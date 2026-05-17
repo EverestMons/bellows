@@ -1,0 +1,10 @@
+passed: True
+failures: []
+plan_header: {
+  "deposits": [
+    "bellows/knowledge/research/frontmatter-canary-deposit-2026-05-20.md"
+  ]
+}
+deposit_exists failures: []
+staging failures: []
+VERDICT: PASS — frontmatter deposits used, prose _staging_ ignored
