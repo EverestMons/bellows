@@ -1,0 +1,50 @@
+........................................................................ [ 21%]
+............................................FFF..F...................... [ 42%]
+........................................................................ [ 63%]
+...................................................................F.... [ 84%]
+.....................................................                    [100%]
+=================================== FAILURES ===================================
+_________________ TestLoadPhrases.test_loads_phrases_from_file _________________
+tests/test_decisions.py:28: in test_loads_phrases_from_file
+    assert len(phrases) > 0
+E   assert 0 > 0
+E    +  where 0 = len([])
+------------------------------ Captured log call -------------------------------
+WARNING  bellows:decisions.py:28 decisions: phrase file not found at /Users/marklehn/Developer/GitHub/bellows/.bellows-worktrees/INTERMEDIATE_DECISION_PHRASES.md
+_________________ TestLoadPhrases.test_includes_known_phrases __________________
+tests/test_decisions.py:35: in test_includes_known_phrases
+    assert "had to" in phrases
+E   AssertionError: assert 'had to' in []
+------------------------------ Captured log call -------------------------------
+WARNING  bellows:decisions.py:28 decisions: phrase file not found at /Users/marklehn/Developer/GitHub/bellows/.bellows-worktrees/INTERMEDIATE_DECISION_PHRASES.md
+________________ TestLoadPhrases.test_splits_slash_alternatives ________________
+tests/test_decisions.py:44: in test_splits_slash_alternatives
+    assert "re-run" in phrases
+E   AssertionError: assert 're-run' in []
+------------------------------ Captured log call -------------------------------
+WARNING  bellows:decisions.py:28 decisions: phrase file not found at /Users/marklehn/Developer/GitHub/bellows/.bellows-worktrees/INTERMEDIATE_DECISION_PHRASES.md
+_______ TestExtractDecisionBlocks.test_s_class_blocks_from_ground_truth ________
+tests/test_decisions.py:89: in test_s_class_blocks_from_ground_truth
+    assert len(results) > 0, (
+E   AssertionError: S-class block not matched: plan=deposit-exists-prose-canary-2026-04-28, step=2, block_idx=7, text=The grep evidence file seems empty. Let me fix that — the working directory migh
+E   assert 0 > 0
+E    +  where 0 = len([])
+------------------------------ Captured log call -------------------------------
+WARNING  bellows:decisions.py:28 decisions: phrase file not found at /Users/marklehn/Developer/GitHub/bellows/.bellows-worktrees/INTERMEDIATE_DECISION_PHRASES.md
+____________________________ test_run_step_timeout _____________________________
+tests/test_runner_parser.py:57: in test_run_step_timeout
+    assert result["is_error"] is True
+E   assert False is True
+=============================== warnings summary ===============================
+../../../../../Library/Python/3.9/lib/python/site-packages/urllib3/__init__.py:35
+  /Users/marklehn/Library/Python/3.9/lib/python/site-packages/urllib3/__init__.py:35: NotOpenSSLWarning: urllib3 v2 only supports OpenSSL 1.1.1+, currently the 'ssl' module is compiled with 'LibreSSL 2.8.3'. See: https://github.com/urllib3/urllib3/issues/3020
+    warnings.warn(
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED tests/test_decisions.py::TestLoadPhrases::test_loads_phrases_from_file
+FAILED tests/test_decisions.py::TestLoadPhrases::test_includes_known_phrases
+FAILED tests/test_decisions.py::TestLoadPhrases::test_splits_slash_alternatives
+FAILED tests/test_decisions.py::TestExtractDecisionBlocks::test_s_class_blocks_from_ground_truth
+FAILED tests/test_runner_parser.py::test_run_step_timeout - assert False is True
+5 failed, 336 passed, 1 warning in 6.28s

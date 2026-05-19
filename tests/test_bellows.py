@@ -156,7 +156,8 @@ def test_diagnostic_auto_close_moves_to_done():
              patch("bellows._capture_git_diff", return_value=""), \
              patch("bellows._create_worktree", return_value="/tmp/wt"), \
              patch("bellows._teardown_worktree"), \
-             patch("bellows.record_run"):
+             patch("bellows.record_run"), \
+             patch("bellows.validators.validate_at_claim", return_value={"rejected": False, "reject_reason": "", "warnings": []}):
             response_server = MagicMock()
             bellows.run_plan(plan_path, config, response_server)
 
@@ -215,7 +216,8 @@ def test_clean_diagnostic_no_header_posts_verdict():
              patch("bellows._capture_git_diff", return_value=""), \
              patch("bellows._create_worktree", return_value="/tmp/wt"), \
              patch("bellows._teardown_worktree"), \
-             patch("bellows.record_run"):
+             patch("bellows.record_run"), \
+             patch("bellows.validators.validate_at_claim", return_value={"rejected": False, "reject_reason": "", "warnings": []}):
             response_server = MagicMock()
             bellows.run_plan(plan_path, config, response_server)
 
@@ -283,7 +285,8 @@ def test_clean_diagnostic_auto_close_true_moves_to_done():
              patch("bellows._capture_git_diff", return_value=""), \
              patch("bellows._create_worktree", return_value="/tmp/wt"), \
              patch("bellows._teardown_worktree"), \
-             patch("bellows.record_run"):
+             patch("bellows.record_run"), \
+             patch("bellows.validators.validate_at_claim", return_value={"rejected": False, "reject_reason": "", "warnings": []}):
             response_server = MagicMock()
             bellows.run_plan(plan_path, config, response_server)
 
@@ -332,7 +335,8 @@ def test_executable_no_header_defaults_to_verdict():
              patch("bellows._capture_git_diff", return_value=""), \
              patch("bellows._create_worktree", return_value="/tmp/wt"), \
              patch("bellows._teardown_worktree"), \
-             patch("bellows.record_run"):
+             patch("bellows.record_run"), \
+             patch("bellows.validators.validate_at_claim", return_value={"rejected": False, "reject_reason": "", "warnings": []}):
             response_server = MagicMock()
             bellows.run_plan(plan_path, config, response_server)
 
@@ -384,7 +388,8 @@ def test_executable_explicit_auto_close_true_still_closes():
              patch("bellows._capture_git_diff", return_value=""), \
              patch("bellows._create_worktree", return_value="/tmp/wt"), \
              patch("bellows._teardown_worktree"), \
-             patch("bellows.record_run"):
+             patch("bellows.record_run"), \
+             patch("bellows.validators.validate_at_claim", return_value={"rejected": False, "reject_reason": "", "warnings": []}):
             response_server = MagicMock()
             bellows.run_plan(plan_path, config, response_server)
 
@@ -1149,7 +1154,8 @@ def test_run_plan_claims_file_before_runner_runs():
              patch("bellows._capture_git_diff", return_value=""), \
              patch("bellows._create_worktree", return_value="/tmp/wt"), \
              patch("bellows._teardown_worktree"), \
-             patch("bellows.record_run"):
+             patch("bellows.record_run"), \
+             patch("bellows.validators.validate_at_claim", return_value={"rejected": False, "reject_reason": "", "warnings": []}):
             response_server = MagicMock()
             bellows.run_plan(plan_path, config, response_server)
 
@@ -1222,7 +1228,8 @@ def test_run_plan_bootstrap_prompt_uses_shadow_path():
              patch("bellows._capture_git_diff", return_value=""), \
              patch("bellows._create_worktree", return_value="/tmp/wt"), \
              patch("bellows._teardown_worktree"), \
-             patch("bellows.record_run"):
+             patch("bellows.record_run"), \
+             patch("bellows.validators.validate_at_claim", return_value={"rejected": False, "reject_reason": "", "warnings": []}):
             response_server = MagicMock()
             bellows.run_plan(plan_path, config, response_server)
 
@@ -1266,7 +1273,8 @@ def test_run_plan_continuation_prompt_uses_shadow_path():
              patch("bellows._capture_git_diff", return_value=""), \
              patch("bellows._create_worktree", return_value="/tmp/wt"), \
              patch("bellows._teardown_worktree"), \
-             patch("bellows.record_run"):
+             patch("bellows.record_run"), \
+             patch("bellows.validators.validate_at_claim", return_value={"rejected": False, "reject_reason": "", "warnings": []}):
             response_server = MagicMock()
             bellows.run_plan(plan_path, config, response_server)
 
@@ -1315,7 +1323,8 @@ def test_run_plan_diagnostic_prompt_uses_shadow_path():
              patch("bellows._capture_git_diff", return_value=""), \
              patch("bellows._create_worktree", return_value="/tmp/wt"), \
              patch("bellows._teardown_worktree"), \
-             patch("bellows.record_run"):
+             patch("bellows.record_run"), \
+             patch("bellows.validators.validate_at_claim", return_value={"rejected": False, "reject_reason": "", "warnings": []}):
             response_server = MagicMock()
             bellows.run_plan(plan_path, config, response_server)
 
@@ -1409,7 +1418,8 @@ def test_shadow_path_resolves_after_claim():
              patch("bellows._capture_git_diff", return_value=""), \
              patch("bellows._create_worktree", return_value="/tmp/wt"), \
              patch("bellows._teardown_worktree"), \
-             patch("bellows.record_run"):
+             patch("bellows.record_run"), \
+             patch("bellows.validators.validate_at_claim", return_value={"rejected": False, "reject_reason": "", "warnings": []}):
             response_server = MagicMock()
             bellows.run_plan(plan_path, config, response_server)
 
@@ -1970,7 +1980,8 @@ def test_run_plan_creates_worktree_before_pre_diff():
              patch("bellows.gates.check", return_value=_clean_gates()), \
              patch("bellows.notifier.push"), \
              patch("bellows.verdict.log_to_ledger"), \
-             patch("bellows.record_run"):
+             patch("bellows.record_run"), \
+             patch("bellows.validators.validate_at_claim", return_value={"rejected": False, "reject_reason": "", "warnings": []}):
             response_server = MagicMock()
             bellows.run_plan(plan_path, config, response_server)
 
@@ -2006,7 +2017,8 @@ def test_run_plan_passes_wt_path_to_capture_and_runner():
              patch("bellows.gates.check", return_value=_clean_gates()), \
              patch("bellows.notifier.push"), \
              patch("bellows.verdict.log_to_ledger"), \
-             patch("bellows.record_run"):
+             patch("bellows.record_run"), \
+             patch("bellows.validators.validate_at_claim", return_value={"rejected": False, "reject_reason": "", "warnings": []}):
             response_server = MagicMock()
             bellows.run_plan(plan_path, config, response_server)
 
@@ -2055,7 +2067,8 @@ def test_run_plan_tears_down_worktree_after_final_gate():
              patch("bellows.gates.check", side_effect=track_gates_check), \
              patch("bellows.notifier.push"), \
              patch("bellows.verdict.log_to_ledger"), \
-             patch("bellows.record_run"):
+             patch("bellows.record_run"), \
+             patch("bellows.validators.validate_at_claim", return_value={"rejected": False, "reject_reason": "", "warnings": []}):
             response_server = MagicMock()
             bellows.run_plan(plan_path, config, response_server)
 
@@ -2091,7 +2104,8 @@ def test_run_plan_strict_pause_on_creation_failure():
              patch("bellows.verdict.post_verdict_request") as mock_verdict, \
              patch("bellows.runner.run_step") as mock_runner, \
              patch("bellows.notifier.push"), \
-             patch("bellows.record_run"):
+             patch("bellows.record_run"), \
+             patch("bellows.validators.validate_at_claim", return_value={"rejected": False, "reject_reason": "", "warnings": []}):
             response_server = MagicMock()
             bellows.run_plan(plan_path, config, response_server)
 
@@ -2134,7 +2148,8 @@ def test_run_plan_pauses_on_cherry_pick_conflict():
              patch("bellows.gates.check", return_value=_clean_gates()), \
              patch("bellows.verdict.post_verdict_request") as mock_verdict, \
              patch("bellows.notifier.push"), \
-             patch("bellows.record_run"):
+             patch("bellows.record_run"), \
+             patch("bellows.validators.validate_at_claim", return_value={"rejected": False, "reject_reason": "", "warnings": []}):
             response_server = MagicMock()
             bellows.run_plan(plan_path, config, response_server)
 
@@ -2246,7 +2261,8 @@ def test_mode_a_detected_and_recovered():
              patch("bellows.verdict.post_verdict_request") as mock_verdict, \
              patch("bellows.notifier.notify_verdict_request"), \
              patch("bellows.notifier.push"), \
-             patch("bellows.record_run"):
+             patch("bellows.record_run"), \
+             patch("bellows.validators.validate_at_claim", return_value={"rejected": False, "reject_reason": "", "warnings": []}):
             response_server = MagicMock()
             bellows.run_plan(plan_path, config, response_server)
 
@@ -2293,7 +2309,8 @@ def test_mode_a_no_detection_normal_flow():
              patch("bellows.verdict.post_verdict_request") as mock_verdict, \
              patch("bellows.notifier.notify_verdict_request"), \
              patch("bellows.notifier.push"), \
-             patch("bellows.record_run"):
+             patch("bellows.record_run"), \
+             patch("bellows.validators.validate_at_claim", return_value={"rejected": False, "reject_reason": "", "warnings": []}):
             response_server = MagicMock()
             bellows.run_plan(plan_path, config, response_server)
 
@@ -2339,7 +2356,8 @@ def test_mode_a_missing_file_not_in_done():
              patch("bellows.verdict.post_verdict_request") as mock_verdict, \
              patch("bellows.notifier.notify_verdict_request"), \
              patch("bellows.notifier.push"), \
-             patch("bellows.record_run"):
+             patch("bellows.record_run"), \
+             patch("bellows.validators.validate_at_claim", return_value={"rejected": False, "reject_reason": "", "warnings": []}):
             response_server = MagicMock()
             bellows.run_plan(plan_path, config, response_server)
 
@@ -2393,7 +2411,8 @@ def test_mode_a_recovery_failure():
              patch("bellows.verdict.post_verdict_request") as mock_verdict, \
              patch("bellows.notifier.notify_verdict_request"), \
              patch("bellows.notifier.push"), \
-             patch("bellows.record_run"):
+             patch("bellows.record_run"), \
+             patch("bellows.validators.validate_at_claim", return_value={"rejected": False, "reject_reason": "", "warnings": []}):
             response_server = MagicMock()
             bellows.run_plan(plan_path, config, response_server)
 
@@ -2446,7 +2465,8 @@ def test_mode_a_synthetic_failure_in_verdict_request():
              patch("bellows.verdict.post_verdict_request", side_effect=capture_verdict), \
              patch("bellows.notifier.notify_verdict_request"), \
              patch("bellows.notifier.push"), \
-             patch("bellows.record_run"):
+             patch("bellows.record_run"), \
+             patch("bellows.validators.validate_at_claim", return_value={"rejected": False, "reject_reason": "", "warnings": []}):
             response_server = MagicMock()
             bellows.run_plan(plan_path, config, response_server)
 
@@ -2528,7 +2548,8 @@ def test_warning_multi_step_plan_without_pause_for_verdict(capsys):
              patch("bellows._read_shadow", return_value=None), \
              patch("bellows._write_shadow"), \
              patch("bellows._delete_shadow"), \
-             patch("bellows.record_run"):
+             patch("bellows.record_run"), \
+             patch("bellows.validators.validate_at_claim", return_value={"rejected": False, "reject_reason": "", "warnings": []}):
             response_server = MagicMock()
             bellows.run_plan(plan_path, config, response_server)
 
@@ -3012,7 +3033,8 @@ def test_auto_close_yaml_bool_does_not_crash():
              patch("bellows._capture_git_diff", return_value=""), \
              patch("bellows._create_worktree", return_value="/tmp/wt"), \
              patch("bellows._teardown_worktree"), \
-             patch("bellows.record_run"):
+             patch("bellows.record_run"), \
+             patch("bellows.validators.validate_at_claim", return_value={"rejected": False, "reject_reason": "", "warnings": []}):
             response_server = MagicMock()
             # This must NOT raise AttributeError
             bellows.run_plan(plan_path, config, response_server)
@@ -3062,7 +3084,8 @@ def test_auto_close_yaml_bool_false():
              patch("bellows._capture_git_diff", return_value=""), \
              patch("bellows._create_worktree", return_value="/tmp/wt"), \
              patch("bellows._teardown_worktree"), \
-             patch("bellows.record_run"):
+             patch("bellows.record_run"), \
+             patch("bellows.validators.validate_at_claim", return_value={"rejected": False, "reject_reason": "", "warnings": []}):
             response_server = MagicMock()
             # This must NOT raise AttributeError
             bellows.run_plan(plan_path, config, response_server)

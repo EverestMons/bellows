@@ -237,7 +237,8 @@ def test_dispatch_starts_fresh_when_db_has_orphan_slug_rows():
              patch("bellows._create_worktree", return_value="/tmp/wt"), \
              patch("bellows._teardown_worktree"), \
              patch("bellows.record_run"), \
-             patch("bellows.DB_PATH", db_path):
+             patch("bellows.DB_PATH", db_path), \
+             patch("bellows.validators.validate_at_claim", return_value={"rejected": False, "reject_reason": "", "warnings": []}):
             response_server = MagicMock()
             bellows.run_plan(str(plan_path), config, response_server, resume_step=None)
 

@@ -117,6 +117,7 @@ import gates
 import verdict
 import notifier
 import server
+import validators
 
 
 def load_config(path: str = "config.json") -> dict:
@@ -357,6 +358,18 @@ def run_plan(plan_path: str, config: dict, response_server: server.ResponseServe
         if "pause_for_verdict" in header and len(header) > prev_len:
             _log("WARN", f"⚠️ sparse header ({prev_len} keys) for {total_steps}-step plan — defaulting pause_for_verdict to after_step_1 (safe-pause)", slug=slug_for(plan_name))
         model = header.get("Model", header.get("model", config["default_model"]))
+
+        # Claim-time dispatch mode validation (Rule 35)
+        if not plan_filename.startswith("in-progress-"):
+            validation_result = validators.validate_at_claim(header, plan_path, config, metadata_text)
+            if validation_result["rejected"]:
+                halted_path = os.path.join(plan_dir, f"halted-{base_filename}")
+                shutil.move(plan_path, halted_path)
+                _log("ERROR", f"plan rejected by dispatch-mode validator: {validation_result['reject_reason']}", slug=slug_for(plan_name))
+                notifier.push(app_key, user_key, "Bellows — Plan Rejected", f"Plan: {plan_name}\nReason: {validation_result['reject_reason']}")
+                return
+            for w in validation_result["warnings"]:
+                _log("WARN", f"dispatch-validator: {w['check']} — {w['message']}", slug=slug_for(plan_name))
 
         # Claim the plan atomically before calling the runner.
         # If already in-progress (e.g. resume path), skip the move.
