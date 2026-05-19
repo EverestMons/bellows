@@ -135,3 +135,14 @@ else:
     print(f"Evidence folder: {evidence_dir}")
     print(f"Files verified: {len(required_evidence_files)}")
 ```
+
+**Output:**
+
+```
+============================================================
+Rule 20 — QA Self-Check Results
+============================================================
+PASSED — SELF-CHECK PASSED — all evidence files present, no hedging keywords found.
+Evidence folder: knowledge/qa/evidence/dispatch-mode-validator-2026-05-19/
+Files verified: 7
+```
