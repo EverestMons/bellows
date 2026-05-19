@@ -1,0 +1,22 @@
+============================= test session starts ==============================
+platform darwin -- Python 3.9.6, pytest-8.4.2, pluggy-1.6.0 -- /Applications/Xcode.app/Contents/Developer/usr/bin/python3
+cachedir: .pytest_cache
+rootdir: /Users/marklehn/Developer/GitHub/bellows/.bellows-worktrees/bellows-dispatch-mode-validator-2026-05-19
+plugins: anyio-4.12.1, xdist-3.8.0, cov-7.0.0
+collecting ... collected 13 items
+
+tests/test_validators.py::test_clean_plan_all_checks_pass PASSED         [  7%]
+tests/test_validators.py::test_reject_missing_dispatch_mode PASSED       [ 15%]
+tests/test_validators.py::test_reject_invalid_dispatch_mode_value PASSED [ 23%]
+tests/test_validators.py::test_warn_mismatch_manual_bootstrap_in_watched_dir PASSED [ 30%]
+tests/test_validators.py::test_no_warn_manual_bootstrap_not_in_watched_dir PASSED [ 38%]
+tests/test_validators.py::test_warn_stop_prose_in_bellows_mode PASSED    [ 46%]
+tests/test_validators.py::test_no_warn_stop_prose_in_manual_bootstrap_mode PASSED [ 53%]
+tests/test_validators.py::test_stop_prose_in_fenced_code_block_excluded PASSED [ 61%]
+tests/test_validators.py::test_stop_prose_in_inline_code_excluded PASSED [ 69%]
+tests/test_validators.py::test_stop_prose_in_header_excluded PASSED      [ 76%]
+tests/test_validators.py::test_stop_prose_in_deposits_block_excluded PASSED [ 84%]
+tests/test_validators.py::test_multiple_stop_prose_patterns_detected PASSED [ 92%]
+tests/test_validators.py::test_reject_empty_dispatch_mode_value PASSED   [100%]
+
+============================== 13 passed in 0.02s ==============================

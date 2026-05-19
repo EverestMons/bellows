@@ -1,0 +1,8 @@
+=== Spot-check 1: Reject case (no dispatch_mode) ===
+Parsed header: {'total_steps': '1'}
+
+rejected: True
+reject_reason: Plan header missing **Dispatch Mode:** field. Per Rule 35, this field is required. Plan will not be claimed.
+warnings: []
+
+RESULT: PASS — plan correctly rejected (no dispatch_mode field)

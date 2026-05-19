@@ -1,0 +1,10 @@
+=== Spot-check 2: Warn case (b) — STOP-prose in bellows mode ===
+Parsed header: {'dispatch_mode': 'bellows', 'total_steps': '1'}
+
+rejected: False
+reject_reason: 
+warnings count: 1
+  check=stop_prose, severity=warn
+  message=STOP-prose detected in step body: 'do not proceed' matched in line: Implement the feature. The agent must do not proceed until the CEO has approved.
+
+RESULT: PASS — plan not blocked, warn emitted for STOP-prose

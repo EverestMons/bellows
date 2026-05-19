@@ -1,0 +1,12 @@
+=== Parsed header ===
+  last_updated: 2026-05-19
+  project: bellows
+  total_steps: 3
+  dispatch_mode: bellows
+  auto_close: false
+  pause_for_verdict: after_each_step
+
+=== Running check_stop_prose against this plan ===
+Warning count: 1
+  {'check': 'stop_prose', 'severity': 'warn', 'message': 'STOP-prose detected in step body: \'STOP\\.\' matched in line: - **Rationale:** The goal is catching directive prose ("the agent should STOP. a'}
+RESULT: FAIL — STOP-prose detected in this plan

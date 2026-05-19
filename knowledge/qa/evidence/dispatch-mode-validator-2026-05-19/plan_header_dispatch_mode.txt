@@ -1,0 +1,10 @@
+# Executable — Bellows-Side Dispatch Mode Validator
+
+**Last Updated:** 2026-05-19
+**Project:** bellows
+**Total Steps:** 3
+**Dispatch Mode:** bellows
+**auto_close:** false
+**pause_for_verdict:** after_each_step
+---
+RESULT: **Dispatch Mode:** bellows confirmed on line 6 of plan header
