@@ -21,13 +21,80 @@ def test_load_config():
             "watched_projects": [],
             "default_model": "claude-sonnet-4-6",
             "planner_model": "claude-sonnet-4-6",
-            "pushover": {"app_key": "", "user_key": ""},
             "callback_port": 5000,
+        }
+        secrets_data = {
+            "pushover": {"app_key": "fake-app-key", "user_key": "fake-user-key"},
+            "tailscale_ip": "100.0.0.1",
         }
         with open(config_path, "w") as f:
             json.dump(config_data, f)
+        with open(os.path.join(tmp, "config.secrets.json"), "w") as f:
+            json.dump(secrets_data, f)
         result = bellows.load_config(config_path)
         assert result["default_model"] == "claude-sonnet-4-6"
+        assert result["pushover"]["app_key"] == "fake-app-key"
+        assert result["tailscale_ip"] == "100.0.0.1"
+
+
+def test_load_config_merges_secrets():
+    with tempfile.TemporaryDirectory() as tmp:
+        config_path = os.path.join(tmp, "config.json")
+        operational = {
+            "watched_projects": ["/tmp/project"],
+            "default_model": "claude-sonnet-4-6",
+            "planner_model": "claude-sonnet-4-6",
+            "callback_port": 5000,
+        }
+        secrets = {
+            "pushover": {"app_key": "test-app", "user_key": "test-user"},
+            "tailscale_ip": "100.1.2.3",
+        }
+        with open(config_path, "w") as f:
+            json.dump(operational, f)
+        with open(os.path.join(tmp, "config.secrets.json"), "w") as f:
+            json.dump(secrets, f)
+        result = bellows.load_config(config_path)
+        assert result["watched_projects"] == ["/tmp/project"]
+        assert result["default_model"] == "claude-sonnet-4-6"
+        assert result["pushover"]["app_key"] == "test-app"
+        assert result["pushover"]["user_key"] == "test-user"
+        assert result["tailscale_ip"] == "100.1.2.3"
+        assert result["callback_port"] == 5000
+
+
+def test_load_config_missing_secrets():
+    with tempfile.TemporaryDirectory() as tmp:
+        config_path = os.path.join(tmp, "config.json")
+        operational = {
+            "watched_projects": [],
+            "default_model": "claude-sonnet-4-6",
+            "callback_port": 5000,
+        }
+        with open(config_path, "w") as f:
+            json.dump(operational, f)
+        result = bellows.load_config(config_path)
+        assert result["default_model"] == "claude-sonnet-4-6"
+        assert result["callback_port"] == 5000
+        assert "pushover" not in result
+
+
+def test_load_config_deep_merge():
+    with tempfile.TemporaryDirectory() as tmp:
+        config_path = os.path.join(tmp, "config.json")
+        operational = {
+            "default_model": "claude-sonnet-4-6",
+            "pushover": {},
+        }
+        secrets = {
+            "pushover": {"app_key": "merged-key"},
+        }
+        with open(config_path, "w") as f:
+            json.dump(operational, f)
+        with open(os.path.join(tmp, "config.secrets.json"), "w") as f:
+            json.dump(secrets, f)
+        result = bellows.load_config(config_path)
+        assert result["pushover"] == {"app_key": "merged-key"}
 
 
 def test_is_final_step():
@@ -3096,3 +3163,130 @@ def test_auto_close_yaml_bool_false():
         mock_post_verdict.assert_called_once()
         for call in mock_ledger.call_args_list:
             assert call[0][3] != "auto-close", "auto-close should not fire"
+
+
+def test_migrate_config_idempotent():
+    sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "scripts"))
+    import migrate_config
+
+    with tempfile.TemporaryDirectory() as tmp:
+        config_path = Path(tmp) / "config.json"
+        original = {
+            "callback_port": 5000,
+            "default_model": "claude-sonnet-4-6",
+            "planner_model": "claude-sonnet-4-6",
+            "pushover": {"app_key": "fake-key", "user_key": "fake-user"},
+            "tailscale_ip": "100.0.0.1",
+            "watched_projects": [],
+        }
+        with open(config_path, "w") as f:
+            json.dump(original, f, indent=2, sort_keys=True)
+            f.write("\n")
+
+        # Patch paths to point at temp dir
+        old_config = migrate_config.CONFIG_PATH
+        old_secrets = migrate_config.SECRETS_PATH
+        try:
+            migrate_config.CONFIG_PATH = config_path
+            migrate_config.SECRETS_PATH = Path(tmp) / "config.secrets.json"
+
+            migrate_config.migrate()
+            first_config = config_path.read_text()
+            first_secrets = migrate_config.SECRETS_PATH.read_text()
+
+            migrate_config.migrate()
+            second_config = config_path.read_text()
+            second_secrets = migrate_config.SECRETS_PATH.read_text()
+
+            assert first_config == second_config, "config.json changed on second run"
+            assert first_secrets == second_secrets, "config.secrets.json changed on second run"
+        finally:
+            migrate_config.CONFIG_PATH = old_config
+            migrate_config.SECRETS_PATH = old_secrets
+
+
+def test_migrate_config_preserves_values():
+    sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "scripts"))
+    import migrate_config
+
+    with tempfile.TemporaryDirectory() as tmp:
+        config_path = Path(tmp) / "config.json"
+        secrets_path = Path(tmp) / "config.secrets.json"
+        original = {
+            "callback_port": 5000,
+            "default_model": "claude-sonnet-4-6",
+            "notifications": {"enabled": True, "events": {"failure": True}},
+            "planner_model": "claude-sonnet-4-6",
+            "pushover": {"app_key": "fake-key", "user_key": "fake-user"},
+            "tailscale_ip": "100.0.0.1",
+            "watched_projects": ["/tmp/proj"],
+        }
+        with open(config_path, "w") as f:
+            json.dump(original, f, indent=2, sort_keys=True)
+            f.write("\n")
+
+        old_config = migrate_config.CONFIG_PATH
+        old_secrets = migrate_config.SECRETS_PATH
+        try:
+            migrate_config.CONFIG_PATH = config_path
+            migrate_config.SECRETS_PATH = secrets_path
+
+            migrate_config.migrate()
+
+            with open(config_path) as f:
+                operational = json.load(f)
+            with open(secrets_path) as f:
+                secrets = json.load(f)
+
+            # Merge and compare to original
+            merged = dict(operational)
+            for key, value in secrets.items():
+                if isinstance(value, dict) and isinstance(merged.get(key), dict):
+                    merged[key].update(value)
+                else:
+                    merged[key] = value
+            assert merged == original, f"Merged config differs from original: {merged} != {original}"
+        finally:
+            migrate_config.CONFIG_PATH = old_config
+            migrate_config.SECRETS_PATH = old_secrets
+
+
+def test_migrate_config_already_split():
+    sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "scripts"))
+    import migrate_config
+
+    with tempfile.TemporaryDirectory() as tmp:
+        config_path = Path(tmp) / "config.json"
+        secrets_path = Path(tmp) / "config.secrets.json"
+        operational = {
+            "callback_port": 5000,
+            "default_model": "claude-sonnet-4-6",
+            "watched_projects": [],
+        }
+        secrets = {
+            "pushover": {"app_key": "fake-key", "user_key": "fake-user"},
+            "tailscale_ip": "100.0.0.1",
+        }
+        with open(config_path, "w") as f:
+            json.dump(operational, f, indent=2, sort_keys=True)
+            f.write("\n")
+        with open(secrets_path, "w") as f:
+            json.dump(secrets, f, indent=2, sort_keys=True)
+            f.write("\n")
+
+        config_before = config_path.read_text()
+        secrets_before = secrets_path.read_text()
+
+        old_config = migrate_config.CONFIG_PATH
+        old_secrets = migrate_config.SECRETS_PATH
+        try:
+            migrate_config.CONFIG_PATH = config_path
+            migrate_config.SECRETS_PATH = secrets_path
+
+            migrate_config.migrate()
+
+            assert config_path.read_text() == config_before, "config.json should not change"
+            assert secrets_path.read_text() == secrets_before, "config.secrets.json should not change"
+        finally:
+            migrate_config.CONFIG_PATH = old_config
+            migrate_config.SECRETS_PATH = old_secrets

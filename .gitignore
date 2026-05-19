@@ -6,7 +6,7 @@ logs/
 __pycache__/
 *.pyc
 .venv/
-config.json
+config.secrets.json
 .env
 verdicts/ledger.jsonl
 .bellows-cache/

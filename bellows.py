@@ -121,9 +121,29 @@ import validators
 
 
 def load_config(path: str = "config.json") -> dict:
+    # Two-file config layout:
+    #   config.json          — operational settings (committed to git)
+    #   config.secrets.json  — credentials & sensitive values (gitignored)
+    # The loader reads both and deep-merges secrets into operational.
+    # If config.secrets.json is missing, operational config is returned
+    # as-is (Pushover notifications will silently no-op).
     config_path = BELLOWS_ROOT / path
     with open(config_path, "r") as f:
-        return json.load(f)
+        config = json.load(f)
+
+    secrets_path = config_path.parent / "config.secrets.json"
+    if secrets_path.exists():
+        with open(secrets_path, "r") as f:
+            secrets = json.load(f)
+        for key, value in secrets.items():
+            if isinstance(value, dict) and isinstance(config.get(key), dict):
+                config[key].update(value)
+            else:
+                config[key] = value
+    else:
+        _log("WARN", "config.secrets.json not found — running without secrets (Pushover disabled)")
+
+    return config
 
 
 def migrate_db():
