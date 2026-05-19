@@ -1,0 +1,21 @@
+Gitignore reconciliation — post-DEV state
+
+=== bellows/.gitignore (relevant lines) ===
+Line 8: .venv/
+Line 9: config.secrets.json
+Line 10: .env
+
+Verification:
+- config.json is NOT in bellows/.gitignore (removed per SA spec) — PASS
+- config.secrets.json IS in bellows/.gitignore (added per SA spec) — PASS
+
+=== Parent .gitignore (/Users/marklehn/Developer/GitHub/.gitignore) (relevant lines) ===
+Line 16: # Sensitive
+Line 17: github-recovery-codes.txt
+Line 18: bellows/config.secrets.json
+
+Verification:
+- bellows/config.json is NOT in parent .gitignore (removed per SA spec) — PASS
+- bellows/config.secrets.json IS in parent .gitignore (added per SA spec) — PASS
+
+GITIGNORE RECONCILIATION: PASS

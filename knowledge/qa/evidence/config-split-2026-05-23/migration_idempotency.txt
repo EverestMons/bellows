@@ -1,0 +1,13 @@
+Migration idempotency test — ran against test fixture (NOT live config.json)
+
+=== First migration run ===
+Migration complete.
+  Operational keys in config.json: ['callback_port', 'default_model', 'notifications', 'planner_model', 'step_inactivity_timeout_seconds', 'step_timeout_seconds', 'watched_projects']
+  Secret keys in config.secrets.json: ['pushover', 'tailscale_ip']
+
+=== Second migration run ===
+Already migrated — config.json has no secret keys and config.secrets.json exists. No-op.
+
+config.json identical across runs: True
+config.secrets.json identical across runs: True
+IDEMPOTENCY: PASS

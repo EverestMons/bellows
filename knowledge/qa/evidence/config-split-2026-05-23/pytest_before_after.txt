@@ -1,0 +1,11 @@
+Pytest regression — before/after DEV
+
+=== Before DEV (from dev log, baseline) ===
+======================== 106 passed, 1 warning in 0.54s ========================
+
+=== After DEV (QA re-run) ===
+======================== 112 passed, 1 warning in 0.57s ========================
+
+Delta: +6 tests (106 → 112), 0 failures, 0 errors, 1 warning (unchanged — urllib3/LibreSSL compat)
+
+REGRESSION: PASS

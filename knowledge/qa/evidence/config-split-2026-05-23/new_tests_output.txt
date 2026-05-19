@@ -1,0 +1,27 @@
+New tests output — pytest -v -k "test_load_config or test_migrate"
+
+============================= test session starts ==============================
+platform darwin -- Python 3.9.6, pytest-8.4.2, pluggy-1.6.0
+rootdir: /Users/marklehn/Developer/GitHub/bellows/.bellows-worktrees/bellows-config-split-2026-05-23
+collecting ... collected 112 items / 105 deselected / 7 selected
+
+tests/test_bellows.py::test_load_config PASSED                           [ 14%]
+tests/test_bellows.py::test_load_config_merges_secrets PASSED            [ 28%]
+tests/test_bellows.py::test_load_config_missing_secrets PASSED           [ 42%]
+tests/test_bellows.py::test_load_config_deep_merge PASSED                [ 57%]
+tests/test_bellows.py::test_migrate_config_idempotent PASSED             [ 71%]
+tests/test_bellows.py::test_migrate_config_preserves_values PASSED       [ 85%]
+tests/test_bellows.py::test_migrate_config_already_split PASSED          [100%]
+
+================= 7 passed, 105 deselected, 1 warning in 0.08s =================
+
+All 7 new/updated tests pass:
+- test_load_config (updated to test two-file merge)
+- test_load_config_merges_secrets (new)
+- test_load_config_missing_secrets (new)
+- test_load_config_deep_merge (new)
+- test_migrate_config_idempotent (new)
+- test_migrate_config_preserves_values (new)
+- test_migrate_config_already_split (new)
+
+NEW TESTS: PASS

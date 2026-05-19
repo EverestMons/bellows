@@ -1,0 +1,40 @@
+Loader diff: git diff HEAD~1 -- bellows.py (load_config function only)
+
+diff --git a/bellows.py b/bellows.py
+index cc87b56..9c13fcc 100644
+--- a/bellows.py
++++ b/bellows.py
+@@ -121,9 +121,29 @@ import validators
+
+
+ def load_config(path: str = "config.json") -> dict:
++    # Two-file config layout:
++    #   config.json          — operational settings (committed to git)
++    #   config.secrets.json  — credentials & sensitive values (gitignored)
++    # The loader reads both and deep-merges secrets into operational.
++    # If config.secrets.json is missing, operational config is returned
++    # as-is (Pushover notifications will silently no-op).
+     config_path = BELLOWS_ROOT / path
+     with open(config_path, "r") as f:
+-        return json.load(f)
++        config = json.load(f)
++
++    secrets_path = config_path.parent / "config.secrets.json"
++    if secrets_path.exists():
++        with open(secrets_path, "r") as f:
++            secrets = json.load(f)
++        for key, value in secrets.items():
++            if isinstance(value, dict) and isinstance(config.get(key), dict):
++                config[key].update(value)
++            else:
++                config[key] = value
++    else:
++        _log("WARN", "config.secrets.json not found — running without secrets (Pushover disabled)")
++
++    return config
+
+Summary:
+- Pre: 4-line function, single json.load, immediate return
+- Post: ~24 lines, reads config.json + optional config.secrets.json, one-level deep merge, WARN log on missing secrets
+- Matches SA pseudocode from Decision 3 (lenient)
+- Minor deviation: secrets_path resolves relative to config_path.parent (not BELLOWS_ROOT) — functionally equivalent in production, better for test isolation

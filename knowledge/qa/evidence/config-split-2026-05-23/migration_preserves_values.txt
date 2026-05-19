@@ -1,0 +1,48 @@
+Migration value preservation test — ran against test fixture (NOT live config.json)
+
+Test: split original config into operational + secrets, then merge, assert merged == original.
+
+Original dict keys (9): callback_port, default_model, notifications, planner_model, pushover,
+  step_inactivity_timeout_seconds, step_timeout_seconds, tailscale_ip, watched_projects
+
+Post-split operational keys (7): callback_port, default_model, notifications, planner_model,
+  step_inactivity_timeout_seconds, step_timeout_seconds, watched_projects
+
+Post-split secret keys (2): pushover, tailscale_ip
+
+Merged dict equals original: True
+VALUE PRESERVATION: PASS
+
+Post-split config.json (operational):
+{
+  "callback_port": 5000,
+  "default_model": "claude-sonnet-4-6",
+  "notifications": {
+    "coalesce_window_seconds": 30,
+    "enabled": true,
+    "events": {
+      "failure": true,
+      "plan_complete": true,
+      "plan_halted": true,
+      "plan_skipped": true,
+      "queue_empty": true,
+      "verdict_needed": true
+    }
+  },
+  "planner_model": "claude-sonnet-4-6",
+  "step_inactivity_timeout_seconds": 600,
+  "step_timeout_seconds": 2400,
+  "watched_projects": [
+    "/tmp/project1",
+    "/tmp/project2"
+  ]
+}
+
+Post-split config.secrets.json:
+{
+  "pushover": {
+    "app_key": "fake-test-key",
+    "user_key": "fake-test-user"
+  },
+  "tailscale_ip": "100.0.0.1"
+}

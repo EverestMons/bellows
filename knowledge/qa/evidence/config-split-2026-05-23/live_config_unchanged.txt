@@ -1,0 +1,23 @@
+Live config.json safety property check
+
+The live config.json is at /Users/marklehn/Developer/GitHub/bellows/config.json (outside worktree).
+
+Verification approach: config.json is gitignored, so git diff does not apply. Verified via:
+
+1. File modification timestamp: May 19 10:56:01 2026 — predates this plan's execution (2026-05-23)
+2. Worktree git status: clean, no untracked or modified files
+3. config.json does NOT exist in the worktree (gitignored) — confirming DEV did not create or modify it
+4. Migration script exists at scripts/migrate_config.py but was NOT executed (no config.secrets.json
+   exists in the worktree or at the live path)
+
+$ ls -la /Users/marklehn/Developer/GitHub/bellows/config.json
+-rw-r--r--  1 marklehn  staff  1331 May 19 10:56 /Users/marklehn/Developer/GitHub/bellows/config.json
+
+$ stat -f "%Sm" /Users/marklehn/Developer/GitHub/bellows/config.json
+May 19 10:56:01 2026
+
+$ git status (in worktree)
+Not currently on any branch.
+nothing to commit, working tree clean
+
+LIVE CONFIG UNCHANGED: PASS
