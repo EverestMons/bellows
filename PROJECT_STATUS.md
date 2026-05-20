@@ -1,5 +1,5 @@
 # Bellows — Project Status
-**Last Updated:** 2026-05-20 (Bash gate GUARDRAILS exemption shipped — closes shop_backlog `guardrails-vs-bash-gate-contradiction-git-locks`)
+**Last Updated:** 2026-05-20 (Bash gate GUARDRAILS exemption QA verified — closes shop_backlog `guardrails-vs-bash-gate-contradiction-git-locks`)
 
 ## Status: Phase 1 Complete — Live (daemon running, all 10 watched paths active)
 

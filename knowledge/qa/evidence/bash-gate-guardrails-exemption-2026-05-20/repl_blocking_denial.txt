@@ -1,5 +1,4 @@
-=== REPL: Blocking denial (non-exempt rm -rf) ===
-Parsed permission_denials: [{'tool_name': 'Bash', 'tool_use_id': 'toolu_rm1', 'tool_input': {'command': 'rm -rf /tmp/foo'}}]
-Failures after gate: [{'gate': 'no_permission_denials', 'evidence': "1 blocking denial(s): {'tool_name': 'Bash', 'tool_use_id': 'toolu_rm1', 'tool_input': {'command': 'rm -rf /tmp/foo'}}"}]
-Failures list contains no_permission_denials: True
-RESULT: PASS — non-exempt denial correctly produces no_permission_denials gate_failure
+=== REPL: Non-exempt Bash denial (rm -rf /tmp/foo) ===
+Failures list: [{'gate': 'no_permission_denials', 'evidence': "1 blocking denial(s): {'tool_name': 'Bash', 'tool_use_id': 'toolu_rm1', 'tool_input': {'command': 'rm -rf /tmp/foo'}}"}]
+Failures count: 1
+RESULT: PASS — non-exempt denial correctly blocks, no_permission_denials gate fires

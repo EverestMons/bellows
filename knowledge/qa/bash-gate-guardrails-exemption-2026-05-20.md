@@ -8,9 +8,17 @@
 
 Verified Step 1's implementation of `GUARDRAILS_BASH_EXEMPTION_PATTERN` in `gates.py`. All deliverables exist on disk with correct content. 93 tests pass in `test_gates.py` (91 pre-existing + 2 new, zero regressions). Full suite: 349 collected, 344 passed, 5 pre-existing failures (unchanged). Behavioral REPL verification confirms exempt denials pass through and non-exempt denials still block.
 
+**REMINDER: restart Bellows daemon to load the new gate logic.**
+
 ## Findings by Severity
 
-None. No issues found.
+| Severity | Count | Details |
+|---|---|---|
+| Critical | 0 | None |
+| High | 0 | None |
+| Medium | 0 | None |
+| Low | 0 | None |
+| Info | 1 | 5 pre-existing test failures in full suite (4 test_decisions.py missing INTERMEDIATE_DECISION_PHRASES.md in worktree, 1 test_runner_parser.py timeout handling) — not introduced by this change |
 
 ## Testing Coverage
 
@@ -24,11 +32,11 @@ None. No issues found.
 
 | Deliverable | Expected | Status | Evidence |
 |---|---|---|---|
-| `gates.py` contains `GUARDRAILS_BASH_EXEMPTION_PATTERN` near `READ_CLASS_TOOLS` | Compiled regex constant at lines 37-48 | OK | grep: `GUARDRAILS_BASH_EXEMPTION_PATTERN` at line 42, immediately after `READ_CLASS_TOOLS` at line 35 |
-| `_gate_no_permission_denials` contains Bash exemption filter | `if tool_name == "Bash"` + pattern search at lines 200-203 | OK | grep: `GUARDRAILS_BASH_EXEMPTION_PATTERN.search(cmd)` at line 202 |
-| `tests/test_gates.py` contains `test_no_permission_denials_exempts_guardrails_lock_cleanup` | Test function present | OK | grep: function def at line 1146 |
-| `tests/test_gates.py` contains `test_no_permission_denials_still_blocks_other_bash_denials` | Test function present | OK | grep: function def at line 1163 |
-| `knowledge/development/bash-gate-guardrails-exemption-2026-05-20.md` | Dev log with Output Receipt | OK | File exists, 142 lines, Status: Complete |
+| `gates.py` contains `GUARDRAILS_BASH_EXEMPTION_PATTERN` near `READ_CLASS_TOOLS` | Compiled regex constant at lines 42-48, after `READ_CLASS_TOOLS` at line 35 | OK | Direct read confirmed: `_LOCK_GLOB` at line 41, `GUARDRAILS_BASH_EXEMPTION_PATTERN = re.compile(...)` at lines 42-48, inline comment citing `governance/GUARDRAILS.md` and shop_backlog entry |
+| `_gate_no_permission_denials` contains Bash exemption filter | `if tool_name == "Bash"` + pattern search at lines 200-203 | OK | Direct read confirmed: lines 198-203, comment cites `tool_input.command` field path |
+| `tests/test_gates.py` contains `test_no_permission_denials_exempts_guardrails_lock_cleanup` | Test function present | OK | Direct read confirmed: function def at line 1146 |
+| `tests/test_gates.py` contains `test_no_permission_denials_still_blocks_other_bash_denials` | Test function present | OK | Direct read confirmed: function def at line 1163 |
+| `knowledge/development/bash-gate-guardrails-exemption-2026-05-20.md` | Dev log with Output Receipt Complete | OK | Direct read confirmed: 142 lines, Status: Complete, before/after snippets, field name `tool_input.command`, test count 91->93 |
 
 ## Behavioral Verification Results
 
@@ -71,7 +79,7 @@ Constructed mock `permission_denials` payload with non-exempt command:
 ```
 rm -rf /tmp/foo
 ```
-Passed through `_gate_no_permission_denials`. Result: `failures` list contains `no_permission_denials` entry. PASS.
+Passed through `_gate_no_permission_denials`. Result: `failures` list contains 1 entry with `gate: "no_permission_denials"`. PASS.
 
 Evidence: `repl_blocking_denial.txt`
 
@@ -98,18 +106,17 @@ Files verified: 4
 **Status:** Complete
 
 ### What Was Done
-Verified Step 1's GUARDRAILS_BASH_EXEMPTION_PATTERN implementation in gates.py. Ran deliverable verification, pytest (targeted + full suite), REPL behavioral verification (exempt + blocking payloads), and Rule 20 self-check. All checks pass.
+Verified Step 1's GUARDRAILS_BASH_EXEMPTION_PATTERN implementation in gates.py. Ran deliverable verification (5/5 OK), pytest targeted (93/93 pass), pytest full suite (344/349 pass, 5 pre-existing), REPL behavioral verification (exempt + blocking payloads both correct), and Rule 20 self-check (PASSED). All checks pass.
 
 ### Files Deposited
 - `knowledge/qa/bash-gate-guardrails-exemption-2026-05-20.md` — QA report with verification table, behavioral results, and Rule 20 self-check banner
 - `knowledge/qa/evidence/bash-gate-guardrails-exemption-2026-05-20/` — 4 evidence files (pytest_test_gates_v.txt, pytest_full_suite.txt, repl_exempt_denial.txt, repl_blocking_denial.txt)
 
 ### Files Created or Modified (Code)
-- None (QA verification only)
+- `PROJECT_STATUS.md` — prepended completed milestone entry
 
 ### Decisions Made
-- Classified all 5 full-suite test failures as pre-existing (no changes to those test files in the commit)
-- Accepted `test_run_step_timeout` as documented pre-existing failure per prior QA reports
+- Classified all 5 full-suite test failures as pre-existing (no changes to those test files in this commit; documented in prior QA reports)
 
 ### Flags for CEO
 - None

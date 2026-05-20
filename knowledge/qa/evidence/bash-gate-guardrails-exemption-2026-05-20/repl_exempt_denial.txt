@@ -1,5 +1,4 @@
-=== REPL: Exempt denial (GUARDRAILS lock cleanup) ===
-Parsed permission_denials: [{'tool_name': 'Bash', 'tool_use_id': 'toolu_lock1', 'tool_input': {'command': 'rm -f .git/index.lock .git/"index "*.lock .git/"index "[0-9]* 2>/dev/null'}}]
-Failures after gate: []
-Failures list is empty: True
-RESULT: PASS — exempt denial correctly filtered, failures list empty
+=== REPL: Exempt GUARDRAILS lock-cleanup denial ===
+Failures list: []
+Failures count: 0
+RESULT: PASS — exempt denial correctly filtered out, failures list is empty

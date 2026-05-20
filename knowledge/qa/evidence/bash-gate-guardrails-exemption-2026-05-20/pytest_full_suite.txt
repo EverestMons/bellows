@@ -358,7 +358,7 @@ tests/test_worktree.py::test_create_worktree_retries_once_on_failure PASSED [100
 =================================== FAILURES ===================================
 _________________ TestLoadPhrases.test_loads_phrases_from_file _________________
 
-self = <test_decisions.TestLoadPhrases object at 0x108fc0fa0>
+self = <test_decisions.TestLoadPhrases object at 0x1098cd0a0>
 
     def test_loads_phrases_from_file(self):
         phrases = decisions.load_phrases()
@@ -371,7 +371,7 @@ tests/test_decisions.py:28: AssertionError
 WARNING  bellows:decisions.py:28 decisions: phrase file not found at /Users/marklehn/Developer/GitHub/bellows/.bellows-worktrees/INTERMEDIATE_DECISION_PHRASES.md
 _________________ TestLoadPhrases.test_includes_known_phrases __________________
 
-self = <test_decisions.TestLoadPhrases object at 0x108fd9190>
+self = <test_decisions.TestLoadPhrases object at 0x1098cd250>
 
     def test_includes_known_phrases(self):
         phrases = decisions.load_phrases()
@@ -383,7 +383,7 @@ tests/test_decisions.py:35: AssertionError
 WARNING  bellows:decisions.py:28 decisions: phrase file not found at /Users/marklehn/Developer/GitHub/bellows/.bellows-worktrees/INTERMEDIATE_DECISION_PHRASES.md
 ________________ TestLoadPhrases.test_splits_slash_alternatives ________________
 
-self = <test_decisions.TestLoadPhrases object at 0x108fd9340>
+self = <test_decisions.TestLoadPhrases object at 0x1098cd400>
 
     def test_splits_slash_alternatives(self):
         phrases = decisions.load_phrases()
@@ -396,7 +396,7 @@ tests/test_decisions.py:44: AssertionError
 WARNING  bellows:decisions.py:28 decisions: phrase file not found at /Users/marklehn/Developer/GitHub/bellows/.bellows-worktrees/INTERMEDIATE_DECISION_PHRASES.md
 _______ TestExtractDecisionBlocks.test_s_class_blocks_from_ground_truth ________
 
-self = <test_decisions.TestExtractDecisionBlocks object at 0x108fd9a30>
+self = <test_decisions.TestExtractDecisionBlocks object at 0x1098cdaf0>
 
     def test_s_class_blocks_from_ground_truth(self):
         """All 6 S-class blocks from the detection design ground truth must match."""
@@ -454,4 +454,4 @@ FAILED tests/test_decisions.py::TestLoadPhrases::test_includes_known_phrases
 FAILED tests/test_decisions.py::TestLoadPhrases::test_splits_slash_alternatives
 FAILED tests/test_decisions.py::TestExtractDecisionBlocks::test_s_class_blocks_from_ground_truth
 FAILED tests/test_runner_parser.py::test_run_step_timeout - assert False is True
-================== 5 failed, 344 passed, 1 warning in 14.19s ===================
+=================== 5 failed, 344 passed, 1 warning in 5.16s ===================

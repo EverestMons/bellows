@@ -105,4 +105,4 @@ tests/test_gates.py::test_pipe_header_pause_for_verdict_after_step_1_causes_paus
     warnings.warn(
 
 -- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
-======================== 93 passed, 1 warning in 0.11s =========================
+======================== 93 passed, 1 warning in 0.12s =========================
