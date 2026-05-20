@@ -1,0 +1,4 @@
+123:STRING_TYPED_HEADER_FIELDS = ("auto_close", "pause_for_verdict", "dispatch_mode")
+141:def check_header_field_types(header: dict) -> list[dict]:
+144:    for field in STRING_TYPED_HEADER_FIELDS:
+200:    type_warnings = check_header_field_types(header)

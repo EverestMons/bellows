@@ -1,0 +1,26 @@
+198:# V2 — pause_for_verdict enum validator
+201:# --- Test 14: valid pause_for_verdict values pass silently ---
+203:def test_pause_for_verdict_valid_values_no_warning():
+204:    """All recognized pause_for_verdict enum values produce no warning."""
+206:        header = {"dispatch_mode": "bellows", "pause_for_verdict": value}
+207:        result = validators.check_pause_for_verdict_value(header)
+211:# --- Test 15: invalid pause_for_verdict values produce WARN ---
+213:def test_pause_for_verdict_invalid_values_warn():
+216:        header = {"dispatch_mode": "bellows", "pause_for_verdict": value}
+217:        result = validators.check_pause_for_verdict_value(header)
+219:        assert result["check"] == "pause_for_verdict_value"
+224:# --- Test 16: absent pause_for_verdict field handled gracefully ---
+226:def test_pause_for_verdict_absent_no_warning():
+227:    """When pause_for_verdict is absent from header, no warning is emitted."""
+229:    result = validators.check_pause_for_verdict_value(header)
+233:# --- Test 17: pause_for_verdict registered in validate_at_claim ---
+235:def test_pause_for_verdict_warn_surfaces_in_validate_at_claim():
+236:    """Invalid pause_for_verdict surfaces as a warning in validate_at_claim output."""
+239:    header["pause_for_verdict"] = "true"
+244:    pause_warns = [w for w in result["warnings"] if w["check"] == "pause_for_verdict_value"]
+256:    header = {"auto_close": "false", "pause_for_verdict": "always", "dispatch_mode": "bellows"}
+277:    """YAML-parsed int value for pause_for_verdict produces a WARN."""
+278:    header = {"pause_for_verdict": 1, "dispatch_mode": "bellows"}
+280:    type_warns = [w for w in result if w["check"] == "header_field_type" and "pause_for_verdict" in w["message"]]
+307:    header = {"auto_close": False, "pause_for_verdict": True, "dispatch_mode": 42}
+311:    assert fields_warned == {"auto_close", "pause_for_verdict", "dispatch_mode"}

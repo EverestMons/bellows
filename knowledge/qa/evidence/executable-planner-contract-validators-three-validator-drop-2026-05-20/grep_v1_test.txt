@@ -1,0 +1,10 @@
+3299:def test_consume_verdicts_malformed_filename_logs_warn_and_notifies():
+3300:    """_consume_verdicts emits WARN + notification for verdict file with malformed filename."""
+3336:        assert len(warn_logs) >= 1, f"Expected WARN log for malformed filename, got: {log_calls}"
+3344:def test_consume_verdicts_malformed_filename_still_skipped():
+3345:    """_consume_verdicts still skips (does not process) a malformed-filename verdict file."""
+3371:        # check_verdict should NOT be called — malformed filename is skipped before verdict check
+3375:def test_consume_verdicts_valid_filename_not_flagged():
+3376:    """_consume_verdicts does NOT warn for a correctly-formatted verdict filename."""
+3426:def test_consume_verdicts_verdict_request_not_flagged_as_malformed():
+3427:    """verdict-request-* files are excluded before the filename format check."""

@@ -1,0 +1,5 @@
+121:VALID_PAUSE_FOR_VERDICT_VALUES = {"always", "after_step_1", "after_qa_step", "after_each_step", ""}
+126:def check_pause_for_verdict_value(header: dict) -> Optional[dict]:
+132:    if value not in VALID_PAUSE_FOR_VERDICT_VALUES:
+136:            "message": f"Plan header has unrecognized pause_for_verdict='{raw}'. Recognized values: {sorted(VALID_PAUSE_FOR_VERDICT_VALUES - {''})}. The defensive default will apply, but the Planner may have intended a different pause behavior."
+195:    pause_result = check_pause_for_verdict_value(header)

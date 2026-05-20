@@ -152,4 +152,4 @@ tests/test_bellows.py::test_consume_verdicts_verdict_request_not_flagged_as_malf
     warnings.warn(
 
 -- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
-======================== 140 passed, 1 warning in 0.45s ========================
+======================== 140 passed, 1 warning in 0.49s ========================

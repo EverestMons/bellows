@@ -1,0 +1,4 @@
+1062:        self._consume_verdicts()
+1106:    def _consume_verdicts(self):
+1125:                _log("WARN", f"verdict filename format mismatch: {fname} — expected pattern: ^verdict-{{slug}}-step-{{N}}.md$ — file will be skipped")
+1126:                verdict._notify_malformed_verdict(resolved_dir / fname, f"filename format mismatch — expected: verdict-{{slug}}-step-{{N}}.md")

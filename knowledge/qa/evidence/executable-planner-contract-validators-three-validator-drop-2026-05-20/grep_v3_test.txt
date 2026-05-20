@@ -1,0 +1,16 @@
+254:def test_header_field_types_all_strings_no_warning():
+257:    result = validators.check_header_field_types(header)
+263:def test_header_field_types_bool_warns():
+266:    result = validators.check_header_field_types(header)
+268:    assert result[0]["check"] == "header_field_type"
+276:def test_header_field_types_int_warns():
+279:    result = validators.check_header_field_types(header)
+280:    type_warns = [w for w in result if w["check"] == "header_field_type" and "pause_for_verdict" in w["message"]]
+287:def test_header_field_types_none_value_no_warning():
+290:    result = validators.check_header_field_types(header)
+296:def test_header_field_types_absent_fields_no_warning():
+299:    result = validators.check_header_field_types(header)
+305:def test_header_field_types_multiple_non_string_fields():
+308:    result = validators.check_header_field_types(header)
+316:def test_header_field_types_warn_surfaces_in_validate_at_claim():
+325:    type_warns = [w for w in result["warnings"] if w["check"] == "header_field_type"]
