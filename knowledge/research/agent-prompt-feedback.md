@@ -1,7 +1,15 @@
 # Agent Prompt Feedback
 
-**Date:** 2026-05-13
-**Plans:** executable-plan-write-time-lessons-reread-2026-05-13
+**Date:** 2026-05-20
+**Plans:** diagnostic-bash-gate-vs-guardrails-2026-05-20, executable-plan-write-time-lessons-reread-2026-05-13
+
+## 2026-05-20 — Bash Gate vs GUARDRAILS Diagnostic (SA Step 1)
+
+- **Q1 premise ("Search `bellows/*.py` for the `.git/` denial logic") was misleading.** The diagnostic states "it is a dispatch-time tool-permission scope" and directs the search to `bellows/*.py`, but no such code exists in bellows. The denial originates from Claude Code's internal runtime, not bellows code. The prompt should either state this upfront as context the agent should verify, or ask the agent to trace the denial path end-to-end without asserting where it lives. As written, the agent risks wasting cycles searching for code that doesn't exist or fabricating a finding to match the prompt's assertion.
+- **The four-question structure with explicit output format was effective.** Each question had a concrete deliverable (quote code, enumerate counts, evaluate replacements, check conflicts). The Gap Assessment table requirement prevented vague conclusions. The Q1-Q4 evidence grounding requirement for the recommendation section ensured the recommendation was empirically justified rather than speculative.
+- **Q3's proposed replacement commands were well-chosen as testable hypotheses.** `git gc --auto` and `git update-index --refresh` are the two most plausible "does not touch `.git/` directly" alternatives. Including both allowed a clean negative finding (neither works) rather than leaving the question open.
+- **shop_next_session.md Thread 3 cross-reference was valuable.** Q4's explicit instruction to check Thread 3 prevented a conflict-blind recommendation. The answer (no conflict — different functions) is non-obvious without checking.
+- **Historical fire search scope was comprehensive.** Directing the search across `logs/`, `feedback.log`, `.bellows-cache/`, and verdict files covered all persistence surfaces. The three documented occurrences were findable through this scope.
 
 ## 2026-05-13 — Runner Retry Transient Failure (QA Step 2)
 
