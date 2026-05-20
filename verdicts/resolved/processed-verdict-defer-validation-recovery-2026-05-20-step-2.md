@@ -1,0 +1,6 @@
+verdict: continue
+Rule 22 verification passed on recovery QA deposit `invoice-pulse/knowledge/research/defer-validation-recovery-qa-2026-05-20.md`. Launcher fix verified at app.py:802 (grep confirms `py validate_batch.py --pending`, zero matches for `python validate_batch` or `python3 validate_batch`). Full regression at 1883/1883 with 2 pre-existing failures, 0 new regressions. Section 4 (User-Visible Signal) re-verification PASS. Sections 1-3, 5-6 carry forward from prior QA (no code touched). Output Receipt complete. No hedging keywords in positive-status rows.
+
+Gate failure (rule_20_self_check, no canonical banner) overridden by CEO: the QA agent included a `## Rule 20 Self-Check` section with substantive checks but did not produce the canonical `Rule 20 — QA Self-Check Results` banner string with em-dash followed by `PASSED — SELF-CHECK PASSED`. Root cause is Planner-side: the Step 2 prompt instructed "review PLANNER_TEMPLATE.md Rule 20 if uncertain" rather than referencing `RULE_20_SELF_CHECK_BLOCK.md` (the single-source-of-truth file established 2026-05-10 precisely to prevent this paraphrase failure). The QA substance is correct; the governance ceremony failed at the prompt-writing layer.
+
+Terminal step (2 of 2); Planner has performed the Done/ move. Authorized by CEO 2026-05-20.
