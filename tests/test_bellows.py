@@ -3290,3 +3290,160 @@ def test_migrate_config_already_split():
         finally:
             migrate_config.CONFIG_PATH = old_config
             migrate_config.SECRETS_PATH = old_secrets
+
+
+# ===================================================================
+# V1 — Verdict filename format validator
+# ===================================================================
+
+def test_consume_verdicts_malformed_filename_logs_warn_and_notifies():
+    """_consume_verdicts emits WARN + notification for verdict file with malformed filename."""
+    with tempfile.TemporaryDirectory() as tmp:
+        tmp_path = Path(tmp)
+
+        decisions_dir = tmp_path / "proj" / "knowledge" / "decisions"
+        decisions_dir.mkdir(parents=True)
+
+        verdicts_resolved = tmp_path / "verdicts" / "resolved"
+        verdicts_resolved.mkdir(parents=True)
+        # Malformed filename: starts with verdict- and ends with .md but doesn't match slug-step pattern
+        malformed_fname = "verdict-continue-my-plan.md"
+        (verdicts_resolved / malformed_fname).write_text("continue\nApproved.")
+
+        config = {
+            "watched_projects": [str(decisions_dir)],
+            "default_model": "claude-sonnet-4-6",
+            "pushover": {"app_key": "test-app", "user_key": "test-user"},
+            "callback_port": 5999,
+        }
+
+        b = bellows.Bellows(config)
+
+        log_calls = []
+        original_log = bellows._log
+
+        def capture_log(level, msg, **kwargs):
+            log_calls.append((level, msg))
+            original_log(level, msg, **kwargs)
+
+        with patch("bellows.BELLOWS_ROOT", tmp_path), \
+             patch("bellows._log", side_effect=capture_log), \
+             patch("bellows.verdict._notify_malformed_verdict") as mock_notify:
+            b._consume_verdicts()
+
+        # Assert WARN was logged with the filename
+        warn_logs = [(lvl, msg) for lvl, msg in log_calls if lvl == "WARN" and "verdict-continue-my-plan.md" in msg]
+        assert len(warn_logs) >= 1, f"Expected WARN log for malformed filename, got: {log_calls}"
+
+        # Assert notification helper was called
+        mock_notify.assert_called_once()
+        call_args = mock_notify.call_args
+        assert malformed_fname in str(call_args[0][0])
+
+
+def test_consume_verdicts_malformed_filename_still_skipped():
+    """_consume_verdicts still skips (does not process) a malformed-filename verdict file."""
+    with tempfile.TemporaryDirectory() as tmp:
+        tmp_path = Path(tmp)
+
+        decisions_dir = tmp_path / "proj" / "knowledge" / "decisions"
+        decisions_dir.mkdir(parents=True)
+
+        verdicts_resolved = tmp_path / "verdicts" / "resolved"
+        verdicts_resolved.mkdir(parents=True)
+        malformed_fname = "verdict-no-step-number.md"
+        (verdicts_resolved / malformed_fname).write_text("continue\nApproved.")
+
+        config = {
+            "watched_projects": [str(decisions_dir)],
+            "default_model": "claude-sonnet-4-6",
+            "pushover": {"app_key": "", "user_key": ""},
+            "callback_port": 5999,
+        }
+
+        b = bellows.Bellows(config)
+
+        with patch("bellows.BELLOWS_ROOT", tmp_path), \
+             patch("bellows.verdict._notify_malformed_verdict"), \
+             patch("bellows.verdict.check_verdict") as mock_check:
+            b._consume_verdicts()
+
+        # check_verdict should NOT be called — malformed filename is skipped before verdict check
+        mock_check.assert_not_called()
+
+
+def test_consume_verdicts_valid_filename_not_flagged():
+    """_consume_verdicts does NOT warn for a correctly-formatted verdict filename."""
+    with tempfile.TemporaryDirectory() as tmp:
+        tmp_path = Path(tmp)
+
+        decisions_dir = tmp_path / "proj" / "knowledge" / "decisions"
+        decisions_dir.mkdir(parents=True)
+
+        plan_filename = "executable-test-2026-05-20.md"
+        verdict_pending_name = f"verdict-pending-{plan_filename}"
+        verdict_pending_path = decisions_dir / verdict_pending_name
+        verdict_pending_path.write_text("## STEP 1\nDo stuff.\n")
+
+        verdicts_resolved = tmp_path / "verdicts" / "resolved"
+        verdicts_resolved.mkdir(parents=True)
+        valid_fname = "verdict-test-2026-05-20-step-1.md"
+        (verdicts_resolved / valid_fname).write_text("continue\nApproved.")
+
+        config = {
+            "watched_projects": [str(decisions_dir)],
+            "default_model": "claude-sonnet-4-6",
+            "pushover": {"app_key": "", "user_key": ""},
+            "callback_port": 5999,
+        }
+
+        b = bellows.Bellows(config)
+
+        log_calls = []
+        original_log = bellows._log
+
+        def capture_log(level, msg, **kwargs):
+            log_calls.append((level, msg))
+            original_log(level, msg, **kwargs)
+
+        with patch("bellows.BELLOWS_ROOT", tmp_path), \
+             patch("bellows._log", side_effect=capture_log), \
+             patch("bellows.verdict.check_verdict", return_value={
+                 "found": True, "verdict": "continue", "reason": "approved"
+             }), \
+             patch("bellows.verdict.log_to_ledger"), \
+             patch("bellows.notifier.push"), \
+             patch.object(b, "handle_new_plan"), \
+             patch("bellows.verdict._notify_malformed_verdict") as mock_notify:
+            b._consume_verdicts()
+
+        # No WARN about filename format
+        filename_warns = [(lvl, msg) for lvl, msg in log_calls if lvl == "WARN" and "filename format mismatch" in msg]
+        assert len(filename_warns) == 0, f"Unexpected filename format warning: {filename_warns}"
+        mock_notify.assert_not_called()
+
+
+def test_consume_verdicts_verdict_request_not_flagged_as_malformed():
+    """verdict-request-* files are excluded before the filename format check."""
+    with tempfile.TemporaryDirectory() as tmp:
+        tmp_path = Path(tmp)
+
+        verdicts_resolved = tmp_path / "verdicts" / "resolved"
+        verdicts_resolved.mkdir(parents=True)
+        # verdict-request files don't match slug-step pattern but should be silently skipped
+        (verdicts_resolved / "verdict-request-my-plan-step-1.md").write_text("# Request")
+
+        config = {
+            "watched_projects": [],
+            "default_model": "claude-sonnet-4-6",
+            "pushover": {"app_key": "", "user_key": ""},
+            "callback_port": 5999,
+        }
+
+        b = bellows.Bellows(config)
+
+        with patch("bellows.BELLOWS_ROOT", tmp_path), \
+             patch("bellows.verdict._notify_malformed_verdict") as mock_notify:
+            b._consume_verdicts()
+
+        mock_notify.assert_not_called()

@@ -192,3 +192,135 @@ def test_reject_empty_dispatch_mode_value():
     plan_path = "/tmp/project/knowledge/decisions/executable-test.md"
     result = validators.validate_at_claim(header, plan_path, config, text)
     assert result["rejected"] is True
+
+
+# ===================================================================
+# V2 — pause_for_verdict enum validator
+# ===================================================================
+
+# --- Test 14: valid pause_for_verdict values pass silently ---
+
+def test_pause_for_verdict_valid_values_no_warning():
+    """All recognized pause_for_verdict enum values produce no warning."""
+    for value in ("always", "after_step_1", "after_qa_step", "after_each_step", ""):
+        header = {"dispatch_mode": "bellows", "pause_for_verdict": value}
+        result = validators.check_pause_for_verdict_value(header)
+        assert result is None, f"Unexpected warning for valid value '{value}'"
+
+
+# --- Test 15: invalid pause_for_verdict values produce WARN ---
+
+def test_pause_for_verdict_invalid_values_warn():
+    """Plausible YAML-think values that are not recognized produce a WARN."""
+    for value in ("true", "yes", "after_qa", "qa_checkpoint", "1"):
+        header = {"dispatch_mode": "bellows", "pause_for_verdict": value}
+        result = validators.check_pause_for_verdict_value(header)
+        assert result is not None, f"Expected warning for invalid value '{value}'"
+        assert result["check"] == "pause_for_verdict_value"
+        assert result["severity"] == "warn"
+        assert value in result["message"]
+
+
+# --- Test 16: absent pause_for_verdict field handled gracefully ---
+
+def test_pause_for_verdict_absent_no_warning():
+    """When pause_for_verdict is absent from header, no warning is emitted."""
+    header = {"dispatch_mode": "bellows"}
+    result = validators.check_pause_for_verdict_value(header)
+    assert result is None
+
+
+# --- Test 17: pause_for_verdict registered in validate_at_claim ---
+
+def test_pause_for_verdict_warn_surfaces_in_validate_at_claim():
+    """Invalid pause_for_verdict surfaces as a warning in validate_at_claim output."""
+    text = _plan_text("bellows", step_body="Do work.")
+    header = _header_for(text)
+    header["pause_for_verdict"] = "true"
+    config = _config_with_watched()
+    plan_path = "/tmp/project/knowledge/decisions/executable-test.md"
+    result = validators.validate_at_claim(header, plan_path, config, text)
+    assert result["rejected"] is False
+    pause_warns = [w for w in result["warnings"] if w["check"] == "pause_for_verdict_value"]
+    assert len(pause_warns) == 1
+
+
+# ===================================================================
+# V3 — Header field type contract validator
+# ===================================================================
+
+# --- Test 18: string-typed header fields pass silently ---
+
+def test_header_field_types_all_strings_no_warning():
+    """When all enumerated fields are strings, no warning is emitted."""
+    header = {"auto_close": "false", "pause_for_verdict": "always", "dispatch_mode": "bellows"}
+    result = validators.check_header_field_types(header)
+    assert result == []
+
+
+# --- Test 19: bool-typed header field produces WARN ---
+
+def test_header_field_types_bool_warns():
+    """YAML-parsed bool value for auto_close produces a WARN."""
+    header = {"auto_close": False, "dispatch_mode": "bellows"}
+    result = validators.check_header_field_types(header)
+    assert len(result) == 1
+    assert result[0]["check"] == "header_field_type"
+    assert result[0]["severity"] == "warn"
+    assert "auto_close" in result[0]["message"]
+    assert "bool" in result[0]["message"]
+
+
+# --- Test 20: int-typed header field produces WARN ---
+
+def test_header_field_types_int_warns():
+    """YAML-parsed int value for pause_for_verdict produces a WARN."""
+    header = {"pause_for_verdict": 1, "dispatch_mode": "bellows"}
+    result = validators.check_header_field_types(header)
+    type_warns = [w for w in result if w["check"] == "header_field_type" and "pause_for_verdict" in w["message"]]
+    assert len(type_warns) == 1
+    assert "int" in type_warns[0]["message"]
+
+
+# --- Test 21: None-valued field handled gracefully (no warning) ---
+
+def test_header_field_types_none_value_no_warning():
+    """When a field is present with None value, it is treated as absent (no warning)."""
+    header = {"auto_close": None, "dispatch_mode": "bellows"}
+    result = validators.check_header_field_types(header)
+    assert result == []
+
+
+# --- Test 22: absent fields handled gracefully ---
+
+def test_header_field_types_absent_fields_no_warning():
+    """When enumerated fields are absent from header, no warning is emitted."""
+    header = {"dispatch_mode": "bellows"}
+    result = validators.check_header_field_types(header)
+    assert result == []
+
+
+# --- Test 23: multiple non-string fields produce multiple warnings ---
+
+def test_header_field_types_multiple_non_string_fields():
+    """Multiple non-string fields each produce their own warning."""
+    header = {"auto_close": False, "pause_for_verdict": True, "dispatch_mode": 42}
+    result = validators.check_header_field_types(header)
+    assert len(result) == 3
+    fields_warned = {w["message"].split("'")[1] for w in result}
+    assert fields_warned == {"auto_close", "pause_for_verdict", "dispatch_mode"}
+
+
+# --- Test 24: header field types registered in validate_at_claim ---
+
+def test_header_field_types_warn_surfaces_in_validate_at_claim():
+    """Non-string header field surfaces as a warning in validate_at_claim output."""
+    text = _plan_text("bellows", step_body="Do work.")
+    header = _header_for(text)
+    header["auto_close"] = False  # Inject YAML-parsed bool
+    config = _config_with_watched()
+    plan_path = "/tmp/project/knowledge/decisions/executable-test.md"
+    result = validators.validate_at_claim(header, plan_path, config, text)
+    assert result["rejected"] is False
+    type_warns = [w for w in result["warnings"] if w["check"] == "header_field_type"]
+    assert len(type_warns) == 1

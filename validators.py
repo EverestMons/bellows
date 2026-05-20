@@ -118,6 +118,40 @@ def check_stop_prose(header: dict, plan_text: str) -> list[dict]:
     return warnings
 
 
+VALID_PAUSE_FOR_VERDICT_VALUES = {"always", "after_step_1", "after_qa_step", "after_each_step", ""}
+
+STRING_TYPED_HEADER_FIELDS = ("auto_close", "pause_for_verdict", "dispatch_mode")
+
+
+def check_pause_for_verdict_value(header: dict) -> Optional[dict]:
+    """Check: pause_for_verdict value (if present) is a recognized enum member."""
+    raw = header.get("pause_for_verdict")
+    if raw is None:
+        return None
+    value = str(raw).strip().lower()
+    if value not in VALID_PAUSE_FOR_VERDICT_VALUES:
+        return {
+            "check": "pause_for_verdict_value",
+            "severity": "warn",
+            "message": f"Plan header has unrecognized pause_for_verdict='{raw}'. Recognized values: {sorted(VALID_PAUSE_FOR_VERDICT_VALUES - {''})}. The defensive default will apply, but the Planner may have intended a different pause behavior."
+        }
+    return None
+
+
+def check_header_field_types(header: dict) -> list[dict]:
+    """Check: known header fields are string-typed after _parse_plan_header() returns."""
+    warnings = []
+    for field in STRING_TYPED_HEADER_FIELDS:
+        value = header.get(field)
+        if value is not None and not isinstance(value, str):
+            warnings.append({
+                "check": "header_field_type",
+                "severity": "warn",
+                "message": f"Header field '{field}' has type {type(value).__name__} (value: {value!r}) — expected str. YAML frontmatter may have coerced the value. Downstream code may crash on .lower() or string operations."
+            })
+    return warnings
+
+
 def validate_at_claim(header: dict, plan_path: str, config: dict, plan_text: str) -> dict:
     """Run all claim-time validators on a plan.
 
@@ -156,6 +190,15 @@ def validate_at_claim(header: dict, plan_path: str, config: dict, plan_text: str
     # Check (b): STOP-prose — warn
     stop_warnings = check_stop_prose(header, plan_text)
     warnings.extend(stop_warnings)
+
+    # Check: pause_for_verdict enum value — warn
+    pause_result = check_pause_for_verdict_value(header)
+    if pause_result is not None:
+        warnings.append(pause_result)
+
+    # Check: header field types — warn
+    type_warnings = check_header_field_types(header)
+    warnings.extend(type_warnings)
 
     return {
         "rejected": False,

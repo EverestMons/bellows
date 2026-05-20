@@ -1122,6 +1122,8 @@ class Bellows:
             # Parse slug and step from filename: verdict-{slug}-step-{N}.md
             match = re.match(r"^verdict-(.+)-step-(\d+)\.md$", fname)
             if not match:
+                _log("WARN", f"verdict filename format mismatch: {fname} — expected pattern: ^verdict-{{slug}}-step-{{N}}.md$ — file will be skipped")
+                verdict._notify_malformed_verdict(resolved_dir / fname, f"filename format mismatch — expected: verdict-{{slug}}-step-{{N}}.md")
                 continue
             plan_slug = match.group(1)
             step_number = int(match.group(2))
