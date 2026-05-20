@@ -1143,6 +1143,41 @@ def test_rule_20_gate_tolerates_single_asterisk_passed_line(tmp_path):
     assert not any(f["gate"] == "rule_20_self_check" for f in result["failures"])
 
 
+def test_no_permission_denials_exempts_guardrails_lock_cleanup():
+    """Bash denial matching GUARDRAILS-prescribed git lock cleanup is non-blocking."""
+    parsed = _clean_parsed()
+    parsed["permission_denials"] = [
+        {
+            "tool_name": "Bash",
+            "tool_use_id": "toolu_lock1",
+            "tool_input": {
+                "command": 'rm -f .git/index.lock .git/"index "*.lock .git/"index "[0-9]* 2>/dev/null'
+            },
+        },
+    ]
+    result = gates.check(parsed, PLAN_TEXT, 1, "/tmp")
+    assert result["passed"] is True
+    assert not any(f["gate"] == "no_permission_denials" for f in result["failures"])
+
+
+def test_no_permission_denials_still_blocks_other_bash_denials():
+    """Bash denial NOT matching the lock cleanup pattern still produces gate_failure."""
+    parsed = _clean_parsed()
+    parsed["permission_denials"] = [
+        {
+            "tool_name": "Bash",
+            "tool_use_id": "toolu_rm1",
+            "tool_input": {
+                "command": "rm -rf /tmp/foo"
+            },
+        },
+    ]
+    result = gates.check(parsed, PLAN_TEXT, 1, "/tmp")
+    assert result["passed"] is False
+    assert any(f["gate"] == "no_permission_denials" and "1 blocking denial" in f["evidence"]
+               for f in result["failures"])
+
+
 def test_gate_deposit_exists_uses_frontmatter_and_ignores_staging_in_prose():
     """Frontmatter is authoritative; prose mentioning _staging_* is ignored (strike 4 defense)."""
     fixture_path = os.path.join(os.path.dirname(__file__), "fixtures", "sample.md")

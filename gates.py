@@ -34,6 +34,19 @@ SCOPE_ALLOWLIST_PREFIXES = ("in-progress-", "verdict-pending-", "halted-")
 # diagnostic at knowledge/research/no-permission-denials-taxonomy-2026-04-28.md.
 READ_CLASS_TOOLS = {"Grep", "Glob", "Read", "mcp__vexp__run_pipeline"}
 
+# Bash commands matching the GUARDRAILS-prescribed git index-lock cleanup are exempt
+# from no_permission_denials blocking. The denial originates from Claude Code's runtime,
+# not bellows — agents following governance/GUARDRAILS.md Development → Git Operations
+# rule 1 should not be penalised. Closes shop_backlog: guardrails-vs-bash-gate-contradiction-git-locks.
+_LOCK_GLOB = r'\.git/(?:index\.lock|"index "\*\.lock|"index "\[0-9\]\*)'
+GUARDRAILS_BASH_EXEMPTION_PATTERN = re.compile(
+    r'(?:^|;\s*)rm\s+-f\s+'
+    + _LOCK_GLOB
+    + r'(?:\s+' + _LOCK_GLOB + r')*'
+    + r'(?:\s+2>/dev/null)?'
+    + r'\s*(?:;|$)'
+)
+
 def _parse_plan_header(plan_text):
     """Extract plan header fields. Tries YAML frontmatter first, then bold-Markdown format.
 
@@ -182,6 +195,12 @@ def _gate_no_permission_denials(parsed, failures):
             tool_name = d.get("tool_name")
             if tool_name in READ_CLASS_TOOLS:
                 continue
+            # Exempt Bash denials matching the GUARDRAILS-prescribed git lock cleanup.
+            # Command text is in tool_input.command per Claude Code's denial payload schema.
+            if tool_name == "Bash":
+                cmd = d.get("tool_input", {}).get("command", "") if isinstance(d.get("tool_input"), dict) else ""
+                if GUARDRAILS_BASH_EXEMPTION_PATTERN.search(cmd):
+                    continue
             blocking.append(d)
         else:
             # String-form denial (legacy) has no tool_name — default to blocking
