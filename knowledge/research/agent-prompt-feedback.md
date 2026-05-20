@@ -1,7 +1,17 @@
 # Agent Prompt Feedback
 
 **Date:** 2026-05-20
-**Plans:** diagnostic-bash-gate-vs-guardrails-2026-05-20, executable-plan-write-time-lessons-reread-2026-05-13
+**Plans:** diagnostic-planner-authored-contract-validation-2026-05-20, diagnostic-bash-gate-vs-guardrails-2026-05-20, executable-plan-write-time-lessons-reread-2026-05-13
+
+## 2026-05-20 — Planner-Authored Contract Validation Surface (SA Step 1)
+
+- **Six-question structure with explicit per-question deliverable format was highly effective.** Q1 (enumeration table), Q2 (classification table), Q3 (per-artifact evaluation), Q4 (shipping order), Q5 (anti-recommendations), Q6 (gap assessment table) each had a concrete output shape. The diagnostic produced a clean, sequential analysis with no ambiguity about what to deliver.
+- **"Known starting set to extend, not exhaustively pre-enumerate" was the right framing.** The prompt provided plan files, verdict files, and deposits as starting candidates but explicitly asked the agent to audit the codebase systematically. This prevented a narrow enumeration while avoiding the overhead of the agent starting from zero.
+- **Prior diagnostic cross-reference (2026-05-12 Step 1/Step 2 findings) was valuable.** The prompt's context section cited the prior enumeration and the three post-2026-05-12 failures, giving the agent a clear delta to compute: what shipped, what didn't, what broke since. Without this, the agent would have re-derived the 2026-05-12 findings from scratch.
+- **Q5 (anti-recommendations) was a critical framing question.** Explicitly asking "what should NOT get a validator" forced the analysis to articulate the Layer 1/Layer 3 boundary. Without Q5, the temptation would be to recommend validators for everything, conflating shape validation with content judgment. The regex-boundary test emerged from this question.
+- **Q3's three-option evaluation (A/B/C) with mandatory justification for rejected options was effective.** Requiring "why the other two options are wrong" prevented lazy defaulting to one response. The honest surfacing of writer-helper cost (MCP tool or Planner-side discipline change) avoided recommending architecturally invasive changes where simpler validators suffice.
+- **`BELLOWS_SA.md` path was incorrect.** The prompt says `bellows/agents/BELLOWS_SA.md` but the actual file is `bellows/agents/BELLOWS_SYSTEMS_ANALYST.md`. Agent adapted by finding the file via glob, but the plan should use the canonical filename.
+- **`LESSONS.md` reference could not be resolved.** The prompt mentions "the 2026-05-12 LESSONS entry (governance-root `LESSONS.md`)" but no LESSONS.md exists in the bellows worktree. LESSONS.md lives at the governance root level (`/Users/marklehn/Developer/GitHub/LESSONS.md`), which is outside the worktree's scope. The agent compensated by using BACKLOG.md and PROJECT_STATUS.md as historical evidence sources, which provided sufficient failure history. Future diagnostics referencing governance-root files should note the cross-repo access requirement.
 
 ## 2026-05-20 — Bash Gate vs GUARDRAILS Diagnostic (SA Step 1)
 
