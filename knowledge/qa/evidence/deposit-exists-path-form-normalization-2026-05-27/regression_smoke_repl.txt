@@ -1,0 +1,7 @@
+Plan-declared path (absolute): /var/folders/vf/8nw0z7hj1m34w6z48l5dp54w0000gn/T/tmp_tsolr58/bellows/scripts/migrate_config.py
+Agent-declared path (relative): bellows/scripts/migrate_config.py
+File exists at project: True
+Gate passed: True
+deposit_exists failures: []
+
+PASSED — abs-vs-rel cross-form gate check works correctly

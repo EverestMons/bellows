@@ -12,6 +12,14 @@
 - **`bellows/` path prefix inconsistency persists.** Same as the disable-autoupdater plan — the plan uses `bellows/gates.py` paths but the worktree has files at the root. The agent adapted by stripping the prefix. This is a recurring pattern across bellows worktree plans.
 - **Recursion-risk constraint section was valuable.** The explicit warning that the plan's own `**Deposits:**` block must use project-prefixed relative paths (because the fix runs on pre-fix code) prevented a meta-level failure. This kind of self-referential constraint documentation should be standard for plans that modify gate logic.
 
+## 2026-05-27 — deposit_exists Path-Form Normalization (QA Step 2)
+
+- **Step 1 Output Receipt was well-structured for QA consumption.** The "Files Created or Modified (Code)" section listed every file with exact line numbers and one-line descriptions. The "Flags for Next Step" section correctly pre-flagged the daemon restart requirement and the specific regression test to verify. This eliminated ambiguity during deliverable verification.
+- **Rule 20 self-check values were pre-specified in the plan prompt.** All four values (`plan_slug`, `qa_report_path`, `evidence_dir`, `required_evidence_files`) were provided verbatim, eliminating naming decisions. The evidence filenames matched the behavioral verification sections 1:1.
+- **Regression smoke test shape specification was precise.** The plan described the exact synthetic input shape (absolute plan-required path, relative agent-declared path, file exists at project location) matching the 2026-05-23 Step 2 reproduction. This made the regression test deterministic and unambiguous.
+- **`bellows/` path prefix inconsistency persists from Step 1 (third occurrence).** The QA step also uses `bellows/` prefixed paths for git add commands and deposit references. The worktree has files at the root. Agent adapted by stripping the prefix. This pattern has now recurred across 3 consecutive bellows plans.
+- **Pre-existing failure count matches the plan's documentation.** The plan correctly listed `test_run_step_timeout` and the 4 `test_decisions.py` failures as acceptable pre-existing failures, matching the actual 5 failures observed. No ambiguity.
+
 ## 2026-05-27 — Disable Claude Code Autoupdater (DEV Step 1)
 
 - **Plan paths used `bellows/` prefix but worktree is flat.** The plan references `bellows/runner.py`, `bellows/bellows.py`, etc., but the worktree root contains these files directly (no `bellows/` subdirectory). The agent needed to adapt by stripping the prefix. Future plans targeting bellows worktrees should use bare filenames or note the flat layout.

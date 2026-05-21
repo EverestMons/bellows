@@ -1,0 +1,7 @@
+Form 1 (abs under project): 'knowledge/research/foo.md'
+Form 2 (abs under dirname): 'knowledge/research/foo.md'
+Form 2b (abs under dirname, sibling): 'other/knowledge/foo.md'
+Form 3 (project-prefixed rel): 'knowledge/research/foo.md'
+Form 4 (already rel): 'knowledge/research/foo.md'
+
+All 4 forms normalize correctly. PASSED.
