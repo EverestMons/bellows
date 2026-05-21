@@ -591,7 +591,7 @@ def run_plan(plan_path: str, config: dict, response_server: server.ResponseServe
                 or not effective_auto_close):
             log_path = str(BELLOWS_ROOT / "logs")
             if not gate_result["passed"]:
-                if all(f["gate"] == "rule_22_verification" for f in gate_result["failures"]):
+                if all(isinstance(f, dict) and f.get("gate") == "rule_22_verification" for f in gate_result["failures"]):
                     _pause_reason = "rule_22_check_failed"
                 else:
                     _pause_reason = "gate_failure"
