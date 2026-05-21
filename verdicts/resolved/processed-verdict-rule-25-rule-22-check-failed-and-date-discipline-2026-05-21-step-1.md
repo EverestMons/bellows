@@ -1,0 +1,2 @@
+verdict: continue
+Rule 22 verified on SA's structural proposal at `governance/knowledge/architecture/rule-25-rule-22-check-failed-and-date-discipline-2026-05-21.md`. All five edits fully specified with verbatim strings and exact insertion anchors. Contradiction search returned zero hits on all seven keywords. Four Claim Verification Blocks confirmed pre-edit state. SA correctly scoped out the pre-existing line-671 stale count as a future flag rather than expanding the plan. Proceed to DOC.
