@@ -1,0 +1,3 @@
+grep -n '"Bash(git:*)"' /Users/marklehn/Developer/GitHub/bellows/.claude/settings.local.json
+Exit code: 1
+(0 matches — broad Bash(git:*) entry removed)

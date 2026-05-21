@@ -1,0 +1,12 @@
+=== Checking all 11 git subcommand entries ===
+Bash(git add:*) → 1 match(es)
+Bash(git commit:*) → 1 match(es)
+Bash(git status:*) → 1 match(es)
+Bash(git log:*) → 1 match(es)
+Bash(git diff:*) → 1 match(es)
+Bash(git show:*) → 1 match(es)
+Bash(git ls-files:*) → 1 match(es)
+Bash(git checkout:*) → 1 match(es)
+Bash(git branch:*) → 1 match(es)
+Bash(git config:*) → 1 match(es)
+Bash(git rev-parse:*) → 1 match(es)

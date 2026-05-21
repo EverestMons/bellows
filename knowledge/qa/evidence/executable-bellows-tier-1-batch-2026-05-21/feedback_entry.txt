@@ -1,0 +1,8 @@
+=== Feedback entry check ===
+4:**Plans:** executable-bellows-tier-1-batch-2026-05-21, executable-bellows-expected-keys-narrow-2026-05-21, diagnostic-bellows-expected-keys-warning-2026-05-21, diagnostic-bellows-isinstance-asymmetry-2026-05-21, executable-deposit-exists-path-form-normalization-2026-05-27, executable-disable-autoupdater-2026-05-27, diagnostic-planner-authored-contract-validation-2026-05-20, diagnostic-bash-gate-vs-guardrails-2026-05-20, executable-plan-write-time-lessons-reread-2026-05-13
+6:## 2026-05-21 — tier-1 batch (DEV Step 1)
+15:## 2026-05-21 — expected-keys warning narrow (QA Step 2)
+23:## 2026-05-21 — expected-keys warning narrow (DEV Step 1)
+30:- **Shape C citation chain was useful for the dev log.** The plan referenced both 2026-05-21 diagnostics (expected-keys-warning and expected-keys-shape-choice) with explicit file paths and findings locations. This made the dev log's authority section straightforward to write without re-reading the diagnostics.
+---
+1

@@ -1,0 +1,5 @@
+305:def header_says_pause(header: dict, current_step: int, total_steps: int, is_qa_step: bool) -> bool:
+---
+308:    if pv == "always":
+310:    if pv == "after_step_1":
+312:    if pv == "after_qa_step":

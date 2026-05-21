@@ -1,0 +1,1 @@
+315:        _log("WARN", f"⚠️ unrecognized pause_for_verdict value: {pv!r} (recognized: 'always', 'after_step_1', 'after_qa_step') — treating as no-pause")
