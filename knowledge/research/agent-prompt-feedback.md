@@ -3,6 +3,13 @@
 **Date:** 2026-05-27
 **Plans:** diagnostic-bellows-isinstance-asymmetry-2026-05-21, executable-deposit-exists-path-form-normalization-2026-05-27, executable-disable-autoupdater-2026-05-27, diagnostic-planner-authored-contract-validation-2026-05-20, diagnostic-bash-gate-vs-guardrails-2026-05-20, executable-plan-write-time-lessons-reread-2026-05-13
 
+## 2026-05-21 — isinstance Asymmetry Fix (DEV Step 1)
+
+- **Edit was fully mechanical — no judgment calls required.** The plan specified the exact anchor line, exact replacement text, and exact indentation (16 spaces). Pre-edit and post-edit grep verification counts were pre-specified (1→2 for new pattern, 1→0 for old pattern). The entire step was executable without consulting any additional files beyond `bellows.py` itself.
+- **Pre-edit verification protocol caught potential drift.** Requiring grep confirmation of exactly 1 old-pattern match at line 594 and exactly 1 new-pattern match at line 505 before editing ensures the plan is still aligned with the code. If any intermediate commit had moved lines, the verification would flag it before a misplaced edit.
+- **`bellows/` path prefix inconsistency persists (fourth occurrence).** The plan uses `bellows/bellows.py` paths throughout but the worktree has files at root. This is now a documented recurring pattern across 4+ consecutive bellows worktree plans.
+- **"Skip glossary read" instruction was appropriate.** For a 1-line edit with exact before/after specification, no domain context was needed beyond the specialist file.
+
 ## 2026-05-21 — isinstance Asymmetry Diagnostic (SA Step 1)
 
 - **Investigation questions were well-structured for systematic trace.** The 6-question framework (block identification, upstream data flow, format invariants, defensive-guard cost, future-refactor risk, recommendation) forced a comprehensive trace rather than a surface-level read. Each question built on the previous one's findings.
