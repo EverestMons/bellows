@@ -1,0 +1,26 @@
+Evidence: git push reference audit in PLANNER_TEMPLATE.md
+Date: 2026-05-21
+Check: No git push references were accidentally removed from Rule 31 or Procedure 3. Only expected occurrences remain.
+
+$ grep -n "git.*push" /Users/marklehn/Developer/GitHub/PLANNER_TEMPLATE.md
+
+All occurrences categorized:
+
+1. Line 477 (Rule 8 mirror paragraph): NEW — Edit A added "Agents do NOT run `git push` during step execution." Expected.
+2. Line 631 (Rule 23(c) paragraph): NEW — Edit B added "Agents do NOT run `git push` during step execution." + extended prohibition text. Expected.
+3. Line 788 (Rule 31 — submodule pointer bump): UNCHANGED — "git --no-pager push origin main". Planner-side activity, must remain. CONFIRMED PRESENT.
+4. Line 792 (Rule 32 — git-internal operations): UNCHANGED — contextual mention of "force-push" in operations list. Not an agent instruction.
+5. Line 1381 (Lessons row): NEW — Edit E added row referencing "git push" in BACKLOG entry context. Expected.
+6. Line 1426 (Procedure 3 — inflate error diagnostic): UNCHANGED — "git push" in operator-side recovery procedure. Must remain. CONFIRMED PRESENT.
+7. Line 1428 (Procedure 3 — commit-by-commit push): UNCHANGED — "git push origin <SHA>:main". Operator-side. Must remain. CONFIRMED PRESENT.
+8. Line 1438 (Procedure 3 — force-push step): UNCHANGED — "git push origin main --force-with-lease". Operator-side. Must remain. CONFIRMED PRESENT.
+
+Summary:
+- Rule 31 push reference: PRESENT (line 788) ✅
+- Procedure 3 push references: PRESENT (lines 1426, 1428, 1438) ✅
+- New Edit A prohibition: PRESENT (line 477) ✅
+- New Edit B prohibition: PRESENT (line 631) ✅
+- New Lessons row context: PRESENT (line 1381) ✅
+- No unintended removals detected.
+
+Result: PASS — All expected git push references remain intact. No accidental removals.

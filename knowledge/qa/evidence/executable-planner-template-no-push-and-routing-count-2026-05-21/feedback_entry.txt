@@ -1,0 +1,15 @@
+Evidence: agent-prompt-feedback.md has a new dated entry from this plan
+Date: 2026-05-21
+Check: Feedback file contains entry for 2026-05-21 PLANNER_TEMPLATE v4.47
+
+$ grep -n -A10 "## 2026-05-21 — PLANNER_TEMPLATE v4.47" knowledge/research/agent-prompt-feedback.md
+1428:## 2026-05-21 — PLANNER_TEMPLATE v4.47 No-Push Rule + Routing-Count Fix (DOC Step 1)
+1429-
+1430-- **Verbatim anchors from the plan made all five edits fully mechanical.** Each anchor was a unique string in the file; no ambiguity in locating the edit target. The Edit tool's exact-match replacement worked on first attempt for all five edits.
+1431-- **The pre-write contradiction scan (documented in the plan's Context section) was the most valuable planning artifact.** It corrected the BACKLOG entry's "remove git push" framing to the correct "add explicit prohibition" before the plan shipped. Without this scan, the agent would have searched for a `git push` string to remove from Rule 23(c), found nothing, and halted — wasting a full execution cycle.
+1432-- **The plan's explicit carve-outs for Rule 31 and Procedure 3 push references prevented over-editing.** Without the carve-outs, an agent might interpret "add no-push rule" as "also remove existing push references," breaking submodule pointer propagation and the operator recovery procedure.
+1433-- **Two-commit split (governance-root + bellows) worked cleanly.** The PLANNER_TEMPLATE.md file lives in the governance root repo, not in bellows, so separate commits are structurally required. The plan made this explicit rather than leaving it to agent inference.
+1434-- **Specialist file not found in worktree.** The prompt instructs "Read your specialist file at `bellows/agents/BELLOWS_DOCUMENTATION_ANALYST.md` first" but the file does not exist in the worktree directory tree. This had no impact since the plan says "Skip glossary read — this is a governance-file edit task" and the task is fully specified in the prompt itself. Future plans dispatched to worktrees should verify specialist file paths resolve from the worktree root.
+1435-- **Edit E (Lessons row append) anchor strategy was sound.** Using the last existing Lessons row as the anchor and appending the new row before the closing `---` separator is a reliable pattern for table appends. The plan correctly specified the exact anchor text to use.
+
+Result: PASS — Feedback entry present at line 1428 with 6 bullet points from DOC Step 1.

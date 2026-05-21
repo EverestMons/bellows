@@ -1,0 +1,10 @@
+Evidence: Rule 25 preamble count reads "three"
+Date: 2026-05-21
+Check: Rule 25 preamble reads "only three codes authorize auto-proceed" (not "only two")
+
+$ grep -n -C1 "only three codes authorize auto-proceed" /Users/marklehn/Developer/GitHub/PLANNER_TEMPLATE.md
+670-
+671:**Pause reason routing:** The `Pause Reason Code` field determines whether the Planner auto-proceeds to Rule 22 verification or stops and reports. The routing is deliberately conservative — only three codes authorize auto-proceed, everything else stops:
+672-
+
+Result: PASS — Line 671 reads "only three codes authorize auto-proceed" — correctly updated from "two" to "three".

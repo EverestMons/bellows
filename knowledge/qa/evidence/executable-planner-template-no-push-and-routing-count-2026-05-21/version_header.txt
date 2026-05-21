@@ -1,0 +1,12 @@
+Evidence: PLANNER_TEMPLATE.md version header
+Date: 2026-05-21
+Check: Version header reads 4.47 and Last Updated reads 2026-05-21 (v4.47)
+
+$ grep -n "Version:" /Users/marklehn/Developer/GitHub/PLANNER_TEMPLATE.md | head -5
+5:**Version:** 4.47
+
+$ sed -n '5,6p' /Users/marklehn/Developer/GitHub/PLANNER_TEMPLATE.md
+**Version:** 4.47
+**Last Updated:** 2026-05-21 (v4.47)
+
+Result: PASS — Version header correctly shows 4.47 and Last Updated shows 2026-05-21 (v4.47).

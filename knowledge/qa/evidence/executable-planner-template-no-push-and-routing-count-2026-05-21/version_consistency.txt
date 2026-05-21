@@ -1,0 +1,19 @@
+Evidence: Version bump consistency — no remaining 4.46 in header positions
+Date: 2026-05-21
+Check: Only version header references were updated; no other 4.46 references remain that should have been updated
+
+$ grep -n "4\.46" /Users/marklehn/Developer/GitHub/PLANNER_TEMPLATE.md
+
+Remaining 4.46 references:
+1379:| 2026-05-21 | Rule 25 routing table gains `rule_22_check_failed` row (v4.46). ...
+1380:| 2026-05-21 | Multi-session date-drift pattern resolved by new Rule 40 (v4.46). ...
+
+Both occurrences are in Lessons Learned table entries that correctly reference v4.46 as the version in which those features were introduced. These are historical content references, NOT version header references — they should NOT be updated to 4.47.
+
+Version header (lines 5-6):
+**Version:** 4.47
+**Last Updated:** 2026-05-21 (v4.47)
+
+No stale 4.46 references in the version header or Last Updated line.
+
+Result: PASS — Version bump is consistent. Only historical Lessons table references to v4.46 remain, which is correct.

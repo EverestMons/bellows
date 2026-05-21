@@ -1,0 +1,10 @@
+Evidence: Lessons table has new 2026-05-21 row about BACKLOG-entries-written-from-memory
+Date: 2026-05-21
+Check: Lessons table contains a row with "BACKLOG entries written from memory"
+
+$ grep -n -C1 "BACKLOG entries written from memory" /Users/marklehn/Developer/GitHub/PLANNER_TEMPLATE.md
+1380-| 2026-05-21 | Multi-session date-drift pattern resolved by new Rule 40 (v4.46). ...
+1381:| 2026-05-21 | BACKLOG entries written from memory can misdescribe the current file state. The 2026-05-21 governance pass started from a BACKLOG entry saying "remove `git push` from Rule 23 housekeeping" — but the pre-write contradiction scan (Rule 22) found that Rule 23(c) had no push verb to remove. The actual fix needed was additive (explicit prohibition), not subtractive. Caught at draft time; BACKLOG entry corrected before the plan shipped. **Pattern:** when authoring a governance plan from a BACKLOG entry that proposes "remove X" or "delete Y" wording, the pre-write contradiction scan must include verifying X or Y actually exists in the current file. Third occurrence of pre-executable-scan catching a stale rule before ship (after 2026-04-10 v4.18 contradiction and 2026-05-11 Rule 26 directory-bullet canary). The scan is doing its job; it works because the Planner runs it. |
+1382-
+
+Result: PASS — Line 1381 contains the new Lessons row with the full text about BACKLOG entries written from memory.

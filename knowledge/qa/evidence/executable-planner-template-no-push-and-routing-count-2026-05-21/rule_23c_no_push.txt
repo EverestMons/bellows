@@ -1,0 +1,8 @@
+Evidence: Rule 23(c) paragraph contains no-push sentences
+Date: 2026-05-21
+Check: Rule 23(c) paragraph contains "Agents do NOT run `git push` during step execution."
+
+$ grep -n -C2 "Agents do NOT run" /Users/marklehn/Developer/GitHub/PLANNER_TEMPLATE.md (second occurrence)
+631:**(c) Ordering: feedback → commit.** The final commit is the absolute last agent operation. The Planner performs the move-to-Done after Rule 22 verification passes — this is a Planner responsibility, not an agent responsibility. If feedback append fails, the plan correctly strands and the failure is visible. If commit fails, same thing. The agent never moves the plan to Done; the Planner does, via `Filesystem:move_file`, after verifying the deposited files pass Rule 22's (a)–(e) checks. **Agents do NOT run `git push` during step execution.** Push is a Planner session-wrap activity, not an agent step instruction. Agent-side push from inside a Bellows worktree commits to origin but leaves local main behind the worktree branch tip, producing parallel-SHA divergence (root cause identified 2026-05-21 teardown-git-operations diagnostic; mitigation validated by 2026-05-21 verdict-enrichment plan). Plan step prose MUST NOT include `git push` for agents; only `git add` and `git commit` are agent-side git operations. Rule 31 (submodule pointer bump) and Procedure 3 (git filter-repo post-execution) describe Planner-side and operator-side push activity respectively and are unaffected by this rule.
+
+Result: PASS — Line 631 contains the no-push sentences in the Rule 23(c) paragraph. Full prohibition text present including the Rule 31/Procedure 3 carve-outs.

@@ -1,0 +1,17 @@
+Evidence: Rule 8 mirror paragraph contains no-push sentence
+Date: 2026-05-21
+Check: Rule 8 mirror paragraph contains "Agents do NOT run `git push` during step execution."
+
+$ grep -n -C2 "Agents do NOT run" /Users/marklehn/Developer/GitHub/PLANNER_TEMPLATE.md
+475-**PROJECT_STATUS.md update instruction (include in final QA step):** ...
+476-
+477:**Per Rule 23 (housekeeping discipline), the order is feedback append → final commit.** The final commit is the absolute last agent operation. The Planner performs the move-to-Done after Rule 22 verification passes — this is a Planner responsibility, not an agent responsibility. If feedback append fails, the plan correctly strands and the failure is visible. If commit fails, same thing. Separating the agent's final commit from the Planner's move-to-Done eliminates the Failure 3 ordering issue where agents moved plans to Done/ before Bellows evaluated gates, producing stranded verdict requests for already-shipped work. **Agents do NOT run `git push` during step execution.** The Planner handles all push activity at session-wrap. Agent-side push from inside a Bellows worktree is the root cause of parallel-SHA divergence (per 2026-05-21 teardown-git-operations diagnostic), validated by the 2026-05-21 verdict-enrichment plan which produced 4 commits with zero divergence by omitting push from step prose.
+478-
+479-**Diagnostic plans use a different closeout pattern — see Rule 22.**
+--
+629-**(b) Enumerated discrete sub-steps.**
+630-
+631:**(c) Ordering: feedback → commit.** The final commit is the absolute last agent operation. The Planner performs the move-to-Done after Rule 22 verification passes — this is a Planner responsibility, not an agent responsibility. If feedback append fails, the plan correctly strands and the failure is visible. If commit fails, same thing. The agent never moves the plan to Done; the Planner does, via `Filesystem:move_file`, after verifying the deposited files pass Rule 22's (a)–(e) checks. **Agents do NOT run `git push` during step execution.** Push is a Planner session-wrap activity, not an agent step instruction. ...
+632-
+
+Result: PASS — Line 477 contains the no-push sentence in the Rule 8 mirror paragraph. The sentence appears as a continuation of the same paragraph block (no paragraph break), appended after "producing stranded verdict requests for already-shipped work."

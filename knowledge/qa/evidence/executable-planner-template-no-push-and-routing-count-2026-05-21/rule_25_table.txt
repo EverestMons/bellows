@@ -1,0 +1,25 @@
+Evidence: Rule 25 routing table rows unchanged
+Date: 2026-05-21
+Check: All six routing table rows present and unchanged (only preamble count word changed)
+
+$ grep -n -E "auto_close_disabled|qa_checkpoint|header_pause|gate_failure|scope_violation|rule_22_check_failed" /Users/marklehn/Developer/GitHub/PLANNER_TEMPLATE.md
+
+Routing table rows (lines 675-680):
+675:| `auto_close_disabled` | Auto-proceed to Rule 22 verification on the Deposit field. This is the normal between-step pause for plans with auto_close disabled. |
+676:| `qa_checkpoint` | Auto-proceed to Rule 22 verification on the Deposit field. This is the standard DEV→QA handoff signal. |
+677:| `header_pause` | Auto-proceed to Rule 22 verification on the Deposit field. This is the normal between-step pause for plans with `pause_for_verdict` specified in the header. Functionally equivalent to `auto_close_disabled` from the routing standpoint. |
+678:| `gate_failure` | Stop and report to CEO. A Bellows gate tripped — the Planner does NOT mechanically approve plans that tripped gates, regardless of whether the Deposit file passes Rule 22. Quote the gate failure text from the verdict file's `## Gate Failures` section in the report. |
+679:| `scope_violation` | Stop and report to CEO. The agent modified files outside the plan's declared scope. Same no-mechanical-approval rule as gate_failure. |
+680:| `rule_22_check_failed` | Stop and report to CEO. A Bellows-side Rule 22 mechanical check failed — the `_gate_rule_22_verification` gate enforces (a)+(c)+(d) of Rule 22 mechanically (file existence, QA verification table greenness, absence of hedging keywords in positive-status rows). Same no-mechanical-approval rule as `gate_failure`. Quote the failure detail from the verdict file's Verification Results table in the report. |
+
+All six rows confirmed:
+1. auto_close_disabled — auto-proceed ✅
+2. qa_checkpoint — auto-proceed ✅
+3. header_pause — auto-proceed ✅
+4. gate_failure — stop and report ✅
+5. scope_violation — stop and report ✅
+6. rule_22_check_failed — stop and report ✅
+
+Three auto-proceed rows match the preamble count of "three".
+
+Result: PASS — All six routing table rows present and unchanged. Table structure intact.
