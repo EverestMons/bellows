@@ -1,5 +1,5 @@
 # Bellows — Project Status
-**Last Updated:** 2026-05-21 (teardown git operations diagnostic complete; concurrency stress test verified; session-wrap)
+**Last Updated:** 2026-05-21 (verdict-enrichment with Rule 22 mechanical check gate shipped; session-wrap)
 
 ## Status: Phase 1 Complete — Live (daemon running, all 10 watched paths active)
 
