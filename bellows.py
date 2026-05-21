@@ -413,10 +413,8 @@ def run_plan(plan_path: str, config: dict, response_server: server.ResponseServe
             _delete_shadow(plan_filename)
             return
         _log("INFO", f"plan has {total_steps} steps", slug=slug_for(plan_name))
-        expected_keys = {"project", "date", "author", "total_steps", "pause_for_verdict"}
-        missing_keys = expected_keys - set(header.keys())
-        if total_steps > 1 and missing_keys:
-            _log("WARN", f"⚠️ {total_steps} steps but parsed header is missing: {sorted(missing_keys)}. Parsed keys: {sorted(header.keys())}. If pause_for_verdict was missing, the defensive default has set it to after_step_1.", slug=slug_for(plan_name))
+        if total_steps > 1 and "pause_for_verdict" not in header:
+            _log("WARN", f"⚠️ {total_steps}-step plan missing pause_for_verdict — plan will auto-advance without pausing at intermediate steps", slug=slug_for(plan_name))
         if model != config["default_model"]:
             _log("INFO", f"using model override: {model}", slug=slug_for(plan_name))
 
