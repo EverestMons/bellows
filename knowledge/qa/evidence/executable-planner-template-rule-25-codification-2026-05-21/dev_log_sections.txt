@@ -1,0 +1,9 @@
+grep -n "^## " knowledge/development/planner-template-v4-48-rule-25-codification-2026-05-21.md
+
+10:## Pre-edit Verification
+30:## Edit A - Rule 25 Mechanized Check Routing Paragraph
+54:## Edit B - Version Header Bump (4.47 -> 4.48)
+74:## Edit C - Lessons Row Append
+99:## Output Receipt
+
+Verification: Dev log contains all 5 expected sections: Pre-edit Verification, Edit A, Edit B, Edit C, Output Receipt. Before/after snippets present for all three edits. PASS.

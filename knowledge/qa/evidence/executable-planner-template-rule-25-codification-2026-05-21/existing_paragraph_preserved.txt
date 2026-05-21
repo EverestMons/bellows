@@ -1,0 +1,5 @@
+grep -n "Step N QA verification passed, safe to close Bellows verdict" /Users/marklehn/Developer/GitHub/PLANNER_TEMPLATE.md
+
+683:**Rule 22 routing on auto-proceed codes:** When the Pause Reason Code authorizes auto-proceed, the Planner takes the path in the verdict file's `Deposit:` field and applies Rule 22's (a)-(e) checks to that path. If the Deposit field is `none` (no deposit declared for that step), the Planner reports the verdict to the CEO for judgment - "none" is not a failure but it is not a Rule 22 pass either, and the CEO decides whether the step should have declared a deposit. If Rule 22 passes, the Planner reports the pass to the CEO ("Step N QA verification passed, safe to close Bellows verdict") and the CEO resolves the verdict via the normal Bellows workflow. If Rule 22 fails at any of (a)-(e), the Planner reports the failure in full per Rule 22's existing escalation language.
+
+Verification: Exactly 1 match at line 683. Original paragraph preserved verbatim. PASS.

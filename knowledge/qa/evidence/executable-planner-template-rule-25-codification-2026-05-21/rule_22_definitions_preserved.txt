@@ -1,0 +1,13 @@
+grep -n "What the Planner specifically checks when reading a deposited file" /Users/marklehn/Developer/GitHub/PLANNER_TEMPLATE.md
+
+604:**What the Planner specifically checks when reading a deposited file:**
+
+Lines 604-609 (Rule 22 (a)-(e) definitions):
+604: **What the Planner specifically checks when reading a deposited file:**
+605: - **(a)** Does the file actually exist on disk? Verify via `Filesystem:get_file_info` or `Filesystem:list_directory` BEFORE reading
+606: - **(b)** Does the file's content actually answer the original questions or fix the original bug? Read the file and compare against the plan's stated objective
+607: - **(c)** Does the agent's conversation summary match what's in the file? If the agent says "all 7 templates covered" but the test file only has 6 sibling tests, that's a mismatch
+608: - **(d)** Are there any "Status: Complete" claims that contradict the actual evidence in the file? Look for hedging keywords ("pending", "inferred", "not run", "should pass") in the QA report's verification rows
+609: - **(e)** For QA reports specifically: the literal Rule 20 banner string `Rule 20 - QA Self-Check Results` MUST be present, immediately followed (within the same code block or section) by a line beginning with `PASSED - SELF-CHECK PASSED`. Section header without banner = fabrication; banner without PASSED line = self-check ran but failed. Both halt the plan. All required evidence files must also be present in the evidence directory.
+
+Verification: Rule 22 (a)-(e) canonical definitions at lines 604-609 are UNCHANGED. The new mechanization paragraph (line 685) clarifies routing but does not modify these definitions. PASS.

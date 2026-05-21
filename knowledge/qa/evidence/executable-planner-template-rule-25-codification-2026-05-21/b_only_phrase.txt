@@ -1,0 +1,5 @@
+grep -n "(b) substance check ONLY" /Users/marklehn/Developer/GitHub/PLANNER_TEMPLATE.md
+
+685:**Mechanized check routing (post-verdict-enrichment).** ... the Planner performs Rule 22 (b) substance check ONLY - does the deposited content actually answer the original question or fix the original bug. ...
+
+Verification: Exactly 1 match at line 685. (b) correctly identified as Planner-only check. PASS.

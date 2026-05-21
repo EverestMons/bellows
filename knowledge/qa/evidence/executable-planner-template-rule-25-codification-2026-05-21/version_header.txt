@@ -1,0 +1,5 @@
+grep -n "Version:" /Users/marklehn/Developer/GitHub/PLANNER_TEMPLATE.md | head -2
+
+5:**Version:** 4.48
+
+Verification: Version header reads 4.48 at line 5. PASS.

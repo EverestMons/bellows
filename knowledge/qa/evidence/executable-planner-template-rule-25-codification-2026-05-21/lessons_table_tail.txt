@@ -1,0 +1,11 @@
+Last 5 rows of the Lessons Learned table (lines 1380-1386 of PLANNER_TEMPLATE.md):
+
+1380: | 2026-05-21 | Multi-session date-drift pattern resolved by new Rule 40 (v4.46). [...]
+1381: | 2026-05-21 | Rule 25 routing table gains `rule_22_check_failed` row (v4.46). [...]
+1382: | 2026-05-21 | Multi-session date-drift pattern resolved by new Rule 40 (v4.46). [...]
+1383: | 2026-05-21 | BACKLOG entries written from memory can misdescribe the current file state. [...]
+1384: | 2026-05-21 | Once Bellows mechanizes a Rule 22 sub-check, the Planner must stop re-running it. [...]
+1385: (blank line)
+1386: ---
+
+Verification: New row (line 1384) sits immediately before the blank line and closing `---` separator (line 1386). Table is valid Markdown pipe-separated format. No prior Lessons rows were modified. PASS.

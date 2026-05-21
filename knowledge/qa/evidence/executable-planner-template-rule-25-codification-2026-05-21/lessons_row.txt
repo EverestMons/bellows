@@ -1,0 +1,5 @@
+grep -n "Once Bellows mechanizes a Rule 22 sub-check" /Users/marklehn/Developer/GitHub/PLANNER_TEMPLATE.md
+
+1384:| 2026-05-21 | Once Bellows mechanizes a Rule 22 sub-check, the Planner must stop re-running it. The 2026-05-21 verdict-enrichment shipped `_gate_rule_22_verification` (covers Rule 22 (a)+(c)+(d)) and `_gate_rule_20_self_check` (covers Rule 22 (e)). For the rest of the same session, the Planner kept re-running file-info, grep audits, and structural compliance walks on every verdict - duplicating mechanical work the gates had already passed. The CEO surfaced this with "why is planner still doing rule 22 a-e?" The fix is structural: governance text (this edit) now says explicitly that when both gates PASS, the Planner does (b) only. **Pattern:** when shipping mechanization of a Planner-side discipline, the same plan or the immediate next plan must update PLANNER_TEMPLATE to reflect what the Planner stops doing. Memory edits alone do not propagate across sessions; the governance text is what future Planner instances read at session start. |
+
+Verification: Exactly 1 match at line 1384. New Lessons row present. PASS.

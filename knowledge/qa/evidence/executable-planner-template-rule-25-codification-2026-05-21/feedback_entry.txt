@@ -1,0 +1,14 @@
+grep -n "PLANNER_TEMPLATE v4.48" knowledge/research/agent-prompt-feedback.md
+
+1526:## 2026-05-21 - PLANNER_TEMPLATE v4.48 Rule 25 codification (DOC Step 1)
+
+Content at lines 1526-1534 includes 8 feedback observations covering:
+- Specialist file found at worktree root (bellows/ prefix stripped)
+- bellows/ path prefix inconsistency (continues)
+- Pre-edit verification instructions effective
+- Desktop Commander vs Edit tool adaptation
+- Anchor strategy for Edit C effective
+- Two-commit split well-specified
+- Skip glossary read appropriate
+
+Verification: Dated 2026-05-21 entry for this plan's DOC step present. PASS.
