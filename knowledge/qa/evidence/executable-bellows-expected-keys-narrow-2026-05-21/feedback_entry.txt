@@ -1,0 +1,5 @@
+Verification: agent-prompt-feedback.md has a 2026-05-21 entry from this plan
+Expected: entry present for "expected-keys warning narrow (DEV Step 1)"
+Result: PASS
+
+Line 6: ## 2026-05-21 — expected-keys warning narrow (DEV Step 1)

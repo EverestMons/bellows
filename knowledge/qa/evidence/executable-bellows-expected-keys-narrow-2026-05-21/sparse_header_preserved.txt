@@ -1,0 +1,5 @@
+Verification: grep -n 'sparse header' bellows.py
+Expected: 1 match (line 383, preserved unchanged)
+Result: 1 match — PASS
+
+383:            _log("WARN", f"⚠️ sparse header ({prev_len} keys) for {total_steps}-step plan — defaulting pause_for_verdict to after_step_1 (safe-pause)", slug=slug_for(plan_name))

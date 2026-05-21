@@ -1,0 +1,5 @@
+Verification: grep -n 'expected_keys = {' bellows.py
+Expected: 0 matches
+Result: 0 matches — PASS
+
+No output (no matches found).

@@ -1,0 +1,5 @@
+Verification: grep -n '"pause_for_verdict" not in header' bellows.py
+Expected: 1 match
+Result: 1 match — PASS
+
+416:        if total_steps > 1 and "pause_for_verdict" not in header:

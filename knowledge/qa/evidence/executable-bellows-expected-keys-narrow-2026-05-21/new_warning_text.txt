@@ -1,0 +1,5 @@
+Verification: grep -n 'will auto-advance without pausing at intermediate steps' bellows.py
+Expected: 1 match
+Result: 1 match — PASS
+
+417:            _log("WARN", f"⚠️ {total_steps}-step plan missing pause_for_verdict — plan will auto-advance without pausing at intermediate steps", slug=slug_for(plan_name))

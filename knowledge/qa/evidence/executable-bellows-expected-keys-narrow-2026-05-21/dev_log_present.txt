@@ -1,0 +1,12 @@
+Verification: dev log exists at knowledge/development/bellows-expected-keys-narrow-2026-05-21.md
+Expected: file exists with anchor/replacement blocks, before/after snippets, grep verifications, and citation of both 2026-05-21 diagnostics
+Result: PASS
+
+File confirmed present. Contents verified:
+- Anchor block (4 lines, removed): present
+- Replacement block (2 lines): present
+- Before/After context (lines 413-420): present
+- Grep verification (pre-edit and post-edit tables): present
+- Authority section citing both diagnostics: present
+- Test impact note: present
+- Output receipt: Complete
