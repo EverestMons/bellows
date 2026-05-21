@@ -3,6 +3,14 @@
 **Date:** 2026-05-27
 **Plans:** executable-bellows-expected-keys-narrow-2026-05-21, diagnostic-bellows-expected-keys-warning-2026-05-21, diagnostic-bellows-isinstance-asymmetry-2026-05-21, executable-deposit-exists-path-form-normalization-2026-05-27, executable-disable-autoupdater-2026-05-27, diagnostic-planner-authored-contract-validation-2026-05-20, diagnostic-bash-gate-vs-guardrails-2026-05-20, executable-plan-write-time-lessons-reread-2026-05-13
 
+## 2026-05-21 — expected-keys warning narrow (QA Step 2)
+
+- **Test assertion fix required behavioral understanding, not just text substitution.** The plan suggested updating the assertion text from `"parsed header is missing"` to `"will auto-advance without pausing at intermediate steps"`. However, the new warning doesn't fire at all in the test's sparse-header scenario because `_apply_defensive_header_defaults` inserts `pause_for_verdict` before the check runs (Case 3 from the shape-choice diagnostic). The correct fix was changing the assertion from a positive match on old text to a negative match confirming the warning does NOT fire. This required understanding the defensive-default → narrowed-warning interaction, not just string replacement.
+- **`bellows/` path prefix inconsistency persists (seventh occurrence).** Same as DEV Step 1 — plan uses `bellows/bellows.py`, `bellows/knowledge/...`, etc. but the worktree root has files directly. Adapted by stripping prefix.
+- **Structural compliance diff needed commit-aware targeting.** `git diff HEAD~1 -- bellows.py` returned empty because HEAD was the prompt-feedback commit, not the code-change commit. Had to target the specific commit (`e2301f7`) to get the right diff. Plans could specify the expected commit message or SHA anchor for the diff.
+- **Rule 20 self-check file had moved from `/Users/marklehn/Desktop/GitHub/` to `/Users/marklehn/Developer/GitHub/`.** The QA specialist file still references the Desktop path. Found it at the Developer path.
+- **Evidence file creation was straightforward.** The 8 required evidence files mapped 1:1 to verification steps. The plan's explicit file list (`no_expected_keys.txt`, `new_predicate.txt`, etc.) made it easy to confirm completeness.
+
 ## 2026-05-21 — expected-keys warning narrow (DEV Step 1)
 
 - **Edit was fully mechanical — no judgment calls required.** The plan specified the exact 4-line anchor block, exact 2-line replacement, and exact indentation (8 spaces). Pre-edit and post-edit grep verification counts were pre-specified (`expected_keys = {`: 1→0, `sparse header`: 1→1). The entire step was executable without consulting any additional files beyond `bellows.py` itself.
