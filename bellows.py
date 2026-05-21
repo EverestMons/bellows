@@ -16,6 +16,10 @@ from datetime import datetime
 from pathlib import Path
 from typing import Optional
 
+# Prevent Claude Code auto-updater from shifting agent behavior mid-plan.
+# setdefault respects explicit operator overrides.  (executable-disable-autoupdater-2026-05-27)
+os.environ.setdefault("DISABLE_AUTOUPDATER", "1")
+
 BELLOWS_ROOT = Path(__file__).parent.resolve()
 DB_PATH = str(BELLOWS_ROOT / "bellows.db")
 SHADOW_CACHE_DIR = BELLOWS_ROOT / ".bellows-cache"

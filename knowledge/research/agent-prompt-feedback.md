@@ -1,7 +1,15 @@
 # Agent Prompt Feedback
 
-**Date:** 2026-05-20
-**Plans:** diagnostic-planner-authored-contract-validation-2026-05-20, diagnostic-bash-gate-vs-guardrails-2026-05-20, executable-plan-write-time-lessons-reread-2026-05-13
+**Date:** 2026-05-27
+**Plans:** executable-disable-autoupdater-2026-05-27, diagnostic-planner-authored-contract-validation-2026-05-20, diagnostic-bash-gate-vs-guardrails-2026-05-20, executable-plan-write-time-lessons-reread-2026-05-13
+
+## 2026-05-27 — Disable Claude Code Autoupdater (DEV Step 1)
+
+- **Plan paths used `bellows/` prefix but worktree is flat.** The plan references `bellows/runner.py`, `bellows/bellows.py`, etc., but the worktree root contains these files directly (no `bellows/` subdirectory). The agent needed to adapt by stripping the prefix. Future plans targeting bellows worktrees should use bare filenames or note the flat layout.
+- **Belt-and-suspenders dual-module placement was well-specified.** The plan explicitly justified why both `bellows.py` and `runner.py` need the setdefault (import order not guaranteed across dispatch paths). This prevented the agent from questioning whether the duplication was intentional.
+- **Pre-existing failure documentation was comprehensive.** The plan listed `test_run_step_timeout` as an acceptable pre-existing failure. The 4 `test_decisions.py` failures were not mentioned but are clearly pre-existing (unrelated module). Future plans could expand the known-failure list to avoid any ambiguity.
+- **The `setdefault` vs unconditional assignment distinction was correctly specified.** The plan's explicit instruction to use `setdefault` with rationale (operator override respect) prevented the simpler but less flexible `os.environ["DISABLE_AUTOUPDATER"] = "1"` approach. The override test directly validates this contract.
+- **Test design using import side-effect was pragmatic.** The plan correctly identified that the module-level `setdefault` IS the contract, making "assert env var after import" the right test shape. The `importlib.reload` approach for testing the override path was straightforward.
 
 ## 2026-05-20 — Planner-Authored Contract Validation Surface (SA Step 1)
 

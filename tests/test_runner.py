@@ -1,3 +1,4 @@
+import importlib
 import io
 import json
 from unittest.mock import patch, MagicMock
@@ -7,6 +8,23 @@ import os
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 import runner
+
+
+# --- DISABLE_AUTOUPDATER env-var contract ---
+
+def test_runner_sets_disable_autoupdater_env_var():
+    """Importing runner must set DISABLE_AUTOUPDATER=1 in the process environment."""
+    assert os.environ.get("DISABLE_AUTOUPDATER") == "1"
+
+
+def test_runner_respects_explicit_disable_autoupdater_override(monkeypatch):
+    """setdefault must not overwrite an explicit operator override."""
+    monkeypatch.setenv("DISABLE_AUTOUPDATER", "0")
+    importlib.reload(runner)
+    assert os.environ.get("DISABLE_AUTOUPDATER") == "0"
+    # Restore default so subsequent tests aren't affected
+    monkeypatch.setenv("DISABLE_AUTOUPDATER", "1")
+    importlib.reload(runner)
 
 
 # --- NDJSON mock data ---

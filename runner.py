@@ -13,6 +13,10 @@ from bellows import _log
 from parser import parse
 import decisions
 
+# Prevent Claude Code auto-updater from shifting agent behavior mid-plan.
+# setdefault respects explicit operator overrides.  (executable-disable-autoupdater-2026-05-27)
+os.environ.setdefault("DISABLE_AUTOUPDATER", "1")
+
 BELLOWS_ROOT = Path(__file__).parent.resolve()
 LOGS_DIR = BELLOWS_ROOT / "logs"
 
