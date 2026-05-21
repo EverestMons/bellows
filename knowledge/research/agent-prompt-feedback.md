@@ -3,6 +3,15 @@
 **Date:** 2026-05-27
 **Plans:** diagnostic-bellows-isinstance-asymmetry-2026-05-21, executable-deposit-exists-path-form-normalization-2026-05-27, executable-disable-autoupdater-2026-05-27, diagnostic-planner-authored-contract-validation-2026-05-20, diagnostic-bash-gate-vs-guardrails-2026-05-20, executable-plan-write-time-lessons-reread-2026-05-13
 
+## 2026-05-21 — isinstance Asymmetry Fix (QA Step 2)
+
+- **All 6 deliverable verifications passed on first run.** Grep commands, expected counts, and evidence filenames were pre-specified in the plan. The verification was fully mechanical — no interpretation needed.
+- **`bellows/` path prefix inconsistency persists (fifth occurrence).** The plan uses `bellows/knowledge/qa/...` paths throughout but the worktree has files at root. Agent adapted by stripping the prefix. This is a recurring pattern across all bellows worktree plans.
+- **`git diff HEAD~1` was not the correct diff target.** The fix commit (`6fdda11`) was HEAD~2, not HEAD~1, because the prompt-feedback commit (`a24b083`) landed after it. The plan's structural compliance instruction (`git diff HEAD~1 bellows.py`) produced empty output. Agent adapted by targeting the specific commit SHA. Future QA plans should reference the Step 1 commit by subject match or SHA rather than assuming HEAD~1.
+- **Rule 20 self-check ran cleanly on first pass.** All 8 evidence files present and non-empty, no hedging keywords in positive-status rows.
+- **`RULE_20_SELF_CHECK_BLOCK.md` path in specialist file was wrong.** The `BELLOWS_QA.md` specialist file references `/Users/marklehn/Desktop/GitHub/RULE_20_SELF_CHECK_BLOCK.md` but the actual path is `/Users/marklehn/Developer/GitHub/RULE_20_SELF_CHECK_BLOCK.md` (post-relocation). Agent adapted via glob search. The specialist file should be updated to reflect the new path.
+- **Targeted test scope was appropriate.** The change is purely defensive (isinstance guard, no behavioral change on dict inputs), so `test_bellows.py` alone was the correct scope. All 116 tests passed.
+
 ## 2026-05-21 — isinstance Asymmetry Fix (DEV Step 1)
 
 - **Edit was fully mechanical — no judgment calls required.** The plan specified the exact anchor line, exact replacement text, and exact indentation (16 spaces). Pre-edit and post-edit grep verification counts were pre-specified (1→2 for new pattern, 1→0 for old pattern). The entire step was executable without consulting any additional files beyond `bellows.py` itself.
