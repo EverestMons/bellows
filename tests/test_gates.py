@@ -1287,3 +1287,148 @@ def test_resolve_deposit_path_absolute_worktree_remap(tmp_path):
     assert result is not None, "absolute path should remap to worktree via Strategy 0"
     assert os.path.isfile(result)
     assert str(wt_path) in result
+
+
+# --- Rule 22 verification gate tests ---
+
+RULE_22_QA_PLAN = """## STEP 1 — DEV (Developer)
+
+> Build the feature.
+>
+> **Deposits:**
+> - `knowledge/development/dev-log.md`
+
+## STEP 2 — QA (QA Engineer)
+
+> Verify deliverables.
+>
+> **Deposits:**
+> - `knowledge/qa/qa-report.md`
+"""
+
+
+def test_rule_22_non_qa_all_deposits_present(tmp_path):
+    """(a) Non-QA step with all deposits present → no rule_22_verification failures."""
+    dep = tmp_path / "knowledge" / "development" / "dev-log.md"
+    dep.parent.mkdir(parents=True)
+    dep.write_text("# Dev Log\n")
+    parsed = _clean_parsed()
+    failures = []
+    gates._gate_rule_22_verification(False, RULE_22_QA_PLAN, 1, str(tmp_path), parsed, failures)
+    assert not any(f["gate"] == "rule_22_verification" for f in failures)
+
+
+def test_rule_22_non_qa_deposit_missing(tmp_path):
+    """(b) Non-QA step with one deposit missing → one failure with path-cite evidence."""
+    parsed = _clean_parsed()
+    failures = []
+    gates._gate_rule_22_verification(False, RULE_22_QA_PLAN, 1, str(tmp_path), parsed, failures)
+    r22 = [f for f in failures if f["gate"] == "rule_22_verification"]
+    assert len(r22) == 1
+    assert "(a)" in r22[0]["evidence"]
+    assert "dev-log.md" in r22[0]["evidence"]
+
+
+def test_rule_22_qa_all_pass(tmp_path):
+    """(c) QA step with verification table all ✅ and no hedging → no failures."""
+    report = tmp_path / "knowledge" / "qa" / "qa-report.md"
+    report.parent.mkdir(parents=True)
+    report.write_text(
+        "# QA Report\n\n"
+        "| Deliverable | Status | Evidence |\n"
+        "|---|---|---|\n"
+        "| gates.py | \u2705 | function exists |\n"
+        "| verdict.py | \u2705 | table renders |\n"
+    )
+    parsed = _clean_parsed()
+    failures = []
+    gates._gate_rule_22_verification(True, RULE_22_QA_PLAN, 2, str(tmp_path), parsed, failures)
+    assert not any(f["gate"] == "rule_22_verification" for f in failures)
+
+
+def test_rule_22_qa_fail_row(tmp_path):
+    """(d) QA step with one ❌ row → one (c)-class failure with row-content evidence."""
+    report = tmp_path / "knowledge" / "qa" / "qa-report.md"
+    report.parent.mkdir(parents=True)
+    report.write_text(
+        "# QA Report\n\n"
+        "| Deliverable | Status | Evidence |\n"
+        "|---|---|---|\n"
+        "| gates.py | \u2705 | function exists |\n"
+        "| verdict.py | \u274c | table missing |\n"
+    )
+    parsed = _clean_parsed()
+    failures = []
+    gates._gate_rule_22_verification(True, RULE_22_QA_PLAN, 2, str(tmp_path), parsed, failures)
+    r22 = [f for f in failures if f["gate"] == "rule_22_verification"]
+    assert len(r22) == 1
+    assert "(c)" in r22[0]["evidence"]
+
+
+def test_rule_22_qa_missing_status(tmp_path):
+    """(e) QA step with a row missing a status → one (c)-class failure."""
+    report = tmp_path / "knowledge" / "qa" / "qa-report.md"
+    report.parent.mkdir(parents=True)
+    report.write_text(
+        "# QA Report\n\n"
+        "| Deliverable | Status | Evidence |\n"
+        "|---|---|---|\n"
+        "| gates.py | \u2705 | function exists |\n"
+        "| verdict.py | | no status |\n"
+    )
+    parsed = _clean_parsed()
+    failures = []
+    gates._gate_rule_22_verification(True, RULE_22_QA_PLAN, 2, str(tmp_path), parsed, failures)
+    r22 = [f for f in failures if f["gate"] == "rule_22_verification"]
+    assert len(r22) == 1
+    assert "(c)" in r22[0]["evidence"]
+    assert "missing status" in r22[0]["evidence"]
+
+
+def test_rule_22_qa_hedging_keyword(tmp_path):
+    """(f) QA step with hedging keyword in positive-status row → one (d)-class failure."""
+    report = tmp_path / "knowledge" / "qa" / "qa-report.md"
+    report.parent.mkdir(parents=True)
+    report.write_text(
+        "# QA Report\n\n"
+        "| Deliverable | Status | Evidence |\n"
+        "|---|---|---|\n"
+        "| gates.py | \u2705 | assumed correct based on inspection |\n"
+    )
+    parsed = _clean_parsed()
+    failures = []
+    gates._gate_rule_22_verification(True, RULE_22_QA_PLAN, 2, str(tmp_path), parsed, failures)
+    r22 = [f for f in failures if f["gate"] == "rule_22_verification"]
+    assert len(r22) == 1
+    assert "(d)" in r22[0]["evidence"]
+    assert "assumed" in r22[0]["evidence"]
+
+
+def test_rule_22_qa_both_fail_and_hedging(tmp_path):
+    """(g) QA step with both ❌ and hedging → two failures recorded (no short-circuit)."""
+    report = tmp_path / "knowledge" / "qa" / "qa-report.md"
+    report.parent.mkdir(parents=True)
+    report.write_text(
+        "# QA Report\n\n"
+        "| Deliverable | Status | Evidence |\n"
+        "|---|---|---|\n"
+        "| gates.py | \u2705 | estimated to work |\n"
+        "| verdict.py | \u274c | table missing |\n"
+    )
+    parsed = _clean_parsed()
+    failures = []
+    gates._gate_rule_22_verification(True, RULE_22_QA_PLAN, 2, str(tmp_path), parsed, failures)
+    r22 = [f for f in failures if f["gate"] == "rule_22_verification"]
+    assert len(r22) == 2
+    assert any("(c)" in f["evidence"] for f in r22)
+    assert any("(d)" in f["evidence"] for f in r22)
+
+
+def test_rule_22_qa_report_missing(tmp_path):
+    """(h) QA step where QA report file is missing → one (a)-class failure, graceful degradation."""
+    parsed = _clean_parsed()
+    failures = []
+    gates._gate_rule_22_verification(True, RULE_22_QA_PLAN, 2, str(tmp_path), parsed, failures)
+    r22 = [f for f in failures if f["gate"] == "rule_22_verification"]
+    assert len(r22) == 1
+    assert "(a)" in r22[0]["evidence"]

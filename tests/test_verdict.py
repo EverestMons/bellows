@@ -515,3 +515,87 @@ def test_check_verdict_pushover_failure_swallowed(tmp_path):
          patch("verdict.notifier.push", side_effect=ConnectionError("Pushover unreachable")):
         result = verdict.check_verdict("test-pushfail", 1)
     assert result == {"found": False}
+
+
+# --- Verification Results table + Rule 22 verdict enrichment tests ---
+
+
+def test_verification_results_table_all_pass():
+    """(a) Verification Results table renders all-PASS rows when no failures."""
+    gate_result = _make_gate_result(passed=True, is_qa=True, files_changed=["a.py", "b.py"])
+    table = verdict._build_verification_results_table(gate_result, None, 2, 3)
+    assert "| Check | Result | Detail |" in table
+    assert "PASS" in table
+    assert "FAIL" not in table
+    assert "receipt_status" in table
+    assert "rule_22_verification" in table
+
+
+def test_verification_results_table_fail_row():
+    """(b) Verification Results table renders FAIL with verbatim evidence."""
+    gate_result = _make_gate_result(
+        passed=False,
+        failures=[{"gate": "scope_check", "evidence": "out-of-scope files: rogue.py"}],
+    )
+    table = verdict._build_verification_results_table(gate_result, None, 1, 2)
+    assert "| scope_check | FAIL |" in table
+    assert "out-of-scope files: rogue.py" in table
+
+
+def test_verification_results_table_intermediate_decisions_count():
+    """(c) intermediate_decisions row shows correct count."""
+    gate_result = _make_gate_result(passed=True)
+    decisions = [{"event_idx": 1, "text": "test", "matched_phrases": ["decided"]}]
+    table = verdict._build_verification_results_table(gate_result, None, 1, 2, intermediate_decisions=decisions)
+    assert "| intermediate_decisions | INFORMATIONAL | 1 phrase-matched blocks |" in table
+
+    table_empty = verdict._build_verification_results_table(gate_result, None, 1, 2)
+    assert "| intermediate_decisions | INFORMATIONAL | 0 phrase-matched blocks |" in table_empty
+
+
+def test_pause_reason_label_rule_22():
+    """(d) _pause_reason_labels returns 'Rule 22 mechanical check failed' for rule_22_check_failed."""
+    with tempfile.TemporaryDirectory() as tmp:
+        with patch.object(verdict, "VERDICTS_DIR", Path(tmp) / "verdicts"):
+            gate_result = _make_gate_result(
+                passed=False,
+                failures=[{"gate": "rule_22_verification", "evidence": "test"}],
+            )
+            path = verdict.post_verdict_request(
+                "/tmp/plan.md", "/tmp/project", 1, "/tmp/logs", gate_result,
+                pause_reason="rule_22_check_failed", total_steps=2,
+            )
+            content = open(path).read()
+            assert "**Pause Reason:** Rule 22 mechanical check failed" in content
+
+
+def test_gate_failures_section_renders_for_rule_22_check_failed():
+    """(e) Gate Failures section renders when pause_reason is rule_22_check_failed."""
+    with tempfile.TemporaryDirectory() as tmp:
+        with patch.object(verdict, "VERDICTS_DIR", Path(tmp) / "verdicts"):
+            gate_result = _make_gate_result(
+                passed=False,
+                failures=[{"gate": "rule_22_verification", "evidence": "(a) deposit missing"}],
+            )
+            path = verdict.post_verdict_request(
+                "/tmp/plan.md", "/tmp/project", 1, "/tmp/logs", gate_result,
+                pause_reason="rule_22_check_failed", total_steps=2,
+            )
+            content = open(path).read()
+            assert "## Gate Failures" in content
+            assert "rule_22_verification" in content
+            assert "(a) deposit missing" in content
+
+
+def test_planner_only_checks_remaining_section():
+    """(f) Planner-Only Checks Remaining section appears in verdict request output."""
+    with tempfile.TemporaryDirectory() as tmp:
+        with patch.object(verdict, "VERDICTS_DIR", Path(tmp) / "verdicts"):
+            gate_result = _make_gate_result(passed=True)
+            path = verdict.post_verdict_request(
+                "/tmp/plan.md", "/tmp/project", 1, "/tmp/logs", gate_result,
+                pause_reason="auto_close_disabled", total_steps=2,
+            )
+            content = open(path).read()
+            assert "## Planner-Only Checks Remaining" in content
+            assert "Bellows verified mechanical pass/fail" in content

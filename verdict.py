@@ -92,6 +92,89 @@ def slug_from_path(plan_path):
     return basename
 
 
+def _build_verification_results_table(gate_result, parsed, step_number, total_steps, intermediate_decisions=None):
+    """Build a Verification Results markdown table from gate_result data.
+
+    Uses post-hoc inference: PASS rows are composed from static descriptions
+    since gates follow the append-on-failure, silent-on-pass pattern.
+    """
+    # (display_name, failure_gate_name, static_pass_detail)
+    _KNOWN_GATES = [
+        ("receipt_status", "receipt_status", "Status: Complete"),
+        ("ceo_flags", "ceo_flags", "No flags raised by agent"),
+        ("errors", "no_errors", "No errors reported in step output"),
+        ("permission_denials", "no_permission_denials", "No blocking permission denials"),
+        ("deposit_exists", "deposit_exists", "All agent-declared deposits present on disk"),
+        ("qa_step_detection", None, None),
+        ("file_change_audit", None, None),
+        ("scope_check", "scope_check", "All changes within plan scope"),
+        ("rule_20_self_check", "rule_20_self_check", None),
+        ("rule_22_verification", "rule_22_verification", None),
+    ]
+
+    failures_by_gate = {}
+    for f in gate_result.get("failures", []):
+        gate_name = f.get("gate", "")
+        if gate_name not in failures_by_gate:
+            failures_by_gate[gate_name] = []
+        failures_by_gate[gate_name].append(f["evidence"])
+
+    is_qa = gate_result.get("is_qa_step", False)
+    files_changed = gate_result.get("files_changed", [])
+
+    rows = ["| Check | Result | Detail |", "|---|---|---|"]
+
+    for display_name, failure_gate, pass_detail in _KNOWN_GATES:
+        if display_name == "qa_step_detection":
+            detail = f"QA step detected (step {step_number} of {total_steps})" if is_qa else "Not a QA step"
+            rows.append(f"| {display_name} | PASS | {detail} |")
+            continue
+        if display_name == "file_change_audit":
+            detail = f"{len(files_changed)} files modified"
+            rows.append(f"| {display_name} | PASS | {detail} |")
+            continue
+        if display_name == "rule_20_self_check":
+            if failure_gate in failures_by_gate:
+                evidence = "; ".join(failures_by_gate[failure_gate])
+                rows.append(f"| {display_name} | FAIL | {evidence} |")
+            else:
+                detail = "Banner byte-exact, PASSED line present" if is_qa else "N/A (not a QA step)"
+                rows.append(f"| {display_name} | PASS | {detail} |")
+            continue
+        if display_name == "rule_22_verification":
+            if failure_gate in failures_by_gate:
+                evidence = "; ".join(failures_by_gate[failure_gate])
+                rows.append(f"| {display_name} | FAIL | {evidence} |")
+            else:
+                detail = "Deposits present, verification table clean, no hedging" if is_qa else "Plan-declared deposits present on disk"
+                rows.append(f"| {display_name} | PASS | {detail} |")
+            continue
+
+        # Standard gates
+        if failure_gate in failures_by_gate:
+            evidence = "; ".join(failures_by_gate[failure_gate])
+            rows.append(f"| {display_name} | FAIL | {evidence} |")
+        else:
+            rows.append(f"| {display_name} | PASS | {pass_detail} |")
+
+    # Informational row for intermediate_decisions
+    if intermediate_decisions:
+        rows.append(f"| intermediate_decisions | INFORMATIONAL | {len(intermediate_decisions)} phrase-matched blocks |")
+    else:
+        rows.append("| intermediate_decisions | INFORMATIONAL | 0 phrase-matched blocks |")
+
+    return "\n".join(rows)
+
+
+_PLANNER_ONLY_CHECKS_SECTION = (
+    "## Planner-Only Checks Remaining\n\n"
+    "Bellows verified mechanical pass/fail. The Planner still verifies:\n"
+    "- (b) Does the deposited content actually answer the original question or fix the original bug?\n"
+    "- Substance of any FAIL rows above \u2014 Bellows surfaces the failure but does not interpret it.\n"
+    "- Plan-shape considerations not encoded in gates (e.g., recursion-risk constraints from LESSONS).\n"
+)
+
+
 def post_verdict_request(plan_path, project_path, step_number, log_path, gate_result, pause_reason="auto_close_disabled", planner_py_decision=None, total_steps=None, step_text="", intermediate_decisions=None):
     """Create a verdict request file in verdicts/pending/."""
     pending_dir = VERDICTS_DIR / "pending"
@@ -107,13 +190,14 @@ def post_verdict_request(plan_path, project_path, step_number, log_path, gate_re
         "agent_verdict_request": "Agent verdict request",
         "header_pause": "Header pause (pause_for_verdict)",
         "auto_close_disabled": "Auto-close disabled",
+        "rule_22_check_failed": "Rule 22 mechanical check failed",
     }
     pause_reason_label = _pause_reason_labels.get(pause_reason, pause_reason)
 
     if total_steps is None:
         raise ValueError("total_steps must be an integer, got None")
 
-    if pause_reason == "gate_failure" and gate_result.get("failures"):
+    if pause_reason in ("gate_failure", "rule_22_check_failed") and gate_result.get("failures"):
         failures_text = ""
         for f in gate_result["failures"]:
             failures_text += f"- **{f['gate']}**: {f['evidence']}\n"
@@ -131,6 +215,11 @@ def post_verdict_request(plan_path, project_path, step_number, log_path, gate_re
     # Scope deposit extraction to the current step's text, not the full plan
     current_step_text = _extract_step_text_from_plan(step_text, step_number) or step_text
 
+    verification_table = _build_verification_results_table(
+        gate_result, None, step_number, total_steps,
+        intermediate_decisions=intermediate_decisions,
+    )
+
     content = (
         f"# Verdict Request\n\n"
         f"**Plan:** {plan_path}\n"
@@ -144,6 +233,8 @@ def post_verdict_request(plan_path, project_path, step_number, log_path, gate_re
         f"**Gate Result Passed:** {gate_result.get('passed', False)}\n"
         f"**Total Steps:** {total_steps}\n\n"
         f"{pause_section}\n\n"
+        f"## Verification Results\n\n{verification_table}\n\n"
+        f"{_PLANNER_ONLY_CHECKS_SECTION}\n"
         f"## Files Changed\n\n"
     )
     for fc in gate_result.get("files_changed", []):

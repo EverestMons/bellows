@@ -47,6 +47,35 @@ GUARDRAILS_BASH_EXEMPTION_PATTERN = re.compile(
     + r'\s*(?:;|$)'
 )
 
+# Hedging keywords for Rule 22(d) QA verification-table scan
+HEDGING_KEYWORDS = [
+    "pending", "inferred", "extrapolated", "estimated", "approximate",
+    "skipped", "assumed", "close enough", "should pass", "would pass", "not run",
+]
+
+# Positive-status tokens for identifying positive-status rows in QA verification tables.
+# Glyph-agnostic: bounded matching (cell equality) prevents false positives.
+POSITIVE_STATUS_TOKENS = ["\u2705", "OK", "PASS", "done", "complete", "verified"]
+
+_TABLE_SEPARATOR_RE = re.compile(r'^\|[\s\-:]+(\|[\s\-:]+)*\|?\s*$')
+
+
+def _is_positive_status_row(line):
+    """True if the markdown table row contains a positive-status token in any cell."""
+    if "|" not in line:
+        return False
+    cells = [c.strip() for c in line.split("|")]
+    for cell in cells:
+        for token in POSITIVE_STATUS_TOKENS:
+            if token == "\u2705":
+                if "\u2705" in cell:
+                    return True
+            else:
+                if cell.lower() == token.lower():
+                    return True
+    return False
+
+
 def _parse_plan_header(plan_text):
     """Extract plan header fields. Tries YAML frontmatter first, then bold-Markdown format.
 
@@ -149,6 +178,8 @@ def check(parsed, plan_text, step_number, project_path, files_changed=None, wt_p
     is_qa_step = _gate_is_qa_step(plan_text, step_number)
     # Gate 6b: Rule 20 self-check verification (blocking, QA steps only)
     _gate_rule_20_self_check(is_qa_step, plan_text, step_number, project_path, parsed, failures, wt_path=wt_path)
+    # Gate 6c: Rule 22 verification (blocking)
+    _gate_rule_22_verification(is_qa_step, plan_text, step_number, project_path, parsed, failures, wt_path=wt_path)
     # Gate 7: file change audit (informational)
     _gate_file_change_audit(files_changed)
     # Gate 8: scope check
@@ -432,6 +463,81 @@ def _gate_rule_20_self_check(is_qa_step, plan_text, step_number, project_path, p
         # Only reach here if no deposit had the banner (and no unreadable errors already appended)
         if not any(f.get("gate") == "rule_20_self_check" for f in failures):
             failures.append({"gate": "rule_20_self_check", "evidence": "no QA deposit contains Rule 20 self-check banner"})
+
+
+def _gate_rule_22_verification(is_qa_step, plan_text, step_number, project_path, parsed, failures, wt_path=None):
+    """Rule 22 mechanical checks: (a) deposits exist, (c) verification table, (d) no hedging."""
+    step_text = _extract_step_text(plan_text, step_number)
+    if not step_text:
+        return
+
+    deposit_paths = _extract_plan_required_deposits(step_text)
+
+    # (a) Check all plan-declared deposits exist on disk
+    for dep_path in deposit_paths:
+        resolved = _resolve_deposit_path(dep_path, project_path, wt_path=wt_path)
+        if resolved is None:
+            failures.append({
+                "gate": "rule_22_verification",
+                "evidence": f"(a) Plan-declared deposit missing: {dep_path}",
+            })
+
+    if not is_qa_step:
+        return
+
+    # For QA steps: independent QA-report open for (c) and (d)
+    md_paths = [p for p in deposit_paths if p.endswith(".md")]
+    if not md_paths:
+        return
+
+    qa_report_path = md_paths[0]
+    resolved = _resolve_deposit_path(qa_report_path, project_path, wt_path=wt_path)
+    if resolved is None:
+        return  # (a) already flagged missing file
+
+    try:
+        with open(resolved, "r", encoding="utf-8") as f:
+            content = f.read()
+    except (FileNotFoundError, UnicodeDecodeError, OSError):
+        return
+
+    lines = content.splitlines()
+
+    # (c) Verification table: no ❌ rows, no data rows missing ✅
+    in_data = False
+    for i, line in enumerate(lines, 1):
+        stripped = line.strip()
+        if "|" not in stripped:
+            in_data = False
+            continue
+        if _TABLE_SEPARATOR_RE.match(stripped):
+            in_data = True
+            continue
+        if not in_data:
+            continue  # Header row
+        # Data row
+        if "\u274c" in stripped:
+            failures.append({
+                "gate": "rule_22_verification",
+                "evidence": f"(c) QA verification table row {i}: {stripped[:120]}. See {qa_report_path} line {i}.",
+            })
+        elif "\u2705" not in stripped:
+            failures.append({
+                "gate": "rule_22_verification",
+                "evidence": f"(c) QA verification table row {i} missing status: {stripped[:120]}. See {qa_report_path} line {i}.",
+            })
+
+    # (d) No hedging keywords in positive-status rows
+    for i, line in enumerate(lines, 1):
+        if _is_positive_status_row(line):
+            lower = line.lower()
+            for kw in HEDGING_KEYWORDS:
+                if kw in lower:
+                    failures.append({
+                        "gate": "rule_22_verification",
+                        "evidence": f"(d) Hedging keyword '{kw}' in positive-status row: {line.strip()[:120]}. See {qa_report_path} line {i}.",
+                    })
+                    break
 
 
 def _gate_is_qa_step(plan_text, step_number):

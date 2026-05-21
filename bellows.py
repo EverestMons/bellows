@@ -502,7 +502,10 @@ def run_plan(plan_path: str, config: dict, response_server: server.ResponseServe
                     or header_says_pause(header, current_step, total_steps, gate_result["is_qa_step"])):
                 log_path = str(BELLOWS_ROOT / "logs")
                 if not gate_result["passed"]:
-                    _pause_reason = "gate_failure"
+                    if all(isinstance(f, dict) and f.get("gate") == "rule_22_verification" for f in gate_result["failures"]):
+                        _pause_reason = "rule_22_check_failed"
+                    else:
+                        _pause_reason = "gate_failure"
                 elif gate_result["is_qa_step"]:
                     _pause_reason = "qa_checkpoint"
                 elif gate_result.get("verdict_requested", {}).get("requested", False):
@@ -588,7 +591,10 @@ def run_plan(plan_path: str, config: dict, response_server: server.ResponseServe
                 or not effective_auto_close):
             log_path = str(BELLOWS_ROOT / "logs")
             if not gate_result["passed"]:
-                _pause_reason = "gate_failure"
+                if all(f["gate"] == "rule_22_verification" for f in gate_result["failures"]):
+                    _pause_reason = "rule_22_check_failed"
+                else:
+                    _pause_reason = "gate_failure"
             elif gate_result["is_qa_step"]:
                 _pause_reason = "qa_checkpoint"
             elif gate_result.get("verdict_requested", {}).get("requested", False):
