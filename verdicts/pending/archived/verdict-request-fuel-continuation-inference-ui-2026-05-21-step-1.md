@@ -1,20 +1,21 @@
 # Verdict Request
 
-**Plan:** /Users/marklehn/Developer/GitHub/bellows/knowledge/decisions/in-progress-diagnostic-bellows-isinstance-asymmetry-2026-05-21.md
-**Project:** /Users/marklehn/Developer/GitHub/bellows
+**Plan:** /Users/marklehn/Developer/GitHub/invoice-pulse/knowledge/decisions/in-progress-executable-fuel-continuation-inference-ui-2026-05-21.md
+**Project:** /Users/marklehn/Developer/GitHub/invoice-pulse
 **Step:** 1
 **Log:** /Users/marklehn/Developer/GitHub/bellows/logs
-**Timestamp:** 2026-05-21T11:09:41.505824
-**Pause Reason:** Header pause (pause_for_verdict)
-**Pause Reason Code:** header_pause
-**Deposit:** bellows/knowledge/research/bellows-isinstance-asymmetry-2026-05-21.md
-**Gate Result Passed:** True
-**Total Steps:** 1
+**Timestamp:** 2026-05-21T15:38:20.545985
+**Pause Reason:** Gate failure
+**Pause Reason Code:** gate_failure
+**Deposit:** none
+**Gate Result Passed:** False
+**Total Steps:** 4
 
-## Pause Reason
+## Gate Failures
 
-The plan header specifies `pause_for_verdict`. This step is complete;
-CEO review is required before the next step begins.
+- **worktree_creation**: worktree creation failed after retry for fuel-continuation-inference-ui-2026-05-21: Preparing worktree (detached HEAD 0169981)
+fatal: '/Users/marklehn/Developer/GitHub/invoice-pulse/.bellows-worktrees/fuel-continuation-inference-ui-2026-05-21' already exists
+
 
 ## Verification Results
 
