@@ -311,6 +311,8 @@ def header_says_pause(header: dict, current_step: int, total_steps: int, is_qa_s
         return current_step == 1
     if pv == "after_qa_step":
         return is_qa_step
+    if pv:
+        _log("WARN", f"⚠️ unrecognized pause_for_verdict value: {pv!r} (recognized: 'always', 'after_step_1', 'after_qa_step') — treating as no-pause")
     return False
 
 
