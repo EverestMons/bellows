@@ -1,7 +1,16 @@
 # Agent Prompt Feedback
 
 **Date:** 2026-05-27
-**Plans:** diagnostic-bellows-expected-keys-warning-2026-05-21, diagnostic-bellows-isinstance-asymmetry-2026-05-21, executable-deposit-exists-path-form-normalization-2026-05-27, executable-disable-autoupdater-2026-05-27, diagnostic-planner-authored-contract-validation-2026-05-20, diagnostic-bash-gate-vs-guardrails-2026-05-20, executable-plan-write-time-lessons-reread-2026-05-13
+**Plans:** executable-bellows-expected-keys-narrow-2026-05-21, diagnostic-bellows-expected-keys-warning-2026-05-21, diagnostic-bellows-isinstance-asymmetry-2026-05-21, executable-deposit-exists-path-form-normalization-2026-05-27, executable-disable-autoupdater-2026-05-27, diagnostic-planner-authored-contract-validation-2026-05-20, diagnostic-bash-gate-vs-guardrails-2026-05-20, executable-plan-write-time-lessons-reread-2026-05-13
+
+## 2026-05-21 — expected-keys warning narrow (DEV Step 1)
+
+- **Edit was fully mechanical — no judgment calls required.** The plan specified the exact 4-line anchor block, exact 2-line replacement, and exact indentation (8 spaces). Pre-edit and post-edit grep verification counts were pre-specified (`expected_keys = {`: 1→0, `sparse header`: 1→1). The entire step was executable without consulting any additional files beyond `bellows.py` itself.
+- **Pre-edit verification protocol caught correct state.** Requiring grep confirmation of exactly 1 `expected_keys = {` match at line 416 and exactly 1 `sparse header` match at line 383 before editing ensures the plan is aligned with the code. Both matched perfectly.
+- **`bellows/` path prefix inconsistency persists (sixth occurrence).** The plan uses `bellows/bellows.py` and `bellows/knowledge/...` paths throughout but the worktree has files at root. Agent adapted by stripping the prefix. This is a recurring pattern across all bellows worktree plans.
+- **"Skip glossary read" instruction was appropriate.** For a 4-line-to-2-line replacement with exact before/after specification, no domain context was needed beyond the specialist file.
+- **Test impact check instruction was well-placed.** The plan correctly anticipated that `test_warning_multi_step_plan_without_pause_for_verdict` would need an assertion update and explicitly asked DEV to report findings without modifying the test file. This separation of concerns (DEV reports, QA fixes) is clean and avoids DEV overstepping into QA's scope.
+- **Shape C citation chain was useful for the dev log.** The plan referenced both 2026-05-21 diagnostics (expected-keys-warning and expected-keys-shape-choice) with explicit file paths and findings locations. This made the dev log's authority section straightforward to write without re-reading the diagnostics.
 
 ## 2026-05-21 — expected-keys warning diagnostic (SA Step 1)
 
