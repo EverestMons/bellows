@@ -11,6 +11,14 @@
 - **The `setdefault` vs unconditional assignment distinction was correctly specified.** The plan's explicit instruction to use `setdefault` with rationale (operator override respect) prevented the simpler but less flexible `os.environ["DISABLE_AUTOUPDATER"] = "1"` approach. The override test directly validates this contract.
 - **Test design using import side-effect was pragmatic.** The plan correctly identified that the module-level `setdefault` IS the contract, making "assert env var after import" the right test shape. The `importlib.reload` approach for testing the override path was straightforward.
 
+## 2026-05-27 — Disable Claude Code Autoupdater (QA Step 2)
+
+- **Step 1 Output Receipt was well-structured for QA consumption.** The "Files Created or Modified (Code)" section listed every file with a one-line description of what changed. The "Flags for Next Step" section correctly pre-flagged the 4 `test_decisions.py` pre-existing failures and the daemon restart requirement. This eliminated ambiguity during deliverable verification.
+- **Rule 20 self-check values were pre-specified in the plan prompt.** All four values (`plan_slug`, `qa_report_path`, `evidence_dir`, `required_evidence_files`) were provided verbatim, eliminating naming decisions. The evidence filenames matched the behavioral verification sections 1:1.
+- **`bellows/` path prefix inconsistency persists from Step 1.** The plan's QA step also uses `bellows/` prefixed paths (e.g., `bellows/runner.py`, `bellows/CLAUDE.md`). Since the worktree is flat, QA had to strip the prefix, same adaptation as DEV. The plan should use consistent path conventions.
+- **Subprocess inheritance smoke test was a good addition.** This test validates the actual mechanism by which `DISABLE_AUTOUPDATER` reaches `claude -p` — parent env vars propagating to child processes. The unit tests verify the module-level `setdefault` contract, but the smoke test closes the gap between "env var is set" and "child process inherits it."
+- **Pre-existing failure count has grown since plan authoring.** The plan mentions only `test_run_step_timeout` as pre-existing. The actual pre-existing failure count is 5 (including 4 `test_decisions.py` tests). Step 1's dev log correctly flagged this, so QA was not surprised, but the plan itself is stale on this point.
+
 ## 2026-05-20 — Planner-Authored Contract Validation Surface (SA Step 1)
 
 - **Six-question structure with explicit per-question deliverable format was highly effective.** Q1 (enumeration table), Q2 (classification table), Q3 (per-artifact evaluation), Q4 (shipping order), Q5 (anti-recommendations), Q6 (gap assessment table) each had a concrete output shape. The diagnostic produced a clean, sequential analysis with no ambiguity about what to deliver.
