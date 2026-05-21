@@ -1532,3 +1532,13 @@ The Planner authors plans in a Project conversation with MCP filesystem tools. T
 - **Anchor strategy for Edit C was effective.** Using the last Lessons row + trailing blank line + `---` separator as the combined anchor ensured uniqueness without needing to match the entire row content (which is extremely long). The plan correctly noted the DOC agent should identify the anchor at runtime rather than pre-quoting it.
 - **Two-commit split (governance root vs bellows repo) is well-specified.** The plan clearly separates the PLANNER_TEMPLATE.md commit (governance root) from the dev log commit (bellows). This prevents cross-repo staging confusion.
 - **"Skip glossary read" instruction was appropriate.** A governance-file edit task has no domain-specific terminology that would benefit from glossary context. The instruction saved unnecessary file reads.
+
+## 2026-05-21 — PLANNER_TEMPLATE v4.48 Rule 25 codification (QA Step 2)
+
+- **Specialist file `agents/BELLOWS_QA.md` exists and was read successfully.** Present at worktree root (not prefixed with `bellows/`). Role context was useful for understanding QA scope and Rule 20 self-check procedure.
+- **`bellows/` path prefix inconsistency persists (seventh occurrence).** Plan references `bellows/agents/BELLOWS_QA.md`, `bellows/knowledge/qa/...`, `bellows/knowledge/research/...`, and `bellows/PROJECT_STATUS.md` but worktree root has files directly. Adapted by stripping prefix. This is now documented across 7+ consecutive bellows worktree plans.
+- **"Read DOC's Step 1 deposit and check Output Receipt status" blocker-check instruction is effective.** Quick validation that Step 1 completed successfully before starting QA work. The dev log's Output Receipt had `Status: Complete`, allowing immediate proceed.
+- **Plan specifies `Desktop Commander:edit_block` for PROJECT_STATUS.md update but agent uses Claude Code's Edit tool.** Same adaptation as Step 1 — plan authored for Desktop Commander MCP context. No semantic loss.
+- **11 evidence files is well-scoped for a governance markdown edit.** The 8 deliverable checks + 3 structural checks each map to exactly one evidence file. The plan's explicit listing of all 11 filenames in the `required_evidence_files` array eliminates ambiguity.
+- **"Skip glossary read" instruction was appropriate.** Governance-file QA has no domain-specific terminology requiring glossary context.
+- **Plan correctly specifies no `pytest_targeted.txt` for markdown-only edits.** The explicit callout of the 2026-04-20 Lessons row (Position A) that codifies empty targeted set for markdown-only plans prevents QA from wondering whether tests should have been run.
