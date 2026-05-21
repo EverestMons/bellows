@@ -1,7 +1,16 @@
 # Agent Prompt Feedback
 
 **Date:** 2026-05-27
-**Plans:** executable-deposit-exists-path-form-normalization-2026-05-27, executable-disable-autoupdater-2026-05-27, diagnostic-planner-authored-contract-validation-2026-05-20, diagnostic-bash-gate-vs-guardrails-2026-05-20, executable-plan-write-time-lessons-reread-2026-05-13
+**Plans:** diagnostic-bellows-isinstance-asymmetry-2026-05-21, executable-deposit-exists-path-form-normalization-2026-05-27, executable-disable-autoupdater-2026-05-27, diagnostic-planner-authored-contract-validation-2026-05-20, diagnostic-bash-gate-vs-guardrails-2026-05-20, executable-plan-write-time-lessons-reread-2026-05-13
+
+## 2026-05-21 — isinstance Asymmetry Diagnostic (SA Step 1)
+
+- **Investigation questions were well-structured for systematic trace.** The 6-question framework (block identification, upstream data flow, format invariants, defensive-guard cost, future-refactor risk, recommendation) forced a comprehensive trace rather than a surface-level read. Each question built on the previous one's findings.
+- **Line numbers in the diagnostic were accurate.** Both anchor lines (505 and 594) matched the current source exactly. The diagnostic was authored against the current code state, not a stale snapshot.
+- **"Skip glossary read" instruction saved time.** For a pure code-tracing task, glossary context is unnecessary. The instruction correctly identified this as a narrow technical investigation.
+- **The "Quote code verbatim with line numbers" output requirement was valuable.** It forces the analyst to anchor findings to specific code rather than paraphrasing, which prevents drift between findings and the actual source.
+- **"Cite anchor lines for any future executable's edit_block" was a useful forward-link.** It creates a direct handoff artifact for the Planner — the findings file contains the exact line and unique string needed for the edit, eliminating re-discovery.
+- **Scope was appropriately tight.** "Read-only investigation of `bellows.py` only" with on-demand reads of other files prevented scope creep into unnecessary refactoring analysis. The gates.py read was necessary for upstream trace and was correctly permitted by the "on-demand" clause.
 
 ## 2026-05-27 — deposit_exists Path-Form Normalization (DEV Step 1)
 
