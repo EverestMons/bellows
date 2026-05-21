@@ -1,0 +1,5 @@
+$ grep -n "rule_22_check_failed" verdict.py
+193:        "rule_22_check_failed": "Rule 22 mechanical check failed",
+200:    if pause_reason in ("gate_failure", "rule_22_check_failed") and gate_result.get("failures"):
+
+RESULT: ✅ _pause_reason_labels contains "rule_22_check_failed": "Rule 22 mechanical check failed" at line 193.

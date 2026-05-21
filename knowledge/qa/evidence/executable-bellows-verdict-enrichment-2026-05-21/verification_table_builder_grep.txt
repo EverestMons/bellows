@@ -1,0 +1,8 @@
+$ grep -n "_build_verification_results_table" verdict.py
+95:def _build_verification_results_table(gate_result, parsed, step_number, total_steps, intermediate_decisions=None):
+96-    """Build a Verification Results markdown table from gate_result data.
+218:    verification_table = _build_verification_results_table(
+219-        gate_result, None, step_number, total_steps,
+220-        intermediate_decisions=intermediate_decisions,
+
+RESULT: ✅ _build_verification_results_table defined at line 95, called from post_verdict_request at line 218.

@@ -1,0 +1,7 @@
+$ grep -n "def _gate_rule_22_verification" gates.py
+468:def _gate_rule_22_verification(is_qa_step, plan_text, step_number, project_path, parsed, failures, wt_path=None):
+469-    """Rule 22 mechanical checks: (a) deposits exist, (c) verification table, (d) no hedging."""
+470-    step_text = _extract_step_text(plan_text, step_number)
+471-    if not step_text:
+
+RESULT: ✅ Function exists at line 468 with expected signature.

@@ -1,0 +1,8 @@
+$ grep -n "_gate_rule_2[02]_" gates.py
+179-    # Gate 6b: Rule 20 self-check verification (blocking, QA steps only)
+180:    _gate_rule_20_self_check(is_qa_step, plan_text, step_number, project_path, parsed, failures, wt_path=wt_path)
+181-    # Gate 6c: Rule 22 verification (blocking)
+182:    _gate_rule_22_verification(is_qa_step, plan_text, step_number, project_path, parsed, failures, wt_path=wt_path)
+183-    # Gate 7: file change audit (informational)
+
+RESULT: ✅ _gate_rule_22_verification called immediately after _gate_rule_20_self_check in check() (lines 180-182).

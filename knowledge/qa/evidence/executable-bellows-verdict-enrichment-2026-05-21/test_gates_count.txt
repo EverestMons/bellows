@@ -1,0 +1,7 @@
+$ grep -c "^def test_" tests/test_gates.py
+107
+
+DEV declared 8 new tests. Pre-edit baseline was 99 test functions (372 total collected - tests in other modules).
+Post-edit: 107 test functions = 99 + 8 new tests. Delta matches DEV declaration.
+
+RESULT: ✅ test_gates.py has 107 test functions (8 new).

@@ -1,0 +1,10 @@
+$ verdict.py lines 169-175:
+_PLANNER_ONLY_CHECKS_SECTION = (
+    "## Planner-Only Checks Remaining\n\n"
+    "Bellows verified mechanical pass/fail. The Planner still verifies:\n"
+    "- (b) Does the deposited content actually answer the original question or fix the original bug?\n"
+    "- Substance of any FAIL rows above — Bellows surfaces the failure but does not interpret it.\n"
+    "- Plan-shape considerations not encoded in gates (e.g., recursion-risk constraints from LESSONS).\n"
+)
+
+RESULT: ✅ Fixed-text constant (no parameterization). Module-level constant, not generated at call time.

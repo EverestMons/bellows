@@ -1,0 +1,18 @@
+$ verdict.py _KNOWN_GATES registry (lines 102-113):
+    _KNOWN_GATES = [
+        ("receipt_status", "receipt_status", "Status: Complete"),
+        ("ceo_flags", "ceo_flags", "No flags raised by agent"),
+        ("errors", "no_errors", "No errors reported in step output"),
+        ("permission_denials", "no_permission_denials", "No blocking permission denials"),
+        ("deposit_exists", "deposit_exists", "All agent-declared deposits present on disk"),
+        ("qa_step_detection", None, None),
+        ("file_change_audit", None, None),
+        ("scope_check", "scope_check", "All changes within plan scope"),
+        ("rule_20_self_check", "rule_20_self_check", None),
+        ("rule_22_verification", "rule_22_verification", None),
+    ]
+
+Count: 10 gates (9 existing + 1 new rule_22_verification).
+Plus 1 informational row: intermediate_decisions (lines 160-164).
+
+RESULT: ✅ Exactly 10 gate entries in _KNOWN_GATES registry.

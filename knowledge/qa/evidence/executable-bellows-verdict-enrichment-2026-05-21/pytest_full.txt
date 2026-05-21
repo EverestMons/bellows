@@ -1,0 +1,60 @@
+tests/test_verdict.py::test_check_verdict_continue PASSED                [ 89%]
+tests/test_verdict.py::test_check_verdict_stop PASSED                    [ 90%]
+tests/test_verdict.py::test_pause_reason_gate_failure_renders_gate_failures_section PASSED [ 90%]
+tests/test_verdict.py::test_pause_reason_qa_checkpoint PASSED            [ 90%]
+tests/test_verdict.py::test_pause_reason_agent_verdict_request PASSED    [ 90%]
+tests/test_verdict.py::test_pause_reason_header_pause PASSED             [ 91%]
+tests/test_verdict.py::test_pause_reason_auto_close_disabled PASSED      [ 91%]
+tests/test_verdict.py::test_old_fallback_string_never_appears PASSED     [ 91%]
+tests/test_verdict.py::test_post_verdict_request_handles_worktree_teardown_failure_dict_format PASSED [ 91%]
+tests/test_verdict.py::test_check_verdict_accepts_bare_continue PASSED   [ 92%]
+tests/test_verdict.py::test_check_verdict_accepts_bare_stop PASSED       [ 92%]
+tests/test_verdict.py::test_check_verdict_still_accepts_prefixed_continue PASSED [ 92%]
+tests/test_verdict.py::test_check_verdict_rejects_garbage PASSED         [ 93%]
+tests/test_verdict.py::test_log_to_ledger_appends_json PASSED            [ 93%]
+tests/test_verdict.py::test_log_to_ledger_without_pause_reason_code PASSED [ 93%]
+tests/test_verdict.py::test_log_to_ledger_with_pause_reason_code_qa_checkpoint PASSED [ 93%]
+tests/test_verdict.py::test_log_to_ledger_all_pause_reason_codes PASSED  [ 94%]
+tests/test_verdict.py::test_intermediate_decisions_section_rendered_when_present PASSED [ 94%]
+tests/test_verdict.py::test_intermediate_decisions_section_omitted_when_empty PASSED [ 94%]
+tests/test_verdict.py::test_intermediate_decisions_section_omitted_when_none PASSED [ 94%]
+tests/test_verdict.py::test_check_verdict_logs_warning_on_malformed_first_line PASSED [ 95%]
+tests/test_verdict.py::test_check_verdict_pushover_deduped_per_file_per_daemon_lifetime PASSED [ 95%]
+tests/test_verdict.py::test_check_verdict_no_warning_on_empty_file PASSED [ 95%]
+tests/test_verdict.py::test_check_verdict_no_warning_on_missing_file PASSED [ 95%]
+tests/test_verdict.py::test_check_verdict_well_formed_verdict_continue PASSED [ 96%]
+tests/test_verdict.py::test_check_verdict_well_formed_verdict_stop_with_reason PASSED [ 96%]
+tests/test_verdict.py::test_check_verdict_pushover_failure_swallowed PASSED [ 96%]
+tests/test_verdict.py::test_verification_results_table_all_pass PASSED   [ 96%]
+tests/test_verdict.py::test_verification_results_table_fail_row PASSED   [ 97%]
+tests/test_verdict.py::test_verification_results_table_intermediate_decisions_count PASSED [ 97%]
+tests/test_verdict.py::test_pause_reason_label_rule_22 PASSED            [ 97%]
+tests/test_verdict.py::test_gate_failures_section_renders_for_rule_22_check_failed PASSED [ 97%]
+tests/test_verdict.py::test_planner_only_checks_remaining_section PASSED [ 98%]
+tests/test_worktree.py::test_create_worktree_returns_valid_path_with_tracked_files PASSED [ 98%]
+tests/test_worktree.py::test_worktree_isolation_git_diff PASSED          [ 98%]
+tests/test_worktree.py::test_teardown_removes_worktree_directory PASSED  [ 98%]
+tests/test_worktree.py::test_teardown_cherry_picks_commits PASSED        [ 99%]
+tests/test_worktree.py::test_teardown_copies_uncommitted_files PASSED    [ 99%]
+tests/test_worktree.py::test_teardown_aborts_on_cherry_pick_conflict PASSED [ 99%]
+tests/test_worktree.py::test_create_worktree_retries_once_on_failure PASSED [100%]
+
+=================================== FAILURES ===================================
+____________________________ test_run_step_timeout _____________________________
+
+    def test_run_step_timeout():
+        with patch("runner.subprocess.run", side_effect=subprocess.TimeoutExpired("claude", 300)):
+            result = runner.run_step("test prompt", "/tmp", "claude-sonnet-4-6")
+>       assert result["is_error"] is True
+E       assert False is True
+
+tests/test_runner_parser.py:57: AssertionError
+=============================== warnings summary ===============================
+../../../Library/Python/3.9/lib/python/site-packages/urllib3/__init__.py:35
+  /Users/marklehn/Library/Python/3.9/lib/python/site-packages/urllib3/__init__.py:35: NotOpenSSLWarning: urllib3 v2 only supports OpenSSL 1.1.1+, currently the 'ssl' module is compiled with 'LibreSSL 2.8.3'. See: https://github.com/urllib3/urllib3/issues/3020
+    warnings.warn(
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED tests/test_runner_parser.py::test_run_step_timeout - assert False is True
+=================== 1 failed, 385 passed, 1 warning in 6.26s ===================

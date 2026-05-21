@@ -1,0 +1,16 @@
+$ bellows.py discriminator blocks:
+
+Block 1 (mid-plan, line 505):
+    if all(isinstance(f, dict) and f.get("gate") == "rule_22_verification" for f in gate_result["failures"]):
+        _pause_reason = "rule_22_check_failed"
+    else:
+        _pause_reason = "gate_failure"
+
+Block 2 (final-step, line 594):
+    if all(f["gate"] == "rule_22_verification" for f in gate_result["failures"]):
+        _pause_reason = "rule_22_check_failed"
+    else:
+        _pause_reason = "gate_failure"
+
+RESULT: ✅ Both blocks use all() (not any()). Mixed failures route to "gate_failure", not "rule_22_check_failed".
+Note: Block 1 includes isinstance(f, dict) defensive guard; Block 2 does not (minor asymmetry, not a functional defect — Block 2's code path only receives dict-format failures).

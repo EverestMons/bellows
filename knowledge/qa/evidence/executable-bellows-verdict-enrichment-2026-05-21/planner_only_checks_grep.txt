@@ -1,0 +1,8 @@
+$ grep -n -C2 "Bellows verified mechanical pass/fail" verdict.py
+169-_PLANNER_ONLY_CHECKS_SECTION = (
+170-    "## Planner-Only Checks Remaining\n\n"
+171:    "Bellows verified mechanical pass/fail. The Planner still verifies:\n"
+172-    "- (b) Does the deposited content actually answer the original question or fix the original bug?\n"
+173-    "- Substance of any FAIL rows above — Bellows surfaces the failure but does not interpret it.\n"
+
+RESULT: ✅ Planner-Only Checks Remaining section with exact required text at line 169-173.

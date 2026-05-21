@@ -1,0 +1,17 @@
+$ grep -n -C2 'rule_22_verification\|rule_22_check_failed' bellows.py
+503-                log_path = str(BELLOWS_ROOT / "logs")
+504-                if not gate_result["passed"]:
+505:                    if all(isinstance(f, dict) and f.get("gate") == "rule_22_verification" for f in gate_result["failures"]):
+506:                        _pause_reason = "rule_22_check_failed"
+507-                    else:
+508-                        _pause_reason = "gate_failure"
+---
+592-            log_path = str(BELLOWS_ROOT / "logs")
+593-            if not gate_result["passed"]:
+594:                if all(f["gate"] == "rule_22_verification" for f in gate_result["failures"]):
+595:                    _pause_reason = "rule_22_check_failed"
+596-                else:
+597-                    _pause_reason = "gate_failure"
+
+RESULT: ✅ Two discriminator blocks found (lines 505 and 594). Both use all() (not any()).
+Note: Block 1 (line 505) includes isinstance(f, dict) guard; Block 2 (line 594) does not.

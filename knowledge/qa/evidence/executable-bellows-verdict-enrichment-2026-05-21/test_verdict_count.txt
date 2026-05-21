@@ -1,0 +1,7 @@
+$ grep -c "^def test_" tests/test_verdict.py
+37
+
+DEV declared 6 new tests. Pre-edit baseline was 31 test functions.
+Post-edit: 37 test functions = 31 + 6 new tests. Delta matches DEV declaration.
+
+RESULT: ✅ test_verdict.py has 37 test functions (6 new).

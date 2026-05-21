@@ -1,0 +1,8 @@
+$ grep -n -C2 'rule_22_check_failed.*gate_result' verdict.py
+198-        raise ValueError("total_steps must be an integer, got None")
+199-
+200:    if pause_reason in ("gate_failure", "rule_22_check_failed") and gate_result.get("failures"):
+201-        failures_text = ""
+202-        for f in gate_result["failures"]:
+
+RESULT: ✅ Gate Failures section trigger at line 200 includes both "gate_failure" and "rule_22_check_failed".
