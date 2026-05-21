@@ -1,29 +1,28 @@
 # bellows — Next Session Baton
 
-**Created:** 2026-05-27 (replaces 2026-05-19 baton; that baton's items are addressed or rolled into the items below)
+**Created:** 2026-05-21 (replaces 2026-05-21 prior baton; Priority 2 resolved, Priority 1 sequencing now clear)
 **Carry-forward owner:** Planner
 
 This file exists when bellows has work to carry into the next session. Delete it when all items here close.
 
 ---
 
-## Priority 1 — Verdict-enrichment executable (ready to author)
+## Priority 1 — Verdict-enrichment executable (READY TO AUTHOR)
 
 **Source roadmap:** `/Users/marklehn/Developer/GitHub/roadmap-bellows-verdict-enrichment-2026-05-27.md`
-**Source diagnostic:** `bellows/knowledge/research/verdict-enrichment-surface-2026-05-27.md` (committed via origin `7f0c6f2`)
-**Plan filename to use:** `executable-bellows-verdict-enrichment-YYYY-MM-DD.md` (use the actual current date, not 2026-05-27)
+**Source diagnostic:** `bellows/knowledge/research/verdict-enrichment-surface-2026-05-27.md` (mis-dated; actual creation 2026-05-21)
+**Plan filename to use:** `executable-bellows-verdict-enrichment-YYYY-MM-DD.md` (use the actual current date — run `date "+%Y-%m-%d"` per Rule 40 before authoring)
 
-**Status:** diagnostic complete, Rule 22 verified, executable not yet written. The diagnostic gave the full surface map; the executable is straightforward to author.
+**Status:** All preconditions met. Priority 2 (parallel-SHA divergence characterization) is complete and unblocks Priority 1. The governance edit shipped (PLANNER_TEMPLATE v4.46, Rule 25 routing row for `rule_22_check_failed` now in place).
 
-**Scope (locked from this session's design discussion):**
+**Scope (locked from 2026-05-21 design):**
 - New `_gate_rule_22_verification` gate consolidating Rule 22 (a)+(c)+(d) mechanical checks
-- Verdict-request enrichment that re-surfaces all 8 existing gates in a unified Verification Results table (PASS rows via approach ii — post-hoc inference, ~30 LOC helper in verdict.py)
-- New `rule_22_check_failed` Pause Reason Code routed via Rule 25 to "stop and report CEO"
-- "Planner-Only Checks Remaining" fixed section at end of verdict request listing what Bellows did NOT verify
+- Verdict-request enrichment re-surfacing all 8 existing gates in a unified Verification Results table (PASS rows via post-hoc inference, ~30 LOC helper in verdict.py)
+- New `rule_22_check_failed` Pause Reason Code (routing row ALREADY in PLANNER_TEMPLATE per 2026-05-21 governance plan)
+- "Planner-Only Checks Remaining" fixed section at end of verdict request
 - File paths + line numbers on FAIL rows, one-line details on PASS rows
 
-**Out of scope (explicitly rejected this session):**
-- Auto-continue / auto-close on all-green. Risk of dropping CEO review is not acceptable. Planner still authors every continue verdict.
+**CRITICAL operational adjustment per Priority 2 findings:** Author this plan WITHOUT `git push` instructions in step prose. Replace "Commit with message X and push to origin/main" with "Commit with message X. Do NOT push — the Planner will handle session-wrap commits." This eliminates the parallel-SHA divergence at the source. The 2026-05-21 governance and bellows-diagnostic plans demonstrated divergence does occur and reconciliation is operationally fine, but the verdict-enrichment plan has 5 deposits (vs. the diagnostic's 1) and the divergence compounds linearly. Cleaner to ship without push.
 
 **Implementation surface (per diagnostic):**
 | File | Changes | Est. LOC |
@@ -35,89 +34,72 @@ This file exists when bellows has work to carry into the next session. Delete it
 | `bellows/tests/test_verdict.py` | Table rendering, PASS row composition | ~60 |
 | **Total** | | **~229** |
 
-**Three follow-up flags from the SA that the executable MUST address:**
-1. Plan's `**Deposits:**` block uses **project-prefixed relative paths** (`bellows/gates.py`, NOT absolute) per the recursion-risk constraint (LESSONS 2026-05-19 + 2026-05-27). The new gate also performs path-comparison work; using normalized forms means the executable's deposits won't trip the gate it's modifying.
-2. `verdict.py` line 116 currently gates the Gate Failures section on `pause_reason == "gate_failure"`. Update to also trigger on `rule_22_check_failed` since the failures list contains the evidence.
-3. `parsed["receipt_status"]` is NOT in `gate_result`. Use generic PASS detail `"Status: Complete"` rather than thread it through (semantically equivalent — receipt_status != Complete is already a gate failure).
+**Three follow-up flags from the SA diagnostic that the executable MUST address:**
+1. Plan's `**Deposits:**` block uses **project-prefixed relative paths** (`bellows/gates.py`, NOT absolute) per the recursion-risk constraint. The new gate also performs path-comparison work; using normalized forms means the executable's deposits won't trip the gate it's modifying.
+2. `verdict.py` line 116 currently gates the Gate Failures section on `pause_reason == "gate_failure"`. Update to also trigger on `rule_22_check_failed`.
+3. `parsed["receipt_status"]` is NOT in `gate_result`. Use generic PASS detail `"Status: Complete"` rather than thread it through.
 
-**Paired governance edit (separate small executable):** PLANNER_TEMPLATE.md Rule 25 routing table needs a row added for `rule_22_check_failed` → "stop and report CEO". Same routing class as `gate_failure` and `scope_violation`.
-
-**Sequencing:** Restart daemon → Phase 1.5 reads → author executable → dispatch → restart daemon → governance edit.
+**Sequencing:** Restart daemon (per outstanding restart reminders from disable-autoupdater + path-form normalization shipped 2026-05-21) → Phase 1.5 reads → author executable → dispatch.
 
 ---
 
-## Priority 2 — Daemon parallel-SHA divergence (characterization needed)
+## Priority 2 — RESOLVED (parallel-SHA divergence)
 
-**Observed pattern (2026-05-27):** Four of today's commits had parallel SHAs between local and origin:
-- `eeaedcb` (local) ≡ `4294706` (origin) — normalize fix
-- `289df0c` (local) ≡ `8469c44` (origin) — normalize QA
-- `3075764` (local) ≡ `80ca915` (origin) — normalize diagnostic
-- `9acd499` (local recovery) ≡ `7f0c6f2` (origin) — verdict-enrichment diagnostic
-
-All four pairs were content-identical (`git diff` returned empty in every case). Local was 3 commits ahead of origin and origin was 4 commits ahead of local at session end; reconciled via `git reset --hard origin/main`.
-
-**The likely mechanism:** Bellows's worktree teardown pushes the agent's commit from the worktree directly to origin. Then locally, the teardown cherry-picks the agent's commit onto local main, producing a content-identical commit with a different SHA (different parent or timestamp). The local push then becomes non-fast-forward against origin (which already has the agent's commit). What happens to that local push isn't fully understood — Bellows may resolve it silently, or local main just diverges and nobody notices until the next session.
-
-**Symptom this produces:** the cherry-pick during teardown reports "previous cherry-pick is now empty, possibly due to conflict resolution" when the branch tip the worktree was created from is a stale commit (e.g., the previous diagnostic's branch tip). The agent's actual new commit lands on origin via the worktree push but local main never gets it cleanly. Looks like a worktree teardown failure but is actually a "local divergence from origin" situation.
-
-**Recovery procedure (proven):** `git fetch origin && git reset --hard origin/main`. Working-tree state preserved. Tested this session — clean.
-
-**Why this is a Priority 2, not Priority 1:**
-- Recovery is mechanical (one command)
-- No data loss
-- No incorrect behavior in agent output
-- Affects operator confidence and clarity of `git log` history, not correctness
-
-**Proposed diagnostic shape (run before authoring Priority 1 executable):**
-- Single SA step, read-only, scope-bounded
-- Three questions:
-  1. What git operations does `_teardown_worktree` perform, in what order? (Trace `bellows.py` teardown code path through subprocess calls.)
-  2. Does it push from worktree to origin? Does it also push from local to origin? Both? Either conditionally?
-  3. When both: what's the resolution mechanism for the local push — fast-forward expected (origin already has the commit), force-push, `--ff-only` with silent fail, or something else?
-
-**Filename:** `diagnostic-teardown-git-operations-mapping-YYYY-MM-DD.md`
-
-**Recommendation: run this diagnostic BEFORE authoring the verdict-enrichment executable.** If teardown has a real bug, we want to know before depositing a 229-LOC plan that runs through the teardown path multiple times.
+Closed by 2026-05-21 diagnostic `knowledge/research/teardown-git-operations-mapping-2026-05-21.md`. Findings classified the pattern as architectural mismatch (agent push + Bellows cherry-pick), NOT a Bellows code bug. Recovery procedure (`git fetch origin && git log HEAD --not origin/main && git reset --hard origin/main`) verified safe with the unique-local-commits pre-check.
 
 ---
 
-## Priority 3 — Operational housekeeping
+## Priority 3 — Operational housekeeping (carry-forward)
 
-**BACKLOG hygiene closures pending:**
-- `Added 2026-05-20: Set DISABLE_AUTOUPDATER=1` — implemented and shipped this session. Move to Closed with reference to `Done/executable-disable-autoupdater-2026-05-27.md`.
-- New entry to add as Closed: shop_next_session.md Thread 3 (`_gate_deposit_exists` path-form normalization) — shipped via `Done/executable-deposit-exists-path-form-normalization-2026-05-27.md`. Was never formally captured in BACKLOG.md before close, so this needs a backdated entry.
+**Outstanding daemon restart needed.** Three shipped fixes are not yet live in the running daemon:
+- DISABLE_AUTOUPDATER env-var (commit `93b74fb`)
+- deposit_exists path-form normalization (commit `336e4fb`)
+- Rule 25 / Rule 40 governance edits (PLANNER_TEMPLATE.md v4.46)
 
-**New BACKLOG entry to capture:**
-- Pre-existing `test_decisions.py` failures (4 tests: `TestLoadPhrases::test_loads_phrases_from_file`, `test_includes_known_phrases`, `test_splits_slash_alternatives`, `TestExtractDecisionBlocks::test_s_class_blocks_from_ground_truth`). PROJECT_STATUS history through 2026-05-27 only documented `test_run_step_timeout` as pre-existing; these four were surfaced for the first time by the disable-autoupdater QA. Origin and date of failures unknown. Open entry with "needs root-cause audit before fix."
+Restart with `pkill -f "bellows" && cd ~/Developer/GitHub/bellows && python3 bellows.py &` (or whatever startup pattern is current).
 
-**Memory amendments needed:**
-- Item 18 ("Bellows OP-001 RESOLVED ... Bellows is operational") is still true but the broader teardown-reliability claim is now nuanced. Add: teardown can produce misleading "empty cherry-pick" messages when the worktree's source branch tip is a stale commit and the agent's real work pushed directly to origin (see Priority 2). Recovery is `git reset --hard origin/main`.
+**BACKLOG hygiene closures pending (carried from prior baton, still open):**
+- `Added 2026-05-20: Set DISABLE_AUTOUPDATER=1` — implemented and shipped 2026-05-21. Move BACKLOG entry to Closed with reference to `Done/executable-disable-autoupdater-2026-05-27.md` (mis-dated; actual ship 2026-05-21).
+- `_gate_deposit_exists` path-form normalization — shipped 2026-05-21 via `Done/executable-deposit-exists-path-form-normalization-2026-05-27.md` (mis-dated). Add backdated Closed entry to BACKLOG.
+
+**New BACKLOG entries to capture:**
+- **`config.json` not gitignored.** `bellows/config.json` (containing pushover keys) is untracked but NOT in `.gitignore`. Risk: accidental commit of secrets. Fix: add `config.json` to `bellows/.gitignore`. One-line edit.
+- **`Bash(git:*)` permission too broad.** `.claude/settings.local.json:4` auto-approves all git commands including `git push --force` and `git reset --hard`. Flagged in 2026-05-04 bash-permission audit, re-surfaced by 2026-05-21 teardown diagnostic. Fix surface: replace with `Bash(git add:*)`, `Bash(git commit:*)`, etc. — explicit allowlist. Cost: ~10 lines settings change + per-plan test against the allowlist.
+- **PLANNER_TEMPLATE.md `git push` removal from housekeeping section.** Root cause of parallel-SHA divergence per 2026-05-21 diagnostic Q4. Future governance executable: edit Rule 23 housekeeping order from `feedback → commit → push` to `feedback → commit (Planner handles push at session-wrap)`. Cross-check all references throughout the template.
+- **PLANNER_TEMPLATE.md line 671 stale count.** Says "only two codes authorize auto-proceed" but routing table has 3 (`auto_close_disabled`, `qa_checkpoint`, `header_pause`) — header_pause was added 2026-05-21 in routing-cleanup plan. One-line correction in a future governance edit.
+- **Bellows expected-keys warning misleading on single-line headers.** `bellows.py:419` emits "missing: ['author', 'project', 'total_steps']" even when the safety-critical `pause_for_verdict` IS parsed. Either tighten the warning to only fire on safety-critical missing keys, or update Planner plan templates to use multi-line headers exclusively. Low priority — false alarm only, no actual plan misbehavior.
+- **Pre-existing `test_decisions.py` failures (4 tests).** Surfaced first time by disable-autoupdater QA. Origin and date unknown. Open BACKLOG entry with "needs root-cause audit before fix."
+
+**Memory amendments needed (for user memory):**
+- Update Item 18 (Bellows OP-001 RESOLVED) — broader teardown-reliability claim now nuanced. Add: teardown produces parallel-SHA local-vs-origin divergence by design when the agent pushes from worktree (Planner-authored plan prose with `git push` instructions triggers this). Recovery via `git fetch origin && git reset --hard origin/main` after pre-check. Documented at `bellows/knowledge/research/teardown-git-operations-mapping-2026-05-21.md`.
 
 ---
 
-## Priority 4 — Stale stuff to clean up
+## Priority 4 — Stale carry-overs
 
-- The 2026-05-19 baton (priority 1 item — stale-redirect grep audit) still hasn't been done. Should be cheap. Defer or just do it next session.
-- The four priority-2 items from the 2026-05-19 baton (Bellows-specific known gaps: pause_for_verdict single-enum, verdict prose directive unactionable, Deposits parenthetical qualifiers, stale verdict step warning rate-limit) — none are blocking. Either promote to BACKLOG.md or explicitly decline.
+- 2026-05-19 baton priority 1 (stale-redirect grep audit) still not done. Defer or knock out.
+- 2026-05-19 baton priority-2 items (4 minor Bellows gaps: pause_for_verdict single-enum, verdict prose directive unactionable, Deposits parenthetical qualifiers, stale verdict step warning rate-limit) — none blocking. Promote to BACKLOG or decline.
 
 ---
 
-## What's CLEAN at session end
+## What's CLEAN at session end 2026-05-21
 
-- Path-form normalization fix shipped and live (daemon restarted).
-- DISABLE_AUTOUPDATER fix shipped and live (daemon restarted twice this session).
-- Verdict-enrichment diagnostic shipped, Rule 22 verified, verdict authored.
-- Local main is reconciled to origin via reset.
-- All 4 of today's plans either in Done/ (3) or about to land there (1, pending Bellows verdict consumption).
+- Path-form normalization fix shipped and committed (daemon restart pending)
+- DISABLE_AUTOUPDATER env-var shipped and committed (daemon restart pending)
+- Governance executable v4.46 shipped: Rule 25 routing row + Rule 40 date discipline + 2 LESSONS entries
+- Teardown git-operations diagnostic shipped with mechanism characterized
+- Both repos pushed to origin (bellows `b4e3cb1`, governance-root `1d80816`)
+- Both repos reconciled — no parallel-SHA divergence carried forward
+- Submodule pointers clean (`git submodule status` showed no `+` prefixes)
+- Concurrency test result captured: Bellows demonstrably interleaves multi-project plans without contention
 
 ---
 
 ## Definition of Done for this file
 
 Delete this file when:
-1. Priority 1 (verdict-enrichment executable) is authored, shipped, and merged.
-2. Priority 2 (parallel-SHA diagnostic) is run OR consciously deferred to BACKLOG.
-3. Priority 3 (BACKLOG hygiene + test_decisions.py entry + memory amendment) is complete.
-4. Priority 4 (2026-05-19 carry-overs) are either promoted or declined.
+1. Priority 1 (verdict-enrichment executable) is authored, shipped, and merged
+2. Priority 3 housekeeping items (daemon restart, BACKLOG hygiene, memory amendment, new BACKLOG entries) are addressed or explicitly deferred
+3. Priority 4 carry-overs are promoted or declined
 
-If priorities 2–4 are deferred but priority 1 ships, rewrite this file with only the unresolved items.
+If priority 1 ships but housekeeping remains, rewrite this file with only unresolved items.
