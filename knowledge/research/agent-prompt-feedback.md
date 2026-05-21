@@ -3,6 +3,15 @@
 **Date:** 2026-05-27
 **Plans:** executable-bellows-tier-1-batch-2026-05-21, executable-bellows-expected-keys-narrow-2026-05-21, diagnostic-bellows-expected-keys-warning-2026-05-21, diagnostic-bellows-isinstance-asymmetry-2026-05-21, executable-deposit-exists-path-form-normalization-2026-05-27, executable-disable-autoupdater-2026-05-27, diagnostic-planner-authored-contract-validation-2026-05-20, diagnostic-bash-gate-vs-guardrails-2026-05-20, executable-plan-write-time-lessons-reread-2026-05-13
 
+## 2026-05-21 — tier-1 batch (QA Step 2)
+
+- **`bellows/` path prefix inconsistency persists (ninth occurrence).** Plan uses `bellows/.gitignore`, `bellows/bellows.py`, `bellows/knowledge/...` but the worktree root has files directly. All paths adapted by stripping prefix.
+- **`.claude/settings.local.json` path required main-repo-root resolution.** The plan's verification checks reference `bellows/.claude/settings.local.json` but the file lives at the main repo root (`/Users/marklehn/Developer/GitHub/bellows/.claude/settings.local.json`), not in the worktree. Initial grep attempts failed with "No such file or directory" until the correct path was used. The DEV log correctly documented this, which helped QA adapt quickly.
+- **Structural compliance check — plan stated "+1 line" for bellows.py but actual delta is +2 lines.** The `if pv:` guard and `_log("WARN", ...)` call are two separate lines. The plan's Context section shows both lines verbatim, so the intent is clear — the "+1 line" in the compliance check instruction undercounts. Not a defect, just a minor specification mismatch.
+- **Rule 20 self-check canonical file found at `/Users/marklehn/Developer/GitHub/RULE_20_SELF_CHECK_BLOCK.md`.** The QA specialist file references `/Users/marklehn/Desktop/GitHub/` (stale path from pre-relocation). The file exists at the Developer path. Same observation as the prior QA step on this codebase.
+- **Specialist file `agents/BELLOWS_QA.md` exists and was read successfully.** Unlike some prior plans where the specialist file was missing from the worktree, this one was present and provided useful procedural guidance for the Rule 20 self-check flow.
+- **Evidence file list in plan exactly matched verification steps.** The 11 required evidence files (`gitignore.txt` through `diff.txt`) mapped 1:1 to the verification and compliance checks, making the Rule 20 self-check straightforward.
+
 ## 2026-05-21 — tier-1 batch (DEV Step 1)
 
 - **`bellows/` path prefix inconsistency persists (eighth occurrence).** Plan uses `bellows/.gitignore`, `bellows/.claude/settings.local.json`, `bellows/bellows.py` but worktree root has files directly. Adapted by stripping prefix. This remains the most common friction point across all bellows worktree plans.
