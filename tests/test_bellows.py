@@ -2567,8 +2567,9 @@ def test_create_worktree_proceeds_when_git_exists():
 
 
 def test_warning_multi_step_plan_without_pause_for_verdict(capsys):
-    """Multi-step plan without pause_for_verdict header emits a sparse-header warning
-    and the richer missing-keys observability warning."""
+    """Multi-step plan without pause_for_verdict header emits a sparse-header warning.
+    The narrowed pause_for_verdict warning does NOT fire because the defensive default
+    already inserted the key before the check runs (Case 3 from shape-choice diagnostic)."""
     with tempfile.TemporaryDirectory() as tmp:
         decisions_dir = os.path.join(tmp, "proj", "knowledge", "decisions")
         os.makedirs(decisions_dir)
@@ -2624,9 +2625,9 @@ def test_warning_multi_step_plan_without_pause_for_verdict(capsys):
         # Defensive default fires (sparse header)
         assert "sparse header" in captured.out and "safe-pause" in captured.out, \
             f"Expected sparse-header defensive default warning. stdout:\n{captured.out}"
-        # Richer missing-keys observability warning fires
-        assert "parsed header is missing" in captured.out, \
-            f"Expected missing-keys observability warning. stdout:\n{captured.out}"
+        # Narrowed pause_for_verdict warning does NOT fire — defensive default already inserted key
+        assert "will auto-advance without pausing at intermediate steps" not in captured.out, \
+            f"Narrowed warning should NOT fire when defensive default inserted pause_for_verdict. stdout:\n{captured.out}"
 
 
 def test_no_warning_multi_step_plan_with_pause_for_verdict(capsys):
