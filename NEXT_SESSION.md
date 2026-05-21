@@ -7,20 +7,9 @@ This file exists when bellows has work to carry into the next session. Delete it
 
 ---
 
-## Daemon restart required (first action of next session)
+## Daemon restart — RESOLVED 2026-05-21
 
-Three shipped fixes are NOT loaded in the running daemon. The daemon was last restarted before this session's verdict-enrichment work landed. Required restart:
-
-```
-pkill -f "bellows" && cd ~/Developer/GitHub/bellows && python3 bellows.py &
-```
-
-Loads:
-- `_gate_rule_22_verification` (new gate from this session's verdict-enrichment plan)
-- `_build_verification_results_table` + `_PLANNER_ONLY_CHECKS_SECTION` in verdict.py
-- `rule_22_check_failed` pause-reason discriminator in bellows.py
-
-After restart, the next plan dispatched will exercise the enriched verdict request format. First dispatch after restart is the live smoke test — observe the verdict request shape to confirm the table renders cleanly.
+Daemon restarted at session start. Enriched verdict request format verified live across two plan dispatches this session (`diagnostic-priority-3-carryover-audit-v2`, `executable-priority-3-audit-closeout`): Verification Results table renders cleanly with 10 gate rows + 1 informational row; `rule_22_verification` gate reports PASS on QA-step deposits; Planner-Only Checks Remaining section present. Smoke test pass.
 
 ---
 
@@ -78,6 +67,6 @@ Five-item carry-over audit completed 2026-05-21. Disposition: 1× UNRESOLVABLE (
 ## Definition of Done for this file
 
 Delete this file when:
-1. Daemon is restarted and the enriched verdict request shape is confirmed via first dispatch post-restart
+1. ~~Daemon is restarted and the enriched verdict request shape is confirmed via first dispatch post-restart~~ ✅ 2026-05-21
 2. Priority 2 housekeeping items are addressed or explicitly deferred
-3. Priority 3 carry-overs are promoted or declined
+3. ~~Priority 3 carry-overs are promoted or declined~~ ✅ 2026-05-21 (3 to BACKLOG, 2 closed)
