@@ -1,7 +1,17 @@
 # Agent Prompt Feedback
 
 **Date:** 2026-05-27
-**Plans:** diagnostic-bellows-isinstance-asymmetry-2026-05-21, executable-deposit-exists-path-form-normalization-2026-05-27, executable-disable-autoupdater-2026-05-27, diagnostic-planner-authored-contract-validation-2026-05-20, diagnostic-bash-gate-vs-guardrails-2026-05-20, executable-plan-write-time-lessons-reread-2026-05-13
+**Plans:** diagnostic-bellows-expected-keys-warning-2026-05-21, diagnostic-bellows-isinstance-asymmetry-2026-05-21, executable-deposit-exists-path-form-normalization-2026-05-27, executable-disable-autoupdater-2026-05-27, diagnostic-planner-authored-contract-validation-2026-05-20, diagnostic-bash-gate-vs-guardrails-2026-05-20, executable-plan-write-time-lessons-reread-2026-05-13
+
+## 2026-05-21 — expected-keys warning diagnostic (SA Step 1)
+
+- **Six-question investigation framework was well-structured for systematic coverage.** Each question built on the previous: Q1 confirmed the warning code, Q2 classified each key, Q3 identified missing safety-critical keys, Q4 characterized template emission rates, Q5 diagnosed parser behavior, Q6 synthesized into a gap table. No question was redundant; removing any one would leave a gap in the executable's input data.
+- **"Quote code verbatim with line numbers" and "Cite anchor lines" instructions were valuable.** They produce directly actionable findings — the Planner can cite `bellows.py:416` and the exact `expected_keys = ...` string for the edit_block without re-reading the source.
+- **Per-key classification taxonomy (safety-critical vs. cosmetic) was the right abstraction.** It correctly separated the single load-bearing key (`pause_for_verdict`) from the four cosmetic ones, which is the exact decision input the Planner needs.
+- **Planner template audit across 30 Done plans was the right sample size.** Smaller samples would miss the template evolution across Formats A-E. The per-key emission rate fractions (e.g., `author: 2/30`) are more persuasive than binary "present/absent" characterizations.
+- **"Skip glossary read" instruction was appropriate.** For a code-tracing + plan-header audit task, glossary context adds no value.
+- **`PLANNER_TEMPLATE.md` reference in the investigation questions was invalid — file does not exist in this repo.** The Planner template lives in the governance-root repo. The diagnostic's instruction "Read `PLANNER_TEMPLATE.md` sections that describe plan-header format" could not be followed literally. The SA adapted by analyzing actual Done plans instead, which provides a more grounded characterization of what the Planner actually emits vs. what the template prescribes. Future diagnostics referencing governance-root files should note the cross-repo path explicitly.
+- **`dispatch_mode` and `auto_close` tracing requirement (Q3) caught the critical finding.** Without Q3, the SA would have concluded "narrow the warning to `pause_for_verdict` only" but missed that `dispatch_mode` has its own claim-time validator making expected_keys redundant for it, and `auto_close` has a safe default. This context changes the implementation shape from "replace 5 keys with 1 key" to "replace 5 keys with targeted `pause_for_verdict` check."
 
 ## 2026-05-21 — isinstance Asymmetry Fix (QA Step 2)
 
