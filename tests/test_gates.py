@@ -1195,3 +1195,95 @@ def test_gate_deposit_exists_uses_frontmatter_and_ignores_staging_in_prose():
     result = gates.check(parsed, plan_text, 1, "/tmp")
     deposit_failures = [f for f in result["failures"] if f["gate"] == "deposit_exists"]
     assert deposit_failures == [], f"unexpected deposit_exists failures: {deposit_failures}"
+
+
+# --- _normalize_deposit_path and abs-vs-rel path-form normalization tests ---
+# Per diagnostic: deposit-exists-path-form-normalization-2026-05-27.md
+
+
+def test_normalize_deposit_path_abs_to_rel(tmp_path):
+    """Absolute path under project_path normalizes to bare project-relative form."""
+    project_path = str(tmp_path / "bellows")
+    abs_path = str(tmp_path / "bellows" / "knowledge" / "research" / "foo.md")
+    result = gates._normalize_deposit_path(abs_path, project_path)
+    assert result == "knowledge/research/foo.md"
+
+
+def test_normalize_deposit_path_prefixed_to_rel(tmp_path):
+    """Project-prefixed relative path strips the basename prefix."""
+    project_path = str(tmp_path / "bellows")
+    result = gates._normalize_deposit_path("bellows/knowledge/research/foo.md", project_path)
+    assert result == "knowledge/research/foo.md"
+
+
+def test_normalize_deposit_path_already_rel(tmp_path):
+    """Already project-relative path returns unchanged."""
+    project_path = str(tmp_path / "bellows")
+    result = gates._normalize_deposit_path("knowledge/research/foo.md", project_path)
+    assert result == "knowledge/research/foo.md"
+
+
+def test_gate_deposit_exists_cross_form_abs_vs_rel(tmp_path):
+    """Regression test for 2026-05-23 reproductions: plan declares absolute path,
+    agent declares relative path, file exists — gate passes."""
+    project_path = tmp_path / "bellows"
+    project_path.mkdir()
+    deposit = project_path / "knowledge" / "research" / "foo.md"
+    deposit.parent.mkdir(parents=True)
+    deposit.write_text("deposit content")
+
+    abs_path = str(deposit)
+    rel_path = "bellows/knowledge/research/foo.md"
+
+    plan_text = (
+        "## STEP 1 — DEV\n\n"
+        "> Do the work.\n>\n"
+        "> **Deposits:**\n"
+        f"> - `{abs_path}`\n"
+    )
+    parsed = _clean_parsed()
+    parsed["result_text"] = f"### Files Deposited\n- `{rel_path}` — findings\n\n### Next"
+    failures = []
+    gates._gate_deposit_exists(parsed, failures, str(project_path), plan_text=plan_text, step_number=1)
+    deposit_failures = [f for f in failures if f["gate"] == "deposit_exists"]
+    assert deposit_failures == [], f"abs-vs-rel mismatch caused false positive: {deposit_failures}"
+
+
+def test_gate_deposit_exists_actually_missing(tmp_path):
+    """Negative test: normalization must not swallow real missing-file failures."""
+    project_path = tmp_path / "bellows"
+    project_path.mkdir()
+
+    abs_path = str(project_path / "knowledge" / "research" / "nonexistent.md")
+    rel_path = "bellows/knowledge/research/nonexistent.md"
+
+    plan_text = (
+        "## STEP 1 — DEV\n\n"
+        "> Do the work.\n>\n"
+        "> **Deposits:**\n"
+        f"> - `{abs_path}`\n"
+    )
+    parsed = _clean_parsed()
+    parsed["result_text"] = f"### Files Deposited\n- `{rel_path}` — findings\n\n### Next"
+    failures = []
+    gates._gate_deposit_exists(parsed, failures, str(project_path), plan_text=plan_text, step_number=1)
+    deposit_failures = [f for f in failures if f["gate"] == "deposit_exists"]
+    assert len(deposit_failures) > 0, "genuinely missing file should still fail the gate"
+
+
+def test_resolve_deposit_path_absolute_worktree_remap(tmp_path):
+    """Absolute path under project_path remaps to worktree via Strategy 0."""
+    project_path = tmp_path / "bellows"
+    project_path.mkdir()
+    wt_path = tmp_path / "worktree"
+    wt_path.mkdir()
+    # File exists ONLY in worktree
+    deposit = wt_path / "knowledge" / "research" / "foo.md"
+    deposit.parent.mkdir(parents=True)
+    deposit.write_text("deposit content")
+
+    abs_path = str(project_path / "knowledge" / "research" / "foo.md")
+    result = gates._resolve_deposit_path(abs_path, str(project_path), wt_path=str(wt_path))
+    assert result is not None, "absolute path should remap to worktree via Strategy 0"
+    assert os.path.isfile(result)
+    assert str(wt_path) in result

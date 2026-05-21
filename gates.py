@@ -213,6 +213,29 @@ def _gate_no_permission_denials(parsed, failures):
         })
 
 
+def _normalize_deposit_path(path, project_path):
+    """Normalize deposit path to canonical project-relative form for comparison.
+
+    Handles four input forms:
+      - Absolute under project_path:  /Users/.../bellows/knowledge/foo.md → knowledge/foo.md
+      - Absolute under parent dir:    /Users/.../bellows/knowledge/foo.md → bellows/knowledge/foo.md
+      - Project-prefixed relative:    bellows/knowledge/foo.md           → knowledge/foo.md
+      - Already project-relative:     knowledge/foo.md                   → knowledge/foo.md (unchanged)
+    """
+    abs_project = os.path.abspath(project_path)
+    if os.path.isabs(path):
+        prefix = abs_project + os.sep
+        if path.startswith(prefix):
+            return path[len(prefix):]
+        parent_prefix = os.path.dirname(abs_project) + os.sep
+        if path.startswith(parent_prefix):
+            return path[len(parent_prefix):]
+    project_basename = os.path.basename(abs_project)
+    if path.startswith(project_basename + os.sep):
+        return path[len(project_basename) + 1:]
+    return path
+
+
 def _resolve_deposit_path(path, project_path, wt_path=None):
     """Check if a deposit path exists, trying multiple path resolution strategies.
 
@@ -226,8 +249,17 @@ def _resolve_deposit_path(path, project_path, wt_path=None):
     # Strategy 0 (worktree-first): if wt_path is provided AND differs from project_path,
     # try resolving against the worktree first — this is where the agent just wrote files
     if wt_path is not None and wt_path != project_path:
+        abs_project = os.path.abspath(project_path)
         project_basename = os.path.basename(project_path)
-        if path.startswith(project_basename + os.sep):
+        if os.path.isabs(path):
+            # Absolute path under project_path: strip prefix to get project-relative remainder
+            prefix = abs_project + os.sep
+            if path.startswith(prefix):
+                wt_candidate = os.path.join(wt_path, path[len(prefix):])
+            else:
+                # Absolute path not under project_path — fall through to relative handling
+                wt_candidate = os.path.join(wt_path, path)
+        elif path.startswith(project_basename + os.sep):
             wt_candidate = os.path.join(wt_path, path[len(project_basename) + 1:])
         else:
             wt_candidate = os.path.join(wt_path, path)
@@ -260,7 +292,7 @@ def _gate_deposit_exists(parsed, failures, project_path, plan_text=None, step_nu
             m = re.match(r'`([^`]+)`', line[2:].strip())
             path = m.group(1) if m else line[2:].strip().strip("`")
             if path:
-                agent_declared.add(path)
+                agent_declared.add(_normalize_deposit_path(path, project_path))
                 if _resolve_deposit_path(path, project_path, wt_path=wt_path) is None:
                     failures.append({"gate": "deposit_exists", "evidence": f"missing: {path}"})
 
@@ -268,14 +300,14 @@ def _gate_deposit_exists(parsed, failures, project_path, plan_text=None, step_nu
     frontmatter_deposits = plan_header.get("deposits") if plan_header is not None else None
     if frontmatter_deposits is not None and isinstance(frontmatter_deposits, list):
         for path in frontmatter_deposits:
-            if path not in agent_declared and _resolve_deposit_path(path, project_path, wt_path=wt_path) is None:
+            if _normalize_deposit_path(path, project_path) not in agent_declared and _resolve_deposit_path(path, project_path, wt_path=wt_path) is None:
                 failures.append({"gate": "deposit_exists", "evidence": f"plan-required deposit missing (frontmatter): {path}"})
     elif plan_text and step_number is not None:
         # Prose fallback: extract deposits from step text
         step_text = _extract_step_text(plan_text, step_number)
         if step_text:
             for path in _extract_plan_required_deposits(step_text):
-                if path not in agent_declared and _resolve_deposit_path(path, project_path, wt_path=wt_path) is None:
+                if _normalize_deposit_path(path, project_path) not in agent_declared and _resolve_deposit_path(path, project_path, wt_path=wt_path) is None:
                     failures.append({"gate": "deposit_exists", "evidence": f"plan-required deposit missing (not declared by agent): {path}"})
 
 

@@ -1,7 +1,16 @@
 # Agent Prompt Feedback
 
 **Date:** 2026-05-27
-**Plans:** executable-disable-autoupdater-2026-05-27, diagnostic-planner-authored-contract-validation-2026-05-20, diagnostic-bash-gate-vs-guardrails-2026-05-20, executable-plan-write-time-lessons-reread-2026-05-13
+**Plans:** executable-deposit-exists-path-form-normalization-2026-05-27, executable-disable-autoupdater-2026-05-27, diagnostic-planner-authored-contract-validation-2026-05-20, diagnostic-bash-gate-vs-guardrails-2026-05-20, executable-plan-write-time-lessons-reread-2026-05-13
+
+## 2026-05-27 — deposit_exists Path-Form Normalization (DEV Step 1)
+
+- **Diagnostic Q5 reference implementation was directly adaptable.** The `_normalize_deposit_path` function in the diagnostic closely matched the final implementation. Providing a reference implementation in the diagnostic eliminates ambiguity about edge cases (e.g., the parent-prefix branch) and prevents the developer from re-deriving behavior from first principles.
+- **Three-call-site enumeration with exact line numbers was precise.** The plan specified lines 263, 271, and 278 with exact before/after code patterns. All three matched the current source. This level of specificity made the implementation fully mechanical.
+- **Component B Strategy 0 specification was clear.** The plan described the absolute-path branch shape (check `os.path.isabs`, strip prefix, join with `wt_path`) without over-constraining the implementation. The existing `project_basename` branch was preserved as specified.
+- **Test specifications with names and descriptions prevented scope creep.** The six test names and descriptions in the plan matched 1:1 with the implementation. The explicit negative test requirement (`test_gate_deposit_exists_actually_missing`) is a good pattern — normalization fixes risk swallowing real failures if not constrained by a negative test.
+- **`bellows/` path prefix inconsistency persists.** Same as the disable-autoupdater plan — the plan uses `bellows/gates.py` paths but the worktree has files at the root. The agent adapted by stripping the prefix. This is a recurring pattern across bellows worktree plans.
+- **Recursion-risk constraint section was valuable.** The explicit warning that the plan's own `**Deposits:**` block must use project-prefixed relative paths (because the fix runs on pre-fix code) prevented a meta-level failure. This kind of self-referential constraint documentation should be standard for plans that modify gate logic.
 
 ## 2026-05-27 — Disable Claude Code Autoupdater (DEV Step 1)
 
