@@ -58,10 +58,9 @@ Verdict-enrichment executable shipped 2026-05-21. 5-file change, 14 new tests, 3
 
 ---
 
-## Priority 3 — Stale carry-overs
+## Priority 3 — Closed
 
-- **2026-05-19 baton priority 1 (stale-redirect grep audit)** still not done. Defer or knock out.
-- **2026-05-19 baton priority-2 items** (4 minor Bellows gaps: pause_for_verdict single-enum, verdict prose directive unactionable, Deposits parenthetical qualifiers, stale verdict step warning rate-limit) — none blocking. Promote to BACKLOG or decline.
+Five-item carry-over audit completed 2026-05-21. Disposition: 1× UNRESOLVABLE (stale-redirect — no referent), 1× STALE (verdict prose directives — superseded by 2026-05-21 verdict-enrichment), 3× LIVE-MINOR added to BACKLOG (pause_for_verdict enum validation, Deposits parenthetical stripping, no-match verdict warning dedup). Reference: `Done/diagnostic-priority-3-carryover-audit-v2-2026-05-21.md`, `Done/executable-priority-3-audit-closeout-2026-05-21.md`.
 
 ---
 
