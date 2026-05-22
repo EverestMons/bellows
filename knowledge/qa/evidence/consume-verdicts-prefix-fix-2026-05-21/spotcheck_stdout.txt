@@ -1,0 +1,4 @@
+BEFORE: ['processed-verdict-spotcheck-2026-05-21-step-1.md']
+NORMALIZED: processed-verdict-spotcheck-2026-05-21-step-1.md -> verdict-spotcheck-2026-05-21-step-1.md
+AFTER: ['verdict-spotcheck-2026-05-21-step-1.md']
+SPOTCHECK PASSED
