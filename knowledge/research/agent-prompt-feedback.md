@@ -1,7 +1,16 @@
 # Agent Prompt Feedback
 
 **Date:** 2026-05-27
-**Plans:** executable-bellows-tier-1-batch-2026-05-21, executable-bellows-expected-keys-narrow-2026-05-21, diagnostic-bellows-expected-keys-warning-2026-05-21, diagnostic-bellows-isinstance-asymmetry-2026-05-21, executable-deposit-exists-path-form-normalization-2026-05-27, executable-disable-autoupdater-2026-05-27, diagnostic-planner-authored-contract-validation-2026-05-20, diagnostic-bash-gate-vs-guardrails-2026-05-20, executable-plan-write-time-lessons-reread-2026-05-13
+**Plans:** executable-bellows-tier-1-batch-2026-05-21, executable-bellows-expected-keys-narrow-2026-05-21, diagnostic-bellows-expected-keys-warning-2026-05-21, diagnostic-bellows-isinstance-asymmetry-2026-05-21, executable-deposit-exists-path-form-normalization-2026-05-27, executable-disable-autoupdater-2026-05-27, diagnostic-planner-authored-contract-validation-2026-05-20, diagnostic-bash-gate-vs-guardrails-2026-05-20, executable-plan-write-time-lessons-reread-2026-05-13, diagnostic-pre-scan-orphan-warn-flood-2026-05-22
+
+## 2026-05-22 — pre-scan orphan WARN flood (SA Step 1)
+
+- **Prompt was well-structured for a code-tracing investigation.** The 9-question format with explicit read-depth guidance ("bellows.py full read is required") and output format constraints ("quote code verbatim with line numbers") produced focused, auditable findings without scope drift.
+- **`bellows/` path prefix inconsistency persists (tenth occurrence).** Plan references `bellows/bellows.py`, `bellows/gates.py`, `bellows/verdict.py`, `bellows/config.json` but the worktree root has files directly. Adapted by stripping prefix. Source files at worktree root; config.json only at main repo root (gitignored).
+- **config.json is gitignored — only readable from main repo root.** The plan says "Read `bellows/config.json` directly (it is gitignored — read it via `Filesystem:read_text_file`)" but the worktree doesn't contain it. Had to read from `/Users/marklehn/Developer/GitHub/bellows/config.json` instead.
+- **"Skip glossary read" instruction was appropriate.** For a code-tracing diagnostic, domain glossary reading would have been unnecessary overhead.
+- **Log search across 7 days was effective.** The `bellows-2026-05-2*.log` glob covered 05-20 through 05-22. The rename events and WARN floods were all concentrated on 05-21 and 05-22, confirming the deployment timeline.
+- **Orphan census found 10 files, not 8.** The BACKLOG cited 8 orphans from the 2026-05-21 mass-rename. Two additional files exist: one stale (`billto-csv-header-resilience`, plan in Done/) and one Finder duplicate (`half-up-currency-rounding` with space in filename). The plan's question 5 correctly anticipated both the "still present" and "new orphans accumulated" possibilities.
 
 ## 2026-05-21 — tier-1 batch (QA Step 2)
 
