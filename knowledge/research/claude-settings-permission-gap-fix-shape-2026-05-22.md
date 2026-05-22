@@ -71,6 +71,8 @@ This tag would signal to the agent (and to Bellows's gate evaluation) that Edit-
 
 This is a moderate code change: new extraction regex, new filtering logic in the gate function, and 4-6 new test cases.
 
+**Precedent:** Bellows already has a gate-filtering pattern — the `READ_CLASS_TOOLS` exemption (shipped 2026-04-28, commit 3ca8361) filters Grep/Glob/Read denials from gate evaluation. This exemption handles 365 of 392 denial events (93.1%) in the 30-day audit window. Shape 2 would follow the same architectural pattern, adding path-based filtering alongside the existing tool-based filtering.
+
 ### Does this close the recurrence vector?
 
 **Partially.** If the Planner declares the path in every plan that needs it, and the gate correctly filters, then the gate failure is suppressed. But the Edit tool will still be denied — the agent must still fall back to Bash. The gate change only prevents the false-positive gate failure; it doesn't grant Edit permission.
@@ -146,9 +148,9 @@ The plan step's task description would say "deposit a settings patch to `knowled
 
 | Shape | (i) Coverage of failure mode | (ii) Compatibility with recurrence pattern | (iii) Authorship burden on Planner |
 |---|---|---|---|
-| **1 — Document bash fallback** | Partial: mitigates retries, does not close gate failure | Good: low frequency (~monthly) means override friction is tolerable | **Low:** no per-plan template changes |
-| **2 — Permitted-path gate filter** | Partial: closes gate failure, does not grant Edit permission | Moderate: generalizable but engineering effort disproportionate to ~monthly frequency | **Medium:** Planner must declare path in each relevant plan |
-| **3 — CEO-only edits** | Complete: eliminates denial entirely | Good: low frequency means CEO burden is ~1 manual edit per month | **Medium:** Planner must template patch-deposit steps for settings file changes |
+| **1 — Document bash fallback** | Partial: mitigates retries, does not close gate failure. With supplementary plan-prompt instruction (agent uses Bash directly), denial never fires — effectively Complete. | Good: 1 incident in 30 days (~monthly). Override friction (~5 min/occurrence) is tolerable; supplementary instruction eliminates it entirely. | **Low:** no per-plan template changes; single BELLOWS_DEVELOPER.md paragraph |
+| **2 — Permitted-path gate filter** | Partial: closes gate failure, does not grant Edit permission — agent still needs bash fallback. Follows READ_CLASS_TOOLS precedent. | Moderate: generalizable to other out-of-worktree files, but engineering cost (gate code + tests + governance rule) disproportionate to 1 incident/month | **Medium:** Planner must declare `Permitted file-tool paths:` in each relevant plan step |
+| **3 — CEO-only edits** | Complete: eliminates denial entirely by removing agent from the loop | Good: low frequency means CEO burden is ~1 manual edit per month (~5 min review + apply) | **Medium:** Planner must template patch-deposit steps for settings file changes |
 
 ---
 
@@ -167,6 +169,10 @@ The plan step's task description would say "deposit a settings patch to `knowled
 4. **Shape 3 is disproportionate to the risk.** Moving settings edits to CEO-only scope adds manual work and introduces a dependency on CEO availability. The file is already local-only (not tracked in git), so the blast radius of an incorrect agent edit is limited to the local machine and recoverable.
 
 5. **The bash fallback is not fragile in practice.** While the pattern hard-codes the absolute repo path, `.claude/settings.local.json` is always at the same location (the main bellows repo root). The path does not change across plans or worktrees.
+
+### Residual gap: MCP tool denials
+
+The Step 2 audit identified 5 MCP tool denials (2 gate failures) for `mcp__vexp__run_pipeline` and `mcp__vexp__get_context_capsule`. These tools are not on the `READ_CLASS_TOOLS` exemption list and are not addressed by any of the three shapes evaluated above (which are specific to `.claude/settings.local.json`). If MCP tool usage increases, a separate BACKLOG entry may be warranted to add them to the exemption list. At current frequency (2 gate failures in 30 days), the override friction is tolerable.
 
 ### Supplementary recommendation
 
@@ -199,10 +205,10 @@ This eliminates wasted Edit retries entirely — the agent will use Bash on the 
 **Status:** Complete
 
 ### What Was Done
-Evaluated three resolution shapes against the mechanism evidence (Step 1) and recurrence audit (Step 2). Scored each shape on coverage, recurrence compatibility, and authorship burden. Recommended Shape 1 (document bash-fallback workaround) with a supplementary plan-prompt instruction that effectively closes the vector by preventing the Edit attempt entirely.
+Evaluated three resolution shapes against the mechanism evidence (Step 1: pattern (ii) file-path-specific denial, structural to worktree model) and recurrence audit (Step 2: 392 total denial events, 10 gate failures, bucket (a) at 1 incident/30 days). Scored each shape on coverage, recurrence compatibility, and authorship burden. Added READ_CLASS_TOOLS precedent analysis to Shape 2 evaluation. Identified MCP tool denial residual gap. Recommended Shape 1 (document bash-fallback workaround) with supplementary plan-prompt instruction that effectively closes the vector by preventing the Edit attempt entirely.
 
 ### Files Deposited
-- `bellows/knowledge/research/claude-settings-permission-gap-fix-shape-2026-05-22.md` — shape evaluation, scoring matrix, recommendation, and next-plan sketch
+- `bellows/knowledge/research/claude-settings-permission-gap-fix-shape-2026-05-22.md` — shape evaluation with READ_CLASS_TOOLS precedent, scoring matrix, recommendation, MCP residual gap note, and next-plan sketch
 
 ### Files Created or Modified (Code)
 - None — investigation only
@@ -210,10 +216,13 @@ Evaluated three resolution shapes against the mechanism evidence (Step 1) and re
 ### Decisions Made
 - Recommended Shape 1 over Shapes 2 and 3 based on low recurrence rate (~monthly), existing autonomous workaround capability, and disproportionate engineering cost of alternatives
 - Specified the supplementary plan-prompt instruction that prevents the denial from firing at all
+- Noted that Shape 2's engineering cost is lower than initially estimated due to READ_CLASS_TOOLS precedent, but still disproportionate to monthly recurrence
+- Identified MCP tool denials (5 events, 2 gate failures) as a separate residual gap not covered by any proposed shape
 
 ### Flags for CEO
 - Shape 1 means the `no_permission_denials` gate will continue to fire if a future plan forgets to include the bash-fallback instruction. The Rule 22 override path remains available as a safety net.
 - The recommended next plan is documentation-only (BELLOWS_DEVELOPER.md + BACKLOG update). No code changes, no governance edits to PLANNER_TEMPLATE.md.
+- MCP tool denials (mcp__vexp__run_pipeline, mcp__vexp__get_context_capsule) are a separate residual gap — may warrant its own BACKLOG entry if usage increases.
 
 ### Flags for Next Step
 - None — terminal step of diagnostic.
