@@ -1124,6 +1124,20 @@ class Bellows:
         app_key = self.config.get("pushover", {}).get("app_key", "")
         user_key = self.config.get("pushover", {}).get("user_key", "")
 
+        # Pre-scan: normalize processed-verdict-* to verdict-* (Planner write-time naming mismatch).
+        # Files named processed-verdict-* at write time are structurally identical to already-consumed
+        # verdicts and would be silently skipped by the main filter. Rename to canonical form so the
+        # main loop can process them. See bellows/knowledge/architecture/consume-verdicts-drain-failure-2026-05-21.md.
+        for fname in os.listdir(resolved_dir):
+            if fname.startswith("processed-verdict-") and fname.endswith(".md"):
+                canonical = fname[len("processed-"):]
+                canonical_path = os.path.join(resolved_dir, canonical)
+                if os.path.exists(canonical_path):
+                    _log("WARN", f"cannot normalize {fname} — canonical {canonical} already exists; skipping rename")
+                    continue
+                shutil.move(os.path.join(resolved_dir, fname), canonical_path)
+                _log("WARN", f"normalized write-time processed- prefix: {fname} → {canonical}")
+
         for fname in os.listdir(resolved_dir):
             if not fname.startswith("verdict-") or not fname.endswith(".md"):
                 continue
