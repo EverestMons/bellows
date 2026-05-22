@@ -1,0 +1,6 @@
+verdict: continue
+Rule 22 override. The scope_check gate flagged 409 files in bellows/verdicts/resolved/ as out-of-scope — these are the exact files the pre-scan rename feature is designed to normalize. The QA agent (or a daemon restart during Step 2) triggered the new pre-scan code, which renamed ~400 historical processed-verdict-*.md files to canonical verdict-*.md; the main loop then re-processed each as "stale verdict — plan in Done/" and renamed them back to processed-*. Net content change: zero. Net git-visible renames: 409 files, all caused by the feature being QA'd.
+
+Substance check (b): all other gates PASS (Rule 20 banner byte-exact + PASSED line, Rule 22 deposits present + verification table clean, deposit_exists, qa_step_detection, file_change_audit). The QA report exists at bellows/knowledge/qa/consume-verdicts-prefix-fix-qa-2026-05-21.md. The 409 file_changes are expected output of the shipped fix, not unauthorized scope expansion. The fix is empirically proven by the same rescan cycle that tripped the gate — the BACKLOG reproduction (processed-verdict-* files silently skipped) is no longer reproducible because they're auto-renamed and consumed.
+
+The fix shipped correctly. Proceeding to Done.

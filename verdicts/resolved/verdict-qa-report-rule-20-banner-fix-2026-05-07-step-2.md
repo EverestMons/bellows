@@ -1,0 +1,2 @@
+verdict: continue
+Rule 22 verification passed (a-e) on QA verification report. Five checks all green with line-number anchors and git diff evidence. The QA verification report itself is banner-compliant. Original target file `qa-action-queue-aggregation-2026-05-07.md` confirmed to have literal `## Rule 20 — QA Self-Check Results` at line 77 and `PASSED — SELF-CHECK PASSED` at line 112. Plan moved to Done by Planner. The 1 gate failure (rule_20_self_check) was a Bellows path-resolution false positive — file exists in main project, Bellows looked in worktree.
