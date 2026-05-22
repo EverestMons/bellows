@@ -22,6 +22,10 @@
 - Range syntax (`qa_steps: 1-3`) was considered and rejected: ranges require additional parsing logic, are harder to validate, and multi-QA-step plans rarely have contiguous QA steps (typical pattern is `DEV → QA → DEV → QA`, not `QA → QA → QA`).
 - Bool-per-step syntax (`qa_steps: false,true,false`) was considered and rejected: it couples the field to total step count (must have exactly N entries for N steps), creates fragile alignment, and is harder to read.
 
+**Population context from Step 2 audit:** The exhaustive plan-header scan found 14 class (b) leaks out of 139 QA steps (10.1% overall leak rate; 61.9% in invoice-pulse alone). Three naming variants leak: "Invoice Security & Testing Analyst" (7 occurrences), "INVOICE_SECURITY_TESTING_ANALYST" (2), "INVOICE SECURITY TESTING ANALYST" (2), "Bellows Security & Testing" (1), and one bare `## STEP 1` header on a standalone QA plan with no role name at all. The `qa_steps` field fixes all five patterns because it is role-name-independent.
+
+**Downstream interaction:** The `pause_for_verdict: after_qa_step` header value (already in use on invoice-pulse plans like `fuel-paste-prompt-cents-as-integer-2026-05-21`) is currently inert when the QA role name lacks "qa" — the pause fires only if `is_qa_step` is True, which the keyword fallback never produces for these plans. Fixing `_gate_is_qa_step` via the `qa_steps` field also restores `after_qa_step` pause semantics for these plans.
+
 **Example header lines:**
 
 Single QA step (most common):
@@ -65,6 +69,9 @@ def _gate_is_qa_step(plan_text, step_number, plan_header=None):
         qa_steps_raw = plan_header.get("qa_steps", "")
         if qa_steps_raw:
             try:
+                # Handle YAML list case (e.g., [2, 4]) and string case (e.g., "2,4")
+                if isinstance(qa_steps_raw, list):
+                    return step_number in [int(x) for x in qa_steps_raw]
                 qa_step_numbers = [int(s.strip()) for s in str(qa_steps_raw).split(",") if s.strip()]
                 return step_number in qa_step_numbers
             except (ValueError, TypeError):
@@ -128,6 +135,16 @@ The `qa_steps` field should be documented in two places in PLANNER_TEMPLATE.md:
 
 **This paragraph belongs near Rule 26** (Deposits field convention) because both are plan-header field specifications that affect Bellows gate behavior. Specifically, it should be placed after the Plan File Structure section's "Execution map" paragraph and before the "Every agent prompt must include the domain glossary read" paragraph, since it describes a header field (like execution map) rather than a prompt-level instruction (like the glossary read).
 
+**Place 3: Gate 6 description in "The Eight Gates" table** (currently around line 955). The current Gate 6 row reads:
+
+> `| 6 | is_qa_step | Info | Heuristic detection based on the step header containing "QA" (case-insensitive). When true, triggers a qa_checkpoint pause reason even if all blocking gates pass. |`
+
+**Proposed replacement:**
+
+> `| 6 | is_qa_step | Info | QA step detection: reads the plan header's qa_steps field (authoritative, comma-separated step numbers) or falls back to keyword detection on the ## STEP N header line (case-insensitive "qa" substring). When true, triggers qa_checkpoint pause reason, Rule 20 self-check verification, and Rule 22 QA-specific checks. |`
+
+This update reflects the two-tier detection and makes the downstream effects (Rule 20, Rule 22) visible in the gate description.
+
 ## 5. Migration Risk Surface
 
 | Risk | Likelihood | Mitigation |
@@ -139,7 +156,7 @@ The `qa_steps` field should be documented in two places in PLANNER_TEMPLATE.md:
 | **`qa_steps` lists a step that doesn't exist** (e.g., 3-step plan with `qa_steps: 4`) | Low — step numbers are validated by execution flow. | `step_number in qa_step_numbers` returns `False` for step 4 since step 4 never runs. Harmless no-op. |
 | **`qa_steps` omitted for a plan where the QA role name contains "qa"** | Common during transition, harmless long-term. | Keyword fallback correctly detects "QA" in the header. The field is additive, not destructive. |
 | **`qa_steps` omitted for a plan where the QA role does NOT contain "qa"** | This is the exact failure mode being fixed. | During transition, these plans remain broken (same as today). After the Planner governance edit, new plans always include the field. The transition window is exactly the window between the gates.py code change shipping and the Planner being re-prompted with the updated PLANNER_TEMPLATE. |
-| **YAML frontmatter plans** | Rare — most plans use bold-Markdown headers. | `_parse_plan_header` handles YAML frontmatter as Strategy 1 (line 91–100). A YAML field `qa_steps: [2, 4]` would parse as a list, not a string. The gate code should `str()` the value and handle both `"2,4"` and `[2, 4]`. The proposed code does `str(qa_steps_raw).split(",")` which handles the string case; the list case would produce `"[2, 4]"` and fail to parse. **Recommend:** Add explicit list handling: `if isinstance(qa_steps_raw, list): return step_number in qa_steps_raw`. |
+| **YAML frontmatter plans** | Rare — most plans use bold-Markdown headers. | `_parse_plan_header` handles YAML frontmatter as Strategy 1 (line 91–100). A YAML field `qa_steps: [2, 4]` would parse as a list, not a string. The proposed code explicitly handles both cases: `isinstance(qa_steps_raw, list)` branch for YAML lists, `str().split(",")` for bold-Markdown strings. Both paths produce correct results. |
 
 ## Recommended Next Plan
 
@@ -147,11 +164,11 @@ The `qa_steps` field should be documented in two places in PLANNER_TEMPLATE.md:
 
 **Expected step structure:**
 
-- **Step 1 — Bellows Developer:** Implement the `qa_steps` field in `gates.py`. Edit `_gate_is_qa_step` to accept `plan_header` kwarg and check `qa_steps` field with keyword fallback. Update call site in `check()`. Add unit tests for: (a) `qa_steps: 2` with step 2 → True, step 1 → False; (b) `qa_steps: 1,3` with step 1 → True, step 2 → False; (c) no `qa_steps` field → keyword fallback; (d) malformed `qa_steps` → keyword fallback with warning; (e) YAML list `qa_steps: [2, 4]` → correct detection.
+- **Step 1 — Bellows Developer:** Implement the `qa_steps` field in `gates.py`. Edit `_gate_is_qa_step` to accept `plan_header` kwarg and check `qa_steps` field with keyword fallback (including YAML list handling). Update call site in `check()`. Add unit tests for: (a) `qa_steps: 2` with step 2 → True, step 1 → False; (b) `qa_steps: 1,3` with step 1 → True, step 2 → False; (c) no `qa_steps` field → keyword fallback; (d) malformed `qa_steps` → keyword fallback with warning; (e) YAML list `qa_steps: [2, 4]` → correct detection; (f) bare `## STEP 1` header with `qa_steps: 1` → True (standalone QA plan case).
 
 - **Step 2 — Bellows QA:** Verify the gate change via test execution. Verify the keyword fallback preserves existing behavior for plans without the field. Run full test suite. Deposit QA report with Rule 20 self-check.
 
-**Governance edit (PLANNER_TEMPLATE.md)** should ship as a separate plan or as a parallel step, since it modifies a governance document outside the bellows project tree. The Planner will automatically pick up the new field on its next prompt load.
+**Governance edit (PLANNER_TEMPLATE.md)** should ship as a separate plan or as a parallel step, since it modifies a governance document outside the bellows project tree. Three insertion points: (1) header example in Plan File Structure, (2) new definitional paragraph after "Execution map", (3) Gate 6 table description update. The Planner will automatically pick up the new field on its next prompt load.
 
 ---
 
