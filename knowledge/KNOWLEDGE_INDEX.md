@@ -6,6 +6,9 @@ Index of knowledge base files deposited by Bellows plans, organized by category.
 
 ## Development Logs (`knowledge/development/`)
 
+### 2026-05-22
+- `pre-scan-orphan-guard-2026-05-22.md` — DEV log for pre-scan orphan-check guard at bellows.py:1135-1162 + module-level `_prescan_orphan_logged` dedup set + one-shot migration of 9 canonical orphans (BACKLOG "Pre-scan rename produces orphaned verdict-* files" close)
+
 ### 2026-05-11
 - `rule-26-evidence-path-fix-dev-log-2026-05-11.md` — DEV log for PLANNER_TEMPLATE v4.37 evidence-path tightening (Rule 26 + 3 Lessons rows; governance-root commit 75904fd)
 - `backlog-hygiene-cause-5-and-daemon-logging-dev-log-2026-05-11.md` — DEV log for BACKLOG hygiene: Cause 5 RC2 closure + daemon code-version logging Open entry (bellows commits 60c56e9, 2a80b3c)
@@ -47,6 +50,9 @@ Index of knowledge base files deposited by Bellows plans, organized by category.
 
 ## QA Reports (`knowledge/qa/`)
 
+### 2026-05-22
+- `executable-pre-scan-orphan-guard-2026-05-22.md` — QA report for pre-scan orphan-check guard (8 deliverables verified; 4 new regression tests added in tests/test_consume_verdicts.py; targeted 13/13 + full 388/393 pass with 5 pre-existing failures unrelated; Rule 20 PASSED; scope_check gate FAIL overridden as daemon-ping-pong false positive)
+
 ### 2026-05-11
 - `rule-26-evidence-path-fix-qa-2026-05-11.md` — QA report for PLANNER_TEMPLATE v4.37 evidence-path tightening (8/8 checks; verified governance-root commit + 3 Lessons rows + Rule 26 paragraph rewrite)
 - `backlog-hygiene-cause-5-and-daemon-logging-qa-2026-05-11.md` — QA report for BACKLOG hygiene (7/7 checks; section structure verified — Open entry in Open, Closed entry in Closed)
@@ -84,6 +90,9 @@ Index of knowledge base files deposited by Bellows plans, organized by category.
 
 ## QA Evidence Directories (`knowledge/qa/evidence/`)
 
+### 2026-05-22
+- `executable-pre-scan-orphan-guard-2026-05-22/` — Evidence for pre-scan orphan-check guard QA (11 files: orphan_guard_grep.txt, dedup_set_grep.txt, code_inspection.txt, migration_output_check.txt, post_migration_ls.txt, pytest_consume_verdicts.txt, dev_log_present.txt, feedback_entry.txt, pytest_targeted.txt, pytest_full_tail.txt, diff.txt)
+
 ### 2026-05-11
 - `rule-26-evidence-path-fix-2026-05-11/` — Evidence for PLANNER_TEMPLATE v4.37 edits (8 files: 6 grep checks for version + tightened guidance + prohibition + 3 Lessons rows, markdown_wellformed.txt, git_log.txt)
 - `backlog-hygiene-cause-5-and-daemon-logging-2026-05-11/` — Evidence for BACKLOG hygiene (7 files: 5 grep checks for Closed/Open entries + audit references + commit SHA + executable reference, section_structure.txt, git_log.txt)
@@ -102,6 +111,9 @@ Index of knowledge base files deposited by Bellows plans, organized by category.
 ---
 
 ## Research (`knowledge/research/`)
+
+### 2026-05-22
+- `pre-scan-orphan-warn-flood-2026-05-22.md` — SA diagnostic findings: characterized pre-scan rename loop in `_consume_verdicts` (bellows.py:1131-1139), enumerated 10 watched projects, identified 8 orphan files plus 313 stale-ping-pong plan slugs producing 8,823 daily rename events and 10,827 stale-verdict events. Specified plan-existence check semantics (decisions/ only, NOT Done/), composition order (orphan-check before collision guard), and 4 regression test scenarios.
 
 ### 2026-05-11
 - `deposit-exists-false-positive-audit-2026-05-11.md` — Population audit: 14 reproductions across 8 verdict requests, classified by candidate cause. Cause 1 confirmed closed (commit 2016d02, 2026-05-06); Cause 5 (plan-agent evidence path convention mismatch) identified as dominant unresolved class — 18 gate-failure lines across 3 verdict requests. Recommended fix shape: standardize plan-authored evidence paths to use full project-relative paths (governance, not code).
