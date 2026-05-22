@@ -1,0 +1,20 @@
+$ cat knowledge/development/pre-scan-orphan-migration-output-2026-05-22.txt
+
+  REMOVED duplicate canonical (processed- form already exists): verdict-action-queue-aggregation-2026-05-07-step-3.md
+  REMOVED duplicate canonical (processed- form already exists): verdict-aggregated-queue-carrier-customer-display-2026-05-07-step-1.md
+  REMOVED duplicate canonical (processed- form already exists): verdict-aggregated-queue-customer-display-2026-05-07-step-2.md
+  REMOVED duplicate canonical (processed- form already exists): verdict-billto-csv-header-resilience-2026-05-14-step-2.md
+  REMOVED duplicate canonical (processed- form already exists): verdict-diagnostic-action-queue-aggregation-2026-05-07-step-1.md
+  REMOVED duplicate canonical (processed- form already exists): verdict-parallel-1-parse-diff-stat-fix-2026-04-16-step-1.md
+  REMOVED duplicate canonical (processed- form already exists): verdict-parallel-1-verdict-readme-2026-04-16-step-1.md
+  REMOVED duplicate canonical (processed- form already exists): verdict-qa-report-rule-20-banner-fix-2026-05-07-step-2.md
+  REMOVED duplicate canonical (processed- form already exists): verdict-session-wrap-action-queue-aggregation-2026-05-07-step-1.md
+
+--- Migration Summary ---
+Orphans found:       9
+Orphans renamed:     9
+Skipped (collision): 0
+Skipped (no slug):   1
+
+RESULT: ✅ Migration output exists and reports non-zero count (9 orphans found, 9 renamed).
+1 file skipped due to malformed filename (embedded space): verdict-half-up-currency-rounding-2026-05-06-step-1 2.md

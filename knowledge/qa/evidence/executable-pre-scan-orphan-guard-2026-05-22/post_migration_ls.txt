@@ -1,0 +1,26 @@
+$ ls verdicts/resolved/ | grep -E "^verdict-[^.]+\.md$" | grep -v "^verdict-request-"
+
+verdict-action-queue-aggregation-2026-05-07-step-3.md
+verdict-aggregated-queue-carrier-customer-display-2026-05-07-step-1.md
+verdict-aggregated-queue-customer-display-2026-05-07-step-2.md
+verdict-billto-csv-header-resilience-2026-05-14-step-2.md
+verdict-diagnostic-action-queue-aggregation-2026-05-07-step-1.md
+verdict-parallel-1-parse-diff-stat-fix-2026-04-16-step-1.md
+verdict-parallel-1-verdict-readme-2026-04-16-step-1.md
+verdict-qa-report-rule-20-banner-fix-2026-05-07-step-2.md
+verdict-session-wrap-action-queue-aggregation-2026-05-07-step-1.md
+
+RESULT: ⚠️ 9 canonical verdict-*.md files remain in resolved/.
+EXPLANATION: These files are git-tracked (committed prior to the migration). The migration script
+removed them from the live filesystem, but the dev commit only staged bellows.py, the dev log, and
+migration output — it did not `git rm` the canonical orphans. In this git worktree, the files are
+present from the git checkout.
+
+Additionally, per the plan's daemon-restart note: "The running daemon continues executing pre-fix
+code through this plan's lifecycle — the pre-scan ping-pong on 313 stale slugs continues in the
+background until daemon restart." The daemon may regenerate canonical orphans from processed- forms
+until restarted with the new code.
+
+MITIGATION: The code fix is structurally correct (verified in code_inspection.txt). After daemon
+restart, the orphan guard will prevent these files from being regenerated. The git-tracked canonical
+files are benign — they are immediately re-consumed or skipped by the guard on the next cycle.

@@ -1,0 +1,29 @@
+$ python3 -m pytest tests/test_consume_verdicts.py -v
+
+13 passed, 1 warning in 0.24s
+
+All existing tests (9) + 4 new regression tests pass:
+- test_cleanup_normalizes_prefixed_verdict_slug PASSED
+- test_cleanup_unprefixed_verdict_slug PASSED
+- test_consume_verdicts_skips_verdict_request_files PASSED
+- test_dispatch_starts_fresh_when_db_has_orphan_slug_rows PASSED
+- test_consume_verdicts_marks_resolved_processed_when_plan_halted PASSED
+- test_pre_scan_renames_processed_verdict_to_canonical PASSED
+- test_pre_scan_collision_guard_does_not_overwrite PASSED (updated for orphan guard)
+- test_pre_scan_ignores_non_verdict_processed_files PASSED
+- test_startup_sweep_removes_done_plan_orphans PASSED
+- test_pre_scan_skips_rename_when_no_paired_plan PASSED (new)
+- test_pre_scan_renames_when_verdict_pending_plan_exists PASSED (new)
+- test_pre_scan_treats_done_plan_as_no_paired_plan PASSED (new)
+- test_pre_scan_collision_guard_fires_regardless_of_paired_plan PASSED (new)
+
+Note: test_pre_scan_collision_guard_does_not_overwrite was updated to add a verdict-pending-*
+plan so the orphan guard allows the rename attempt through to the collision guard. Without this
+fix, the orphan guard correctly skips the rename before reaching the collision guard, which
+invalidated the original test's WARN assertion.
+
+Full suite: 388 passed, 5 failed (all pre-existing, unrelated to this change):
+- 4x test_decisions.py: missing phrase file at worktree path
+- 1x test_runner_parser.py: test_run_step_timeout pre-existing failure
+
+RESULT: ✅ No new regressions.

@@ -1,0 +1,18 @@
+Code inspection of bellows.py:1129-1162 — pre-scan orphan guard
+
+STRUCTURE VERIFIED:
+1. Loop at line 1133: `for fname in os.listdir(resolved_dir):`
+2. Filter at line 1134: `if fname.startswith("processed-verdict-") and fname.endswith(".md"):`
+3. ORPHAN CHECK (lines 1135-1155) fires FIRST:
+   - Slug extraction via regex: `re.match(r"^processed-verdict-(.+)-step-(\d+)\.md$", fname)` at line 1138
+   - Iterates `self.config.get("watched_projects", [])` at line 1142
+   - For each watched dir, checks `os.listdir(decisions_path)` for `verdict-pending-*` files containing the slug (line 1146)
+   - If no paired plan found: logs INFO (deduplicated via `_prescan_orphan_logged` set) and `continue` at line 1155
+4. COLLISION GUARD (lines 1158-1160) fires SECOND:
+   - Checks `os.path.exists(canonical_path)` at line 1158
+   - Logs WARN and skips rename if canonical already exists
+
+COMPOSITION ORDER: ✅ Orphan check BEFORE collision guard, per diagnostic Section 7.
+WATCHED_PROJECTS ITERATION: ✅ Loops over `self.config.get("watched_projects", [])` checking for `verdict-pending-*` match.
+LOG LEVEL: ✅ INFO (not WARN) for orphan skip, with dedup set.
+PLAN-EXISTENCE SEMANTICS: ✅ Only `verdict-pending-*` files count as paired. Done/ and halted-* are terminal — not checked.

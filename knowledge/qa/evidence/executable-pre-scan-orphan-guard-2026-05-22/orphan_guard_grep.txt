@@ -1,0 +1,4 @@
+$ grep -n 'pre-scan: skipping orphan' bellows.py
+1153:                            _log("INFO", f"pre-scan: skipping orphan {fname} — no active verdict-pending plan")
+
+RESULT: ✅ INFO log string exists at line 1153. Orphan guard code at lines 1135-1155 fires BEFORE collision guard at lines 1158-1160.

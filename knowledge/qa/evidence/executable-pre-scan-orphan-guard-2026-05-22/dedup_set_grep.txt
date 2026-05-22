@@ -1,0 +1,6 @@
+$ grep -n '_prescan_orphan_logged' bellows.py
+33:_prescan_orphan_logged: set = set()
+1152:                        if fname not in _prescan_orphan_logged:
+1154:                            _prescan_orphan_logged.add(fname)
+
+RESULT: ✅ Module-level set initialization at line 33. Used for dedup at lines 1152-1154.

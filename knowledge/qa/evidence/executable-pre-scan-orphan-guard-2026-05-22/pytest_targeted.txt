@@ -1,0 +1,28 @@
+============================= test session starts ==============================
+platform darwin -- Python 3.9.6, pytest-8.4.2, pluggy-1.6.0 -- /Applications/Xcode.app/Contents/Developer/usr/bin/python3
+cachedir: .pytest_cache
+rootdir: /Users/marklehn/Developer/GitHub/bellows/.bellows-worktrees/pre-scan-orphan-guard-2026-05-22
+plugins: anyio-4.12.1, xdist-3.8.0, cov-7.0.0
+collecting ... collected 13 items
+
+tests/test_consume_verdicts.py::test_cleanup_normalizes_prefixed_verdict_slug PASSED [  7%]
+tests/test_consume_verdicts.py::test_cleanup_unprefixed_verdict_slug PASSED [ 15%]
+tests/test_consume_verdicts.py::test_consume_verdicts_skips_verdict_request_files PASSED [ 23%]
+tests/test_consume_verdicts.py::test_dispatch_starts_fresh_when_db_has_orphan_slug_rows PASSED [ 30%]
+tests/test_consume_verdicts.py::test_consume_verdicts_marks_resolved_processed_when_plan_halted PASSED [ 38%]
+tests/test_consume_verdicts.py::test_pre_scan_renames_processed_verdict_to_canonical PASSED [ 46%]
+tests/test_consume_verdicts.py::test_pre_scan_collision_guard_does_not_overwrite PASSED [ 53%]
+tests/test_consume_verdicts.py::test_pre_scan_ignores_non_verdict_processed_files PASSED [ 61%]
+tests/test_consume_verdicts.py::test_startup_sweep_removes_done_plan_orphans PASSED [ 69%]
+tests/test_consume_verdicts.py::test_pre_scan_skips_rename_when_no_paired_plan PASSED [ 76%]
+tests/test_consume_verdicts.py::test_pre_scan_renames_when_verdict_pending_plan_exists PASSED [ 84%]
+tests/test_consume_verdicts.py::test_pre_scan_treats_done_plan_as_no_paired_plan PASSED [ 92%]
+tests/test_consume_verdicts.py::test_pre_scan_collision_guard_fires_regardless_of_paired_plan PASSED [100%]
+
+=============================== warnings summary ===============================
+../../../../../Library/Python/3.9/lib/python/site-packages/urllib3/__init__.py:35
+  /Users/marklehn/Library/Python/3.9/lib/python/site-packages/urllib3/__init__.py:35: NotOpenSSLWarning: urllib3 v2 only supports OpenSSL 1.1.1+, currently the 'ssl' module is compiled with 'LibreSSL 2.8.3'. See: https://github.com/urllib3/urllib3/issues/3020
+    warnings.warn(
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+======================== 13 passed, 1 warning in 0.24s =========================

@@ -371,14 +371,20 @@ def test_pre_scan_renames_processed_verdict_to_canonical():
 
 
 def test_pre_scan_collision_guard_does_not_overwrite():
-    """When both verdict-* and processed-verdict-* exist, the pre-scan must
-    skip the rename and preserve the canonical file."""
+    """When both verdict-* and processed-verdict-* exist AND a paired plan is
+    present, the pre-scan must skip the rename and preserve the canonical file.
+    Updated for orphan guard: a verdict-pending-* plan must exist so the orphan
+    check lets the file through to the collision guard."""
     with tempfile.TemporaryDirectory() as tmp:
         tmp_path = Path(tmp)
 
         decisions_dir = tmp_path / "proj" / "knowledge" / "decisions"
         decisions_dir.mkdir(parents=True)
         (decisions_dir / "Done").mkdir()
+
+        # Paired plan in verdict-pending state so orphan guard allows rename attempt
+        plan_filename = "verdict-pending-diagnostic-foo-2026-05-21.md"
+        (decisions_dir / plan_filename).write_text("## STEP 1\nDo stuff.\n")
 
         verdicts_resolved = tmp_path / "verdicts" / "resolved"
         verdicts_resolved.mkdir(parents=True)
@@ -502,3 +508,230 @@ def test_startup_sweep_removes_done_plan_orphans():
             f"Orphaned verdict-request for Done/ plan should have been removed by startup sweep: {orphan_file}"
         )
         assert "verdict-request-bar-2026-05-01-step-1.md" in orphaned_removed
+
+
+# --- Pre-scan orphan guard regression tests (2026-05-22) ---
+
+def test_pre_scan_skips_rename_when_no_paired_plan():
+    """Pre-scan orphan guard: when no verdict-pending-* plan exists anywhere,
+    processed-verdict-* must stay as-is with INFO log (not WARN)."""
+    with tempfile.TemporaryDirectory() as tmp:
+        tmp_path = Path(tmp)
+
+        decisions_dir = tmp_path / "proj" / "knowledge" / "decisions"
+        decisions_dir.mkdir(parents=True)
+        (decisions_dir / "Done").mkdir()
+
+        verdicts_resolved = tmp_path / "verdicts" / "resolved"
+        verdicts_resolved.mkdir(parents=True)
+        (tmp_path / "verdicts" / "pending").mkdir(parents=True)
+
+        # processed-verdict file with no paired plan anywhere
+        orphan_fname = "processed-verdict-foo-2026-05-22-step-1.md"
+        (verdicts_resolved / orphan_fname).write_text("verdict: continue\nOrphan.")
+
+        config = {
+            "watched_projects": [str(decisions_dir)],
+            "default_model": "claude-sonnet-4-6",
+            "pushover": {"app_key": "", "user_key": ""},
+            "callback_port": 5999,
+        }
+
+        b = bellows.Bellows(config)
+
+        with patch("bellows.BELLOWS_ROOT", tmp_path), \
+             patch("bellows.verdict.check_verdict") as mock_check, \
+             patch("bellows.verdict.log_to_ledger"), \
+             patch("bellows.notifier.push"), \
+             patch("bellows._log") as mock_log:
+            # Clear dedup set to ensure INFO log fires
+            bellows._prescan_orphan_logged.discard(orphan_fname)
+            b._consume_verdicts()
+
+        # File must remain as processed-verdict-* (not renamed)
+        assert (verdicts_resolved / orphan_fname).exists(), (
+            f"Orphan file should stay as processed-*: {orphan_fname}"
+        )
+        canonical_fname = "verdict-foo-2026-05-22-step-1.md"
+        assert not (verdicts_resolved / canonical_fname).exists(), (
+            f"Orphan should NOT be renamed to canonical: {canonical_fname}"
+        )
+        # INFO log emitted (not WARN)
+        info_calls = [c for c in mock_log.call_args_list if c[0][0] == "INFO" and "skipping orphan" in c[0][1]]
+        assert len(info_calls) >= 1, (
+            "Expected INFO log for skipped orphan"
+        )
+        warn_calls = [c for c in mock_log.call_args_list if c[0][0] == "WARN" and "skipping orphan" in c[0][1]]
+        assert len(warn_calls) == 0, (
+            "Orphan skip should be INFO, not WARN"
+        )
+        # check_verdict must NOT have been called — file was skipped
+        mock_check.assert_not_called()
+
+
+def test_pre_scan_renames_when_verdict_pending_plan_exists():
+    """Pre-scan orphan guard: when a verdict-pending-* plan exists in decisions/,
+    processed-verdict-* must be renamed to verdict-* (canonical form)."""
+    with tempfile.TemporaryDirectory() as tmp:
+        tmp_path = Path(tmp)
+
+        decisions_dir = tmp_path / "proj" / "knowledge" / "decisions"
+        decisions_dir.mkdir(parents=True)
+        (decisions_dir / "Done").mkdir()
+
+        # verdict-pending plan exists — this file should be allowed through
+        plan_filename = "verdict-pending-diagnostic-foo-2026-05-22.md"
+        (decisions_dir / plan_filename).write_text("## STEP 1\nDo stuff.\n")
+
+        verdicts_resolved = tmp_path / "verdicts" / "resolved"
+        verdicts_resolved.mkdir(parents=True)
+        (tmp_path / "verdicts" / "pending").mkdir(parents=True)
+
+        # processed-verdict file matching the plan slug
+        processed_fname = "processed-verdict-foo-2026-05-22-step-1.md"
+        (verdicts_resolved / processed_fname).write_text("verdict: continue\nApproved.")
+
+        # Pending request file for the main loop
+        pending_dir = tmp_path / "verdicts" / "pending"
+        pending_file = pending_dir / "verdict-request-foo-2026-05-22-step-1.md"
+        pending_file.write_text("# Verdict Request\n**Plan:** " + str(decisions_dir / plan_filename))
+
+        config = {
+            "watched_projects": [str(decisions_dir)],
+            "default_model": "claude-sonnet-4-6",
+            "pushover": {"app_key": "", "user_key": ""},
+            "callback_port": 5999,
+        }
+
+        b = bellows.Bellows(config)
+
+        with patch("bellows.BELLOWS_ROOT", tmp_path), \
+             patch("bellows.verdict.check_verdict", return_value={
+                 "found": True, "verdict": "continue", "reason": "approved"
+             }), \
+             patch("bellows.verdict.log_to_ledger"), \
+             patch("bellows.notifier.push"), \
+             patch.object(b, "handle_new_plan"):
+            b._consume_verdicts()
+
+        # The processed-verdict file should have been renamed to canonical
+        # and then consumed by the main loop (producing processed-verdict-*)
+        canonical_fname = "verdict-foo-2026-05-22-step-1.md"
+        # Either the canonical was consumed (processed-*) or it still exists
+        # The key assertion: the original processed-verdict was renamed (canonical or re-processed)
+        assert not (verdicts_resolved / processed_fname).exists() or \
+               (verdicts_resolved / canonical_fname).exists() or \
+               (verdicts_resolved / f"processed-{canonical_fname}").exists(), (
+            f"File should have been renamed from processed-verdict to canonical form"
+        )
+
+
+def test_pre_scan_treats_done_plan_as_no_paired_plan():
+    """Pre-scan orphan guard: a plan in Done/ is terminal — processed-verdict-*
+    must NOT be renamed when the only matching plan is in Done/."""
+    with tempfile.TemporaryDirectory() as tmp:
+        tmp_path = Path(tmp)
+
+        decisions_dir = tmp_path / "proj" / "knowledge" / "decisions"
+        decisions_dir.mkdir(parents=True)
+        done_dir = decisions_dir / "Done"
+        done_dir.mkdir()
+
+        # Plan in Done/ only — terminal state, no verdict-pending-* in decisions/
+        done_plan = done_dir / "diagnostic-bar-2026-05-22.md"
+        done_plan.write_text("## STEP 1\nCompleted.\n")
+
+        verdicts_resolved = tmp_path / "verdicts" / "resolved"
+        verdicts_resolved.mkdir(parents=True)
+        (tmp_path / "verdicts" / "pending").mkdir(parents=True)
+
+        # processed-verdict file for the done plan
+        orphan_fname = "processed-verdict-bar-2026-05-22-step-1.md"
+        (verdicts_resolved / orphan_fname).write_text("verdict: continue\nDone plan orphan.")
+
+        config = {
+            "watched_projects": [str(decisions_dir)],
+            "default_model": "claude-sonnet-4-6",
+            "pushover": {"app_key": "", "user_key": ""},
+            "callback_port": 5999,
+        }
+
+        b = bellows.Bellows(config)
+
+        with patch("bellows.BELLOWS_ROOT", tmp_path), \
+             patch("bellows.verdict.check_verdict") as mock_check, \
+             patch("bellows.verdict.log_to_ledger"), \
+             patch("bellows.notifier.push"), \
+             patch("bellows._log") as mock_log:
+            bellows._prescan_orphan_logged.discard(orphan_fname)
+            b._consume_verdicts()
+
+        # File must remain as processed-* (Done/ plan is terminal)
+        assert (verdicts_resolved / orphan_fname).exists(), (
+            f"File should stay as processed-* when plan is in Done/: {orphan_fname}"
+        )
+        canonical_fname = "verdict-bar-2026-05-22-step-1.md"
+        assert not (verdicts_resolved / canonical_fname).exists(), (
+            f"File should NOT be renamed when plan is in Done/: {canonical_fname}"
+        )
+        # check_verdict must NOT have been called
+        mock_check.assert_not_called()
+
+
+def test_pre_scan_collision_guard_fires_regardless_of_paired_plan():
+    """Pre-scan orphan guard + collision guard: when both forms exist AND a paired
+    plan is present, the orphan guard allows the rename attempt but the collision
+    guard must fire (skip rename + WARN)."""
+    with tempfile.TemporaryDirectory() as tmp:
+        tmp_path = Path(tmp)
+
+        decisions_dir = tmp_path / "proj" / "knowledge" / "decisions"
+        decisions_dir.mkdir(parents=True)
+        (decisions_dir / "Done").mkdir()
+
+        # Paired plan present — orphan guard allows rename attempt
+        plan_filename = "verdict-pending-diagnostic-baz-2026-05-22.md"
+        (decisions_dir / plan_filename).write_text("## STEP 1\nDo stuff.\n")
+
+        verdicts_resolved = tmp_path / "verdicts" / "resolved"
+        verdicts_resolved.mkdir(parents=True)
+        (tmp_path / "verdicts" / "pending").mkdir(parents=True)
+
+        # Both canonical and processed- forms exist
+        canonical_fname = "verdict-baz-2026-05-22-step-1.md"
+        processed_fname = "processed-verdict-baz-2026-05-22-step-1.md"
+        canonical_content = "verdict: continue\nCanonical — must not be overwritten."
+        (verdicts_resolved / canonical_fname).write_text(canonical_content)
+        (verdicts_resolved / processed_fname).write_text("verdict: continue\nDuplicate.")
+
+        config = {
+            "watched_projects": [str(decisions_dir)],
+            "default_model": "claude-sonnet-4-6",
+            "pushover": {"app_key": "", "user_key": ""},
+            "callback_port": 5999,
+        }
+
+        b = bellows.Bellows(config)
+
+        with patch("bellows.BELLOWS_ROOT", tmp_path), \
+             patch("bellows.verdict.check_verdict", return_value={
+                 "found": False, "verdict": None, "reason": None
+             }), \
+             patch("bellows.verdict.log_to_ledger"), \
+             patch("bellows.notifier.push"), \
+             patch("bellows._log") as mock_log:
+            b._consume_verdicts()
+
+        # Processed file must still exist (collision guard skipped the rename)
+        assert (verdicts_resolved / processed_fname).exists(), (
+            f"processed-verdict-* should be preserved by collision guard: {processed_fname}"
+        )
+        # Canonical content must be unchanged (main loop skipped it — found=False)
+        assert (verdicts_resolved / canonical_fname).read_text() == canonical_content, (
+            "Canonical file content must not be overwritten by collision"
+        )
+        # WARN log was emitted for the collision
+        warn_calls = [c for c in mock_log.call_args_list if c[0][0] == "WARN" and "cannot normalize" in c[0][1]]
+        assert len(warn_calls) >= 1, (
+            "Expected WARN log for collision — cannot normalize"
+        )

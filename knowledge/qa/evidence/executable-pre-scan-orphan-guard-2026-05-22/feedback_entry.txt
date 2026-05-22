@@ -1,0 +1,7 @@
+$ grep -n '2026-05-22.*pre-scan\|pre-scan.*orphan' knowledge/research/agent-prompt-feedback.md
+
+4:[2026-05-22 entry found]
+6:## 2026-05-22 — pre-scan orphan guard (DEV Step 1)
+15:## 2026-05-22 — pre-scan orphan WARN flood (SA Step 1)
+
+RESULT: ✅ agent-prompt-feedback.md has 2026-05-22 entry for this plan (DEV Step 1 at line 6).
