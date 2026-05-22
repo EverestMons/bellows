@@ -1,72 +1,165 @@
 # bellows — Next Session Baton
 
-**Created:** 2026-05-21 (replaces 2026-05-21 prior baton; Priority 1 verdict-enrichment shipped)
+**Created:** 2026-05-22 (replaces 2026-05-21 baton; all Priority 2 items shipped or closed)
 **Carry-forward owner:** Planner
 
 This file exists when bellows has work to carry into the next session. Delete it when all items here close.
 
 ---
 
-## Daemon restart — RESOLVED 2026-05-21
+## Session focus: clean up the Bellows flow
 
-Daemon restarted at session start. Enriched verdict request format verified live across two plan dispatches this session (`diagnostic-priority-3-carryover-audit-v2`, `executable-priority-3-audit-closeout`): Verification Results table renders cleanly with 10 gate rows + 1 informational row; `rule_22_verification` gate reports PASS on QA-step deposits; Planner-Only Checks Remaining section present. Smoke test pass.
+The 2026-05-22 session shipped two diagnostics characterizing operational gaps in the Bellows flow. Both have follow-on work queued. Plus three additional friction items from the open BACKLOG warrant attention. Five items total, sequenced below.
 
----
-
-## Priority 1 — RESOLVED
-
-Verdict-enrichment executable shipped 2026-05-21. 5-file change, 14 new tests, 386 collected / 385 passed / 1 pre-existing failure. Reference: `Done/executable-bellows-verdict-enrichment-2026-05-21.md`.
+The sequencing principle: pair items with different cognitive modes when possible (e.g., diagnostic + documentation work in same session), keep items operating on the same code surface separated.
 
 ---
 
-## Priority 2 — Operational housekeeping
+## Priority 1 — Recovery-pain items (need diagnostics first)
 
-**BACKLOG additions to capture (from prior baton + this session):**
+These cause ~10+ min recovery when triggered and will recur until fixed. Both touch `bellows.py` pause/dispatch logic. Run diagnostics separately; consider whether the executables can share a session.
 
-- **`config.json` not gitignored.** `bellows/config.json` (containing pushover keys) is untracked but NOT in `.gitignore`. Risk: accidental commit of secrets. Fix: add `config.json` to `bellows/.gitignore`. One-line edit.
-- **`Bash(git:*)` permission too broad.** `.claude/settings.local.json:4` auto-approves all git commands. Replace with explicit allowlist: `Bash(git add:*)`, `Bash(git commit:*)`, `Bash(git status:*)`, `Bash(git log:*)`, `Bash(git diff:*)`, `Bash(git checkout:*)`, etc. Explicitly omit `git push`, `git reset --hard`, `git push --force`. Per 2026-05-21 teardown diagnostic findings.
-- **PLANNER_TEMPLATE.md `git push` removal from housekeeping section.** Root cause of parallel-SHA divergence. Future governance executable: edit Rule 23 housekeeping order from `feedback → commit → push` to `feedback → commit (Planner handles push at session-wrap)`. Cross-check all template references. **This session's verdict-enrichment plan validated the approach — zero parallel-SHA divergence when push instructions are omitted.**
-- **PLANNER_TEMPLATE.md line 671 stale count.** Says "only two codes authorize auto-proceed" but routing table has 3. One-line correction in a future governance edit.
-- **Bellows expected-keys warning misleading on single-line headers.** `bellows.py:419` emits "missing: ['author', 'project', 'total_steps']" even when the safety-critical `pause_for_verdict` IS parsed. Tighten to only fire on safety-critical missing keys OR update Planner plan templates to use multi-line headers exclusively.
-- **`isinstance(f, dict)` discriminator asymmetry between bellows.py blocks.** Block 1 (line 505) has the defensive guard; Block 2 (line 594) does not. QA classified as non-defect (Block 2's code path only receives dict-format failures), but the asymmetry creates reasoning friction. Symmetric guards would clean this up.
+### Item 1.A — Step 2 final-step gate_failure pause doesn't rename in-progress-* → verdict-pending-*
 
-**BACKLOG retirement (CLOSE THIS):**
+**State:** BACKLOG entry, no diagnostic yet.
 
-- **`Pre-existing test_decisions.py failures (4 tests)`.** Retire this entry. Independently verified during 2026-05-21 verdict-enrichment QA: all 18 test_decisions.py tests PASS when pytest runs from main repo. The failures were worktree-context artifacts (missing `INTERMEDIATE_DECISION_PHRASES.md` in worktree). Not a real failure mode.
+**Symptom:** When a final step pauses on a `gate_failure` (e.g., `scope_check` false positive), Bellows posts the verdict-request file correctly, but the plan filename stays `in-progress-*` rather than renaming to `verdict-pending-*`. Verdict response cannot be consumed (no `verdict-pending-*` for `_consume_verdicts` to match); no-match WARN fires every 30s indefinitely. Manual recovery via Planner-side rename triggers `on_moved` re-dispatch → stale worktree → step-counter loop.
 
-**BACKLOG closures pending (carried from prior session, still open):**
+**Two candidate root causes** (BACKLOG entry 2026-05-22 lists both):
+1. The `gate_failure` code path in `run_plan()` at the final-step pause site (bellows.py:580-625 region) may conditionally skip the rename when teardown was called before `post_verdict_request`.
+2. Daemon restart between pause and verdict response may drop mid-pause rename-pending state.
 
-- `Added 2026-05-20: Set DISABLE_AUTOUPDATER=1` — implemented and shipped 2026-05-21. Move BACKLOG entry to Closed with reference to `Done/executable-disable-autoupdater-2026-05-27.md` (mis-dated; actual ship 2026-05-21).
-- `_gate_deposit_exists` path-form normalization — shipped 2026-05-21 via `Done/executable-deposit-exists-path-form-normalization-2026-05-27.md` (mis-dated). Add backdated Closed entry to BACKLOG.
+**Diagnostic shape:** Single-step SA or two-step (SA characterize → SA reproduce). Header should be `pause_for_verdict: always` if multi-step (today's lesson) or split into separate single-step diagnostics.
 
-**Memory amendments needed (for user memory):**
+**Operational mitigation in place today:** When a plan is stuck `in-progress-*` with a verdict-request file in pending/, do NOT manually rename. Issue `verdict: stop`, then manually move `halted-*` → `Done/` if work shipped.
 
-- The "Pre-existing test_decisions.py failures (4 tests)" carry-forward in current memory is misleading and should be removed/updated. Verified worktree-context artifact, not a real failure.
-- Item 18 (Bellows OP-001 RESOLVED) addendum from prior baton still valid: teardown produces parallel-SHA divergence by design when agent pushes from worktree.
-- Add: 2026-05-21 verdict-enrichment plan validated the no-push approach — 4 commits, zero divergence.
+### Item 1.B — Step-counter loop after precondition-failure verdict
+
+**State:** BACKLOG entry, no diagnostic yet.
+
+**Symptom:** When Bellows pauses on a precondition gate (e.g., worktree creation failure) labeled `step-N` and the Planner verdict-continues, Bellows re-dispatches step N rather than advancing to N+1. If step N's work was already on origin from a prior run (parallel-SHA pattern), the agent's fresh worktree forks from origin tip → no-op → empty commit → teardown empty cherry-pick fails → gate_failure → re-pause same step. Loops indefinitely until verdict-stop. Three iterations seen in one reproduction (2026-05-21).
+
+**Two candidate root causes** (BACKLOG entry 2026-05-21):
+1. `_consume_verdicts` interprets continue-on-precondition-failure as "step N done, advance to N+1" without checking whether step N actually produced work.
+2. Step counter is computed from verdict request's `Step` field rather than internal daemon state, so a precondition-failure labeled `step-1` propagates as "step 1 resolved, start step 2."
+
+**Diagnostic shape:** Single-step SA. The two hypotheses are mutually exclusive and the diagnostic should pick which one.
+
+**Sequencing note:** Items 1.A and 1.B both touch pause/dispatch code. Diagnostics can run independent sessions; the executables should NOT bundle blindly — re-evaluate when diagnostics complete whether they share enough surface to combine.
+
+**Operational mitigation today:** `verdict: stop` on the second teardown-empty in a row for the same step. Author follow-up plan covering only remaining steps. ~10 min recovery cost per occurrence.
 
 ---
 
-## Priority 3 — Closed
+## Priority 2 — Already-diagnosed, ready for executable
 
-Five-item carry-over audit completed 2026-05-21. Disposition: 1× UNRESOLVABLE (stale-redirect — no referent), 1× STALE (verdict prose directives — superseded by 2026-05-21 verdict-enrichment), 3× LIVE-MINOR added to BACKLOG (pause_for_verdict enum validation, Deposits parenthetical stripping, no-match verdict warning dedup). Reference: `Done/diagnostic-priority-3-carryover-audit-v2-2026-05-21.md`, `Done/executable-priority-3-audit-closeout-2026-05-21.md`.
+### Item 2.A — Document `.claude/settings.local.json` bash-fallback in BELLOWS_DEVELOPER.md
+
+**State:** Diagnostic complete (2026-05-22). Fix-shape findings at `bellows/knowledge/research/claude-settings-permission-gap-fix-shape-2026-05-22.md`.
+
+**Recommended fix:** Shape 1 + supplementary plan-prompt instruction.
+
+1. Add a new paragraph to BELLOWS_DEVELOPER.md "Project-Specific Procedure" section documenting the bash-fallback (`python3 -c` JSON-edit pattern) for `.claude/settings.local.json` edits.
+2. Template plan-prompts that target this file with: "Edit `.claude/settings.local.json` using Bash (python3 -c) — the Edit tool will be denied on this path because the file is outside the worktree. See BELLOWS_DEVELOPER.md 'Project-Specific Procedure' for the pattern."
+
+**Combined effect:** Agent never attempts Edit → denial never fires → no `gate_failure` verdict → no Rule 22 override. Effectively closes the vector without any code changes.
+
+**Executable shape:** Documentation Analyst → QA. Doc-only, no code changes. Tier: Small.
+
+**Plan staged:** `_staging_executable-settings-local-bash-fallback-doc-2026-05-22.md` at governance root. Move to `bellows/knowledge/decisions/executable-settings-local-bash-fallback-doc-2026-05-22.md` to dispatch.
+
+**Proposed filename:** `executable-settings-local-bash-fallback-doc-2026-05-22.md` (already authored).
+
+### Item 2.B — Implement `qa_steps` plan-header field
+
+**State:** Diagnostic complete (2026-05-22). Fix-shape findings at `bellows/knowledge/research/qa-step-detection-fix-shape-2026-05-22.md`.
+
+**Recommended fix:** Add `qa_steps` header field (comma-separated integers, e.g., `qa_steps: 2,4`) with keyword fallback for legacy plans.
+
+1. Code change to `gates.py` — extend `_gate_is_qa_step` to accept `plan_header` kwarg, check `qa_steps` field first, fall back to keyword detection.
+2. Governance edit to PLANNER_TEMPLATE.md in three places: header example in Plan File Structure, new definitional paragraph after "Execution map", Gate 6 description in "The Eight Gates" table.
+3. Test surface: unit tests for the field parse cases (string, list, malformed, missing).
+
+**Caveat from Planner review (2026-05-22):** The SA's proposed Doc Analyst → QA may under-scope. This is a multi-file change (gates.py + governance) with parse contract decisions. Re-evaluate at planning time whether SA → DEV → QA is more appropriate.
+
+**Pre-write check before authoring:** Verify the PLANNER_TEMPLATE.md insertion point ("Gate 6 description in The Eight Gates table around line 955") matches actual file structure. SA proposal cited the line number from agent-side read; Planner should confirm.
+
+**Proposed filename:** `executable-qa-steps-header-field-2026-05-XX.md`.
+
+**Closes BACKLOG:** the 2026-05-22 Closed entry already references this follow-on.
 
 ---
 
-## What's CLEAN at session end 2026-05-21
+## Priority 3 — Small friction items
 
-- Verdict-enrichment with Rule 22 mechanical check gate shipped, committed (daemon restart pending)
-- Teardown git operations mechanism characterized; recommendation validated
-- Two LESSONS-worthy patterns demonstrated: (a) Bellows interleaves multi-project plans without contention; (b) removing `git push` from plan step prose eliminates parallel-SHA divergence (zero divergence in verdict-enrichment plan with 4 agent commits)
-- Both repos pushed to origin (bellows session-start commit + session-wrap pending)
-- No parallel-SHA divergence carried forward
-- Submodule pointer bump pending (governance-root)
+### Item 3.A — Pre-scan orphan-guard INFO log flood
+
+**State:** BACKLOG entry (2026-05-22). Resolution shape recommended in the entry.
+
+**Symptom:** ~300 INFO log lines per daemon restart from the orphan-guard pre-scan re-discovering historical `processed-verdict-*` files. Daemon-lifetime dedup works correctly during runtime but resets on every restart. Bellows dev sessions have frequent restarts.
+
+**Recommended fix (from BACKLOG entry):** Shape 1 — at startup before the first rescan, populate `_prescan_orphan_logged` with every existing `processed-verdict-*.md` in `resolved/` whose paired-plan check would fail. Dedup short-circuits silently; only NEW orphans during runtime would log.
+
+**Effort:** small (~5 LOC change to `_consume_verdicts` + 1-2 regression tests).
+
+**Executable shape:** DEV → QA. Tier: Small. Could ship without further diagnostic — shape is already specified.
+
+### Item 3.B — MCP tool denials not on READ_CLASS_TOOLS exemption
+
+**State:** BACKLOG entry (2026-05-22).
+
+**Symptom:** `mcp__vexp__run_pipeline` and `mcp__vexp__get_context_capsule` denials fire `no_permission_denials` gate. 5 events / 2 gate failures over 30 days.
+
+**Recommended fix:** Add `mcp__vexp__*` patterns to `READ_CLASS_TOOLS` in `gates.py` so denials filter from gate evaluation. Follows the existing READ_CLASS_TOOLS architectural precedent (shipped 2026-04-28).
+
+**Effort:** small (~3 LOC + 1-2 regression tests).
+
+**Executable shape:** DEV → QA. Tier: Small. Could ship without further diagnostic — shape is already specified.
+
+**Open question:** Is the right resolution to extend READ_CLASS_TOOLS specifically (treating MCP read tools as a known class), or to generalize the exemption mechanism (any tool name matching `mcp__*_read*` or similar pattern)? Worth a brief SA blueprint if the answer isn't obvious.
+
+---
+
+## Suggested session sequencing
+
+**Single-item sessions (lowest contention):**
+- Session A: Item 2.A (settings.local.json doc). Doc-only, no code conflicts. Cleanest standalone.
+- Session B: Item 3.A or 3.B (small DEV → QA). Either ships clean without diagnostic.
+
+**Diagnostic-first sessions:**
+- Session C: Diagnostic for Item 1.A (Step 2 rename bug). Single-step SA.
+- Session D: Diagnostic for Item 1.B (step-counter loop). Single-step SA.
+
+**Combinable in one session if bandwidth allows:**
+- Item 2.A doc work + Item 1.A diagnostic (different cognitive modes, no surface contention).
+- Item 3.B small fix + Item 1.B diagnostic.
+
+**Do NOT combine without re-evaluation:**
+- Items 1.A and 1.B executables. Both touch `bellows.py` pause/dispatch logic. Re-evaluate after diagnostics complete.
+- Item 2.B (qa_steps field) executable. Multi-file change across bellows + governance. Stands alone.
+
+---
+
+## What's CLEAN at session end 2026-05-22
+
+- Two diagnostics shipped to Done/ (`qa-step-detection-audit`, `claude-settings-permission-gap`).
+- BACKLOG: 4 closes (2 from morning hygiene pass + 2 from today's diagnostics), 2 new opens (MCP tool denials, WebSearch in --allowedTools).
+- Two LESSONS.md entries shipped (Rule 25 codification invalidating defer rationale; `pause_for_verdict: after_step_1` plan-authoring miss for multi-step diagnostics).
+- Both bellows + governance-root repos pushed to origin.
+- Submodule pointer bumped and verified clean.
+- No parallel-SHA divergence carried forward.
+
+## Outstanding from other sessions (not Planner-owned in this baton)
+
+- invoice-pulse specialist-file-drift diagnostic in flight from a separate session as of 2026-05-22 11:31. Awaiting verdict from that session's owner. Not part of bellows-flow cleanup.
 
 ---
 
 ## Definition of Done for this file
 
 Delete this file when:
-1. ~~Daemon is restarted and the enriched verdict request shape is confirmed via first dispatch post-restart~~ ✅ 2026-05-21
-2. Priority 2 housekeeping items are addressed or explicitly deferred
-3. ~~Priority 3 carry-overs are promoted or declined~~ ✅ 2026-05-21 (3 to BACKLOG, 2 closed)
+1. Items 1.A and 1.B have shipped executables (diagnostics + fixes).
+2. Items 2.A and 2.B have shipped executables.
+3. Items 3.A and 3.B have shipped executables OR been explicitly deferred with reason.
+
+Until then, this baton carries forward into each next session as Phase 1.5 Source 0b reading.
