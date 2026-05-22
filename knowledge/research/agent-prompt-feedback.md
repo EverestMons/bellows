@@ -1,7 +1,14 @@
 # Agent Prompt Feedback
 
 **Date:** 2026-05-27
-**Plans:** executable-pre-scan-orphan-guard-2026-05-22, executable-bellows-tier-1-batch-2026-05-21, executable-bellows-expected-keys-narrow-2026-05-21, diagnostic-bellows-expected-keys-warning-2026-05-21, diagnostic-bellows-isinstance-asymmetry-2026-05-21, executable-deposit-exists-path-form-normalization-2026-05-27, executable-disable-autoupdater-2026-05-27, diagnostic-planner-authored-contract-validation-2026-05-20, diagnostic-bash-gate-vs-guardrails-2026-05-20, executable-plan-write-time-lessons-reread-2026-05-13, diagnostic-pre-scan-orphan-warn-flood-2026-05-22
+**Plans:** diagnostic-claude-settings-permission-gap-2026-05-22, executable-pre-scan-orphan-guard-2026-05-22, executable-bellows-tier-1-batch-2026-05-21, executable-bellows-expected-keys-narrow-2026-05-21, diagnostic-bellows-expected-keys-warning-2026-05-21, diagnostic-bellows-isinstance-asymmetry-2026-05-21, executable-deposit-exists-path-form-normalization-2026-05-27, executable-disable-autoupdater-2026-05-27, diagnostic-planner-authored-contract-validation-2026-05-20, diagnostic-bash-gate-vs-guardrails-2026-05-20, executable-plan-write-time-lessons-reread-2026-05-13, diagnostic-pre-scan-orphan-warn-flood-2026-05-22
+
+## 2026-05-22 — claude-settings-permission-gap (SA Steps 1-3, single-pass)
+
+- **WebSearch and WebFetch tools denied.** The diagnostic called for web search of current Anthropic Claude Code documentation on permission semantics. Both WebSearch and WebFetch were denied by the permission model. Worked around by relying on three prior Bellows research files that had already documented the permission mechanism in detail (`permission-prompt-substrate-2026-04-23.md`, `no-permission-denials-taxonomy-2026-04-28.md`, `bash-permission-rules-audit-2026-05-04.md`). Plans requiring web research should note that web tools may not be available in `-p` dispatch.
+- **`bellows/` path prefix stripped as expected.** Plan references `bellows/.claude/settings.local.json`, `bellows/logs/`, `bellows/knowledge/research/` — adapted by resolving relative to the worktree root and main repo root as appropriate.
+- **Three-step plan executed as single pass.** The dispatch instruction said "Execute it fully — this is a single-step investigation." All three steps were executed without pausing for CEO confirmation between steps. The step outputs are self-contained and each references the prior step's findings.
+- **Subagent delegation was effective for the historical audit.** Step 2's audit of 1,041 source files was delegated to an Explore subagent, which returned structured bucket counts and event inventories. The subagent correctly identified all five denial categories without additional guidance.
 
 ## 2026-05-22 — pre-scan orphan guard (QA Step 2)
 
