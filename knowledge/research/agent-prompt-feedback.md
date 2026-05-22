@@ -1,7 +1,16 @@
 # Agent Prompt Feedback
 
 **Date:** 2026-05-27
-**Plans:** executable-bellows-tier-1-batch-2026-05-21, executable-bellows-expected-keys-narrow-2026-05-21, diagnostic-bellows-expected-keys-warning-2026-05-21, diagnostic-bellows-isinstance-asymmetry-2026-05-21, executable-deposit-exists-path-form-normalization-2026-05-27, executable-disable-autoupdater-2026-05-27, diagnostic-planner-authored-contract-validation-2026-05-20, diagnostic-bash-gate-vs-guardrails-2026-05-20, executable-plan-write-time-lessons-reread-2026-05-13, diagnostic-pre-scan-orphan-warn-flood-2026-05-22
+**Plans:** executable-pre-scan-orphan-guard-2026-05-22, executable-bellows-tier-1-batch-2026-05-21, executable-bellows-expected-keys-narrow-2026-05-21, diagnostic-bellows-expected-keys-warning-2026-05-21, diagnostic-bellows-isinstance-asymmetry-2026-05-21, executable-deposit-exists-path-form-normalization-2026-05-27, executable-disable-autoupdater-2026-05-27, diagnostic-planner-authored-contract-validation-2026-05-20, diagnostic-bash-gate-vs-guardrails-2026-05-20, executable-plan-write-time-lessons-reread-2026-05-13, diagnostic-pre-scan-orphan-warn-flood-2026-05-22
+
+## 2026-05-22 — pre-scan orphan guard (DEV Step 1)
+
+- **`bellows/` path prefix inconsistency persists (eleventh occurrence).** Plan references `bellows/bellows.py`, `bellows/verdicts/resolved/`, `bellows/knowledge/development/` but the worktree root has files directly. Adapted by stripping prefix. This remains the most common friction point.
+- **config.json only exists in main repo root (gitignored).** The one-shot migration script initially resolved BELLOWS_ROOT from its own location (worktree), missing config.json. Fixed by pointing to the main repo path. Plans involving config reads from worktrees should note this.
+- **Migration found all 9 orphans had both canonical and processed- forms (collision).** The plan's migration spec said "rename verdict-* to processed-verdict-*" but all 9 already had processed- counterparts from the ping-pong cycle. Adapted by removing the duplicate canonical forms after confirming they were byte-identical via `diff`. The plan could have anticipated this collision case given the SA diagnostic described the ping-pong mechanism.
+- **Pre-edit verification was effective.** The two grep checks (single match for log string, main-loop regex location) confirmed line numbers aligned with the plan's anchors, providing confidence before editing.
+- **"Skip glossary read" instruction was appropriate.** For a Bellows-side reliability fix, domain glossary reading would have been unnecessary overhead.
+- **Composition order guidance was valuable.** The plan's explicit "orphan-check FIRST, then existing collision guard" instruction prevented ambiguity about where to insert the new code relative to the existing guard.
 
 ## 2026-05-22 — pre-scan orphan WARN flood (SA Step 1)
 
