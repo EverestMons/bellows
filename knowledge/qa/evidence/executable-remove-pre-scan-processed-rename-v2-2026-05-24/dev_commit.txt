@@ -1,0 +1,12 @@
+commit c2aeef4bc5e043c03644feaecf2a493844320f37
+Author: Mark Lehn <marklehn@icloud.com>
+Date:   Sun May 24 16:55:54 2026 -0500
+
+    fix(bellows): remove pre-scan processed- prefix rename — eliminates P0 multi-step pause-cycle loop
+    
+    Co-Authored-By: Claude Opus 4.6 <noreply@anthropic.com>
+
+ bellows.py                                         |  38 --
+ ...move-pre-scan-processed-rename-v2-2026-05-24.md | 129 +++++++
+ tests/test_consume_verdicts.py                     | 391 ---------------------
+ 3 files changed, 129 insertions(+), 429 deletions(-)

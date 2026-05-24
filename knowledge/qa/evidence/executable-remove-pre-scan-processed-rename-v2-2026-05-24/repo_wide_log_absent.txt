@@ -1,0 +1,3 @@
+VERIFIED: grep -rn 'normalized write-time processed- prefix' . --include='*.py'
+Result: zero matches (exit code 1 — pattern not found)
+Exit code: 1

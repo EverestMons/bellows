@@ -1,0 +1,4 @@
+-rw-r--r--  1 marklehn  staff  5586 May 24 17:00 knowledge/development/remove-pre-scan-processed-rename-v2-2026-05-24.md
+---
+Items (a)-(f) verified present:
+6

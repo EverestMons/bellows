@@ -1,0 +1,3 @@
+VERIFIED: grep -n 'normalized write-time processed- prefix:' bellows.py
+Result: zero matches (exit code 1 — pattern not found)
+Exit code: 1

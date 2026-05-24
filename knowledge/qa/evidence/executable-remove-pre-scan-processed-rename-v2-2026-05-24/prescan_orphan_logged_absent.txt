@@ -1,0 +1,3 @@
+VERIFIED: grep -n '_prescan_orphan_logged' bellows.py
+Result: zero matches (exit code 1 — pattern not found)
+Exit code: 1

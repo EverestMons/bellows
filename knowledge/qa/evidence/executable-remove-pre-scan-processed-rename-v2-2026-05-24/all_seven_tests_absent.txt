@@ -1,0 +1,14 @@
+--- test_pre_scan_renames_processed_verdict_to_canonical ---
+(not found)
+--- test_pre_scan_collision_guard_does_not_overwrite ---
+(not found)
+--- test_pre_scan_ignores_non_verdict_processed_files ---
+(not found)
+--- test_pre_scan_skips_rename_when_no_paired_plan ---
+(not found)
+--- test_pre_scan_renames_when_verdict_pending_plan_exists ---
+(not found)
+--- test_pre_scan_treats_done_plan_as_no_paired_plan ---
+(not found)
+--- test_pre_scan_collision_guard_fires_regardless_of_paired_plan ---
+(not found)
