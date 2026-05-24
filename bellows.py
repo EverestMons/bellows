@@ -29,9 +29,6 @@ MODULE_FINGERPRINT_HEARTBEAT_INTERVAL = 10
 _NOTIFIED_MISPLACED: set[tuple[str, str]] = set()
 MISPLACED_VERDICT_SCAN_VERBOSE = False
 
-# --- Pre-scan orphan dedup ---
-_prescan_orphan_logged: set = set()
-
 # --- Terminal output infrastructure ---
 _last_plan_event_time = 0.0
 _plan_event_lock = threading.Lock()
@@ -1125,41 +1122,6 @@ class Bellows:
             return
         app_key = self.config.get("pushover", {}).get("app_key", "")
         user_key = self.config.get("pushover", {}).get("user_key", "")
-
-        # Pre-scan: normalize processed-verdict-* to verdict-* (Planner write-time naming mismatch).
-        # Files named processed-verdict-* at write time are structurally identical to already-consumed
-        # verdicts and would be silently skipped by the main filter. Rename to canonical form so the
-        # main loop can process them. See bellows/knowledge/architecture/consume-verdicts-drain-failure-2026-05-21.md.
-        for fname in os.listdir(resolved_dir):
-            if fname.startswith("processed-verdict-") and fname.endswith(".md"):
-                # Orphan check (fires BEFORE collision guard): only rename if a
-                # verdict-pending-* plan exists in a watched decisions/ directory.
-                # Plans in Done/ or halted-* are terminal — leave as processed-*.
-                slug_match = re.match(r"^processed-verdict-(.+)-step-(\d+)\.md$", fname)
-                if slug_match:
-                    plan_slug = slug_match.group(1)
-                    has_paired_plan = False
-                    for decisions_path in self.config.get("watched_projects", []):
-                        if not os.path.isdir(decisions_path):
-                            continue
-                        for pname in os.listdir(decisions_path):
-                            if pname.startswith("verdict-pending-") and plan_slug in pname:
-                                has_paired_plan = True
-                                break
-                        if has_paired_plan:
-                            break
-                    if not has_paired_plan:
-                        if fname not in _prescan_orphan_logged:
-                            _log("INFO", f"pre-scan: skipping orphan {fname} — no active verdict-pending plan")
-                            _prescan_orphan_logged.add(fname)
-                        continue
-                canonical = fname[len("processed-"):]
-                canonical_path = os.path.join(resolved_dir, canonical)
-                if os.path.exists(canonical_path):
-                    _log("WARN", f"cannot normalize {fname} — canonical {canonical} already exists; skipping rename")
-                    continue
-                shutil.move(os.path.join(resolved_dir, fname), canonical_path)
-                _log("WARN", f"normalized write-time processed- prefix: {fname} → {canonical}")
 
         for fname in os.listdir(resolved_dir):
             if not fname.startswith("verdict-") or not fname.endswith(".md"):
