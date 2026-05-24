@@ -1,7 +1,15 @@
 # Agent Prompt Feedback
 
 **Date:** 2026-05-27
-**Plans:** diagnostic-claude-settings-permission-gap-2026-05-22, executable-pre-scan-orphan-guard-2026-05-22, executable-bellows-tier-1-batch-2026-05-21, executable-bellows-expected-keys-narrow-2026-05-21, diagnostic-bellows-expected-keys-warning-2026-05-21, diagnostic-bellows-isinstance-asymmetry-2026-05-21, executable-deposit-exists-path-form-normalization-2026-05-27, executable-disable-autoupdater-2026-05-27, diagnostic-planner-authored-contract-validation-2026-05-20, diagnostic-bash-gate-vs-guardrails-2026-05-20, executable-plan-write-time-lessons-reread-2026-05-13, diagnostic-pre-scan-orphan-warn-flood-2026-05-22
+**Plans:** diagnostic-claude-settings-permission-gap-2026-05-22, executable-pre-scan-orphan-guard-2026-05-22, executable-bellows-tier-1-batch-2026-05-21, executable-bellows-expected-keys-narrow-2026-05-21, diagnostic-bellows-expected-keys-warning-2026-05-21, diagnostic-bellows-isinstance-asymmetry-2026-05-21, executable-deposit-exists-path-form-normalization-2026-05-27, executable-disable-autoupdater-2026-05-27, diagnostic-planner-authored-contract-validation-2026-05-20, diagnostic-bash-gate-vs-guardrails-2026-05-20, executable-plan-write-time-lessons-reread-2026-05-13, diagnostic-pre-scan-orphan-warn-flood-2026-05-22, executable-remove-pre-scan-processed-rename-v2-2026-05-24
+
+## 2026-05-24 — remove-pre-scan-processed-rename-v2 (QA Step 2)
+
+- **Evidence files for "absence" checks must contain explicit verification text.** Six grep-based evidence files (checking that removed code is absent) were initially empty because grep returns no output and exit code 1 when the pattern is not found. The Rule 20 self-check treats empty files as CRITICAL failures. Fixed by writing explicit verification text (command, result description, exit code) to each file. Plans should instruct QA agents to capture absence-check evidence with headers/metadata, not bare grep output.
+- **`python3` required, not `python`.** Consistent with the DEV step observation — macOS worktree environment has `python3` only. Used `python3` for import smoke check.
+- **4 `test_decisions.py` failures are worktree-environment artifacts, not regressions.** These are documented in 5+ prior PROJECT_STATUS entries as pre-existing (missing `INTERMEDIATE_DECISION_PHRASES.md` in worktree). `decisions.py` was not modified in the DEV commit. The plan's expected-failure list mentions only `test_run_step_timeout`, but the 4 decisions failures are equally pre-existing. Plans should enumerate all known pre-existing failures, not just the BACKLOG-documented one.
+- **Rule 20 canonical file path is `/Users/marklehn/Developer/GitHub/RULE_20_SELF_CHECK_BLOCK.md`.** QA specialist file still references stale `/Users/marklehn/Desktop/GitHub/` path. Same observation as prior QA steps (13th occurrence).
+- **`Desktop Commander:edit_block` tool does not exist.** Plan references this tool for PROJECT_STATUS edits. Used the Edit tool instead. Same observation as prior QA steps.
 
 ## 2026-05-22 — claude-settings-permission-gap (SA Steps 1-3, single-pass)
 
