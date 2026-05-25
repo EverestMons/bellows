@@ -175,7 +175,7 @@ _PLANNER_ONLY_CHECKS_SECTION = (
 )
 
 
-def post_verdict_request(plan_path, project_path, step_number, log_path, gate_result, pause_reason="auto_close_disabled", planner_py_decision=None, total_steps=None, step_text="", intermediate_decisions=None):
+def post_verdict_request(plan_path, project_path, step_number, log_path, gate_result, pause_reason="auto_close_disabled", planner_py_decision=None, total_steps=None, step_text="", intermediate_decisions=None, precondition_failure=False):
     """Create a verdict request file in verdicts/pending/."""
     pending_dir = VERDICTS_DIR / "pending"
     pending_dir.mkdir(parents=True, exist_ok=True)
@@ -229,6 +229,7 @@ def post_verdict_request(plan_path, project_path, step_number, log_path, gate_re
         f"**Timestamp:** {datetime.now().isoformat()}\n"
         f"**Pause Reason:** {pause_reason_label}\n"
         f"**Pause Reason Code:** {pause_reason}\n"
+        f"**Precondition Failure:** {'true' if precondition_failure else 'false'}\n"
         f"**Deposit:** {extract_primary_deposit(current_step_text) or 'none'}\n"
         f"**Gate Result Passed:** {gate_result.get('passed', False)}\n"
         f"**Total Steps:** {total_steps}\n\n"

@@ -344,3 +344,173 @@ def test_startup_sweep_removes_done_plan_orphans():
             f"Orphaned verdict-request for Done/ plan should have been removed by startup sweep: {orphan_file}"
         )
         assert "verdict-request-bar-2026-05-01-step-1.md" in orphaned_removed
+
+
+def _make_verdict_request_content(plan_path, step_number=1, total_steps=2,
+                                   pause_reason_code="gate_failure",
+                                   precondition_failure=None):
+    """Build verdict-request content with the fields that _consume_verdicts parses."""
+    lines = [
+        "# Verdict Request",
+        f"**Plan:** {plan_path}",
+        f"**Step:** {step_number}",
+        f"**Total Steps:** {total_steps}",
+        f"**Pause Reason Code:** {pause_reason_code}",
+    ]
+    if precondition_failure is not None:
+        lines.append(f"**Precondition Failure:** {'true' if precondition_failure else 'false'}")
+    return "\n".join(lines)
+
+
+def test_consume_verdict_continue_advances_step_when_precondition_failure_absent():
+    """Backward-compat: verdict-request WITHOUT Precondition Failure field → advance step_number + 1."""
+    with tempfile.TemporaryDirectory() as tmp:
+        tmp_path = Path(tmp)
+
+        decisions_dir = tmp_path / "proj" / "knowledge" / "decisions"
+        decisions_dir.mkdir(parents=True)
+        (decisions_dir / "Done").mkdir()
+
+        plan_filename = "executable-precond-absent-2026-05-24.md"
+        verdict_pending_name = f"verdict-pending-{plan_filename}"
+        verdict_pending_path = decisions_dir / verdict_pending_name
+        verdict_pending_path.write_text("## STEP 1\nDo stuff.\n## STEP 2\nMore stuff.\n")
+
+        verdicts_resolved = tmp_path / "verdicts" / "resolved"
+        verdicts_resolved.mkdir(parents=True)
+        verdict_fname = "verdict-precond-absent-2026-05-24-step-1.md"
+        (verdicts_resolved / verdict_fname).write_text("continue\nApproved.")
+
+        pending_dir = tmp_path / "verdicts" / "pending"
+        pending_dir.mkdir(parents=True)
+        pending_file = pending_dir / "verdict-request-precond-absent-2026-05-24-step-1.md"
+        # No precondition_failure field — simulates pre-fix verdict-request files
+        pending_file.write_text(_make_verdict_request_content(
+            str(verdict_pending_path), step_number=1, total_steps=2,
+            precondition_failure=None))
+
+        config = {
+            "watched_projects": [str(decisions_dir)],
+            "default_model": "claude-sonnet-4-6",
+            "pushover": {"app_key": "", "user_key": ""},
+            "callback_port": 5999,
+        }
+
+        b = bellows.Bellows(config)
+
+        with patch("bellows.BELLOWS_ROOT", tmp_path), \
+             patch("bellows.verdict.check_verdict", return_value={
+                 "found": True, "verdict": "continue", "reason": "approved"
+             }), \
+             patch("bellows.verdict.log_to_ledger"), \
+             patch("bellows.notifier.push"), \
+             patch.object(b, "handle_new_plan") as mock_handle:
+            b._consume_verdicts()
+
+        mock_handle.assert_called_once()
+        call_kwargs = mock_handle.call_args
+        assert call_kwargs[1]["resume_step"] == 2, (
+            f"Expected resume_step=2 (advance) when Precondition Failure absent, got {call_kwargs[1]['resume_step']}"
+        )
+
+
+def test_consume_verdict_continue_advances_step_when_precondition_failure_false():
+    """Explicit false: verdict-request with Precondition Failure: false → advance step_number + 1."""
+    with tempfile.TemporaryDirectory() as tmp:
+        tmp_path = Path(tmp)
+
+        decisions_dir = tmp_path / "proj" / "knowledge" / "decisions"
+        decisions_dir.mkdir(parents=True)
+        (decisions_dir / "Done").mkdir()
+
+        plan_filename = "executable-precond-false-2026-05-24.md"
+        verdict_pending_name = f"verdict-pending-{plan_filename}"
+        verdict_pending_path = decisions_dir / verdict_pending_name
+        verdict_pending_path.write_text("## STEP 1\nDo stuff.\n## STEP 2\nMore stuff.\n")
+
+        verdicts_resolved = tmp_path / "verdicts" / "resolved"
+        verdicts_resolved.mkdir(parents=True)
+        verdict_fname = "verdict-precond-false-2026-05-24-step-1.md"
+        (verdicts_resolved / verdict_fname).write_text("continue\nApproved.")
+
+        pending_dir = tmp_path / "verdicts" / "pending"
+        pending_dir.mkdir(parents=True)
+        pending_file = pending_dir / "verdict-request-precond-false-2026-05-24-step-1.md"
+        pending_file.write_text(_make_verdict_request_content(
+            str(verdict_pending_path), step_number=1, total_steps=2,
+            precondition_failure=False))
+
+        config = {
+            "watched_projects": [str(decisions_dir)],
+            "default_model": "claude-sonnet-4-6",
+            "pushover": {"app_key": "", "user_key": ""},
+            "callback_port": 5999,
+        }
+
+        b = bellows.Bellows(config)
+
+        with patch("bellows.BELLOWS_ROOT", tmp_path), \
+             patch("bellows.verdict.check_verdict", return_value={
+                 "found": True, "verdict": "continue", "reason": "approved"
+             }), \
+             patch("bellows.verdict.log_to_ledger"), \
+             patch("bellows.notifier.push"), \
+             patch.object(b, "handle_new_plan") as mock_handle:
+            b._consume_verdicts()
+
+        mock_handle.assert_called_once()
+        call_kwargs = mock_handle.call_args
+        assert call_kwargs[1]["resume_step"] == 2, (
+            f"Expected resume_step=2 (advance) when Precondition Failure is false, got {call_kwargs[1]['resume_step']}"
+        )
+
+
+def test_consume_verdict_continue_retries_step_when_precondition_failure_true():
+    """Precondition failure: verdict-request with Precondition Failure: true → retry same step."""
+    with tempfile.TemporaryDirectory() as tmp:
+        tmp_path = Path(tmp)
+
+        decisions_dir = tmp_path / "proj" / "knowledge" / "decisions"
+        decisions_dir.mkdir(parents=True)
+        (decisions_dir / "Done").mkdir()
+
+        plan_filename = "executable-precond-true-2026-05-24.md"
+        verdict_pending_name = f"verdict-pending-{plan_filename}"
+        verdict_pending_path = decisions_dir / verdict_pending_name
+        verdict_pending_path.write_text("## STEP 1\nDo stuff.\n## STEP 2\nMore stuff.\n")
+
+        verdicts_resolved = tmp_path / "verdicts" / "resolved"
+        verdicts_resolved.mkdir(parents=True)
+        verdict_fname = "verdict-precond-true-2026-05-24-step-1.md"
+        (verdicts_resolved / verdict_fname).write_text("continue\nApproved.")
+
+        pending_dir = tmp_path / "verdicts" / "pending"
+        pending_dir.mkdir(parents=True)
+        pending_file = pending_dir / "verdict-request-precond-true-2026-05-24-step-1.md"
+        pending_file.write_text(_make_verdict_request_content(
+            str(verdict_pending_path), step_number=1, total_steps=2,
+            precondition_failure=True))
+
+        config = {
+            "watched_projects": [str(decisions_dir)],
+            "default_model": "claude-sonnet-4-6",
+            "pushover": {"app_key": "", "user_key": ""},
+            "callback_port": 5999,
+        }
+
+        b = bellows.Bellows(config)
+
+        with patch("bellows.BELLOWS_ROOT", tmp_path), \
+             patch("bellows.verdict.check_verdict", return_value={
+                 "found": True, "verdict": "continue", "reason": "approved"
+             }), \
+             patch("bellows.verdict.log_to_ledger"), \
+             patch("bellows.notifier.push"), \
+             patch.object(b, "handle_new_plan") as mock_handle:
+            b._consume_verdicts()
+
+        mock_handle.assert_called_once()
+        call_kwargs = mock_handle.call_args
+        assert call_kwargs[1]["resume_step"] == 1, (
+            f"Expected resume_step=1 (retry) when Precondition Failure is true, got {call_kwargs[1]['resume_step']}"
+        )

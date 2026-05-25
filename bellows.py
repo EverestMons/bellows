@@ -440,8 +440,10 @@ def run_plan(plan_path: str, config: dict, response_server: server.ResponseServe
             verdict_pending_path = os.path.join(plan_dir, f"verdict-pending-{base_filename}")
             if os.path.exists(inprogress_path):
                 shutil.move(inprogress_path, verdict_pending_path)
+            # Precondition-failure signal (item #5, 2026-05-24): worktree creation failed → step never ran → consumer must retry, not advance.
             verdict.post_verdict_request(plan_path, project_path, 1, log_path, gate_result,
-                                         pause_reason="gate_failure", total_steps=total_steps, step_text=plan_text)
+                                         pause_reason="gate_failure", total_steps=total_steps, step_text=plan_text,
+                                         precondition_failure=True)
             _log("PAUSE", f"⏸️ worktree creation failed, awaiting CEO verdict", slug=slug_for(plan_name))
             return
 
@@ -1155,6 +1157,7 @@ class Bellows:
             scoped_decisions_path = None
             total_steps_from_request = None
             pause_reason_code_from_request = None
+            precondition_failure_from_request = False
             if pending_req_file.exists():
                 pending_req_file_text = pending_req_file.read_text()
                 for req_line in pending_req_file_text.splitlines():
@@ -1173,6 +1176,8 @@ class Bellows:
                                 pass
                     if req_line.startswith("**Pause Reason Code:**"):
                         pause_reason_code_from_request = req_line.split(":**", 1)[1].strip() or None
+                    if req_line.startswith("**Precondition Failure:**"):
+                        precondition_failure_from_request = req_line.split(":**", 1)[1].strip().lower() == "true"
 
             verdict_result = verdict.check_verdict(plan_slug, step_number)
             if not verdict_result.get("found"):
@@ -1232,9 +1237,15 @@ class Bellows:
                                 inprogress_name = f"in-progress-{original_name}"
                                 inprogress_path = os.path.join(decisions_path, inprogress_name)
                                 shutil.move(full_plan_path, inprogress_path)
-                                _log("EVENT", f"verdict continue — resuming", slug=slug_for(original_name))
-                                # Dispatch next step
-                                self.handle_new_plan(inprogress_path, resume_step=step_number + 1)
+                                # Precondition-failure handling (item #5, 2026-05-24): if the prior step never ran due to
+                                # a precondition gate failure (e.g., worktree creation), retry the same step rather than advance.
+                                if precondition_failure_from_request:
+                                    next_step = step_number
+                                    _log("EVENT", f"verdict continue — retrying step {step_number} (precondition failure)", slug=slug_for(original_name))
+                                else:
+                                    next_step = step_number + 1
+                                    _log("EVENT", f"verdict continue — resuming", slug=slug_for(original_name))
+                                self.handle_new_plan(inprogress_path, resume_step=next_step)
                         else:
                             verdict.log_to_ledger(full_plan_path, step_number, gate_result, v, reason,
                                                   pause_reason_code=pause_reason_code_from_request)

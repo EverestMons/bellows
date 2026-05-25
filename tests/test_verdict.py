@@ -599,3 +599,47 @@ def test_planner_only_checks_remaining_section():
             content = open(path).read()
             assert "## Planner-Only Checks Remaining" in content
             assert "Bellows verified mechanical pass/fail" in content
+
+
+def test_post_verdict_request_writes_precondition_failure_field():
+    """Item #5: post_verdict_request must write Precondition Failure field to verdict-request content."""
+    with tempfile.TemporaryDirectory() as tmp:
+        with patch.object(verdict, "VERDICTS_DIR", Path(tmp) / "verdicts"):
+            gate_result = _make_gate_result(
+                passed=False,
+                failures=[{"gate": "worktree_creation", "evidence": "already exists"}],
+            )
+            # precondition_failure=True
+            path_true = verdict.post_verdict_request(
+                "/tmp/plans/in-progress-executable-precond-test-2026-05-24.md",
+                "/tmp/project", 1, "/tmp/logs", gate_result,
+                pause_reason="gate_failure", total_steps=2,
+                precondition_failure=True,
+            )
+            content_true = open(path_true).read()
+            assert "**Precondition Failure:** true" in content_true, (
+                f"Expected '**Precondition Failure:** true' in verdict-request content, got:\n{content_true}"
+            )
+
+            # precondition_failure=False (explicit)
+            path_false = verdict.post_verdict_request(
+                "/tmp/plans/in-progress-executable-precond-test2-2026-05-24.md",
+                "/tmp/project", 1, "/tmp/logs", gate_result,
+                pause_reason="gate_failure", total_steps=2,
+                precondition_failure=False,
+            )
+            content_false = open(path_false).read()
+            assert "**Precondition Failure:** false" in content_false, (
+                f"Expected '**Precondition Failure:** false' in verdict-request content, got:\n{content_false}"
+            )
+
+            # precondition_failure omitted (default=False)
+            path_default = verdict.post_verdict_request(
+                "/tmp/plans/in-progress-executable-precond-test3-2026-05-24.md",
+                "/tmp/project", 1, "/tmp/logs", gate_result,
+                pause_reason="gate_failure", total_steps=2,
+            )
+            content_default = open(path_default).read()
+            assert "**Precondition Failure:** false" in content_default, (
+                f"Expected '**Precondition Failure:** false' when default, got:\n{content_default}"
+            )
