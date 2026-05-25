@@ -1684,3 +1684,13 @@ The Planner authors plans in a Project conversation with MCP filesystem tools. T
 1. **All 9 deliverable verifications passed on first attempt.** The plan's grep-based verification checks were well-specified with exact expected counts. The `_is_positive_status_row(line)` grep returning 3 (vs "at least 1") was correctly anticipated in the plan. Evidence file capture via `tee` worked cleanly for all checks.
 2. **Structural compliance diff analysis confirmed disjoint edit regions.** The `git show --stat` and `git show -- gates.py` commands cleanly showed exactly two diff hunks in `gates.py` — one per target function — with no out-of-scope modifications. The 3-file commit (gates.py, tests/test_gates.py, dev log) matched the plan specification exactly.
 3. **DEV's fixture update decision was correct and well-documented.** The dev log noted 4 existing rule_22 tests needed `## Deliverable Verification` section headers for the section-scoped (c) check. This was the right call — without the headers, the existing tests would pass vacuously (fail-open) rather than exercising the (c) check logic. The tests now exercise the same assertions under the new section-scoped context.
+
+## 2026-05-25 — mcp-read-class-tools-extension (QA Step 2)
+
+1. **Plan file paths use `bellows/` prefix but worktree root IS the bellows repo.** Same as prior feedback — all plan-referenced paths needed `bellows/` prefix stripped.
+
+2. **No specialist file or domain glossary found.** Plan instructs "Read your specialist file and domain glossary first" — neither `knowledge/specialists/qa.md` nor any domain glossary file exists in the worktree.
+
+3. **No `RULE_20_SELF_CHECK_BLOCK.md` found at governance root.** Plan instructs to "Run the canonical Rule 20 self-check from `RULE_20_SELF_CHECK_BLOCK.md` at the governance root" — no such file exists. Used the template from a prior QA evidence file instead.
+
+4. **DEV commit touched 4 files, not 3.** Plan expected exactly 3 files changed; commit also touched `knowledge/research/agent-prompt-feedback.md` (standard protocol). Not a compliance issue — the feedback file is explicitly allowed by SCOPE_ALLOWLIST expectations.

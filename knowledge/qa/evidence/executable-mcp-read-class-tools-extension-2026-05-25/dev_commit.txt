@@ -1,0 +1,23 @@
+commit 9473cf7e329c4e2f795b38471dc0357982ce1334
+Author: Mark Lehn <marklehn@icloud.com>
+Date:   Mon May 25 13:48:33 2026 -0500
+
+    fix(gates): extend READ_CLASS_TOOLS with 5 vexp read-class tools — closes BACKLOG mcp_tool_denials
+    
+    Add mcp__vexp__get_context_capsule, get_session_context, get_skeleton,
+    index_status, and search_memory to READ_CLASS_TOOLS. Deliberately excludes
+    mcp__vexp__save_observation (write-class). 6 regression tests added
+    (5 positive + 1 critical negative for save_observation).
+    
+    Files changed:
+    - gates.py — READ_CLASS_TOOLS set extended from 4 to 9 entries
+    - tests/test_gates.py — 6 new test functions
+    - knowledge/development/mcp-read-class-tools-extension-2026-05-25.md — dev log
+    
+    Co-Authored-By: Claude Opus 4.6 <noreply@anthropic.com>
+
+ gates.py                                           |  10 +-
+ .../mcp-read-class-tools-extension-2026-05-25.md   | 111 +++++++++++++++++++++
+ knowledge/research/agent-prompt-feedback.md        |  12 ++-
+ tests/test_gates.py                                |  68 +++++++++++++
+ 4 files changed, 199 insertions(+), 2 deletions(-)
