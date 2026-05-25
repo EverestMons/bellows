@@ -175,7 +175,7 @@ def check(parsed, plan_text, step_number, project_path, files_changed=None, wt_p
     # Gate 5: deposit exists
     _gate_deposit_exists(parsed, failures, project_path, plan_text=plan_text, step_number=step_number, wt_path=wt_path, plan_header=header)
     # Gate 6: QA step detection (informational)
-    is_qa_step = _gate_is_qa_step(plan_text, step_number)
+    is_qa_step = _gate_is_qa_step(plan_text, step_number, plan_header=header)
     # Gate 6b: Rule 20 self-check verification (blocking, QA steps only)
     _gate_rule_20_self_check(is_qa_step, plan_text, step_number, project_path, parsed, failures, wt_path=wt_path)
     # Gate 6c: Rule 22 verification (blocking)
@@ -553,7 +553,21 @@ def _gate_rule_22_verification(is_qa_step, plan_text, step_number, project_path,
                     break
 
 
-def _gate_is_qa_step(plan_text, step_number):
+def _gate_is_qa_step(plan_text, step_number, plan_header=None):
+    # Primary: check plan_header for qa_steps field
+    if plan_header:
+        qa_steps_raw = plan_header.get("qa_steps", "")
+        if qa_steps_raw:
+            try:
+                # Handle YAML list case (e.g., [2, 4]) and string case (e.g., "2,4")
+                if isinstance(qa_steps_raw, list):
+                    return step_number in [int(x) for x in qa_steps_raw]
+                qa_step_numbers = [int(s.strip()) for s in str(qa_steps_raw).split(",") if s.strip()]
+                return step_number in qa_step_numbers
+            except (ValueError, TypeError):
+                logger.warning("qa_steps field malformed: %r — falling back to keyword detection", qa_steps_raw)
+
+    # Fallback: keyword detection on step header (existing behavior)
     plan_text = strip_fenced_code_blocks(plan_text)
     pattern = rf"^## STEP {step_number}\b[^\n]*"
     match = re.search(pattern, plan_text, re.MULTILINE)

@@ -1574,3 +1574,64 @@ def test_rule_22_verification_c_flags_genuine_missing_status_in_verification_tab
     r22 = [f for f in failures if f["gate"] == "rule_22_verification" and "(c)" in f["evidence"]]
     assert len(r22) == 1
     assert "missing status" in r22[0]["evidence"]
+
+
+# ---------------------------------------------------------------------------
+# qa_steps header field tests (qa-step-detection-fix-shape-2026-05-22)
+# ---------------------------------------------------------------------------
+
+def test_qa_steps_field_single_step_matches():
+    """qa_steps: '2', step 2 → True."""
+    plan_text = "## STEP 2 — Developer\n\nDo the work.\n"
+    header = {"qa_steps": "2"}
+    assert gates._gate_is_qa_step(plan_text, 2, plan_header=header) is True
+
+
+def test_qa_steps_field_single_step_excludes_other():
+    """qa_steps: '2', step 1 → False."""
+    plan_text = "## STEP 1 — Developer\n\nDo the work.\n\n## STEP 2 — QA\n\nVerify.\n"
+    header = {"qa_steps": "2"}
+    assert gates._gate_is_qa_step(plan_text, 1, plan_header=header) is False
+
+
+def test_qa_steps_field_multi_step():
+    """qa_steps: '1,3', step 1 → True, step 2 → False, step 3 → True."""
+    plan_text = "## STEP 1 — QA\n\n## STEP 2 — DEV\n\n## STEP 3 — QA\n\n"
+    header = {"qa_steps": "1,3"}
+    assert gates._gate_is_qa_step(plan_text, 1, plan_header=header) is True
+    assert gates._gate_is_qa_step(plan_text, 2, plan_header=header) is False
+    assert gates._gate_is_qa_step(plan_text, 3, plan_header=header) is True
+
+
+def test_qa_steps_field_absent_falls_back_to_keyword():
+    """No qa_steps field, header contains 'QA' → True (preserves existing behavior)."""
+    plan_text = "## STEP 2 — Bellows QA\n\nVerify deliverables.\n"
+    header = {}
+    assert gates._gate_is_qa_step(plan_text, 2, plan_header=header) is True
+
+
+def test_qa_steps_field_malformed_falls_back_to_keyword(caplog):
+    """qa_steps: 'step 2' (malformed), header contains 'QA' → True with warning."""
+    import logging
+    plan_text = "## STEP 2 — Bellows QA\n\nVerify deliverables.\n"
+    header = {"qa_steps": "step 2"}
+    with caplog.at_level(logging.WARNING):
+        result = gates._gate_is_qa_step(plan_text, 2, plan_header=header)
+    assert result is True
+    assert any("qa_steps field malformed" in record.message for record in caplog.records)
+
+
+def test_qa_steps_field_yaml_list():
+    """qa_steps: [2, 4] (Python list from YAML), step 2 → True, step 3 → False."""
+    plan_text = "## STEP 2 — Developer\n\n## STEP 3 — Developer\n\n"
+    header = {"qa_steps": [2, 4]}
+    assert gates._gate_is_qa_step(plan_text, 2, plan_header=header) is True
+    assert gates._gate_is_qa_step(plan_text, 3, plan_header=header) is False
+
+
+def test_qa_steps_field_non_qa_role_header():
+    """qa_steps: '2', header is 'Invoice Security & Testing Analyst' → True.
+    This is the exact leak vector closure regression test."""
+    plan_text = "## STEP 2 — Invoice Security & Testing Analyst\n\nVerify invoices.\n"
+    header = {"qa_steps": "2"}
+    assert gates._gate_is_qa_step(plan_text, 2, plan_header=header) is True
