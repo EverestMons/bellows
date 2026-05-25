@@ -3,6 +3,16 @@
 **Date:** 2026-05-27
 **Plans:** diagnostic-claude-settings-permission-gap-2026-05-22, executable-pre-scan-orphan-guard-2026-05-22, executable-bellows-tier-1-batch-2026-05-21, executable-bellows-expected-keys-narrow-2026-05-21, diagnostic-bellows-expected-keys-warning-2026-05-21, diagnostic-bellows-isinstance-asymmetry-2026-05-21, executable-deposit-exists-path-form-normalization-2026-05-27, executable-disable-autoupdater-2026-05-27, diagnostic-planner-authored-contract-validation-2026-05-20, diagnostic-bash-gate-vs-guardrails-2026-05-20, executable-plan-write-time-lessons-reread-2026-05-13, diagnostic-pre-scan-orphan-warn-flood-2026-05-22, executable-remove-pre-scan-processed-rename-v2-2026-05-24, executable-rename-first-ordering-2026-05-24
 
+## 2026-05-25 — precondition-failure-field (QA Step 2)
+
+1. **Verification 2 grep pattern required shell escaping.** The plan specified `grep -n '**Precondition Failure:**' verdict.py` — the double asterisks are interpreted as glob patterns by the shell, producing `grep: repetition-operator operand invalid`. Using `grep -n 'Precondition Failure' verdict.py` (without the bold markers) or escaping the asterisks with backslashes resolves the issue. Plans should avoid literal `**` in grep patterns or specify `grep -F` (fixed-string mode) when bold-Markdown markers are part of the search string.
+
+2. **Verification 10 — grep by plan slug, not date.** The plan specified `agent-prompt-feedback.md` has a new `2026-05-24` entry. Grepping by date returned entries from other plans (`remove-pre-scan-processed-rename-v2`, `rename-first-ordering`) that also had 2026-05-24 entries. Grepping by plan slug (`precondition-failure-field`) returned exactly the target entry. This mirrors feedback entry #4 from the rename-first-ordering QA — plans should specify slug-based grep for feedback verification.
+
+3. **Rule 20 self-check canonical block required quote escaping for Python -c invocation.** The canonical block uses single quotes in f-string hedging-keyword output (`'{kw}'`). When the block is run via `python3 -c '...'`, the inner single quotes conflict with the outer shell quoting. Replacing inner `'` with `\x27` (hex escape) resolved the issue. Alternative: write the block to a temp file and execute it. Plans should note this when the Rule 20 block is expected to be run via `python3 -c`.
+
+4. **Evidence file for old_dispatch_absent needed explicit "no matches" text.** When `grep` finds no matches, it produces no stdout and exits with code 1. The evidence file was initially empty-looking. Adding an explicit "no matches found" header before the grep output makes the evidence file self-documenting for audit trail purposes.
+
 ## 2026-05-25 — precondition-failure-field (DEV Step 1)
 
 1. **Check (iii) expected count was off — 1 match, not 2.** The plan specified `grep -n 'Pause Reason Code' verdict.py` should return "two matches (~lines 230-231, in the content template)." In practice, line 230 contains `**Pause Reason:**` (no "Code") and line 231 contains `**Pause Reason Code:**`. The grep for "Pause Reason Code" only matches line 231. This is a plan estimation error — the code structure was correct for the edits. Plans should double-check multi-match count expectations against the literal grep pattern.
