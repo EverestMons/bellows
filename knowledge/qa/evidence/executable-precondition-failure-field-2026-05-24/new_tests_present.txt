@@ -1,0 +1,4 @@
+365:def test_consume_verdict_continue_advances_step_when_precondition_failure_absent():
+417:def test_consume_verdict_continue_advances_step_when_precondition_failure_false():
+468:def test_consume_verdict_continue_retries_step_when_precondition_failure_true():
+604:def test_post_verdict_request_writes_precondition_failure_field():

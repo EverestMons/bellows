@@ -1,0 +1,8 @@
+Backward compatibility verification:
+
+From diff_bellows.txt, the parser initialization line:
++            precondition_failure_from_request = False
+
+Confirmed: precondition_failure_from_request is initialized to False (not None or undefined).
+Historical verdict-request files lacking the **Precondition Failure:** field will
+correctly default to False, preserving advance behavior (resume_step = step_number + 1).

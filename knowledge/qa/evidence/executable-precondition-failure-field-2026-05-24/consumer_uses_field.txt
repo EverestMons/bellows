@@ -1,0 +1,3 @@
+1160:            precondition_failure_from_request = False
+1180:                        precondition_failure_from_request = req_line.split(":**", 1)[1].strip().lower() == "true"
+1242:                                if precondition_failure_from_request:

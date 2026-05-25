@@ -1,0 +1,14 @@
+commit 0a90e26f7a055e27c80b0b3d58614f54649456a2
+Author: Mark Lehn <marklehn@icloud.com>
+Date:   Mon May 25 11:09:25 2026 -0500
+
+    fix(bellows): precondition-failure verdict-request field — retries step instead of advancing (item #5)
+    
+    Co-Authored-By: Claude Opus 4.6 <noreply@anthropic.com>
+
+ bellows.py                                         |  19 +-
+ .../precondition-failure-field-2026-05-24.md       | 232 +++++++++++++++++++++
+ tests/test_consume_verdicts.py                     | 170 +++++++++++++++
+ tests/test_verdict.py                              |  44 ++++
+ verdict.py                                         |   3 +-
+ 5 files changed, 463 insertions(+), 5 deletions(-)
