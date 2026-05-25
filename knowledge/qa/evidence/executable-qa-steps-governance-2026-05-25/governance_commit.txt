@@ -1,0 +1,10 @@
+commit b765b6d99b0ab20d9456ee636c520da71593f1b4
+Author: Mark Lehn <marklehn@icloud.com>
+Date:   Mon May 25 13:16:44 2026 -0500
+
+    docs: PLANNER_TEMPLATE v4.50 — qa_steps header field documentation
+    
+    Co-Authored-By: Claude Opus 4.6 <noreply@anthropic.com>
+
+ PLANNER_TEMPLATE.md | 11 +++++++----
+ 1 file changed, 7 insertions(+), 4 deletions(-)

@@ -1,0 +1,50 @@
+diff --git a/PLANNER_TEMPLATE.md b/PLANNER_TEMPLATE.md
+index 47d4f77..409c8ae 100644
+--- a/PLANNER_TEMPLATE.md
++++ b/PLANNER_TEMPLATE.md
+@@ -2,8 +2,8 @@
+ **Company:** Eluvian
+ **Role:** Project Planner
+ **Reports To:** CEO
+-**Version:** 4.49
+-**Last Updated:** 2026-05-21 (v4.49)
++**Version:** 4.50
++**Last Updated:** 2026-05-25 (v4.50)
+ 
+ ---
+ 
+@@ -350,7 +350,7 @@ Orchestration plans are **dense, compressed Claude Code prompts**. Claude Code d
+ 
+ ```markdown
+ # [Project] — [Feature/Task Name]
+-**Date:** YYYY-MM-DD | **Tier:** [tier] | **Dispatch Mode:** [bellows | manual_bootstrap] | **Test Scope:** [targeted | full-suite | both] | **Execution:** Step 1 (AGENT) → Step 2 (AGENT) or Step 2A (AGENT) ∥ Step 2B (AGENT) → Step 3 (AGENT) | **pause_for_verdict:** after_step_1
++**Date:** YYYY-MM-DD | **Tier:** [tier] | **Dispatch Mode:** [bellows | manual_bootstrap] | **Test Scope:** [targeted | full-suite | both] | **Execution:** Step 1 (AGENT) → Step 2 (AGENT) or Step 2A (AGENT) ∥ Step 2B (AGENT) → Step 3 (AGENT) | **qa_steps:** [comma-separated step numbers] | **pause_for_verdict:** after_step_1
+ 
+ ## How to Run This Plan
+ 
+@@ -397,6 +397,8 @@ For parallel steps (∥), no prior-step verification is needed between the paral
+ 
+ **Execution map:** The header line includes the execution map inline showing `→` for sequential and `∥` for parallel steps. No separate Execution Map section needed.
+ 
++**`qa_steps` header field.** Every executable plan with one or more QA steps MUST declare a `qa_steps` field in the plan header listing the step numbers that are QA-gated, as a comma-separated list of integers (e.g., `qa_steps: 2` or `qa_steps: 2,4`). Bellows's `_gate_is_qa_step` reads this field to determine which steps trigger Rule 20 self-check verification, Rule 22 QA-specific checks (c)+(d), and `qa_checkpoint` auto-pause. Without the field, Bellows falls back to keyword detection on the `## STEP N` header line — checking whether the header contains the substring "qa" (case-insensitive). This fallback misclassifies QA steps whose specialist role name does not contain "qa" (e.g., "Invoice Security & Testing Analyst", "Bellows Security & Testing") or whose header uses a descriptive label instead of a role name (e.g., "Canary verification" with `**Agent:** QA` in the body). The 2026-05-22 population audit found 14 leaked QA steps across 139 total (10.1% overall; concentrated in invoice-pulse) — every instance of "Invoice Security & Testing Analyst" leaked, every use of a descriptive header label leaked. The `qa_steps` field is the authoritative source; the keyword fallback is a backward-compatibility path for legacy plans. Diagnostic plans and plans with no QA steps omit the field entirely — omission means "no QA steps" when no keyword match is found.
++
+ **Every agent prompt must include the domain glossary read** (shortened to "Read your specialist file and domain glossary first."). This is how agents compound their knowledge across sessions.
+ 
+ ### File Naming Convention
+@@ -952,7 +954,7 @@ Bellows evaluates eight gates after each step completes. Gates 1–5 and 8 are b
+ | 3 | `no_errors` | Yes | No exceptions or authentication failures detected in the `claude -p` output stream. |
+ | 4 | `no_permission_denials` | Yes | No write-class tool denials. Read-class tools (Grep, Glob, Read) are exempted — agents routinely fall back to bash equivalents when these are denied. |
+ | 5 | `deposit_exists` | Yes | All files declared in the step's `**Deposits:**` block exist on disk. Uses multi-strategy path resolution (absolute, project-relative, parent-relative). |
+-| 6 | `is_qa_step` | Info | Heuristic detection based on the step header containing "QA" (case-insensitive). When true, triggers a `qa_checkpoint` pause reason even if all blocking gates pass. |
++| 6 | `is_qa_step` | Info | QA step detection: reads the plan header's `qa_steps` field (authoritative, comma-separated step numbers) or falls back to keyword detection on the `## STEP N` header line (case-insensitive "qa" substring). When true, triggers `qa_checkpoint` pause reason, Rule 20 self-check verification, and Rule 22 QA-specific checks. |
+ | 7 | `file_change_audit` | Info | Records the list of files changed during this step (derived from pre/post `git diff --stat`). Passed through to the verdict request for Planner review. |
+ | 8 | `scope_check` | Yes | Files modified during the step must appear in the step's plan text (by full path or basename). Files on the scope allowlist (e.g., `agent-prompt-feedback.md`, `PROJECT_STATUS.md`) and lifecycle-prefix files are exempted. Uses `--relative -- .` to scope the diff to the project subtree in monorepo configurations. |
+ 
+@@ -1385,6 +1387,7 @@ The Planner does not sync specialist files directly. It produces the sync prompt
+ | 2026-05-21 | BACKLOG entries written from memory can misdescribe the current file state. The 2026-05-21 governance pass started from a BACKLOG entry saying "remove `git push` from Rule 23 housekeeping" — but the pre-write contradiction scan (Rule 22) found that Rule 23(c) had no push verb to remove. The actual fix needed was additive (explicit prohibition), not subtractive. Caught at draft time; BACKLOG entry corrected before the plan shipped. **Pattern:** when authoring a governance plan from a BACKLOG entry that proposes "remove X" or "delete Y" wording, the pre-write contradiction scan must include verifying X or Y actually exists in the current file. Third occurrence of pre-executable-scan catching a stale rule before ship (after 2026-04-10 v4.18 contradiction and 2026-05-11 Rule 26 directory-bullet canary). The scan is doing its job; it works because the Planner runs it. |
+ | 2026-05-21 | Once Bellows mechanizes a Rule 22 sub-check, the Planner must stop re-running it. The 2026-05-21 verdict-enrichment shipped `_gate_rule_22_verification` (covers Rule 22 (a)+(c)+(d)) and `_gate_rule_20_self_check` (covers Rule 22 (e)). For the rest of the same session, the Planner kept re-running file-info, grep audits, and structural compliance walks on every verdict — duplicating mechanical work the gates had already passed. The CEO surfaced this with "why is planner still doing rule 22 a-e?" The fix is structural: governance text (this edit) now says explicitly that when both gates PASS, the Planner does (b) only. **Pattern:** when shipping mechanization of a Planner-side discipline, the same plan or the immediate next plan must update PLANNER_TEMPLATE to reflect what the Planner stops doing. Memory edits alone do not propagate across sessions; the governance text is what future Planner instances read at session start. |
+ | 2026-05-21 | Planner deposited verdict response files with `processed-verdict-*` filename prefix at write time, structurally indistinguishable from already-consumed verdicts. Bellows's discovery filter at `bellows.py:1128` (`if not fname.startswith("verdict-")`) silently dropped them — no error, no notification, heartbeat correctly showed plans awaiting verdict but no pairing. Two reproductions across multiple daemon rescan cycles AND a clean restart before the Planner recognized the pattern. Diagnostic at `bellows/knowledge/architecture/consume-verdicts-drain-failure-2026-05-21.md` traced root cause to H2 (post-consumption rename at `bellows.py:1253` produces `processed-verdict-*` filenames, which the Planner copied at write time when referencing `resolved/` for format examples). Structural fix shipped (executable-consume-verdicts-prefix-fix-2026-05-21): pre-scan rename pass in `_consume_verdicts` auto-normalizes any `processed-verdict-*` files in `resolved/` to canonical `verdict-*` form, plus 3 regression tests. Discipline fix also shipped: new "Verdict response file write-time filename" paragraph in Rule 25 prohibits the `processed-` prefix at write time. **Meta-lesson:** the format-source-of-truth pattern (read a working example before authoring) is correct discipline, but it leaks post-consumption state back into write-time naming. When a file naming convention has lifecycle states (write-time → consumed → processed), the Planner must read the *write-time* form not the post-consumption form. The pre-scan rename is belt-and-suspenders against the recurrence pattern (the Planner *will* make this mistake again under different cognitive load); the discipline rule is the authoritative fix. Third occurrence of the Planner-authored-against-stale-or-wrong-contract failure mode (after 2026-05-01 verdict format mismatch and 2026-05-12 silent-skip), confirming that contract-mismatch failures are structural and require Bellows-side validation/normalization, not discipline-only correction. |
++| 2026-05-25 | qa_steps header field documentation. The code half (gates.py) shipped earlier same day via executable-qa-steps-header-field-code-2026-05-25 with keyword fallback preserving backward compatibility. This governance edit documents the field in PLANNER_TEMPLATE.md so future Planner-authored plans declare it. Three insertion points: header example, new definitional paragraph after Execution map, Gate 6 table row. Closes the post-Rule-25 blind spot where vacuous `is_qa_step = False` produced PASS results that the Planner's substance-only routing under Rule 25 treated as clean, silently suppressing manual verification of misclassified QA steps. The 2026-05-22 population audit measured 10.1% leak rate (14/139 QA steps); 6 patterns identified, all closed by the new field. **Pattern:** when shipping mechanization that creates a new authoritative data source, the same plan or immediate-next plan ships the governance edit that obligates the Planner to write the new field. The code change alone is half-shipped; the Planner won't author the field without the template prompt. |
+ 
+ ---
+ 

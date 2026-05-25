@@ -1,0 +1,10 @@
+commit 49ff26fad938ffb92f7e78aab20f1e3816110236
+Author: Mark Lehn <marklehn@icloud.com>
+Date:   Mon May 25 13:16:55 2026 -0500
+
+    docs(dev-log): qa_steps governance documentation — Step 1 deposit
+    
+    Co-Authored-By: Claude Opus 4.6 <noreply@anthropic.com>
+
+ .../development/qa-steps-governance-2026-05-25.md  | 75 ++++++++++++++++++++++
+ 1 file changed, 75 insertions(+)
