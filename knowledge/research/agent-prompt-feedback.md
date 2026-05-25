@@ -3,6 +3,16 @@
 **Date:** 2026-05-27
 **Plans:** diagnostic-claude-settings-permission-gap-2026-05-22, executable-pre-scan-orphan-guard-2026-05-22, executable-bellows-tier-1-batch-2026-05-21, executable-bellows-expected-keys-narrow-2026-05-21, diagnostic-bellows-expected-keys-warning-2026-05-21, diagnostic-bellows-isinstance-asymmetry-2026-05-21, executable-deposit-exists-path-form-normalization-2026-05-27, executable-disable-autoupdater-2026-05-27, diagnostic-planner-authored-contract-validation-2026-05-20, diagnostic-bash-gate-vs-guardrails-2026-05-20, executable-plan-write-time-lessons-reread-2026-05-13, diagnostic-pre-scan-orphan-warn-flood-2026-05-22, executable-remove-pre-scan-processed-rename-v2-2026-05-24, executable-rename-first-ordering-2026-05-24
 
+## 2026-05-25 — rename-first-ordering (QA Step 2)
+
+1. **Site anchor grep patterns needed adaptation for diff output format.** The plan specified site anchors for `git show` extraction: `gate_result = {"failures": [{"gate": "worktree_creation"` (Site 1), `gate_result["failures"].append({"gate": "worktree_teardown"` (Sites 2/3), `gate_result["passed"] = False` (Site 4). For Sites 2/3, the plan suggested differentiating "first occurrence" vs "second occurrence" — this is fragile in diff output since context overlap and hunk boundaries make occurrence counting unreliable. Instead, awk-based hunk extraction by `@@` line number was more reliable: `awk '/^@@.*519/{found=1} found{print; if(++n>25) exit}'` to isolate specific hunks. Plans should provide hunk-addressable anchors (line number ranges) rather than "Nth occurrence" instructions for diff-based verification.
+
+2. **`pytest` not in PATH — `python3 -m pytest` required.** Consistent with multiple prior DEV/QA step observations (documented 13+ times in this file). Plans should use `python3 -m pytest` for macOS worktree environments.
+
+3. **Rule 20 canonical file path is `/Users/marklehn/Developer/GitHub/RULE_20_SELF_CHECK_BLOCK.md`.** QA specialist file still references stale `/Users/marklehn/Desktop/GitHub/` path. 14th occurrence of this observation. The file was found via `find` at the correct Developer/GitHub location.
+
+4. **Evidence file for feedback_entry.txt captured broader context than needed.** The grep for `rename-first-ordering` in agent-prompt-feedback.md returned the DEV Step 1 entry (correct), but the initial grep for `2026-05-24` returned entries from the `remove-pre-scan-processed-rename-v2` plan instead. For feedback entries, grep by plan slug rather than date to avoid cross-plan matches.
+
 ## 2026-05-25 — rename-first-ordering (DEV Step 1)
 
 1. **All 4 site anchors matched on first attempt — no line-number adjustment needed.** The plan's approximate line numbers (437-444, 519-528, 610-617, 639-644) were accurate against origin/main. The actual line numbers were 437-443, 520-530, 611-621, 640-645 — close enough that all `old_string` anchors matched uniquely without modification. This is a positive signal: Planner-side grep verification immediately before authoring (noted in plan Context) pays off.
