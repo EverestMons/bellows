@@ -3448,3 +3448,205 @@ def test_consume_verdicts_verdict_request_not_flagged_as_malformed():
             b._consume_verdicts()
 
         mock_notify.assert_not_called()
+
+
+# ---------------------------------------------------------------------------
+# Rename-first ordering regression tests (RV-1 closure, 2026-05-24)
+# Each test verifies that shutil.move (to verdict-pending-*) happens BEFORE
+# verdict.post_verdict_request at the corresponding pause site.
+# ---------------------------------------------------------------------------
+
+def _make_ordering_tracker():
+    """Return (call_order list, shutil.move wrapper, verdict.post wrapper)."""
+    call_order = []
+    _real_move = shutil.move
+
+    def tracking_move(src, dst, *args, **kwargs):
+        if "verdict-pending-" in str(dst):
+            call_order.append("rename")
+        return _real_move(src, dst, *args, **kwargs)
+
+    def tracking_post(*args, **kwargs):
+        call_order.append("verdict_post")
+
+    return call_order, tracking_move, tracking_post
+
+
+def test_pause_site_1_worktree_creation_failure_renames_before_post():
+    """Site 1: WorktreeCreationError — rename to verdict-pending-* must precede verdict.post_verdict_request."""
+    with tempfile.TemporaryDirectory() as tmp:
+        decisions_dir = os.path.join(tmp, "proj", "knowledge", "decisions")
+        os.makedirs(decisions_dir)
+        plan_filename = "executable-rv1-site1-2026-05-24.md"
+        plan_path = os.path.join(decisions_dir, plan_filename)
+        with open(plan_path, "w") as f:
+            f.write("## STEP 1\nDo stuff.\n")
+
+        config = {
+            "default_model": "claude-sonnet-4-6",
+            "pushover": {"app_key": "", "user_key": ""},
+            "callback_port": 5999,
+            "step_timeout_seconds": 600,
+        }
+
+        call_order, tracking_move, tracking_post = _make_ordering_tracker()
+
+        with patch("bellows._create_worktree", side_effect=bellows.WorktreeCreationError("test failure")), \
+             patch("shutil.move", side_effect=tracking_move), \
+             patch("bellows.verdict.post_verdict_request", side_effect=tracking_post), \
+             patch("bellows.runner.run_step") as mock_runner, \
+             patch("bellows.notifier.push"), \
+             patch("bellows.record_run"), \
+             patch("bellows.validators.validate_at_claim", return_value={"rejected": False, "reject_reason": "", "warnings": []}):
+            response_server = MagicMock()
+            bellows.run_plan(plan_path, config, response_server)
+
+        assert "rename" in call_order, f"shutil.move to verdict-pending-* was not called: {call_order}"
+        assert "verdict_post" in call_order, f"verdict.post_verdict_request was not called: {call_order}"
+        rename_idx = call_order.index("rename")
+        post_idx = call_order.index("verdict_post")
+        assert rename_idx < post_idx, \
+            f"Site 1: rename ({rename_idx}) must precede verdict_post ({post_idx}): {call_order}"
+
+
+def test_pause_site_2_intermediate_step_gate_failure_renames_before_post():
+    """Site 2: Intermediate-step gate failure — rename to verdict-pending-* must precede verdict.post_verdict_request."""
+    with tempfile.TemporaryDirectory() as tmp:
+        decisions_dir = os.path.join(tmp, "proj", "knowledge", "decisions")
+        os.makedirs(decisions_dir)
+        plan_filename = "executable-rv1-site2-2026-05-24.md"
+        plan_path = os.path.join(decisions_dir, plan_filename)
+        with open(plan_path, "w") as f:
+            f.write("## STEP 1\nDo stuff.\n## STEP 2\nMore stuff.\n")
+
+        config = {
+            "default_model": "claude-sonnet-4-6",
+            "pushover": {"app_key": "", "user_key": ""},
+            "callback_port": 5999,
+            "step_timeout_seconds": 600,
+        }
+
+        call_order, tracking_move, tracking_post = _make_ordering_tracker()
+
+        def failing_gates(*args, **kwargs):
+            return {
+                "passed": False,
+                "failures": [{"gate": "test_gate", "evidence": "forced failure"}],
+                "is_qa_step": False,
+                "files_changed": [],
+                "plan_header": {"auto_close": "false"},
+                "verdict_requested": {"requested": False, "body": None},
+            }
+
+        with patch("bellows._create_worktree", return_value="/tmp/wt"), \
+             patch("bellows._capture_git_diff", return_value=""), \
+             patch("bellows._teardown_worktree"), \
+             patch("bellows.runner.run_step", return_value=_make_fake_run_step_result()), \
+             patch("bellows.gates.check", side_effect=failing_gates), \
+             patch("shutil.move", side_effect=tracking_move), \
+             patch("bellows.verdict.post_verdict_request", side_effect=tracking_post), \
+             patch("bellows.notifier.notify_verdict_request"), \
+             patch("bellows.notifier.push"), \
+             patch("bellows.record_run"), \
+             patch("bellows.validators.validate_at_claim", return_value={"rejected": False, "reject_reason": "", "warnings": []}):
+            response_server = MagicMock()
+            bellows.run_plan(plan_path, config, response_server)
+
+        assert "rename" in call_order, f"shutil.move to verdict-pending-* was not called: {call_order}"
+        assert "verdict_post" in call_order, f"verdict.post_verdict_request was not called: {call_order}"
+        rename_idx = call_order.index("rename")
+        post_idx = call_order.index("verdict_post")
+        assert rename_idx < post_idx, \
+            f"Site 2: rename ({rename_idx}) must precede verdict_post ({post_idx}): {call_order}"
+
+
+def test_pause_site_3_final_step_gate_failure_renames_before_post():
+    """Site 3: Final-step gate failure — rename to verdict-pending-* must precede verdict.post_verdict_request."""
+    with tempfile.TemporaryDirectory() as tmp:
+        decisions_dir = os.path.join(tmp, "proj", "knowledge", "decisions")
+        os.makedirs(decisions_dir)
+        plan_filename = "executable-rv1-site3-2026-05-24.md"
+        plan_path = os.path.join(decisions_dir, plan_filename)
+        with open(plan_path, "w") as f:
+            f.write("## STEP 1\nDo stuff.\n")
+
+        config = {
+            "default_model": "claude-sonnet-4-6",
+            "pushover": {"app_key": "", "user_key": ""},
+            "callback_port": 5999,
+            "step_timeout_seconds": 600,
+        }
+
+        call_order, tracking_move, tracking_post = _make_ordering_tracker()
+
+        def failing_gates(*args, **kwargs):
+            return {
+                "passed": False,
+                "failures": [{"gate": "test_gate", "evidence": "forced failure"}],
+                "is_qa_step": False,
+                "files_changed": [],
+                "plan_header": {"auto_close": "false"},
+                "verdict_requested": {"requested": False, "body": None},
+            }
+
+        with patch("bellows._create_worktree", return_value="/tmp/wt"), \
+             patch("bellows._capture_git_diff", return_value=""), \
+             patch("bellows._teardown_worktree"), \
+             patch("bellows.runner.run_step", return_value=_make_fake_run_step_result()), \
+             patch("bellows.gates.check", side_effect=failing_gates), \
+             patch("shutil.move", side_effect=tracking_move), \
+             patch("bellows.verdict.post_verdict_request", side_effect=tracking_post), \
+             patch("bellows.notifier.notify_verdict_request"), \
+             patch("bellows.notifier.push"), \
+             patch("bellows.record_run"), \
+             patch("bellows.validators.validate_at_claim", return_value={"rejected": False, "reject_reason": "", "warnings": []}):
+            response_server = MagicMock()
+            bellows.run_plan(plan_path, config, response_server)
+
+        assert "rename" in call_order, f"shutil.move to verdict-pending-* was not called: {call_order}"
+        assert "verdict_post" in call_order, f"verdict.post_verdict_request was not called: {call_order}"
+        rename_idx = call_order.index("rename")
+        post_idx = call_order.index("verdict_post")
+        assert rename_idx < post_idx, \
+            f"Site 3: rename ({rename_idx}) must precede verdict_post ({post_idx}): {call_order}"
+
+
+def test_pause_site_4_auto_close_teardown_failure_renames_before_post():
+    """Site 4: Auto-close teardown failure — rename to verdict-pending-* must precede verdict.post_verdict_request."""
+    with tempfile.TemporaryDirectory() as tmp:
+        decisions_dir = os.path.join(tmp, "proj", "knowledge", "decisions")
+        os.makedirs(decisions_dir)
+        plan_filename = "executable-rv1-site4-2026-05-24.md"
+        plan_path = os.path.join(decisions_dir, plan_filename)
+        with open(plan_path, "w") as f:
+            f.write("## STEP 1\nDo stuff.\n")
+
+        config = {
+            "default_model": "claude-sonnet-4-6",
+            "pushover": {"app_key": "", "user_key": ""},
+            "callback_port": 5999,
+            "step_timeout_seconds": 600,
+        }
+
+        call_order, tracking_move, tracking_post = _make_ordering_tracker()
+
+        with patch("bellows._create_worktree", return_value="/tmp/wt"), \
+             patch("bellows._capture_git_diff", return_value=""), \
+             patch("bellows._teardown_worktree",
+                   side_effect=bellows.WorktreeTeardownError("cherry-pick conflict")), \
+             patch("bellows.runner.run_step", return_value=_make_fake_run_step_result()), \
+             patch("bellows.gates.check", return_value=_clean_gates()), \
+             patch("shutil.move", side_effect=tracking_move), \
+             patch("bellows.verdict.post_verdict_request", side_effect=tracking_post), \
+             patch("bellows.notifier.push"), \
+             patch("bellows.record_run"), \
+             patch("bellows.validators.validate_at_claim", return_value={"rejected": False, "reject_reason": "", "warnings": []}):
+            response_server = MagicMock()
+            bellows.run_plan(plan_path, config, response_server)
+
+        assert "rename" in call_order, f"shutil.move to verdict-pending-* was not called: {call_order}"
+        assert "verdict_post" in call_order, f"verdict.post_verdict_request was not called: {call_order}"
+        rename_idx = call_order.index("rename")
+        post_idx = call_order.index("verdict_post")
+        assert rename_idx < post_idx, \
+            f"Site 4: rename ({rename_idx}) must precede verdict_post ({post_idx}): {call_order}"
