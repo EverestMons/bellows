@@ -1,0 +1,13 @@
+             gate_result = {"failures": [{"gate": "worktree_creation", "evidence": str(e)}], "files_changed": [], "passed": False, "is_qa_step": False}
+-            verdict.post_verdict_request(plan_path, project_path, 1, log_path, gate_result,
+-                                         pause_reason="gate_failure", total_steps=total_steps, step_text=plan_text)
++            # Rename-first ordering (RV-1 closure, 2026-05-24): rename plan BEFORE posting verdict-request,
++            # so a daemon restart between these ops cannot leave plan as in-progress-* with a verdict-request pending.
+             verdict_pending_path = os.path.join(plan_dir, f"verdict-pending-{base_filename}")
+             if os.path.exists(inprogress_path):
+                 shutil.move(inprogress_path, verdict_pending_path)
++            verdict.post_verdict_request(plan_path, project_path, 1, log_path, gate_result,
++                                         pause_reason="gate_failure", total_steps=total_steps, step_text=plan_text)
+             _log("PAUSE", f"⏸️ worktree creation failed, awaiting CEO verdict", slug=slug_for(plan_name))
+             return
+ 

@@ -1,0 +1,4 @@
+3475:def test_pause_site_1_worktree_creation_failure_renames_before_post():
+3512:def test_pause_site_2_intermediate_step_gate_failure_renames_before_post():
+3563:def test_pause_site_3_final_step_gate_failure_renames_before_post():
+3614:def test_pause_site_4_auto_close_teardown_failure_renames_before_post():

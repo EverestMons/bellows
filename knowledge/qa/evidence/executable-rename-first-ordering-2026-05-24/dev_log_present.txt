@@ -1,0 +1,9 @@
+## (a) Pre-edit verification stdout
+## (b) Before/after snippets for each reordered site
+## (c) New test functions
+## (d) Task E grep verification stdout
+## (e) Task G pytest summary
+## (f) Summary
+## Output Receipt
+---
+All 6 sections (a)-(f) plus Output Receipt present

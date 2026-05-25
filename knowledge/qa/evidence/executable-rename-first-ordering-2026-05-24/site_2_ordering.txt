@@ -1,0 +1,26 @@
+@@ -517,14 +519,15 @@ def run_plan(plan_path: str, config: dict, response_server: server.ResponseServe
+                 except WorktreeTeardownError as e:
+                     _pause_reason = "gate_failure"
+                     gate_result["failures"].append({"gate": "worktree_teardown", "evidence": str(e)})
++                # Rename-first ordering (RV-1 closure, 2026-05-24): rename plan BEFORE posting verdict-request,
++                # so a daemon restart between these ops cannot leave plan as in-progress-* with a verdict-request pending.
++                verdict_pending_path = os.path.join(plan_dir, f"verdict-pending-{base_filename}")
++                if os.path.exists(inprogress_path):
++                    shutil.move(inprogress_path, verdict_pending_path)
+                 verdict.post_verdict_request(plan_path, project_path, current_step, log_path, gate_result, pause_reason=_pause_reason, total_steps=total_steps, step_text=plan_text, intermediate_decisions=parsed.get("intermediate_decisions", []))
+                 notifier.notify_verdict_request(
+                     app_key, user_key, plan_name, current_step, gate_result["failures"]
+                 )
+-                # Rename plan to verdict-pending
+-                verdict_pending_path = os.path.join(plan_dir, f"verdict-pending-{base_filename}")
+-                if os.path.exists(inprogress_path):
+-                    shutil.move(inprogress_path, verdict_pending_path)
+                 record_run(db_path, plan_path, project_path,
+                            parsed.get("session_id", ""), current_step, "VerdictPending", parsed["cost_usd"], plan_slug)
+                 _log("PAUSE", f"⏸️ step {current_step} — waiting for CEO verdict", slug=slug_for(plan_name))
+@@ -608,13 +611,15 @@ def run_plan(plan_path: str, config: dict, response_server: server.ResponseServe
+             except WorktreeTeardownError as e:
+                 _pause_reason = "gate_failure"
+                 gate_result["failures"].append({"gate": "worktree_teardown", "evidence": str(e)})
++            # Rename-first ordering (RV-1 closure, 2026-05-24): rename plan BEFORE posting verdict-request,
++            # so a daemon restart between these ops cannot leave plan as in-progress-* with a verdict-request pending.

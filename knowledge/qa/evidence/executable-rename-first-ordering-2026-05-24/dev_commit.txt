@@ -1,0 +1,12 @@
+commit 10b5fc35d40afbeff6114927a1d9c136cda08290
+Author: Mark Lehn <marklehn@icloud.com>
+Date:   Mon May 25 10:52:03 2026 -0500
+
+    fix(bellows): rename-first ordering at all 4 pause sites — closes RV-1 boundary (items #2, #3)
+    
+    Co-Authored-By: Claude Opus 4.6 <noreply@anthropic.com>
+
+ bellows.py                                         |  29 +--
+ .../rename-first-ordering-2026-05-24.md            | 209 +++++++++++++++++++++
+ tests/test_bellows.py                              | 202 ++++++++++++++++++++
+ 3 files changed, 429 insertions(+), 11 deletions(-)
