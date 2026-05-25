@@ -1,7 +1,17 @@
 # Agent Prompt Feedback
 
 **Date:** 2026-05-27
-**Plans:** diagnostic-claude-settings-permission-gap-2026-05-22, executable-pre-scan-orphan-guard-2026-05-22, executable-bellows-tier-1-batch-2026-05-21, executable-bellows-expected-keys-narrow-2026-05-21, diagnostic-bellows-expected-keys-warning-2026-05-21, diagnostic-bellows-isinstance-asymmetry-2026-05-21, executable-deposit-exists-path-form-normalization-2026-05-27, executable-disable-autoupdater-2026-05-27, diagnostic-planner-authored-contract-validation-2026-05-20, diagnostic-bash-gate-vs-guardrails-2026-05-20, executable-plan-write-time-lessons-reread-2026-05-13, diagnostic-pre-scan-orphan-warn-flood-2026-05-22, executable-remove-pre-scan-processed-rename-v2-2026-05-24, executable-rename-first-ordering-2026-05-24
+**Plans:** diagnostic-claude-settings-permission-gap-2026-05-22, executable-pre-scan-orphan-guard-2026-05-22, executable-bellows-tier-1-batch-2026-05-21, executable-bellows-expected-keys-narrow-2026-05-21, diagnostic-bellows-expected-keys-warning-2026-05-21, diagnostic-bellows-isinstance-asymmetry-2026-05-21, executable-deposit-exists-path-form-normalization-2026-05-27, executable-disable-autoupdater-2026-05-27, diagnostic-planner-authored-contract-validation-2026-05-20, diagnostic-bash-gate-vs-guardrails-2026-05-20, executable-plan-write-time-lessons-reread-2026-05-13, diagnostic-pre-scan-orphan-warn-flood-2026-05-22, executable-remove-pre-scan-processed-rename-v2-2026-05-24, executable-rename-first-ordering-2026-05-24, executable-settings-local-bash-fallback-doc-2026-05-22
+
+## 2026-05-25 — settings-local-bash-fallback-doc (DOC Step 1)
+
+1. **Plan file paths use `bellows/` prefix but worktree root IS the bellows repo.** The plan references paths like `bellows/agents/BELLOWS_DEVELOPER.md` and `bellows/knowledge/research/...`, but in the worktree the files are at `agents/BELLOWS_DEVELOPER.md` and `knowledge/research/...` (no `bellows/` prefix). The agent had to discover this by listing the worktree root. Plans dispatched to worktrees should use paths relative to the worktree root, or note that the `bellows/` prefix should be stripped.
+
+2. **Plan claim step references a file that doesn't exist in the worktree.** The plan says to claim by moving `bellows/knowledge/decisions/executable-settings-local-bash-fallback-doc-2026-05-22.md` to `in-progress-` prefix. This file does not exist in the worktree's `knowledge/decisions/` directory — the plan was read from `.bellows-cache/`. The claim step could not be executed as written. For worktree-dispatched plans, the claim mechanism needs to account for the fact that the plan file lives in the cache, not in the worktree's decisions directory.
+
+3. **Plan specifies "Use Filesystem:edit_file" — tool name mismatch.** The plan instructs to use `Filesystem:edit_file (NOT str_replace, NOT bash sed)`. In Claude Code, the tool is called `Edit`, not `Filesystem:edit_file`. The instruction was clear enough in intent, but plans should use Claude Code tool names (`Edit`, `Read`, `Bash`) rather than MCP tool names.
+
+4. **Plan instructs to "Read your specialist file and domain glossary first" — no glossary found.** No domain glossary file was located in the worktree. The agent read the specialist file but could not locate a glossary. If a glossary exists outside the worktree, the plan should provide the absolute path.
 
 ## 2026-05-25 — precondition-failure-field (QA Step 2)
 
