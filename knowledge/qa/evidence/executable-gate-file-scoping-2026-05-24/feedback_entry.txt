@@ -1,0 +1,1 @@
+1653:## 2026-05-25 — gate-file-scoping (DEV Step 1)

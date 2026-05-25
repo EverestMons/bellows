@@ -1,0 +1,12 @@
+commit 56f94f03ec968c6f8d4f2ad293e4f53158783391
+Author: Mark Lehn <marklehn@icloud.com>
+Date:   Mon May 25 11:52:21 2026 -0500
+
+    fix(gates): section-scoped table inspection + status tokens + rule_20 first-deposit scoping (items #6, #7)
+    
+    Co-Authored-By: Claude Opus 4.6 <noreply@anthropic.com>
+
+ gates.py                                           |  83 +++++----
+ .../development/gate-file-scoping-2026-05-24.md    | 198 +++++++++++++++++++++
+ tests/test_gates.py                                | 142 +++++++++++++++
+ 3 files changed, 388 insertions(+), 35 deletions(-)

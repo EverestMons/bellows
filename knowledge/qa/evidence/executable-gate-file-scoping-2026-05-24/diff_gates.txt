@@ -1,0 +1,128 @@
+commit 56f94f03ec968c6f8d4f2ad293e4f53158783391
+Author: Mark Lehn <marklehn@icloud.com>
+Date:   Mon May 25 11:52:21 2026 -0500
+
+    fix(gates): section-scoped table inspection + status tokens + rule_20 first-deposit scoping (items #6, #7)
+    
+    Co-Authored-By: Claude Opus 4.6 <noreply@anthropic.com>
+
+diff --git a/gates.py b/gates.py
+index 38f1782..e3a11b9 100644
+--- a/gates.py
++++ b/gates.py
+@@ -427,42 +427,39 @@ def _gate_rule_20_self_check(is_qa_step, plan_text, step_number, project_path, p
+         return
+ 
+     banner = "Rule 20 — QA Self-Check Results"
+-    banner_found_path = None
+ 
+-    for dep_path in md_paths:
+-        resolved = _resolve_deposit_path(dep_path, project_path, wt_path=wt_path)
+-        if resolved is None:
+-            failures.append({"gate": "rule_20_self_check", "evidence": f"deposit file unreadable: {dep_path} (file not found)"})
+-            continue
++    # Item #7 fix (2026-05-24, Shape 7A): scope banner scan to the QA report (first .md deposit),
++    # matching the pattern used by _gate_rule_22_verification. Previously iterated ALL md_paths,
++    # which caused false-positives when a non-QA deposit (e.g., agent-prompt-feedback.md)
++    # contained the banner text as incidental prose.
++    qa_report_path = md_paths[0]
++    resolved = _resolve_deposit_path(qa_report_path, project_path, wt_path=wt_path)
++    if resolved is None:
++        failures.append({"gate": "rule_20_self_check", "evidence": f"deposit file unreadable: {qa_report_path} (file not found)"})
++        return
+ 
+-        try:
+-            with open(resolved, "r", encoding="utf-8") as f:
+-                content = f.read()
+-        except (FileNotFoundError, UnicodeDecodeError, OSError) as e:
+-            failures.append({"gate": "rule_20_self_check", "evidence": f"deposit file unreadable: {dep_path} ({e})"})
+-            continue
++    try:
++        with open(resolved, "r", encoding="utf-8") as f:
++            content = f.read()
++    except (FileNotFoundError, UnicodeDecodeError, OSError) as e:
++        failures.append({"gate": "rule_20_self_check", "evidence": f"deposit file unreadable: {qa_report_path} ({e})"})
++        return
+ 
+-        if banner not in content:
+-            continue
++    if banner not in content:
++        failures.append({"gate": "rule_20_self_check", "evidence": "no QA deposit contains Rule 20 self-check banner"})
++        return
+ 
+-        # Banner found — scan ALL remaining content for the PASSED line, tolerating
+-        # whitespace, decoration lines, and fenced-block indentation.
+-        # Per LESSONS 2026-05-17 strike-3 and 2026-05-18 strike-5 entries.
+-        banner_pos = content.index(banner)
+-        remaining = content[banner_pos:]
+-        # The PASSED line may be anywhere in the remaining content, optionally
+-        # preceded by whitespace on its line. Use re.MULTILINE so ^ matches each
+-        # line start, and \s* tolerates leading indentation/whitespace.
+-        if re.search(r'^\s*\*{0,2}\s*PASSED\s+—\s+SELF-CHECK\s+PASSED', remaining, re.MULTILINE):
+-            return  # Gate passes
+-        banner_found_path = dep_path
+-
+-    if banner_found_path:
+-        failures.append({"gate": "rule_20_self_check", "evidence": f"banner present but PASSED line missing in {banner_found_path}"})
+-    else:
+-        # Only reach here if no deposit had the banner (and no unreadable errors already appended)
+-        if not any(f.get("gate") == "rule_20_self_check" for f in failures):
+-            failures.append({"gate": "rule_20_self_check", "evidence": "no QA deposit contains Rule 20 self-check banner"})
++    # Banner found — scan ALL remaining content for the PASSED line, tolerating
++    # whitespace, decoration lines, and fenced-block indentation.
++    # Per LESSONS 2026-05-17 strike-3 and 2026-05-18 strike-5 entries.
++    banner_pos = content.index(banner)
++    remaining = content[banner_pos:]
++    # The PASSED line may be anywhere in the remaining content, optionally
++    # preceded by whitespace on its line. Use re.MULTILINE so ^ matches each
++    # line start, and \s* tolerates leading indentation/whitespace.
++    if re.search(r'^\s*\*{0,2}\s*PASSED\s+—\s+SELF-CHECK\s+PASSED', remaining, re.MULTILINE):
++        return  # Gate passes
++    failures.append({"gate": "rule_20_self_check", "evidence": f"banner present but PASSED line missing in {qa_report_path}"})
+ 
+ 
+ def _gate_rule_22_verification(is_qa_step, plan_text, step_number, project_path, parsed, failures, wt_path=None):
+@@ -503,10 +500,24 @@ def _gate_rule_22_verification(is_qa_step, plan_text, step_number, project_path,
+ 
+     lines = content.splitlines()
+ 
+-    # (c) Verification table: no ❌ rows, no data rows missing ✅
++    # (c) Verification table: no ❌ rows, no data rows missing a positive status.
++    # Item #6 fix (2026-05-24, Shape 6C):
++    #   (a) Section-scoped: only inspect tables inside sections whose ## header contains
++    #       "verification" (case-insensitive). QA reports contain non-verification tables
++    #       (failure classifications, commit stats) that should not be inspected.
++    #   (b) Status-token broadened: use _is_positive_status_row() which accepts ✅ AND
++    #       text tokens (PASS, OK, done, complete, verified) with bounded cell equality.
++    #       Previously accepted only ✅ as positive status, false-positiving on rows like
++    #       "| ... | PASS |".
+     in_data = False
++    in_verification_section = False
+     for i, line in enumerate(lines, 1):
+         stripped = line.strip()
++        # Track section transitions via ## headers.
++        if stripped.startswith("## "):
++            in_verification_section = "verification" in stripped.lower()
++            in_data = False
++            continue
+         if "|" not in stripped:
+             in_data = False
+             continue
+@@ -515,13 +526,15 @@ def _gate_rule_22_verification(is_qa_step, plan_text, step_number, project_path,
+             continue
+         if not in_data:
+             continue  # Header row
+-        # Data row
++        if not in_verification_section:
++            continue  # Skip tables outside verification sections
++        # Data row inside a verification-section table
+         if "\u274c" in stripped:
+             failures.append({
+                 "gate": "rule_22_verification",
+                 "evidence": f"(c) QA verification table row {i}: {stripped[:120]}. See {qa_report_path} line {i}.",
+             })
+-        elif "\u2705" not in stripped:
++        elif not _is_positive_status_row(line):
+             failures.append({
+                 "gate": "rule_22_verification",
+                 "evidence": f"(c) QA verification table row {i} missing status: {stripped[:120]}. See {qa_report_path} line {i}.",
