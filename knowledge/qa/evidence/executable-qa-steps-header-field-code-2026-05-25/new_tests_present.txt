@@ -1,0 +1,13 @@
+Check 6: 7 new test functions present in tests/test_gates.py
+
+tests/test_gates.py:1583: def test_qa_steps_field_single_step_matches():
+tests/test_gates.py:1590: def test_qa_steps_field_single_step_excludes_other():
+tests/test_gates.py:1597: def test_qa_steps_field_multi_step():
+tests/test_gates.py:1606: def test_qa_steps_field_absent_falls_back_to_keyword():
+tests/test_gates.py:1613: def test_qa_steps_field_malformed_falls_back_to_keyword(caplog):
+tests/test_gates.py:1624: def test_qa_steps_field_yaml_list():
+tests/test_gates.py:1632: def test_qa_steps_field_non_qa_role_header():
+
+7 matches found.
+
+Result: ✅ PASS

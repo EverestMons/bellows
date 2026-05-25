@@ -1,0 +1,17 @@
+commit f45651505485f2dd3fbb2704fc3ca4895aa21bf8
+Author: Mark Lehn <marklehn@icloud.com>
+Date:   Mon May 25 12:59:02 2026 -0500
+
+    fix(gates): qa_steps header field for authoritative QA-step detection — closes BACKLOG qa_step_detection (#audit-leak)
+    
+    Files changed:
+    - gates.py — _gate_is_qa_step accepts plan_header kwarg, checks qa_steps field as primary source, keyword fallback preserved
+    - tests/test_gates.py — 7 new test functions covering field parsing, fallback, YAML list, malformed input, and leak vector closure
+    - knowledge/development/qa-steps-header-field-2026-05-25.md — dev log with diffs, test inventory, and full-suite results
+    
+    Co-Authored-By: Claude Opus 4.6 <noreply@anthropic.com>
+
+ gates.py                                           | 18 ++++-
+ .../qa-steps-header-field-2026-05-25.md            | 90 ++++++++++++++++++++++
+ tests/test_gates.py                                | 61 +++++++++++++++
+ 3 files changed, 167 insertions(+), 2 deletions(-)

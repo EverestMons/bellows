@@ -1,0 +1,6 @@
+Check 3: YAML list handling present — isinstance(..., list) branch exists near _gate_is_qa_step
+
+gates.py:563:                if isinstance(qa_steps_raw, list):
+gates.py:564:                    return step_number in [int(x) for x in qa_steps_raw]
+
+Result: ✅ PASS

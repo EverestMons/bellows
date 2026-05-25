@@ -1,0 +1,126 @@
+============================= test session starts ==============================
+platform darwin -- Python 3.9.6, pytest-8.4.2, pluggy-1.6.0
+rootdir: /Users/marklehn/Developer/GitHub/bellows/.bellows-worktrees/qa-steps-header-field-code-2026-05-25
+plugins: anyio-4.12.1, xdist-3.8.0, cov-7.0.0
+collected 406 items
+
+tests/test_bellows.py .................................................. [ 12%]
+......................................................................   [ 29%]
+tests/test_cleanup_verdicts.py ....                                      [ 30%]
+tests/test_consume_verdicts.py .........                                 [ 32%]
+tests/test_decisions.py FFF..F............                               [ 37%]
+tests/test_extract_primary_deposit_blocks.py .........                   [ 39%]
+tests/test_gates.py .................................................... [ 52%]
+...................................................................      [ 68%]
+tests/test_misplaced_verdicts.py .......                                 [ 70%]
+tests/test_notifier_server.py ......                                     [ 71%]
+tests/test_phase4_parser.py ...                                          [ 72%]
+tests/test_phase4_planner_retry.py ..                                    [ 73%]
+tests/test_planner.py ...                                                [ 73%]
+tests/test_rule_26_deposit_parser.py .........                           [ 76%]
+tests/test_runner.py ...................                                 [ 80%]
+tests/test_runner_parser.py ..F......                                    [ 83%]
+tests/test_validators.py ........................                        [ 88%]
+tests/test_verdict.py ......................................             [ 98%]
+tests/test_worktree.py .......                                           [100%]
+
+=================================== FAILURES ===================================
+_________________ TestLoadPhrases.test_loads_phrases_from_file _________________
+
+self = <test_decisions.TestLoadPhrases object at 0x10ba7ceb0>
+
+    def test_loads_phrases_from_file(self):
+        phrases = decisions.load_phrases()
+>       assert len(phrases) > 0
+E       assert 0 > 0
+E        +  where 0 = len([])
+
+tests/test_decisions.py:28: AssertionError
+------------------------------ Captured log call -------------------------------
+WARNING  bellows:decisions.py:28 decisions: phrase file not found at /Users/marklehn/Developer/GitHub/bellows/.bellows-worktrees/INTERMEDIATE_DECISION_PHRASES.md
+_________________ TestLoadPhrases.test_includes_known_phrases __________________
+
+self = <test_decisions.TestLoadPhrases object at 0x10ba7cc10>
+
+    def test_includes_known_phrases(self):
+        phrases = decisions.load_phrases()
+>       assert "had to" in phrases
+E       AssertionError: assert 'had to' in []
+
+tests/test_decisions.py:35: AssertionError
+------------------------------ Captured log call -------------------------------
+WARNING  bellows:decisions.py:28 decisions: phrase file not found at /Users/marklehn/Developer/GitHub/bellows/.bellows-worktrees/INTERMEDIATE_DECISION_PHRASES.md
+________________ TestLoadPhrases.test_splits_slash_alternatives ________________
+
+self = <test_decisions.TestLoadPhrases object at 0x10ba7c8e0>
+
+    def test_splits_slash_alternatives(self):
+        phrases = decisions.load_phrases()
+        # "re-run / rerun" should produce two separate entries
+>       assert "re-run" in phrases
+E       AssertionError: assert 're-run' in []
+
+tests/test_decisions.py:44: AssertionError
+------------------------------ Captured log call -------------------------------
+WARNING  bellows:decisions.py:28 decisions: phrase file not found at /Users/marklehn/Developer/GitHub/bellows/.bellows-worktrees/INTERMEDIATE_DECISION_PHRASES.md
+_______ TestExtractDecisionBlocks.test_s_class_blocks_from_ground_truth ________
+
+self = <test_decisions.TestExtractDecisionBlocks object at 0x10ba7c160>
+
+    def test_s_class_blocks_from_ground_truth(self):
+        """All 6 S-class blocks from the detection design ground truth must match."""
+        labeled_path = os.path.join(
+            os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+            "knowledge", "qa", "evidence",
+            "intermediate-decision-detection-2026-05-12",
+            "labeled-blocks.jsonl",
+        )
+        phrases = decisions.load_phrases()
+    
+        s_blocks = []
+        with open(labeled_path) as f:
+            for line in f:
+                entry = json.loads(line)
+                if entry["label"] == "S":
+                    s_blocks.append(entry)
+    
+        assert len(s_blocks) == 6, f"Expected 6 S-class blocks, got {len(s_blocks)}"
+    
+        for block in s_blocks:
+            event = _make_assistant_event(block["text"])
+            ndjson = _make_ndjson(event)
+            results = decisions.extract_decision_blocks(ndjson, phrases)
+>           assert len(results) > 0, (
+                f"S-class block not matched: plan={block['plan']}, "
+                f"step={block['step']}, block_idx={block['block_idx']}, "
+                f"text={block['text'][:80]}"
+            )
+E           AssertionError: S-class block not matched: plan=deposit-exists-prose-canary-2026-04-28, step=2, block_idx=7, text=The grep evidence file seems empty. Let me fix that — the working directory migh
+E           assert 0 > 0
+E            +  where 0 = len([])
+
+tests/test_decisions.py:89: AssertionError
+------------------------------ Captured log call -------------------------------
+WARNING  bellows:decisions.py:28 decisions: phrase file not found at /Users/marklehn/Developer/GitHub/bellows/.bellows-worktrees/INTERMEDIATE_DECISION_PHRASES.md
+____________________________ test_run_step_timeout _____________________________
+
+    def test_run_step_timeout():
+        with patch("runner.subprocess.run", side_effect=subprocess.TimeoutExpired("claude", 300)):
+            result = runner.run_step("test prompt", "/tmp", "claude-sonnet-4-6")
+>       assert result["is_error"] is True
+E       assert False is True
+
+tests/test_runner_parser.py:57: AssertionError
+=============================== warnings summary ===============================
+../../../../../Library/Python/3.9/lib/python/site-packages/urllib3/__init__.py:35
+  /Users/marklehn/Library/Python/3.9/lib/python/site-packages/urllib3/__init__.py:35: NotOpenSSLWarning: urllib3 v2 only supports OpenSSL 1.1.1+, currently the 'ssl' module is compiled with 'LibreSSL 2.8.3'. See: https://github.com/urllib3/urllib3/issues/3020
+    warnings.warn(
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED tests/test_decisions.py::TestLoadPhrases::test_loads_phrases_from_file
+FAILED tests/test_decisions.py::TestLoadPhrases::test_includes_known_phrases
+FAILED tests/test_decisions.py::TestLoadPhrases::test_splits_slash_alternatives
+FAILED tests/test_decisions.py::TestExtractDecisionBlocks::test_s_class_blocks_from_ground_truth
+FAILED tests/test_runner_parser.py::test_run_step_timeout - assert False is True
+=================== 5 failed, 401 passed, 1 warning in 5.69s ===================

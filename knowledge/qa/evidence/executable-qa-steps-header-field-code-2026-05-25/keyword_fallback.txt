@@ -1,0 +1,5 @@
+Check 4: keyword fallback preserved — "qa" in substring check still present in fallback path
+
+gates.py:575:        return "qa" in match.group(0).lower()
+
+Result: ✅ PASS

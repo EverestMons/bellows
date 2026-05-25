@@ -1,0 +1,5 @@
+Check 5: call site passes plan_header=header
+
+gates.py:178:    is_qa_step = _gate_is_qa_step(plan_text, step_number, plan_header=header)
+
+Result: ✅ PASS

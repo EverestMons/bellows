@@ -1,0 +1,10 @@
+Check 2: qa_steps field is checked as primary path — at least 2 references inside _gate_is_qa_step
+
+gates.py:559:        qa_steps_raw = plan_header.get("qa_steps", "")
+gates.py:560:        if qa_steps_raw:
+gates.py:565:                qa_step_numbers = [int(s.strip()) for s in str(qa_steps_raw).split(",") if s.strip()]
+gates.py:568:                logger.warning("qa_steps field malformed: %r — falling back to keyword detection", qa_steps_raw)
+
+4 references found (read, truthiness check, parse, warning). Exceeds minimum of 2.
+
+Result: ✅ PASS

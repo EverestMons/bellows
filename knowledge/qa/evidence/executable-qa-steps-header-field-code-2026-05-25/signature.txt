@@ -1,0 +1,5 @@
+Check 1: _gate_is_qa_step signature accepts plan_header=None kwarg
+
+gates.py:556: def _gate_is_qa_step(plan_text, step_number, plan_header=None):
+
+Result: ✅ PASS
