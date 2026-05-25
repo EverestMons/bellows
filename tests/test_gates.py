@@ -1335,6 +1335,7 @@ def test_rule_22_qa_all_pass(tmp_path):
     report.parent.mkdir(parents=True)
     report.write_text(
         "# QA Report\n\n"
+        "## Deliverable Verification\n\n"
         "| Deliverable | Status | Evidence |\n"
         "|---|---|---|\n"
         "| gates.py | \u2705 | function exists |\n"
@@ -1352,6 +1353,7 @@ def test_rule_22_qa_fail_row(tmp_path):
     report.parent.mkdir(parents=True)
     report.write_text(
         "# QA Report\n\n"
+        "## Deliverable Verification\n\n"
         "| Deliverable | Status | Evidence |\n"
         "|---|---|---|\n"
         "| gates.py | \u2705 | function exists |\n"
@@ -1371,6 +1373,7 @@ def test_rule_22_qa_missing_status(tmp_path):
     report.parent.mkdir(parents=True)
     report.write_text(
         "# QA Report\n\n"
+        "## Deliverable Verification\n\n"
         "| Deliverable | Status | Evidence |\n"
         "|---|---|---|\n"
         "| gates.py | \u2705 | function exists |\n"
@@ -1410,6 +1413,7 @@ def test_rule_22_qa_both_fail_and_hedging(tmp_path):
     report.parent.mkdir(parents=True)
     report.write_text(
         "# QA Report\n\n"
+        "## Deliverable Verification\n\n"
         "| Deliverable | Status | Evidence |\n"
         "|---|---|---|\n"
         "| gates.py | \u2705 | estimated to work |\n"
@@ -1432,3 +1436,141 @@ def test_rule_22_qa_report_missing(tmp_path):
     r22 = [f for f in failures if f["gate"] == "rule_22_verification"]
     assert len(r22) == 1
     assert "(a)" in r22[0]["evidence"]
+
+
+# ---------------------------------------------------------------------------
+# Item #7 regression tests (Shape 7A — rule_20 scoped to first .md deposit)
+# ---------------------------------------------------------------------------
+
+def test_rule_20_self_check_scopes_to_first_md_deposit_ignoring_incidental_banner_in_other_deposits(tmp_path):
+    """Item #7 regression: gate reads only the first .md deposit (QA report), ignoring
+    a second deposit that contains the banner text as incidental prose without a PASSED line.
+    Uses patch to control deposit ordering since _extract_plan_required_deposits returns a set."""
+    # First deposit: QA report with valid banner + PASSED line
+    qa_report = tmp_path / "knowledge" / "qa" / "qa-report.md"
+    qa_report.parent.mkdir(parents=True)
+    qa_report.write_text(
+        "# QA Report\n\n"
+        "============================================================\n"
+        "Rule 20 — QA Self-Check Results\n"
+        "============================================================\n"
+        "PASSED — SELF-CHECK PASSED — all evidence files present.\n"
+    )
+    # Second deposit: feedback file with banner text in prose but NO PASSED line
+    feedback = tmp_path / "knowledge" / "research" / "agent-prompt-feedback.md"
+    feedback.parent.mkdir(parents=True)
+    feedback.write_text(
+        "# Prompt Feedback\n\n"
+        "## 2026-05-22 entry\n\n"
+        "The Rule 20 — QA Self-Check Results section was analyzed.\n"
+        "Found issues with banner detection in non-QA files.\n"
+    )
+    # Patch deposit extraction to return ordered list (QA report first),
+    # since _extract_plan_required_deposits returns a set with hash-randomized ordering.
+    ordered_deposits = ["knowledge/qa/qa-report.md", "knowledge/research/agent-prompt-feedback.md"]
+    plan_text = "## STEP 2 — QA\n\n> Verify deliverables.\n"
+    with patch.object(gates, '_extract_plan_required_deposits', return_value=ordered_deposits):
+        parsed = _clean_parsed()
+        failures = []
+        gates._gate_rule_20_self_check(True, plan_text, 2, str(tmp_path), parsed, failures)
+        assert not any(f["gate"] == "rule_20_self_check" for f in failures)
+
+
+def test_rule_20_self_check_fails_when_first_md_deposit_lacks_passed_line(tmp_path):
+    """Item #7 surviving failure mode: first .md deposit has the banner but no PASSED line
+    → gate fails with 'banner present but PASSED line missing' referencing the QA report path."""
+    qa_report = tmp_path / "knowledge" / "qa" / "qa-report.md"
+    qa_report.parent.mkdir(parents=True)
+    qa_report.write_text(
+        "# QA Report\n\n"
+        "============================================================\n"
+        "Rule 20 — QA Self-Check Results\n"
+        "============================================================\n"
+        "FAILED — SELF-CHECK FAILED — 1 issue(s):\n"
+        "  - CRITICAL: evidence file missing\n"
+    )
+    ordered_deposits = ["knowledge/qa/qa-report.md"]
+    plan_text = "## STEP 2 — QA\n\n> Verify deliverables.\n"
+    with patch.object(gates, '_extract_plan_required_deposits', return_value=ordered_deposits):
+        parsed = _clean_parsed()
+        failures = []
+        gates._gate_rule_20_self_check(True, plan_text, 2, str(tmp_path), parsed, failures)
+        r20 = [f for f in failures if f["gate"] == "rule_20_self_check"]
+        assert len(r20) == 1
+        assert "banner present but PASSED line missing" in r20[0]["evidence"]
+        assert "qa-report.md" in r20[0]["evidence"]
+
+
+# ---------------------------------------------------------------------------
+# Item #6 regression tests (Shape 6C — section-scoped table + status tokens)
+# ---------------------------------------------------------------------------
+
+def test_rule_22_verification_c_skips_non_verification_section_tables(tmp_path):
+    """Item #6 regression: (c) check only inspects tables under ## headers containing
+    'verification'. A failure-classification table in a different section (no status column)
+    should not be inspected."""
+    report = tmp_path / "knowledge" / "qa" / "qa-report.md"
+    report.parent.mkdir(parents=True)
+    report.write_text(
+        "# QA Report\n\n"
+        "## Deliverable Verification\n\n"
+        "| Deliverable | Status | Evidence |\n"
+        "|---|---|---|\n"
+        "| gates.py | \u2705 | function present |\n"
+        "| tests | \u2705 | all pass |\n\n"
+        "## Test Failures\n\n"
+        "| Test Name | Classification | Notes |\n"
+        "|---|---|---|\n"
+        "| test_foo | carry-over | known issue |\n"
+        "| test_bar | carry-over | worktree artifact |\n"
+        "| test_baz | carry-over | timeout flake |\n"
+    )
+    parsed = _clean_parsed()
+    failures = []
+    gates._gate_rule_22_verification(True, RULE_22_QA_PLAN, 2, str(tmp_path), parsed, failures)
+    assert not any(f["gate"] == "rule_22_verification" for f in failures)
+
+
+def test_rule_22_verification_c_accepts_text_pass_status(tmp_path):
+    """Item #6 regression: (c) check recognizes text 'PASS' status via _is_positive_status_row(),
+    not just ✅ emoji."""
+    report = tmp_path / "knowledge" / "qa" / "qa-report.md"
+    report.parent.mkdir(parents=True)
+    report.write_text(
+        "# QA Report\n\n"
+        "## Deliverable Verification\n\n"
+        "| Deliverable | Status | Evidence |\n"
+        "|---|---|---|\n"
+        "| gates.py | PASS | function present |\n"
+        "| tests | PASS | all 107 pass |\n"
+        "| dev-log | PASS | deposited |\n"
+    )
+    parsed = _clean_parsed()
+    failures = []
+    gates._gate_rule_22_verification(True, RULE_22_QA_PLAN, 2, str(tmp_path), parsed, failures)
+    # No (c) failures — PASS is recognized as a positive status token
+    assert not any(
+        f["gate"] == "rule_22_verification" and "(c)" in f["evidence"]
+        for f in failures
+    )
+
+
+def test_rule_22_verification_c_flags_genuine_missing_status_in_verification_table(tmp_path):
+    """Item #6 surviving failure mode: a row in a verification-section table with neither ✅,
+    ❌, nor a text positive-status token is flagged as missing status."""
+    report = tmp_path / "knowledge" / "qa" / "qa-report.md"
+    report.parent.mkdir(parents=True)
+    report.write_text(
+        "# QA Report\n\n"
+        "## Deliverable Verification\n\n"
+        "| Deliverable | Status | Evidence |\n"
+        "|---|---|---|\n"
+        "| gates.py | \u2705 | function present |\n"
+        "| verdict.py | | no status provided |\n"
+    )
+    parsed = _clean_parsed()
+    failures = []
+    gates._gate_rule_22_verification(True, RULE_22_QA_PLAN, 2, str(tmp_path), parsed, failures)
+    r22 = [f for f in failures if f["gate"] == "rule_22_verification" and "(c)" in f["evidence"]]
+    assert len(r22) == 1
+    assert "missing status" in r22[0]["evidence"]
