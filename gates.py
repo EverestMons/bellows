@@ -32,7 +32,15 @@ SCOPE_ALLOWLIST_PREFIXES = ("in-progress-", "verdict-pending-", "halted-")
 # Read-class tools whose denials do NOT block agent execution. Agents fall back
 # to bash equivalents (grep/rg, find/ls, cat) when these are denied. Per BACKLOG #2
 # diagnostic at knowledge/research/no-permission-denials-taxonomy-2026-04-28.md.
-READ_CLASS_TOOLS = {"Grep", "Glob", "Read", "mcp__vexp__run_pipeline"}
+READ_CLASS_TOOLS = {
+    "Grep", "Glob", "Read",
+    "mcp__vexp__run_pipeline",
+    "mcp__vexp__get_context_capsule",
+    "mcp__vexp__get_session_context",
+    "mcp__vexp__get_skeleton",
+    "mcp__vexp__index_status",
+    "mcp__vexp__search_memory",
+}
 
 # Bash commands matching the GUARDRAILS-prescribed git index-lock cleanup are exempt
 # from no_permission_denials blocking. The denial originates from Claude Code's runtime,

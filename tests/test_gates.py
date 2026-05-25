@@ -882,6 +882,74 @@ def test_permission_denials_vexp_run_pipeline_exempt():
     assert not any(f["gate"] == "no_permission_denials" for f in result["failures"])
 
 
+def test_permission_denials_vexp_get_context_capsule_exempt():
+    """Regression: mcp__vexp__get_context_capsule denial does NOT trip no_permission_denials gate."""
+    parsed = _clean_parsed()
+    parsed["permission_denials"] = [
+        {"tool_name": "mcp__vexp__get_context_capsule", "tool_use_id": "toolu_1", "tool_input": {}},
+    ]
+    result = gates.check(parsed, PLAN_TEXT, 1, "/tmp")
+    assert result["passed"] is True
+    assert not any(f["gate"] == "no_permission_denials" for f in result["failures"])
+
+
+def test_permission_denials_vexp_get_session_context_exempt():
+    """Regression: mcp__vexp__get_session_context denial does NOT trip no_permission_denials gate."""
+    parsed = _clean_parsed()
+    parsed["permission_denials"] = [
+        {"tool_name": "mcp__vexp__get_session_context", "tool_use_id": "toolu_1", "tool_input": {}},
+    ]
+    result = gates.check(parsed, PLAN_TEXT, 1, "/tmp")
+    assert result["passed"] is True
+    assert not any(f["gate"] == "no_permission_denials" for f in result["failures"])
+
+
+def test_permission_denials_vexp_get_skeleton_exempt():
+    """Regression: mcp__vexp__get_skeleton denial does NOT trip no_permission_denials gate."""
+    parsed = _clean_parsed()
+    parsed["permission_denials"] = [
+        {"tool_name": "mcp__vexp__get_skeleton", "tool_use_id": "toolu_1", "tool_input": {}},
+    ]
+    result = gates.check(parsed, PLAN_TEXT, 1, "/tmp")
+    assert result["passed"] is True
+    assert not any(f["gate"] == "no_permission_denials" for f in result["failures"])
+
+
+def test_permission_denials_vexp_index_status_exempt():
+    """Regression: mcp__vexp__index_status denial does NOT trip no_permission_denials gate."""
+    parsed = _clean_parsed()
+    parsed["permission_denials"] = [
+        {"tool_name": "mcp__vexp__index_status", "tool_use_id": "toolu_1", "tool_input": {}},
+    ]
+    result = gates.check(parsed, PLAN_TEXT, 1, "/tmp")
+    assert result["passed"] is True
+    assert not any(f["gate"] == "no_permission_denials" for f in result["failures"])
+
+
+def test_permission_denials_vexp_search_memory_exempt():
+    """Regression: mcp__vexp__search_memory denial does NOT trip no_permission_denials gate."""
+    parsed = _clean_parsed()
+    parsed["permission_denials"] = [
+        {"tool_name": "mcp__vexp__search_memory", "tool_use_id": "toolu_1", "tool_input": {}},
+    ]
+    result = gates.check(parsed, PLAN_TEXT, 1, "/tmp")
+    assert result["passed"] is True
+    assert not any(f["gate"] == "no_permission_denials" for f in result["failures"])
+
+
+def test_permission_denials_vexp_save_observation_is_not_exempted():
+    """Critical negative: mcp__vexp__save_observation denial DOES trip no_permission_denials gate.
+    save_observation is write-class — its denials carry real signal and must not be silenced."""
+    parsed = _clean_parsed()
+    parsed["permission_denials"] = [
+        {"tool_name": "mcp__vexp__save_observation", "tool_use_id": "toolu_1", "tool_input": {}},
+    ]
+    result = gates.check(parsed, PLAN_TEXT, 1, "/tmp")
+    assert result["passed"] is False
+    assert any(f["gate"] == "no_permission_denials" and "1 blocking denial" in f["evidence"]
+               for f in result["failures"])
+
+
 def test_gate_deposit_exists_fails_when_file_truly_missing(tmp_path):
     """Test 2.6: negative case — deposit missing from both wt_path and project_path."""
     project_path = tmp_path / "myproject"

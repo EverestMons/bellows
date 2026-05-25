@@ -1,7 +1,17 @@
 # Agent Prompt Feedback
 
 **Date:** 2026-05-27
-**Plans:** diagnostic-claude-settings-permission-gap-2026-05-22, executable-pre-scan-orphan-guard-2026-05-22, executable-bellows-tier-1-batch-2026-05-21, executable-bellows-expected-keys-narrow-2026-05-21, diagnostic-bellows-expected-keys-warning-2026-05-21, diagnostic-bellows-isinstance-asymmetry-2026-05-21, executable-deposit-exists-path-form-normalization-2026-05-27, executable-disable-autoupdater-2026-05-27, diagnostic-planner-authored-contract-validation-2026-05-20, diagnostic-bash-gate-vs-guardrails-2026-05-20, executable-plan-write-time-lessons-reread-2026-05-13, diagnostic-pre-scan-orphan-warn-flood-2026-05-22, executable-remove-pre-scan-processed-rename-v2-2026-05-24, executable-rename-first-ordering-2026-05-24, executable-settings-local-bash-fallback-doc-2026-05-22
+**Plans:** diagnostic-claude-settings-permission-gap-2026-05-22, executable-pre-scan-orphan-guard-2026-05-22, executable-bellows-tier-1-batch-2026-05-21, executable-bellows-expected-keys-narrow-2026-05-21, diagnostic-bellows-expected-keys-warning-2026-05-21, diagnostic-bellows-isinstance-asymmetry-2026-05-21, executable-deposit-exists-path-form-normalization-2026-05-27, executable-disable-autoupdater-2026-05-27, diagnostic-planner-authored-contract-validation-2026-05-20, diagnostic-bash-gate-vs-guardrails-2026-05-20, executable-plan-write-time-lessons-reread-2026-05-13, diagnostic-pre-scan-orphan-warn-flood-2026-05-22, executable-remove-pre-scan-processed-rename-v2-2026-05-24, executable-rename-first-ordering-2026-05-24, executable-settings-local-bash-fallback-doc-2026-05-22, executable-mcp-read-class-tools-extension-2026-05-25
+
+## 2026-05-25 — mcp-read-class-tools-extension (DEV Step 1)
+
+1. **Plan file paths use `bellows/` prefix but worktree root IS the bellows repo.** Same as prior feedback — the plan references `bellows/gates.py`, `bellows/knowledge/research/...` etc., but in the worktree the files are at `gates.py` and `knowledge/research/...` directly. The agent had to discover this by listing the worktree root.
+
+2. **Plan claim step references a file that doesn't exist in the worktree.** The plan says to claim by moving `bellows/knowledge/decisions/executable-mcp-read-class-tools-extension-2026-05-25.md` to `in-progress-` prefix. This file does not exist in the worktree — the plan was read from `.bellows-cache/`. Same issue as prior feedback for worktree-dispatched plans.
+
+3. **SA diagnostic and specialist file paths worked after stripping `bellows/` prefix.** Once the agent stripped the prefix, all referenced files (`knowledge/research/mcp-read-class-tools-exemption-2026-05-25.md`, `agents/BELLOWS_DEVELOPER.md`, `tests/test_gates.py`) were found correctly.
+
+4. **No domain glossary file found.** Plan instructs "Read your specialist file and domain glossary first" — no glossary file was located in the worktree. Same issue as prior feedback.
 
 ## 2026-05-25 — settings-local-bash-fallback-doc (DOC Step 1)
 
