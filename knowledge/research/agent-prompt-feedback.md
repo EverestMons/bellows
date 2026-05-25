@@ -1,7 +1,19 @@
 # Agent Prompt Feedback
 
 **Date:** 2026-05-27
-**Plans:** diagnostic-claude-settings-permission-gap-2026-05-22, executable-pre-scan-orphan-guard-2026-05-22, executable-bellows-tier-1-batch-2026-05-21, executable-bellows-expected-keys-narrow-2026-05-21, diagnostic-bellows-expected-keys-warning-2026-05-21, diagnostic-bellows-isinstance-asymmetry-2026-05-21, executable-deposit-exists-path-form-normalization-2026-05-27, executable-disable-autoupdater-2026-05-27, diagnostic-planner-authored-contract-validation-2026-05-20, diagnostic-bash-gate-vs-guardrails-2026-05-20, executable-plan-write-time-lessons-reread-2026-05-13, diagnostic-pre-scan-orphan-warn-flood-2026-05-22, executable-remove-pre-scan-processed-rename-v2-2026-05-24
+**Plans:** diagnostic-claude-settings-permission-gap-2026-05-22, executable-pre-scan-orphan-guard-2026-05-22, executable-bellows-tier-1-batch-2026-05-21, executable-bellows-expected-keys-narrow-2026-05-21, diagnostic-bellows-expected-keys-warning-2026-05-21, diagnostic-bellows-isinstance-asymmetry-2026-05-21, executable-deposit-exists-path-form-normalization-2026-05-27, executable-disable-autoupdater-2026-05-27, diagnostic-planner-authored-contract-validation-2026-05-20, diagnostic-bash-gate-vs-guardrails-2026-05-20, executable-plan-write-time-lessons-reread-2026-05-13, diagnostic-pre-scan-orphan-warn-flood-2026-05-22, executable-remove-pre-scan-processed-rename-v2-2026-05-24, executable-rename-first-ordering-2026-05-24
+
+## 2026-05-25 — rename-first-ordering (DEV Step 1)
+
+1. **All 4 site anchors matched on first attempt — no line-number adjustment needed.** The plan's approximate line numbers (437-444, 519-528, 610-617, 639-644) were accurate against origin/main. The actual line numbers were 437-443, 520-530, 611-621, 640-645 — close enough that all `old_string` anchors matched uniquely without modification. This is a positive signal: Planner-side grep verification immediately before authoring (noted in plan Context) pays off.
+
+2. **Task F test fixture borrowing worked cleanly.** The existing `test_run_plan_strict_pause_on_creation_failure` (Site 1) and `test_run_plan_pauses_on_cherry_pick_conflict` (Site 4) patterns transferred directly — same config dict shape, same mock set. For Sites 2 and 3, the key insight was using `gates.check` returning `{"passed": False, ...}` with a 2-step plan (Site 2, intermediate) vs 1-step plan (Site 3, final) to hit the `while not is_final_step` loop vs the post-loop final-step block. No skip needed — all 4 sites triggered reliably.
+
+3. **Observations about test_bellows.py fixture patterns for future plans:**
+   - The `_make_fake_run_step_result()` and `_clean_gates()` helpers at ~line 1167 are the canonical fixtures. They are well-factored and reusable.
+   - Patching `shutil.move` globally (via `patch("shutil.move")`) rather than `bellows.shutil.move` works because bellows.py does `import shutil` at module top and calls `shutil.move(...)` — the `shutil.move` reference in the module is to the `shutil` module object, so patching the module-level `shutil.move` intercepts all calls from any import site. This is the correct approach for ordering tests.
+   - The `validators.validate_at_claim` mock (`return_value={"rejected": False, ...}`) is required for all `run_plan` tests — without it, the plan gets rejected before reaching any pause site.
+   - The `notifier.notify_verdict_request` mock is only needed for Sites 2 and 3 (intermediate/final step), not Sites 1 and 4 — those sites don't call Pushover.
 
 ## 2026-05-24 — remove-pre-scan-processed-rename-v2 (Planner-side post-mortem, post-QA)
 
