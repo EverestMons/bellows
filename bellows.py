@@ -727,7 +727,7 @@ def _parse_diff_stat(post_diff: str, pre_diff: str, project_path: Optional[str] 
     cwd = project_path if project_path else None
     try:
         result = subprocess.run(
-            ["git", "--no-pager", "diff", "--stat", "--relative", pre_diff, "--", "."],
+            ["git", "--no-pager", "diff", "--stat=300", "--relative", pre_diff, "--", "."],
             cwd=cwd, capture_output=True, text=True, timeout=10,
         )
     except Exception:
