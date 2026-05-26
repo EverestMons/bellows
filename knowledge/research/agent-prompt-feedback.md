@@ -1,7 +1,15 @@
 # Agent Prompt Feedback
 
 **Date:** 2026-05-27
-**Plans:** diagnostic-claude-settings-permission-gap-2026-05-22, executable-pre-scan-orphan-guard-2026-05-22, executable-bellows-tier-1-batch-2026-05-21, executable-bellows-expected-keys-narrow-2026-05-21, diagnostic-bellows-expected-keys-warning-2026-05-21, diagnostic-bellows-isinstance-asymmetry-2026-05-21, executable-deposit-exists-path-form-normalization-2026-05-27, executable-disable-autoupdater-2026-05-27, diagnostic-planner-authored-contract-validation-2026-05-20, diagnostic-bash-gate-vs-guardrails-2026-05-20, executable-plan-write-time-lessons-reread-2026-05-13, diagnostic-pre-scan-orphan-warn-flood-2026-05-22, executable-remove-pre-scan-processed-rename-v2-2026-05-24, executable-rename-first-ordering-2026-05-24, executable-settings-local-bash-fallback-doc-2026-05-22, executable-mcp-read-class-tools-extension-2026-05-25, diagnostic-file-change-audit-false-negative-2026-05-25, executable-file-change-audit-fix-2026-05-25
+**Plans:** diagnostic-claude-settings-permission-gap-2026-05-22, executable-pre-scan-orphan-guard-2026-05-22, executable-bellows-tier-1-batch-2026-05-21, executable-bellows-expected-keys-narrow-2026-05-21, diagnostic-bellows-expected-keys-warning-2026-05-21, diagnostic-bellows-isinstance-asymmetry-2026-05-21, executable-deposit-exists-path-form-normalization-2026-05-27, executable-disable-autoupdater-2026-05-27, diagnostic-planner-authored-contract-validation-2026-05-20, diagnostic-bash-gate-vs-guardrails-2026-05-20, executable-plan-write-time-lessons-reread-2026-05-13, diagnostic-pre-scan-orphan-warn-flood-2026-05-22, executable-remove-pre-scan-processed-rename-v2-2026-05-24, executable-rename-first-ordering-2026-05-24, executable-settings-local-bash-fallback-doc-2026-05-22, executable-mcp-read-class-tools-extension-2026-05-25, diagnostic-file-change-audit-false-negative-2026-05-25, executable-file-change-audit-fix-2026-05-25, executable-planner-template-rule-21-contract-change-2026-05-26
+
+## 2026-05-26 — planner-template-rule-21-contract-change (DOC Step 1)
+
+1. **Plan claim step references a file that doesn't exist in the worktree.** The plan says to claim by moving `knowledge/decisions/executable-planner-template-rule-21-contract-change-2026-05-26.md` to `in-progress-` prefix. The file was already claimed (in-progress version existed in the main bellows repo). For worktree-dispatched plans, the claim mechanism needs to account for the fact that the plan file lives in the main repo's decisions directory, not in the worktree. Same recurring feedback as prior worktree-dispatched plans.
+
+2. **Prompt worked cleanly for a governance-only edit.** The four anchor greps, three edit specifications with exact oldText/newText, and two-commit split pattern were all precise and executable as written. No improvisation needed beyond the claim step.
+
+3. **Glossary skip was correctly specified.** The "skip glossary read" instruction saved unnecessary file reads for a markdown-only governance edit.
 
 ## 2026-05-25 — file-change-audit-fix (DEV Step 1)
 
