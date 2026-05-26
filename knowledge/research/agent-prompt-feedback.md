@@ -3,6 +3,18 @@
 **Date:** 2026-05-27
 **Plans:** diagnostic-claude-settings-permission-gap-2026-05-22, executable-pre-scan-orphan-guard-2026-05-22, executable-bellows-tier-1-batch-2026-05-21, executable-bellows-expected-keys-narrow-2026-05-21, diagnostic-bellows-expected-keys-warning-2026-05-21, diagnostic-bellows-isinstance-asymmetry-2026-05-21, executable-deposit-exists-path-form-normalization-2026-05-27, executable-disable-autoupdater-2026-05-27, diagnostic-planner-authored-contract-validation-2026-05-20, diagnostic-bash-gate-vs-guardrails-2026-05-20, executable-plan-write-time-lessons-reread-2026-05-13, diagnostic-pre-scan-orphan-warn-flood-2026-05-22, executable-remove-pre-scan-processed-rename-v2-2026-05-24, executable-rename-first-ordering-2026-05-24, executable-settings-local-bash-fallback-doc-2026-05-22, executable-mcp-read-class-tools-extension-2026-05-25, diagnostic-file-change-audit-false-negative-2026-05-25, executable-file-change-audit-fix-2026-05-25, executable-planner-template-rule-21-contract-change-2026-05-26, diagnostic-verdict-ledger-gate-result-preservation-2026-05-26, executable-verdict-ledger-gate-result-preservation-2026-05-26, executable-fix-f-guard-removal-2026-05-26, diagnostic-bellows-hardening-batch-freshness-2026-05-26, executable-bellows-hardening-batch-items-1-3-4-2026-05-26
 
+## 2026-05-26 — bellows-hardening-batch-items-1-3-4 (QA Step 2)
+
+1. **GUARDRAILS.md not found at `governance/GUARDRAILS.md`.** Consistent with DEV feedback and all prior sessions — the worktree doesn't contain this file. The plan instructs reading it as a mandatory first-read. Non-blocking (specialist file + plan prompt provide sufficient context), but the mandatory-read instruction wastes time on a file-not-found error every execution.
+
+2. **Evidence directory path used `bellows/` prefix.** The plan specified `evidence_dir = "bellows/knowledge/qa/evidence/executable-bellows-hardening-batch-items-1-3-4-2026-05-26/"` but the worktree root IS the bellows project root, so the actual path is `knowledge/qa/evidence/...`. The "strip bellows/ prefix" note at the top of the step prompt covers this, but the Rule 20 self-check placeholder values should use worktree-relative paths directly to avoid the agent needing to mentally transform them.
+
+3. **Lifecycle-prefix audit had no single canonical source.** The plan asked to compare the guard's prefix list against `bellows/PROJECT_BRIEF.md` — that file doesn't exist. Had to cross-reference multiple sources (specialist files, gates.py `SCOPE_ALLOWLIST_PREFIXES`, PROJECT_STATUS.md entries) to confirm the three-prefix set. A single canonical lifecycle-prefix definition (e.g., a `LIFECYCLE_PREFIXES` constant in a shared module) would make this audit trivial.
+
+4. **RULE_20_SELF_CHECK_BLOCK.md at governance root.** The specialist file references `/Users/marklehn/Desktop/GitHub/RULE_20_SELF_CHECK_BLOCK.md` but the actual location is `/Users/marklehn/Developer/GitHub/RULE_20_SELF_CHECK_BLOCK.md`. The `Desktop` vs `Developer` path discrepancy requires a `find` to locate the file. The specialist file should be updated to reflect the correct path.
+
+5. **Test count discrepancy is benign.** DEV reported 411 passed (407 + 3 new + 1 existing fix). Plan expected 410 (407 + 3 new). The difference is the existing test fix (`test_run_plan_continuation_prompt_uses_shadow_path` updated to use non-sparse gate mock) — a correct behavioral change documented in DEV's Output Receipt.
+
 ## 2026-05-26 — bellows-hardening-batch-items-1-3-4 (DEV Step 1)
 
 1. **GUARDRAILS.md not found at `governance/GUARDRAILS.md`.** Consistent with prior feedback — the worktree doesn't contain this file. The specialist file and plan both reference it as a mandatory read. Non-blocking for this task.
