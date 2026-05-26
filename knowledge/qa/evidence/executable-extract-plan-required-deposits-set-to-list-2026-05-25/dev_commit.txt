@@ -1,0 +1,19 @@
+commit 4e805fa7a23b268ad529ac5430d4a9c98e33940b
+Author: Mark Lehn <marklehn@icloud.com>
+Date:   Mon May 25 20:18:02 2026 -0500
+
+    fix(gates): _extract_plan_required_deposits set→list — deterministic md_paths[0] selection — closes BACKLOG capability
+    
+    Convert _extract_plan_required_deposits and _filter_transient_paths to return
+    list (preserving authoring order) instead of set. Adds dict.fromkeys dedup on
+    the legacy prose-matching path. Updates stale comments in test_gates.py and
+    adds test_extract_plan_required_deposits_preserves_block_order regression test.
+    
+    Files changed: gates.py, tests/test_gates.py, knowledge/development/extract-plan-required-deposits-set-to-list-2026-05-25.md
+    
+    Co-Authored-By: Claude Opus 4.6 <noreply@anthropic.com>
+
+ gates.py                                           | 31 ++++---
+ ...lan-required-deposits-set-to-list-2026-05-25.md | 98 ++++++++++++++++++++++
+ tests/test_gates.py                                | 21 ++++-
+ 3 files changed, 136 insertions(+), 14 deletions(-)

@@ -1,0 +1,2 @@
+450:    qa_report_path = md_paths[0]
+505:    qa_report_path = md_paths[0]
