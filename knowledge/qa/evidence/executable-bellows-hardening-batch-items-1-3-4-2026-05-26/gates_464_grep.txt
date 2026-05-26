@@ -1,0 +1,2 @@
+$ grep -n 'no QA deposit contains Rule 20 self-check banner' gates.py
+464:        failures.append({"gate": "rule_20_self_check", "evidence": "no QA deposit contains Rule 20 self-check banner"})

@@ -1,0 +1,12 @@
+Lifecycle Prefix Completeness Audit
+
+Guard in on_modified (bellows.py:1039):
+  LIFECYCLE_PREFIXES = ("in-progress-", "verdict-pending-", "halted-")
+
+Documented prefixes in project:
+- agents/BELLOWS_DEVELOPER.md:64 — "three lifecycle prefixes (`in-progress-`, `verdict-pending-`, `halted-`)"
+- agents/BELLOWS_QA.md:40 — "three plan lifecycle prefixes (`in-progress-`, `verdict-pending-`, `halted-`)"
+- gates.py:30 — SCOPE_ALLOWLIST_PREFIXES = ("in-progress-", "verdict-pending-", "halted-")
+- PROJECT_STATUS.md:135 — SCOPE_ALLOWLIST_PREFIXES = ("in-progress-", "verdict-pending-", "halted-")
+
+Conclusion: All project documentation consistently references exactly three Bellows-managed lifecycle prefixes. No fourth prefix exists. The guard is complete. ✅

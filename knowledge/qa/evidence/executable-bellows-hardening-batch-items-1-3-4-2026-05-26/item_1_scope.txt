@@ -1,0 +1,15 @@
+$ git diff HEAD~2 HEAD -- gates.py
+
+diff --git a/gates.py b/gates.py
+index b8b5c4e..8d6a270 100644
+--- a/gates.py
++++ b/gates.py
+@@ -438,7 +438,7 @@ def _gate_rule_20_self_check(is_qa_step, plan_text, step_number, project_path, p
+     deposit_paths = _extract_plan_required_deposits(step_text)
+     md_paths = [p for p in deposit_paths if p.endswith(".md")]
+     if not md_paths:
+-        failures.append({"gate": "rule_20_self_check", "evidence": "no QA deposit contains Rule 20 self-check banner"})
++        failures.append({"gate": "rule_20_self_check", "evidence": "deposits block declares no .md paths (check **Deposits:** block format — must be multi-line bullets)"})
+         return
+
+Scope verification: Item 1 change is bounded to gates.py — single string replacement at line 441. No incidental edits to bellows.py, verdict.py, or elsewhere. ✅

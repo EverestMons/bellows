@@ -1,0 +1,2 @@
+$ grep -n 'propagates_to_reparsed_header' tests/
+tests/test_bellows.py:3001:def test_apply_defensive_header_defaults_propagates_to_reparsed_header():

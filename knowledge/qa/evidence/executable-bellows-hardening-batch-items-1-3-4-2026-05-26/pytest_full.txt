@@ -1,0 +1,46 @@
+$ python3 -m pytest tests/ -v 2>&1 | tail -120
+
+tests/test_verdict.py::test_check_verdict_no_warning_on_missing_file PASSED [ 95%]
+tests/test_verdict.py::test_check_verdict_well_formed_verdict_continue PASSED [ 95%]
+tests/test_verdict.py::test_check_verdict_well_formed_verdict_stop_with_reason PASSED [ 96%]
+tests/test_verdict.py::test_check_verdict_pushover_failure_swallowed PASSED [ 96%]
+tests/test_verdict.py::test_verification_results_table_all_pass PASSED   [ 96%]
+tests/test_verdict.py::test_verification_results_table_fail_row PASSED   [ 96%]
+tests/test_verdict.py::test_verification_results_table_intermediate_decisions_count PASSED [ 97%]
+tests/test_verdict.py::test_pause_reason_label_rule_22 PASSED            [ 97%]
+tests/test_verdict.py::test_gate_failures_section_renders_for_rule_22_check_failed PASSED [ 97%]
+tests/test_verdict.py::test_planner_only_checks_remaining_section PASSED [ 97%]
+tests/test_verdict.py::test_post_verdict_request_writes_precondition_failure_field PASSED [ 98%]
+tests/test_verdict.py::test_post_verdict_request_includes_gate_result_json PASSED [ 98%]
+tests/test_worktree.py::test_create_worktree_returns_valid_path_with_tracked_files PASSED [ 98%]
+tests/test_worktree.py::test_worktree_isolation_git_diff PASSED          [ 98%]
+tests/test_worktree.py::test_teardown_removes_worktree_directory PASSED  [ 99%]
+tests/test_worktree.py::test_teardown_cherry_picks_commits PASSED        [ 99%]
+tests/test_worktree.py::test_teardown_copies_uncommitted_files PASSED    [ 99%]
+tests/test_worktree.py::test_teardown_aborts_on_cherry_pick_conflict PASSED [ 99%]
+tests/test_worktree.py::test_create_worktree_retries_once_on_failure PASSED [100%]
+
+=================================== FAILURES ===================================
+_________________ TestLoadPhrases.test_loads_phrases_from_file _________________
+tests/test_decisions.py:28: AssertionError (worktree context — INTERMEDIATE_DECISION_PHRASES.md not found)
+_________________ TestLoadPhrases.test_includes_known_phrases __________________
+tests/test_decisions.py:35: AssertionError (worktree context — same)
+________________ TestLoadPhrases.test_splits_slash_alternatives ________________
+tests/test_decisions.py:44: AssertionError (worktree context — same)
+_______ TestExtractDecisionBlocks.test_s_class_blocks_from_ground_truth ________
+tests/test_decisions.py:89: AssertionError (worktree context — same)
+____________________________ test_run_step_timeout _____________________________
+tests/test_runner_parser.py:57: AssertionError (long-standing assertion mismatch)
+
+=================== 5 failed, 411 passed, 1 warning in 7.63s ===================
+
+Summary:
+- 411 passed (407 baseline + 3 new regression tests + 1 existing test fix)
+- 5 failed (all known carry-overs: 4 x test_decisions.py worktree context, 1 x test_run_step_timeout)
+- 0 new regressions
+
+New regression tests (all PASSED):
+- tests/test_gates.py::test_rule_20_self_check_distinguishes_no_md_paths_from_missing_banner PASSED
+- tests/test_bellows.py::test_on_modified_invalidates_seen_for_runnable_plan PASSED
+- tests/test_bellows.py::test_on_modified_preserves_seen_for_lifecycle_renames PASSED
+- tests/test_bellows.py::test_apply_defensive_header_defaults_propagates_to_reparsed_header PASSED

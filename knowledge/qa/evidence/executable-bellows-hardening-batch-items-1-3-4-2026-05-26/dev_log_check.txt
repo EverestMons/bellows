@@ -1,0 +1,19 @@
+File: knowledge/development/bellows-hardening-batch-items-1-3-4-2026-05-26.md
+Size: 170 lines
+
+First 5 lines:
+# Bellows Hardening Batch — Items 1, 3, 4 — Dev Log
+**Date:** 2026-05-26 | **Agent:** Bellows Developer | **Step:** 1 (DEV) | **Plan:** executable-bellows-hardening-batch-items-1-3-4-2026-05-26
+
+---
+
+## Pre-Edit Verification (Rule 39)
+
+Last 5 lines:
+### Flags for CEO
+- None
+
+### Flags for Next Step
+- The `test_run_plan_continuation_prompt_uses_shadow_path` update is a consequence of Item 4's fix: the test was previously succeeding because the defensive default didn't propagate to the re-parsed header. QA should verify this is a correct behavioral change, not a regression.
+
+Content verified: 3 change-block sections with before/after snippets, pre-edit verification results, pytest output (411 passed / 5 failed), anchor verification table. Output Receipt status: Complete.

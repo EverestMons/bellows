@@ -1,0 +1,2 @@
+$ grep -n 'distinguishes_no_md_paths' tests/test_gates.py
+1589:def test_rule_20_self_check_distinguishes_no_md_paths_from_missing_banner(tmp_path):

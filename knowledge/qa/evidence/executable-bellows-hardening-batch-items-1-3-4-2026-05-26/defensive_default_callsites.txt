@@ -1,0 +1,7 @@
+$ grep -n '_apply_defensive_header_defaults' bellows.py
+318:def _apply_defensive_header_defaults(header: dict, total_steps: int) -> dict:
+382:        _apply_defensive_header_defaults(header, total_steps)
+499:        _apply_defensive_header_defaults(header, total_steps)
+
+3 hits: 1 definition (line 318) + 2 call sites (line 382 pre-gate, line 499 post-gate). ✅
+New call site at line 499 is 1 line after header reassignment at line 498.

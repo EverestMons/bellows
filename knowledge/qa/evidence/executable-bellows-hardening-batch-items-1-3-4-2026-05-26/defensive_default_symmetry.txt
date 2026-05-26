@@ -1,0 +1,12 @@
+Defensive Default Call Symmetry Check
+
+Pre-gate call site (bellows.py:382):
+        _apply_defensive_header_defaults(header, total_steps)
+
+Post-gate call site (bellows.py:499):
+        _apply_defensive_header_defaults(header, total_steps)
+
+Both call sites pass identical arguments: (header, total_steps). ✅
+The pre-gate call operates on the header dict parsed from the plan file.
+The post-gate call operates on the re-parsed header dict from gate_result.get("plan_header", {}).
+Both share the same `total_steps` variable (set at line 367, same run_plan() function scope).

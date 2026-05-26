@@ -1,0 +1,19 @@
+bellows.py lines 1033-1044 — PlanHandler.on_modified handler:
+
+    def on_modified(self, event):
+        if not event.is_directory:
+            path = event.src_path
+            filename = os.path.basename(path)
+            # Invalidate _seen on corrected re-deposit so the plan can be re-dispatched.
+            # Guard: don't invalidate on Bellows-managed lifecycle renames (would loop).
+            LIFECYCLE_PREFIXES = ("in-progress-", "verdict-pending-", "halted-")
+            if not any(filename.startswith(p) for p in LIFECYCLE_PREFIXES):
+                slug = verdict.slug_from_path(path)
+                if slug in self.orchestrator._seen:
+                    self.orchestrator._seen.discard(slug)
+            self._handle(path)
+
+Verification:
+(a) Three lifecycle prefixes present: in-progress-, verdict-pending-, halted- ✅
+(b) self.orchestrator._seen.discard(slug) called only when guard passes (not lifecycle prefix) AND slug in _seen ✅
+(c) self._handle(path) called at end of handler regardless of guard outcome ✅

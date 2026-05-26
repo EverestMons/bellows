@@ -1,0 +1,2 @@
+$ grep -n 'deposits block declares no .md paths' gates.py
+441:        failures.append({"gate": "rule_20_self_check", "evidence": "deposits block declares no .md paths (check **Deposits:** block format — must be multi-line bullets)"})
