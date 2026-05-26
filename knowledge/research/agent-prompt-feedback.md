@@ -1,7 +1,7 @@
 # Agent Prompt Feedback
 
 **Date:** 2026-05-27
-**Plans:** diagnostic-claude-settings-permission-gap-2026-05-22, executable-pre-scan-orphan-guard-2026-05-22, executable-bellows-tier-1-batch-2026-05-21, executable-bellows-expected-keys-narrow-2026-05-21, diagnostic-bellows-expected-keys-warning-2026-05-21, diagnostic-bellows-isinstance-asymmetry-2026-05-21, executable-deposit-exists-path-form-normalization-2026-05-27, executable-disable-autoupdater-2026-05-27, diagnostic-planner-authored-contract-validation-2026-05-20, diagnostic-bash-gate-vs-guardrails-2026-05-20, executable-plan-write-time-lessons-reread-2026-05-13, diagnostic-pre-scan-orphan-warn-flood-2026-05-22, executable-remove-pre-scan-processed-rename-v2-2026-05-24, executable-rename-first-ordering-2026-05-24, executable-settings-local-bash-fallback-doc-2026-05-22, executable-mcp-read-class-tools-extension-2026-05-25, diagnostic-file-change-audit-false-negative-2026-05-25, executable-file-change-audit-fix-2026-05-25, executable-planner-template-rule-21-contract-change-2026-05-26, diagnostic-verdict-ledger-gate-result-preservation-2026-05-26, executable-verdict-ledger-gate-result-preservation-2026-05-26, executable-fix-f-guard-removal-2026-05-26
+**Plans:** diagnostic-claude-settings-permission-gap-2026-05-22, executable-pre-scan-orphan-guard-2026-05-22, executable-bellows-tier-1-batch-2026-05-21, executable-bellows-expected-keys-narrow-2026-05-21, diagnostic-bellows-expected-keys-warning-2026-05-21, diagnostic-bellows-isinstance-asymmetry-2026-05-21, executable-deposit-exists-path-form-normalization-2026-05-27, executable-disable-autoupdater-2026-05-27, diagnostic-planner-authored-contract-validation-2026-05-20, diagnostic-bash-gate-vs-guardrails-2026-05-20, executable-plan-write-time-lessons-reread-2026-05-13, diagnostic-pre-scan-orphan-warn-flood-2026-05-22, executable-remove-pre-scan-processed-rename-v2-2026-05-24, executable-rename-first-ordering-2026-05-24, executable-settings-local-bash-fallback-doc-2026-05-22, executable-mcp-read-class-tools-extension-2026-05-25, diagnostic-file-change-audit-false-negative-2026-05-25, executable-file-change-audit-fix-2026-05-25, executable-planner-template-rule-21-contract-change-2026-05-26, diagnostic-verdict-ledger-gate-result-preservation-2026-05-26, executable-verdict-ledger-gate-result-preservation-2026-05-26, executable-fix-f-guard-removal-2026-05-26, diagnostic-bellows-hardening-batch-freshness-2026-05-26
 
 ## 2026-05-26 — fix-f-guard-removal (QA Step 2)
 
@@ -1782,3 +1782,11 @@ The Planner authors plans in a Project conversation with MCP filesystem tools. T
 3. **Log files lack plan_slug metadata.** The step JSON logs (`logs/*.json`) don't include the plan slug in top-level metadata — only in the raw output. Finding the correct log for a specific plan run required searching raw_output for plan-specific strings. Adding `plan_slug` to the parsed/top-level JSON would make log retrieval trivial.
 
 4. **No specialist file or domain glossary needed.** Plan correctly instructed to skip specialist file and glossary reads for this code-tracing investigation.
+
+## 2026-05-26 — bellows-hardening-batch-freshness (SA diagnostic Step 1)
+
+1. **Plan path references used `bellows/` prefix.** The plan referenced `bellows/knowledge/BACKLOG.md`, `bellows/gates.py`, `bellows/bellows.py`, etc. In the worktree, these files are at the root (e.g., `knowledge/BACKLOG.md`, `gates.py`). Required path discovery before reads could proceed. Recommend: plans dispatched to worktrees should either use worktree-relative paths or include the standard "strip `bellows/` prefix" note.
+
+2. **Domain glossary skip was correct.** Instruction to skip the domain glossary read was appropriate — this was a pure code-state audit against specific line numbers. No domain interpretation was needed.
+
+3. **BACKLOG.md exceeded 25K token read limit.** The full BACKLOG could not be read in a single pass. Required offset/limit reads to access both Open and Closed sections. For future audits that require scanning both sections, consider noting the approximate line ranges in the plan.
