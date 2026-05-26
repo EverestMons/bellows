@@ -1,0 +1,5 @@
+verdict: continue
+
+Rule 22 (b) substance check passed. The `_gate_is_qa_step` change matches the SA fix-shape (`knowledge/research/qa-step-detection-fix-shape-2026-05-22.md` Section 2) verbatim: primary path reads `qa_steps` from `plan_header`, handles YAML list and comma-string variants, falls back to keyword detection on malformed values with a logger.warning, preserves existing keyword behavior when field absent. Call site change at `gates.py:178` passes `plan_header=header` (already-parsed in scope). 7 new regression tests cover all SA-specified cases plus the critical leak-vector closure test (test_qa_steps_field_non_qa_role_header — "Invoice Security & Testing Analyst" header now resolves to True via the new field). Full suite: 406 collected, 401 passed, 5 pre-existing carry-over failures (4 test_decisions.py worktree artifacts + 1 test_run_step_timeout), 0 new regressions. Logger pattern matches existing gates.py:98 precedent. Rule 22 (a)/(c)/(d) mechanized via _gate_rule_22_verification PASS; Rule 22 (e) mechanized via _gate_rule_20_self_check PASS (N/A — not a QA step).
+
+Proceed to Step 2 (QA).
