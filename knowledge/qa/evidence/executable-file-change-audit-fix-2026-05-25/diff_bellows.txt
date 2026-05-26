@@ -1,0 +1,129 @@
+diff --git a/bellows.py b/bellows.py
+index 9505dbc..3d4073b 100644
+--- a/bellows.py
++++ b/bellows.py
+@@ -484,7 +484,7 @@ def run_plan(plan_path: str, config: dict, response_server: server.ResponseServe
+ 
+         # Capture post-step file state and run gates
+         post_diff = _capture_git_diff(wt_path)
+-        files_changed = _parse_diff_stat(post_diff, pre_diff, project_path)
++        files_changed = _parse_diff_stat(post_diff, pre_diff, wt_path)
+         gate_result = gates.check(parsed, plan_text, current_step, project_path, files_changed=files_changed, wt_path=wt_path)
+         if mode_a_detected:
+             gate_result["failures"].append({
+@@ -575,7 +575,7 @@ def run_plan(plan_path: str, config: dict, response_server: server.ResponseServe
+ 
+             # Capture post-step file state and run gates
+             post_diff = _capture_git_diff(wt_path)
+-            files_changed = _parse_diff_stat(post_diff, pre_diff, project_path)
++            files_changed = _parse_diff_stat(post_diff, pre_diff, wt_path)
+             gate_result = gates.check(parsed, plan_text, current_step, project_path, files_changed=files_changed, wt_path=wt_path)
+             if mode_a_detected:
+                 gate_result["failures"].append({
+@@ -676,50 +676,75 @@ def run_plan(plan_path: str, config: dict, response_server: server.ResponseServe
+ 
+ 
+ def _capture_git_diff(project_path: str) -> str:
+-    """Capture git diff --stat output for file change tracking, scoped to the project subtree.
+-
+-    Uses `--relative -- .` to handle the nested-repo case where project_path is a
+-    subdirectory of a larger repo (e.g., bellows/ inside the governance-root repo).
+-    Without scoping, git walks up to the parent repo's .git and reports the entire
+-    monorepo's diff. Universally applicable: for standalone repos (cwd = repo root)
+-    `-- .` is equivalent to no pathspec and `--relative` is a no-op. Closes BACKLOG #4.
++    """Capture the current HEAD commit SHA, scoped to the directory at project_path.
++
++    Returns the short SHA as a string, or empty string on subprocess error or
++    missing git. The function name and signature are preserved from a prior
++    implementation; "diff" in the name is now anachronistic but the contract
++    change is necessary to fix the file_change_audit false-negative documented
++    in BACKLOG 2026-05-21 (diagnostic: knowledge/research/file-change-audit-false-negative-2026-05-25.md).
++    Prior implementation returned `git diff --stat` output, which was blind to
++    committed changes — agents commit during their step as standard practice,
++    leaving both pre- and post-step working trees clean.
+     """
+     try:
+         result = subprocess.run(
+-            ["git", "--no-pager", "diff", "--stat", "--relative", "--", "."],
++            ["git", "--no-pager", "rev-parse", "HEAD"],
+             cwd=project_path, capture_output=True, text=True, timeout=10,
+         )
+-        return result.stdout
++        if result.returncode != 0:
++            return ""
++        return result.stdout.strip()
+     except Exception:
+         return ""
+ 
+ 
+ def _parse_diff_stat(post_diff: str, pre_diff: str, project_path: Optional[str] = None) -> list:
+-    """Parse git diff --stat output to extract files changed by this step.
++    """Return list of files changed between pre_diff (HEAD SHA before step) and the
++    current working-tree state, scoped to project_path.
+ 
+-    Uses diff-of-diffs semantics: returns only files where the stat line
+-    changed between pre_diff and post_diff, eliminating false positives from
+-    pre-existing dirty files that the step never touched.
++    Uses `git diff --stat <pre_diff> -- .` (run with cwd=project_path) which captures
++    BOTH committed and uncommitted changes since pre_diff. This covers the agent's
++    standard commit-during-step pattern as well as edge cases where the agent edits
++    but does not commit.
+ 
+-    Files outside `project_path` (paths with `..` components after normalization)
+-    are excluded — `git diff --stat` run with `cwd=project_path` still reports
+-    changes across the entire repo, and we only want to gate on files the plan
+-    could have legitimately touched.
+-    """
+-    def parse_stat_map(diff_text):
+-        result = {}
+-        for line in diff_text.strip().splitlines():
+-            line = line.strip()
+-            if "|" in line:
+-                filename, stat = line.split("|", 1)
+-                filename = filename.strip()
+-                if filename:
+-                    result[filename] = stat.strip()
+-        return result
++    Parameters retain legacy names for backward compatibility:
++      - `post_diff`: currently unused; retained so call-site signatures don't change.
++      - `pre_diff`: HEAD SHA captured at step start by `_capture_git_diff`.
++      - `project_path`: directory to run git in AND the scope filter for `..` paths.
++
++    Files outside `project_path` (paths with `..` components after normalization) are
++    excluded — same filter as the prior implementation. Returns sorted list. Returns
++    [] on subprocess error, empty pre_diff, or no changes.
+ 
+-    pre_map = parse_stat_map(pre_diff)
+-    post_map = parse_stat_map(post_diff)
+-    changed = [f for f, s in post_map.items() if pre_map.get(f) != s]
++    Closes BACKLOG 2026-05-21 file_change_audit false-negative (root cause: prior
++    implementation used `git diff --stat` working-tree-vs-index, blind to commits).
++    """
++    if not pre_diff:
++        return []
++    # cwd must be the same directory where _capture_git_diff captured pre_diff.
++    # Callers pass project_path consistently across both calls.
++    cwd = project_path if project_path else None
++    try:
++        result = subprocess.run(
++            ["git", "--no-pager", "diff", "--stat", "--relative", pre_diff, "--", "."],
++            cwd=cwd, capture_output=True, text=True, timeout=10,
++        )
++    except Exception:
++        return []
++    if result.returncode != 0:
++        return []
++
++    changed = []
++    for line in result.stdout.strip().splitlines():
++        line = line.strip()
++        if "|" not in line:
++            continue
++        filename, _stat = line.split("|", 1)
++        filename = filename.strip()
++        if not filename:
++            continue
++        changed.append(filename)
+ 
+     if project_path is not None:
+         changed = [

@@ -1,0 +1,26 @@
+commit 950436cfbba1b239537c42769b606221b680aea5
+Author: Mark Lehn <marklehn@icloud.com>
+Date:   Mon May 25 21:30:32 2026 -0500
+
+    fix(bellows): file_change_audit now detects committed changes — closes BACKLOG 2026-05-21
+    
+    Files changed:
+    - bellows.py: _capture_git_diff rewritten to return HEAD SHA via `git rev-parse HEAD`;
+      _parse_diff_stat rewritten to run `git diff --stat <pre_sha> -- .` internally
+      (captures BOTH committed and uncommitted changes); 2 call sites updated to pass
+      wt_path instead of project_path for correct worktree scoping.
+    - tests/test_bellows.py: 12 obsolete tests deleted, 6 new tests added covering
+      SHA capture, committed-change detection (the regression test), uncommitted-change
+      detection, empty-SHA short-circuit, and ../ path filtering.
+    
+    Closes the cascading silent bypass of _gate_scope_check: empty files_changed from the
+    old working-tree-vs-index diff caused scope_check to short-circuit on every code-edit
+    step. 8+ reproductions documented in the SA diagnostic.
+    
+    Co-Authored-By: Claude Opus 4.6 <noreply@anthropic.com>
+
+ bellows.py                                         |  91 +++++----
+ .../file-change-audit-fix-2026-05-25.md            | 157 ++++++++++++++++
+ knowledge/research/agent-prompt-feedback.md        |  12 +-
+ tests/test_bellows.py                              | 209 ++++++++++-----------
+ 4 files changed, 321 insertions(+), 148 deletions(-)

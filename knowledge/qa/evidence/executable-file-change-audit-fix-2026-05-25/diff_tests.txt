@@ -1,0 +1,238 @@
+diff --git a/tests/test_bellows.py b/tests/test_bellows.py
+index c81c32f..73ac839 100644
+--- a/tests/test_bellows.py
++++ b/tests/test_bellows.py
+@@ -1,6 +1,7 @@
+ import json
+ import os
+ import shutil
++import subprocess
+ import sys
+ import tempfile
+ import threading
+@@ -535,131 +536,111 @@ def test_verdict_continue_at_final_step_moves_to_done():
+ 
+ 
+ # ---------------------------------------------------------------------------
+-# _parse_diff_stat — diff-of-diffs semantics
++# _capture_git_diff / _parse_diff_stat — commit-aware semantics (BACKLOG 2026-05-21 fix)
+ # ---------------------------------------------------------------------------
+ 
+-def test_parse_diff_stat_preexisting_unchanged_returns_empty():
+-    """Pre-existing dirty file with identical stat in post → not reported."""
+-    pre = " src/foo.py | 3 ++-\n 1 file changed, 2 insertions(+), 1 deletion(-)\n"
+-    post = " src/foo.py | 3 ++-\n 1 file changed, 2 insertions(+), 1 deletion(-)\n"
+-    assert bellows._parse_diff_stat(post, pre) == []
+-
+-
+-def test_parse_diff_stat_new_file_only_in_post():
+-    """File that appears only in post (not in pre) is reported."""
+-    pre = ""
+-    post = " src/new.py | 10 ++++++++++\n 1 file changed, 10 insertions(+)\n"
+-    assert bellows._parse_diff_stat(post, pre) == ["src/new.py"]
+-
+-
+-def test_parse_diff_stat_preexisting_changed_stat_is_reported():
+-    """Pre-existing dirty file whose stat changed in post is reported."""
+-    pre = " src/foo.py | 3 ++-\n"
+-    post = " src/foo.py | 7 +++----\n"
+-    assert bellows._parse_diff_stat(post, pre) == ["src/foo.py"]
+-
+-
+-def test_parse_diff_stat_summary_line_ignored():
+-    """Summary line (no '|') does not appear in output."""
+-    pre = ""
+-    post = " src/bar.py | 2 +-\n 1 file changed, 1 insertion(+), 1 deletion(-)\n"
+-    result = bellows._parse_diff_stat(post, pre)
+-    assert result == ["src/bar.py"]
+-    assert not any("|" not in f and "file changed" in f for f in result)
+-
+-
+-def test_parse_diff_stat_empty_inputs_return_empty():
+-    """Both empty inputs → empty list."""
+-    assert bellows._parse_diff_stat("", "") == []
+-
+-
+-def test_capture_git_diff_uses_relative_pathspec():
+-    """BACKLOG #4 fix: _capture_git_diff scopes diff to project subtree via --relative -- ."""
++def test_capture_git_diff_returns_head_sha():
++    """_capture_git_diff returns the HEAD SHA of the repo at the given path."""
++    with tempfile.TemporaryDirectory() as tmpdir:
++        subprocess.run(["git", "init"], cwd=tmpdir, capture_output=True, check=True)
++        subprocess.run(["git", "config", "user.email", "test@test"], cwd=tmpdir, capture_output=True, check=True)
++        subprocess.run(["git", "config", "user.name", "test"], cwd=tmpdir, capture_output=True, check=True)
++        # Create initial commit so HEAD exists
++        filepath = os.path.join(tmpdir, "init.txt")
++        with open(filepath, "w") as f:
++            f.write("init")
++        subprocess.run(["git", "add", "."], cwd=tmpdir, capture_output=True, check=True)
++        subprocess.run(["git", "commit", "-m", "init"], cwd=tmpdir, capture_output=True, check=True)
++
++        result = bellows._capture_git_diff(tmpdir)
++        assert result, "Expected non-empty SHA"
++        assert all(c in "0123456789abcdef" for c in result), f"Not a hex SHA: {result!r}"
++
++        # Cross-check against independent git rev-parse
++        expected = subprocess.run(
++            ["git", "rev-parse", "HEAD"], cwd=tmpdir, capture_output=True, text=True
++        ).stdout.strip()
++        assert result == expected, f"SHA mismatch: {result!r} vs {expected!r}"
++
++
++def test_capture_git_diff_returns_empty_on_no_git():
++    """_capture_git_diff returns empty string when path is not a git repo."""
++    with tempfile.TemporaryDirectory() as tmpdir:
++        result = bellows._capture_git_diff(tmpdir)
++        assert result == "", f"Expected empty string, got {result!r}"
++
++
++def test_parse_diff_stat_empty_pre_sha_returns_empty():
++    """_parse_diff_stat short-circuits to [] when pre_diff (SHA) is empty."""
++    assert bellows._parse_diff_stat("", "", "/any/path") == []
++    assert bellows._parse_diff_stat("post_sha", "", "/any/path") == []
++
++
++def test_parse_diff_stat_detects_committed_changes():
++    """Regression test: _parse_diff_stat detects changes that were committed (the actual bug)."""
++    with tempfile.TemporaryDirectory() as tmpdir:
++        subprocess.run(["git", "init"], cwd=tmpdir, capture_output=True, check=True)
++        subprocess.run(["git", "config", "user.email", "test@test"], cwd=tmpdir, capture_output=True, check=True)
++        subprocess.run(["git", "config", "user.name", "test"], cwd=tmpdir, capture_output=True, check=True)
++        # Initial commit
++        filepath = os.path.join(tmpdir, "tracked.txt")
++        with open(filepath, "w") as f:
++            f.write("original")
++        subprocess.run(["git", "add", "."], cwd=tmpdir, capture_output=True, check=True)
++        subprocess.run(["git", "commit", "-m", "init"], cwd=tmpdir, capture_output=True, check=True)
++
++        # Capture pre-step SHA
++        pre_sha = bellows._capture_git_diff(tmpdir)
++
++        # Simulate agent: edit file and COMMIT (the pattern that caused the false negative)
++        with open(filepath, "w") as f:
++            f.write("modified by agent")
++        subprocess.run(["git", "add", "."], cwd=tmpdir, capture_output=True, check=True)
++        subprocess.run(["git", "commit", "-m", "agent edit"], cwd=tmpdir, capture_output=True, check=True)
++
++        result = bellows._parse_diff_stat("", pre_sha, tmpdir)
++        assert "tracked.txt" in result, f"Expected 'tracked.txt' in {result!r}"
++
++
++def test_parse_diff_stat_detects_uncommitted_changes():
++    """Edge case: _parse_diff_stat detects changes that are NOT committed."""
++    with tempfile.TemporaryDirectory() as tmpdir:
++        subprocess.run(["git", "init"], cwd=tmpdir, capture_output=True, check=True)
++        subprocess.run(["git", "config", "user.email", "test@test"], cwd=tmpdir, capture_output=True, check=True)
++        subprocess.run(["git", "config", "user.name", "test"], cwd=tmpdir, capture_output=True, check=True)
++        # Initial commit
++        filepath = os.path.join(tmpdir, "tracked.txt")
++        with open(filepath, "w") as f:
++            f.write("original")
++        subprocess.run(["git", "add", "."], cwd=tmpdir, capture_output=True, check=True)
++        subprocess.run(["git", "commit", "-m", "init"], cwd=tmpdir, capture_output=True, check=True)
++
++        # Capture pre-step SHA
++        pre_sha = bellows._capture_git_diff(tmpdir)
++
++        # Simulate agent: edit file but do NOT commit
++        with open(filepath, "w") as f:
++            f.write("modified by agent")
++
++        result = bellows._parse_diff_stat("", pre_sha, tmpdir)
++        assert "tracked.txt" in result, f"Expected 'tracked.txt' in {result!r}"
++
++
++def test_parse_diff_stat_filters_dotdot_paths():
++    """_parse_diff_stat filters out ../ paths when project_path is provided."""
+     mock_result = MagicMock()
+-    mock_result.stdout = ""
+-    with patch("bellows.subprocess.run", return_value=mock_result) as mock_run:
+-        bellows._capture_git_diff("/some/project")
+-    assert mock_run.called
+-    argv = mock_run.call_args[0][0]
+-    assert "--relative" in argv, f"Expected --relative in argv: {argv!r}"
+-    assert "--" in argv, f"Expected -- separator in argv: {argv!r}"
+-    dash_dash_idx = argv.index("--")
+-    assert dash_dash_idx + 1 < len(argv) and argv[dash_dash_idx + 1] == ".", \
+-        f"Expected '.' immediately after '--' in argv: {argv!r}"
+-
+-
+-# ---------------------------------------------------------------------------
+-# _parse_diff_stat — project_path filter (BACKLOG #2 point fix)
+-# ---------------------------------------------------------------------------
+-
+-def test_parse_diff_stat_no_project_path_returns_all():
+-    """No project_path arg → returns all changed files unchanged (backward compat)."""
+-    pre = ""
+-    post = (
+-        " src/foo.py          | 3 ++-\n"
+-        " ../anvil/bar.py     | 5 +++--\n"
+-        " ../LESSONS.md       | 2 +-\n"
+-        " 3 files changed\n"
+-    )
+-    result = bellows._parse_diff_stat(post, pre)
+-    assert result == ["../LESSONS.md", "../anvil/bar.py", "src/foo.py"]
+-
+-
+-def test_parse_diff_stat_project_path_all_inside():
+-    """project_path provided, all changed files inside → returns all."""
+-    pre = ""
+-    post = (
+-        " knowledge/research/foo.md | 10 ++++++++++\n"
+-        " tests/test_bar.py         | 5 +++--\n"
+-        " bellows.py                | 3 ++-\n"
+-        " 3 files changed\n"
+-    )
+-    result = bellows._parse_diff_stat(post, pre, project_path="/some/project")
+-    assert result == ["bellows.py", "knowledge/research/foo.md", "tests/test_bar.py"]
+-
+-
+-def test_parse_diff_stat_project_path_filters_dotdot():
+-    """project_path provided, some files have ../ prefix → those are filtered out."""
+-    pre = ""
+-    post = (
++    mock_result.returncode = 0
++    mock_result.stdout = (
+         " src/foo.py          | 3 ++-\n"
+         " ../anvil/bar.py     | 5 +++--\n"
+         " tests/test_baz.py   | 2 +-\n"
+         " 3 files changed\n"
+     )
+-    result = bellows._parse_diff_stat(post, pre, project_path="/some/project")
++    with patch("bellows.subprocess.run", return_value=mock_result):
++        result = bellows._parse_diff_stat("post", "pre", "/some/project")
+     assert result == ["src/foo.py", "tests/test_baz.py"]
+ 
+ 
+-def test_parse_diff_stat_project_path_filters_sibling_project():
+-    """project_path provided, file in sibling project (../anvil/foo.py) → filtered out."""
+-    pre = ""
+-    post = " ../anvil/foo.py | 7 +++----\n 1 file changed\n"
+-    result = bellows._parse_diff_stat(post, pre, project_path="/some/project")
+-    assert result == []
+-
+-
+-def test_parse_diff_stat_project_path_filters_repo_root():
+-    """project_path provided, file at repo root (../LESSONS.md) → filtered out."""
+-    pre = ""
+-    post = " ../LESSONS.md | 2 +-\n 1 file changed\n"
+-    result = bellows._parse_diff_stat(post, pre, project_path="/some/project")
+-    assert result == []
+-
+-
+-def test_parse_diff_stat_project_path_keeps_deep_paths():
+-    """project_path provided, files inside project at any depth → returned."""
+-    pre = ""
+-    post = (
+-        " knowledge/research/foo.md | 10 ++++++++++\n"
+-        " tests/test_bar.py         | 5 +++--\n"
+-        " deeply/nested/dir/file.py | 1 +\n"
+-        " 3 files changed\n"
+-    )
+-    result = bellows._parse_diff_stat(post, pre, project_path="/some/project")
+-    assert result == ["deeply/nested/dir/file.py", "knowledge/research/foo.md", "tests/test_bar.py"]
+-
+-
+ # ---------------------------------------------------------------------------
+ # resume_step threading — Bug 1 fix
+ # ---------------------------------------------------------------------------
