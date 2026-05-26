@@ -1,7 +1,17 @@
 # Agent Prompt Feedback
 
 **Date:** 2026-05-27
-**Plans:** diagnostic-claude-settings-permission-gap-2026-05-22, executable-pre-scan-orphan-guard-2026-05-22, executable-bellows-tier-1-batch-2026-05-21, executable-bellows-expected-keys-narrow-2026-05-21, diagnostic-bellows-expected-keys-warning-2026-05-21, diagnostic-bellows-isinstance-asymmetry-2026-05-21, executable-deposit-exists-path-form-normalization-2026-05-27, executable-disable-autoupdater-2026-05-27, diagnostic-planner-authored-contract-validation-2026-05-20, diagnostic-bash-gate-vs-guardrails-2026-05-20, executable-plan-write-time-lessons-reread-2026-05-13, diagnostic-pre-scan-orphan-warn-flood-2026-05-22, executable-remove-pre-scan-processed-rename-v2-2026-05-24, executable-rename-first-ordering-2026-05-24, executable-settings-local-bash-fallback-doc-2026-05-22, executable-mcp-read-class-tools-extension-2026-05-25, diagnostic-file-change-audit-false-negative-2026-05-25
+**Plans:** diagnostic-claude-settings-permission-gap-2026-05-22, executable-pre-scan-orphan-guard-2026-05-22, executable-bellows-tier-1-batch-2026-05-21, executable-bellows-expected-keys-narrow-2026-05-21, diagnostic-bellows-expected-keys-warning-2026-05-21, diagnostic-bellows-isinstance-asymmetry-2026-05-21, executable-deposit-exists-path-form-normalization-2026-05-27, executable-disable-autoupdater-2026-05-27, diagnostic-planner-authored-contract-validation-2026-05-20, diagnostic-bash-gate-vs-guardrails-2026-05-20, executable-plan-write-time-lessons-reread-2026-05-13, diagnostic-pre-scan-orphan-warn-flood-2026-05-22, executable-remove-pre-scan-processed-rename-v2-2026-05-24, executable-rename-first-ordering-2026-05-24, executable-settings-local-bash-fallback-doc-2026-05-22, executable-mcp-read-class-tools-extension-2026-05-25, diagnostic-file-change-audit-false-negative-2026-05-25, executable-file-change-audit-fix-2026-05-25
+
+## 2026-05-25 — file-change-audit-fix (DEV Step 1)
+
+1. **Plan says "4 call sites" for `_parse_diff_stat` but only 2 exist.** The plan references "4 call sites in `run_plan`" for `_parse_diff_stat` (Edit 3), but there are only 2 call sites (lines 487, 578). The "4" conflates `_capture_git_diff` call sites (4) with `_parse_diff_stat` call sites (2). Agent had to grep to discover the correct count.
+
+2. **Plan missed 2 tests that also need deletion.** Edit 4 lists 10 tests to delete, but `test_parse_diff_stat_project_path_filters_repo_root` (line 642) and `test_parse_diff_stat_project_path_keeps_deep_paths` (line 650) also test the old diff-text contract. The `keeps_deep_paths` test would FAIL under the new implementation (empty `pre_diff` → short-circuit → `[]`). Agent deleted both as necessary to avoid regressions.
+
+3. **Pre-edit verification check 3: mock-patch count drifted below range.** Plan expected ≥38, actual was 32. The plan correctly acknowledges drift, and the constraint (don't modify these sites) holds regardless. The lower bound should be updated for accuracy.
+
+4. **Pre-existing failure count higher than plan states.** Plan says 5 carry-over failures, but 6 additional failures from the `set→list` refactor (commit 4e805fa, landed after plan was written) bring the total to 11. All pre-existing — zero regressions from this change. Plans should snapshot the known-failure count closer to dispatch time.
 
 ## 2026-05-25 — mcp-read-class-tools-extension (DEV Step 1)
 
