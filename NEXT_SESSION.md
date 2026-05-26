@@ -1,48 +1,46 @@
 # Bellows — Next Session Baton
 
 **Last session:** 2026-05-26
-**Last session focus:** Bellows hardening — parallel-SHA audit closeout + Rule 21 governance edit (halted on scope_check) + scope_check post-fix behavior diagnostic
+**Last session focus:** Bellows hardening — Rule 21 halted-plan cleanup, scope_check forensics, and `_parse_diff_stat` path truncation fix shipped
 
 ---
 
 ## Session summary
 
-Three plans dispatched. Two closed cleanly to `Done/`; one halted at Step 1 scope_check but its substantive Edit A/B/C all landed at the governance root, so the governance change shipped despite the halt.
+Four plans dispatched. All four closed cleanly to `Done/`; one closed via Rule 22 override on two non-substantive gate fails. Two diagnostics inverted prior framings; one executable shipped a one-parameter fix that resolved a recurring symptom class.
 
 | # | Plan | Outcome |
 |---|---|---|
-| 1 | `diagnostic-parallel-sha-population-audit-2026-05-26` | Population audit n=34 plans post-v4.47, **0 parallel-SHA reproductions**. Disposition: CLOSE-SUPERSEDED. v4.47 closed the root cause. No follow-up needed. |
-| 2 | `executable-planner-template-rule-21-contract-change-2026-05-26` | **HALTED at Step 1 scope_check.** Edits all landed: PLANNER_TEMPLATE v4.50 → v4.51 with Rule 21 contract-change carve-out (function appears in >1 test file → MUST be `full-suite`). Step 2 QA never ran. Plan sits in `decisions/` as `halted-*`. |
-| 3 | `diagnostic-scope-check-post-fix-behavior-2026-05-26` | Reframed CEO context. Plan-file rename does NOT trip scope_check (architecturally impossible). The Rule 21 trip was the **dev log deposit** failing the text-mention predicate. Disposition: DESIGN-INTENT-AUDIT-NEEDED. |
+| 1 | (no plan — direct verification) | Rule 21 v4.51 governance edits verified live; halted plan from 2026-05-26 moved to `Done/`. |
+| 2 | `diagnostic-scope-check-text-mention-audit-2026-05-26` | **Disproved** the prior diagnostic's leading hypothesis. Text-mention predicate PASSES for the Rule 21 dev log (2 fpath + 4 basename matches). Surfaced bigger finding: `_consume_verdicts` at bellows.py:1226 creates empty `gate_result`, destroying real failure evidence. Closed to `Done/`. |
+| 3 | `diagnostic-verdict-ledger-gate-result-preservation-2026-05-26` | Recommended **Fix Shape E.4 (JSON metadata line)** — ~7 LOC total, no new artifacts, zero coupling. Full implementation hand-off in Q6 of findings. Closed to `Done/` via Rule 22 override (own scope_check trip caused by truncation bug — perfect reproduction). |
+| 4 | `executable-parse-diff-stat-truncation-fix-2026-05-26` | **Shipped `--stat=300` fix** at bellows.py:730. 4/4 targeted tests PASS, integration verification confirms full paths. Closed via Rule 22 override on two gate fails (Step 2 scope_check on a `...`-truncated path — pre-fix daemon running on Step 2's gate evaluation; Step 2 rule_20_self_check on a Planner-authoring miss). |
 
-**Daemon restart this session at session start (CEO confirmed).** All three plans ran against the post-fix `_capture_git_diff` + `_parse_diff_stat` code. The Rule 21 halt was the first time scope_check actually evaluated against a real plan post-fix — scope_check had been silently bypassed for weeks pre-fix because `files_changed` was always empty.
+**Daemon NOT restarted at session end yet.** The `--stat=300` fix is in code (commit `4cee78a` or similar; check `git log bellows.py`) but the running daemon is still on pre-fix code. **Restart before next session** to load the fix.
 
 ---
 
 ## In-flight threads (carry forward)
 
-### 1. Rule 21 plan post-halt cleanup (PRIORITY)
+### 1. E.4 + Fix F executable (PRIORITY)
 
-The Rule 21 governance edits shipped to PLANNER_TEMPLATE v4.51 (commit `bc0f51e` at governance root) but the plan halted at Step 1 before Step 2 QA ran. No structural QA verification exists for the edits. Options:
+The verdict-ledger gate-result preservation diagnostic produced a complete implementation hand-off in Q6 of `bellows/knowledge/research/verdict-ledger-gate-result-preservation-2026-05-26.md`. The DEV plan is ready to author directly from that Q6 detail:
 
-- (a) Author a thin executable-rule-21-qa-cleanup plan that runs only Step 2 verification against the now-committed edits.
-- (b) Manually verify the edits via direct file reads (low overhead, no plan needed).
-- (c) Leave it — the governance edits are content-verifiable in the file itself, and the plan can be archived as `halted-*` indefinitely.
+- **Change 1 (verdict.py:234):** Add `**Gate Result JSON:**` metadata line to verdict request file.
+- **Change 2 (bellows.py:1185):** Add `gate_result_from_request = None` initialization.
+- **Change 3 (bellows.py:1205):** Add 4-line JSON parser in existing metadata-parse loop.
+- **Change 4 (bellows.py:1226):** Replace empty-dict construction with `gate_result_from_request or {...}`.
+- **Fix F (bellows.py:495 and :586):** Expand terminal log with failure gate names and files_changed count.
 
-Recommend (b) at start of next session: read PLANNER_TEMPLATE.md sections around Rule 21, the Lessons row table, and the version line; confirm the three edits landed correctly. Move the halted plan to `Done/halted-*-2026-05-26.md` once verified.
+Total: ~9 LOC across 2 files. Test scope: `_consume_verdicts` and `log_to_ledger` reach 4 test files (`test_consume_verdicts.py`, `test_misplaced_verdicts.py`, `test_bellows.py`, `test_verdict.py`) → **`full-suite` mandated** by Rule 21's contract-change carve-out (Fix E.4 changes the *content* the ledger receives from empty arrays to real data — functionally a contract change for ledger consumers).
 
-### 2. Pristine-plan-text follow-up diagnostic (the scope_check design-intent audit)
+This plan should be the **first plan of next session**. PROJECT_STATUS.md does NOT yet mention the gate-result preservation diagnostic — the next session's PROJECT_STATUS entry for the E.4+F plan will reference it.
 
-The scope_check diagnostic ended with DESIGN-INTENT-AUDIT-NEEDED. To resolve, a follow-up SA diagnostic should:
-- Read the pristine Rule 21 plan step text from the main repo's `.bellows-cache/` (the worktree didn't have access)
-- Determine whether the dev log path was mentioned in the step text in a form the text-mention predicate didn't match (path-form gap) or whether the predicate has a structural failure mode
-- Then select one of Fix Shape B (parse `**Deposits:**` block structurally) or Fix Shape D (governance rule requiring deposit paths be mentioned in step prose)
+### 2. Re-investigate original Rule 21 scope_check trip with full forensics in place (after E.4 lands)
 
-This diagnostic is scoped — single SA step, no DEV/QA chain. Can be the first plan of next session if Rule 21 cleanup goes the (b) route.
+The original 2026-05-25 Rule 21 scope_check trip's actual cause is **now known**: the `--stat=300` truncation bug fixed in this session. The dev log path `knowledge/development/planner-template-rule-21-contract-change-2026-05-26.md` was truncated by `git diff --stat`'s default ~80-column allocation, producing a `...`-prefixed entry in `files_changed` that didn't match anything in the step text. The prior diagnostic's text-mention finding was correct; the actual tripping mechanism was upstream of the gate. **No further investigation needed** — the truncation fix retroactively explains all three observed scope_check trips this session (Rule 21 plan, verdict-ledger diagnostic, truncation-fix plan's own Step 2).
 
-### 3. `knowledge/development/` deposits = systemic scope_check risk (side-finding from diagnostic 3)
-
-The SA's side-finding 3: every Rule 8 split-commit DOC step creates a `knowledge/development/*.md` deposit. If the Planner doesn't mention the deposit path in step text, scope_check trips. The Rule 21 plan tripped this on its first run. Without a structural fix, every DOC step from now on will trip scope_check unless the Planner is meticulous about including the dev log path in step prose. Fix Shape B (parse Deposits block structurally) would close this systemically; Fix Shape D (governance rule) closes it via discipline. Decision waits on the in-flight thread 2 diagnostic.
+**This thread is effectively closed** by the truncation fix. Listed here only to record that the loop closed.
 
 ---
 
@@ -59,19 +57,21 @@ No new BACKLOG additions this session. Two existing Open entries remain relevant
 
 In priority order:
 
-1. **Rule 21 plan cleanup** — option (b) recommended; ~5 minutes
-2. **Pristine-plan-text scope_check diagnostic** — single SA step; gets us to a fix decision on the `knowledge/development/` systemic risk
-3. **Whichever fix shape is chosen** — small DEV plan if Fix Shape B, governance edit if Fix Shape D
+1. **E.4 + Fix F executable** — DEV plan from Q6 hand-off detail, full-suite scope, ~9 LOC.
+2. **Any other planned hardening work** — no specific carries beyond E.4+F.
 
 ---
 
 ## LESSONS entries from this session
 
-One entry: 2026-05-26 — scope_check trip identified the WRONG file in CEO context (pattern-recognition + planner-discipline tag). Filename-slug-overloading made the Files Changed message ambiguous; I picked the most operationally salient interpretation without reading the literal Files Changed list. Mitigation: read literal entries before authoring follow-up plans on gate failures.
+Two entries appended to `/Users/marklehn/Developer/GitHub/LESSONS.md`:
+
+1. **`pause_for_verdict` accepts only three values; inventing a fourth gets a WARN, not an error.** I authored `pause_for_verdict: after_each_step` on three plans this session; the daemon WARNed and treated as no-pause. Yesterday's Rule 21 plan had the same invalid value. Tag: `planner-discipline`, `bellows-architecture`.
+2. **Use `**Deposits:**` blocks for ALL agent deposits including QA reports.** Truncation-fix plan's Step 2 used inline prose "Deposit at" instead of the Rule 26 block; the parser missed the QA report path; rule_20_self_check failed despite the banner being present in the deposit. Tag: `planner-discipline`, `rule-26`.
 
 ---
 
 ## CEO actions before next session
 
-- **Restart daemon** if any further code lands in the bellows worktree between sessions. The current daemon has all post-fix code loaded.
-- **Session-wrap git commits** for the bellows-side lifecycle artifacts (this commit) and the governance-root LESSONS entry (next commit). Both happen at session-wrap below.
+- **Restart Bellows daemon** to load the `--stat=300` fix in `_parse_diff_stat`. The fix is committed but not running.
+- No other actions required — all session work shipped and committed.
