@@ -643,3 +643,39 @@ def test_post_verdict_request_writes_precondition_failure_field():
             assert "**Precondition Failure:** false" in content_default, (
                 f"Expected '**Precondition Failure:** false' when default, got:\n{content_default}"
             )
+
+
+def test_post_verdict_request_includes_gate_result_json():
+    """E.4: post_verdict_request must include a **Gate Result JSON:** line whose JSON
+    round-trips the failures and files_changed subset of gate_result."""
+    with tempfile.TemporaryDirectory() as tmp:
+        with patch.object(verdict, "VERDICTS_DIR", Path(tmp) / "verdicts"):
+            gate_result = _make_gate_result(
+                passed=False,
+                failures=[
+                    {"gate": "scope_check", "evidence": "out-of-scope file: rogue.py"},
+                    {"gate": "deposit_exists", "evidence": "missing deposit"},
+                ],
+                files_changed=["src/main.py", "tests/test_main.py", "README.md"],
+            )
+            path = verdict.post_verdict_request(
+                "/tmp/plan.md", "/tmp/project", 1, "/tmp/logs", gate_result,
+                pause_reason="gate_failure", total_steps=2,
+            )
+            content = open(path).read()
+
+            # Find the Gate Result JSON line
+            json_line = None
+            for line in content.splitlines():
+                if line.startswith("**Gate Result JSON:**"):
+                    json_line = line
+                    break
+            assert json_line is not None, (
+                f"Expected '**Gate Result JSON:**' line in verdict-request content"
+            )
+
+            # Parse and verify round-trip
+            json_str = json_line.split(":**", 1)[1].strip()
+            parsed = json.loads(json_str)
+            assert parsed["failures"] == gate_result["failures"]
+            assert parsed["files_changed"] == gate_result["files_changed"]

@@ -1,7 +1,17 @@
 # Agent Prompt Feedback
 
 **Date:** 2026-05-27
-**Plans:** diagnostic-claude-settings-permission-gap-2026-05-22, executable-pre-scan-orphan-guard-2026-05-22, executable-bellows-tier-1-batch-2026-05-21, executable-bellows-expected-keys-narrow-2026-05-21, diagnostic-bellows-expected-keys-warning-2026-05-21, diagnostic-bellows-isinstance-asymmetry-2026-05-21, executable-deposit-exists-path-form-normalization-2026-05-27, executable-disable-autoupdater-2026-05-27, diagnostic-planner-authored-contract-validation-2026-05-20, diagnostic-bash-gate-vs-guardrails-2026-05-20, executable-plan-write-time-lessons-reread-2026-05-13, diagnostic-pre-scan-orphan-warn-flood-2026-05-22, executable-remove-pre-scan-processed-rename-v2-2026-05-24, executable-rename-first-ordering-2026-05-24, executable-settings-local-bash-fallback-doc-2026-05-22, executable-mcp-read-class-tools-extension-2026-05-25, diagnostic-file-change-audit-false-negative-2026-05-25, executable-file-change-audit-fix-2026-05-25, executable-planner-template-rule-21-contract-change-2026-05-26, diagnostic-verdict-ledger-gate-result-preservation-2026-05-26
+**Plans:** diagnostic-claude-settings-permission-gap-2026-05-22, executable-pre-scan-orphan-guard-2026-05-22, executable-bellows-tier-1-batch-2026-05-21, executable-bellows-expected-keys-narrow-2026-05-21, diagnostic-bellows-expected-keys-warning-2026-05-21, diagnostic-bellows-isinstance-asymmetry-2026-05-21, executable-deposit-exists-path-form-normalization-2026-05-27, executable-disable-autoupdater-2026-05-27, diagnostic-planner-authored-contract-validation-2026-05-20, diagnostic-bash-gate-vs-guardrails-2026-05-20, executable-plan-write-time-lessons-reread-2026-05-13, diagnostic-pre-scan-orphan-warn-flood-2026-05-22, executable-remove-pre-scan-processed-rename-v2-2026-05-24, executable-rename-first-ordering-2026-05-24, executable-settings-local-bash-fallback-doc-2026-05-22, executable-mcp-read-class-tools-extension-2026-05-25, diagnostic-file-change-audit-false-negative-2026-05-25, executable-file-change-audit-fix-2026-05-25, executable-planner-template-rule-21-contract-change-2026-05-26, diagnostic-verdict-ledger-gate-result-preservation-2026-05-26, executable-verdict-ledger-gate-result-preservation-2026-05-26
+
+## 2026-05-26 — verdict-ledger-gate-result-preservation (DEV Step 1)
+
+1. **Q6 hand-off was high quality.** All 16 anchors matched exactly — no line-number drift. Every code snippet was copy-pasteable with one exception (see #3). The SA's verification block (Q7) was load-bearing for confidence in the edits.
+
+2. **Claim step failed again (worktree isolation).** Same recurring issue: the plan file doesn't exist in the worktree. The claim mechanism for worktree-dispatched plans still assumes the plan file is co-located with the code.
+
+3. **Fix F snippet needed a defensive guard not in Q6.** The Q6 snippet for the terminal log expansion uses `f["gate"]` directly, but `test_run_plan_inprogress_entry_renames_to_verdict_pending` uses `failures: ["scope_check"]` (string-typed, not dict-typed). Adding `isinstance(f, dict)` guard was necessary to avoid breaking an unrelated pre-existing test. Future SA diagnostics should grep for all test fixtures that construct `gate_result` to catch format divergences.
+
+4. **Test fixture helper `_make_verdict_request_content` needed extension.** The existing helper in `test_consume_verdicts.py` didn't support the new `gate_result_json` field, but extending it with an optional parameter was clean and backward-compatible.
 
 ## 2026-05-26 — verdict-ledger-gate-result-preservation (SA Step 1)
 

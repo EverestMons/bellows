@@ -232,6 +232,7 @@ def post_verdict_request(plan_path, project_path, step_number, log_path, gate_re
         f"**Precondition Failure:** {'true' if precondition_failure else 'false'}\n"
         f"**Deposit:** {extract_primary_deposit(current_step_text) or 'none'}\n"
         f"**Gate Result Passed:** {gate_result.get('passed', False)}\n"
+        f"**Gate Result JSON:** {json.dumps({'failures': gate_result.get('failures', []), 'files_changed': gate_result.get('files_changed', [])})}\n"
         f"**Total Steps:** {total_steps}\n\n"
         f"{pause_section}\n\n"
         f"## Verification Results\n\n{verification_table}\n\n"

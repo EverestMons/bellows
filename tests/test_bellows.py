@@ -3631,3 +3631,63 @@ def test_pause_site_4_auto_close_teardown_failure_renames_before_post():
         post_idx = call_order.index("verdict_post")
         assert rename_idx < post_idx, \
             f"Site 4: rename ({rename_idx}) must precede verdict_post ({post_idx}): {call_order}"
+
+
+def test_gates_log_includes_failure_gates_and_files_changed_count():
+    """Fix F: gate log message must include failure gate names and files_changed count."""
+    with tempfile.TemporaryDirectory() as tmp:
+        decisions_dir = os.path.join(tmp, "proj", "knowledge", "decisions")
+        os.makedirs(decisions_dir)
+        plan_filename = "executable-gate-log-expand-2026-05-26.md"
+        plan_path = os.path.join(decisions_dir, plan_filename)
+        with open(plan_path, "w") as f:
+            f.write("## STEP 1\nDo stuff.\n")
+
+        config = {
+            "default_model": "claude-sonnet-4-6",
+            "pushover": {"app_key": "", "user_key": ""},
+            "callback_port": 5999,
+            "step_timeout_seconds": 600,
+        }
+
+        def failing_gates_with_files(*args, **kwargs):
+            return {
+                "passed": False,
+                "failures": [
+                    {"gate": "scope_check", "evidence": "out-of-scope"},
+                    {"gate": "deposit_exists", "evidence": "missing deposit"},
+                ],
+                "is_qa_step": False,
+                "files_changed": ["a.py", "b.py", "c.py"],
+                "plan_header": {"auto_close": "false"},
+                "verdict_requested": {"requested": False, "body": None},
+            }
+
+        log_calls = []
+        original_log = bellows._log
+
+        def capture_log(level, msg, **kwargs):
+            log_calls.append((level, msg))
+            original_log(level, msg, **kwargs)
+
+        with patch("bellows._create_worktree", return_value="/tmp/wt"), \
+             patch("bellows._capture_git_diff", return_value=""), \
+             patch("bellows._teardown_worktree"), \
+             patch("bellows.runner.run_step", return_value=_make_fake_run_step_result()), \
+             patch("bellows.gates.check", side_effect=failing_gates_with_files), \
+             patch("bellows._log", side_effect=capture_log), \
+             patch("shutil.move"), \
+             patch("bellows.verdict.post_verdict_request", return_value="/tmp/verdict.md"), \
+             patch("bellows.notifier.notify_verdict_request"), \
+             patch("bellows.notifier.push"), \
+             patch("bellows.record_run"), \
+             patch("bellows.validators.validate_at_claim", return_value={"rejected": False, "reject_reason": "", "warnings": []}):
+            response_server = MagicMock()
+            bellows.run_plan(plan_path, config, response_server)
+
+        gate_log_msgs = [msg for level, msg in log_calls if "gates step" in msg]
+        assert len(gate_log_msgs) >= 1, f"Expected at least one 'gates step' log, got: {log_calls}"
+        msg = gate_log_msgs[0]
+        assert "scope_check" in msg, f"Expected 'scope_check' in gate log, got: {msg}"
+        assert "deposit_exists" in msg, f"Expected 'deposit_exists' in gate log, got: {msg}"
+        assert "files_changed=3" in msg, f"Expected 'files_changed=3' in gate log, got: {msg}"

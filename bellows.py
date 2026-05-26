@@ -492,7 +492,8 @@ def run_plan(plan_path: str, config: dict, response_server: server.ResponseServe
                 "evidence": f"Agent moved {base_filename} to Done/ during step execution. File recovered to in-progress. This is a Failure 3 Mode A violation."
             })
             gate_result["passed"] = False
-        _log("EVENT", f"gates step {current_step}: passed={gate_result['passed']}, failures={len(gate_result['failures'])}", slug=slug_for(plan_name))
+        failure_gates = ", ".join((f["gate"] if isinstance(f, dict) else str(f)) for f in gate_result["failures"]) if gate_result["failures"] else "none"
+        _log("EVENT", f"gates step {current_step}: passed={gate_result['passed']}, failures={len(gate_result['failures'])} ({failure_gates}), files_changed={len(gate_result.get('files_changed', []))}", slug=slug_for(plan_name))
 
         header = gate_result.get("plan_header", {})
         effective_auto_close = str(header.get("auto_close", "false")).lower() == "true"
@@ -583,7 +584,8 @@ def run_plan(plan_path: str, config: dict, response_server: server.ResponseServe
                     "evidence": f"Agent moved {base_filename} to Done/ during step execution. File recovered to in-progress. This is a Failure 3 Mode A violation."
                 })
                 gate_result["passed"] = False
-            _log("EVENT", f"gates step {current_step}: passed={gate_result['passed']}, failures={len(gate_result['failures'])}", slug=slug_for(plan_name))
+            failure_gates = ", ".join((f["gate"] if isinstance(f, dict) else str(f)) for f in gate_result["failures"]) if gate_result["failures"] else "none"
+            _log("EVENT", f"gates step {current_step}: passed={gate_result['passed']}, failures={len(gate_result['failures'])} ({failure_gates}), files_changed={len(gate_result.get('files_changed', []))}", slug=slug_for(plan_name))
 
         # Final step completed — check gates one last time. Mirrors the while-loop
         # pause conditions plus `not effective_auto_close` so single-step plans
@@ -1183,6 +1185,7 @@ class Bellows:
             total_steps_from_request = None
             pause_reason_code_from_request = None
             precondition_failure_from_request = False
+            gate_result_from_request = None
             if pending_req_file.exists():
                 pending_req_file_text = pending_req_file.read_text()
                 for req_line in pending_req_file_text.splitlines():
@@ -1203,6 +1206,11 @@ class Bellows:
                         pause_reason_code_from_request = req_line.split(":**", 1)[1].strip() or None
                     if req_line.startswith("**Precondition Failure:**"):
                         precondition_failure_from_request = req_line.split(":**", 1)[1].strip().lower() == "true"
+                    if req_line.startswith("**Gate Result JSON:**"):
+                        try:
+                            gate_result_from_request = json.loads(req_line.split(":**", 1)[1].strip())
+                        except (json.JSONDecodeError, IndexError):
+                            pass
 
             verdict_result = verdict.check_verdict(plan_slug, step_number)
             if not verdict_result.get("found"):
@@ -1223,7 +1231,7 @@ class Bellows:
                         full_plan_path = os.path.join(decisions_path, pname)
                         original_name = pname.replace("verdict-pending-", "", 1)
                         cleanup_slug = verdict.slug_from_path(original_name)
-                        gate_result = {"failures": [], "files_changed": []}
+                        gate_result = gate_result_from_request or {"failures": [], "files_changed": []}
 
                         if v == "continue":
                             is_diag = original_name.startswith("diagnostic-")
