@@ -3,6 +3,16 @@
 **Date:** 2026-05-27
 **Plans:** diagnostic-claude-settings-permission-gap-2026-05-22, executable-pre-scan-orphan-guard-2026-05-22, executable-bellows-tier-1-batch-2026-05-21, executable-bellows-expected-keys-narrow-2026-05-21, diagnostic-bellows-expected-keys-warning-2026-05-21, diagnostic-bellows-isinstance-asymmetry-2026-05-21, executable-deposit-exists-path-form-normalization-2026-05-27, executable-disable-autoupdater-2026-05-27, diagnostic-planner-authored-contract-validation-2026-05-20, diagnostic-bash-gate-vs-guardrails-2026-05-20, executable-plan-write-time-lessons-reread-2026-05-13, diagnostic-pre-scan-orphan-warn-flood-2026-05-22, executable-remove-pre-scan-processed-rename-v2-2026-05-24, executable-rename-first-ordering-2026-05-24, executable-settings-local-bash-fallback-doc-2026-05-22, executable-mcp-read-class-tools-extension-2026-05-25, diagnostic-file-change-audit-false-negative-2026-05-25, executable-file-change-audit-fix-2026-05-25, executable-planner-template-rule-21-contract-change-2026-05-26
 
+## 2026-05-26 — scope-check-text-mention-audit (SA Step 1)
+
+1. **CEO Context framing was correct that the prior diagnostic ended with DESIGN-INTENT-AUDIT-NEEDED.** The plan correctly identified the single empirical question to answer and provided all four inputs needed to answer it.
+
+2. **Plan assumption about the failure mode was wrong — but that's the point of the diagnostic.** The plan assumed the dev log path was not in the step text. The diagnostic proved it IS. The plan correctly structured the investigation so this finding would emerge naturally from Q1.
+
+3. **Missing evidence source: verdict request file was destroyed.** The plan did not anticipate that the original gate evidence would be lost. A future diagnostic of this type should check for the verdict request file's existence FIRST and flag if it's been consumed/deleted.
+
+4. **Claim step worked correctly.** The plan was already in `in-progress-` state when the agent started (claimed by a prior dispatch attempt or by the Bellows daemon).
+
 ## 2026-05-26 — planner-template-rule-21-contract-change (DOC Step 1)
 
 1. **Plan claim step references a file that doesn't exist in the worktree.** The plan says to claim by moving `knowledge/decisions/executable-planner-template-rule-21-contract-change-2026-05-26.md` to `in-progress-` prefix. The file was already claimed (in-progress version existed in the main bellows repo). For worktree-dispatched plans, the claim mechanism needs to account for the fact that the plan file lives in the main repo's decisions directory, not in the worktree. Same recurring feedback as prior worktree-dispatched plans.
