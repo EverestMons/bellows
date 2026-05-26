@@ -23,7 +23,7 @@ def test_extract_plan_required_deposits_prefers_declared_block():
 > - `knowledge/dev/beta.md`
 """
     result = gates._extract_plan_required_deposits(step_text)
-    assert result == {"knowledge/dev/alpha.md", "knowledge/dev/beta.md"}
+    assert set(result) == {"knowledge/dev/alpha.md", "knowledge/dev/beta.md"}
     assert "other-path.md" not in result
 
 
@@ -49,7 +49,7 @@ def test_extract_plan_required_deposits_handles_none_bullet():
 > - none
 """
     result = gates._extract_plan_required_deposits(step_text)
-    assert result == set()
+    assert set(result) == set()
 
 
 def test_extract_plan_required_deposits_ignores_paths_in_code_fences_when_block_present():
@@ -69,7 +69,7 @@ def test_extract_plan_required_deposits_ignores_paths_in_code_fences_when_block_
 > - `knowledge/dev/real-deposit.md`
 """
     result = gates._extract_plan_required_deposits(step_text)
-    assert result == {"knowledge/dev/real-deposit.md"}
+    assert set(result) == {"knowledge/dev/real-deposit.md"}
     assert "path/to/file.md" not in result
     assert "legacy/false-positive.md" not in result
 
@@ -120,7 +120,7 @@ def test_extract_plan_required_deposits_blank_quoted_line():
 > - `bellows/foo.md`
 """
     result = gates._extract_plan_required_deposits(step_text)
-    assert result == {"bellows/foo.md"}
+    assert set(result) == {"bellows/foo.md"}
 
 
 def test_extract_plan_required_deposits_multiple_blank_quoted_lines():
@@ -134,7 +134,7 @@ def test_extract_plan_required_deposits_multiple_blank_quoted_lines():
 > - `bellows/foo.md`
 """
     result = gates._extract_plan_required_deposits(step_text)
-    assert result == {"bellows/foo.md"}
+    assert set(result) == {"bellows/foo.md"}
 
 
 def test_extract_plan_required_deposits_does_not_span_paragraphs():
@@ -150,7 +150,7 @@ Some other prose.
 - `unrelated/bar.md`
 """
     result = gates._extract_plan_required_deposits(step_text)
-    assert result == set()
+    assert set(result) == set()
 
 
 def test_extract_step_text_helper_gates_py():
