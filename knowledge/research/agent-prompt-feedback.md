@@ -3,6 +3,18 @@
 **Date:** 2026-05-27
 **Plans:** diagnostic-claude-settings-permission-gap-2026-05-22, executable-pre-scan-orphan-guard-2026-05-22, executable-bellows-tier-1-batch-2026-05-21, executable-bellows-expected-keys-narrow-2026-05-21, diagnostic-bellows-expected-keys-warning-2026-05-21, diagnostic-bellows-isinstance-asymmetry-2026-05-21, executable-deposit-exists-path-form-normalization-2026-05-27, executable-disable-autoupdater-2026-05-27, diagnostic-planner-authored-contract-validation-2026-05-20, diagnostic-bash-gate-vs-guardrails-2026-05-20, executable-plan-write-time-lessons-reread-2026-05-13, diagnostic-pre-scan-orphan-warn-flood-2026-05-22, executable-remove-pre-scan-processed-rename-v2-2026-05-24, executable-rename-first-ordering-2026-05-24, executable-settings-local-bash-fallback-doc-2026-05-22, executable-mcp-read-class-tools-extension-2026-05-25, diagnostic-file-change-audit-false-negative-2026-05-25, executable-file-change-audit-fix-2026-05-25, executable-planner-template-rule-21-contract-change-2026-05-26, diagnostic-verdict-ledger-gate-result-preservation-2026-05-26, executable-verdict-ledger-gate-result-preservation-2026-05-26, executable-fix-f-guard-removal-2026-05-26
 
+## 2026-05-26 — fix-f-guard-removal (QA Step 2)
+
+1. **GUARDRAILS.md not found at `governance/GUARDRAILS.md`.** Same as DEV's feedback — the worktree doesn't contain this file. The specialist file and plan both reference it as a mandatory read, but the file doesn't exist in the repo at that path. Non-blocking for this mechanical QA task.
+
+2. **RULE_20_SELF_CHECK_BLOCK.md location mismatch.** The specialist file says "governance root" but the file lives at `/Users/marklehn/Developer/GitHub/RULE_20_SELF_CHECK_BLOCK.md` (repo parent directory), not in the project's governance/ directory. Required a find command to locate. The specialist should reference the actual path.
+
+3. **Evidence file list was explicit and complete.** The plan specified all 9 required evidence filenames and their content expectations, making the Rule 20 self-check deterministic. No ambiguity about what to deposit.
+
+4. **Guard site classification task was well-framed.** The plan explicitly distinguished Fix F sites (`.join()` log expressions at 495/587) from 2026-05-21 symmetric pattern sites (`all()` predicates at 509/600) and instructed QA to verify both sets independently. This eliminated guesswork.
+
+5. **`qa_report_path` in plan uses `bellows/` prefix.** The plan specifies `bellows/knowledge/qa/...` but the worktree root IS the bellows project root, so the actual path is `knowledge/qa/...` without the `bellows/` prefix. The plan's preamble correctly notes "strip the `bellows/` prefix" but the Rule 20 values section still includes it.
+
 ## 2026-05-26 — fix-f-guard-removal (DEV Step 1)
 
 1. **Change 2 description in the plan conflated Fix F sites with Block 1/Block 2 sites.** The plan's Change 2 text says "The current code at `bellows.py:495` includes `isinstance(f, dict) and` in the `all(...)` predicate that classifies pause reasons." In reality, line 495 is the Fix F `.join()` expression, not the `all()` predicate (which is at line 509). The anchor verification instructions and CEO Context were accurate — the Change 2/3 body text was misleading. Disambiguating by quoting the actual code pattern (`.join()` vs `all()`) would eliminate confusion.
