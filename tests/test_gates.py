@@ -1586,6 +1586,35 @@ def test_rule_20_self_check_fails_when_first_md_deposit_lacks_passed_line(tmp_pa
         assert "qa-report.md" in r20[0]["evidence"]
 
 
+def test_rule_20_self_check_distinguishes_no_md_paths_from_missing_banner(tmp_path):
+    """Item 1 regression: the no-md-paths branch (deposits block declares no .md files) and
+    the banner-missing branch (QA report exists but lacks the Rule 20 banner) must produce
+    distinct evidence strings so verdict-read can route to the correct discipline rule."""
+    parsed = _clean_parsed()
+
+    # Branch A: deposits block has no .md paths (only directories)
+    failures_a = []
+    with patch.object(gates, '_extract_plan_required_deposits', return_value=["knowledge/qa/evidence/"]):
+        gates._gate_rule_20_self_check(True, "## STEP 2 — QA\n> Verify.\n", 2, str(tmp_path), parsed, failures_a)
+    r20_a = [f for f in failures_a if f["gate"] == "rule_20_self_check"]
+    assert len(r20_a) == 1
+    assert "deposits block declares no .md paths" in r20_a[0]["evidence"]
+
+    # Branch B: deposits block has .md path but banner is missing from QA report content
+    report = tmp_path / "knowledge" / "qa" / "qa-report.md"
+    report.parent.mkdir(parents=True)
+    report.write_text("# QA Report\n\nAll tests passed. No issues found.\n")
+    failures_b = []
+    with patch.object(gates, '_extract_plan_required_deposits', return_value=["knowledge/qa/qa-report.md"]):
+        gates._gate_rule_20_self_check(True, "## STEP 2 — QA\n> Verify.\n", 2, str(tmp_path), parsed, failures_b)
+    r20_b = [f for f in failures_b if f["gate"] == "rule_20_self_check"]
+    assert len(r20_b) == 1
+    assert "no QA deposit contains Rule 20 self-check banner" in r20_b[0]["evidence"]
+
+    # The two evidence strings must differ
+    assert r20_a[0]["evidence"] != r20_b[0]["evidence"]
+
+
 # ---------------------------------------------------------------------------
 # Item #6 regression tests (Shape 6C — section-scoped table + status tokens)
 # ---------------------------------------------------------------------------

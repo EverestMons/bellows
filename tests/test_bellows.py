@@ -1314,8 +1314,13 @@ def test_run_plan_continuation_prompt_uses_shadow_path():
             captured_prompts.append(prompt)
             return _make_fake_run_step_result()
 
+        # Use a non-sparse plan_header (>= 3 keys) so _apply_defensive_header_defaults
+        # doesn't inject pause_for_verdict — this test is about shadow path, not pause behavior.
+        advance_gates = _clean_gates()
+        advance_gates["plan_header"] = {"auto_close": "true", "pause_for_verdict": "never", "Total Steps": "2"}
+
         with patch("bellows.runner.run_step", side_effect=fake_run_step), \
-             patch("bellows.gates.check", return_value=_clean_gates()), \
+             patch("bellows.gates.check", return_value=advance_gates), \
              patch("bellows.notifier.push"), \
              patch("bellows.verdict.log_to_ledger"), \
              patch("bellows._capture_git_diff", return_value=""), \
@@ -2934,6 +2939,119 @@ def test_seen_dispatch_window_guard_holds():
         handler._handle(path)
 
     mock_orch.handle_new_plan.assert_not_called()
+
+
+def test_on_modified_invalidates_seen_for_runnable_plan():
+    """Item 3 regression: on_modified must discard the slug from _seen when the modified file
+    is a runnable plan without a lifecycle prefix, allowing corrected re-deposits to dispatch."""
+    mock_orch = MagicMock()
+    mock_orch._seen = set()
+    handler = bellows.PlanHandler(mock_orch)
+
+    with tempfile.TemporaryDirectory() as tmp:
+        mock_orch.config = {"watched_projects": [tmp]}
+        fname = "executable-widget-2026-05-11.md"
+        path = os.path.join(tmp, fname)
+        open(path, "w").close()
+
+        slug = verdict.slug_from_path(path)
+        mock_orch._seen.add(slug)
+
+        event = MagicMock()
+        event.is_directory = False
+        event.src_path = path
+
+        with patch.object(handler, "_handle") as mock_handle:
+            handler.on_modified(event)
+
+        # Slug should have been invalidated before _handle was called
+        assert slug not in mock_orch._seen, "slug should be discarded from _seen on non-lifecycle on_modified"
+        mock_handle.assert_called_once_with(path)
+
+
+def test_on_modified_preserves_seen_for_lifecycle_renames():
+    """Item 3 regression: on_modified must NOT invalidate _seen when the file has a Bellows-managed
+    lifecycle prefix (in-progress-, verdict-pending-, halted-). This prevents re-dispatch loops."""
+    mock_orch = MagicMock()
+    mock_orch._seen = set()
+    handler = bellows.PlanHandler(mock_orch)
+
+    lifecycle_filenames = [
+        "in-progress-executable-widget-2026-05-11.md",
+        "verdict-pending-executable-widget-2026-05-11.md",
+        "halted-executable-widget-2026-05-11.md",
+    ]
+
+    for lf in lifecycle_filenames:
+        path = f"/proj/knowledge/decisions/{lf}"
+        slug = verdict.slug_from_path(path)
+        mock_orch._seen.add(slug)
+
+        event = MagicMock()
+        event.is_directory = False
+        event.src_path = path
+
+        with patch.object(handler, "_handle") as mock_handle:
+            handler.on_modified(event)
+
+        assert slug in mock_orch._seen, f"slug should remain in _seen for lifecycle prefix file {lf}"
+        mock_handle.assert_called_once_with(path)
+
+
+def test_apply_defensive_header_defaults_propagates_to_reparsed_header():
+    """Item 4 regression: after gates.check() re-parses the header at line ~498, run_plan must
+    call _apply_defensive_header_defaults again so header_says_pause() consumers see the default."""
+    with tempfile.TemporaryDirectory() as tmp:
+        decisions_dir = os.path.join(tmp, "proj", "knowledge", "decisions")
+        os.makedirs(decisions_dir)
+        plan_filename = "executable-item4-test-2026-05-26.md"
+        plan_path = os.path.join(decisions_dir, plan_filename)
+        plan_text = "## STEP 1\nDo stuff.\n## STEP 2\nDo more stuff.\n"
+        with open(plan_path, "w") as f:
+            f.write(plan_text)
+
+        config = {
+            "default_model": "claude-sonnet-4-6",
+            "pushover": {"app_key": "", "user_key": ""},
+            "callback_port": 5999,
+            "step_timeout_seconds": 600,
+        }
+
+        # gates.check returns a sparse plan_header (missing pause_for_verdict)
+        # simulating the re-parse that drops the defensive default
+        sparse_gate_result = {
+            "passed": True,
+            "failures": [],
+            "is_qa_step": False,
+            "files_changed": [],
+            "plan_header": {"project": "bellows"},
+            "verdict_requested": {"requested": False, "body": None},
+        }
+
+        captured_headers = []
+        original_header_says_pause = bellows.header_says_pause
+
+        def spy_header_says_pause(header, *args, **kwargs):
+            captured_headers.append(dict(header))
+            return original_header_says_pause(header, *args, **kwargs)
+
+        with patch("bellows.runner.run_step", return_value=_make_fake_run_step_result()), \
+             patch("bellows.gates.check", return_value=sparse_gate_result), \
+             patch("bellows.notifier.push"), \
+             patch("bellows.verdict.log_to_ledger"), \
+             patch("bellows._capture_git_diff", return_value=""), \
+             patch("bellows._create_worktree", return_value="/tmp/wt"), \
+             patch("bellows._teardown_worktree"), \
+             patch("bellows.record_run"), \
+             patch("bellows.validators.validate_at_claim", return_value={"rejected": False, "reject_reason": "", "warnings": []}), \
+             patch("bellows.header_says_pause", side_effect=spy_header_says_pause):
+            response_server = MagicMock()
+            bellows.run_plan(plan_path, config, response_server)
+
+        # The header passed to header_says_pause must contain the defensive default
+        assert len(captured_headers) >= 1, "header_says_pause should have been called"
+        assert captured_headers[0].get("pause_for_verdict") == "after_step_1", \
+            "re-parsed header should have defensive default pause_for_verdict=after_step_1"
 
 
 def test_seen_cleared_on_continue_to_done():

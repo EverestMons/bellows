@@ -438,7 +438,7 @@ def _gate_rule_20_self_check(is_qa_step, plan_text, step_number, project_path, p
     deposit_paths = _extract_plan_required_deposits(step_text)
     md_paths = [p for p in deposit_paths if p.endswith(".md")]
     if not md_paths:
-        failures.append({"gate": "rule_20_self_check", "evidence": "no QA deposit contains Rule 20 self-check banner"})
+        failures.append({"gate": "rule_20_self_check", "evidence": "deposits block declares no .md paths (check **Deposits:** block format — must be multi-line bullets)"})
         return
 
     banner = "Rule 20 — QA Self-Check Results"

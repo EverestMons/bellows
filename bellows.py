@@ -496,6 +496,7 @@ def run_plan(plan_path: str, config: dict, response_server: server.ResponseServe
         _log("EVENT", f"gates step {current_step}: passed={gate_result['passed']}, failures={len(gate_result['failures'])} ({failure_gates}), files_changed={len(gate_result.get('files_changed', []))}", slug=slug_for(plan_name))
 
         header = gate_result.get("plan_header", {})
+        _apply_defensive_header_defaults(header, total_steps)
         effective_auto_close = str(header.get("auto_close", "false")).lower() == "true"
 
         while not is_final_step(current_step, total_steps):
@@ -1031,7 +1032,16 @@ class PlanHandler(FileSystemEventHandler):
 
     def on_modified(self, event):
         if not event.is_directory:
-            self._handle(event.src_path)
+            path = event.src_path
+            filename = os.path.basename(path)
+            # Invalidate _seen on corrected re-deposit so the plan can be re-dispatched.
+            # Guard: don't invalidate on Bellows-managed lifecycle renames (would loop).
+            LIFECYCLE_PREFIXES = ("in-progress-", "verdict-pending-", "halted-")
+            if not any(filename.startswith(p) for p in LIFECYCLE_PREFIXES):
+                slug = verdict.slug_from_path(path)
+                if slug in self.orchestrator._seen:
+                    self.orchestrator._seen.discard(slug)
+            self._handle(path)
 
     def on_moved(self, event):
         if not event.is_directory:
