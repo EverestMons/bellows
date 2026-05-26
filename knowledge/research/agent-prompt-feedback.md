@@ -3,6 +3,16 @@
 **Date:** 2026-05-27
 **Plans:** diagnostic-claude-settings-permission-gap-2026-05-22, executable-pre-scan-orphan-guard-2026-05-22, executable-bellows-tier-1-batch-2026-05-21, executable-bellows-expected-keys-narrow-2026-05-21, diagnostic-bellows-expected-keys-warning-2026-05-21, diagnostic-bellows-isinstance-asymmetry-2026-05-21, executable-deposit-exists-path-form-normalization-2026-05-27, executable-disable-autoupdater-2026-05-27, diagnostic-planner-authored-contract-validation-2026-05-20, diagnostic-bash-gate-vs-guardrails-2026-05-20, executable-plan-write-time-lessons-reread-2026-05-13, diagnostic-pre-scan-orphan-warn-flood-2026-05-22, executable-remove-pre-scan-processed-rename-v2-2026-05-24, executable-rename-first-ordering-2026-05-24, executable-settings-local-bash-fallback-doc-2026-05-22, executable-mcp-read-class-tools-extension-2026-05-25, diagnostic-file-change-audit-false-negative-2026-05-25, executable-file-change-audit-fix-2026-05-25, executable-planner-template-rule-21-contract-change-2026-05-26, diagnostic-verdict-ledger-gate-result-preservation-2026-05-26, executable-verdict-ledger-gate-result-preservation-2026-05-26
 
+## 2026-05-26 — verdict-ledger-gate-result-preservation (QA Step 2)
+
+1. **Dev log was well-structured for QA consumption.** The Output Receipt status field, per-edit line ranges, test table, and isinstance guard flag all made verification efficient. No ambiguity about what was implemented or why.
+
+2. **Round-trip behavioral verification is high-value.** The plan specified a REPL session constructing a non-trivial gate_result, calling post_verdict_request, reading back, parsing JSON, and asserting equality. This end-to-end proof caught the actual serialization/deserialization cycle — more confidence than unit tests alone.
+
+3. **Evidence file naming convention worked cleanly.** The plan specified exact filenames (`verdict_py_230_245.txt`, `bellows_py_1180_1230.txt`, etc.) which made the Rule 20 self-check deterministic. No ambiguity about what to deposit.
+
+4. **isinstance guard assessment was straightforward.** The dev flagged it for QA review. After reading the test fixture, the guard is clearly appropriate — not masking a bug. Good handoff discipline.
+
 ## 2026-05-26 — verdict-ledger-gate-result-preservation (DEV Step 1)
 
 1. **Q6 hand-off was high quality.** All 16 anchors matched exactly — no line-number drift. Every code snippet was copy-pasteable with one exception (see #3). The SA's verification block (Q7) was load-bearing for confidence in the edits.

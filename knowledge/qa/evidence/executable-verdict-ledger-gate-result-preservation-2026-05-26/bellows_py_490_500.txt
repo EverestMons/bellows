@@ -1,0 +1,20 @@
+bellows.py lines 490-500 — Terminal log expansion (first site, Fix F)
+=====================================================================
+
+490:            gate_result["failures"].append({
+491:                "gate": "unauthorized_done_move",
+492:                "evidence": f"Agent moved {base_filename} to Done/ during step execution. File recovered to in-progress. This is a Failure 3 Mode A violation."
+493:            })
+494:            gate_result["passed"] = False
+495:        failure_gates = ", ".join((f["gate"] if isinstance(f, dict) else str(f)) for f in gate_result["failures"]) if gate_result["failures"] else "none"
+496:        _log("EVENT", f"gates step {current_step}: passed={gate_result['passed']}, failures={len(gate_result['failures'])} ({failure_gates}), files_changed={len(gate_result.get('files_changed', []))}", slug=slug_for(plan_name))
+497:
+498:        header = gate_result.get("plan_header", {})
+499:        effective_auto_close = str(header.get("auto_close", "false")).lower() == "true"
+500:
+
+Verification:
+- Line 495: failure_gates computation with isinstance(f, dict) guard ✅
+- Line 496: Expanded log message includes ({failure_gates}) and files_changed={...} ✅
+- isinstance guard is a MINOR DEVIATION from Q6 (Q6 specified f["gate"] only) — justified by pre-existing test fixture with string-typed failures
+- MATCHES Q6 intent: failure gate names and files_changed count in terminal log

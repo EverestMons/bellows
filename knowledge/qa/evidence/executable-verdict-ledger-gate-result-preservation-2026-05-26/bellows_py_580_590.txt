@@ -1,0 +1,20 @@
+bellows.py lines 580-590 — Terminal log expansion (second site, Fix F)
+======================================================================
+
+580:            gate_result = gates.check(parsed, plan_text, current_step, project_path, files_changed=files_changed, wt_path=wt_path)
+581:            if mode_a_detected:
+582:                gate_result["failures"].append({
+583:                    "gate": "unauthorized_done_move",
+584:                    "evidence": f"Agent moved {base_filename} to Done/ during step execution. File recovered to in-progress. This is a Failure 3 Mode A violation."
+585:                })
+586:                gate_result["passed"] = False
+587:            failure_gates = ", ".join((f["gate"] if isinstance(f, dict) else str(f)) for f in gate_result["failures"]) if gate_result["failures"] else "none"
+588:            _log("EVENT", f"gates step {current_step}: passed={gate_result['passed']}, failures={len(gate_result['failures'])} ({failure_gates}), files_changed={len(gate_result.get('files_changed', []))}", slug=slug_for(plan_name))
+589:
+590:        # Final step completed — check gates one last time. Mirrors the while-loop
+
+Verification:
+- Line 587: failure_gates computation — identical pattern to first site (line 495) ✅
+- Line 588: Expanded log message — identical pattern to first site (line 496) ✅
+- Both sites are structurally identical as required ✅
+- MATCHES Q6 intent: failure gate names and files_changed count in terminal log

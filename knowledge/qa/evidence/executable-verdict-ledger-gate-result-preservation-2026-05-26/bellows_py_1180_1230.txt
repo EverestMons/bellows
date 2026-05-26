@@ -1,0 +1,49 @@
+bellows.py lines 1180-1234 — gate_result_from_request init, parse, and replacement
+=====================================================================================
+
+1180:                if lookup_slug.startswith(prefix):
+1181:                    lookup_slug = lookup_slug[len(prefix):]
+1182:                    break
+1183:            pending_req_file = BELLOWS_ROOT / "verdicts" / "pending" / f"verdict-request-{lookup_slug}-step-{step_number}.md"
+1184:            scoped_decisions_path = None
+1185:            total_steps_from_request = None
+1186:            pause_reason_code_from_request = None
+1187:            precondition_failure_from_request = False
+1188:            gate_result_from_request = None
+1189:            if pending_req_file.exists():
+1190:                pending_req_file_text = pending_req_file.read_text()
+1191:                for req_line in pending_req_file_text.splitlines():
+1192:                    if req_line.startswith("**Plan:**"):
+1193:                        plan_path_from_request = req_line.split("**Plan:**", 1)[1].strip()
+1194:                        scoped_decisions_path = str(pathlib.Path(plan_path_from_request).parent)
+1195:                    # Legacy tolerance: pre-2026-04-18 verdict files may contain literal "None".
+1196:                    if req_line.startswith("**Total Steps:**"):
+1197:                        raw_val = req_line.split(":**", 1)[1].strip()
+1198:                        if raw_val == "None":
+1199:                            total_steps_from_request = None
+1200:                        else:
+1201:                            try:
+1202:                                total_steps_from_request = int(raw_val)
+1203:                            except (ValueError, IndexError):
+1204:                                pass
+1205:                    if req_line.startswith("**Pause Reason Code:**"):
+1206:                        pause_reason_code_from_request = req_line.split(":**", 1)[1].strip() or None
+1207:                    if req_line.startswith("**Precondition Failure:**"):
+1208:                        precondition_failure_from_request = req_line.split(":**", 1)[1].strip().lower() == "true"
+1209:                    if req_line.startswith("**Gate Result JSON:**"):
+1210:                        try:
+1211:                            gate_result_from_request = json.loads(req_line.split(":**", 1)[1].strip())
+1212:                        except (json.JSONDecodeError, IndexError):
+1213:                            pass
+1214:
+...
+1234:                        gate_result = gate_result_from_request or {"failures": [], "files_changed": []}
+
+Verification:
+- Change 2 (line 1188): gate_result_from_request = None — alongside existing siblings (1185-1187) ✅
+- Change 3 (lines 1209-1213): 4-line JSON parse block with json.JSONDecodeError + IndexError caught, both pass-handled ✅
+  - Uses req_line.split(":**", 1)[1].strip() — same pattern as other metadata parsers ✅
+  - Silent fallback is intentional per backward-compat design ✅
+- Change 4 (line 1234): gate_result = gate_result_from_request or {"failures": [], "files_changed": []} ✅
+  - No longer unconditional empty dict — uses `or` fallback for pre-fix pending files ✅
+- All three changes MATCH Q6 hand-off specification exactly
