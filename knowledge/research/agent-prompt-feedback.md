@@ -1,7 +1,7 @@
 # Agent Prompt Feedback
 
 **Date:** 2026-05-27
-**Plans:** diagnostic-claude-settings-permission-gap-2026-05-22, executable-pre-scan-orphan-guard-2026-05-22, executable-bellows-tier-1-batch-2026-05-21, executable-bellows-expected-keys-narrow-2026-05-21, diagnostic-bellows-expected-keys-warning-2026-05-21, diagnostic-bellows-isinstance-asymmetry-2026-05-21, executable-deposit-exists-path-form-normalization-2026-05-27, executable-disable-autoupdater-2026-05-27, diagnostic-planner-authored-contract-validation-2026-05-20, diagnostic-bash-gate-vs-guardrails-2026-05-20, executable-plan-write-time-lessons-reread-2026-05-13, diagnostic-pre-scan-orphan-warn-flood-2026-05-22, executable-remove-pre-scan-processed-rename-v2-2026-05-24, executable-rename-first-ordering-2026-05-24, executable-settings-local-bash-fallback-doc-2026-05-22, executable-mcp-read-class-tools-extension-2026-05-25
+**Plans:** diagnostic-claude-settings-permission-gap-2026-05-22, executable-pre-scan-orphan-guard-2026-05-22, executable-bellows-tier-1-batch-2026-05-21, executable-bellows-expected-keys-narrow-2026-05-21, diagnostic-bellows-expected-keys-warning-2026-05-21, diagnostic-bellows-isinstance-asymmetry-2026-05-21, executable-deposit-exists-path-form-normalization-2026-05-27, executable-disable-autoupdater-2026-05-27, diagnostic-planner-authored-contract-validation-2026-05-20, diagnostic-bash-gate-vs-guardrails-2026-05-20, executable-plan-write-time-lessons-reread-2026-05-13, diagnostic-pre-scan-orphan-warn-flood-2026-05-22, executable-remove-pre-scan-processed-rename-v2-2026-05-24, executable-rename-first-ordering-2026-05-24, executable-settings-local-bash-fallback-doc-2026-05-22, executable-mcp-read-class-tools-extension-2026-05-25, diagnostic-file-change-audit-false-negative-2026-05-25
 
 ## 2026-05-25 — mcp-read-class-tools-extension (DEV Step 1)
 
@@ -1694,3 +1694,13 @@ The Planner authors plans in a Project conversation with MCP filesystem tools. T
 3. **No `RULE_20_SELF_CHECK_BLOCK.md` found at governance root.** Plan instructs to "Run the canonical Rule 20 self-check from `RULE_20_SELF_CHECK_BLOCK.md` at the governance root" — no such file exists. Used the template from a prior QA evidence file instead.
 
 4. **DEV commit touched 4 files, not 3.** Plan expected exactly 3 files changed; commit also touched `knowledge/research/agent-prompt-feedback.md` (standard protocol). Not a compliance issue — the feedback file is explicitly allowed by SCOPE_ALLOWLIST expectations.
+
+## 2026-05-25 — file-change-audit-false-negative (SA Step 1)
+
+1. **Worktree-prefix note in plan was helpful.** The plan included a "Worktree-prefix note for the agent" explicitly stating to strip the `bellows/` prefix. This avoided the recurring confusion seen in prior plans. Recommend making this a standard inclusion for all bellows-dispatched plans.
+
+2. **Investigation procedure was well-structured.** The 8-step investigation procedure (read flow, test H1, test H2, test H3, controlled reproduction, verdicts, verification blocks, secondary findings) provided a clear execution path with no ambiguity. Each step had testable predictions.
+
+3. **Log files lack plan_slug metadata.** The step JSON logs (`logs/*.json`) don't include the plan slug in top-level metadata — only in the raw output. Finding the correct log for a specific plan run required searching raw_output for plan-specific strings. Adding `plan_slug` to the parsed/top-level JSON would make log retrieval trivial.
+
+4. **No specialist file or domain glossary needed.** Plan correctly instructed to skip specialist file and glossary reads for this code-tracing investigation.
