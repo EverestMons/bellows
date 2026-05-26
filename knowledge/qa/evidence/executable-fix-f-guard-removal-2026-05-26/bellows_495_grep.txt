@@ -1,0 +1,13 @@
+Evidence: bellows.py line 495 — Fix F isinstance guard REMOVED
+Captured: 2026-05-26
+
+grep -n -C 3 'f\["gate"\]' bellows.py (line 495 area):
+
+492:                "evidence": f"Agent moved {base_filename} to Done/ during step execution. File recovered to in-progress. This is a Failure 3 Mode A violation."
+493:            })
+494:            gate_result["passed"] = False
+495:        failure_gates = ", ".join(f["gate"] for f in gate_result["failures"]) if gate_result["failures"] else "none"
+496:        _log("EVENT", f"gates step {current_step}: passed={gate_result['passed']}, failures={len(gate_result['failures'])} ({failure_gates}), files_changed={len(gate_result.get('files_changed', []))}", slug=slug_for(plan_name))
+
+Verification: Line 495 uses `f["gate"] for f in gate_result["failures"]` — NO isinstance guard present.
+The Fix F defensive guard `(f["gate"] if isinstance(f, dict) else str(f))` has been removed.

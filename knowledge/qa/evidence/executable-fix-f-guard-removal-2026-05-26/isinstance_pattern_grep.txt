@@ -1,0 +1,15 @@
+Evidence: 2026-05-21 Block 1 / Block 2 symmetric isinstance pattern PRESERVED
+Captured: 2026-05-26
+
+grep -n 'isinstance(f, dict)' bellows.py:
+
+509:                    if all(isinstance(f, dict) and f.get("gate") == "rule_22_verification" for f in gate_result["failures"]):
+600:                if all(isinstance(f, dict) and f.get("gate") == "rule_22_verification" for f in gate_result["failures"]):
+
+Total matches: 2 — both are the 2026-05-21 symmetric pattern for rule_22_verification classification.
+These are structurally distinct from the Fix F sites:
+- Line 509: Block 1 symmetric pattern (inside all() predicate for pause-reason classification)
+- Line 600: Block 2 symmetric pattern (inside all() predicate for pause-reason classification)
+
+Fix F sites (former lines 495 and 587) were in .join() log-expansion expressions, not in all() predicates.
+Both Fix F guards have been removed — zero matches at those sites.

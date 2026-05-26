@@ -1,0 +1,27 @@
+Evidence: Production contract consistency — gate_result["failures"] uses dict shape everywhere
+Captured: 2026-05-26
+
+grep -n 'gate_result\["failures"\]' bellows.py gates.py verdict.py:
+
+bellows.py:
+490:            gate_result["failures"].append({"gate": "unauthorized_done_move", "evidence": ...})  — dict
+495:        failure_gates = ", ".join(f["gate"] for f in gate_result["failures"])  — assumes dict
+509:                    if all(isinstance(f, dict) and f.get("gate") == "rule_22_verification" for f in gate_result["failures"]):  — dict
+524:                    gate_result["failures"].append({"gate": "worktree_teardown", "evidence": str(e)})  — dict
+532:                    ... gate_result["failures"]  — pass-through
+582:                gate_result["failures"].append({"gate": "unauthorized_done_move", "evidence": ...})  — dict
+587:            failure_gates = ", ".join(f["gate"] for f in gate_result["failures"])  — assumes dict
+600:                if all(isinstance(f, dict) and f.get("gate") == "rule_22_verification" for f in gate_result["failures"]):  — dict
+617:                gate_result["failures"].append({"gate": "worktree_teardown", "evidence": str(e)})  — dict
+625:                ... gate_result["failures"]  — pass-through
+647:                gate_result["failures"].append({"gate": "worktree_teardown", "evidence": str(e)})  — dict
+
+gates.py:
+162:            "failures": [{"gate": str, "evidence": str}, ...],  — contract docstring, dict shape
+201:        "failures": failures,  — returns list built by append of dicts
+
+verdict.py:
+202:        for f in gate_result["failures"]:  — iteration, assumes dict
+
+Conclusion: All source code sites use the dict shape {"gate": str, "evidence": str}.
+No string-list format exists in production code. Contract is consistent.

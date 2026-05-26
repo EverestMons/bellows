@@ -1,0 +1,17 @@
+Evidence: DEV deposit exists and documents all three changes
+Captured: 2026-05-26
+
+File: knowledge/development/fix-f-guard-removal-2026-05-26.md
+Exists: YES
+Output Receipt Status: Complete
+
+Documented changes:
+1. Change 1 — Test Fixture Update (tests/test_bellows.py): before/after snippets present
+2. Change 2 — Remove Fix F isinstance Guard at bellows.py:495: before/after snippets present
+3. Change 3 — Remove Fix F isinstance Guard at bellows.py:587: before/after snippets present
+
+Additional sections present:
+- Pre-flight Scope Check (grep results)
+- 2026-05-21 isinstance Symmetry Pattern — Preserved (line 509, 600 documented)
+- Anchor Verification (post-edit grep confirmation)
+- Test Results (pre/post: 5 failed, 407 passed, 1 warning — 0 regressions)

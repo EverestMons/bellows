@@ -1,0 +1,18 @@
+Evidence: Full test suite results
+Captured: 2026-05-26
+
+Command: python3 -m pytest tests/ -v
+Result: 5 failed, 407 passed, 1 warning in 6.52s
+
+Failed tests (all pre-existing carry-over failures):
+1. tests/test_decisions.py::TestLoadPhrases::test_loads_phrases_from_file — worktree-context phrase file missing
+2. tests/test_decisions.py::TestLoadPhrases::test_includes_known_phrases — worktree-context phrase file missing
+3. tests/test_decisions.py::TestLoadPhrases::test_splits_slash_alternatives — worktree-context phrase file missing
+4. tests/test_decisions.py::TestExtractDecisionBlocks::test_s_class_blocks_from_ground_truth — worktree-context phrase file missing
+5. tests/test_runner_parser.py::test_run_step_timeout — long-standing known failure
+
+Key verification:
+- test_run_plan_inprogress_entry_renames_to_verdict_pending: PASSED (dict fixture works)
+- 407 passed matches DEV's reported baseline exactly
+- 5 failures match DEV's reported carry-over failures exactly
+- Zero new failures, zero regressions

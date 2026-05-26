@@ -1,0 +1,24 @@
+Evidence: Guard site classification — Fix F sites vs 2026-05-21 symmetric pattern sites
+Captured: 2026-05-26
+
+REMOVED (Fix F guards, added 2026-05-26):
+- Former line 495: failure_gates = ", ".join((f["gate"] if isinstance(f, dict) else str(f)) for f in gate_result["failures"])
+  → Now line 495: failure_gates = ", ".join(f["gate"] for f in gate_result["failures"])
+  Context: .join() log-expansion expression in intermediate-step pause block
+
+- Former line 587: failure_gates = ", ".join((f["gate"] if isinstance(f, dict) else str(f)) for f in gate_result["failures"])
+  → Now line 587: failure_gates = ", ".join(f["gate"] for f in gate_result["failures"])
+  Context: .join() log-expansion expression in final-step pause block
+
+PRESERVED (2026-05-21 symmetric pattern):
+- Line 509: if all(isinstance(f, dict) and f.get("gate") == "rule_22_verification" for f in gate_result["failures"]):
+  Context: all() predicate for rule_22 pause-reason classification, Block 1
+
+- Line 600: if all(isinstance(f, dict) and f.get("gate") == "rule_22_verification" for f in gate_result["failures"]):
+  Context: all() predicate for rule_22 pause-reason classification, Block 2
+
+Classification rationale:
+- Fix F guards were in .join() expressions, protecting against string entries in the failures list during log formatting
+- 2026-05-21 symmetric pattern guards are in all() predicates, classifying whether ALL failures are rule_22_verification type
+- These are structurally distinct — different code paths, different purposes
+- Only Fix F guards were removed; symmetric pattern guards remain intact

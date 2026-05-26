@@ -1,0 +1,36 @@
+Evidence: Test fixture audit — no non-conformant string-list fixtures remain
+Captured: 2026-05-26
+
+grep -n '"failures": \[' tests/:
+
+tests/test_rule_26_deposit_parser.py:92:    gate_result = {"passed": True, "failures": [], ...}  — empty list (conformant)
+tests/test_bellows.py:213:            "failures": [],  — empty list
+tests/test_bellows.py:271:            "failures": [],  — empty list
+tests/test_bellows.py:342:            "failures": [],  — empty list
+tests/test_bellows.py:390:            "failures": [],  — empty list
+tests/test_bellows.py:445:            "failures": [],  — empty list
+tests/test_bellows.py:683:            "failures": [],  — empty list
+tests/test_bellows.py:1165:        "failures": [],  — empty list
+tests/test_bellows.py:1789:            "failures": [{"gate": "scope_check", "evidence": "test fixture for scope_check failure"}],  — dict shape ✅
+tests/test_bellows.py:1851:            "failures": [],  — empty list
+tests/test_bellows.py:2582:            "failures": [],  — empty list
+tests/test_bellows.py:2644:            "failures": [],  — empty list
+tests/test_bellows.py:2701:            "failures": [],  — empty list
+tests/test_bellows.py:2758:            "failures": [],  — empty list
+tests/test_bellows.py:3071:            "failures": [],  — empty list
+tests/test_bellows.py:3120:            "failures": [],  — empty list
+tests/test_bellows.py:3515:                "failures": [{"gate": "test_gate", "evidence": "forced failure"}],  — dict shape ✅
+tests/test_bellows.py:3566:                "failures": [{"gate": "test_gate", "evidence": "forced failure"}],  — dict shape ✅
+tests/test_bellows.py:3656:                "failures": [  — dict shape (multi-line)
+tests/test_verdict.py:57:                "failures": [{"gate": "receipt_status", "evidence": "Blocked"}],  — dict shape ✅
+tests/test_verdict.py:213:                "failures": [{"gate": "worktree_teardown", "evidence": "simulated teardown error"}],  — dict shape ✅
+tests/test_verdict.py:290:                "failures": [{"gate": "receipt_status", "evidence": "Partial"}],  — dict shape ✅
+tests/test_verdict.py:312:            gate_result = {"failures": [], ...}  — empty list
+tests/test_verdict.py:327:            gate_result = {"failures": [], ...}  — empty list
+tests/test_verdict.py:350:            gate_result = {"failures": [], ...}  — empty list
+tests/test_consume_verdicts.py:31:        "failures": [],  — empty list
+tests/test_consume_verdicts.py:546:            "failures": [{"gate": "scope_check", "evidence": "out-of-scope"}],  — dict shape ✅
+tests/test_consume_verdicts.py:604:            "failures": [{"gate": "deposit_exists", "evidence": "missing deposit"}],  — dict shape ✅
+
+Conclusion: Every non-empty failures list uses the dict shape {"gate": str, "evidence": str}.
+Zero non-conformant string-list fixtures remain in any test file.

@@ -1,0 +1,11 @@
+Evidence: test fixture updated to production dict shape
+Captured: 2026-05-26
+
+tests/test_bellows.py line 1789 (test_run_plan_inprogress_entry_renames_to_verdict_pending):
+
+1787:        # Gates fail to trigger the pause branch
+1788:        failing_gates = {
+1789:            "failures": [{"gate": "scope_check", "evidence": "test fixture for scope_check failure"}],
+
+Verification: Fixture uses dict shape {"gate": str, "evidence": str} matching production contract.
+Previously was: "failures": ["scope_check"] (non-conformant string list).
