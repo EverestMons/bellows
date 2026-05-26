@@ -1,45 +1,34 @@
 # Bellows — Next Session Baton
 
 **Last session:** 2026-05-25
-**Last session focus:** 2026-05-22 baton drain — Items 2.A, 2.B (code + governance), 3.B all closed
+**Last session focus:** Bellows hardening — set→list capability fix + file_change_audit false-negative diagnostic + structural fix + test regression follow-up
 
 ---
 
 ## Session summary
 
-Five plans shipped, all closed to Done/. The 2026-05-22 NEXT_SESSION baton's Definition of Done criteria are all met. Per its own instructions, the baton was drained.
+Four plans shipped, all closed to Done/. Three are structural Bellows hardening; one is a follow-up to close a regression detected during the third plan's full-suite run.
 
 | # | Plan | Outcome |
 |---|---|---|
-| 1 | `executable-settings-local-bash-fallback-doc-2026-05-22` | BELLOWS_DEVELOPER.md gained `.claude/settings.local.json` bash-fallback paragraph |
-| 2 | `executable-qa-steps-header-field-code-2026-05-25` | `_gate_is_qa_step` now reads `qa_steps` header field as authoritative source; 7 regression tests; keyword fallback preserved |
-| 3 | `executable-qa-steps-governance-2026-05-25` | PLANNER_TEMPLATE.md → v4.50 documenting the qa_steps field (3 insertion points + Lessons row) |
-| 4 | `diagnostic-mcp-read-class-tools-exemption-2026-05-25` | Characterized current READ_CLASS_TOOLS state, classified all 7 vexp tools, recommended Shape A (literal extend) |
-| 5 | `executable-mcp-read-class-tools-extension-2026-05-25` | READ_CLASS_TOOLS extended with 5 read-class vexp tools; save_observation deliberately excluded as write-class; 6 regression tests |
+| 1 | `executable-extract-plan-required-deposits-set-to-list-2026-05-25` | `_extract_plan_required_deposits` and `_filter_transient_paths` return `list` (preserving authoring order); `md_paths[0]` selection now deterministic. 1 new test, 126/126 pass in `test_gates.py`. Closes BACKLOG 2026-05-24 capability entry. |
+| 2 | `diagnostic-file-change-audit-false-negative-2026-05-25` | H1 CONFIRMED: `git diff --stat` is blind to committed changes. Cascading effect: `_gate_scope_check` silently bypassed on every code-edit step. 3 Rule 39 verification blocks captured. |
+| 3 | `executable-file-change-audit-fix-2026-05-25` | `_capture_git_diff` and `_parse_diff_stat` rewritten to use HEAD SHA + commit-range diff. Function names preserved (32 mock-patch sites unchanged). 396/407 pass, 11 carry-over failures. Closes BACKLOG 2026-05-21 entry AND closes the cascading silent bypass. |
+| 4 | `executable-test-rule-26-set-to-list-followup-2026-05-25` | 6 set-literal assertions in `tests/test_rule_26_deposit_parser.py` wrapped in `set(...)` to accommodate plan 1's list return. 9/9 tests now PASS. |
 
-**Daemon restart requirements:** plan 2 (new gate code) and plan 5 (extended exemption set) both require daemon restart to load. Plan 5 was tested empirically at runtime on plan 5's own QA step — gate detected `qa_step_detection: PASS | QA step detected (step 2 of 2)` confirming the new field code is live. Plan 3 (governance) is doc-only, no restart.
+**Daemon restart REQUIRED at session start next time.** Three of today's plans (1, 3, 4) shipped code that the live daemon hasn't loaded. The daemon will continue dispatching with old gate code and old `_capture_git_diff` until restarted.
 
 ---
 
 ## In-flight threads (carry forward)
 
-**None active.** All five plans shipped to Done/, all verdicts consumed, all PROJECT_STATUS entries prepended, all submodule pointers bumped (or pending session-wrap commit — see Operational below).
+**None active.** All four plans shipped to Done/, all verdicts consumed, all PROJECT_STATUS entries prepended, all carry-over regressions resolved.
 
 ---
 
 ## Open BACKLOG items at session end
 
-The 2026-05-22 baton's 5 items are closed. New items surfaced today add to the prior carry-over list. Full state in `bellows/knowledge/BACKLOG.md`.
-
-**Promotable items (multiple reproductions, may warrant the next session):**
-
-1. **`_extract_plan_required_deposits` set→list** — BACKLOG 2026-05-24 capability addition. Today's plan 2 hit it as a Rule 22 override (2nd reproduction). Convert from `set` to `list` preserving authoring order, so `md_paths[0]` is deterministic. Small (~3 LOC + 1 test). Next session candidate.
-
-2. **`file_change_audit` gate false-negative** — Logged twice today (plan 1 Steps 1 and 2 both showed `0 files modified` despite real edits). BACKLOG 2026-05-21 defer-recommended. Today is 4th and 5th reproduction. Worth a diagnostic next session to characterize whether the timing/scope issue affects gate trust under Rule 25.
-
-3. **Audit number reconciliation** — Today's plan 3 governance edit used "14/139/10.1%" matching the 2026-05-22 BACKLOG Closed entry; SA fix-shape Section 4 had "17/142/12.0%" from the original diagnostic. One of the two citations is stale. Minor; resolve next time a similar audit comes up.
-
-**Pre-existing open (carry-over from 2026-05-22 baton, unchanged):**
+Two new closures from today (file_change_audit + extract_plan_required_deposits set→list). Pre-existing open carryover from 2026-05-22 baton:
 
 - BACKLOG `config.json` gitignore (Open)
 - `Bash(git:*)` too broad allowlist (Open)
@@ -51,39 +40,46 @@ The 2026-05-22 baton's 5 items are closed. New items surfaced today add to the p
 - `bellows.py:1280` no-match warning dedup (Open)
 - `_extract_step_text` case (Open, deferred)
 
-Plus today's new BACKLOG entries (if filed): Phase 3b read-side helper, teardown push silent failure, daemon-restart recovery shape, path-keyed rejection cache, sequential-Planner-edit cherry-pick conflict, parallel-diagnostic shared-bookkeeping conflict.
+**Closed this session:**
+- 2026-05-21 `file_change_audit` 0-files-modified (was Open; closed by plan 3)
+- 2026-05-24 `_extract_plan_required_deposits` set→list (was Open; closed by plan 1)
 
 ---
 
 ## On the horizon (priority order if continuing Bellows hardening)
 
-1. **`_extract_plan_required_deposits` set→list** (small, promotion candidate, 2 reproductions)
-2. **Daemon-restart recovery shape** for `in-progress-*` + verdict-in-resolved pairing (BACKLOG 2026-05-23)
-3. **Parallel-SHA teardown diagnostic** (BACKLOG 2026-05-27, queued)
-4. **PLANNER_TEMPLATE Rule 25 codification edit** (queued in BACKLOG)
-5. **Anvil pending COMPANY.md update + agent specialist files + git init** (separate stream)
+The 2026-05-22 baton listed these in priority order. Today closed one of them (file_change_audit is no longer on the list because it's a NEW closure, not the original carryover #2 reproduction). The remaining horizon:
+
+1. **Daemon-restart recovery shape** for `in-progress-*` + verdict-in-resolved pairing (BACKLOG 2026-05-23) — characterization needed; medium-sized SA diagnostic
+2. **Parallel-SHA teardown diagnostic** (BACKLOG 2026-05-27) — characterization
+3. **PLANNER_TEMPLATE Rule 25 codification edit** (queued in BACKLOG) — small governance edit
+4. **Anvil pending COMPANY.md update + agent specialist files + git init** (separate stream)
+5. **Rule 21 update** based on today's LESSONS entry on test-scope-vs-test-coverage — small governance edit (~10 LOC change to PLANNER_TEMPLATE.md)
+
+Item 5 is new for next session — captures today's empirical finding into Rule 21 itself so the test_rule_26-style regression class can't recur.
 
 ---
 
 ## Operational notes for next session
 
-- **Session-wrap git commits NOT YET RUN.** Today's session shipped 5 plans through Bellows worktree teardown. Each plan's terminal teardown pushed agent commits direct to origin and cherry-picked locally — parallel-SHA divergence is expected. Recovery: `git fetch origin && git --no-pager log --oneline HEAD..origin/main` to confirm work landed on origin, then `git reset --hard origin/main` if all content-identical (per 2026-05-27 LESSONS entry). DO THIS FIRST at session start before any new plan work.
+- **Daemon restart REQUIRED before any new plan dispatch.** Three of today's plans shipped code: plan 1 (set→list in gates.py), plan 3 (file_change_audit rewrite in bellows.py), plan 4 (test-only, no daemon impact). The first plan dispatched next session will run gates with the OLD code unless restart happens first. Restart with: `cd /Users/marklehn/Developer/GitHub/bellows && python3 bellows.py`. Verify startup banner shows new module fingerprints.
 
-- **Submodule pointer bumps not yet pushed at governance root.** Bellows shipped 4 commits today through its worktree-push path. If submodule pointer is stale at governance root, run `cd ~/Developer/GitHub && git status` — if `M bellows`, run `git add bellows && git commit -m "chore: bump bellows submodule (qa_steps + MCP exemption)" && git push origin main`.
+- **Session-wrap git commits NOT YET RUN.** Today's session shipped 4 plans through Bellows worktree teardown. Each plan's terminal teardown pushed agent commits direct to origin and cherry-picked locally. Lifecycle artifacts (4 plan files in `Done/`, 7 processed verdicts in `verdicts/resolved/`) accumulated as untracked changes. Standard wrap procedure at session start next time: `git add -A knowledge/decisions/Done/ verdicts/ && git commit -m "chore: session-wrap 2026-05-25 lifecycle artifacts" && git push origin main`. Then bump bellows submodule pointer at governance root.
 
-- **PLANNER_TEMPLATE v4.50 changes governance landed on origin via worktree teardown.** Verify with `git log --oneline -3 PLANNER_TEMPLATE.md` at governance root.
+- **Two LESSONS entries captured at governance root** (`/Users/marklehn/Developer/GitHub/LESSONS.md`): (1) targeted-scope QA can miss regressions in test files outside the targeted bucket — `planner-discipline`, `rule-21`; (2) `git diff --stat` blindness to committed changes + the broader pattern of misclassifying blocking gates as informational — `bellows-architecture`, `gate-design`.
 
-- **Daemon may still need restart** to pick up plan 2 + plan 5 code changes if not done during today's session. Empirical evidence at end of session shows plan 5's qa_steps code is live (verdict request showed `qa_step_detection: PASS | QA step detected`). MCP exemption extension status unknown — would only show effect on next vexp denial event.
+- **`file_change_audit` gate now reports real file counts** post-restart. The 11 carry-over failures composition (4 worktree + 6 test_rule_26 + 1 timeout) is reduced to 5 after today's plan 4 — should be exactly 5 (4 worktree + 1 timeout) on next session's full-suite run.
 
-- **Phase 1.5 reads non-negotiable.** Today's session caught the 2026-05-22 baton out of date by 3 days (Items 1.A, 1.B, 3.A had already closed in the interim). Always re-confirm BACKLOG state and recent QA reports before authoring plans even when a baton seems fresh.
+- **Phase 1.5 reads non-negotiable.** Today's session caught an important nuance about the 2026-05-22 baton's framing: it referenced the file_change_audit gate as "informational gate produces misleading signal" but the actual cascade meant `_gate_scope_check` was silently bypassed. The framing in BACKLOG entries can be subtly wrong — re-read recent QA reports and verdict requests to triangulate, don't trust the BACKLOG entry alone.
 
 ---
 
 ## Definition of Done for this session
 
-- [x] Item 2.A (settings.local.json bash-fallback doc) — closed
-- [x] Item 2.B code (qa_steps header field in gates.py) — closed
-- [x] Item 2.B governance (PLANNER_TEMPLATE v4.50) — closed
-- [x] Item 3.B (MCP READ_CLASS_TOOLS extension) — closed, with bonus scope (5 vexp tools instead of 2)
-- [x] 2 LESSONS entries captured (qa-step single-deposit discipline + mechanization-governance coupling)
+- [x] Plan 1 (extract_plan_required_deposits set→list) — closed
+- [x] Plan 2 (file_change_audit diagnostic) — closed
+- [x] Plan 3 (file_change_audit structural fix) — closed
+- [x] Plan 4 (test_rule_26 set-literal follow-up) — closed
+- [x] 2 LESSONS entries captured (targeted-scope test-coverage trap + blocking-gate-as-informational framing pattern)
 - [ ] Session-wrap git commits — CEO action at session-start next time
+- [ ] Daemon restart — CEO action at session-start next time
