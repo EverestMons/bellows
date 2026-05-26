@@ -1,26 +1,31 @@
 # Bellows — Next Session Baton
 
-**Last session:** 2026-05-26 (continuation, session 6)
-**Last session focus:** BACKLOG hygiene sweep + Fix F isinstance guard removal
+**Last session:** 2026-05-26 (session 7)
+**Last session focus:** Bellows hardening batch — ship items 1, 3, 4 from session-6 horizon + BACKLOG hygiene
 
 ---
 
 ## Session summary
 
-Six artifacts shipped end-to-end. Final BACKLOG state: Open down from 13 to 7 entries; 6 retirements + 1 ship close.
+Six artifacts shipped end-to-end. Final BACKLOG state: Open down from 13 to 9 entries; 4 ship closures + 1 new entry filed.
 
 | # | Artifact | Outcome |
 |---|---|---|
-| 1 | Stale roadmap archived | `obsolete-roadmap-bellows-verdict-enrichment-2026-05-27.md` (verdict-enrichment work shipped 2026-05-21; roadmap was post-ship documentation mistaken for queued plan by 2 prior batons) |
-| 2 | NEXT_SESSION baton corrected | Stale-priority correction note added; horizon reprioritized |
-| 3 | `diagnostic-phase-3b-read-side-step-state-resume-2026-05-26` | **RETIRE.** SA surfaced that the read-side was previously shipped 2026-04-28 and deliberately removed 2026-05-01 as dead code per Phase 3b/3c cost-benefit diagnostic. BACKLOG entry closed. |
-| 4 | `diagnostic-teardown-push-silent-failure-2026-05-26` | **RETIRE — premise wrong.** Fresh grep confirmed zero `git push` calls in bellows source (unchanged from 2026-05-21 finding). `_teardown_worktree` mapped: 5 git subprocess calls, all local, zero origin interactions. The 2026-05-24 50-commit accumulation was caused by P0 loop, not push absence. BACKLOG entry closed. |
-| 5 | `executable-fix-f-guard-removal-2026-05-26` | **Shipped DEV + QA.** 2 lines removed from `bellows.py` (Fix F guards at lines 495, 587); test fixture conformed from string-list to production dict shape. 2026-05-21 isinstance symmetry pattern at lines 509, 600 correctly preserved as structurally distinct. Suite: 407 passed / 5 known carry-overs / 0 regressions. Rule 20 self-check PASSED. BACKLOG entry closed. |
-| 6 | BACKLOG hygiene sweep (Planner-direct) | 3 entries retired via Closed-section cross-reference: step-counter loop (duplicate of 2026-05-24 closure); Step 2 final-step rename-skip (structurally resolved by 2026-05-24 rename-first ordering); daemon-restart recovery shape (structurally resolved by same fix). |
+| 1 | `diagnostic-bellows-hardening-batch-freshness-2026-05-26` | **Shipped SA.** Phase 1.5 caught Item 2 as already-shipped 2026-05-25 (`executable-extract-plan-required-deposits-set-to-list-2026-05-25`). Diagnostic verified items 1, 3, 4 still Open against current code; produced Gap Assessment table with exact line numbers + Q5 verification block + Q6 cross-item independence analysis. Item 3 re-characterized: not a dedicated `dispatch_mode_validator` cache but the existing `_seen` slug-keyed set in `PlanHandler`. Item 4 line numbers shifted +1 to +6 from intervening 2026-05-2x commits. |
+| 2 | Item 2 BACKLOG hygiene close (Planner-direct) | Closed via Planner edit — `_extract_plan_required_deposits` set-vs-list resolved 2026-05-25, entry was leftover propagating through 2 batons as Open. |
+| 3 | `executable-bellows-hardening-batch-items-1-3-4-2026-05-26` | **Shipped DEV + QA.** Three independent edits: (1) `gates.py:441` evidence string disambiguation; (2) `bellows.py:1033-1044` `_seen` invalidation in `on_modified` with three-prefix lifecycle guard; (3) `bellows.py:499` defensive default re-applied after header reassignment. 3 new regression tests + 1 existing test fix. Test suite: 411 passed / 5 known carry-overs / 0 regressions. Rule 20 self-check PASSED with 12 evidence files. |
+| 4 | Test-isolation BACKLOG entry filed (Planner-direct) | New Open entry captures pattern reproduced 4× today: Bellows has no `tests/conftest.py`, `verdict.post_verdict_request()` is unmocked, tests that exercise it write real `verdict-request-*` files to production `verdicts/pending/`. Three resolution shapes documented (conftest autouse / signature refactor / point fixes). |
+| 5 | Items 1, 3, 4 BACKLOG hygiene close (Planner-direct) | Three Closed entries inserted at top of Closed section with full ship citation, line number deltas (Item 4), and SA re-characterization (Item 3). |
+| 6 | Operational cleanup | 4 test-spawned verdict-request orphans archived to `verdicts/pending/archived/` under `orphan-test-spawned-*` and `orphan-test-spawned-qa-rerun-*` prefixes. |
 
-Two governance commits at session-wrap. Bellows submodule at `cf96a27`. Governance root at `432cb79`. Both pushed clean.
+Three governance-region commits at session-wrap (Bellows + 2 submodule pointer bumps). Bellows submodule at `71c98b0`. Governance root at `658e847`. All pushed clean. Submodule status all space-prefixed.
 
-**Daemon NOT restarted at session end.** The Fix F simplified discriminator (without isinstance guards on `.join()` log expression) requires daemon restart to load. **Restart before next session.**
+**Daemon NOT restarted at session end.** Three fixes from items 1, 3, 4 require daemon restart to load:
+- New Item 1 evidence string at `gates.py:441` (verdict-read disambiguation)
+- New Item 3 `_seen` invalidation logic in `PlanHandler.on_modified` (corrected re-deposit recovery)
+- New Item 4 defensive-default re-application at `bellows.py:499` (intermediate-step pause safety net)
+
+**Restart before next session.**
 
 ---
 
@@ -28,65 +33,62 @@ Two governance commits at session-wrap. Bellows submodule at `cf96a27`. Governan
 
 None active. All session work shipped and committed.
 
-**Pattern observed this session (worth carrying forward):** 6 of 7 BACKLOG closures today were retirements of 2026-05-2x-era entries. All 6 shared the same root cause — entries authored from current-state observation without scanning architectural shifts (v4.47 agent-push prohibition shipped 2026-05-21; rename-first ordering and precondition-failure field shipped 2026-05-24) or the BACKLOG's own Closed section. Misframings concentrated in a ~10-day window when major Bellows fixes were landing rapidly. The 2026-05-26 BACKLOG-current-state-grep LESSON captures the discipline rule (~30 second grep of Closed before filing Open entries whose premise is "X is missing/never done/half-implemented"). Today's pre-write check would have prevented every one of these retirements.
+**Pattern observed this session (worth carrying forward):** Phase 1.5 freshness check fired correctly on Item 2 — caught at plan-authoring time, before the executable was deposited. This is the third recurrence of the BACKLOG-stale-claim pattern in three days, but the first one caught by the discipline rule (LESSONS 2026-05-26 "BACKLOG entries authored from current-state grep without scanning Closed history can misframe already-evaluated work"). The fix shape that worked: when a baton-carried horizon item names a specific function/file/line, grep the BACKLOG Closed section AND the recent QA reports for that function name before treating the item as live work. ~30 seconds; prevented authoring an executable batch covering already-shipped work.
+
+**Pattern observed this session (worth carrying forward, second):** The SA freshness diagnostic re-characterized Item 3's underlying mechanism. The BACKLOG framed it as a dedicated `dispatch_mode_validator` cache, but SA found it was the existing `_seen` slug-keyed set in `PlanHandler`. The diagnostic-before-executable discipline (Rule 22) caught this in time to author a correct fix shape (lifecycle-prefix guard on the `on_modified` invalidation) rather than a fix that would have created re-dispatch loops on Bellows's own lifecycle renames. Cost: 1 SA dispatch (~5 min). Avoided: a broken executable that would have re-dispatched plans into loops.
 
 ---
 
-## Open BACKLOG items added this session (0)
+## Open BACKLOG items added this session (1)
 
-None. This session's net effect on Open was -6 (retirements alone) + -1 (Fix F ship close) = **-7 entries**.
-
-The Fix F entry that was Open at start-of-session was also closed (via ship), so no leftover work from session 5's BACKLOG additions remains.
+1. **Test-isolation orphan pattern** — Bellows `tests/` has no `conftest.py`; tests that exercise `verdict.post_verdict_request()` write real verdict-request files to production `verdicts/pending/`. Reproduced 4× today (2× DEV pytest + 2× QA pytest re-run). At least 2 leaking tests identified by orphan filenames (`item4-test`, `regression-slug-collision-2026-05-01`). Operational tax today: manual archive per occurrence + WARN flood every 30s until archived. Three resolution shapes documented (conftest autouse recommended). **Disposition recommendation:** schedule once current hardening sweep clears; not blocking. **Defer until** a planning session can scope the conftest write and the leaking-test audit.
 
 ---
 
-## LESSONS entries added this session (2)
+## LESSONS entries added this session (0)
 
-1. **Stale priority claims propagate across batons without PROJECT_STATUS cross-check** [tag: planner-discipline, baton-discipline]. The verdict-enrichment roadmap claim propagated through 2 consecutive batons (sessions 3 + 4 of 2026-05-26) before catching the stale-claim pattern. Pre-write check: every "On the horizon" item carried from prior baton MUST be cross-referenced against PROJECT_STATUS Completed before propagating.
+No new LESSONS entries this session. The 2026-05-26 entries on BACKLOG-current-state-grep and stale-priority-baton-propagation from session 6 already cover today's observed patterns. Today's third-recurrence-but-first-catch on Item 2 is a confirming data point for those entries, not a new lesson.
 
-2. **BACKLOG entries authored from current-state grep without scanning Closed history can misframe already-evaluated work** [tag: planner-discipline, backlog-discipline]. Phase 3b read-side was the trigger case (entry's "half-implemented" framing missed the 2026-04-28 ship + 2026-05-01 removal cycle already in Closed). Pre-write check: when filing entries whose hypothesis is "X is missing/never done/half-implemented," grep the BACKLOG Closed section for the feature/function name before filing. ~30 seconds.
+**Consider adding a LESSONS entry next session** if the test-isolation pattern recurs in a new form, or if the SA-re-characterization-of-BACKLOG-framing pattern produces a third occurrence (precedent + today's Item 3 = 2). Worth watching but not yet codified.
 
 ---
 
 ## On the horizon (next session)
 
-In priority order:
+The session-6 baton listed 12 items. Items 1, 3, 4 shipped this session. Item 2 closed via hygiene. Remaining 8 from prior baton + 1 new from this session = **9 items** on the horizon, in priority order:
 
-1. **`_gate_rule_20_self_check` ambiguous evidence string** — trivial 1-line evidence string change at `gates.py:441` + 1 regression test. Disambiguates `if not md_paths` failure (Planner-authoring discipline) from `if banner not in content` failure (QA-agent discipline). Surfaced 2026-05-26 session 5; deferred during hardening discipline; still trivial.
+1. **Test-isolation orphan pattern** (new this session) — concrete code-grounded, conftest fix is structural. Option (a) recommended in BACKLOG entry. Small (~10-15 LOC + 1 audit pass). The next plan that adds a Bellows test exercising `verdict.post_verdict_request()` paths will spawn more orphans; cost compounds. Worth scheduling sooner rather than later.
 
-2. **`_extract_plan_required_deposits()` returns `set` making `md_paths[0]` hash-dependent** — capability addition at `gates.py:373, 380, 397`. Option (b) from the BACKLOG entry — select "the QA report" by `*-qa-*` path suffix rather than positional index — is most robust. ~10 LOC + regression test. Currently works in practice (QA steps typically have one `.md` deposit), but not deterministic.
+2. **Worktree teardown cherry-pick conflict on dirty `PROJECT_STATUS.md`** (2026-05-22) — Planner-side mitigation (commit before session-wrap) is working. Option (b) from BACKLOG (teardown detects dirty working tree, pause-for-CEO with explicit recovery) is small (~20 LOC). Defer until second occurrence demonstrates discipline alone is insufficient.
 
-3. **Path-keyed rejection cache (2026-05-22)** — `dispatch_mode_validator` cache keyed by filename, so corrected re-deposit at same name is silently skipped. Concrete code-grounded entry, real failure mode observed. Small fix: invalidate cache on `on_modified` watchdog event OR key cache by content SHA. ~10 LOC + 1 regression test.
+3. **WebSearch/WebFetch not in agents' `--allowedTools` list** (2026-05-22) — real capability gap for SA diagnostics that need current external docs. Small fix (~2 LOC). Open question: uniform allowance vs role-conditional. Defer pending decision.
 
-4. **`_apply_defensive_header_defaults` ineffective at runtime (2026-05-21)** — defensive default applied to original header but `header` is reassigned from `gate_result.get("plan_header", {})` at `bellows.py:494`, which does NOT inherit the default. Warning at `bellows.py:382-383` claims "safe-pause" behavior but the reassignment makes the safety net illusory at intermediate steps. Two resolution shapes: apply default to reparsed header too, or remove the misleading "safe-pause" claim.
+4. **MCP tool denials `mcp__vexp__*` not on READ_CLASS_TOOLS exemption** (2026-05-22) — low frequency (~2 gate failures/30 days). Small fix. Defer until usage increases.
 
-5. **Worktree teardown cherry-pick conflict on dirty `PROJECT_STATUS.md`** (2026-05-22) — Planner-side mitigation (commit before session-wrap) is working. Option (b) from the BACKLOG entry — teardown detects dirty working tree and produces clearer pause-for-CEO — is small (~20 LOC). Defer until second occurrence demonstrates the discipline alone is insufficient.
+5. **Bellows status UI** (2026-05-21) — genuine design question, not misframed. Worth a dedicated planning session. Open design questions: deployment shape (web vs Tauri vs menu-bar vs TUI), data source (DB vs filesystem vs daemon endpoint), update mechanism, scope of v1.
 
-6. **WebSearch/WebFetch not in agents' `--allowedTools` list** (2026-05-22) — real capability gap for SA diagnostics that need current external docs. Small fix (~2 LOC). Open question: uniform allowance vs role-conditional. Defer pending decision.
+6. **Parallel-diagnostic cherry-pick conflicts on shared bookkeeping files** (2026-05-22) — BACKLOG explicitly says defer-until-second-occurrence; Planner-discipline mitigation (serialize same-project plans) working.
 
-7. **MCP tool denials `mcp__vexp__*` not on READ_CLASS_TOOLS exemption** (2026-05-22) — low frequency (~2 gate failures/30 days). Small fix. Defer until usage increases.
+7. **Deposits parser parenthetical qualifiers** (2026-05-21) — BACKLOG says defer until first incident; Rule 26 governance prevents the problematic pattern. No incidents to date.
 
-8. **Bellows status UI** (2026-05-21) — genuine design question, not misframed. Worth a dedicated planning session, not snap-decided. Open design questions: deployment shape (web vs Tauri vs menu-bar vs TUI), data source (DB vs filesystem vs daemon endpoint), update mechanism, scope of v1.
+8. **No-match verdict warning rate-limit** (2026-05-21) — low priority, self-limiting.
 
-9. **Parallel-diagnostic cherry-pick conflicts on shared bookkeeping files** (2026-05-22) — BACKLOG explicitly says defer-until-second-occurrence; Planner-discipline mitigation (serialize same-project plans) working.
+9. **`_extract_step_text` regex case-sensitivity** (2026-05-13) — governance prevents the failure mode. Defer.
 
-10. **Deposits parser parenthetical qualifiers** (2026-05-21) — BACKLOG says defer until first incident; Rule 26 governance prevents the problematic pattern. No incidents to date.
-
-11. **No-match verdict warning rate-limit** (2026-05-21) — low priority, self-limiting.
-
-12. **`_extract_step_text` regex case-sensitivity** (2026-05-13) — governance prevents the failure mode. Defer.
+**Bellows hardening sweep status (per session-6 baton's framing):** "After items 1-4 ship, Bellows hardening is substantively complete absent second-occurrence triggers on the deferred items." This session shipped items 1, 3, 4 and closed Item 2 via hygiene. **Hardening sweep is now substantively complete.** Remaining 9 horizon items are deferred-by-disposition; none are blocking. Next session can either start the deferred items based on a CEO priority pick (Item 1 test-isolation recommended), tackle the Bellows status UI design session (Item 5), or move to a non-hardening Bellows item, or shift focus to a different project (forge, anvil, invoice-pulse, etc.).
 
 ---
 
 ## Discipline reminders for next baton
 
-- **Cross-reference every horizon item against PROJECT_STATUS Completed before propagating.** Items 1, 2, 3, 4, 5, 6, 7, 9, 10, 11 above are carried from prior baton or from BACKLOG; verify each is still Open in BACKLOG and not in Completed before treating as live work.
-- **Before filing any new "X is missing/never done/half-implemented" BACKLOG entry, grep Closed section for the feature/function name.** This session retired 6 entries that failed this check.
-- **2026-05-26 LESSONS entries are both fresh and high-relevance to baton authoring.** Read them before drafting the next baton.
+- **Cross-reference every horizon item against current state before propagating.** Today's Item 2 catch confirms the rule works — apply it to every baton-carried item.
+- **Before filing any new "X is missing/never done/half-implemented" BACKLOG entry, grep Closed section for the feature/function name.** Today's test-isolation entry passed this check (no precedent in Closed); the 2026-04-21 invoice-pulse precedent was correctly cited.
+- **2026-05-26 LESSONS entries (3 from sessions 5–7) remain fresh and high-relevance to baton authoring.** Re-read before drafting the next baton.
+- **Daemon restart is a CEO action that gets lost between sessions** — every baton should restate it explicitly when fixes from prior session haven't loaded.
 
 ---
 
 ## CEO actions before next session
 
-- **Restart Bellows daemon** to load `cf96a27` (Fix F isinstance guard removal). The simplified `.join()` log expressions activate on next plan dispatched after restart.
-- No other actions required — all session work shipped, committed, pushed.
+- **Restart Bellows daemon** to load the three fixes from session 7 (Items 1, 3, 4 code changes at `gates.py:441`, `bellows.py:1033-1044`, `bellows.py:499`). The simplified discriminator from session 6 (Fix F, commit `cf96a27`) loaded successfully when daemon was restarted mid-session 7 (Bellows successfully dispatched the diagnostic and executable batch using post-restart code), so only the new session-7 fixes need to load.
+- No other actions required — all session work shipped, committed, pushed. Submodule pointer bumped twice, both clean.
