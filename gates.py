@@ -363,14 +363,18 @@ def _extract_step_text(plan_text: str, step_number: int):
 
 
 def _filter_transient_paths(paths):
-    """Drop paths whose basename starts with `_staging_` — these are transient
-    atomic-deposit filenames that exist only between write and move and are not
-    deliverables. Per LESSONS 2026-05-18 strike-4 entry."""
-    return {p for p in paths if not os.path.basename(p).startswith("_staging_")}
+    """Drop paths whose basename starts with `_staging_` and return as a list preserving
+    input order. These are transient atomic-deposit filenames that exist only between
+    write and move and are not deliverables. Per LESSONS 2026-05-18 strike-4 entry."""
+    return [p for p in paths if not os.path.basename(p).startswith("_staging_")]
 
 
 def _extract_plan_required_deposits(step_text):
     """Extract file paths explicitly required by deposit instructions in the plan step text.
+
+    Returns a list preserving insertion order; for the block form, this equals the
+    authoring order of bullets in the ``**Deposits:**`` block. Convention: the QA report
+    is the first ``.md`` entry in the block.
 
     Filters out `_staging_*` basenames (transient atomic-deposit filenames mentioned in
     step prose as part of describing the deposit mechanism, never persistent on disk).
@@ -384,9 +388,9 @@ def _extract_plan_required_deposits(step_text):
     block_match = re.search(r'[> ]*\*\*Deposits:\*\*\s*\n(?:[> ]*\n)*((?:[> ]*-\s+.*\n?)+)', step_text)
     if block_match:
         block_text = block_match.group(1)
-        paths = set()
+        paths = []
         for m in re.finditer(r'-\s+`([^`]+)`', block_text):
-            paths.add(m.group(1))
+            paths.append(m.group(1))
         # Explicit "- none" means no deposits required
         return _filter_transient_paths(paths)
 
@@ -395,27 +399,30 @@ def _extract_plan_required_deposits(step_text):
     inline_match = re.search(r'[> ]*\*\*Deposits:\*\*[ \t]+(.+)', step_text)
     if inline_match:
         inline_text = inline_match.group(1)
-        paths = set()
+        paths = []
         for m in re.finditer(r'`-\s+([^`]+)`', inline_text):
-            paths.add(m.group(1))
+            paths.append(m.group(1))
         if paths:
             return _filter_transient_paths(paths)
 
     # Legacy fallback: prose-matching regexes
-    paths = set()
+    paths = []
     # Pattern 1: Deposit ... to `path` (backtick-quoted — most explicit form)
     for m in re.finditer(r'Deposit[^\n`]*?to\s+`([^`]+)`', step_text, re.IGNORECASE):
         candidate = m.group(1).strip()
         if candidate:
-            paths.add(candidate)
+            paths.append(candidate)
     # Pattern 2: Deposit ... to path.md (unquoted, must contain a directory separator)
     for m in re.finditer(r'Deposit[^\n]*?to\s+(\S+\.md)', step_text, re.IGNORECASE):
         candidate = m.group(1).strip().rstrip('.,;)').strip('`')
         if '/' in candidate:
-            paths.add(candidate)
+            paths.append(candidate)
     # Pattern 3: with open("path.md", "w") canonical Python write
     for m in re.finditer(r'with open\(["\']([^"\']+\.md)["\'],\s*["\']w["\']', step_text):
-        paths.add(m.group(1).strip())
+        paths.append(m.group(1).strip())
+    # Deduplicate preserving first-seen order (a path matched by multiple patterns
+    # should appear only once; Python 3.7+ dict preserves insertion order).
+    paths = list(dict.fromkeys(paths))
     return _filter_transient_paths(paths)
 
 

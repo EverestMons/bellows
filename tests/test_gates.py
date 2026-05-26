@@ -572,6 +572,23 @@ def test_extract_plan_required_deposits_multiline_format():
     assert len(result) == 2
 
 
+def test_extract_plan_required_deposits_preserves_block_order():
+    """Regression: _extract_plan_required_deposits returns a list preserving authoring order
+    of bullets in the **Deposits:** block. The QA report (first .md) must be deterministic."""
+    step_text = (
+        "## STEP 2 — QA\n\n"
+        "> Verify deliverables.\n>\n"
+        "> **Deposits:**\n"
+        "> - `knowledge/qa/foo.md`\n"
+        "> - `knowledge/qa/evidence/`\n"
+        "> - `knowledge/research/bar.md`\n"
+    )
+    result = gates._extract_plan_required_deposits(step_text)
+    assert isinstance(result, list), f"Expected list, got {type(result)}"
+    md_paths = [p for p in result if p.endswith(".md")]
+    assert md_paths[0] == "knowledge/qa/foo.md"
+
+
 def test_rule_20_self_check_passes_with_valid_banner_and_passed_line(tmp_path):
     report = tmp_path / "bellows" / "knowledge" / "qa" / "qa-report.md"
     report.parent.mkdir(parents=True)
@@ -1513,7 +1530,7 @@ def test_rule_22_qa_report_missing(tmp_path):
 def test_rule_20_self_check_scopes_to_first_md_deposit_ignoring_incidental_banner_in_other_deposits(tmp_path):
     """Item #7 regression: gate reads only the first .md deposit (QA report), ignoring
     a second deposit that contains the banner text as incidental prose without a PASSED line.
-    Uses patch to control deposit ordering since _extract_plan_required_deposits returns a set."""
+    _extract_plan_required_deposits now returns a list preserving authoring order (per BACKLOG 2026-05-24 fix); patch is retained for test isolation."""
     # First deposit: QA report with valid banner + PASSED line
     qa_report = tmp_path / "knowledge" / "qa" / "qa-report.md"
     qa_report.parent.mkdir(parents=True)
@@ -1534,7 +1551,7 @@ def test_rule_20_self_check_scopes_to_first_md_deposit_ignoring_incidental_banne
         "Found issues with banner detection in non-QA files.\n"
     )
     # Patch deposit extraction to return ordered list (QA report first),
-    # since _extract_plan_required_deposits returns a set with hash-randomized ordering.
+    # _extract_plan_required_deposits now returns a list preserving authoring order (per BACKLOG 2026-05-24 fix); patch is retained for test isolation.
     ordered_deposits = ["knowledge/qa/qa-report.md", "knowledge/research/agent-prompt-feedback.md"]
     plan_text = "## STEP 2 — QA\n\n> Verify deliverables.\n"
     with patch.object(gates, '_extract_plan_required_deposits', return_value=ordered_deposits):
