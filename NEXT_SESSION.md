@@ -21,7 +21,7 @@ One plan dispatched and shipped. Closed via Rule 22 override on a non-substantiv
 
 None active. All session work shipped and committed.
 
-The verdict-enrichment roadmap (`/Users/marklehn/Developer/GitHub/roadmap-bellows-verdict-enrichment-2026-05-27.md`) remains queued as a separate executable. Its named dependency (path-form normalization) was already closed 2026-05-27; this session's E.4 fix is unrelated to verdict-enrichment but lives in the same `verdict.py` / `bellows.py` files. No coupling — verdict-enrichment can dispatch independently when prioritized.
+**Stale-priority correction (2026-05-26 session 5).** The prior two batons (2026-05-26 sessions 3 and 4) carried "Verdict-enrichment executable" as On-the-horizon #1. PROJECT_STATUS verification confirmed that work shipped 2026-05-21 via `Done/executable-bellows-verdict-enrichment-2026-05-21.md` (all 7 components matched the roadmap spec 1:1; the plan's own context section even cites the roadmap as its source). The roadmap doc has been archived to `obsolete-roadmap-bellows-verdict-enrichment-2026-05-27.md`. LESSON appended at governance root covering the stale-baton-priority-claim pattern.
 
 ---
 
@@ -43,9 +43,9 @@ The verdict-enrichment roadmap (`/Users/marklehn/Developer/GitHub/roadmap-bellow
 
 In priority order:
 
-1. **Verdict-enrichment executable** — roadmap at governance root, dependency shipped, design unblocked. Largest single Planner-time leverage available. ~244 LOC across `gates.py` + `verdict.py` + `bellows.py`, +1 PLANNER_TEMPLATE Rule 25 routing row.
-2. **BACKLOG triage** — three risk-bearing items deferred during current hardening sprint: teardown push silent failure (2026-05-24), parallel-teardown bookkeeping-file conflict (2026-05-22), `md_paths[0]` set-ordering (closed 2026-05-25 by set→list conversion, deferred items are downstream).
-3. **Test-fixture cleanup** — string-typed failures in `test_run_plan_inprogress_entry_renames_to_verdict_pending` to unblock Fix F guard removal. Small but isolated.
+1. **BACKLOG triage** — risk-bearing items deferred during current hardening sprint: teardown push silent failure (2026-05-24), parallel-teardown bookkeeping-file conflict (2026-05-22). Both are conflict-driven daemon-side issues, not parallel-SHA (population audit 2026-05-26 closed that pattern). Two new items added 2026-05-26: `_gate_rule_20_self_check` ambiguous evidence string at `gates.py:441` and `:464`; Fix F `isinstance(f, dict)` guard removal blocked by test fixture.
+2. **Test-fixture cleanup** — string-typed failures in `test_run_plan_inprogress_entry_renames_to_verdict_pending` to unblock Fix F guard removal. Small but isolated (~5 LOC test update + 2-line guard removal).
+3. **Stale-priority audit discipline** — append to plan-write-time discipline: when carrying a multi-line "On the horizon" item across sessions, the Planner authoring the next baton must cross-reference PROJECT_STATUS Completed entries against the priority claims. Two consecutive batons (2026-05-26 sessions 3 and 4) propagated the false-queued verdict-enrichment claim because each instance trusted the prior baton without verifying.
 
 ---
 
