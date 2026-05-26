@@ -492,7 +492,7 @@ def run_plan(plan_path: str, config: dict, response_server: server.ResponseServe
                 "evidence": f"Agent moved {base_filename} to Done/ during step execution. File recovered to in-progress. This is a Failure 3 Mode A violation."
             })
             gate_result["passed"] = False
-        failure_gates = ", ".join((f["gate"] if isinstance(f, dict) else str(f)) for f in gate_result["failures"]) if gate_result["failures"] else "none"
+        failure_gates = ", ".join(f["gate"] for f in gate_result["failures"]) if gate_result["failures"] else "none"
         _log("EVENT", f"gates step {current_step}: passed={gate_result['passed']}, failures={len(gate_result['failures'])} ({failure_gates}), files_changed={len(gate_result.get('files_changed', []))}", slug=slug_for(plan_name))
 
         header = gate_result.get("plan_header", {})
@@ -584,7 +584,7 @@ def run_plan(plan_path: str, config: dict, response_server: server.ResponseServe
                     "evidence": f"Agent moved {base_filename} to Done/ during step execution. File recovered to in-progress. This is a Failure 3 Mode A violation."
                 })
                 gate_result["passed"] = False
-            failure_gates = ", ".join((f["gate"] if isinstance(f, dict) else str(f)) for f in gate_result["failures"]) if gate_result["failures"] else "none"
+            failure_gates = ", ".join(f["gate"] for f in gate_result["failures"]) if gate_result["failures"] else "none"
             _log("EVENT", f"gates step {current_step}: passed={gate_result['passed']}, failures={len(gate_result['failures'])} ({failure_gates}), files_changed={len(gate_result.get('files_changed', []))}", slug=slug_for(plan_name))
 
         # Final step completed — check gates one last time. Mirrors the while-loop

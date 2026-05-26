@@ -1786,7 +1786,7 @@ def test_run_plan_inprogress_entry_renames_to_verdict_pending():
         # Gates fail to trigger the pause branch
         failing_gates = {
             "passed": False,
-            "failures": ["scope_check"],
+            "failures": [{"gate": "scope_check", "evidence": "test fixture for scope_check failure"}],
             "is_qa_step": False,
             "files_changed": [],
             "plan_header": {},
