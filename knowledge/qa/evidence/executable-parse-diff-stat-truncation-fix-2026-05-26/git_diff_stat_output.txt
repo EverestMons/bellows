@@ -1,0 +1,13 @@
+ NEXT_SESSION.md                                                                                   |  86 +++++++++++++++++---------------------
+ PROJECT_STATUS.md                                                                                 |   5 ++-
+ knowledge/decisions/Done/diagnostic-parallel-sha-population-audit-2026-05-26.md                   |  97 +++++++++++++++++++++++++++++++++++++++++++
+ knowledge/decisions/Done/diagnostic-scope-check-post-fix-behavior-2026-05-26.md                   | 105 ++++++++++++++++++++++++++++++++++++++++++++++
+ knowledge/development/planner-template-rule-21-contract-change-2026-05-26.md                      |  52 +++++++++++++++++++++++
+ knowledge/research/agent-prompt-feedback.md                                                       |  30 +++++++++++++-
+ knowledge/research/scope-check-post-fix-behavior-2026-05-26.md                                    | 445 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ knowledge/research/scope-check-text-mention-audit-2026-05-26.md                                   | 232 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ knowledge/research/verdict-ledger-gate-result-preservation-2026-05-26.md                          | 352 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ verdicts/resolved/processed-verdict-parallel-sha-population-audit-2026-05-26-step-1.md            |   7 ++++
+ verdicts/resolved/processed-verdict-planner-template-rule-21-contract-change-2026-05-26-step-1.md |   9 ++++
+ verdicts/resolved/processed-verdict-scope-check-post-fix-behavior-2026-05-26-step-1.md            |  14 +++++++
+ 12 files changed, 1385 insertions(+), 49 deletions(-)
