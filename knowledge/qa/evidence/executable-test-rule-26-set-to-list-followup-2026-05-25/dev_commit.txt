@@ -1,0 +1,16 @@
+commit bc1ecd924bdefa8bafeffd5a3252064043f3bed0
+Author: Mark Lehn <marklehn@icloud.com>
+Date:   Mon May 25 21:53:40 2026 -0500
+
+    test(rule_26): wrap result LHS in set() for 6 membership assertions — closes set→list carry-over
+
+    6 assertions in test_rule_26_deposit_parser.py compared result directly
+    against set literals, which broke after _extract_plan_required_deposits
+    changed from returning set to list. Wrapping LHS in set() restores
+    membership-only semantics without re-introducing ordering dependency.
+
+    Co-Authored-By: Claude Opus 4.6 <noreply@anthropic.com>
+
+ ...test-rule-26-set-to-list-followup-2026-05-25.md | 109 +++++++++++++++++++++
+ tests/test_rule_26_deposit_parser.py               |  12 +--
+ 2 files changed, 115 insertions(+), 6 deletions(-)
