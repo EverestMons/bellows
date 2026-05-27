@@ -1,6 +1,37 @@
 #!/usr/bin/env python3
 """Check BACKLOG Open entries for evidence of already-shipped closures.
 
+⚠️  HALTED EXPERIMENT — DO NOT EVOLVE WITH PURE TERM-MATCHING  ⚠️
+
+This script was retired 2026-05-27 as an inadequate solution to the
+"leftover after ship" detection problem. Two implementation iterations
+both halted at Rule 22 (b) substance check:
+
+  - v1 (title-word fingerprints):           6/6 entries flagged, 39 candidates
+  - v2 (high-distinctiveness fingerprints): 6/6 entries flagged, 37 candidates
+
+Term-matching cannot distinguish same-function-different-bug, shared
+project names, or slug-token substring collisions without semantic
+understanding. All 4 ground-truth recurrences (set→list,
+precondition-failure-field, Phase 3b read-side, mcp__vexp__) are
+caught by the algorithm trace, but the false-positive rate against
+current Open entries makes the script no better than manual triage.
+
+The manual Phase 1.5 grep (catch rate: 5/5 over 30 days, ~5s cost
+per entry) remains the working solution.
+
+REVISIT TRIGGER: capability-addition framing only. If a
+semantic-comparison primitive becomes available (LLM-based same-bug
+detection, embeddings for entry similarity), reconsider. Pure
+term-matching iterations should NOT be reopened.
+
+Full session post-mortem and revisit criteria:
+  - bellows/knowledge/BACKLOG.md       (2026-05-27 Closed entry)
+  - LESSONS.md                          (2026-05-26 follow-up note)
+  - bellows/NEXT_SESSION.md             (session-10 summary)
+
+Bellows daemon does NOT run this script. It is reference-only.
+
 Scans four sources (git log, PROJECT_STATUS Completed, BACKLOG Closed,
 BACKLOG Open fingerprints) and surfaces candidate matches where an Open
 entry may already have been shipped. Deposits a markdown report.
