@@ -42,29 +42,29 @@ REFERENCE_SLUG_RE = re.compile(
     r'(?:Reference:\s*`?)(executable-[\w-]+-\d{4}-\d{2}-\d{2})'
 )
 
-STOPWORDS = {
-    'added', 'after', 'before', 'between', 'could', 'during',
-    'existing', 'first', 'making', 'never', 'originally', 'other',
-    'should', 'their', 'there', 'these', 'where', 'which', 'would',
-}
-
 
 def extract_fingerprint(text):
-    """Extract distinctive terms from entry text for matching."""
+    """Extract high-distinctiveness terms from entry text for matching."""
     terms = set()
+    # Rule 1: Backtick-delimited identifiers (length >= 5)
     for m in re.finditer(r'`([^`]+)`', text[:500]):
         cleaned = m.group(1).strip('()').lower()
-        if len(cleaned) >= 3:
+        if len(cleaned) >= 5:
             terms.add(cleaned)
+    # Rule 2: Hyphenated compounds (total length >= 12)
     for m in re.finditer(r'\b([a-zA-Z][\w]*(?:-[a-zA-Z][\w]*){1,})\b', text[:300]):
+        compound = m.group(1).lower()
+        if len(compound) >= 12:
+            terms.add(compound)
+    # Rule 3: Underscore identifiers (length >= 8, >= 2 underscores)
+    for m in re.finditer(r'\b(_?[a-z][a-z0-9]*(?:_[a-z0-9]+)+)\b', text[:300],
+                         re.IGNORECASE):
+        ident = m.group(1).lower()
+        if len(ident) >= 8 and ident.count('_') >= 2:
+            terms.add(ident)
+    # Rule 4: Executable slugs cited in text
+    for m in re.finditer(r'(executable-[\w-]+-\d{4}-\d{2}-\d{2})', text[:500]):
         terms.add(m.group(1).lower())
-    for m in re.finditer(r'\b(_?[a-z][a-z0-9]*(?:_[a-z0-9]+)+)\b', text[:300], re.IGNORECASE):
-        terms.add(m.group(1).lower())
-    first_sentence = re.split(r'\.\s', text[:200])[0]
-    for word in re.findall(r'[a-zA-Z][a-zA-Z0-9]{4,}', first_sentence):
-        w = word.lower()
-        if w not in STOPWORDS:
-            terms.add(w)
     return terms
 
 
@@ -152,26 +152,41 @@ def find_candidates(open_entries, closure_commits, ps_entries, closed_entries):
         candidates = []
         fp = entry['fingerprint']
         text_300 = entry['text'][:300]
-        # Source 1: Git log (closure-signal commits)
+        # Source 1: Git log — threshold >= 1 (was >= 2)
         for sha, subject in closure_commits:
-            if score_overlap(fp, subject) >= 2:
+            if score_overlap(fp, subject) >= 1:
                 matching = sorted(t for t in fp if t in subject.lower())
                 candidates.append(("git", sha, subject, matching))
-        # Source 2: PROJECT_STATUS (windowed entries with Reference slug)
+        # Source 2: PROJECT_STATUS — slug tokens >= 6 chars, threshold >= 1 (was >= 2)
         for ps in ps_entries:
             if ps['slug']:
                 slug_tokens = tokenize_slug(ps['slug'])
                 text_lower = text_300.lower()
-                overlap = sorted(t for t in slug_tokens if t in text_lower)
-                if len(overlap) >= 2:
-                    candidates.append(("project_status", ps['date'], ps['slug'], overlap))
-        # Source 3: BACKLOG Closed (duplicate detection)
+                overlap = sorted(t for t in slug_tokens
+                                 if len(t) >= 6 and t in text_lower)
+                if len(overlap) >= 1:
+                    candidates.append(("project_status", ps['date'],
+                                       ps['slug'], overlap))
+        # Source 3: BACKLOG Closed — new v2 rule
         for closed in closed_entries:
             closed_text = closed['text'][:300]
             matching = sorted(t for t in fp if t in closed_text.lower())
-            if len(matching) >= 2 and any(len(t) >= 8 for t in matching):
+            long_match = any(len(t) >= 12 for t in matching)
+            # Backtick-id condition: same backtick identifier in both entries
+            backtick_match = False
+            if matching and not long_match:
+                open_bt = {m.group(1).strip('()').lower()
+                           for m in re.finditer(r'`([^`]+)`', entry['text'][:500])
+                           if len(m.group(1).strip('()')) >= 5}
+                closed_bt = {m.group(1).strip('()').lower()
+                             for m in re.finditer(r'`([^`]+)`', closed_text)
+                             if len(m.group(1).strip('()')) >= 5}
+                backtick_match = bool(
+                    open_bt & closed_bt & set(matching))
+            if matching and (long_match or backtick_match):
                 candidates.append(("backlog_closed", closed['date'],
-                                   closed['text'][:80].replace('\n', ' '), matching))
+                                   closed['text'][:80].replace('\n', ' '),
+                                   matching))
         entry['candidates'] = candidates
         entry['action'] = "investigate-as-shipped" if candidates else "no-match"
 
