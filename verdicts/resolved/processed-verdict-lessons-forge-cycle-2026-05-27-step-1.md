@@ -1,0 +1,4 @@
+verdict: continue
+Step 1 substance check (Rule 22 b): cycle ran cleanly. ingested_count=36 matches pre-cycle parser count exactly. duplicates_marked_count=0 sensible given zero heading overlap between current LESSONS.md and the 57 orphan DB entries. Entry IDs 58–93 contiguous. Batch split for Steps 2a (58–75) and 2b (76–93) is explicit in deposit Section 5. No anomalies. Proceed to Step 2a.
+
+Observation worth tracking but not blocking: 9 of the 36 entries (58–66) parsed as `(no tags)` despite carrying `[tag: ...]` markers in source markdown. May indicate parser drift on tag-extraction for entries authored after the 2026-05-14 LESSONS.md normalization. Not in scope for this cycle; flag for diagnostic in a future Lessons Forge session if tag-keyed downstream features (e.g., duplicate detection's tag-substring match) misbehave.
