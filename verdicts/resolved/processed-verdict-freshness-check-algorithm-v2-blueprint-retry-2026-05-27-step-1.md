@@ -1,0 +1,2 @@
+verdict: continue
+Rule 22 (b) substance check PASSED. SA delivered a rigorous 5-section v2 blueprint with explicit, honest analysis of what v2 fixes (60% candidate noise reduction, 6/6 FP entries → 4/6) and what it cannot fix (same-function-different-bug, shared project names, slug-token collisions — inherent limits of term matching without semantic understanding). All 4 ground-truth catches preserved, no TP regression. Shipping v2 as a candidate-surfacer rather than closure-detector; honest about the limits.
