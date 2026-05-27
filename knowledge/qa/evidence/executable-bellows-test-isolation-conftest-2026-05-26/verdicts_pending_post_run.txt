@@ -1,0 +1,2 @@
+=== verdicts/pending/ contents after full pytest run (excluding archived/) ===
+=== Result: CLEAN — zero orphan verdict-request files ===

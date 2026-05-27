@@ -1826,3 +1826,11 @@ The Planner authors plans in a Project conversation with MCP filesystem tools. T
 2. **Domain glossary skip was correct.** Instruction to skip the domain glossary read was appropriate — this was a pure code-state audit against specific line numbers. No domain interpretation was needed.
 
 3. **BACKLOG.md exceeded 25K token read limit.** The full BACKLOG could not be read in a single pass. Required offset/limit reads to access both Open and Closed sections. For future audits that require scanning both sections, consider noting the approximate line ranges in the plan.
+
+## 2026-05-26 — bellows-test-isolation-conftest (QA Step 2)
+
+1. **verdicts_pending_post_run.txt was empty, tripping Rule 20 self-check.** The expected-correct result for the leak-closure verification is empty `ls` output (no orphan files). But the Rule 20 self-check rejects empty evidence files. The plan command `ls ... | tee ...` produces a 0-byte file on success. Fix: prepend a header line and append a summary line so the file is non-empty while still documenting the clean result. Recommend: plans that expect empty command output should instruct the agent to wrap the command with context lines, or the Rule 20 self-check should treat expected-empty evidence files differently.
+
+2. **Line count discrepancy ("7 lines" vs 9 lines) was benign.** The SA diagnostic and plan both said "7-LOC fixture" but the prescribed code block contains 9 lines (including comment header and 2 blank lines). The file content matched the prescribed body verbatim. The count was a LOC-vs-total-lines convention difference. No fix needed, but future plans could use "N lines of code" vs "N total lines" for clarity.
+
+3. **Plan claim step referenced verdict-pending prefix, but file was already in-progress.** The QA step instructions said to move from `verdict-pending-*` to `in-progress-*`, but the file was already named `in-progress-*` (from DEV Step 1). This is expected in the worktree model where both steps run in sequence. No action needed.
