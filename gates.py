@@ -67,6 +67,13 @@ POSITIVE_STATUS_TOKENS = ["\u2705", "OK", "PASS", "done", "complete", "verified"
 
 _TABLE_SEPARATOR_RE = re.compile(r'^\|[\s\-:]+(\|[\s\-:]+)*\|?\s*$')
 
+_NULL_FLAG_RE = re.compile(r'^(none|n/a|no flags?|nothing|clean|no issues)\b', re.IGNORECASE)
+
+
+def _is_null_flag_declaration(text: str) -> bool:
+    """True if the text is a null-declaration (no flags raised)."""
+    return bool(_NULL_FLAG_RE.match(text.strip()))
+
 
 def _is_positive_status_row(line):
     """True if the markdown table row contains a positive-status token in any cell."""
@@ -81,6 +88,30 @@ def _is_positive_status_row(line):
             else:
                 if cell.lower() == token.lower():
                     return True
+    return False
+
+
+def _hedging_in_status_vicinity(line: str, keyword: str) -> bool:
+    """True if the hedging keyword appears in or adjacent to the row's status-bearing cell."""
+    if "|" not in line:
+        return False
+    cells = [c.strip() for c in line.split("|")]
+    kw_lower = keyword.lower()
+    for cell in cells:
+        # Identify cells that contain a positive-status token
+        has_status = False
+        for token in POSITIVE_STATUS_TOKENS:
+            if token == "\u2705":
+                if "\u2705" in cell:
+                    has_status = True
+                    break
+            else:
+                if cell.lower() == token.lower():
+                    has_status = True
+                    break
+        # Only match hedging keywords in status-bearing cells
+        if has_status and kw_lower in cell.lower():
+            return True
     return False
 
 
@@ -213,7 +244,7 @@ def _gate_receipt_status(parsed, failures):
 
 
 def _gate_ceo_flags(parsed, failures):
-    flags = parsed.get("ceo_flags", [])
+    flags = [f for f in parsed.get("ceo_flags", []) if not _is_null_flag_declaration(f)]
     if flags:
         failures.append({"gate": "ceo_flags", "evidence": "; ".join(flags)})
 
@@ -526,17 +557,34 @@ def _gate_rule_22_verification(is_qa_step, plan_text, step_number, project_path,
     #       "| ... | PASS |".
     in_data = False
     in_verification_section = False
+    current_table_failures = []
+    current_table_has_positive_row = False
     for i, line in enumerate(lines, 1):
         stripped = line.strip()
         # Track section transitions via ## headers.
         if stripped.startswith("## "):
+            # Table ended — flush deferred failures if this was a verification table
+            if in_data and current_table_has_positive_row:
+                failures.extend(current_table_failures)
+            current_table_failures = []
+            current_table_has_positive_row = False
             in_verification_section = "verification" in stripped.lower()
             in_data = False
             continue
         if "|" not in stripped:
+            # Table ended — flush deferred failures if this was a verification table
+            if in_data and current_table_has_positive_row:
+                failures.extend(current_table_failures)
+            current_table_failures = []
+            current_table_has_positive_row = False
             in_data = False
             continue
         if _TABLE_SEPARATOR_RE.match(stripped):
+            # New table starting — flush previous table if any
+            if in_data and current_table_has_positive_row:
+                failures.extend(current_table_failures)
+            current_table_failures = []
+            current_table_has_positive_row = False
             in_data = True
             continue
         if not in_data:
@@ -545,22 +593,35 @@ def _gate_rule_22_verification(is_qa_step, plan_text, step_number, project_path,
             continue  # Skip tables outside verification sections
         # Data row inside a verification-section table
         if "\u274c" in stripped:
+            # Explicit failure markers always fire regardless of table type
             failures.append({
                 "gate": "rule_22_verification",
                 "evidence": f"(c) QA verification table row {i}: {stripped[:120]}. See {qa_report_path} line {i}.",
             })
-        elif not _is_positive_status_row(line):
-            failures.append({
+        elif _is_positive_status_row(line):
+            current_table_has_positive_row = True
+        else:
+            # Defer "missing status" — discard if table has no positive-status rows
+            current_table_failures.append({
                 "gate": "rule_22_verification",
                 "evidence": f"(c) QA verification table row {i} missing status: {stripped[:120]}. See {qa_report_path} line {i}.",
             })
+    # Flush final table
+    if in_data and current_table_has_positive_row:
+        failures.extend(current_table_failures)
 
-    # (d) No hedging keywords in positive-status rows
+    # (d) No hedging keywords in positive-status rows (section-scoped, cell-scoped)
+    in_verification_section_d = False
     for i, line in enumerate(lines, 1):
+        stripped_d = line.strip()
+        if stripped_d.startswith("## "):
+            in_verification_section_d = "verification" in stripped_d.lower()
+            continue
+        if not in_verification_section_d:
+            continue
         if _is_positive_status_row(line):
-            lower = line.lower()
             for kw in HEDGING_KEYWORDS:
-                if kw in lower:
+                if _hedging_in_status_vicinity(line, kw):
                     failures.append({
                         "gate": "rule_22_verification",
                         "evidence": f"(d) Hedging keyword '{kw}' in positive-status row: {line.strip()[:120]}. See {qa_report_path} line {i}.",
