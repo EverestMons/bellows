@@ -2882,6 +2882,113 @@ def test_teardown_worktree_force_removes_orphaned_directory():
             f"Orphaned worktree directory should have been force-removed, but still exists"
 
 
+def test_teardown_pauses_when_local_main_dirty():
+    """Dirty-tree pre-check raises WorktreeTeardownError when main checkout has uncommitted changes."""
+    with tempfile.TemporaryDirectory() as tmp:
+        project_path = os.path.join(tmp, "project")
+        wt_path = os.path.join(tmp, "worktree")
+        os.makedirs(os.path.join(project_path, ".git"))
+        os.makedirs(wt_path)
+
+        cherry_pick_called = []
+
+        def fake_subprocess_run(cmd, **kwargs):
+            mock_result = MagicMock()
+            mock_result.returncode = 0
+            mock_result.stderr = ""
+            if "status" in cmd and "--porcelain" in cmd and kwargs.get("cwd") == project_path:
+                mock_result.stdout = " M PROJECT_STATUS.md\n"
+            elif "cherry-pick" in cmd:
+                cherry_pick_called.append(cmd)
+                mock_result.stdout = ""
+            else:
+                mock_result.stdout = ""
+            return mock_result
+
+        with patch("bellows.subprocess.run", side_effect=fake_subprocess_run):
+            try:
+                bellows._teardown_worktree(project_path, wt_path, "test-slug")
+                assert False, "Expected WorktreeTeardownError to be raised"
+            except bellows.WorktreeTeardownError as e:
+                assert "worktree_teardown_dirty_tree" in str(e)
+            assert len(cherry_pick_called) == 0, "Cherry-pick should not be called when tree is dirty"
+
+
+def test_teardown_proceeds_when_local_main_clean():
+    """Clean main checkout allows teardown to proceed past the dirty-tree pre-check."""
+    with tempfile.TemporaryDirectory() as tmp:
+        project_path = os.path.join(tmp, "project")
+        wt_path = os.path.join(tmp, "worktree")
+        os.makedirs(os.path.join(project_path, ".git"))
+        os.makedirs(wt_path)
+
+        def fake_subprocess_run(cmd, **kwargs):
+            mock_result = MagicMock()
+            mock_result.returncode = 0
+            mock_result.stdout = ""
+            mock_result.stderr = ""
+            return mock_result
+
+        with patch("bellows.subprocess.run", side_effect=fake_subprocess_run):
+            bellows._teardown_worktree(project_path, wt_path, "test-slug")
+        # No exception means the pre-check passed and teardown proceeded
+
+
+def test_teardown_dirty_tree_evidence_contains_recovery_commands():
+    """Evidence string contains gate name, both recovery sub-variants, LESSONS pointer, and dirty files."""
+    with tempfile.TemporaryDirectory() as tmp:
+        project_path = os.path.join(tmp, "project")
+        wt_path = os.path.join(tmp, "worktree")
+        os.makedirs(os.path.join(project_path, ".git"))
+        os.makedirs(wt_path)
+
+        def fake_subprocess_run(cmd, **kwargs):
+            mock_result = MagicMock()
+            mock_result.returncode = 0
+            mock_result.stderr = ""
+            if "status" in cmd and "--porcelain" in cmd and kwargs.get("cwd") == project_path:
+                mock_result.stdout = " M PROJECT_STATUS.md\n?? untracked.md\n"
+            else:
+                mock_result.stdout = ""
+            return mock_result
+
+        with patch("bellows.subprocess.run", side_effect=fake_subprocess_run):
+            try:
+                bellows._teardown_worktree(project_path, wt_path, "test-slug")
+                assert False, "Expected WorktreeTeardownError to be raised"
+            except bellows.WorktreeTeardownError as e:
+                evidence = str(e)
+                assert "worktree_teardown_dirty_tree" in evidence
+                assert "Sub-variant A" in evidence
+                assert "Sub-variant B" in evidence
+                assert "LESSONS.md 2026-05-27" in evidence
+                assert "PROJECT_STATUS.md" in evidence
+
+
+def test_teardown_proceeds_when_git_status_errors():
+    """Fail-open: git status failure does not raise WorktreeTeardownError, cherry-pick proceeds."""
+    with tempfile.TemporaryDirectory() as tmp:
+        project_path = os.path.join(tmp, "project")
+        wt_path = os.path.join(tmp, "worktree")
+        os.makedirs(os.path.join(project_path, ".git"))
+        os.makedirs(wt_path)
+
+        def fake_subprocess_run(cmd, **kwargs):
+            mock_result = MagicMock()
+            mock_result.stderr = ""
+            if "status" in cmd and "--porcelain" in cmd and kwargs.get("cwd") == project_path:
+                mock_result.returncode = 128  # simulate git error
+                mock_result.stdout = ""
+            else:
+                mock_result.returncode = 0
+                mock_result.stdout = ""
+            return mock_result
+
+        with patch("bellows.subprocess.run", side_effect=fake_subprocess_run):
+            # Should not raise — fail-open means we proceed to cherry-pick
+            bellows._teardown_worktree(project_path, wt_path, "test-slug")
+
+
 def test_defensive_default_sets_pause_for_verdict_when_header_sparse():
     """Shape g safety net: when header parse returns < 3 keys for a multi-step plan,
     pause_for_verdict defaults to after_step_1 to prevent silent auto-advance.

@@ -852,6 +852,47 @@ def _teardown_worktree(project_path: str, wt_path: str, slug: str) -> None:
                 except OSError as e:
                     _log("WARN", f"⚠ could not remove .git/index.lock: {e}", slug=slug)
 
+    # (b2) Pre-cherry-pick dirty-tree check on main checkout
+    try:
+        dt_result = subprocess.run(
+            ["git", "--no-pager", "status", "--porcelain"],
+            cwd=project_path, capture_output=True, text=True, timeout=10,
+        )
+        if dt_result.returncode == 0 and dt_result.stdout.strip():
+            dirty_output = dt_result.stdout.strip()
+            dirty_lines = dirty_output.splitlines()
+            if len(dirty_lines) > 10:
+                dirty_display = "\n".join(dirty_lines[:10]) + f"\n... ({len(dirty_lines) - 10} more files)"
+            else:
+                dirty_display = dirty_output
+            raise WorktreeTeardownError(
+                f"worktree_teardown_dirty_tree: local main has uncommitted changes "
+                f"that would conflict with cherry-pick from worktree.\n"
+                f"\n"
+                f"Dirty files in local main ({len(dirty_lines)} file(s)):\n"
+                f"{dirty_display}\n"
+                f"\n"
+                f"Recovery (choose based on dirty-file type):\n"
+                f"\n"
+                f"  Sub-variant A — untracked artifact (e.g., claim-rename):\n"
+                f"    cd {project_path}\n"
+                f"    git add <file(s)>\n"
+                f"    git commit -m 'chore: commit untracked artifact before teardown'\n"
+                f"\n"
+                f"  Sub-variant B — dirty bookkeeping file (e.g., PROJECT_STATUS.md):\n"
+                f"    cd {project_path}\n"
+                f"    git add <file(s)>\n"
+                f"    git commit -m 'chore: commit dirty bookkeeping before teardown'\n"
+                f"\n"
+                f"  Then: re-issue continue verdict to retry teardown.\n"
+                f"\n"
+                f"Reference: LESSONS.md 2026-05-27 R2 recovery shape."
+            )
+    except WorktreeTeardownError:
+        raise
+    except Exception:
+        _log("WARN", f"⚠ dirty-tree pre-check failed (proceeding to cherry-pick)", slug=slug)
+
     # (c) Cherry-pick each commit onto main checkout
     for sha in commit_shas:
         if not sha.strip():
