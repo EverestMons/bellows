@@ -1,0 +1,977 @@
+============================= test session starts ==============================
+platform darwin -- Python 3.9.6, pytest-8.4.2, pluggy-1.6.0 -- /Applications/Xcode.app/Contents/Developer/usr/bin/python3
+cachedir: .pytest_cache
+rootdir: /Users/marklehn/Developer/GitHub/bellows/.bellows-worktrees/dirty-tree-precheck-filter-qa-2026-05-28
+plugins: anyio-4.12.1, xdist-3.8.0, cov-7.0.0
+collecting ... collected 433 items
+
+tests/test_bellows.py::test_load_config PASSED                           [  0%]
+tests/test_bellows.py::test_load_config_merges_secrets PASSED            [  0%]
+tests/test_bellows.py::test_load_config_missing_secrets PASSED           [  0%]
+tests/test_bellows.py::test_load_config_deep_merge PASSED                [  0%]
+tests/test_bellows.py::test_is_final_step PASSED                         [  1%]
+tests/test_bellows.py::test_is_runnable_plan_diagnostic PASSED           [  1%]
+tests/test_bellows.py::test_is_runnable_plan_parallel_prefix PASSED      [  1%]
+tests/test_bellows.py::test_extract_parallel_group_match PASSED          [  1%]
+tests/test_bellows.py::test_extract_parallel_group_no_match PASSED       [  2%]
+tests/test_bellows.py::test_is_plan_stranded_returns_true_when_inprogress_exists PASSED [  2%]
+tests/test_bellows.py::test_is_plan_stranded_returns_true_when_done_missing PASSED [  2%]
+tests/test_bellows.py::test_is_plan_stranded_returns_false_on_happy_path PASSED [  2%]
+tests/test_bellows.py::test_rescan_preserves_seen PASSED                 [  3%]
+tests/test_bellows.py::test_source_sha_returns_string PASSED             [  3%]
+tests/test_bellows.py::test_diagnostic_auto_close_moves_to_done PASSED   [  3%]
+tests/test_bellows.py::test_clean_diagnostic_no_header_posts_verdict PASSED [  3%]
+tests/test_bellows.py::test_clean_diagnostic_auto_close_true_moves_to_done PASSED [  3%]
+tests/test_bellows.py::test_executable_no_header_defaults_to_verdict PASSED [  4%]
+tests/test_bellows.py::test_executable_explicit_auto_close_true_still_closes PASSED [  4%]
+tests/test_bellows.py::test_handle_parallel_group_stagger PASSED         [  4%]
+tests/test_bellows.py::test_verdict_continue_at_final_step_moves_to_done PASSED [  4%]
+tests/test_bellows.py::test_capture_git_diff_returns_head_sha PASSED     [  5%]
+tests/test_bellows.py::test_capture_git_diff_returns_empty_on_no_git PASSED [  5%]
+tests/test_bellows.py::test_parse_diff_stat_empty_pre_sha_returns_empty PASSED [  5%]
+tests/test_bellows.py::test_parse_diff_stat_detects_committed_changes PASSED [  5%]
+tests/test_bellows.py::test_parse_diff_stat_detects_uncommitted_changes PASSED [  6%]
+tests/test_bellows.py::test_parse_diff_stat_filters_dotdot_paths PASSED  [  6%]
+tests/test_bellows.py::test_run_plan_resume_step_uses_correct_prompt PASSED [  6%]
+tests/test_bellows.py::test_consume_verdicts_continue_calls_handle_new_plan_with_resume_step PASSED [  6%]
+tests/test_bellows.py::test_consume_verdicts_deletes_pending_file PASSED [  6%]
+tests/test_bellows.py::test_consume_verdicts_pending_cleanup_safe_when_file_missing PASSED [  7%]
+tests/test_bellows.py::test_consume_verdicts_scopes_to_project_from_pending_file PASSED [  7%]
+tests/test_bellows.py::test_consume_verdicts_fallback_to_all_watched_when_pending_missing PASSED [  7%]
+tests/test_bellows.py::test_consume_verdicts_break_prevents_double_consumption PASSED [  7%]
+tests/test_bellows.py::test_handle_parallel_from_watchdog_adds_pending_not_dispatched PASSED [  8%]
+tests/test_bellows.py::test_rescan_dispatches_pending_group_after_settle PASSED [  8%]
+tests/test_bellows.py::test_rescan_does_not_dispatch_pending_group_within_settle PASSED [  8%]
+tests/test_bellows.py::test_nonparallel_plan_dispatches_immediately_from_handle PASSED [  8%]
+tests/test_bellows.py::test_two_parallel_siblings_collected_as_one_group PASSED [  9%]
+tests/test_bellows.py::test_run_plan_claims_file_before_runner_runs PASSED [  9%]
+tests/test_bellows.py::test_run_plan_skips_claim_if_already_inprogress PASSED [  9%]
+tests/test_bellows.py::test_run_plan_bootstrap_prompt_uses_shadow_path PASSED [  9%]
+tests/test_bellows.py::test_run_plan_continuation_prompt_uses_shadow_path PASSED [  9%]
+tests/test_bellows.py::test_run_plan_diagnostic_prompt_uses_shadow_path PASSED [ 10%]
+tests/test_bellows.py::test_run_plan_resume_prompt_uses_shadow_path PASSED [ 10%]
+tests/test_bellows.py::test_shadow_path_resolves_after_claim PASSED      [ 10%]
+tests/test_bellows.py::test_on_moved_dispatches_for_non_directory_event PASSED [ 10%]
+tests/test_bellows.py::test_on_moved_ignores_directory_events PASSED     [ 11%]
+tests/test_bellows.py::test_on_moved_dispatches_for_top_level_dest PASSED [ 11%]
+tests/test_bellows.py::test_on_moved_rejects_subdirectory_dest PASSED    [ 11%]
+tests/test_bellows.py::test_on_moved_dispatches_same_directory_rename PASSED [ 11%]
+tests/test_bellows.py::test_is_runnable_plan_inprogress_executable_returns_false PASSED [ 12%]
+tests/test_bellows.py::test_is_runnable_plan_qa_prefix PASSED            [ 12%]
+tests/test_bellows.py::test_is_runnable_plan_parallel_qa_prefix PASSED   [ 12%]
+tests/test_bellows.py::test_is_runnable_plan_rejects_roadmap PASSED      [ 12%]
+tests/test_bellows.py::test_is_runnable_plan_rejects_staging PASSED      [ 12%]
+tests/test_bellows.py::test_skip_logging_fires_once PASSED               [ 13%]
+tests/test_bellows.py::test_skip_logging_deduplication PASSED            [ 13%]
+tests/test_bellows.py::test_consume_verdicts_no_match_leaves_in_resolved PASSED [ 13%]
+tests/test_bellows.py::test_consume_verdicts_stale_verdict_plan_in_done_moves_to_processed PASSED [ 13%]
+tests/test_bellows.py::test_consume_verdicts_match_still_moves_to_processed PASSED [ 14%]
+tests/test_bellows.py::test_run_plan_inprogress_entry_renames_to_verdict_pending PASSED [ 14%]
+tests/test_bellows.py::test_run_plan_inprogress_entry_no_double_prefix PASSED [ 14%]
+tests/test_bellows.py::test_extract_total_steps_mixed_case PASSED        [ 14%]
+tests/test_bellows.py::test_extract_total_steps_lowercase PASSED         [ 15%]
+tests/test_bellows.py::test_extract_total_steps_uppercase_unchanged PASSED [ 15%]
+tests/test_bellows.py::test_extract_total_steps_requires_number PASSED   [ 15%]
+tests/test_bellows.py::test_extract_total_steps_case_mismatch_warning PASSED [ 15%]
+tests/test_bellows.py::test_strip_fenced_code_blocks_basic PASSED        [ 15%]
+tests/test_bellows.py::test_extract_total_steps_ignores_in_fence_headers PASSED [ 16%]
+tests/test_bellows.py::test_record_run_stores_plan_slug PASSED           [ 16%]
+tests/test_bellows.py::test_run_plan_creates_worktree_before_pre_diff PASSED [ 16%]
+tests/test_bellows.py::test_run_plan_passes_wt_path_to_capture_and_runner PASSED [ 16%]
+tests/test_bellows.py::test_run_plan_tears_down_worktree_after_final_gate PASSED [ 17%]
+tests/test_bellows.py::test_run_plan_strict_pause_on_creation_failure PASSED [ 17%]
+tests/test_bellows.py::test_run_plan_pauses_on_cherry_pick_conflict PASSED [ 17%]
+tests/test_bellows.py::test_bellows_init_runs_worktree_prune PASSED      [ 17%]
+tests/test_bellows.py::test_create_worktree_returns_project_path_when_no_git PASSED [ 18%]
+tests/test_bellows.py::test_teardown_worktree_noop_when_wt_equals_project PASSED [ 18%]
+tests/test_bellows.py::test_mode_a_detected_and_recovered PASSED         [ 18%]
+tests/test_bellows.py::test_mode_a_no_detection_normal_flow PASSED       [ 18%]
+tests/test_bellows.py::test_mode_a_missing_file_not_in_done PASSED       [ 18%]
+tests/test_bellows.py::test_mode_a_recovery_failure PASSED               [ 19%]
+tests/test_bellows.py::test_mode_a_synthetic_failure_in_verdict_request PASSED [ 19%]
+tests/test_bellows.py::test_create_worktree_proceeds_when_git_exists PASSED [ 19%]
+tests/test_bellows.py::test_warning_multi_step_plan_without_pause_for_verdict PASSED [ 19%]
+tests/test_bellows.py::test_no_warning_multi_step_plan_with_pause_for_verdict PASSED [ 20%]
+tests/test_bellows.py::test_no_warning_single_step_plan_without_pause_for_verdict PASSED [ 20%]
+tests/test_bellows.py::test_no_warning_multi_step_plan_with_pause_always PASSED [ 20%]
+tests/test_bellows.py::test_teardown_worktree_removes_stale_index_lock PASSED [ 20%]
+tests/test_bellows.py::test_teardown_worktree_waits_for_fresh_index_lock PASSED [ 21%]
+tests/test_bellows.py::test_teardown_worktree_force_removes_orphaned_directory PASSED [ 21%]
+tests/test_bellows.py::test_teardown_pauses_when_local_main_dirty PASSED [ 21%]
+tests/test_bellows.py::test_teardown_proceeds_when_local_main_clean PASSED [ 21%]
+tests/test_bellows.py::test_teardown_dirty_tree_evidence_contains_recovery_commands PASSED [ 21%]
+tests/test_bellows.py::test_teardown_proceeds_when_git_status_errors PASSED [ 22%]
+tests/test_bellows.py::test_teardown_ignores_lifecycle_artifacts PASSED  [ 22%]
+tests/test_bellows.py::test_teardown_ignores_deletion_porcelain_codes PASSED [ 22%]
+tests/test_bellows.py::test_lifecycle_artifact_regex_coverage PASSED     [ 22%]
+tests/test_bellows.py::test_teardown_blocks_on_non_lifecycle_untracked PASSED [ 23%]
+tests/test_bellows.py::test_teardown_blocks_on_dirty_project_status PASSED [ 23%]
+tests/test_bellows.py::test_teardown_blocks_on_real_dirty_mixed_with_lifecycle PASSED [ 23%]
+tests/test_bellows.py::test_teardown_blocks_on_dirty_source_file PASSED  [ 23%]
+tests/test_bellows.py::test_defensive_default_sets_pause_for_verdict_when_header_sparse PASSED [ 24%]
+tests/test_bellows.py::test_defensive_default_does_not_override_explicit_pause_for_verdict PASSED [ 24%]
+tests/test_bellows.py::test_seen_uses_slug_not_path PASSED               [ 24%]
+tests/test_bellows.py::test_seen_dispatch_window_guard_holds PASSED      [ 24%]
+tests/test_bellows.py::test_on_modified_invalidates_seen_for_runnable_plan PASSED [ 24%]
+tests/test_bellows.py::test_on_modified_preserves_seen_for_lifecycle_renames PASSED [ 25%]
+tests/test_bellows.py::test_apply_defensive_header_defaults_propagates_to_reparsed_header PASSED [ 25%]
+tests/test_bellows.py::test_seen_cleared_on_continue_to_done PASSED      [ 25%]
+tests/test_bellows.py::test_seen_cleared_on_halt PASSED                  [ 25%]
+tests/test_bellows.py::test_module_fingerprints_returns_all_six_modules PASSED [ 26%]
+tests/test_bellows.py::test_module_fingerprints_handles_git_failure PASSED [ 26%]
+tests/test_bellows.py::test_module_fingerprints_fallback_to_unknown_on_unexpected_error PASSED [ 26%]
+tests/test_bellows.py::test_auto_close_yaml_bool_does_not_crash PASSED   [ 26%]
+tests/test_bellows.py::test_auto_close_yaml_bool_false PASSED            [ 27%]
+tests/test_bellows.py::test_migrate_config_idempotent PASSED             [ 27%]
+tests/test_bellows.py::test_migrate_config_preserves_values PASSED       [ 27%]
+tests/test_bellows.py::test_migrate_config_already_split PASSED          [ 27%]
+tests/test_bellows.py::test_consume_verdicts_malformed_filename_logs_warn_and_notifies PASSED [ 27%]
+tests/test_bellows.py::test_consume_verdicts_malformed_filename_still_skipped PASSED [ 28%]
+tests/test_bellows.py::test_consume_verdicts_valid_filename_not_flagged PASSED [ 28%]
+tests/test_bellows.py::test_consume_verdicts_verdict_request_not_flagged_as_malformed PASSED [ 28%]
+tests/test_bellows.py::test_pause_site_1_worktree_creation_failure_renames_before_post PASSED [ 28%]
+tests/test_bellows.py::test_pause_site_2_intermediate_step_gate_failure_renames_before_post PASSED [ 29%]
+tests/test_bellows.py::test_pause_site_3_final_step_gate_failure_renames_before_post PASSED [ 29%]
+tests/test_bellows.py::test_pause_site_4_auto_close_teardown_failure_renames_before_post PASSED [ 29%]
+tests/test_bellows.py::test_gates_log_includes_failure_gates_and_files_changed_count PASSED [ 29%]
+tests/test_cleanup_verdicts.py::TestCleanupVerdictsForSlug::test_cleanup_removes_all_step_files_for_slug PASSED [ 30%]
+tests/test_cleanup_verdicts.py::TestCleanupVerdictsForSlug::test_cleanup_noop_when_no_matches PASSED [ 30%]
+tests/test_cleanup_verdicts.py::TestCleanupVerdictsForSlug::test_cleanup_respects_slug_boundary PASSED [ 30%]
+tests/test_cleanup_verdicts.py::TestCleanupVerdictsForSlug::test_cleanup_ignores_resolved_directory PASSED [ 30%]
+tests/test_consume_verdicts.py::test_cleanup_normalizes_prefixed_verdict_slug PASSED [ 30%]
+tests/test_consume_verdicts.py::test_cleanup_unprefixed_verdict_slug PASSED [ 31%]
+tests/test_consume_verdicts.py::test_consume_verdicts_skips_verdict_request_files PASSED [ 31%]
+tests/test_consume_verdicts.py::test_dispatch_starts_fresh_when_db_has_orphan_slug_rows PASSED [ 31%]
+tests/test_consume_verdicts.py::test_consume_verdicts_marks_resolved_processed_when_plan_halted PASSED [ 31%]
+tests/test_consume_verdicts.py::test_startup_sweep_removes_done_plan_orphans PASSED [ 32%]
+tests/test_consume_verdicts.py::test_consume_verdict_continue_advances_step_when_precondition_failure_absent PASSED [ 32%]
+tests/test_consume_verdicts.py::test_consume_verdict_continue_advances_step_when_precondition_failure_false PASSED [ 32%]
+tests/test_consume_verdicts.py::test_consume_verdict_continue_retries_step_when_precondition_failure_true PASSED [ 32%]
+tests/test_consume_verdicts.py::test_consume_verdicts_parses_gate_result_json_continue_to_done PASSED [ 33%]
+tests/test_consume_verdicts.py::test_consume_verdicts_parses_gate_result_json_continue_resume PASSED [ 33%]
+tests/test_consume_verdicts.py::test_consume_verdicts_falls_back_to_empty_when_metadata_absent PASSED [ 33%]
+tests/test_decisions.py::TestLoadPhrases::test_loads_phrases_from_file FAILED [ 33%]
+tests/test_decisions.py::TestLoadPhrases::test_includes_known_phrases FAILED [ 33%]
+tests/test_decisions.py::TestLoadPhrases::test_splits_slash_alternatives FAILED [ 34%]
+tests/test_decisions.py::TestLoadPhrases::test_handles_missing_file PASSED [ 34%]
+tests/test_decisions.py::TestLoadPhrases::test_caches_result PASSED      [ 34%]
+tests/test_decisions.py::TestExtractDecisionBlocks::test_s_class_blocks_from_ground_truth FAILED [ 34%]
+tests/test_decisions.py::TestExtractDecisionBlocks::test_empty_input_string PASSED [ 35%]
+tests/test_decisions.py::TestExtractDecisionBlocks::test_empty_input_list PASSED [ 35%]
+tests/test_decisions.py::TestExtractDecisionBlocks::test_none_input PASSED [ 35%]
+tests/test_decisions.py::TestExtractDecisionBlocks::test_empty_phrases PASSED [ 35%]
+tests/test_decisions.py::TestExtractDecisionBlocks::test_malformed_ndjson PASSED [ 36%]
+tests/test_decisions.py::TestExtractDecisionBlocks::test_malformed_mixed_with_valid PASSED [ 36%]
+tests/test_decisions.py::TestExtractDecisionBlocks::test_multiple_content_items PASSED [ 36%]
+tests/test_decisions.py::TestExtractDecisionBlocks::test_text_truncation PASSED [ 36%]
+tests/test_decisions.py::TestExtractDecisionBlocks::test_case_insensitive_matching PASSED [ 36%]
+tests/test_decisions.py::TestExtractDecisionBlocks::test_non_assistant_events_ignored PASSED [ 37%]
+tests/test_decisions.py::TestExtractDecisionBlocks::test_pre_parsed_event_list PASSED [ 37%]
+tests/test_decisions.py::TestExtractDecisionBlocks::test_event_idx_tracking PASSED [ 37%]
+tests/test_extract_primary_deposit_blocks.py::test_block_single_md_path_returned PASSED [ 37%]
+tests/test_extract_primary_deposit_blocks.py::test_block_multiple_md_first_returned PASSED [ 38%]
+tests/test_extract_primary_deposit_blocks.py::test_block_none_bullet_returns_none PASSED [ 38%]
+tests/test_extract_primary_deposit_blocks.py::test_block_directory_only_returns_none PASSED [ 38%]
+tests/test_extract_primary_deposit_blocks.py::test_no_block_falls_back_to_legacy PASSED [ 38%]
+tests/test_extract_primary_deposit_blocks.py::test_block_with_blockquote_prefix_still_matches PASSED [ 39%]
+tests/test_extract_primary_deposit_blocks.py::test_block_with_blank_quoted_line_between_header_and_bullets PASSED [ 39%]
+tests/test_extract_primary_deposit_blocks.py::test_block_with_multiple_blank_quoted_lines PASSED [ 39%]
+tests/test_extract_primary_deposit_blocks.py::test_block_does_not_span_paragraphs PASSED [ 39%]
+tests/test_gates.py::test_all_gates_pass_on_clean_parsed PASSED          [ 39%]
+tests/test_gates.py::test_receipt_status_blocked PASSED                  [ 40%]
+tests/test_gates.py::test_receipt_status_partial PASSED                  [ 40%]
+tests/test_gates.py::test_ceo_flags_nonempty PASSED                      [ 40%]
+tests/test_gates.py::test_is_error_true PASSED                           [ 40%]
+tests/test_gates.py::test_permission_denials_nonempty PASSED             [ 41%]
+tests/test_gates.py::test_permission_denials_read_class_only_passes PASSED [ 41%]
+tests/test_gates.py::test_permission_denials_write_class_fails PASSED    [ 41%]
+tests/test_gates.py::test_permission_denials_mixed_read_write_fails PASSED [ 41%]
+tests/test_gates.py::test_permission_denials_missing_tool_name_fails PASSED [ 42%]
+tests/test_gates.py::test_permission_denials_none_tool_name_fails PASSED [ 42%]
+tests/test_gates.py::test_permission_denials_unknown_tool_fails PASSED   [ 42%]
+tests/test_gates.py::test_permission_denials_string_form_fails PASSED    [ 42%]
+tests/test_gates.py::test_deposit_path_missing PASSED                    [ 42%]
+tests/test_gates.py::test_qa_step_detection PASSED                       [ 43%]
+tests/test_gates.py::test_file_change_audit_populates PASSED             [ 43%]
+tests/test_gates.py::test_scope_check_passes_when_files_in_plan PASSED   [ 43%]
+tests/test_gates.py::test_scope_check_fails_when_file_not_in_plan PASSED [ 43%]
+tests/test_gates.py::test_scope_check_allowlist PASSED                   [ 44%]
+tests/test_gates.py::test_no_deposit_section_passes PASSED               [ 44%]
+tests/test_gates.py::test_parse_plan_header_empty PASSED                 [ 44%]
+tests/test_gates.py::test_parse_plan_header_basic PASSED                 [ 44%]
+tests/test_gates.py::test_parse_plan_header_malformed PASSED             [ 45%]
+tests/test_gates.py::test_parse_plan_header_pipe_format_with_pause_for_verdict PASSED [ 45%]
+tests/test_gates.py::test_parse_plan_header_pipe_format_without_pause_for_verdict PASSED [ 45%]
+tests/test_gates.py::test_parse_plan_header_yaml_still_works PASSED      [ 45%]
+tests/test_gates.py::test_parse_plan_header_no_format_returns_empty PASSED [ 45%]
+tests/test_gates.py::test_parse_plan_header_pipe_format_always PASSED    [ 46%]
+tests/test_gates.py::test_parse_plan_header_pipe_format_key_normalization PASSED [ 46%]
+tests/test_gates.py::test_pipe_header_pause_for_verdict_after_step_1_causes_pause PASSED [ 46%]
+tests/test_gates.py::test_pipe_header_pause_for_verdict_always_causes_pause PASSED [ 46%]
+tests/test_gates.py::test_pipe_header_no_pause_for_verdict_no_pause PASSED [ 47%]
+tests/test_gates.py::test_parse_plan_header_multi_line_bold_returns_all_fields PASSED [ 47%]
+tests/test_gates.py::test_parse_plan_header_single_line_pipe_still_works PASSED [ 47%]
+tests/test_gates.py::test_parse_plan_header_multi_line_bold_with_blank_lines PASSED [ 47%]
+tests/test_gates.py::test_parse_plan_header_horizontal_rule_terminates_header_block PASSED [ 48%]
+tests/test_gates.py::test_parse_plan_header_non_bold_line_terminates_header_block PASSED [ 48%]
+tests/test_gates.py::test_scope_check_prefix_allowlist_in_progress PASSED [ 48%]
+tests/test_gates.py::test_scope_check_prefix_allowlist_verdict_pending PASSED [ 48%]
+tests/test_gates.py::test_scope_check_prefix_allowlist_halted PASSED     [ 48%]
+tests/test_gates.py::test_scope_check_prefix_allowlist_does_not_suppress_real_violations PASSED [ 49%]
+tests/test_gates.py::test_verdict_requested_from_parsed_dict PASSED      [ 49%]
+tests/test_gates.py::test_verdict_requested_defaults_when_key_missing PASSED [ 49%]
+tests/test_gates.py::test_resolve_deposit_path_directory_as_is PASSED    [ 49%]
+tests/test_gates.py::test_resolve_deposit_path_directory_project_relative PASSED [ 50%]
+tests/test_gates.py::test_resolve_deposit_path_directory_parent_relative PASSED [ 50%]
+tests/test_gates.py::test_resolve_deposit_path_nonexistent PASSED        [ 50%]
+tests/test_gates.py::test_gate_deposit_exists_directory_in_deposits_block PASSED [ 50%]
+tests/test_gates.py::test_deposit_exists_extracts_path_from_backtick_with_description PASSED [ 51%]
+tests/test_gates.py::test_deposit_exists_extracts_path_from_backtick_only PASSED [ 51%]
+tests/test_gates.py::test_deposit_exists_extracts_path_from_bare_path_without_backticks PASSED [ 51%]
+tests/test_gates.py::test_deposit_exists_still_fails_on_genuinely_missing_path_with_new_format PASSED [ 51%]
+tests/test_gates.py::test_extract_plan_required_deposits_inline_format PASSED [ 51%]
+tests/test_gates.py::test_extract_plan_required_deposits_multiline_format PASSED [ 52%]
+tests/test_gates.py::test_extract_plan_required_deposits_preserves_block_order PASSED [ 52%]
+tests/test_gates.py::test_rule_20_self_check_passes_with_valid_banner_and_passed_line PASSED [ 52%]
+tests/test_gates.py::test_rule_20_self_check_fails_when_banner_missing PASSED [ 52%]
+tests/test_gates.py::test_rule_20_self_check_fails_when_banner_without_passed_line PASSED [ 53%]
+tests/test_gates.py::test_rule_20_self_check_fails_when_deposit_unreadable PASSED [ 53%]
+tests/test_gates.py::test_rule_20_self_check_skipped_on_non_qa_step PASSED [ 53%]
+tests/test_gates.py::test_rule_20_self_check_passes_when_passed_line_after_banner_in_multi_section_report PASSED [ 53%]
+tests/test_gates.py::test_resolve_deposit_path_returns_absolute_path_when_found PASSED [ 54%]
+tests/test_gates.py::test_resolve_deposit_path_returns_none_when_not_found PASSED [ 54%]
+tests/test_gates.py::test_resolve_deposit_path_finds_file_in_worktree PASSED [ 54%]
+tests/test_gates.py::test_resolve_deposit_path_finds_file_in_worktree_form_a PASSED [ 54%]
+tests/test_gates.py::test_resolve_deposit_path_bellows_self_no_wt_path_drift PASSED [ 54%]
+tests/test_gates.py::test_resolve_deposit_path_no_wt_path_backward_compat PASSED [ 55%]
+tests/test_gates.py::test_gate_deposit_exists_threads_wt_path PASSED     [ 55%]
+tests/test_gates.py::test_rule_20_self_check_resolves_via_worktree_path PASSED [ 55%]
+tests/test_gates.py::test_extract_step_text_ignores_in_fence_headers PASSED [ 55%]
+tests/test_gates.py::test_gate_is_qa_step_ignores_in_fence_headers PASSED [ 56%]
+tests/test_gates.py::test_extract_step_text_ignores_inline_code_references PASSED [ 56%]
+tests/test_gates.py::test_gate_is_qa_step_ignores_inline_code_references PASSED [ 56%]
+tests/test_gates.py::test_permission_denials_vexp_run_pipeline_exempt PASSED [ 56%]
+tests/test_gates.py::test_permission_denials_vexp_get_context_capsule_exempt PASSED [ 57%]
+tests/test_gates.py::test_permission_denials_vexp_get_session_context_exempt PASSED [ 57%]
+tests/test_gates.py::test_permission_denials_vexp_get_skeleton_exempt PASSED [ 57%]
+tests/test_gates.py::test_permission_denials_vexp_index_status_exempt PASSED [ 57%]
+tests/test_gates.py::test_permission_denials_vexp_search_memory_exempt PASSED [ 57%]
+tests/test_gates.py::test_permission_denials_vexp_save_observation_is_not_exempted PASSED [ 58%]
+tests/test_gates.py::test_gate_deposit_exists_fails_when_file_truly_missing PASSED [ 58%]
+tests/test_gates.py::test_extract_deposits_filters_staging_prefix PASSED [ 58%]
+tests/test_gates.py::test_extract_deposits_filters_staging_in_structured_block PASSED [ 58%]
+tests/test_gates.py::test_extract_deposits_filters_staging_in_inline_format PASSED [ 59%]
+tests/test_gates.py::test_extract_deposits_filters_staging_in_legacy_prose PASSED [ 59%]
+tests/test_gates.py::test_rule_20_banner_in_fenced_block PASSED          [ 59%]
+tests/test_gates.py::test_rule_20_banner_with_decoration PASSED          [ 59%]
+tests/test_gates.py::test_rule_20_banner_with_shell_prompt_prefix PASSED [ 60%]
+tests/test_gates.py::test_rule_20_passed_line_with_indentation PASSED    [ 60%]
+tests/test_gates.py::test_rule_20_no_banner PASSED                       [ 60%]
+tests/test_gates.py::test_rule_20_banner_without_passed PASSED           [ 60%]
+tests/test_gates.py::test_parse_plan_header_yaml_frontmatter_returns_deposits_list PASSED [ 60%]
+tests/test_gates.py::test_parse_plan_header_yaml_frontmatter_returns_nested_qa_dict PASSED [ 61%]
+tests/test_gates.py::test_parse_plan_header_malformed_yaml_falls_through_to_bold_markdown PASSED [ 61%]
+tests/test_gates.py::test_gate_deposit_exists_uses_frontmatter_when_present_and_passes_when_file_exists PASSED [ 61%]
+tests/test_gates.py::test_rule_20_gate_tolerates_bold_passed_line PASSED [ 61%]
+tests/test_gates.py::test_rule_20_gate_tolerates_single_asterisk_passed_line PASSED [ 62%]
+tests/test_gates.py::test_no_permission_denials_exempts_guardrails_lock_cleanup PASSED [ 62%]
+tests/test_gates.py::test_no_permission_denials_still_blocks_other_bash_denials PASSED [ 62%]
+tests/test_gates.py::test_gate_deposit_exists_uses_frontmatter_and_ignores_staging_in_prose PASSED [ 62%]
+tests/test_gates.py::test_normalize_deposit_path_abs_to_rel PASSED       [ 63%]
+tests/test_gates.py::test_normalize_deposit_path_prefixed_to_rel PASSED  [ 63%]
+tests/test_gates.py::test_normalize_deposit_path_already_rel PASSED      [ 63%]
+tests/test_gates.py::test_gate_deposit_exists_cross_form_abs_vs_rel PASSED [ 63%]
+tests/test_gates.py::test_gate_deposit_exists_actually_missing PASSED    [ 63%]
+tests/test_gates.py::test_resolve_deposit_path_absolute_worktree_remap PASSED [ 64%]
+tests/test_gates.py::test_rule_22_non_qa_all_deposits_present PASSED     [ 64%]
+tests/test_gates.py::test_rule_22_non_qa_deposit_missing PASSED          [ 64%]
+tests/test_gates.py::test_rule_22_qa_all_pass PASSED                     [ 64%]
+tests/test_gates.py::test_rule_22_qa_fail_row PASSED                     [ 65%]
+tests/test_gates.py::test_rule_22_qa_missing_status PASSED               [ 65%]
+tests/test_gates.py::test_rule_22_qa_hedging_keyword PASSED              [ 65%]
+tests/test_gates.py::test_rule_22_qa_both_fail_and_hedging PASSED        [ 65%]
+tests/test_gates.py::test_rule_22_qa_report_missing PASSED               [ 66%]
+tests/test_gates.py::test_rule_20_self_check_scopes_to_first_md_deposit_ignoring_incidental_banner_in_other_deposits PASSED [ 66%]
+tests/test_gates.py::test_rule_20_self_check_fails_when_first_md_deposit_lacks_passed_line PASSED [ 66%]
+tests/test_gates.py::test_rule_20_self_check_distinguishes_no_md_paths_from_missing_banner PASSED [ 66%]
+tests/test_gates.py::test_rule_22_verification_c_skips_non_verification_section_tables PASSED [ 66%]
+tests/test_gates.py::test_rule_22_verification_c_accepts_text_pass_status PASSED [ 67%]
+tests/test_gates.py::test_rule_22_verification_c_flags_genuine_missing_status_in_verification_table PASSED [ 67%]
+tests/test_gates.py::test_qa_steps_field_single_step_matches PASSED      [ 67%]
+tests/test_gates.py::test_qa_steps_field_single_step_excludes_other PASSED [ 67%]
+tests/test_gates.py::test_qa_steps_field_multi_step PASSED               [ 68%]
+tests/test_gates.py::test_qa_steps_field_absent_falls_back_to_keyword PASSED [ 68%]
+tests/test_gates.py::test_qa_steps_field_malformed_falls_back_to_keyword PASSED [ 68%]
+tests/test_gates.py::test_qa_steps_field_yaml_list PASSED                [ 68%]
+tests/test_gates.py::test_qa_steps_field_non_qa_role_header PASSED       [ 69%]
+tests/test_gates.py::test_ceo_flags_null_declaration_prose_passes PASSED [ 69%]
+tests/test_gates.py::test_rule_22_c_enumerative_table_inside_verification_section_passes PASSED [ 69%]
+tests/test_gates.py::test_rule_22_d_pending_in_description_cell_passes PASSED [ 69%]
+tests/test_gates.py::test_ceo_flags_real_flag_still_fires PASSED         [ 69%]
+tests/test_gates.py::test_rule_22_c_genuine_missing_status_still_fires PASSED [ 70%]
+tests/test_gates.py::test_rule_22_d_pending_in_status_cell_still_fires PASSED [ 70%]
+tests/test_misplaced_verdicts.py::test_scan_misplaced_verdicts_warns_on_verdict_in_pending PASSED [ 70%]
+tests/test_misplaced_verdicts.py::test_scan_misplaced_verdicts_ignores_verdict_request_files PASSED [ 70%]
+tests/test_misplaced_verdicts.py::test_scan_misplaced_verdicts_ignores_non_md_files PASSED [ 71%]
+tests/test_misplaced_verdicts.py::test_scan_misplaced_verdicts_pushover_deduped_per_file PASSED [ 71%]
+tests/test_misplaced_verdicts.py::test_scan_misplaced_verdicts_pushover_failure_swallowed PASSED [ 71%]
+tests/test_misplaced_verdicts.py::test_scan_misplaced_verdicts_invoked_from_consume_verdicts PASSED [ 71%]
+tests/test_misplaced_verdicts.py::test_scan_misplaced_verdicts_empty_pending_directory PASSED [ 72%]
+tests/test_notifier_server.py::test_push_success PASSED                  [ 72%]
+tests/test_notifier_server.py::test_push_passes_timeout PASSED           [ 72%]
+tests/test_notifier_server.py::test_push_timeout_exception_handled_gracefully PASSED [ 72%]
+tests/test_notifier_server.py::test_no_stranded_check_in_run_plan PASSED [ 72%]
+tests/test_notifier_server.py::test_push_failure PASSED                  [ 73%]
+tests/test_notifier_server.py::test_server_respond PASSED                [ 73%]
+tests/test_phase4_parser.py::test_parser_returns_complete_for_end_turn PASSED [ 73%]
+tests/test_phase4_parser.py::test_parser_returns_blocked_for_error PASSED [ 73%]
+tests/test_phase4_parser.py::test_parser_returns_partial_for_max_tokens PASSED [ 74%]
+tests/test_phase4_planner_retry.py::test_planner_retries_on_auth_failure PASSED [ 74%]
+tests/test_phase4_planner_retry.py::test_planner_falls_back_to_continue_on_persistent_failure PASSED [ 74%]
+tests/test_planner.py::test_build_consult_file PASSED                    [ 74%]
+tests/test_planner.py::test_consult_bad_json PASSED                      [ 75%]
+tests/test_planner.py::test_consult_timeout PASSED                       [ 75%]
+tests/test_rule_26_deposit_parser.py::test_extract_plan_required_deposits_prefers_declared_block PASSED [ 75%]
+tests/test_rule_26_deposit_parser.py::test_extract_plan_required_deposits_falls_back_to_legacy_when_no_block PASSED [ 75%]
+tests/test_rule_26_deposit_parser.py::test_extract_plan_required_deposits_handles_none_bullet PASSED [ 75%]
+tests/test_rule_26_deposit_parser.py::test_extract_plan_required_deposits_ignores_paths_in_code_fences_when_block_present PASSED [ 76%]
+tests/test_rule_26_deposit_parser.py::test_extract_primary_deposit_scoping_in_post_verdict_request PASSED [ 76%]
+tests/test_rule_26_deposit_parser.py::test_extract_plan_required_deposits_blank_quoted_line PASSED [ 76%]
+tests/test_rule_26_deposit_parser.py::test_extract_plan_required_deposits_multiple_blank_quoted_lines PASSED [ 76%]
+tests/test_rule_26_deposit_parser.py::test_extract_plan_required_deposits_does_not_span_paragraphs PASSED [ 77%]
+tests/test_rule_26_deposit_parser.py::test_extract_step_text_helper_gates_py PASSED [ 77%]
+tests/test_runner.py::test_runner_sets_disable_autoupdater_env_var PASSED [ 77%]
+tests/test_runner.py::test_runner_respects_explicit_disable_autoupdater_override PASSED [ 77%]
+tests/test_runner.py::test_configurable_timeout_respected PASSED         [ 78%]
+tests/test_runner.py::test_timeout_returns_cost_none PASSED              [ 78%]
+tests/test_runner.py::test_timeout_writes_log_file PASSED                [ 78%]
+tests/test_runner.py::test_generic_exception_returns_cost_none PASSED    [ 78%]
+tests/test_runner.py::test_generic_exception_message_contains_actual_error PASSED [ 78%]
+tests/test_runner.py::test_generic_exception_writes_log_file PASSED      [ 79%]
+tests/test_runner.py::test_success_writes_log_file PASSED                [ 79%]
+tests/test_runner.py::test_stderr_printed_on_success PASSED              [ 79%]
+tests/test_runner.py::test_no_result_event_returns_blocked PASSED        [ 79%]
+tests/test_runner.py::test_no_result_event_writes_log_with_raw_output PASSED [ 80%]
+tests/test_runner.py::test_ndjson_parse_valid_stream PASSED              [ 80%]
+tests/test_runner.py::test_ndjson_parse_malformed_line_skipped PASSED    [ 80%]
+tests/test_runner.py::test_ndjson_parse_missing_result_event PASSED      [ 80%]
+tests/test_runner.py::test_resume_session_flag_in_command PASSED         [ 81%]
+tests/test_runner.py::test_append_system_prompt_flag_in_command PASSED   [ 81%]
+tests/test_runner.py::test_run_step_retries_on_transient_401 PASSED      [ 81%]
+tests/test_runner.py::test_run_step_does_not_retry_on_non_transient_error PASSED [ 81%]
+tests/test_runner_parser.py::test_parse_clean_output PASSED              [ 81%]
+tests/test_runner_parser.py::test_parse_blocked_output PASSED            [ 82%]
+tests/test_runner_parser.py::test_run_step_timeout FAILED                [ 82%]
+tests/test_runner_parser.py::test_parse_paragraph_form_no_longer_extracted PASSED [ 82%]
+tests/test_runner_parser.py::test_parse_h3_flags_for_ceo_bulleted_regression PASSED [ 82%]
+tests/test_runner_parser.py::test_parse_h3_flags_for_ceo_none_regression PASSED [ 83%]
+tests/test_runner_parser.py::test_parse_verdict_requested_present PASSED [ 83%]
+tests/test_runner_parser.py::test_parse_verdict_requested_absent PASSED  [ 83%]
+tests/test_runner_parser.py::test_parse_verdict_requested_mid_text PASSED [ 83%]
+tests/test_validators.py::test_clean_plan_all_checks_pass PASSED         [ 84%]
+tests/test_validators.py::test_reject_missing_dispatch_mode PASSED       [ 84%]
+tests/test_validators.py::test_reject_invalid_dispatch_mode_value PASSED [ 84%]
+tests/test_validators.py::test_warn_mismatch_manual_bootstrap_in_watched_dir PASSED [ 84%]
+tests/test_validators.py::test_no_warn_manual_bootstrap_not_in_watched_dir PASSED [ 84%]
+tests/test_validators.py::test_warn_stop_prose_in_bellows_mode PASSED    [ 85%]
+tests/test_validators.py::test_no_warn_stop_prose_in_manual_bootstrap_mode PASSED [ 85%]
+tests/test_validators.py::test_stop_prose_in_fenced_code_block_excluded PASSED [ 85%]
+tests/test_validators.py::test_stop_prose_in_inline_code_excluded PASSED [ 85%]
+tests/test_validators.py::test_stop_prose_in_header_excluded PASSED      [ 86%]
+tests/test_validators.py::test_stop_prose_in_deposits_block_excluded PASSED [ 86%]
+tests/test_validators.py::test_multiple_stop_prose_patterns_detected PASSED [ 86%]
+tests/test_validators.py::test_reject_empty_dispatch_mode_value PASSED   [ 86%]
+tests/test_validators.py::test_pause_for_verdict_valid_values_no_warning PASSED [ 87%]
+tests/test_validators.py::test_pause_for_verdict_invalid_values_warn PASSED [ 87%]
+tests/test_validators.py::test_pause_for_verdict_absent_no_warning PASSED [ 87%]
+tests/test_validators.py::test_pause_for_verdict_warn_surfaces_in_validate_at_claim PASSED [ 87%]
+tests/test_validators.py::test_header_field_types_all_strings_no_warning PASSED [ 87%]
+tests/test_validators.py::test_header_field_types_bool_warns PASSED      [ 88%]
+tests/test_validators.py::test_header_field_types_int_warns PASSED       [ 88%]
+tests/test_validators.py::test_header_field_types_none_value_no_warning PASSED [ 88%]
+tests/test_validators.py::test_header_field_types_absent_fields_no_warning PASSED [ 88%]
+tests/test_validators.py::test_header_field_types_multiple_non_string_fields PASSED [ 89%]
+tests/test_validators.py::test_header_field_types_warn_surfaces_in_validate_at_claim PASSED [ 89%]
+tests/test_verdict.py::test_extract_step_text_from_plan_ignores_in_fence_headers PASSED [ 89%]
+tests/test_verdict.py::test_extract_step_text_from_plan_ignores_inline_code_references PASSED [ 89%]
+tests/test_verdict.py::test_post_verdict_request_creates_file PASSED     [ 90%]
+tests/test_verdict.py::test_check_verdict_not_found PASSED               [ 90%]
+tests/test_verdict.py::test_check_verdict_continue PASSED                [ 90%]
+tests/test_verdict.py::test_check_verdict_stop PASSED                    [ 90%]
+tests/test_verdict.py::test_pause_reason_gate_failure_renders_gate_failures_section PASSED [ 90%]
+tests/test_verdict.py::test_pause_reason_qa_checkpoint PASSED            [ 91%]
+tests/test_verdict.py::test_pause_reason_agent_verdict_request PASSED    [ 91%]
+tests/test_verdict.py::test_pause_reason_header_pause PASSED             [ 91%]
+tests/test_verdict.py::test_pause_reason_auto_close_disabled PASSED      [ 91%]
+tests/test_verdict.py::test_old_fallback_string_never_appears PASSED     [ 92%]
+tests/test_verdict.py::test_post_verdict_request_handles_worktree_teardown_failure_dict_format PASSED [ 92%]
+tests/test_verdict.py::test_check_verdict_accepts_bare_continue PASSED   [ 92%]
+tests/test_verdict.py::test_check_verdict_accepts_bare_stop PASSED       [ 92%]
+tests/test_verdict.py::test_check_verdict_still_accepts_prefixed_continue PASSED [ 93%]
+tests/test_verdict.py::test_check_verdict_rejects_garbage PASSED         [ 93%]
+tests/test_verdict.py::test_log_to_ledger_appends_json PASSED            [ 93%]
+tests/test_verdict.py::test_log_to_ledger_without_pause_reason_code PASSED [ 93%]
+tests/test_verdict.py::test_log_to_ledger_with_pause_reason_code_qa_checkpoint PASSED [ 93%]
+tests/test_verdict.py::test_log_to_ledger_all_pause_reason_codes PASSED  [ 94%]
+tests/test_verdict.py::test_intermediate_decisions_section_rendered_when_present PASSED [ 94%]
+tests/test_verdict.py::test_intermediate_decisions_section_omitted_when_empty PASSED [ 94%]
+tests/test_verdict.py::test_intermediate_decisions_section_omitted_when_none PASSED [ 94%]
+tests/test_verdict.py::test_check_verdict_logs_warning_on_malformed_first_line PASSED [ 95%]
+tests/test_verdict.py::test_check_verdict_pushover_deduped_per_file_per_daemon_lifetime PASSED [ 95%]
+tests/test_verdict.py::test_check_verdict_no_warning_on_empty_file PASSED [ 95%]
+tests/test_verdict.py::test_check_verdict_no_warning_on_missing_file PASSED [ 95%]
+tests/test_verdict.py::test_check_verdict_well_formed_verdict_continue PASSED [ 96%]
+tests/test_verdict.py::test_check_verdict_well_formed_verdict_stop_with_reason PASSED [ 96%]
+tests/test_verdict.py::test_check_verdict_pushover_failure_swallowed PASSED [ 96%]
+tests/test_verdict.py::test_verification_results_table_all_pass PASSED   [ 96%]
+tests/test_verdict.py::test_verification_results_table_fail_row PASSED   [ 96%]
+tests/test_verdict.py::test_verification_results_table_intermediate_decisions_count PASSED [ 97%]
+tests/test_verdict.py::test_pause_reason_label_rule_22 PASSED            [ 97%]
+tests/test_verdict.py::test_gate_failures_section_renders_for_rule_22_check_failed PASSED [ 97%]
+tests/test_verdict.py::test_planner_only_checks_remaining_section PASSED [ 97%]
+tests/test_verdict.py::test_post_verdict_request_writes_precondition_failure_field PASSED [ 98%]
+tests/test_verdict.py::test_post_verdict_request_includes_gate_result_json PASSED [ 98%]
+tests/test_worktree.py::test_create_worktree_returns_valid_path_with_tracked_files PASSED [ 98%]
+tests/test_worktree.py::test_worktree_isolation_git_diff PASSED          [ 98%]
+tests/test_worktree.py::test_teardown_removes_worktree_directory FAILED  [ 99%]
+tests/test_worktree.py::test_teardown_cherry_picks_commits FAILED        [ 99%]
+tests/test_worktree.py::test_teardown_copies_uncommitted_files FAILED    [ 99%]
+tests/test_worktree.py::test_teardown_aborts_on_cherry_pick_conflict PASSED [ 99%]
+tests/test_worktree.py::test_create_worktree_retries_once_on_failure PASSED [100%]
+
+=================================== FAILURES ===================================
+_________________ TestLoadPhrases.test_loads_phrases_from_file _________________
+
+self = <test_decisions.TestLoadPhrases object at 0x10b3fd7c0>
+
+    def test_loads_phrases_from_file(self):
+        phrases = decisions.load_phrases()
+>       assert len(phrases) > 0
+E       assert 0 > 0
+E        +  where 0 = len([])
+
+tests/test_decisions.py:28: AssertionError
+------------------------------ Captured log call -------------------------------
+WARNING  bellows:decisions.py:28 decisions: phrase file not found at /Users/marklehn/Developer/GitHub/bellows/.bellows-worktrees/INTERMEDIATE_DECISION_PHRASES.md
+_________________ TestLoadPhrases.test_includes_known_phrases __________________
+
+self = <test_decisions.TestLoadPhrases object at 0x10b3fda30>
+
+    def test_includes_known_phrases(self):
+        phrases = decisions.load_phrases()
+>       assert "had to" in phrases
+E       AssertionError: assert 'had to' in []
+
+tests/test_decisions.py:35: AssertionError
+------------------------------ Captured log call -------------------------------
+WARNING  bellows:decisions.py:28 decisions: phrase file not found at /Users/marklehn/Developer/GitHub/bellows/.bellows-worktrees/INTERMEDIATE_DECISION_PHRASES.md
+________________ TestLoadPhrases.test_splits_slash_alternatives ________________
+
+self = <test_decisions.TestLoadPhrases object at 0x10b3fdca0>
+
+    def test_splits_slash_alternatives(self):
+        phrases = decisions.load_phrases()
+        # "re-run / rerun" should produce two separate entries
+>       assert "re-run" in phrases
+E       AssertionError: assert 're-run' in []
+
+tests/test_decisions.py:44: AssertionError
+------------------------------ Captured log call -------------------------------
+WARNING  bellows:decisions.py:28 decisions: phrase file not found at /Users/marklehn/Developer/GitHub/bellows/.bellows-worktrees/INTERMEDIATE_DECISION_PHRASES.md
+_______ TestExtractDecisionBlocks.test_s_class_blocks_from_ground_truth ________
+
+self = <test_decisions.TestExtractDecisionBlocks object at 0x10b405610>
+
+    def test_s_class_blocks_from_ground_truth(self):
+        """All 6 S-class blocks from the detection design ground truth must match."""
+        labeled_path = os.path.join(
+            os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+            "knowledge", "qa", "evidence",
+            "intermediate-decision-detection-2026-05-12",
+            "labeled-blocks.jsonl",
+        )
+        phrases = decisions.load_phrases()
+    
+        s_blocks = []
+        with open(labeled_path) as f:
+            for line in f:
+                entry = json.loads(line)
+                if entry["label"] == "S":
+                    s_blocks.append(entry)
+    
+        assert len(s_blocks) == 6, f"Expected 6 S-class blocks, got {len(s_blocks)}"
+    
+        for block in s_blocks:
+            event = _make_assistant_event(block["text"])
+            ndjson = _make_ndjson(event)
+            results = decisions.extract_decision_blocks(ndjson, phrases)
+>           assert len(results) > 0, (
+                f"S-class block not matched: plan={block['plan']}, "
+                f"step={block['step']}, block_idx={block['block_idx']}, "
+                f"text={block['text'][:80]}"
+            )
+E           AssertionError: S-class block not matched: plan=deposit-exists-prose-canary-2026-04-28, step=2, block_idx=7, text=The grep evidence file seems empty. Let me fix that — the working directory migh
+E           assert 0 > 0
+E            +  where 0 = len([])
+
+tests/test_decisions.py:89: AssertionError
+------------------------------ Captured log call -------------------------------
+WARNING  bellows:decisions.py:28 decisions: phrase file not found at /Users/marklehn/Developer/GitHub/bellows/.bellows-worktrees/INTERMEDIATE_DECISION_PHRASES.md
+____________________________ test_run_step_timeout _____________________________
+
+    def test_run_step_timeout():
+        with patch("runner.subprocess.run", side_effect=subprocess.TimeoutExpired("claude", 300)):
+            result = runner.run_step("test prompt", "/tmp", "claude-sonnet-4-6")
+>       assert result["is_error"] is True
+E       assert False is True
+
+tests/test_runner_parser.py:57: AssertionError
+___________________ test_teardown_removes_worktree_directory ___________________
+
+git_repo = '/var/folders/vf/8nw0z7hj1m34w6z48l5dp54w0000gn/T/tmpgbyyov9t'
+
+    def test_teardown_removes_worktree_directory(git_repo):
+        """After teardown, the worktree directory must not exist and must not appear in git worktree list."""
+        wt_path = _create_worktree(git_repo, "teardown-test")
+        assert os.path.isdir(wt_path)
+    
+>       _teardown_worktree(git_repo, wt_path, "teardown-test")
+
+tests/test_worktree.py:133: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+project_path = '/var/folders/vf/8nw0z7hj1m34w6z48l5dp54w0000gn/T/tmpgbyyov9t'
+wt_path = '/var/folders/vf/8nw0z7hj1m34w6z48l5dp54w0000gn/T/tmpgbyyov9t/.bellows-worktrees/teardown-test'
+slug = 'teardown-test'
+
+    def _teardown_worktree(project_path: str, wt_path: str, slug: str) -> None:
+        """Tear down a worktree: cherry-pick commits back, copy dirty files, remove worktree.
+    
+        Raises WorktreeTeardownError on cherry-pick conflict (worktree left alive for manual resolution).
+        No-op when wt_path == project_path (in-place execution, no worktree was created).
+        """
+        if wt_path == project_path:
+            return
+    
+        # (a) Detect main branch
+        main_branch = "main"
+        try:
+            result = subprocess.run(
+                ["git", "--no-pager", "symbolic-ref", "--short", "refs/remotes/origin/HEAD"],
+                cwd=project_path, capture_output=True, text=True, timeout=10,
+            )
+            if result.returncode == 0 and result.stdout.strip():
+                detected = result.stdout.strip()
+                if detected.startswith("origin/"):
+                    detected = detected[len("origin/"):]
+                main_branch = detected
+            else:
+                _log("WARN", f"⚠ could not detect main branch, falling back to 'main'", slug=slug)
+        except Exception:
+            _log("WARN", f"⚠ could not detect main branch, falling back to 'main'", slug=slug)
+    
+        # (b) Collect commits made in worktree
+        try:
+            result = subprocess.run(
+                ["git", "--no-pager", "log", "--format=%H", "HEAD", "--not", main_branch],
+                cwd=wt_path, capture_output=True, text=True, timeout=30,
+            )
+            commit_shas = result.stdout.strip().splitlines()[::-1]  # oldest-first for cherry-pick
+        except Exception:
+            commit_shas = []
+    
+        # Detect stale .git/index.lock that would block cherry-pick
+        lock_path = os.path.join(project_path, ".git", "index.lock")
+        if os.path.exists(lock_path):
+            lock_age = time.time() - os.path.getmtime(lock_path)
+            if lock_age > 5:
+                try:
+                    os.remove(lock_path)
+                    _log("WARN", f"⚠ removed stale .git/index.lock ({lock_age:.0f}s old)", slug=slug)
+                except OSError as e:
+                    _log("WARN", f"⚠ could not remove .git/index.lock: {e}", slug=slug)
+            else:
+                # Fresh lock — wait briefly, then remove if still present
+                time.sleep(3)
+                if os.path.exists(lock_path):
+                    try:
+                        os.remove(lock_path)
+                        _log("WARN", f"⚠ removed .git/index.lock after 3s wait", slug=slug)
+                    except OSError as e:
+                        _log("WARN", f"⚠ could not remove .git/index.lock: {e}", slug=slug)
+    
+        # (b2) Pre-cherry-pick dirty-tree check on main checkout
+        try:
+            dt_result = subprocess.run(
+                ["git", "--no-pager", "status", "--porcelain"],
+                cwd=project_path, capture_output=True, text=True, timeout=10,
+            )
+            if dt_result.returncode == 0 and dt_result.stdout.strip():
+                dirty_lines = dt_result.stdout.strip().splitlines()
+                blocking_lines = [line for line in dirty_lines if not _is_lifecycle_artifact(line)]
+                if blocking_lines:
+                    if len(blocking_lines) > 10:
+                        dirty_display = "\n".join(blocking_lines[:10]) + f"\n... ({len(blocking_lines) - 10} more files)"
+                    else:
+                        dirty_display = "\n".join(blocking_lines)
+>                   raise WorktreeTeardownError(
+                        f"worktree_teardown_dirty_tree: local main has uncommitted changes "
+                        f"that would conflict with cherry-pick from worktree.\n"
+                        f"\n"
+                        f"Dirty files in local main ({len(blocking_lines)} blocking file(s)):\n"
+                        f"{dirty_display}\n"
+                        f"({len(dirty_lines) - len(blocking_lines)} lifecycle artifacts filtered, {len(blocking_lines)} blocking file(s) remain)\n"
+                        f"\n"
+                        f"Recovery (choose based on dirty-file type):\n"
+                        f"\n"
+                        f"  Sub-variant A — untracked artifact (e.g., claim-rename):\n"
+                        f"    cd {project_path}\n"
+                        f"    git add <file(s)>\n"
+                        f"    git commit -m 'chore: commit untracked artifact before teardown'\n"
+                        f"\n"
+                        f"  Sub-variant B — dirty bookkeeping file (e.g., PROJECT_STATUS.md):\n"
+                        f"    cd {project_path}\n"
+                        f"    git add <file(s)>\n"
+                        f"    git commit -m 'chore: commit dirty bookkeeping before teardown'\n"
+                        f"\n"
+                        f"  Then: re-issue continue verdict to retry teardown.\n"
+                        f"\n"
+                        f"Reference: LESSONS.md 2026-05-27 R2 recovery shape."
+                    )
+E                   bellows.WorktreeTeardownError: worktree_teardown_dirty_tree: local main has uncommitted changes that would conflict with cherry-pick from worktree.
+E                   
+E                   Dirty files in local main (1 blocking file(s)):
+E                   ?? .bellows-worktrees/
+E                   (0 lifecycle artifacts filtered, 1 blocking file(s) remain)
+E                   
+E                   Recovery (choose based on dirty-file type):
+E                   
+E                     Sub-variant A — untracked artifact (e.g., claim-rename):
+E                       cd /var/folders/vf/8nw0z7hj1m34w6z48l5dp54w0000gn/T/tmpgbyyov9t
+E                       git add <file(s)>
+E                       git commit -m 'chore: commit untracked artifact before teardown'
+E                   
+E                     Sub-variant B — dirty bookkeeping file (e.g., PROJECT_STATUS.md):
+E                       cd /var/folders/vf/8nw0z7hj1m34w6z48l5dp54w0000gn/T/tmpgbyyov9t
+E                       git add <file(s)>
+E                       git commit -m 'chore: commit dirty bookkeeping before teardown'
+E                   
+E                     Then: re-issue continue verdict to retry teardown.
+E                   
+E                   Reference: LESSONS.md 2026-05-27 R2 recovery shape.
+
+bellows.py:893: WorktreeTeardownError
+----------------------------- Captured stdout call -----------------------------
+14:29:54 [WARN] [teardown-test] ⚠ could not detect main branch, falling back to 'main'
+______________________ test_teardown_cherry_picks_commits ______________________
+
+git_repo = '/var/folders/vf/8nw0z7hj1m34w6z48l5dp54w0000gn/T/tmpd5w94kf9'
+
+    def test_teardown_cherry_picks_commits(git_repo):
+        """Commits made in the worktree must appear on main after teardown."""
+        wt_path = _create_worktree(git_repo, "cherry-pick-test")
+        try:
+            with open(os.path.join(wt_path, "README.md"), "a") as f:
+                f.write("worktree change\n")
+            subprocess.run(["git", "add", "."], cwd=wt_path, capture_output=True, text=True)
+            subprocess.run(
+                ["git", "commit", "-m", "commit from worktree"], cwd=wt_path,
+                capture_output=True, text=True, check=True,
+            )
+        except Exception:
+            subprocess.run(
+                ["git", "worktree", "remove", "--force", wt_path], cwd=git_repo,
+                capture_output=True, text=True,
+            )
+            raise
+    
+>       _teardown_worktree(git_repo, wt_path, "cherry-pick-test")
+
+tests/test_worktree.py:162: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+project_path = '/var/folders/vf/8nw0z7hj1m34w6z48l5dp54w0000gn/T/tmpd5w94kf9'
+wt_path = '/var/folders/vf/8nw0z7hj1m34w6z48l5dp54w0000gn/T/tmpd5w94kf9/.bellows-worktrees/cherry-pick-test'
+slug = 'cherry-pick-test'
+
+    def _teardown_worktree(project_path: str, wt_path: str, slug: str) -> None:
+        """Tear down a worktree: cherry-pick commits back, copy dirty files, remove worktree.
+    
+        Raises WorktreeTeardownError on cherry-pick conflict (worktree left alive for manual resolution).
+        No-op when wt_path == project_path (in-place execution, no worktree was created).
+        """
+        if wt_path == project_path:
+            return
+    
+        # (a) Detect main branch
+        main_branch = "main"
+        try:
+            result = subprocess.run(
+                ["git", "--no-pager", "symbolic-ref", "--short", "refs/remotes/origin/HEAD"],
+                cwd=project_path, capture_output=True, text=True, timeout=10,
+            )
+            if result.returncode == 0 and result.stdout.strip():
+                detected = result.stdout.strip()
+                if detected.startswith("origin/"):
+                    detected = detected[len("origin/"):]
+                main_branch = detected
+            else:
+                _log("WARN", f"⚠ could not detect main branch, falling back to 'main'", slug=slug)
+        except Exception:
+            _log("WARN", f"⚠ could not detect main branch, falling back to 'main'", slug=slug)
+    
+        # (b) Collect commits made in worktree
+        try:
+            result = subprocess.run(
+                ["git", "--no-pager", "log", "--format=%H", "HEAD", "--not", main_branch],
+                cwd=wt_path, capture_output=True, text=True, timeout=30,
+            )
+            commit_shas = result.stdout.strip().splitlines()[::-1]  # oldest-first for cherry-pick
+        except Exception:
+            commit_shas = []
+    
+        # Detect stale .git/index.lock that would block cherry-pick
+        lock_path = os.path.join(project_path, ".git", "index.lock")
+        if os.path.exists(lock_path):
+            lock_age = time.time() - os.path.getmtime(lock_path)
+            if lock_age > 5:
+                try:
+                    os.remove(lock_path)
+                    _log("WARN", f"⚠ removed stale .git/index.lock ({lock_age:.0f}s old)", slug=slug)
+                except OSError as e:
+                    _log("WARN", f"⚠ could not remove .git/index.lock: {e}", slug=slug)
+            else:
+                # Fresh lock — wait briefly, then remove if still present
+                time.sleep(3)
+                if os.path.exists(lock_path):
+                    try:
+                        os.remove(lock_path)
+                        _log("WARN", f"⚠ removed .git/index.lock after 3s wait", slug=slug)
+                    except OSError as e:
+                        _log("WARN", f"⚠ could not remove .git/index.lock: {e}", slug=slug)
+    
+        # (b2) Pre-cherry-pick dirty-tree check on main checkout
+        try:
+            dt_result = subprocess.run(
+                ["git", "--no-pager", "status", "--porcelain"],
+                cwd=project_path, capture_output=True, text=True, timeout=10,
+            )
+            if dt_result.returncode == 0 and dt_result.stdout.strip():
+                dirty_lines = dt_result.stdout.strip().splitlines()
+                blocking_lines = [line for line in dirty_lines if not _is_lifecycle_artifact(line)]
+                if blocking_lines:
+                    if len(blocking_lines) > 10:
+                        dirty_display = "\n".join(blocking_lines[:10]) + f"\n... ({len(blocking_lines) - 10} more files)"
+                    else:
+                        dirty_display = "\n".join(blocking_lines)
+>                   raise WorktreeTeardownError(
+                        f"worktree_teardown_dirty_tree: local main has uncommitted changes "
+                        f"that would conflict with cherry-pick from worktree.\n"
+                        f"\n"
+                        f"Dirty files in local main ({len(blocking_lines)} blocking file(s)):\n"
+                        f"{dirty_display}\n"
+                        f"({len(dirty_lines) - len(blocking_lines)} lifecycle artifacts filtered, {len(blocking_lines)} blocking file(s) remain)\n"
+                        f"\n"
+                        f"Recovery (choose based on dirty-file type):\n"
+                        f"\n"
+                        f"  Sub-variant A — untracked artifact (e.g., claim-rename):\n"
+                        f"    cd {project_path}\n"
+                        f"    git add <file(s)>\n"
+                        f"    git commit -m 'chore: commit untracked artifact before teardown'\n"
+                        f"\n"
+                        f"  Sub-variant B — dirty bookkeeping file (e.g., PROJECT_STATUS.md):\n"
+                        f"    cd {project_path}\n"
+                        f"    git add <file(s)>\n"
+                        f"    git commit -m 'chore: commit dirty bookkeeping before teardown'\n"
+                        f"\n"
+                        f"  Then: re-issue continue verdict to retry teardown.\n"
+                        f"\n"
+                        f"Reference: LESSONS.md 2026-05-27 R2 recovery shape."
+                    )
+E                   bellows.WorktreeTeardownError: worktree_teardown_dirty_tree: local main has uncommitted changes that would conflict with cherry-pick from worktree.
+E                   
+E                   Dirty files in local main (1 blocking file(s)):
+E                   ?? .bellows-worktrees/
+E                   (0 lifecycle artifacts filtered, 1 blocking file(s) remain)
+E                   
+E                   Recovery (choose based on dirty-file type):
+E                   
+E                     Sub-variant A — untracked artifact (e.g., claim-rename):
+E                       cd /var/folders/vf/8nw0z7hj1m34w6z48l5dp54w0000gn/T/tmpd5w94kf9
+E                       git add <file(s)>
+E                       git commit -m 'chore: commit untracked artifact before teardown'
+E                   
+E                     Sub-variant B — dirty bookkeeping file (e.g., PROJECT_STATUS.md):
+E                       cd /var/folders/vf/8nw0z7hj1m34w6z48l5dp54w0000gn/T/tmpd5w94kf9
+E                       git add <file(s)>
+E                       git commit -m 'chore: commit dirty bookkeeping before teardown'
+E                   
+E                     Then: re-issue continue verdict to retry teardown.
+E                   
+E                   Reference: LESSONS.md 2026-05-27 R2 recovery shape.
+
+bellows.py:893: WorktreeTeardownError
+----------------------------- Captured stdout call -----------------------------
+14:29:55 [WARN] [cherry-pick-test] ⚠ could not detect main branch, falling back to 'main'
+____________________ test_teardown_copies_uncommitted_files ____________________
+
+git_repo = '/var/folders/vf/8nw0z7hj1m34w6z48l5dp54w0000gn/T/tmp8iqkxciy'
+
+    def test_teardown_copies_uncommitted_files(git_repo):
+        """Uncommitted new files in the worktree must be copied back to main on teardown."""
+        wt_path = _create_worktree(git_repo, "dirty-copy-test")
+        try:
+            new_file = os.path.join(wt_path, "new_file.txt")
+            with open(new_file, "w") as f:
+                f.write("uncommitted content\n")
+        except Exception:
+            subprocess.run(
+                ["git", "worktree", "remove", "--force", wt_path], cwd=git_repo,
+                capture_output=True, text=True,
+            )
+            raise
+    
+>       _teardown_worktree(git_repo, wt_path, "dirty-copy-test")
+
+tests/test_worktree.py:186: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+project_path = '/var/folders/vf/8nw0z7hj1m34w6z48l5dp54w0000gn/T/tmp8iqkxciy'
+wt_path = '/var/folders/vf/8nw0z7hj1m34w6z48l5dp54w0000gn/T/tmp8iqkxciy/.bellows-worktrees/dirty-copy-test'
+slug = 'dirty-copy-test'
+
+    def _teardown_worktree(project_path: str, wt_path: str, slug: str) -> None:
+        """Tear down a worktree: cherry-pick commits back, copy dirty files, remove worktree.
+    
+        Raises WorktreeTeardownError on cherry-pick conflict (worktree left alive for manual resolution).
+        No-op when wt_path == project_path (in-place execution, no worktree was created).
+        """
+        if wt_path == project_path:
+            return
+    
+        # (a) Detect main branch
+        main_branch = "main"
+        try:
+            result = subprocess.run(
+                ["git", "--no-pager", "symbolic-ref", "--short", "refs/remotes/origin/HEAD"],
+                cwd=project_path, capture_output=True, text=True, timeout=10,
+            )
+            if result.returncode == 0 and result.stdout.strip():
+                detected = result.stdout.strip()
+                if detected.startswith("origin/"):
+                    detected = detected[len("origin/"):]
+                main_branch = detected
+            else:
+                _log("WARN", f"⚠ could not detect main branch, falling back to 'main'", slug=slug)
+        except Exception:
+            _log("WARN", f"⚠ could not detect main branch, falling back to 'main'", slug=slug)
+    
+        # (b) Collect commits made in worktree
+        try:
+            result = subprocess.run(
+                ["git", "--no-pager", "log", "--format=%H", "HEAD", "--not", main_branch],
+                cwd=wt_path, capture_output=True, text=True, timeout=30,
+            )
+            commit_shas = result.stdout.strip().splitlines()[::-1]  # oldest-first for cherry-pick
+        except Exception:
+            commit_shas = []
+    
+        # Detect stale .git/index.lock that would block cherry-pick
+        lock_path = os.path.join(project_path, ".git", "index.lock")
+        if os.path.exists(lock_path):
+            lock_age = time.time() - os.path.getmtime(lock_path)
+            if lock_age > 5:
+                try:
+                    os.remove(lock_path)
+                    _log("WARN", f"⚠ removed stale .git/index.lock ({lock_age:.0f}s old)", slug=slug)
+                except OSError as e:
+                    _log("WARN", f"⚠ could not remove .git/index.lock: {e}", slug=slug)
+            else:
+                # Fresh lock — wait briefly, then remove if still present
+                time.sleep(3)
+                if os.path.exists(lock_path):
+                    try:
+                        os.remove(lock_path)
+                        _log("WARN", f"⚠ removed .git/index.lock after 3s wait", slug=slug)
+                    except OSError as e:
+                        _log("WARN", f"⚠ could not remove .git/index.lock: {e}", slug=slug)
+    
+        # (b2) Pre-cherry-pick dirty-tree check on main checkout
+        try:
+            dt_result = subprocess.run(
+                ["git", "--no-pager", "status", "--porcelain"],
+                cwd=project_path, capture_output=True, text=True, timeout=10,
+            )
+            if dt_result.returncode == 0 and dt_result.stdout.strip():
+                dirty_lines = dt_result.stdout.strip().splitlines()
+                blocking_lines = [line for line in dirty_lines if not _is_lifecycle_artifact(line)]
+                if blocking_lines:
+                    if len(blocking_lines) > 10:
+                        dirty_display = "\n".join(blocking_lines[:10]) + f"\n... ({len(blocking_lines) - 10} more files)"
+                    else:
+                        dirty_display = "\n".join(blocking_lines)
+>                   raise WorktreeTeardownError(
+                        f"worktree_teardown_dirty_tree: local main has uncommitted changes "
+                        f"that would conflict with cherry-pick from worktree.\n"
+                        f"\n"
+                        f"Dirty files in local main ({len(blocking_lines)} blocking file(s)):\n"
+                        f"{dirty_display}\n"
+                        f"({len(dirty_lines) - len(blocking_lines)} lifecycle artifacts filtered, {len(blocking_lines)} blocking file(s) remain)\n"
+                        f"\n"
+                        f"Recovery (choose based on dirty-file type):\n"
+                        f"\n"
+                        f"  Sub-variant A — untracked artifact (e.g., claim-rename):\n"
+                        f"    cd {project_path}\n"
+                        f"    git add <file(s)>\n"
+                        f"    git commit -m 'chore: commit untracked artifact before teardown'\n"
+                        f"\n"
+                        f"  Sub-variant B — dirty bookkeeping file (e.g., PROJECT_STATUS.md):\n"
+                        f"    cd {project_path}\n"
+                        f"    git add <file(s)>\n"
+                        f"    git commit -m 'chore: commit dirty bookkeeping before teardown'\n"
+                        f"\n"
+                        f"  Then: re-issue continue verdict to retry teardown.\n"
+                        f"\n"
+                        f"Reference: LESSONS.md 2026-05-27 R2 recovery shape."
+                    )
+E                   bellows.WorktreeTeardownError: worktree_teardown_dirty_tree: local main has uncommitted changes that would conflict with cherry-pick from worktree.
+E                   
+E                   Dirty files in local main (1 blocking file(s)):
+E                   ?? .bellows-worktrees/
+E                   (0 lifecycle artifacts filtered, 1 blocking file(s) remain)
+E                   
+E                   Recovery (choose based on dirty-file type):
+E                   
+E                     Sub-variant A — untracked artifact (e.g., claim-rename):
+E                       cd /var/folders/vf/8nw0z7hj1m34w6z48l5dp54w0000gn/T/tmp8iqkxciy
+E                       git add <file(s)>
+E                       git commit -m 'chore: commit untracked artifact before teardown'
+E                   
+E                     Sub-variant B — dirty bookkeeping file (e.g., PROJECT_STATUS.md):
+E                       cd /var/folders/vf/8nw0z7hj1m34w6z48l5dp54w0000gn/T/tmp8iqkxciy
+E                       git add <file(s)>
+E                       git commit -m 'chore: commit dirty bookkeeping before teardown'
+E                   
+E                     Then: re-issue continue verdict to retry teardown.
+E                   
+E                   Reference: LESSONS.md 2026-05-27 R2 recovery shape.
+
+bellows.py:893: WorktreeTeardownError
+----------------------------- Captured stdout call -----------------------------
+14:29:55 [WARN] [dirty-copy-test] ⚠ could not detect main branch, falling back to 'main'
+=============================== warnings summary ===============================
+../../../../../Library/Python/3.9/lib/python/site-packages/urllib3/__init__.py:35
+  /Users/marklehn/Library/Python/3.9/lib/python/site-packages/urllib3/__init__.py:35: NotOpenSSLWarning: urllib3 v2 only supports OpenSSL 1.1.1+, currently the 'ssl' module is compiled with 'LibreSSL 2.8.3'. See: https://github.com/urllib3/urllib3/issues/3020
+    warnings.warn(
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED tests/test_decisions.py::TestLoadPhrases::test_loads_phrases_from_file
+FAILED tests/test_decisions.py::TestLoadPhrases::test_includes_known_phrases
+FAILED tests/test_decisions.py::TestLoadPhrases::test_splits_slash_alternatives
+FAILED tests/test_decisions.py::TestExtractDecisionBlocks::test_s_class_blocks_from_ground_truth
+FAILED tests/test_runner_parser.py::test_run_step_timeout - assert False is True
+FAILED tests/test_worktree.py::test_teardown_removes_worktree_directory - bel...
+FAILED tests/test_worktree.py::test_teardown_cherry_picks_commits - bellows.W...
+FAILED tests/test_worktree.py::test_teardown_copies_uncommitted_files - bello...
+=================== 8 failed, 425 passed, 1 warning in 7.03s ===================
