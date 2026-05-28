@@ -390,6 +390,8 @@ def run_plan(plan_path: str, config: dict, response_server: server.ResponseServe
             if validation_result["rejected"]:
                 halted_path = os.path.join(plan_dir, f"halted-{base_filename}")
                 shutil.move(plan_path, halted_path)
+                if bellows is not None:
+                    bellows._seen.discard(verdict.slug_from_path(plan_path))
                 _log("ERROR", f"plan rejected by dispatch-mode validator: {validation_result['reject_reason']}", slug=slug_for(plan_name))
                 notifier.push(app_key, user_key, "Bellows — Plan Rejected", f"Plan: {plan_name}\nReason: {validation_result['reject_reason']}")
                 return
