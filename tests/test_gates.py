@@ -1479,9 +1479,10 @@ def test_rule_22_qa_hedging_keyword(tmp_path):
     report.parent.mkdir(parents=True)
     report.write_text(
         "# QA Report\n\n"
+        "## Deliverable Verification\n\n"
         "| Deliverable | Status | Evidence |\n"
         "|---|---|---|\n"
-        "| gates.py | \u2705 | assumed correct based on inspection |\n"
+        "| gates.py | \u2705 assumed | correct based on inspection |\n"
     )
     parsed = _clean_parsed()
     failures = []
@@ -1501,7 +1502,7 @@ def test_rule_22_qa_both_fail_and_hedging(tmp_path):
         "## Deliverable Verification\n\n"
         "| Deliverable | Status | Evidence |\n"
         "|---|---|---|\n"
-        "| gates.py | \u2705 | estimated to work |\n"
+        "| gates.py | \u2705 estimated | works |\n"
         "| verdict.py | \u274c | table missing |\n"
     )
     parsed = _clean_parsed()
@@ -1749,3 +1750,119 @@ def test_qa_steps_field_non_qa_role_header():
     plan_text = "## STEP 2 — Invoice Security & Testing Analyst\n\nVerify invoices.\n"
     header = {"qa_steps": "2"}
     assert gates._gate_is_qa_step(plan_text, 2, plan_header=header) is True
+
+
+# ---------------------------------------------------------------------------
+# Gate FP coordinated shape — FP reproduction tests (2026-05-27)
+# ---------------------------------------------------------------------------
+
+def test_ceo_flags_null_declaration_prose_passes():
+    """FP reproduction: null-declaration prose from triggering artifact passes gate.
+    Content from processed-verdict-planner-template-bellows-operational-workarounds-2026-05-27-step-2."""
+    parsed = _clean_parsed()
+    parsed["ceo_flags"] = [
+        "None. All SA-cited anchor lines matched verbatim. No blueprint-vs-file mismatches. No prose adjustments needed."
+    ]
+    failures = []
+    gates._gate_ceo_flags(parsed, failures)
+    assert failures == [], f"null-declaration prose should not fire ceo_flags gate: {failures}"
+
+
+def test_rule_22_c_enumerative_table_inside_verification_section_passes(tmp_path):
+    """FP reproduction: enumerative table (heading list) inside ## Verification Checks
+    produces zero (c) failures. Content shape from plan-authoring-checklist-qa-2026-05-27."""
+    report = tmp_path / "knowledge" / "qa" / "qa-report.md"
+    report.parent.mkdir(parents=True)
+    report.write_text(
+        "# QA Report\n\n"
+        "## Verification Checks\n\n"
+        "### Check 1 — Heading enumeration\n\n"
+        "The following headings were found in the document:\n\n"
+        "| # | Line | Title |\n"
+        "|---|---|---|\n"
+        "| 1 | 923 | Deposits blocks use canonical multi-line bullet form |\n"
+        "| 2 | 945 | Plan header includes pause_for_verdict field |\n"
+        "| 3 | 960 | Step prose references correct agent file |\n"
+    )
+    parsed = _clean_parsed()
+    failures = []
+    gates._gate_rule_22_verification(True, RULE_22_QA_PLAN, 2, str(tmp_path), parsed, failures)
+    c_failures = [f for f in failures if f["gate"] == "rule_22_verification" and "(c)" in f["evidence"]]
+    assert c_failures == [], f"enumerative table should not produce (c) failures: {c_failures}"
+
+
+def test_rule_22_d_pending_in_description_cell_passes(tmp_path):
+    """FP reproduction: 'pending' in description cell with positive status produces zero (d) failures.
+    Content shape from deferred-validation-status-card-2026-05-22-step-4."""
+    report = tmp_path / "knowledge" / "qa" / "qa-report.md"
+    report.parent.mkdir(parents=True)
+    report.write_text(
+        "# QA Report\n\n"
+        "## Deliverable Verification\n\n"
+        "| Check | Description | Status | Evidence |\n"
+        "|---|---|---|---|\n"
+        "| (c) | _run_pending flag lifecycle — try/finally | \u2705 | code review |\n"
+        "| (d) | POST /ingest/validation/run — 200 + correct JSON | \u2705 | curl test |\n"
+        "| (d3) | GET /ingest/validation/status — JSON shape with pending field | \u2705 | curl test |\n"
+        "| (h) | State walkthrough — idle to pending=0, in_progress | \u2705 | log trace |\n"
+        "| (h2) | State walkthrough — pending=5, processing | \u2705 | log trace |\n"
+    )
+    parsed = _clean_parsed()
+    failures = []
+    gates._gate_rule_22_verification(True, RULE_22_QA_PLAN, 2, str(tmp_path), parsed, failures)
+    d_failures = [f for f in failures if f["gate"] == "rule_22_verification" and "(d)" in f["evidence"]]
+    assert d_failures == [], f"'pending' in description cell should not fire (d): {d_failures}"
+
+
+# ---------------------------------------------------------------------------
+# Gate FP coordinated shape — counter-tests (2026-05-27)
+# ---------------------------------------------------------------------------
+
+def test_ceo_flags_real_flag_still_fires():
+    """Counter-test: genuine CEO flag still fires the gate."""
+    parsed = _clean_parsed()
+    parsed["ceo_flags"] = ["warning: build failed on macOS"]
+    failures = []
+    gates._gate_ceo_flags(parsed, failures)
+    assert len(failures) == 1
+    assert failures[0]["gate"] == "ceo_flags"
+
+
+def test_rule_22_c_genuine_missing_status_still_fires(tmp_path):
+    """Counter-test: verification table with at least one positive row and a row
+    missing status still produces one (c) failure."""
+    report = tmp_path / "knowledge" / "qa" / "qa-report.md"
+    report.parent.mkdir(parents=True)
+    report.write_text(
+        "# QA Report\n\n"
+        "## Deliverable Verification\n\n"
+        "| Deliverable | Status | Evidence |\n"
+        "|---|---|---|\n"
+        "| gates.py | \u2705 | function present |\n"
+        "| verdict.py | | no status provided |\n"
+    )
+    parsed = _clean_parsed()
+    failures = []
+    gates._gate_rule_22_verification(True, RULE_22_QA_PLAN, 2, str(tmp_path), parsed, failures)
+    c_failures = [f for f in failures if f["gate"] == "rule_22_verification" and "(c)" in f["evidence"]]
+    assert len(c_failures) == 1
+    assert "missing status" in c_failures[0]["evidence"]
+
+
+def test_rule_22_d_pending_in_status_cell_still_fires(tmp_path):
+    """Counter-test: 'pending' IN the status cell of a positive-status row fires (d)."""
+    report = tmp_path / "knowledge" / "qa" / "qa-report.md"
+    report.parent.mkdir(parents=True)
+    report.write_text(
+        "# QA Report\n\n"
+        "## Deliverable Verification\n\n"
+        "| Deliverable | Status | Evidence |\n"
+        "|---|---|---|\n"
+        "| gates.py | \u2705 pending | awaiting review |\n"
+    )
+    parsed = _clean_parsed()
+    failures = []
+    gates._gate_rule_22_verification(True, RULE_22_QA_PLAN, 2, str(tmp_path), parsed, failures)
+    d_failures = [f for f in failures if f["gate"] == "rule_22_verification" and "(d)" in f["evidence"]]
+    assert len(d_failures) == 1
+    assert "pending" in d_failures[0]["evidence"]
