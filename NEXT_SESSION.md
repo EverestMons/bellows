@@ -1,90 +1,88 @@
 # Bellows — Next Session Baton
 
-**Last session:** 2026-05-28 (session 13)
-**Last session focus:** Hygiene + small-hardening pass that turned into a real build + a significant finding. Shipped the `_seen.discard`-on-rejection fix (the root cause of the session-12 plan-claim miss). But the session's more important output: last session's `worktree_teardown_dirty_tree` pre-check (shipped session 12) is **net-negative for multi-step plans** — it false-trips on Bellows's own lifecycle artifacts and trapped a plan in a recovery loop.
+**Last session:** 2026-05-28 (session 14)
+**Last session focus:** Closed BACKLOG #1 (dirty-tree pre-check false-trip) and #2 (cascade). Shipped lifecycle filter, QA-verified it, smoke-tested live daemon. First fully clean Bellows dispatch in three sessions.
 
 ---
 
 ## Session summary
 
-Session opened on the session-12 baton's option (2): hygiene + small-hardening (Rule 25 routing entry, rescan self-heal, worktree sweep). Diagnostic-first discipline (Rule 10) paid off twice and exposed a real problem.
+Diagnostic → DEV → QA → smoke test, four-arc ship across one session. Two Planner-direct R2 closures along the way (consistent with session 13's pattern — now a documented LESSON).
 
-- **Worktree sweep (Planner-direct):** removed the two stale worktrees (`bash-gate-guardrails-exemption-2026-05-20`, `remove-pre-scan-processed-rename-v2-2026-05-24`). Both clean, both shipped work. Closed.
-- **Rescan self-heal diagnostic (SA):** REFRAMED the BACKLOG entry. The entry proposed "add a periodic `decisions/` rescan" — but reading the code showed `_rescan` already does exactly that (bellows.py:1172-1177, since 2026-05-15). Real root cause (hypothesis (b), confirmed against the session-12 log): the dispatch-mode validator rejection path was the ONLY `run_plan` early-exit that didn't call `_seen.discard()`. A rejected v1 diagnostic stranded its slug; `slug_from_path` strips both `diagnostic-`/`executable-` prefixes, so the follow-on executable inherited the stranded slug and was silently skipped every rescan tick until the manual restart cleared `_seen`. The proposed fix was dead code; the real fix is 2 LOC.
-- **`_seen.discard` fix (DEV):** shipped commit `0322124` — adds `if bellows is not None: bellows._seen.discard(verdict.slug_from_path(plan_path))` to the rejection path, mirroring the line-668 auto-close precedent. Planner-verified by direct code read. Dev log `7069793`.
-- **THE FINDING — dirty-tree pre-check false-trips on lifecycle artifacts.** The `worktree_teardown_dirty_tree` pre-check tripped teardown THREE times this session, every time on Bellows's own untracked bookkeeping (`verdict-pending-*`, `processed-verdict-*`, `in-progress-*`, Done/ plans), never a real cherry-pick conflict. On the multi-step `_seen` executable it created a cascade: teardown abort → stranded worktree → next-step `worktree_creation` precondition failure → precondition-retry resumes the SAME (already-run) step → re-trips teardown → loop. Broke the loop by closing the executable Planner-direct (commit `3b9a997`); QA regression tests deferred.
+- **Diagnostic** (`Done/diagnostic-dirty-tree-precheck-false-trip-surface-2026-05-28.md`): mapped the filter surface, produced regex + predicate spec at Section 3, test surface at Section 6. Confirmed BACKLOG #2 (cascade) is a downstream symptom of #1.
+- **DEV** (commit `7bb05ae` `feat: add lifecycle-artifact filter to dirty-tree pre-check`): `_LIFECYCLE_IGNORE_RE` at `bellows.py:32-51` + `_is_lifecycle_artifact()` at lines 43-51 + pre-check integration at lines 885-916. Shipped via R2 sub-variant Planner-direct close — the executable's own dispatch tripped the very bug it was designed to fix (daemon hadn't loaded the filter yet).
+- **QA** (commit `3d79151`, halted Planner-direct on teardown cherry-pick conflict, substance shipped): 3 filter-positive + 4 filter-negative (CRITICAL SAFETY) + 1 regex-coverage + full-suite regression. All 7 new tests PASS locally on main at `f8edacc` (429 passed, 4 pre-existing failures only). Rule 20 self-check PASSED.
+- **Smoke test** (commit `d4d7b56` deposit + `f8edacc` close): first fully clean Bellows dispatch this session (no R2 recovery). Confirms filter operational in live daemon. Single-step SA, single deposit, all 10 gates PASS.
 
 | # | Artifact | Outcome |
 |---|---|---|
-| 1 | Worktree sweep | 2 orphans removed, Planner-direct. |
-| 2 | Diagnostic (rescan miss) | Reframed BACKLOG premise; root cause = `_seen` stranding on validator rejection. `Done/diagnostic-rescan-miss-disposition-2026-05-28.md`. Continue verdict (after R2 dirty-tree recovery). |
-| 3 | Executable (`_seen` fix) | DEV shipped 2-LOC fix `0322124` + dev log `7069793`. QA NEVER RAN — closed Planner-direct (`3b9a997`) after dirty-tree pre-check loop. |
+| 1 | Diagnostic | `Done/diagnostic-dirty-tree-precheck-false-trip-surface-2026-05-28.md`; SA findings at `knowledge/research/`. |
+| 2 | DEV executable | DEV shipped `7bb05ae`. Halted Planner-direct (substance landed via R2 recovery). |
+| 3 | QA executable | QA shipped at `3d79151` (7 new tests, all pass). Halted Planner-direct (teardown cherry-pick conflict, substance landed). |
+| 4 | Smoke test | `Done/executable-smoke-daemon-connectivity-2026-05-28.md`. Clean teardown, no R2 needed. Halted via verdict-stop consumption. |
 
-**Commits this session (bellows):** `cb57887` (diagnostic findings, recovered via checkout), `427765d` (diagnostic lifecycle artifacts), `0322124` (the `_seen` fix), `7069793` (dev log), `3b9a997` (executable close). Main HEAD: `3b9a997`.
+**Commits this session (bellows):** `49baac9` (DEV close + verdicts), `3d79151` (QA close), `d4d7b56` (smoke deposit, Bellows-authored), `f8edacc` (smoke close). Main HEAD: `f8edacc`.
 
-**No daemon restart strictly required** for the `_seen` fix to take effect on NEW slugs (the bug only stranded already-seen slugs), but a restart WILL clear the stale "1 awaiting verdict" in-memory count (see below) and load `0322124` into the running process. Recommend restart at session start.
+**Governance submodule pointer**: BUMPED at session wrap (`abc01f7` → new pointer reflecting `f8edacc`).
 
 ---
 
 ## In-flight threads (carry forward)
 
-None active. All plans resolved. BUT: the running daemon (PID 80902 at session-13 close) has a **stale in-memory "1 awaiting verdict" count** for the closed `seen-discard-rejection-path` plan — the plan file was moved to Done/ Planner-direct and its verdict bookkeeping removed, but the daemon's in-memory awaiting-set still holds it. Not re-dispatching (nothing on disk to claim), purely cosmetic. Clears on restart.
+None active. Tree clean. Daemon idle.
 
 ---
 
-## Open BACKLOG items added this session (3) — TOP OF OPEN
+## Open BACKLOG items added this session (4) — TOP OF OPEN
 
-1. **Dirty-tree pre-check false-trips on Bellows's own lifecycle artifacts** — HIGHEST priority. The session-12 pre-check checks `git status --porcelain` for ANY uncommitted state, but Bellows constantly generates untracked lifecycle files (`verdict-pending-*`, `processed-verdict-*`, `in-progress-*`, `halted-*`, Done/ plans, `verdict-request-*`). None are real cherry-pick conflicts. Fix: narrow the check to exclude daemon-managed paths/prefixes (diagnostic first to enumerate the set). **The session-12 ship was net-negative for multi-step plans as it stands.**
-2. **Failed teardown strands the worktree → blocks next step's worktree creation (cascade)** — likely subsumed by #1; if not, add a worktree-recreate-on-collision guard. Also documents the precondition-retry-resumes-same-step interaction that made it a loop.
-3. **QA regression tests for the `_seen.discard` fix — deferred** — a standalone 1-step QA plan (tests only, fix already shipped). Dispatch AFTER #1 is fixed or the QA plan's own teardown risks the same loop.
+1. **`_LIFECYCLE_IGNORE_RE` false-strict on space-prefixed porcelain codes** (`dt_result.stdout.strip()` at bellows.py:886 strips leading space from ` D foo.md`). Safe direction; trivial fix (`rstrip()` instead).
+2. **Pre-check trips on test fixtures' `.bellows-worktrees/` directory** (3 pre-existing `test_worktree.py` failures). Directory-prefix outside the lifecycle filter coverage. Add to regex or fix fixtures.
+3. **Dispatch-validator `stop_prose` matches "do not proceed" in instructional prose.** Smoke-test surfaced. WARN-only, doesn't halt. Tighten detector.
+4. **Vestigial `mv` claim-rename in plan prose.** R3 shadow-cache makes it a no-op; agents observe "doesn't exist, I'll skip" and produce intermediate-decision phrase-matches. Fix at PLANNER_TEMPLATE source.
 
 ---
 
-## LESSONS to promote (session-wrap — NOT yet written to LESSONS.md)
+## BACKLOG closures this session
 
-Two candidates, both from this session:
+- **BACKLOG #1** (Dirty-tree pre-check false-trips on lifecycle artifacts) — CLOSED.
+- **BACKLOG #2** (Failed teardown strands worktree → cascade) — CLOSED (subsumed by #1 fix).
+- **QA regression tests for `_seen.discard`** — CLOSED (deferred indefinitely; precondition now met but standalone risk is low).
 
-1. **The dirty-tree pre-check shipped as hardening has a worse failure mode than the conflict it replaced, for multi-step plans.** It doesn't distinguish Bellows's own bookkeeping from real source conflicts. Meta-lesson: a "hardening" ship that surfaces a clearer error can still be net-negative if it fires on benign daemon-generated state. Validate hardening against the daemon's OWN operational artifacts, not just the failure case it targets.
-2. **Diagnostic-first (Rule 10) overturned the BACKLOG premise twice this session** — the rescan entry proposed adding code that already existed; the line-1369 baton item was already shipped (v4.54). Both caught by reading current state before authoring. Continued recurrence of "BACKLOG/baton entries authored from observation without scanning the code/governance that explains them."
+---
 
-(Note: LESSONS.md was NOT edited this session — these are candidates for next session's promotion, or promote now if continuing.)
+## LESSONS promoted this session
+
+1. **R2 sub-variant Planner-direct close** is the documented working recovery shape for "substance shipped, teardown cherry-pick conflicts on lifecycle artifacts." Two-session recurrence count. Includes the 6-step recovery procedure. Filed at LESSONS.md top.
 
 ---
 
 ## On the horizon (next session)
 
-1. **Dirty-tree pre-check false-trip fix** (BACKLOG #1 above) — the clear top priority. Diagnostic to enumerate daemon-managed paths, then narrow-filter executable. This unblocks clean multi-step plan execution.
-2. **QA tests for the `_seen` fix** (BACKLOG #3) — after #1.
-3. **Rule 25 routing-table entry for `worktree_teardown_dirty_tree`** — STILL NOT DONE (deferred this session when the `_seen` work took over). Single-edit governance plan through the Documentation Agent. NOTE: scope is single-edit — the line-1369 pairing the session-12 baton suggested is ALREADY SHIPPED (v4.54, confirmed this session); do not re-do it. Routing decision already made: option (i) — `gate_failure` sub-note keyed on the evidence-string prefix (NOT a new routing-table row, because the gate has no distinct Pause Reason Code), stop-and-report but report surfaces the inline recovery commands.
-4. **Bellows status UI** (2026-05-21) — still the big unscoped design item.
-5. Lower-priority carryovers: verdict filename prefix tolerance (2026-05-27), lessons-forge.db disposition (2026-05-27), orphan-guard wrong-step (2026-05-27), parallel-diagnostic teardown conflicts (2026-05-22), and the Priority-3 defer-by-disposition items.
+1. **Rule 25 routing sub-note for `worktree_teardown_dirty_tree`** — STILL NOT DONE (deferred across two sessions). Single-edit governance plan through Documentation Agent. Option (i) routing decision already made (sub-note on `gate_failure` keyed on evidence-string prefix).
+2. **Cherry-pick conflict on `in-progress-*` plan files during teardown** — NEW failure mode that the lifecycle-filter ship surfaced as the next layer of the teardown stack. Not in BACKLOG yet (only mentioned in this baton). The filter handles the *pre-check*; the cherry-pick command itself still chokes on the same file when the worktree commit treats `in-progress-*` as a tracked addition while main has it as `verdict-pending-*` at the same path. R2 sub-variant recovery now documented in LESSONS. **Decide:** file as new BACKLOG entry, or treat as known-and-documented operational pattern.
+3. **Bellows status UI** (2026-05-21) — still unscoped, big design item.
+4. **Open BACKLOG** (12 entries after this session's closures + adds): the four new this-session entries above + the existing 8 (Rule 25 routing, pre-deposit lint, verdict prefix tolerance, lessons-forge.db, orphan-guard wrong-step, dirty PROJECT_STATUS variant, parallel-diagnostic teardown, deposits parser parens, no-match warning rate-limit, `_extract_step_text` case).
+5. **Other projects on horizon:** anvil (first executable still pending), invoice-pulse (Phase B pending Windows query results), forge, study, BrewBuddy, SimpleScreen, freight-kb, ai-career-digest.
 
 **Next session options:**
-- **Fix the dirty-tree pre-check false-trip** — clear top priority; it's actively breaking multi-step plans. Diagnostic → executable.
-- **Quick wins** — Rule 25 routing sub-note (single governance edit) + the deferred `_seen` QA tests (after the pre-check fix).
-- **Shift to another project** — forge, anvil (first executable still pending), invoice-pulse (Phase B pending Windows query results), study, BrewBuddy, SimpleScreen, freight-kb, ai-career-digest.
-
----
-
-## Open governance follow-up
-
-- **Rule 25 routing sub-note for `worktree_teardown_dirty_tree`** — scoped this session (option (i), evidence-string-prefix sub-note on the `gate_failure` row), not authored. Single-edit governance executable through Documentation Agent. The line-1369 historical-lesson fix the session-12 baton paired with this is ALREADY DONE (v4.54) — confirmed by reading LESSONS row at PLANNER_TEMPLATE line ~1604.
-- **PROJECT_STATUS.md is STALE** — last dated section is 2026-04-19, despite multiple session batons claiming it was updated. Session history is being carried entirely by NEXT_SESSION.md + BACKLOG.md. **Decision needed:** is PROJECT_STATUS.md meant to be maintained, or has it been de facto retired in favor of the baton? If retired, say so explicitly; if maintained, it needs ~5 weeks of backfill or a "see baton history" pointer. Flagged but not acted on this session.
+- **Quick wins** — Rule 25 routing sub-note (single governance edit), `rstrip()` fix + `.bellows-worktrees/` regex addition (the two follow-on BACKLOG entries this session created share a single file).
+- **Shift to another project** — anvil first executable, invoice-pulse Phase B, or any other on the horizon.
 
 ---
 
 ## Discipline reminders for next baton
 
-- **Dirty-tree pre-check WILL trip on lifecycle artifacts until BACKLOG #1 ships.** Until then: commit/clean ALL Bellows lifecycle artifacts (Done/ plans, processed verdicts, in-progress renames) BEFORE any plan's teardown, not at session-wrap. The pre-check forces lifecycle commits eagerly. For multi-step plans, expect teardown trips between steps and keep the tree clean throughout — or close Planner-direct if it loops.
-- **Copy strict convention strings from a known-good artifact, never author from memory.** Held this session — header parse-checked locally before both atomic moves (`gates._parse_plan_header`), no authoring failures. NOTE: a recent QA report (`knowledge/qa/executable-worktree-teardown-dirty-tree-precheck-2026-05-27.md`) contains the WRONG banner (`RULE 20 SELF-CHECK: PASSED`) — it is the artifact of a session-12 failure, NOT a known-good source. Pull the canonical banner (`Rule 20 — QA Self-Check Results` / `PASSED — SELF-CHECK PASSED`) from `gates.py:475` + the PASSED regex at `gates.py:505`, or `RULE_20_SELF_CHECK_BLOCK.md`.
-- **Verdict filenames must match `^verdict-(.+)-step-(\d+)\.md$` EXACTLY.** A `-step-1-retry.md` suffix was silently skipped this session (`verdict filename format mismatch`) until renamed to bare `-step-1.md`. No suffixes.
-- **Diagnostic-first (Rule 10) is earning its keep.** Two BACKLOG/baton premises overturned this session by reading current state before authoring. Keep grepping Closed + current code before treating any baton item as live.
-- **Daemon restart at session start** clears the stale awaiting-count and loads `0322124`.
+- **Lifecycle filter is live at commit `7bb05ae`.** Pre-check no longer trips on lifecycle artifacts. Tree still needs to be clean for *real* dirty files before dispatch — the filter doesn't change that. The R2 recovery shape (now in LESSONS) handles the teardown cherry-pick edge case that remains.
+- **Copy strict convention strings from a known-good artifact, never author from memory.** Held this session — header parse-checked locally before both atomic moves.
+- **Two-bellows.py-processes diagnostic** (this session): if you see duplicate `bellows.py` processes, the second one is detached (likely from Ctrl-Z then resume losing the controlling terminal). Always verify `ps aux | grep bellows.py | grep -v grep` shows exactly one process before starting a fresh daemon. Use `kill <pid>` for detached processes — Ctrl-C cannot reach them.
+- **PROJECT_STATUS.md decision still pending** — last session's flag carried forward. NEXT_SESSION.md + BACKLOG.md are carrying session history; PROJECT_STATUS is partially backfilled but Rule 8 still mandates a one-line-per-step update. Decide: maintain (and what cadence), or retire (and dereference). Not blocking next session.
+- **Diagnostic-first (Rule 10)** continues to earn its keep — this session's diagnostic correctly disposition'd BACKLOG #2 as a downstream symptom rather than a separate fix.
 
 ---
 
 ## CEO actions before next session
 
-- **Restart the Bellows daemon** — clears the stale "1 awaiting verdict" in-memory count for the closed `seen-discard-rejection-path` plan and loads the `_seen` fix (`0322124`) into the running process.
-- Decide on **PROJECT_STATUS.md** — maintain or retire (see Open governance follow-up).
-- Top of next session: **fix the dirty-tree pre-check false-trip** (BACKLOG #1) — it's actively breaking multi-step plans.
+- **No required action.** Daemon idle, tree clean, no in-flight plans, no pending verdicts.
+- Optional: kill the foreground daemon if not actively using; restart at session start.
+- Top of next session: pick a thread from "On the horizon" above.
+</content>
