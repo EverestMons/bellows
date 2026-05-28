@@ -1,81 +1,81 @@
 # Bellows — Next Session Baton
 
-**Last session:** 2026-05-27 (session 10)
-**Last session focus:** Leftover-after-ship tooling — two failed implementations, retired as term-matching limit. Closure moves shipped: LESSONS updates, Rule 41 ratification, script header warning.
+**Last session:** 2026-05-27 (session 11)
+**Last session focus:** Coordinated daemon-side gate-FP fix — three 2026-05-27 BACKLOG entries closed in one ship (ceo_flags null-declaration, rule_22 (c) row-status enumerative-table FPs, hedging-detector domain-term FPs). First session to close daemon-side BACKLOG entries since they began accumulating.
 
 ---
 
 ## Session summary
 
-Long session. Attempted to build `scripts/check_backlog_freshness.py` per session-9's tooling-not-rule LESSON recommendation. Two iterations shipped, both halted at Rule 22 (b) substance check. BACKLOG entry filed retiring the original problem as not achievable with term-matching; manual Phase 1.5 grep remains the working solution. After CEO check-in on "how do we not redo this," three closure moves shipped: LESSONS follow-up note on the 2026-05-26 leftover-after-ship entry, new LESSON for the SA early-output anchor pattern, script header warning. After CEO check-in on "what's the logical next step," PLANNER_TEMPLATE v4.53 shipped with new Rule 41 ratifying the SA anchor pattern into governance.
+Single diagnostic + single executable, ~3 hours wall-clock end-to-end. Diagnostic produced a 5c mixed-shape recommendation (CEO Flags independent + Rule 22 (c)/(d) coordinated). DEV shipped three fixes in `gates.py` per spec with one accepted divergence (stricter cell-scope for (d) than diagnostic specified). QA verified all 3 FPs closed via reproduction tests + 3 counter-tests + adjacent-suite regression check (133 passed, 0 failed). Daemon restart confirmed 20:14.
+
+Three operational recoveries this session worth noting:
+1. **R2 worktree-stranded-findings recovery.** The diagnostic's teardown failed on cherry-pick conflict (agent's own claim-rename in main's untracked tree). Recovery: copied findings from worktree to main, committed standalone, left the transient lifecycle artifact uncommitted. Commit `b3b9646`.
+2. **Stale-worktree cleanup.** The diagnostic's failed teardown left `.bellows-worktrees/gate-fp-coordinated-shape-2026-05-27/` + git worktree registration intact. Downstream executable couldn't spin up its own worktree at the same path. Recovery: `git worktree remove --force`. Precondition-failure verdict then retried Step 1 successfully — first practical use of the 2026-05-24 precondition-failure-field shipped under the rename-first-ordering plan.
+3. **Planner-authoring failure caught by Rule 20.** Plan was deposited with `### Deposits` (markdown h3 header) instead of `**Deposits:**` (bold-colon form per Rule 26). Step 2's `_gate_rule_20_self_check` fired with the 2026-05-26 line-441 evidence string "deposits block declares no .md paths..." which correctly routed Planner to "this is a Planner-authoring failure, not a QA-banner failure." Validates the 2026-05-26 evidence-string disambiguation ship. Recovery: in-place plan-file edit safe because `is_runnable_plan` returns False for `verdict-pending-*` prefix and `on_modified` lifecycle-prefix guard prevents `_seen` invalidation. No re-dispatch trigger fired.
 
 | # | Artifact | Outcome |
 |---|---|---|
-| 1 | Scope diagnostic | SA enumerated 4 input shapes (BACKLOG, PROJECT_STATUS, git log, 5 recurrence pairs). Clean ship. `Done/diagnostic-leftover-after-ship-tooling-scope-2026-05-26.md`. |
-| 2 | V1 blueprint (3-step plan halted at first SA timeout 713s; single-step SA after retry succeeded) | SA delivered a comprehensive blueprint with parsing, matching algorithm, output format, CLI, and ground-truth traces for all 4 recurrences. Predicted zero false positives. `Done/executable-leftover-after-ship-tooling-blueprint-2026-05-26.md`. |
-| 3 | V1 implementation | DEV shipped `scripts/check_backlog_freshness.py` (239 LOC, commit `3c377a2`) per blueprint. Live run: 6/6 entries flagged, 39 candidates. SA's hand-traced FP analysis was wrong — verified fingerprint overlap in the abstract but didn't cross-product against all Closed entries and PS slugs. Halted at Rule 22 (b). `halted-executable-leftover-after-ship-tooling-implementation-2026-05-26.md`. |
-| 4 | V2 algorithm rework blueprint (3-step plan, halted at first SA at 730s; 2-step chunked plan, halted at second SA at 636s; single-step retry with explicit early-output anchors, **shipped**) | Three SA-content steps timed out in a row before the retry worked. Retry instructed: post claim confirmation BEFORE reads, post 1-line acknowledgment as each file read completes, post 1-line marker at the start of each section. Reproducible anti-timeout pattern. Blueprint delivered: high-distinctiveness term extraction (backtick ≥ 5, hyphenated ≥ 12, underscore ≥ 8 with ≥ 2 underscores, executable slugs), title-word matching dropped, source-specific thresholds tightened. Predicted 60% candidate reduction and 4/6 FP entries. Commits `550517f`, `0d219a1`. |
-| 5 | V2 implementation | DEV edited script in place to 254 LOC (commit `141c0c3`), per blueprint Section 5. Live run: 37 candidates (predicted 15), 6/6 entries still flagged (predicted 4/6). Implementation faithful to blueprint; deviation was in the blueprint's prediction. **Root cause:** V2 traded one FP source (BACKLOG Closed title-word noise, ELIMINATED) for another (PROJECT_STATUS slug-token noise from generic 6+ char tokens like `bellows`, `planner`, `template`). Blueprint Section 3 only re-traced v1-flagged candidates, didn't enumerate NEW candidates v2 would surface. SA's own "Flags for Next Step" called this risk out; Planner underweighted it. Halted at Rule 22 (b). `halted-executable-freshness-check-algorithm-v2-implementation-2026-05-27.md`. |
-| 6 | BACKLOG closure | Closed 2026-05-27 (RETIRE — term-matching approach insufficient). Captures: both failed iterations, root limit (term-matching can't distinguish same-function-different-bug without semantic understanding), session lessons. Revisit trigger: capability-addition framing only — if semantic-comparison primitive becomes available, reconsider. |
-| 7 | Closure moves (CEO check-in: "how do we not redo this?") | Three artifacts to prevent re-treading: (a) follow-up note appended to 2026-05-26 "Leftover after ship" LESSON explicitly saying "Do not re-attempt with pure term-matching"; (b) new 2026-05-27 LESSON for the SA dense-content early-output anchor pattern (3 reproductions documented, working anchors specified, counter-patterns noted, template prompt provided); (c) script header warning at `scripts/check_backlog_freshness.py` with halted-experiment notice, FP rate, root limit, revisit trigger, cross-references. Commits: bellows `1ac42be` (script header), governance `1925cae` (LESSONS + submodule pointer bump). |
-| 8 | Rule 41 ratification (CEO check-in: "logical next step?") | PLANNER_TEMPLATE v4.52 → v4.53 with new Rule 41 "SA dispatch shape for Bellows-watched directories — distributed early-output anchors mandatory for content load >400w." Insertion: Rule body after Rule 40, rule-index table row, Lessons Learned row in chronological position. Three required anchors codified (claim-confirmation BEFORE reads, 1-line acknowledgment after each file read, 1-line marker at start of each section), two counter-patterns documented (front-loaded plan-of-attack alone, chunking), copy-paste template provided. Governance commit `97a5b45`. **Daemon NOT restarted** — pure governance edit, no Bellows code changed. |
+| 1 | Diagnostic | SA delivered 5c mixed-shape recommendation. Two BACKLOG-framing divergences flagged and accepted. Findings at `knowledge/research/gate-fp-coordinated-shape-2026-05-27.md`. Worktree teardown failed (R2 recovery applied). `Done/diagnostic-gate-fp-coordinated-shape-2026-05-27.md`. |
+| 2 | Executable Step 1 (DEV) | First attempt failed precondition (stale worktree from diagnostic). Continue-verdict with `precondition_failure: true` retried Step 1; second attempt clean. Three gate fixes shipped: `_is_null_flag_declaration` at gates.py:73, defer-and-discard at gates.py:558-611, `_hedging_in_status_vicinity` at gates.py:94 + section-scoping. Commit `7e67b0b`. |
+| 3 | Executable Step 2 (QA) | Gates passed substantively but tripped `_gate_rule_20_self_check` on Planner-authoring failure (`### Deposits` vs `**Deposits:**`). Rule 22(d) override after R2 plan-file edit. 6 new tests + 2 fixture updates. 133 tests pass. Commit `9f8a0d4`. |
+| 4 | Session-wrap | 3 BACKLOG entries moved Open→Closed, lifecycle artifacts committed, submodule pointer bumped. Commits `d40afb0` (bellows), `30bdc83` + `3b7fa89` (governance). |
+| 5 | Daemon restart | CEO-initiated, confirmed in log at 20:14:01. New `gates.py` symbols loaded. |
 
-**Commits this session (10 total):**
-- `301185c` Scope diagnostic findings
-- `d2e07a9` V1 blueprint
-- `3c377a2` V1 script
-- `550517f` V2 outline
-- `0d219a1` V2 blueprint
-- `141c0c3` V2 script edit
-- `285d82d` Session-wrap (BACKLOG closure + 17 lifecycle files)
-- `04dac2e` PROJECT_STATUS entry + initial NEXT_SESSION baton
-- `1ac42be` Script header warning
-- `cf14124`, `1925cae`, `97a5b45` Governance root (bellows pointer bumps + LESSONS update + Rule 41 ratification)
+**Commits this session (5 bellows + 2 governance):**
+- bellows `b3b9646` (R2 recovery of stranded diagnostic findings)
+- bellows `7e67b0b` (DEV — three gate FP fixes)
+- bellows `9f8a0d4` (QA — verification tests + fixture updates)
+- bellows `d40afb0` (session-wrap — BACKLOG closures + lifecycle artifacts)
+- governance `30bdc83`, `3b7fa89` (submodule pointer bumps)
 
-**Daemon NOT restarted.** V2 script `scripts/check_backlog_freshness.py` exists in tree but is reference-only — Bellows doesn't run it. No Bellows daemon code changed this session. PLANNER_TEMPLATE v4.53 is governance-only.
+**Daemon restarted.** Live `gates.py` now contains `_is_null_flag_declaration`, `_hedging_in_status_vicinity`, defer-and-discard table state, (d) section-scoping. Three FP classes structurally closed.
 
 ---
 
 ## In-flight threads (carry forward)
 
-None active. All session work halted or shipped and committed.
+None active. All session work shipped and committed. Daemon running.
 
 ---
 
 ## Open BACKLOG items added this session (0)
 
-None added. One Closed entry filed (term-matching approach retirement).
+None added. Three Closed entries filed (ceo_flags, rule_22 (c), hedging-detector).
 
 ---
 
-## LESSONS entries added this session (1 new, 1 follow-up)
+## LESSONS candidates carried forward (not yet promoted)
 
-- **NEW 2026-05-27:** "SA dense-content blueprint steps need explicit early-output anchors to avoid ~600-730s inactivity timeouts" — tags `planner-discipline`, `plan-shape`, `bellows-integration`. Three reproductions documented (713s, 730s, 636s timeouts), working anchor pattern (claim-confirmation BEFORE reads, 1-line ack after each file read, 1-line marker at section starts), counter-patterns (front-loaded plan-of-attack alone fails; chunking doesn't fix it), template prompt. **Ratified into PLANNER_TEMPLATE Rule 41 this same session.**
-- **Follow-up appended to 2026-05-26 "Leftover after ship" entry:** explicit "Do not re-attempt with pure term-matching" with session-10 attempt summary, root limit, and revisit trigger.
+Three patterns observed this session worth tracking for next-session LESSONS evaluation. None promoted today — discipline rule is to wait for second occurrence unless a single occurrence is structurally severe.
 
-**Candidate LESSONS for future sessions if patterns recur (captured in BACKLOG entry, not yet promoted):**
-- **Same-day-overwrite assumption in Bellows scope_check** — observed one occurrence (the script's date-rolled-over deposit caused scope_check FAIL on v2 implementation). Promote on second occurrence.
-- **Blueprint FP-validation asymmetry** — observed twice this session (v1 and v2 blueprints both validated "what to catch" without stress-testing "what to exclude"). Third occurrence would qualify as a governance-root LESSON in its own right.
+1. **`### Deposits` vs `**Deposits:**` Planner-authoring failure.** First occurrence this session, caught at Step 2 of executable plan by Rule 20 self-check. The h3-header form is visually similar to the bold-colon form but Rule 26's regex is strict. Either pre-emptive promotion as a Planner pre-deposit format-check rule, or wait for second occurrence. The 2026-05-26 evidence-string disambiguation ship correctly routed the failure mode this time — validates that earlier fix. Promote on second occurrence.
+
+2. **Stale worktree from failed teardown blocks downstream plans.** First formal occurrence this session. The diagnostic's worktree-teardown cherry-pick conflict left `.bellows-worktrees/<slug>/` + git worktree registration intact; downstream executable plan couldn't spin up at the same path. Recovery is mechanical (`git worktree remove --force`). Could mechanize as teardown-failure cleanup hook in Bellows; for now, Planner-side recovery is fast. Promote on second occurrence, OR mechanize via small Bellows BACKLOG entry.
+
+3. **R2 recovery for cherry-pick conflict on agent's own claim-rename.** Second occurrence of the 2026-05-22 BACKLOG variant "Worktree teardown cherry-pick conflict on dirty PROJECT_STATUS.md (sequential-Planner-edit variant)" — different sub-variant (untracked claim-rename instead of dirty bookkeeping file). Recovery shape stable. Both occurrences in 5 days. Strong candidate for promotion as a Planner discipline LESSON on the recovery shape itself.
+
+**Carried forward from session 10 baton (not yet promoted):**
+- Same-day-overwrite assumption in Bellows scope_check (one occurrence so far).
+- Blueprint FP-validation asymmetry (two occurrences last session). Third occurrence would qualify.
 
 ---
 
-## Governance edits this session (v4.52 → v4.53)
+## Governance edits this session
 
-- **New Rule 41:** SA dispatch shape for Bellows-watched directories — distributed early-output anchors mandatory for content load >400w. Codifies the anchor template from the 2026-05-27 LESSON. Lives in the Bellows-integration cluster of rules (alongside Rules 22-26, 35, 39, 40). Sister to Rule 13 (semantic anchoring) — Rule 41 addresses mechanical liveness anchoring.
-- **Rule-index table** updated with Rule 41 row.
-- **Lessons Learned table** updated with the v4.53 ratification row.
+None. No PLANNER_TEMPLATE, COMPANY.md, or specialist file changes. Pure Bellows code + BACKLOG hygiene.
 
 ---
 
 ## On the horizon (next session)
 
-Session-9 baton listed 6 horizon items. Session 10 closed zero of them; the leftover-after-ship Closed entry doesn't unlock anything else. Remaining horizon, unchanged from session 9:
+Session 10's horizon had 6 items. Session 11 closed 3 daemon-side BACKLOG entries (the three gate-FP entries that were ALSO horizon-relevant though not on the formal horizon list). Remaining horizon, updated:
 
 1. **Bellows status UI** (2026-05-21) — still the natural next-session candidate if focus stays on Bellows. Genuine design work. Open design questions: deployment shape (web vs Tauri vs menu-bar vs TUI), data source (DB vs filesystem vs daemon endpoint), update mechanism, scope of v1. Needs a dedicated planning session.
 
-2. **Worktree teardown cherry-pick conflict on dirty `PROJECT_STATUS.md`** (2026-05-22) — Planner-side discipline (commit before session-wrap) working. Option (b) from BACKLOG (~20 LOC pre-cherry-pick dirty-tree check) is the small build if/when second occurrence arrives.
+2. **Worktree teardown cherry-pick conflict on dirty `PROJECT_STATUS.md`** (2026-05-22) — second-occurrence threshold now met (this session's R2 recovery on the claim-rename variant). Option (b) from BACKLOG (~20 LOC pre-cherry-pick dirty-tree check) is the small build. **Likely next-session candidate.**
 
-3. **Parallel-diagnostic cherry-pick conflicts on shared bookkeeping files** (2026-05-22) — defer-until-second-occurrence; discipline mitigation working.
+3. **Parallel-diagnostic cherry-pick conflicts on shared bookkeeping files** (2026-05-22) — still defer-until-second-occurrence; discipline mitigation working.
 
 4. **Deposits parser parenthetical qualifiers** (2026-05-21) — defer until first incident; Rule 26 prevents the pattern.
 
@@ -83,31 +83,40 @@ Session-9 baton listed 6 horizon items. Session 10 closed zero of them; the left
 
 6. **`_extract_step_text` regex case-sensitivity** (2026-05-13) — governance prevents the failure mode.
 
-**Bellows hardening sweep status:** substantively complete; the leftover-after-ship attempt this session was an offshoot (Planner discipline tooling, not Bellows daemon hardening). Remaining 6 horizon items still all deferred-by-disposition. Next session options:
-- **Start Bellows status UI (#1)** — biggest concrete next move within Bellows
-- **Shift focus to a different project** — forge (pre-scan sync workflow), anvil (COMPANY.md update + first executable plan pending), invoice-pulse (Phase B fuel bracket data migration pending Windows production query results), study, BrewBuddy, SimpleScreen, freight-kb, ai-career-digest
-- **Address shop-meta governance items** — line 1369 carry-over from sessions 8, 9
+7. **Verdict filename prefix tolerance** (2026-05-27) — investigation-then-decide.
+
+8. **`lessons-forge.db` tracked-but-gitignored disposition** (2026-05-27) — surface before next gate 2d cycle.
+
+9. **Orphan-guard renormalization fires on wrong step** (2026-05-27) — single-line predicate strengthening, defer until reproduction.
+
+**Bellows hardening sweep status:** substantively complete. The three 2026-05-27 gate-FP entries closed this session were the most actionable Open items. Remaining 9 Open items are all defer-by-disposition or low-priority. Next session options:
+
+- **Start Bellows status UI (#1)** — biggest concrete next move within Bellows. Substantial design work.
+- **Ship worktree-teardown dirty-tree pre-check (#2)** — small, well-scoped, second-occurrence threshold met this session. Quick win.
+- **Shift focus to a different project** — forge (pre-scan sync workflow), anvil (COMPANY.md update + first executable plan pending), invoice-pulse (Phase B fuel bracket data migration pending Windows production query results), study, BrewBuddy, SimpleScreen, freight-kb, ai-career-digest.
 
 ---
 
 ## Open governance follow-up
 
-- **Line 1369 historical lesson** in PLANNER_TEMPLATE — still references "the Planner-owned terminal-move pattern from Rule 25 (rename the plan file directly to `Done/` via `Filesystem:move_file`...)" — carry-over from sessions 8, 9 batons. Stale per the 2026-05-26 v4.52 reconciliation. Not blocking; flag for next session if/when touching governance text.
-- **Cosmetic: commit message `97a5b45` has a literal `\u2014` instead of em-dash** from a shell escape that didn't interpret. Won't fix — force-push to clean a message crosses the destructive-git line for marginal benefit. Content is correct.
+- **Line 1369 historical lesson** in PLANNER_TEMPLATE — still references "the Planner-owned terminal-move pattern from Rule 25 (rename the plan file directly to `Done/` via `Filesystem:move_file`...)" — carry-over from sessions 8, 9, 10 batons. Stale per the 2026-05-26 v4.52 reconciliation. Not blocking; flag for next session if/when touching governance text.
 
 ---
 
 ## Discipline reminders for next baton
 
-- **Cross-reference every horizon item against current state before propagating** (5/5 catch rate across sessions 7-9; held this session — no horizon items needed re-evaluation).
-- **Pre-write grep of BACKLOG Closed section AND current code state before treating any baton-carried entry as live** — discipline rule holds.
-- **2026-05-26 LESSONS entries (7 from sessions 5-10) remain fresh and high-relevance.** Re-read before drafting any plan that involves housekeeping operations.
-- **2026-05-27 LESSONS entry on SA early-output anchors is now codified as Rule 41.** Any Bellows-dispatched SA prompt >400w MUST include the three anchors. The LESSON is for context; the rule is for compliance.
-- **Term-matching has structural limits for same-function-different-bug detection.** If a future task requires distinguishing two entries that share a function name or project name but describe different bugs, term-matching is the wrong approach. Reconsider only if semantic-comparison primitives become available. The retired `scripts/check_backlog_freshness.py` has a header warning preserving this signal.
-- **Daemon restart NOT required this session-wrap.** No Bellows code changed; governance-only.
+- **Daemon restart required after gate code changes.** This session's three FP fixes require the running daemon to load new symbols (`_is_null_flag_declaration`, `_hedging_in_status_vicinity`, defer-and-discard state, (d) section-scoping). Restart confirmed 2026-05-27 20:14 (CEO-initiated). New plans dispatched after restart correctly use the fixed gates.
+- **Rule 41 anchors mandatory for SA prompts >400w.** Session 11's diagnostic SA step used the canonical anchor template (claim-confirmation BEFORE reads, 1-line ack after each file read, 1-line marker at section starts) and completed cleanly in 481s. Pattern continues to function.
+- **`**Deposits:**` is the canonical Rule 26 format.** Pre-deposit verification of the bold-colon format prevents the QA-step Rule 20 trip. Visual similarity with `### Deposits` markdown header is a latent failure mode.
+- **2026-05-27 LESSONS entry on SA early-output anchors is codified as Rule 41.** Any Bellows-dispatched SA prompt >400w MUST include the three anchors. Compliance is author-discipline; the LESSON is for context.
+- **Term-matching has structural limits for same-function-different-bug detection.** Retired script `scripts/check_backlog_freshness.py` has a header warning preserving this signal. Reconsider only if semantic-comparison primitives become available.
+- **R2 recovery shape (copy-from-worktree-to-main, commit standalone) is the precedent for cherry-pick conflicts on agent's own claim-rename.** Second occurrence this session; recovery shape stable; LESSONS candidate noted.
+- **Stale-worktree cleanup discipline:** if a teardown fails, the worktree directory persists and blocks downstream plans at the same slug. Check `git worktree list` after any teardown failure; `git worktree remove --force` clears it cleanly.
 
 ---
 
 ## CEO actions before next session
 
-- None required. No daemon restart needed. No manual filesystem operations needed. No pending verdicts to resolve.
+- None required. Daemon running with new gate code loaded. No pending verdicts. No manual filesystem operations needed.
+
+- Optional: review the three gate-FP closures next session start as a Phase 1.5 sanity check — three Closed entries appended to `bellows/knowledge/BACKLOG.md` top of Closed section.
