@@ -29,6 +29,28 @@ MODULE_FINGERPRINT_HEARTBEAT_INTERVAL = 10
 _NOTIFIED_MISPLACED: set[tuple[str, str]] = set()
 MISPLACED_VERDICT_SCAN_VERBOSE = False
 
+# --- Lifecycle artifact filter for dirty-tree pre-check ---
+# Daemon-managed bookkeeping paths that agents never commit to.
+# These are safe to ignore for cherry-pick conflict purposes.
+# See: knowledge/research/dirty-tree-precheck-false-trip-surface-2026-05-28.md Section 3
+_LIFECYCLE_IGNORE_RE = re.compile(
+    r'^knowledge/decisions/(in-progress-|verdict-pending-|halted-|executable-|diagnostic-).*\.md$'
+    r'|^knowledge/decisions/Done/'
+    r'|^verdicts/(pending|resolved)/'
+)
+
+
+def _is_lifecycle_artifact(porcelain_line: str) -> bool:
+    """Return True if the porcelain line is a daemon-managed lifecycle artifact."""
+    if len(porcelain_line) < 4:
+        return False
+    path = porcelain_line[3:]
+    # Handle renamed files: "R  old -> new"
+    if " -> " in path:
+        path = path.split(" -> ", 1)[1]
+    return bool(_LIFECYCLE_IGNORE_RE.match(path.strip()))
+
+
 # --- Terminal output infrastructure ---
 _last_plan_event_time = 0.0
 _plan_event_lock = threading.Lock()
@@ -861,35 +883,37 @@ def _teardown_worktree(project_path: str, wt_path: str, slug: str) -> None:
             cwd=project_path, capture_output=True, text=True, timeout=10,
         )
         if dt_result.returncode == 0 and dt_result.stdout.strip():
-            dirty_output = dt_result.stdout.strip()
-            dirty_lines = dirty_output.splitlines()
-            if len(dirty_lines) > 10:
-                dirty_display = "\n".join(dirty_lines[:10]) + f"\n... ({len(dirty_lines) - 10} more files)"
-            else:
-                dirty_display = dirty_output
-            raise WorktreeTeardownError(
-                f"worktree_teardown_dirty_tree: local main has uncommitted changes "
-                f"that would conflict with cherry-pick from worktree.\n"
-                f"\n"
-                f"Dirty files in local main ({len(dirty_lines)} file(s)):\n"
-                f"{dirty_display}\n"
-                f"\n"
-                f"Recovery (choose based on dirty-file type):\n"
-                f"\n"
-                f"  Sub-variant A — untracked artifact (e.g., claim-rename):\n"
-                f"    cd {project_path}\n"
-                f"    git add <file(s)>\n"
-                f"    git commit -m 'chore: commit untracked artifact before teardown'\n"
-                f"\n"
-                f"  Sub-variant B — dirty bookkeeping file (e.g., PROJECT_STATUS.md):\n"
-                f"    cd {project_path}\n"
-                f"    git add <file(s)>\n"
-                f"    git commit -m 'chore: commit dirty bookkeeping before teardown'\n"
-                f"\n"
-                f"  Then: re-issue continue verdict to retry teardown.\n"
-                f"\n"
-                f"Reference: LESSONS.md 2026-05-27 R2 recovery shape."
-            )
+            dirty_lines = dt_result.stdout.strip().splitlines()
+            blocking_lines = [line for line in dirty_lines if not _is_lifecycle_artifact(line)]
+            if blocking_lines:
+                if len(blocking_lines) > 10:
+                    dirty_display = "\n".join(blocking_lines[:10]) + f"\n... ({len(blocking_lines) - 10} more files)"
+                else:
+                    dirty_display = "\n".join(blocking_lines)
+                raise WorktreeTeardownError(
+                    f"worktree_teardown_dirty_tree: local main has uncommitted changes "
+                    f"that would conflict with cherry-pick from worktree.\n"
+                    f"\n"
+                    f"Dirty files in local main ({len(blocking_lines)} blocking file(s)):\n"
+                    f"{dirty_display}\n"
+                    f"({len(dirty_lines) - len(blocking_lines)} lifecycle artifacts filtered, {len(blocking_lines)} blocking file(s) remain)\n"
+                    f"\n"
+                    f"Recovery (choose based on dirty-file type):\n"
+                    f"\n"
+                    f"  Sub-variant A — untracked artifact (e.g., claim-rename):\n"
+                    f"    cd {project_path}\n"
+                    f"    git add <file(s)>\n"
+                    f"    git commit -m 'chore: commit untracked artifact before teardown'\n"
+                    f"\n"
+                    f"  Sub-variant B — dirty bookkeeping file (e.g., PROJECT_STATUS.md):\n"
+                    f"    cd {project_path}\n"
+                    f"    git add <file(s)>\n"
+                    f"    git commit -m 'chore: commit dirty bookkeeping before teardown'\n"
+                    f"\n"
+                    f"  Then: re-issue continue verdict to retry teardown.\n"
+                    f"\n"
+                    f"Reference: LESSONS.md 2026-05-27 R2 recovery shape."
+                )
     except WorktreeTeardownError:
         raise
     except Exception:
