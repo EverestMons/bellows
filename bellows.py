@@ -37,6 +37,7 @@ _LIFECYCLE_IGNORE_RE = re.compile(
     r'^knowledge/decisions/(in-progress-|verdict-pending-|halted-|executable-|diagnostic-).*\.md$'
     r'|^knowledge/decisions/Done/'
     r'|^verdicts/(pending|resolved)/'
+    r'|^\.bellows-worktrees(/|$)'
 )
 
 
@@ -801,6 +802,25 @@ def _create_worktree(project_path: str, slug: str) -> str:
     parent_dir = os.path.join(project_path, ".bellows-worktrees")
     os.makedirs(parent_dir, exist_ok=True)
 
+    # Clean stranded worktree from a prior failed dispatch (mirrors __init__ prune style)
+    if os.path.exists(wt_path):
+        _log("WARN", f"⚠ stranded worktree found at {wt_path}, removing before re-creation", slug=slug)
+        try:
+            subprocess.run(
+                ["git", "--no-pager", "worktree", "remove", "--force", wt_path],
+                cwd=project_path, capture_output=True, text=True, timeout=10,
+            )
+        except Exception:
+            pass  # path may not be a registered worktree
+        shutil.rmtree(wt_path, ignore_errors=True)
+        try:
+            subprocess.run(
+                ["git", "--no-pager", "worktree", "prune"],
+                cwd=project_path, capture_output=True, text=True, timeout=10,
+            )
+        except Exception:
+            pass
+
     try:
         cmd = ["git", "--no-pager", "worktree", "add", wt_path, "HEAD", "--detach"]
         result = subprocess.run(cmd, cwd=project_path, capture_output=True, text=True, timeout=60)
@@ -882,8 +902,9 @@ def _teardown_worktree(project_path: str, wt_path: str, slug: str) -> None:
             ["git", "--no-pager", "status", "--porcelain"],
             cwd=project_path, capture_output=True, text=True, timeout=10,
         )
-        if dt_result.returncode == 0 and dt_result.stdout.strip():
-            dirty_lines = dt_result.stdout.strip().splitlines()
+        # rstrip (not strip): preserve leading status-code space on first porcelain line
+        if dt_result.returncode == 0 and dt_result.stdout.rstrip():
+            dirty_lines = dt_result.stdout.rstrip().splitlines()
             blocking_lines = [line for line in dirty_lines if not _is_lifecycle_artifact(line)]
             if blocking_lines:
                 if len(blocking_lines) > 10:

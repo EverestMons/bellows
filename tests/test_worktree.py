@@ -22,6 +22,7 @@ from bellows import (
     WorktreeCreationError,
     WorktreeTeardownError,
     _create_worktree,
+    _is_lifecycle_artifact,
     _teardown_worktree,
 )
 
@@ -266,3 +267,86 @@ def test_create_worktree_retries_once_on_failure(git_repo):
     mock_sleep.assert_called_once_with(2)
     expected_path = os.path.join(git_repo, ".bellows-worktrees", "retry-test")
     assert wt_path == expected_path, f"Expected {expected_path}, got {wt_path}"
+
+
+# --- Item (a): stranded-worktree cleanup tests ---
+
+def test_create_worktree_cleans_stranded_directory(git_repo, caplog):
+    """A bare directory pre-existing at wt_path is cleaned and worktree creation succeeds."""
+    slug = "stranded-dir-test"
+    wt_path = os.path.join(git_repo, ".bellows-worktrees", slug)
+    os.makedirs(wt_path, exist_ok=True)
+    # Plant a marker file to prove the directory gets removed
+    with open(os.path.join(wt_path, "stale.txt"), "w") as f:
+        f.write("stale")
+
+    with patch("bellows._log") as mock_log:
+        result_path = _create_worktree(git_repo, slug)
+
+    try:
+        assert os.path.isdir(result_path), "Worktree should exist after creation"
+        assert os.path.isfile(os.path.join(result_path, "README.md")), \
+            "Tracked file should be present in new worktree"
+        assert not os.path.isfile(os.path.join(result_path, "stale.txt")), \
+            "Stale marker should be gone after cleanup"
+        # Verify WARN was logged
+        warn_calls = [c for c in mock_log.call_args_list
+                      if c[0][0] == "WARN" and "stranded worktree found" in c[0][1]]
+        assert len(warn_calls) >= 1, "Expected WARN about stranded worktree"
+    finally:
+        subprocess.run(
+            ["git", "worktree", "remove", "--force", result_path], cwd=git_repo,
+            capture_output=True, text=True,
+        )
+
+
+def test_create_worktree_cleans_stranded_registered_worktree(git_repo):
+    """A registered worktree pre-existing at wt_path is cleaned via worktree remove --force."""
+    slug = "stranded-registered-test"
+    # Create a real worktree first, then try to create again at the same path
+    wt_path = _create_worktree(git_repo, slug)
+    assert os.path.isdir(wt_path)
+
+    # Now call _create_worktree again — should clean up and succeed
+    with patch("bellows._log") as mock_log:
+        result_path = _create_worktree(git_repo, slug)
+
+    try:
+        assert os.path.isdir(result_path), "Worktree should exist after re-creation"
+        assert os.path.isfile(os.path.join(result_path, "README.md")), \
+            "Tracked file should be present in re-created worktree"
+        # Verify WARN was logged
+        warn_calls = [c for c in mock_log.call_args_list
+                      if c[0][0] == "WARN" and "stranded worktree found" in c[0][1]]
+        assert len(warn_calls) >= 1, "Expected WARN about stranded worktree"
+    finally:
+        subprocess.run(
+            ["git", "worktree", "remove", "--force", result_path], cwd=git_repo,
+            capture_output=True, text=True,
+        )
+
+
+# --- Item (f): rstrip + leading-space tolerance tests ---
+
+def test_pre_check_recognizes_space_prefixed_lifecycle_line():
+    """A space-prefixed lifecycle artifact on the first porcelain line must be recognized."""
+    # " D" status — deleted lifecycle artifact
+    assert _is_lifecycle_artifact(" D knowledge/decisions/verdict-pending-foo.md") is True
+    # " M" status — modified lifecycle artifact
+    assert _is_lifecycle_artifact(" M verdicts/pending/some-verdict.md") is True
+    # Negative control: space-prefixed REAL dirty file must NOT be treated as lifecycle
+    assert _is_lifecycle_artifact(" M README.md") is False
+    assert _is_lifecycle_artifact(" D src/app.py") is False
+
+
+# --- Item (g): .bellows-worktrees/ lifecycle-ignore tests ---
+
+def test_pre_check_ignores_bellows_worktrees_dir():
+    """Porcelain entries under .bellows-worktrees/ must be treated as lifecycle artifacts."""
+    # Bare directory entry
+    assert _is_lifecycle_artifact("?? .bellows-worktrees/") is True
+    # Child path
+    assert _is_lifecycle_artifact("?? .bellows-worktrees/some-slug/file.py") is True
+    # Negative control: real untracked file outside .bellows-worktrees/
+    assert _is_lifecycle_artifact("?? src/untracked.py") is False
+    assert _is_lifecycle_artifact("?? bellows-worktrees-imposter/foo.py") is False
