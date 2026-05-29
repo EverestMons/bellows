@@ -1902,3 +1902,13 @@ The Planner authors plans in a Project conversation with MCP filesystem tools. T
 2. **Line count discrepancy ("7 lines" vs 9 lines) was benign.** The SA diagnostic and plan both said "7-LOC fixture" but the prescribed code block contains 9 lines (including comment header and 2 blank lines). The file content matched the prescribed body verbatim. The count was a LOC-vs-total-lines convention difference. No fix needed, but future plans could use "N lines of code" vs "N total lines" for clarity.
 
 3. **Plan claim step referenced verdict-pending prefix, but file was already in-progress.** The QA step instructions said to move from `verdict-pending-*` to `in-progress-*`, but the file was already named `in-progress-*` (from DEV Step 1). This is expected in the worktree model where both steps run in sequence. No action needed.
+
+## 2026-05-29 — executable-worktree-precheck-hardening (QA Step 2)
+
+1. **`governance/GUARDRAILS.md` not present in worktree (same as DEV).** Step 2 also instructs "Read your specialist file at `agents/BELLOWS_QA.md` and `governance/GUARDRAILS.md` first." The governance directory does not exist in this worktree. The QA specialist file was found and read successfully, but GUARDRAILS.md could not be located. This is the same issue noted by DEV in Step 1 — the instruction should be conditional or the file path corrected.
+
+2. **`RULE_20_SELF_CHECK_BLOCK.md` location ambiguity.** The QA specialist file references the file at "governance root" and `/Users/marklehn/Desktop/GitHub/RULE_20_SELF_CHECK_BLOCK.md` (stale Desktop path). The actual file was at `/Users/marklehn/Developer/GitHub/RULE_20_SELF_CHECK_BLOCK.md`. Plans should use a relative path from the project root or document the canonical absolute path after the Desktop→Developer relocation.
+
+3. **Evidence dir path form inconsistency.** Plan specifies `evidence_dir` as `bellows/knowledge/qa/evidence/worktree-precheck-hardening-2026-05-29/` (with `bellows/` prefix), but the worktree root IS the bellows project root (as noted in the plan's own path-prefix note). The Rule 20 self-check was run with the corrected relative path. Suggest: evidence_dir values in plan prompts should use the same convention as the "strip bellows/ prefix" note.
+
+4. **Deliverable verification item 5 wording was precise and actionable.** The instruction to confirm the fix "NOT in a test fixture or a comment only" was a valuable specificity — it prevented superficial grep-hit verification. Good pattern to repeat for future ignore-pattern deliverables.
