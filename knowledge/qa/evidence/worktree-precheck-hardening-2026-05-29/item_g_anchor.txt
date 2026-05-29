@@ -1,0 +1,20 @@
+Evidence: Structural-compliance check (c) — item g pattern anchoring
+
+Pattern in _LIFECYCLE_IGNORE_RE (bellows.py line 40):
+    r'|^\.bellows-worktrees(/|$)'
+
+Analysis:
+- ^ anchor: matches only at the START of the path string — prevents matching paths
+  containing "bellows-worktrees" as a substring elsewhere (e.g., "src/.bellows-worktrees"
+  would not match in the extracted path, since _is_lifecycle_artifact extracts from
+  porcelain_line[3:] which gives the repo-relative path)
+- \. literal dot: prevents matching "Xbellows-worktrees" (any char before)
+- (/|$) alternation: matches either "/" (directory with children) or end-of-string
+  (bare directory entry) — does NOT match ".bellows-worktrees-extra" or
+  ".bellows-worktreesfoo"
+
+Test confirmation (test_pre_check_ignores_bellows_worktrees_dir):
+  assert _is_lifecycle_artifact("?? bellows-worktrees-imposter/foo.py") is False
+  — this proves the pattern does NOT accidentally match paths without the leading dot
+
+Conclusion: pattern is properly anchored to the path component ✅

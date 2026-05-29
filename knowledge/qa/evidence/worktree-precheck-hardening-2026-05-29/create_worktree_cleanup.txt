@@ -1,0 +1,51 @@
+Evidence: Item a — stranded-worktree cleanup in _create_worktree
+Captured from bellows.py lines 786–841
+
+def _create_worktree(project_path: str, slug: str) -> str:
+    """Create a detached-HEAD git worktree for a plan execution.
+
+    Returns the worktree path on success. Retries once on failure with a 2s delay.
+    Raises WorktreeCreationError if both attempts fail or on timeout/OS error.
+
+    If project_path has no project-local .git (directory or file), worktree
+    creation is skipped and project_path is returned as-is.  The caller uses
+    wt_path == project_path as the sentinel for "no worktree created".
+    """
+    if not os.path.exists(os.path.join(project_path, ".git")):
+        project_name = os.path.basename(project_path)
+        _log("WARN", f"⚠ {project_name} has no project-local .git — running in-place without worktree isolation", slug=slug)
+        return project_path
+
+    wt_path = os.path.join(project_path, ".bellows-worktrees", slug)
+    parent_dir = os.path.join(project_path, ".bellows-worktrees")
+    os.makedirs(parent_dir, exist_ok=True)
+
+    # Clean stranded worktree from a prior failed dispatch (mirrors __init__ prune style)
+    if os.path.exists(wt_path):
+        _log("WARN", f"⚠ stranded worktree found at {wt_path}, removing before re-creation", slug=slug)
+        try:
+            subprocess.run(
+                ["git", "--no-pager", "worktree", "remove", "--force", wt_path],
+                cwd=project_path, capture_output=True, text=True, timeout=10,
+            )
+        except Exception:
+            pass  # path may not be a registered worktree
+        shutil.rmtree(wt_path, ignore_errors=True)
+        try:
+            subprocess.run(
+                ["git", "--no-pager", "worktree", "prune"],
+                cwd=project_path, capture_output=True, text=True, timeout=10,
+            )
+        except Exception:
+            pass
+
+    try:
+        cmd = ["git", "--no-pager", "worktree", "add", wt_path, "HEAD", "--detach"]
+        ...
+
+Verification:
+- Cleanup guard is AFTER parent_dir mkdir (line 803) and BEFORE git worktree add (line 824): ✅
+- Contains git worktree remove --force: ✅
+- Contains shutil.rmtree(..., ignore_errors=True): ✅
+- Contains git worktree prune: ✅
+- Logs WARN with "stranded worktree found": ✅

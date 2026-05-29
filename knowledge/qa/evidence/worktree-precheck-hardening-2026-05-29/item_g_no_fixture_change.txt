@@ -1,0 +1,15 @@
+Evidence: Item g — no fixture/.gitignore changes
+Command: git diff HEAD~2 HEAD --stat
+
+Result:
+ bellows.py                                         |  25 ++-
+ .../worktree-precheck-hardening-2026-05-29.md      | 222 +++++++++++++++++++++
+ knowledge/research/agent-prompt-feedback.md        |  14 +-
+ tests/test_worktree.py                             |  84 ++++++++
+ 4 files changed, 341 insertions(+), 4 deletions(-)
+
+Confirmation:
+- No .gitignore file modified or created: ✅
+- No fixture files modified: ✅
+- test_worktree.py additions are new test functions only (not fixture changes): ✅
+- The item g fix lives in bellows.py (_LIFECYCLE_IGNORE_RE pattern): ✅

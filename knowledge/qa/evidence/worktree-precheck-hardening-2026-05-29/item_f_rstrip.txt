@@ -1,0 +1,20 @@
+Evidence: Item f — rstrip in pre-check
+Command: grep -n "\.rstrip()" bellows.py
+
+Result:
+906:        if dt_result.returncode == 0 and dt_result.stdout.rstrip():
+907:            dirty_lines = dt_result.stdout.rstrip().splitlines()
+
+Surrounding pre-check block (lines 899–910):
+    # (b2) Pre-cherry-pick dirty-tree check on main checkout
+    try:
+        dt_result = subprocess.run(
+            ["git", "--no-pager", "status", "--porcelain"],
+            cwd=project_path, capture_output=True, text=True, timeout=10,
+        )
+        # rstrip (not strip): preserve leading status-code space on first porcelain line
+        if dt_result.returncode == 0 and dt_result.stdout.rstrip():
+            dirty_lines = dt_result.stdout.rstrip().splitlines()
+            blocking_lines = [line for line in dirty_lines if not _is_lifecycle_artifact(line)]
+
+Confirmation: .strip() is NOT applied to porcelain result at this site — replaced by .rstrip() ✅

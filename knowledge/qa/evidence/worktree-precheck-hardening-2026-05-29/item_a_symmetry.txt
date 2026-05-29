@@ -1,0 +1,46 @@
+Evidence: Structural-compliance check (b) — item a scope & symmetry with __init__ prune
+
+--- _create_worktree cleanup (bellows.py lines 805–822) ---
+
+    # Clean stranded worktree from a prior failed dispatch (mirrors __init__ prune style)
+    if os.path.exists(wt_path):
+        _log("WARN", f"⚠ stranded worktree found at {wt_path}, removing before re-creation", slug=slug)
+        try:
+            subprocess.run(
+                ["git", "--no-pager", "worktree", "remove", "--force", wt_path],
+                cwd=project_path, capture_output=True, text=True, timeout=10,
+            )
+        except Exception:
+            pass  # path may not be a registered worktree
+        shutil.rmtree(wt_path, ignore_errors=True)
+        try:
+            subprocess.run(
+                ["git", "--no-pager", "worktree", "prune"],
+                cwd=project_path, capture_output=True, text=True, timeout=10,
+            )
+        except Exception:
+            pass
+
+--- Bellows.__init__ startup prune (bellows.py lines 1147–1157) ---
+
+        # Startup: prune stale worktree registrations from prior crashes
+        for wp in config.get("watched_projects", []):
+            project_root = str(pathlib.Path(wp).parent.parent)
+            try:
+                subprocess.run(
+                    ["git", "--no-pager", "worktree", "prune"],
+                    cwd=project_root, capture_output=True, text=True, timeout=10,
+                )
+            except Exception as e:
+                _log("WARN", f"⚠ worktree prune failed for {project_root}: {e}")
+
+Symmetry analysis:
+- Both use subprocess.run with ["git", "--no-pager", ...]: ✅
+- Both use capture_output=True, text=True, timeout=10: ✅
+- Both use cwd=project_path/project_root: ✅
+- Both wrap in try/except Exception: ✅
+- Minor divergence: __init__ logs on exception; _create_worktree silently passes.
+  This is acceptable — _create_worktree's pass is intentional because the path may not
+  be a registered worktree (just a bare directory), so failure is expected and not
+  worth logging. The __init__ prune failure is always unexpected.
+- Change is bounded to _create_worktree: ✅ (no other functions modified for item a)

@@ -1,0 +1,10 @@
+Evidence: Regression tests exist
+Command: grep -n "test_create_worktree_cleans_stranded\|test_pre_check_recognizes_space_prefixed_lifecycle_line\|test_pre_check_ignores_bellows_worktrees_dir" tests/
+
+Result:
+tests/test_worktree.py:274:def test_create_worktree_cleans_stranded_directory(git_repo, caplog):
+tests/test_worktree.py:303:def test_create_worktree_cleans_stranded_registered_worktree(git_repo):
+tests/test_worktree.py:331:def test_pre_check_recognizes_space_prefixed_lifecycle_line():
+tests/test_worktree.py:344:def test_pre_check_ignores_bellows_worktrees_dir():
+
+Total: 4 new test functions (≥4 required per DEV plan) ✅

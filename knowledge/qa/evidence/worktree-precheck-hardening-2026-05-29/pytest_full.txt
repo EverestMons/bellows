@@ -1,0 +1,25 @@
+Evidence: Full test suite output
+Command: python3 -m pytest tests/ -v 2>&1 | tail -160
+
+Result: 432 passed, 5 failed, 1 warning in 6.61s
+
+Previously-failing worktree tests now PASS:
+  ✅ test_worktree.py::test_teardown_removes_worktree_directory PASSED
+  ✅ test_worktree.py::test_teardown_cherry_picks_commits PASSED
+  ✅ test_worktree.py::test_teardown_copies_uncommitted_files PASSED
+
+New regression tests all PASS:
+  ✅ test_worktree.py::test_create_worktree_cleans_stranded_directory PASSED
+  ✅ test_worktree.py::test_create_worktree_cleans_stranded_registered_worktree PASSED
+  ✅ test_worktree.py::test_pre_check_recognizes_space_prefixed_lifecycle_line PASSED
+  ✅ test_worktree.py::test_pre_check_ignores_bellows_worktrees_dir PASSED
+
+Remaining failures (all pre-existing carry-over):
+  FAILED tests/test_decisions.py::TestLoadPhrases::test_loads_phrases_from_file
+  FAILED tests/test_decisions.py::TestLoadPhrases::test_includes_known_phrases
+  FAILED tests/test_decisions.py::TestLoadPhrases::test_splits_slash_alternatives
+  FAILED tests/test_decisions.py::TestExtractDecisionBlocks::test_s_class_blocks_from_ground_truth
+  FAILED tests/test_runner_parser.py::test_run_step_timeout
+
+Zero new failures beyond pre-existing carry-over: ✅
+Total pass count matches DEV's post-edit (432): ✅

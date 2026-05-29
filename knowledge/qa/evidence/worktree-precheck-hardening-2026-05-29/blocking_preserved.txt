@@ -1,0 +1,26 @@
+Evidence: Structural-compliance check (a) — blocking behavior preserved
+
+The dirty-tree pre-check still RAISES WorktreeTeardownError on genuine uncommitted changes.
+
+Filter-negative tests (real dirty conditions block teardown):
+  ✅ test_teardown_aborts_on_cherry_pick_conflict PASSED — cherry-pick conflict raises WorktreeTeardownError
+
+Regression tests with negative controls:
+  ✅ test_pre_check_recognizes_space_prefixed_lifecycle_line — negative control:
+      assert _is_lifecycle_artifact(" M README.md") is False
+      assert _is_lifecycle_artifact(" D src/app.py") is False
+  ✅ test_pre_check_ignores_bellows_worktrees_dir — negative control:
+      assert _is_lifecycle_artifact("?? src/untracked.py") is False
+      assert _is_lifecycle_artifact("?? bellows-worktrees-imposter/foo.py") is False
+
+Pre-check logic (bellows.py lines 906–914):
+    if dt_result.returncode == 0 and dt_result.stdout.rstrip():
+        dirty_lines = dt_result.stdout.rstrip().splitlines()
+        blocking_lines = [line for line in dirty_lines if not _is_lifecycle_artifact(line)]
+        if blocking_lines:
+            ...
+            raise WorktreeTeardownError(...)
+
+Blocking path is intact — non-lifecycle dirty files still raise WorktreeTeardownError: ✅
+No filter-negative tests were weakened or removed: ✅
+No safety regression detected: ✅

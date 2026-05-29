@@ -1,0 +1,22 @@
+Evidence: Item f — _is_lifecycle_artifact predicate (leading-space tolerance)
+Captured from bellows.py lines 44–52
+
+def _is_lifecycle_artifact(porcelain_line: str) -> bool:
+    """Return True if the porcelain line is a daemon-managed lifecycle artifact."""
+    if len(porcelain_line) < 4:
+        return False
+    path = porcelain_line[3:]
+    # Handle renamed files: "R  old -> new"
+    if " -> " in path:
+        path = path.split(" -> ", 1)[1]
+    return bool(_LIFECYCLE_IGNORE_RE.match(path.strip()))
+
+Analysis:
+- Path extraction: porcelain_line[3:] — skips the 2-char status code + 1 space (XY prefix)
+- For space-prefixed forms (e.g. " D knowledge/..." = " D" + " " + "knowledge/..."):
+  - porcelain_line[3:] extracts "knowledge/..." correctly
+  - The XY prefix is always exactly 2 chars + 1 space in git porcelain format
+- path.strip() on the extracted path cleans any trailing whitespace
+- Works correctly for: "?? path", " D path", " M path", "A  path", "M  path"
+
+Leading-space tolerance confirmed: ✅

@@ -1,0 +1,7 @@
+Evidence: Item a — WARN string present
+Command: grep -n "stranded worktree found" bellows.py
+
+Result:
+807:        _log("WARN", f"⚠ stranded worktree found at {wt_path}, removing before re-creation", slug=slug)
+
+Hit count: 1 (≥1 required) ✅

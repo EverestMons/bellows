@@ -1,0 +1,17 @@
+Evidence: Item g — .bellows-worktrees/ lifecycle-ignore coverage
+Command: grep -n "bellows-worktrees" bellows.py
+
+Result:
+40:    r'|^\.bellows-worktrees(/|$)'
+801:    wt_path = os.path.join(project_path, ".bellows-worktrees", slug)
+802:    parent_dir = os.path.join(project_path, ".bellows-worktrees")
+
+Line 40 is in the _LIFECYCLE_IGNORE_RE pattern (ignore logic) — NOT a test fixture or comment-only hit: ✅
+
+Full _LIFECYCLE_IGNORE_RE (lines 36–41):
+_LIFECYCLE_IGNORE_RE = re.compile(
+    r'^knowledge/decisions/(in-progress-|verdict-pending-|halted-|executable-|diagnostic-).*\.md$'
+    r'|^knowledge/decisions/Done/'
+    r'|^verdicts/(pending|resolved)/'
+    r'|^\.bellows-worktrees(/|$)'
+)

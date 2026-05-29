@@ -1,0 +1,24 @@
+Evidence: Dev log completeness check
+File: knowledge/development/worktree-precheck-hardening-2026-05-29.md
+
+File exists: ✅
+
+First 5 lines:
+# Worktree & Dirty-Tree Pre-Check Hardening — Dev Log
+**Date:** 2026-05-29
+**Plan:** executable-worktree-precheck-hardening-2026-05-29
+**Step:** 1 (DEV)
+---
+
+Last 5 lines:
+- Pre-edit baseline had 8 failures (4 decisions + 1 timeout + 3 worktree); post-edit has 5 failures (same carry-over minus the 3 worktree)
+- Daemon restart required to activate all three fixes
+
+Content verification:
+- Three change-block sections (Change 1/item a, Change 2/item f, Change 3/item g) with before/after snippets: ✅
+- Pre-edit verification results (3 queries): ✅
+- Regression test descriptions (4 tests): ✅
+- Pre-edit pytest run (425 passed, 8 failed): ✅
+- Post-edit pytest run (432 passed, 5 failed): ✅
+- Anchor verification (4 grep results): ✅
+- Output Receipt (Status: Complete): ✅
