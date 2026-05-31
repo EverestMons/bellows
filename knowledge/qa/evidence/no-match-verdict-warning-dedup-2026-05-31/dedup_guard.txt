@@ -1,0 +1,14 @@
+--- Captured from bellows.py lines 1435-1438 ---
+
+                else:
+                    if fname not in _warned_no_match:
+                        _log("WARN", f"⚠️ no verdict-pending plan found step {step_number} — leaving in resolved/ for retry", slug=plan_slug)
+                        _warned_no_match.add(fname)
+
+--- WARN message text (byte-identical to original) ---
+⚠️ no verdict-pending plan found step {step_number} — leaving in resolved/ for retry
+
+--- Verification ---
+The WARN only fires when fname not in _warned_no_match (guard present).
+fname is added to the set immediately after logging (dedup add present).
+Message text is UNCHANGED from the pre-edit WARN.

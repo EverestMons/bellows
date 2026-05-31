@@ -1,0 +1,22 @@
+--- File: knowledge/development/no-match-verdict-warning-dedup-2026-05-31.md ---
+Filesize: 205 lines
+
+--- First 5 lines ---
+# Dev Log — No-Match Verdict WARN Dedup
+**Date:** 2026-05-31
+**Plan:** executable-no-match-verdict-warning-dedup-2026-05-31
+**Step:** 1 (DEV)
+
+--- Last 5 lines ---
+- None
+
+### Flags for Next Step
+- The `_warned_no_match` set is module-level; each new test must call `bellows._warned_no_match.clear()` at start to prevent cross-test state leak — both new tests do this.
+- Daemon restart required to activate the fix — the running daemon executed this plan with pre-edit code. Fix activates on next plan dispatched after restart.
+
+--- Verification ---
+File exists at knowledge/development/no-match-verdict-warning-dedup-2026-05-31.md.
+Output Receipt status: Complete.
+Contains sections: Pre-Edit Verification (3 queries), Edit Points (3 sections with before/after),
+  Regression Tests (2 functions documented), Test Runs (pre-edit and post-edit pytest output),
+  Anchor Verification (grep results).

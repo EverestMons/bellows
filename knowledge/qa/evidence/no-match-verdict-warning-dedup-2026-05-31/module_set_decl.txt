@@ -1,0 +1,15 @@
+--- Captured from bellows.py lines 32-36 ---
+
+# --- No-match verdict WARN dedup ---
+# Suppresses repeat "no verdict-pending plan found" WARNs for the same resolved/ filename.
+# Logged once per file; cleared when the file leaves resolved/ (match or stale move).
+# Module-level scope means daemon startup automatically resets the set.
+_warned_no_match: set[str] = set()
+
+--- Adjacent precedent (lines 29-30) ---
+_NOTIFIED_MISPLACED: set[tuple[str, str]] = set()
+MISPLACED_VERDICT_SCAN_VERBOSE = False
+
+--- Verification ---
+_warned_no_match is declared at module top, adjacent to _NOTIFIED_MISPLACED, with matching style.
+Type annotation: set[str]. Initialized as empty set.

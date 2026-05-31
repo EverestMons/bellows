@@ -1,0 +1,18 @@
+--- Site 1: if plan_matched: block (bellows.py lines 1407-1409) ---
+
+                processed_path = resolved_dir / f"processed-{fname}"
+                shutil.move(str(resolved_dir / fname), str(processed_path))
+                _warned_no_match.discard(fname)
+
+--- Site 2: if stale: block (bellows.py lines 1431-1433) ---
+
+                if stale:
+                    processed_path = resolved_dir / f"processed-{fname}"
+                    shutil.move(str(resolved_dir / fname), str(processed_path))
+                    _warned_no_match.discard(fname)
+                    _log("WARN", f"⚠️ stale verdict step {step_number} — plan in Done/ or halted-, moving to processed", slug=plan_slug)
+
+--- Verification ---
+Both clear sites use .discard(fname) — not .remove(fname).
+.discard is safe for never-warned files (no KeyError on missing key).
+discard is called immediately after shutil.move at BOTH processed-move sites.

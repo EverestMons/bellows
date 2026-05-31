@@ -1,0 +1,11 @@
+--- bellows.py line 1437 (the guarded WARN) ---
+
+                        _log("WARN", f"⚠️ no verdict-pending plan found step {step_number} — leaving in resolved/ for retry", slug=plan_slug)
+
+--- Pre-edit WARN (from DEV's Pre-edit Verification query 1) ---
+1428:                    _log("WARN", f"⚠️ no verdict-pending plan found step {step_number} — leaving in resolved/ for retry", slug=plan_slug)
+
+--- Verification ---
+Message text byte-identical: "⚠️ no verdict-pending plan found step {step_number} — leaving in resolved/ for retry"
+The only change is the surrounding guard (if fname not in _warned_no_match: / _warned_no_match.add(fname)).
+The _log call itself — level, message format string, slug= kwarg — is UNCHANGED.

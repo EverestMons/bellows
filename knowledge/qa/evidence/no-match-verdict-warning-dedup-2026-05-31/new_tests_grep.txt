@@ -1,0 +1,9 @@
+--- grep -n "test_no_match_warning_logged_once\|test_no_match_warning_cleared_when_file_leaves_resolved" tests/test_consume_verdicts.py ---
+
+694:def test_no_match_warning_logged_once():
+746:def test_no_match_warning_cleared_when_file_leaves_resolved():
+
+--- Verification ---
+Both test functions present in tests/test_consume_verdicts.py.
+test_no_match_warning_logged_once at line 694.
+test_no_match_warning_cleared_when_file_leaves_resolved at line 746.
