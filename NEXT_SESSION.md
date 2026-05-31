@@ -1,88 +1,75 @@
 # Bellows — Next Session Baton
 
-**Last session:** 2026-05-28 (session 14)
-**Last session focus:** Closed BACKLOG #1 (dirty-tree pre-check false-trip) and #2 (cascade). Shipped lifecycle filter, QA-verified it, smoke-tested live daemon. First fully clean Bellows dispatch in three sessions.
+**Last session:** 2026-05-31 (follows the 2026-05-29 session)
+**Last session focus:** Shipped the no-match verdict WARN dedup (BACKLOG 2026-05-21) via the first Opus→Sonnet routing A/B; discovered, diagnosed, and documented the worktree teardown→resume regression; full closeout of both repos.
 
 ---
 
 ## Session summary
 
-Diagnostic → DEV → QA → smoke test, four-arc ship across one session. Two Planner-direct R2 closures along the way (consistent with session 13's pattern — now a documented LESSON).
+A mechanical BACKLOG fix run as a deliberate model-routing experiment surfaced a high-severity lifecycle bug. Both got handled.
 
-- **Diagnostic** (`Done/diagnostic-dirty-tree-precheck-false-trip-surface-2026-05-28.md`): mapped the filter surface, produced regex + predicate spec at Section 3, test surface at Section 6. Confirmed BACKLOG #2 (cascade) is a downstream symptom of #1.
-- **DEV** (commit `7bb05ae` `feat: add lifecycle-artifact filter to dirty-tree pre-check`): `_LIFECYCLE_IGNORE_RE` at `bellows.py:32-51` + `_is_lifecycle_artifact()` at lines 43-51 + pre-check integration at lines 885-916. Shipped via R2 sub-variant Planner-direct close — the executable's own dispatch tripped the very bug it was designed to fix (daemon hadn't loaded the filter yet).
-- **QA** (commit `3d79151`, halted Planner-direct on teardown cherry-pick conflict, substance shipped): 3 filter-positive + 4 filter-negative (CRITICAL SAFETY) + 1 regex-coverage + full-suite regression. All 7 new tests PASS locally on main at `f8edacc` (429 passed, 4 pre-existing failures only). Rule 20 self-check PASSED.
-- **Smoke test** (commit `d4d7b56` deposit + `f8edacc` close): first fully clean Bellows dispatch this session (no R2 recovery). Confirms filter operational in live daemon. Single-step SA, single deposit, all 10 gates PASS.
-
-| # | Artifact | Outcome |
-|---|---|---|
-| 1 | Diagnostic | `Done/diagnostic-dirty-tree-precheck-false-trip-surface-2026-05-28.md`; SA findings at `knowledge/research/`. |
-| 2 | DEV executable | DEV shipped `7bb05ae`. Halted Planner-direct (substance landed via R2 recovery). |
-| 3 | QA executable | QA shipped at `3d79151` (7 new tests, all pass). Halted Planner-direct (teardown cherry-pick conflict, substance landed). |
-| 4 | Smoke test | `Done/executable-smoke-daemon-connectivity-2026-05-28.md`. Clean teardown, no R2 needed. Halted via verdict-stop consumption. |
-
-**Commits this session (bellows):** `49baac9` (DEV close + verdicts), `3d79151` (QA close), `d4d7b56` (smoke deposit, Bellows-authored), `f8edacc` (smoke close). Main HEAD: `f8edacc`.
-
-**Governance submodule pointer**: BUMPED at session wrap (`abc01f7` → new pointer reflecting `f8edacc`).
+- **No-match dedup — SHIPPED and LIVE.** `executable-no-match-verdict-warning-dedup-2026-05-31.md` (now in `Done/`). Added module-level `_warned_no_match: set[str]` in `_consume_verdicts`; logs the no-match WARN once per `resolved/` file, `.discard()` at both processed-move sites clears on leave. 2 regression tests. Commits `e38b958` (fix) + `a004270`/`7edb969`/`3663e1a`. **Daemon restarted 2026-05-31 → the dedup is now active** (it lives in `_consume_verdicts`, so the restart was required).
+- **A/B result (Opus→Sonnet routing).** Ran DEV+QA on `claude-sonnet-4-6` (set via the plan `Model:` header — per-plan, not per-step). Sonnet DEV ran ABOVE the Opus all-step median on both attempts (37 turns / 286s clean; 41 turns / 348s first attempt vs Opus median 23/184s). **Leans against the routing-speed thesis** from the speed-research doc (now filed at `knowledge/research/bellows-speed-research-2026-05-29.md`). Caveat: compared against the all-step median, NOT like-for-like. **The controlled Opus baseline is still owed** — CEO decision: collect it ORGANICALLY from the next mechanical item run on the default (Opus) model, no main revert/churn.
+- **Worktree teardown→resume regression — DIAGNOSED + DOCUMENTED.** The dedup plan's first attempt cascaded: a stray untracked file on `main` tripped `_teardown_worktree` (b2) dirty-tree pre-check at the step-1 pause, the failure was invisible in the `passed=True` log line, a continue was issued over it, and `_create_worktree`'s stranded-cleanup orphaned step-1's commits at the step-2 boundary. Full mechanism + Opus-class fix blueprint at **`knowledge/research/worktree-teardown-resume-regression-2026-05-31.md`** (commit `7a6d8e9`). Recovered via a clean re-run (cleared the stray file first).
 
 ---
 
-## In-flight threads (carry forward)
+## State (verified at wrap)
 
-None active. Tree clean. Daemon idle.
-
----
-
-## Open BACKLOG items added this session (4) — TOP OF OPEN
-
-1. **`_LIFECYCLE_IGNORE_RE` false-strict on space-prefixed porcelain codes** (`dt_result.stdout.strip()` at bellows.py:886 strips leading space from ` D foo.md`). Safe direction; trivial fix (`rstrip()` instead).
-2. **Pre-check trips on test fixtures' `.bellows-worktrees/` directory** (3 pre-existing `test_worktree.py` failures). Directory-prefix outside the lifecycle filter coverage. Add to regex or fix fixtures.
-3. **Dispatch-validator `stop_prose` matches "do not proceed" in instructional prose.** Smoke-test surfaced. WARN-only, doesn't halt. Tighten detector.
-4. **Vestigial `mv` claim-rename in plan prose.** R3 shadow-cache makes it a no-op; agents observe "doesn't exist, I'll skip" and produce intermediate-decision phrase-matches. Fix at PLANNER_TEMPLATE source.
+- **bellows** main HEAD `6223780` — pushed clean, tree clean.
+- **eluvian-governance** HEAD `13df358` — LESSONS updated + bellows submodule pointer bumped to `6223780`, pushed clean, submodule prefix clean (space).
+- **Daemon:** RESTARTED 2026-05-31, **exactly one process** (PID 29829 at wrap), dedup live. Verify `ps aux | grep bellows.py | grep -v grep` before any fresh start.
+- No in-flight plans, no pending verdicts, no halted plans.
 
 ---
 
-## BACKLOG closures this session
+## THE next work item (priority)
 
-- **BACKLOG #1** (Dirty-tree pre-check false-trips on lifecycle artifacts) — CLOSED.
-- **BACKLOG #2** (Failed teardown strands worktree → cascade) — CLOSED (subsumed by #1 fix).
-- **QA regression tests for `_seen.discard`** — CLOSED (deferred indefinitely; precondition now met but standalone risk is low).
+**Author the Opus-class worktree teardown→resume fix executable from the findings blueprint** (`knowledge/research/worktree-teardown-resume-regression-2026-05-31.md`).
 
----
+- **Ship gap 1 first:** block a continue verdict when the prior step's gate result carries an uncleared `worktree_teardown*` failure (cheapest, highest safety — stops the silent skip). Gaps 2 (stranded-cleanup orphans un-landed commits) and 3 (dirty-tree ergonomics) sequenced after.
+- **QA must be code-level only.** A live multi-step integration smoke test inside the fix plan would trip the very bug during its own close/resume. Keep the fix plan single-pause where possible.
+- This is genuine reasoning work → default Opus model (NOT a Sonnet-route candidate).
 
-## LESSONS promoted this session
-
-1. **R2 sub-variant Planner-direct close** is the documented working recovery shape for "substance shipped, teardown cherry-pick conflicts on lifecycle artifacts." Two-session recurrence count. Includes the 6-step recovery procedure. Filed at LESSONS.md top.
+**Also owed:** capture the **organic Opus baseline** — when the next mechanical item runs on the default model, record turns/wall to complete the A/B comparison against this session's Sonnet numbers.
 
 ---
 
-## On the horizon (next session)
+## BACKLOG changes this session
 
-1. **Rule 25 routing sub-note for `worktree_teardown_dirty_tree`** — STILL NOT DONE (deferred across two sessions). Single-edit governance plan through Documentation Agent. Option (i) routing decision already made (sub-note on `gate_failure` keyed on evidence-string prefix).
-2. **Cherry-pick conflict on `in-progress-*` plan files during teardown** — NEW failure mode that the lifecycle-filter ship surfaced as the next layer of the teardown stack. Not in BACKLOG yet (only mentioned in this baton). The filter handles the *pre-check*; the cherry-pick command itself still chokes on the same file when the worktree commit treats `in-progress-*` as a tracked addition while main has it as `verdict-pending-*` at the same path. R2 sub-variant recovery now documented in LESSONS. **Decide:** file as new BACKLOG entry, or treat as known-and-documented operational pattern.
-3. **Bellows status UI** (2026-05-21) — still unscoped, big design item.
-4. **Open BACKLOG** (12 entries after this session's closures + adds): the four new this-session entries above + the existing 8 (Rule 25 routing, pre-deposit lint, verdict prefix tolerance, lessons-forge.db, orphan-guard wrong-step, dirty PROJECT_STATUS variant, parallel-diagnostic teardown, deposits parser parens, no-match warning rate-limit, `_extract_step_text` case).
-5. **Other projects on horizon:** anvil (first executable still pending), invoice-pulse (Phase B pending Windows query results), forge, study, BrewBuddy, SimpleScreen, freight-kb, ai-career-digest.
+- **Closed:** No-match verdict WARN dedup (SHIPPED). Orphan-guard wrong-step renormalization (RETIRED — the targeted site does not exist in current code; removed by `c2aeef4`; entry was authored from a mental model, not the code).
+- **New (top of Open):** Worktree teardown→resume regression — consolidated entry that unifies the 2026-05-22 dirty-tree-teardown item and the 2026-05-30 resume-recreation item as ONE failure family, cross-links the findings doc, and **corrects the 2026-05-30 "restart-only" framing (it fires on a normal continue-resume).**
+- **Parked governance decision (existing 2026-05-29 item):** `stop_prose` dispatch-validator matches the PLANNER_TEMPLATE-prescribed `**STOP. Do NOT proceed...**` block (~line 368). This is a LIVE contradiction, not a mechanical fix — CEO call between (a) remove the prose from the template vs (b) relax the validator regex. Leaning (a) by v4.57 precedent.
 
-**Next session options:**
-- **Quick wins** — Rule 25 routing sub-note (single governance edit), `rstrip()` fix + `.bellows-worktrees/` regex addition (the two follow-on BACKLOG entries this session created share a single file).
-- **Shift to another project** — anvil first executable, invoice-pulse Phase B, or any other on the horizon.
+---
+
+## LESSONS promoted this session (governance LESSONS.md, top)
+
+1. **Read the verdict-request Gate Result JSON before EVERY verdict.** The `gates step N: passed=True` log line is emitted BEFORE teardown; a `worktree_teardown*` failure appends after it and is invisible in the log — read the gate JSON + Pause Reason Code, not just deposit substance. A `gate_failure` carrying `worktree_teardown*` → R2 recovery, never a plain continue.
+2. **Never leave stray uncommitted non-lifecycle files in a watched repo root.** They fail `_teardown_worktree` (b2) on EVERY plan's teardown until committed/removed. Commit knowledge deposits (e.g. findings docs) before dispatching the next plan.
 
 ---
 
 ## Discipline reminders for next baton
 
-- **Lifecycle filter is live at commit `7bb05ae`.** Pre-check no longer trips on lifecycle artifacts. Tree still needs to be clean for *real* dirty files before dispatch — the filter doesn't change that. The R2 recovery shape (now in LESSONS) handles the teardown cherry-pick edge case that remains.
-- **Copy strict convention strings from a known-good artifact, never author from memory.** Held this session — header parse-checked locally before both atomic moves.
-- **Two-bellows.py-processes diagnostic** (this session): if you see duplicate `bellows.py` processes, the second one is detached (likely from Ctrl-Z then resume losing the controlling terminal). Always verify `ps aux | grep bellows.py | grep -v grep` shows exactly one process before starting a fresh daemon. Use `kill <pid>` for detached processes — Ctrl-C cannot reach them.
-- **PROJECT_STATUS.md decision still pending** — last session's flag carried forward. NEXT_SESSION.md + BACKLOG.md are carrying session history; PROJECT_STATUS is partially backfilled but Rule 8 still mandates a one-line-per-step update. Decide: maintain (and what cadence), or retire (and dereference). Not blocking next session.
-- **Diagnostic-first (Rule 10)** continues to earn its keep — this session's diagnostic correctly disposition'd BACKLOG #2 as a downstream symptom rather than a separate fix.
+- **Code-verify BACKLOG items before authoring against them.** Two-for-two this session, Open items did not match their own description (orphan-guard phantom; stop_prose-as-governance-contradiction). Read the current code first.
+- **The dedup fix is live but unproven in the wild** — no-match WARN should now log once per stuck file. If a future stuck verdict floods again, suspect a restart cleared `_warned_no_match` legitimately, not a regression.
+- **Stale-process check** still applies: confirm exactly one `bellows.py` via `ps aux | grep bellows.py | grep -v grep` before a fresh daemon start.
+
+---
+
+## On the horizon (other)
+
+- Pre-existing test failures (4× `test_decisions.py` TestLoadPhrases/TestExtractDecisionBlocks + `test_run_step_timeout`) — unrelated carry-over, separate hygiene item.
+- QA step-log result-object anomaly (1 turn / 1.75s for a ~426s step) — logging oddity, worth a glance.
+- Bellows status UI (2026-05-21) — still unscoped.
+- Other projects: anvil (first executable pending), invoice-pulse Phase B (pending Windows query results), forge, study, BrewBuddy, SimpleScreen, freight-kb, ai-career-digest.
 
 ---
 
 ## CEO actions before next session
 
-- **No required action.** Daemon idle, tree clean, no in-flight plans, no pending verdicts.
-- Optional: kill the foreground daemon if not actively using; restart at session start.
-- Top of next session: pick a thread from "On the horizon" above.
-</content>
+- **None required.** Daemon restarted and running (dedup live), both repos pushed clean, no in-flight plans or pending verdicts.
+- Top of next session: the worktree fix executable (priority above), or pick another horizon thread.
+- **PROJECT_STATUS.md not updated this session** — the standing "maintain vs retire" decision is still open. Not blocking.
