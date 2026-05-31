@@ -689,3 +689,122 @@ def test_consume_verdicts_falls_back_to_empty_when_metadata_absent():
         assert logged_gate_result["files_changed"] == [], (
             f"Expected empty files_changed for pre-fix pending file, got: {logged_gate_result['files_changed']}"
         )
+
+
+def test_no_match_warning_logged_once():
+    """Dedup guard: the no-match WARN fires exactly once across two rescan ticks for the same file."""
+    with tempfile.TemporaryDirectory() as tmp:
+        tmp_path = Path(tmp)
+
+        decisions_dir = tmp_path / "proj" / "knowledge" / "decisions"
+        decisions_dir.mkdir(parents=True)
+        (decisions_dir / "Done").mkdir()
+
+        # Verdict in resolved/ with no paired verdict-pending-* plan and no Done/ or halted-* entry
+        verdicts_resolved = tmp_path / "verdicts" / "resolved"
+        verdicts_resolved.mkdir(parents=True)
+        verdict_fname = "verdict-no-match-dedup-2026-05-31-step-1.md"
+        (verdicts_resolved / verdict_fname).write_text("continue\nApproved.")
+
+        config = {
+            "watched_projects": [str(decisions_dir)],
+            "default_model": "claude-sonnet-4-6",
+            "pushover": {"app_key": "", "user_key": ""},
+            "callback_port": 5999,
+        }
+
+        b = bellows.Bellows(config)
+
+        # Reset module-level dedup set to prevent state leak from prior tests
+        bellows._warned_no_match.clear()
+
+        warn_messages = []
+
+        def capture_log(level, msg, slug=None, suppress_timer_update=False):
+            if level == "WARN":
+                warn_messages.append(msg)
+
+        with patch("bellows.BELLOWS_ROOT", tmp_path), \
+             patch("bellows.verdict.check_verdict", return_value={
+                 "found": True, "verdict": "continue", "reason": "approved"
+             }), \
+             patch("bellows._log", side_effect=capture_log):
+            # Two rescan ticks — verdict is found but no matching verdict-pending plan exists
+            b._consume_verdicts()
+            b._consume_verdicts()
+
+        no_match_warns = [m for m in warn_messages if "no verdict-pending plan found" in m]
+        assert len(no_match_warns) == 1, (
+            f"Expected exactly 1 no-match WARN across two ticks, got {len(no_match_warns)}: {no_match_warns}"
+        )
+        # File must remain in resolved/ (not consumed or moved)
+        assert (verdicts_resolved / verdict_fname).exists(), (
+            "Verdict file should remain in resolved/ when no match found"
+        )
+
+
+def test_no_match_warning_cleared_when_file_leaves_resolved():
+    """Clear-on-leave: after a no-match WARN fires, making the slug stale causes the file to be
+    moved to processed-* AND fname is removed from _warned_no_match."""
+    with tempfile.TemporaryDirectory() as tmp:
+        tmp_path = Path(tmp)
+
+        decisions_dir = tmp_path / "proj" / "knowledge" / "decisions"
+        decisions_dir.mkdir(parents=True)
+        done_dir = decisions_dir / "Done"
+        done_dir.mkdir()
+
+        # Verdict in resolved/ — no match initially
+        verdicts_resolved = tmp_path / "verdicts" / "resolved"
+        verdicts_resolved.mkdir(parents=True)
+        verdict_fname = "verdict-no-match-clear-2026-05-31-step-1.md"
+        (verdicts_resolved / verdict_fname).write_text("continue\nApproved.")
+
+        config = {
+            "watched_projects": [str(decisions_dir)],
+            "default_model": "claude-sonnet-4-6",
+            "pushover": {"app_key": "", "user_key": ""},
+            "callback_port": 5999,
+        }
+
+        b = bellows.Bellows(config)
+
+        # Reset module-level dedup set
+        bellows._warned_no_match.clear()
+
+        # Tick 1: verdict found but no matching verdict-pending plan — WARN fires, fname added to _warned_no_match
+        with patch("bellows.BELLOWS_ROOT", tmp_path), \
+             patch("bellows.verdict.check_verdict", return_value={
+                 "found": True, "verdict": "continue", "reason": "approved"
+             }), \
+             patch("bellows.verdict.log_to_ledger"), \
+             patch("bellows.notifier.push"):
+            b._consume_verdicts()
+
+        assert verdict_fname in bellows._warned_no_match, (
+            "fname should be in _warned_no_match after first no-match WARN"
+        )
+
+        # Now make the slug stale: place a Done/ entry matching the slug
+        done_plan = done_dir / "executable-no-match-clear-2026-05-31.md"
+        done_plan.write_text("## STEP 1\nDone.\n")
+
+        # Tick 2: stale branch fires — file moved to processed-*, fname cleared from set
+        with patch("bellows.BELLOWS_ROOT", tmp_path), \
+             patch("bellows.verdict.check_verdict", return_value={
+                 "found": True, "verdict": "continue", "reason": "approved"
+             }), \
+             patch("bellows.verdict.log_to_ledger"), \
+             patch("bellows.notifier.push"):
+            b._consume_verdicts()
+
+        processed_path = verdicts_resolved / f"processed-{verdict_fname}"
+        assert processed_path.exists(), (
+            f"Verdict file should have been moved to processed- on stale detection: {processed_path}"
+        )
+        assert not (verdicts_resolved / verdict_fname).exists(), (
+            "Original verdict file should no longer exist in resolved/ after stale move"
+        )
+        assert verdict_fname not in bellows._warned_no_match, (
+            "fname should be cleared from _warned_no_match after file leaves resolved/"
+        )

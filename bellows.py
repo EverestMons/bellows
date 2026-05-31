@@ -29,6 +29,12 @@ MODULE_FINGERPRINT_HEARTBEAT_INTERVAL = 10
 _NOTIFIED_MISPLACED: set[tuple[str, str]] = set()
 MISPLACED_VERDICT_SCAN_VERBOSE = False
 
+# --- No-match verdict WARN dedup ---
+# Suppresses repeat "no verdict-pending plan found" WARNs for the same resolved/ filename.
+# Logged once per file; cleared when the file leaves resolved/ (match or stale move).
+# Module-level scope means daemon startup automatically resets the set.
+_warned_no_match: set[str] = set()
+
 # --- Lifecycle artifact filter for dirty-tree pre-check ---
 # Daemon-managed bookkeeping paths that agents never commit to.
 # These are safe to ignore for cherry-pick conflict purposes.
@@ -1400,6 +1406,7 @@ class Bellows:
                 # Move the verdict file out of resolved to prevent re-processing
                 processed_path = resolved_dir / f"processed-{fname}"
                 shutil.move(str(resolved_dir / fname), str(processed_path))
+                _warned_no_match.discard(fname)
             else:
                 # No match — check if plan is already in Done/ OR halted in decisions/ (stale verdict)
                 stale = False
@@ -1423,9 +1430,12 @@ class Bellows:
                 if stale:
                     processed_path = resolved_dir / f"processed-{fname}"
                     shutil.move(str(resolved_dir / fname), str(processed_path))
+                    _warned_no_match.discard(fname)
                     _log("WARN", f"⚠️ stale verdict step {step_number} — plan in Done/ or halted-, moving to processed", slug=plan_slug)
                 else:
-                    _log("WARN", f"⚠️ no verdict-pending plan found step {step_number} — leaving in resolved/ for retry", slug=plan_slug)
+                    if fname not in _warned_no_match:
+                        _log("WARN", f"⚠️ no verdict-pending plan found step {step_number} — leaving in resolved/ for retry", slug=plan_slug)
+                        _warned_no_match.add(fname)
 
     def _perform_startup_sweep(self) -> list[str]:
         """Remove orphaned verdict-request files from verdicts/pending/.
