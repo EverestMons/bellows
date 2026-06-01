@@ -1936,3 +1936,15 @@ The Planner authors plans in a Project conversation with MCP filesystem tools. T
 3. **Evidence dir path form inconsistency.** Plan specifies `evidence_dir` as `bellows/knowledge/qa/evidence/worktree-precheck-hardening-2026-05-29/` (with `bellows/` prefix), but the worktree root IS the bellows project root (as noted in the plan's own path-prefix note). The Rule 20 self-check was run with the corrected relative path. Suggest: evidence_dir values in plan prompts should use the same convention as the "strip bellows/ prefix" note.
 
 4. **Deliverable verification item 5 wording was precise and actionable.** The instruction to confirm the fix "NOT in a test fixture or a comment only" was a valuable specificity — it prevented superficial grep-hit verification. Good pattern to repeat for future ignore-pattern deliverables.
+
+---
+
+## 2026-06-01 — executable-block-continue-over-worktree-teardown-failure (DEV Step 1)
+
+1. **`governance/GUARDRAILS.md` not present in worktree (recurring).** Step 1 instructs "Read your specialist file at `agents/BELLOWS_DEVELOPER.md` and `governance/GUARDRAILS.md` first." The governance directory does not exist in this worktree (same as reported in prior entries 2026-05-29, 2026-05-31). The specialist file was found and read successfully. Suggest making the GUARDRAILS.md read conditional or adding the file to the worktree.
+
+2. **Pre-edit verification queries were highly effective.** The three queries (gate_result_from_request binding, worktree_teardown dict shape, continue branch two-exit structure) each confirmed exactly as expected and provided confidence to proceed. The "locate by symbol, not line number" directive was essential — line numbers had drifted from the plan's authoring time but symbols were stable. This is a strong pattern to continue.
+
+3. **Block-path housekeeping instructions were thorough and unambiguous.** The plan specified each housekeeping action (ledger, move, cleanup, notify) by mirroring an existing exit, which made the implementation mechanical. The only judgment call was whether to include `_delete_shadow` (not explicitly mentioned but present in the halt exit being mirrored) — included it for consistency. Suggest: explicitly list `_delete_shadow` in future halt-path instructions since it's non-obvious.
+
+4. **Verdict-file move instruction created minor ambiguity.** The plan says "Move the consumed verdict file out of `resolved/` to `processed-{fname}`" as a block-path action, but the existing code handles this move in the `plan_matched` block OUTSIDE the if/else branches (line 1407 pre-edit). Including it inside the guard would double-move and error. The correct approach (confirmed by reading) is to let the existing `plan_matched` block handle it. Suggest: note in future plans when a housekeeping action is already handled by surrounding control flow and need not be duplicated.
