@@ -1948,3 +1948,15 @@ The Planner authors plans in a Project conversation with MCP filesystem tools. T
 3. **Block-path housekeeping instructions were thorough and unambiguous.** The plan specified each housekeeping action (ledger, move, cleanup, notify) by mirroring an existing exit, which made the implementation mechanical. The only judgment call was whether to include `_delete_shadow` (not explicitly mentioned but present in the halt exit being mirrored) — included it for consistency. Suggest: explicitly list `_delete_shadow` in future halt-path instructions since it's non-obvious.
 
 4. **Verdict-file move instruction created minor ambiguity.** The plan says "Move the consumed verdict file out of `resolved/` to `processed-{fname}`" as a block-path action, but the existing code handles this move in the `plan_matched` block OUTSIDE the if/else branches (line 1407 pre-edit). Including it inside the guard would double-move and error. The correct approach (confirmed by reading) is to let the existing `plan_matched` block handle it. Suggest: note in future plans when a housekeeping action is already handled by surrounding control flow and need not be duplicated.
+
+---
+
+## 2026-06-01 — executable-block-continue-over-worktree-teardown-failure (QA Step 2)
+
+1. **`governance/GUARDRAILS.md` absent in worktree (recurring).** Same as prior entries. The file does not exist in the Bellows worktree. QA specialist file was read successfully. This is the fifth consecutive occurrence across plans.
+
+2. **`RULE_20_SELF_CHECK_BLOCK.md` location still requires filesystem search.** The plan says "at governance root" — the file is at `/Users/marklehn/Developer/GitHub/RULE_20_SELF_CHECK_BLOCK.md`, not in any governance directory. Found via `find` command. Same as 2026-05-31 QA feedback. The specialist file's canonical path (`/Users/marklehn/Desktop/GitHub/`) is stale.
+
+3. **PROJECT_STATUS.md is very large (33k+ tokens).** Reading required offset/limit parameters due to token cap. The plan instruction to "find the existing topmost Completed entry as anchor" worked well with grep + targeted read. Consider periodic archival of older entries to keep the file manageable.
+
+4. **QA scope note was well-placed and prevented waste.** The explicit "code-level ONLY — do NOT dispatch or simulate a live multi-step plan" instruction saved time by front-loading the constraint. This is a good pattern for plans where live testing would be self-defeating.
