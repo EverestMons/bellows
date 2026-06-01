@@ -1,75 +1,70 @@
 # Bellows — Next Session Baton
 
-**Last session:** 2026-05-31 (follows the 2026-05-29 session)
-**Last session focus:** Shipped the no-match verdict WARN dedup (BACKLOG 2026-05-21) via the first Opus→Sonnet routing A/B; discovered, diagnosed, and documented the worktree teardown→resume regression; full closeout of both repos.
+**Last session:** 2026-06-01 (follows 2026-05-31)
+**Last session focus:** Shipped Gap 1(b) of the worktree teardown→resume regression — a guard that blocks a continue verdict over an uncleared `worktree_teardown` failure, routing the plan to `halted-` for manual R2 instead of silently advancing. Full DEV→QA cycle on default Opus, clean close.
 
 ---
 
 ## Session summary
 
-A mechanical BACKLOG fix run as a deliberate model-routing experiment surfaced a high-severity lifecycle bug. Both got handled.
-
-- **No-match dedup — SHIPPED and LIVE.** `executable-no-match-verdict-warning-dedup-2026-05-31.md` (now in `Done/`). Added module-level `_warned_no_match: set[str]` in `_consume_verdicts`; logs the no-match WARN once per `resolved/` file, `.discard()` at both processed-move sites clears on leave. 2 regression tests. Commits `e38b958` (fix) + `a004270`/`7edb969`/`3663e1a`. **Daemon restarted 2026-05-31 → the dedup is now active** (it lives in `_consume_verdicts`, so the restart was required).
-- **A/B result (Opus→Sonnet routing).** Ran DEV+QA on `claude-sonnet-4-6` (set via the plan `Model:` header — per-plan, not per-step). Sonnet DEV ran ABOVE the Opus all-step median on both attempts (37 turns / 286s clean; 41 turns / 348s first attempt vs Opus median 23/184s). **Leans against the routing-speed thesis** from the speed-research doc (now filed at `knowledge/research/bellows-speed-research-2026-05-29.md`). Caveat: compared against the all-step median, NOT like-for-like. **The controlled Opus baseline is still owed** — CEO decision: collect it ORGANICALLY from the next mechanical item run on the default (Opus) model, no main revert/churn.
-- **Worktree teardown→resume regression — DIAGNOSED + DOCUMENTED.** The dedup plan's first attempt cascaded: a stray untracked file on `main` tripped `_teardown_worktree` (b2) dirty-tree pre-check at the step-1 pause, the failure was invisible in the `passed=True` log line, a continue was issued over it, and `_create_worktree`'s stranded-cleanup orphaned step-1's commits at the step-2 boundary. Full mechanism + Opus-class fix blueprint at **`knowledge/research/worktree-teardown-resume-regression-2026-05-31.md`** (commit `7a6d8e9`). Recovered via a clean re-run (cleared the stray file first).
+- **Gap 1(b) — SHIPPED and closed.** `executable-block-continue-over-worktree-teardown-failure-2026-06-01.md` (now in `Done/`). 18-line guard at the TOP of the `if v == "continue":` branch in `_consume_verdicts`, before the final/non-final split — covers BOTH inter-step resume AND final-step continue-to-done. Predicate `any(f.get("gate") == "worktree_teardown" for f in gate_result.get("failures", []))`; on trip: ERROR log + `continue-blocked-worktree-teardown` ledger + move to `halted-` + cleanup + `notify_plan_halted` + `break`. 3 regression tests. Fix commit `8b2f952` (+ QA `20cfe4d`). `_teardown_worktree`/`_create_worktree` byte-unchanged. Suite 437 passed / 5 pre-existing carry-over / zero new.
+- **DEV step paused on a false-positive `scope_check`** — the plan body did not literally name `tests/test_consume_verdicts.py` as a deposit target (I over-applied the "don't name test paths from memory" rule, which governs *assertions*, not deposit-target naming). Planner verified the file held only the 3 intended tests and issued a documented override continue. Lesson promoted (see below).
+- **Organic Opus A/B baseline captured** (the owed item): DEV 31 turns / ~349s / $1.38; QA 47 turns / ~283s / $1.67. DEV was *slower* in wall than last session's Sonnet clean DEV (286s) and above the Opus median (184s), but a heavier task (3 tests + lifecycle routing vs the dedup's single edit) — not like-for-like. Routing-speed thesis remains under-evidenced.
 
 ---
 
 ## State (verified at wrap)
 
-- **bellows** main HEAD `6223780` — pushed clean, tree clean.
-- **eluvian-governance** HEAD `13df358` — LESSONS updated + bellows submodule pointer bumped to `6223780`, pushed clean, submodule prefix clean (space).
-- **Daemon:** RESTARTED 2026-05-31, **exactly one process** (PID 29829 at wrap), dedup live. Verify `ps aux | grep bellows.py | grep -v grep` before any fresh start.
-- No in-flight plans, no pending verdicts, no halted plans.
+- **bellows** — fix + QA + feedback commits on `main` (tip is this session's lifecycle/baton chore commit); tree clean after wrap commit.
+- **eluvian-governance** — LESSONS updated + bellows submodule pointer bumped; pushed clean.
+- **Daemon:** CEO is performing the restart this session to activate the guard (it lives in `_consume_verdicts`, so a restart is required — the running daemon executed the plan under pre-edit code). **Verify exactly one `bellows.py` via `ps aux | grep bellows.py | grep -v grep` after restart.**
+- No in-flight plans, no pending verdicts. (Note: `decisions/` carries 16 stale `halted-*` files dating 05-01→05-28 — accumulated cruft, unrelated to this session; a triage-and-close pass is an open hygiene item.)
 
 ---
 
 ## THE next work item (priority)
 
-**Author the Opus-class worktree teardown→resume fix executable from the findings blueprint** (`knowledge/research/worktree-teardown-resume-regression-2026-05-31.md`).
+**Gap 2 — preserve un-landed commits on stranded-cleanup** (from `knowledge/research/worktree-teardown-resume-regression-2026-05-31.md`).
 
-- **Ship gap 1 first:** block a continue verdict when the prior step's gate result carries an uncleared `worktree_teardown*` failure (cheapest, highest safety — stops the silent skip). Gaps 2 (stranded-cleanup orphans un-landed commits) and 3 (dirty-tree ergonomics) sequenced after.
-- **QA must be code-level only.** A live multi-step integration smoke test inside the fix plan would trip the very bug during its own close/resume. Keep the fix plan single-pause where possible.
-- This is genuine reasoning work → default Opus model (NOT a Sonnet-route candidate).
-
-**Also owed:** capture the **organic Opus baseline** — when the next mechanical item runs on the default model, record turns/wall to complete the A/B comparison against this session's Sonnet numbers.
-
----
-
-## BACKLOG changes this session
-
-- **Closed:** No-match verdict WARN dedup (SHIPPED). Orphan-guard wrong-step renormalization (RETIRED — the targeted site does not exist in current code; removed by `c2aeef4`; entry was authored from a mental model, not the code).
-- **New (top of Open):** Worktree teardown→resume regression — consolidated entry that unifies the 2026-05-22 dirty-tree-teardown item and the 2026-05-30 resume-recreation item as ONE failure family, cross-links the findings doc, and **corrects the 2026-05-30 "restart-only" framing (it fires on a normal continue-resume).**
-- **Parked governance decision (existing 2026-05-29 item):** `stop_prose` dispatch-validator matches the PLANNER_TEMPLATE-prescribed `**STOP. Do NOT proceed...**` block (~line 368). This is a LIVE contradiction, not a mechanical fix — CEO call between (a) remove the prose from the template vs (b) relax the validator regex. Leaning (a) by v4.57 precedent.
+- Gap 1(b) only *halts* the cascade; it does not *recover* the orphaned commits. Gap 2 is the next cut by severity — before removing a "stranded" worktree, detect un-landed commits (worktree HEAD ahead of main) and reattach/preserve on a branch rather than destroy (findings options 2a/2b).
+- Genuine git-lifecycle reasoning → default Opus.
+- Same QA constraint as Gap 1(b): **code-level only**, single-pause where possible — a live multi-step integration run would trip the very bug during its own close/resume.
+- Gap 1(c) (re-attempt teardown on resume) and Gap 3 (dirty-tree auto-stash) follow.
 
 ---
 
-## LESSONS promoted this session (governance LESSONS.md, top)
+## Parked governance decision (carried)
 
-1. **Read the verdict-request Gate Result JSON before EVERY verdict.** The `gates step N: passed=True` log line is emitted BEFORE teardown; a `worktree_teardown*` failure appends after it and is invisible in the log — read the gate JSON + Pause Reason Code, not just deposit substance. A `gate_failure` carrying `worktree_teardown*` → R2 recovery, never a plain continue.
-2. **Never leave stray uncommitted non-lifecycle files in a watched repo root.** They fail `_teardown_worktree` (b2) on EVERY plan's teardown until committed/removed. Commit knowledge deposits (e.g. findings docs) before dispatching the next plan.
+- **`stop_prose` dispatch-validator vs the PLANNER_TEMPLATE `**STOP. Do NOT proceed...**` block.** Fired its WARN again this session (non-blocking; plan started normally). LIVE contradiction — CEO call between (a) remove the prose from the template vs (b) relax the validator regex. Leaning (a) by v4.57 precedent. Tracked in BACKLOG (2026-05-29).
+
+---
+
+## LESSON promoted this session (governance LESSONS.md)
+
+- **Name test/deposit file paths literally in plan step bodies** — `scope_check` authorizes file modifications from the literal paths named in the step body, so a deposit target that isn't named is flagged out-of-scope. The "don't name test paths from session memory" discipline is about **assertions** (claiming a specific test exists/passes), NOT about naming a deposit target. Name the file; have the agent verify it via Rule 39 pre-edit grep.
 
 ---
 
 ## Discipline reminders for next baton
 
-- **Code-verify BACKLOG items before authoring against them.** Two-for-two this session, Open items did not match their own description (orphan-guard phantom; stop_prose-as-governance-contradiction). Read the current code first.
-- **The dedup fix is live but unproven in the wild** — no-match WARN should now log once per stuck file. If a future stuck verdict floods again, suspect a restart cleared `_warned_no_match` legitimately, not a regression.
-- **Stale-process check** still applies: confirm exactly one `bellows.py` via `ps aux | grep bellows.py | grep -v grep` before a fresh daemon start.
+- **Read the verdict-request Gate Result JSON before EVERY verdict** (the `passed=True` log line is emitted before teardown; a `worktree_teardown` failure appends after it and is invisible there). Did this both verdicts this session — no teardown failure either time (main was clean).
+- **Never leave stray uncommitted non-lifecycle files in the watched repo root** — they trip `_teardown_worktree` (b2). Lived in real-time this session: a temporary probe script was written to the repo root and removed immediately after use.
+- **Code-verify BACKLOG/blueprint items before authoring against them** — the blueprint mapped cleanly to real symbols this session; verified by grep before authoring.
 
 ---
 
 ## On the horizon (other)
 
-- Pre-existing test failures (4× `test_decisions.py` TestLoadPhrases/TestExtractDecisionBlocks + `test_run_step_timeout`) — unrelated carry-over, separate hygiene item.
-- QA step-log result-object anomaly (1 turn / 1.75s for a ~426s step) — logging oddity, worth a glance.
+- Worktree regression family: Gap 2 (priority above), Gap 1(c), Gap 3.
+- 16 stale `halted-*` files in `decisions/` — triage-and-close hygiene pass.
+- Pre-existing test failures (4× `test_decisions.py` + `test_run_step_timeout`) — unrelated carry-over.
+- QA step-log result-object anomaly (1 turn / 1.75s for a long step) — logging oddity, worth a glance.
 - Bellows status UI (2026-05-21) — still unscoped.
-- Other projects: anvil (first executable pending), invoice-pulse Phase B (pending Windows query results), forge, study, BrewBuddy, SimpleScreen, freight-kb, ai-career-digest.
+- Other projects: anvil (first executable pending), invoice-pulse Phase B / T0.5.1 reconciliation (pending Windows query), forge, study, BrewBuddy, SimpleScreen, freight-kb, ai-career-digest.
 
 ---
 
 ## CEO actions before next session
 
-- **None required.** Daemon restarted and running (dedup live), both repos pushed clean, no in-flight plans or pending verdicts.
-- Top of next session: the worktree fix executable (priority above), or pick another horizon thread.
-- **PROJECT_STATUS.md not updated this session** — the standing "maintain vs retire" decision is still open. Not blocking.
+- **Restart the daemon** to activate the Gap 1(b) guard (in progress this session). Verify single `bellows.py` process after.
+- Top of next session: Gap 2 executable (priority above), or pick another horizon thread.
