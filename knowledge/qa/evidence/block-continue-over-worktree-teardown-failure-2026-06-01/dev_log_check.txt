@@ -1,0 +1,27 @@
+Dev log check — knowledge/development/block-continue-over-worktree-teardown-failure-2026-06-01.md
+
+Filesize: 8971 bytes
+Lines: 174
+
+--- First 5 lines ---
+# Block Continue Over Uncleared Worktree-Teardown Failure — Dev Log
+
+**Date:** 2026-06-01
+**Plan:** `executable-block-continue-over-worktree-teardown-failure-2026-06-01.md`
+**Step:** 1 (DEV)
+
+--- Last 5 lines ---
+### Flags for CEO
+- REMINDER: restart the Bellows daemon to activate the guard. The running daemon executed this plan with pre-edit code; the guard activates on the next plan dispatched after restart.
+
+### Flags for Next Step
+- QA should verify guard placement is before the final/non-final split, block path routes to `halted-` with all housekeeping, and the three new tests pass with zero new regressions.
+
+Content verification:
+- Guard placement (before/after snippet): PRESENT (## Guard Placement section with ### Before and ### After)
+- Detection predicate: PRESENT (## Detection Predicate section)
+- Block-path housekeeping: PRESENT (## Block-Path Housekeeping section, 8 items listed)
+- Pre-edit verification query results: PRESENT (## Pre-Edit Verification Query Results, 3 queries)
+- Both pytest runs: PRESENT (## Test Execution with ### Pre-edit baseline and ### Post-edit)
+- Anchor verification: PRESENT (## Anchor Verification section)
+- Output Receipt: PRESENT (Status: Complete)

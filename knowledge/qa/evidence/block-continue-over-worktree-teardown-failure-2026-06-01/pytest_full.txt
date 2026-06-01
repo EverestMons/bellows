@@ -1,0 +1,20 @@
+Full pytest output — python3 -m pytest tests/ -v (2026-06-01 QA run)
+
+Three new tests (all PASS):
+tests/test_consume_verdicts.py::test_continue_blocked_on_worktree_teardown_failure_interstep PASSED
+tests/test_consume_verdicts.py::test_continue_to_done_blocked_on_worktree_teardown_failure_final_step PASSED
+tests/test_consume_verdicts.py::test_continue_advances_normally_without_teardown_failure PASSED
+
+FAILURES (all carry-over from DEV's pre-edit baseline):
+FAILED tests/test_decisions.py::TestLoadPhrases::test_loads_phrases_from_file
+FAILED tests/test_decisions.py::TestLoadPhrases::test_includes_known_phrases
+FAILED tests/test_decisions.py::TestLoadPhrases::test_splits_slash_alternatives
+FAILED tests/test_decisions.py::TestExtractDecisionBlocks::test_s_class_blocks_from_ground_truth
+FAILED tests/test_runner_parser.py::test_run_step_timeout
+
+Summary: 5 failed, 437 passed, 1 warning in 6.43s
+
+Verification:
+(a) All 3 new tests PASS: YES
+(b) Zero new failures beyond carry-over: YES (same 5 as DEV's pre-edit baseline)
+(c) Total pass count matches DEV's post-edit: YES (437 = 437)

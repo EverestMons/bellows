@@ -1,0 +1,36 @@
+Diff scope — git diff HEAD~2..HEAD -- bellows.py
+
+diff --git a/bellows.py b/bellows.py
+index 6cb987d..93bc8b9 100644
+--- a/bellows.py
++++ b/bellows.py
+@@ -1338,6 +1338,24 @@ class Bellows:
+                         gate_result = gate_result_from_request or {"failures": [], "files_changed": []}
+
+                         if v == "continue":
++                            # Guard: block continue when prior step's worktree teardown failed (Gap 1b).
++                            # An uncleared worktree_teardown failure means Step N's commits were never
++                            # cherry-picked to main — advancing would orphan them. Route to halted-
++                            # for manual R2 recovery instead of silently advancing.
++                            if any(f.get("gate") == "worktree_teardown" for f in gate_result.get("failures", [])):
++                                _log("ERROR", f"continue verdict REJECTED — prior step's worktree_teardown failure uncleared (commits not landed); routing to halted- for manual R2 recovery", slug=plan_slug)
++                                verdict.log_to_ledger(full_plan_path, step_number, gate_result,
++                                                      "continue-blocked-worktree-teardown",
++                                                      f"continue verdict rejected — prior-step worktree_teardown failure uncleared; Step {step_number} commits not landed; manual R2 recovery required",
++                                                      pause_reason_code=pause_reason_code_from_request)
++                                halted_name = f"halted-{original_name}"
++                                halted_path = os.path.join(decisions_path, halted_name)
++                                _cleanup_verdicts_for_slug(cleanup_slug)
++                                self._seen.discard(cleanup_slug)
++                                shutil.move(full_plan_path, halted_path)
++                                _delete_shadow(original_name)
++                                notifier.notify_plan_halted(original_name)
++                                break
+                             is_diag = original_name.startswith("diagnostic-")
+
+SCOPE VERIFICATION:
+- Changes confined to: `if v == "continue":` block in `_consume_verdicts` only (18 lines inserted at line 1340)
+- _teardown_worktree: UNTOUCHED (byte-unchanged)
+- _create_worktree: UNTOUCHED (byte-unchanged)
+- stranded-cleanup: UNTOUCHED
+- No other functions modified

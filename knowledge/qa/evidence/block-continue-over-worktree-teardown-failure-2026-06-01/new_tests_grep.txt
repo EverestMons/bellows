@@ -1,0 +1,12 @@
+Grep results for three new regression tests in tests/test_consume_verdicts.py:
+
+$ grep -n "test_continue_blocked_on_worktree_teardown_failure_interstep\|test_continue_to_done_blocked_on_worktree_teardown_failure_final_step\|test_continue_advances_normally_without_teardown_failure" tests/test_consume_verdicts.py
+
+813:def test_continue_blocked_on_worktree_teardown_failure_interstep():
+887:def test_continue_to_done_blocked_on_worktree_teardown_failure_final_step():
+955:def test_continue_advances_normally_without_teardown_failure():
+
+All three tests present:
+1. test_continue_blocked_on_worktree_teardown_failure_interstep (line 813) — inter-step block
+2. test_continue_to_done_blocked_on_worktree_teardown_failure_final_step (line 887) — final-step block
+3. test_continue_advances_normally_without_teardown_failure (line 955) — negative/specificity case

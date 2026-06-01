@@ -1,0 +1,17 @@
+Specificity check — test_continue_advances_normally_without_teardown_failure
+
+Test setup:
+- Multi-step plan (total_steps=2), step-1 continue verdict
+- Gate result with EMPTY failures list: {"failures": [], "files_changed": ["bellows.py"]}
+- NO worktree_teardown failure present
+
+Assertions (lines 1006-1023):
+1. Plan advances to in-progress-: `assert inprogress_path.exists()` (line 1008)
+2. Plan NOT routed to halted-: `assert not halted_path.exists()` (line 1010)
+3. Next step dispatched: `mock_handle.assert_called_once()` (line 1013)
+4. Resume step = 2 (advance): `assert call_kwargs[1]["resume_step"] == 2` (line 1015)
+5. Ledger action is regular "continue" (not blocked): `assert ledger_call[0][3] == "continue"` (line 1021)
+
+Conclusion: The guard is specific — it does NOT false-trip on clean continues.
+A continue verdict with no worktree_teardown failure advances normally to in-progress-
+and dispatches the next step, exactly as it did before the guard was added.
