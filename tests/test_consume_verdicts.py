@@ -808,3 +808,216 @@ def test_no_match_warning_cleared_when_file_leaves_resolved():
         assert verdict_fname not in bellows._warned_no_match, (
             "fname should be cleared from _warned_no_match after file leaves resolved/"
         )
+
+
+def test_continue_blocked_on_worktree_teardown_failure_interstep():
+    """Guard: a continue verdict on a non-final step is REJECTED when the prior step's
+    gate result carries an uncleared worktree_teardown failure. Plan routes to halted-."""
+    import json
+    with tempfile.TemporaryDirectory() as tmp:
+        tmp_path = Path(tmp)
+
+        decisions_dir = tmp_path / "proj" / "knowledge" / "decisions"
+        decisions_dir.mkdir(parents=True)
+        (decisions_dir / "Done").mkdir()
+
+        plan_filename = "executable-wt-block-interstep-2026-06-01.md"
+        verdict_pending_name = f"verdict-pending-{plan_filename}"
+        verdict_pending_path = decisions_dir / verdict_pending_name
+        verdict_pending_path.write_text("## STEP 1\nDo stuff.\n## STEP 2\nMore stuff.\n")
+
+        verdicts_resolved = tmp_path / "verdicts" / "resolved"
+        verdicts_resolved.mkdir(parents=True)
+        verdict_fname = "verdict-wt-block-interstep-2026-06-01-step-1.md"
+        (verdicts_resolved / verdict_fname).write_text("continue\nApproved.")
+
+        pending_dir = tmp_path / "verdicts" / "pending"
+        pending_dir.mkdir(parents=True)
+        pending_file = pending_dir / "verdict-request-wt-block-interstep-2026-06-01-step-1.md"
+        gate_data = {
+            "failures": [{"gate": "worktree_teardown", "evidence": "worktree_teardown_dirty_tree: local main has uncommitted changes"}],
+            "files_changed": ["bellows.py"],
+        }
+        pending_file.write_text(_make_verdict_request_content(
+            str(verdict_pending_path), step_number=1, total_steps=2,
+            gate_result_json=gate_data))
+
+        config = {
+            "watched_projects": [str(decisions_dir)],
+            "default_model": "claude-sonnet-4-6",
+            "pushover": {"app_key": "", "user_key": ""},
+            "callback_port": 5999,
+        }
+
+        b = bellows.Bellows(config)
+
+        with patch("bellows.BELLOWS_ROOT", tmp_path), \
+             patch("bellows.verdict.check_verdict", return_value={
+                 "found": True, "verdict": "continue", "reason": "approved"
+             }), \
+             patch("bellows.verdict.log_to_ledger") as mock_ledger, \
+             patch("bellows.notifier.push"), \
+             patch.object(b, "handle_new_plan") as mock_handle:
+            b._consume_verdicts()
+
+        # (a) Plan is halted, NOT in-progress or Done
+        halted_path = decisions_dir / f"halted-{plan_filename}"
+        assert halted_path.exists(), f"Plan should be routed to halted-: {halted_path}"
+        assert not verdict_pending_path.exists(), "verdict-pending plan should no longer exist"
+        assert not (decisions_dir / f"in-progress-{plan_filename}").exists(), "Plan must NOT advance to in-progress"
+        done_path = decisions_dir / "Done" / plan_filename
+        assert not done_path.exists(), "Plan must NOT be moved to Done/"
+
+        # (b) Next step NOT dispatched
+        mock_handle.assert_not_called()
+
+        # (c) Ledger entry with correct action
+        mock_ledger.assert_called_once()
+        ledger_call = mock_ledger.call_args
+        assert ledger_call[0][3] == "continue-blocked-worktree-teardown", (
+            f"Expected ledger action 'continue-blocked-worktree-teardown', got: {ledger_call[0][3]}"
+        )
+
+        # (d) Verdict file moved to processed
+        processed_path = verdicts_resolved / f"processed-{verdict_fname}"
+        assert processed_path.exists(), f"Verdict file should be moved to processed-: {processed_path}"
+        assert not (verdicts_resolved / verdict_fname).exists(), "Original verdict file should not remain"
+
+
+def test_continue_to_done_blocked_on_worktree_teardown_failure_final_step():
+    """Guard on final step: continue verdict on the FINAL step is REJECTED when the prior
+    step's gate result carries a worktree_teardown failure. Plan routes to halted-, NOT Done/."""
+    import json
+    with tempfile.TemporaryDirectory() as tmp:
+        tmp_path = Path(tmp)
+
+        decisions_dir = tmp_path / "proj" / "knowledge" / "decisions"
+        decisions_dir.mkdir(parents=True)
+        (decisions_dir / "Done").mkdir()
+
+        plan_filename = "executable-wt-block-final-2026-06-01.md"
+        verdict_pending_name = f"verdict-pending-{plan_filename}"
+        verdict_pending_path = decisions_dir / verdict_pending_name
+        verdict_pending_path.write_text("## STEP 1\nDo stuff.\n")
+
+        verdicts_resolved = tmp_path / "verdicts" / "resolved"
+        verdicts_resolved.mkdir(parents=True)
+        verdict_fname = "verdict-wt-block-final-2026-06-01-step-1.md"
+        (verdicts_resolved / verdict_fname).write_text("continue\nApproved.")
+
+        pending_dir = tmp_path / "verdicts" / "pending"
+        pending_dir.mkdir(parents=True)
+        pending_file = pending_dir / "verdict-request-wt-block-final-2026-06-01-step-1.md"
+        gate_data = {
+            "failures": [{"gate": "worktree_teardown", "evidence": "worktree_teardown_dirty_tree: stray file"}],
+            "files_changed": [],
+        }
+        pending_file.write_text(_make_verdict_request_content(
+            str(verdict_pending_path), step_number=1, total_steps=1,
+            gate_result_json=gate_data))
+
+        config = {
+            "watched_projects": [str(decisions_dir)],
+            "default_model": "claude-sonnet-4-6",
+            "pushover": {"app_key": "", "user_key": ""},
+            "callback_port": 5999,
+        }
+
+        b = bellows.Bellows(config)
+
+        with patch("bellows.BELLOWS_ROOT", tmp_path), \
+             patch("bellows.verdict.check_verdict", return_value={
+                 "found": True, "verdict": "continue", "reason": "approved"
+             }), \
+             patch("bellows.verdict.log_to_ledger") as mock_ledger, \
+             patch("bellows.notifier.push"):
+            b._consume_verdicts()
+
+        # Plan is halted, NOT in Done/
+        halted_path = decisions_dir / f"halted-{plan_filename}"
+        assert halted_path.exists(), f"Plan should be routed to halted-: {halted_path}"
+        done_path = decisions_dir / "Done" / plan_filename
+        assert not done_path.exists(), "Plan must NOT be moved to Done/ when teardown failed"
+        assert not verdict_pending_path.exists(), "verdict-pending plan should no longer exist"
+
+        # Ledger entry
+        mock_ledger.assert_called_once()
+        ledger_call = mock_ledger.call_args
+        assert ledger_call[0][3] == "continue-blocked-worktree-teardown", (
+            f"Expected ledger action 'continue-blocked-worktree-teardown', got: {ledger_call[0][3]}"
+        )
+
+        # Verdict file moved to processed
+        processed_path = verdicts_resolved / f"processed-{verdict_fname}"
+        assert processed_path.exists(), f"Verdict file should be moved to processed-: {processed_path}"
+
+
+def test_continue_advances_normally_without_teardown_failure():
+    """Negative: a continue verdict with NO worktree_teardown failure advances normally
+    (the guard does not false-trip). Plan moves to in-progress and next step is dispatched."""
+    import json
+    with tempfile.TemporaryDirectory() as tmp:
+        tmp_path = Path(tmp)
+
+        decisions_dir = tmp_path / "proj" / "knowledge" / "decisions"
+        decisions_dir.mkdir(parents=True)
+        (decisions_dir / "Done").mkdir()
+
+        plan_filename = "executable-wt-clean-advance-2026-06-01.md"
+        verdict_pending_name = f"verdict-pending-{plan_filename}"
+        verdict_pending_path = decisions_dir / verdict_pending_name
+        verdict_pending_path.write_text("## STEP 1\nDo stuff.\n## STEP 2\nMore stuff.\n")
+
+        verdicts_resolved = tmp_path / "verdicts" / "resolved"
+        verdicts_resolved.mkdir(parents=True)
+        verdict_fname = "verdict-wt-clean-advance-2026-06-01-step-1.md"
+        (verdicts_resolved / verdict_fname).write_text("continue\nApproved.")
+
+        pending_dir = tmp_path / "verdicts" / "pending"
+        pending_dir.mkdir(parents=True)
+        pending_file = pending_dir / "verdict-request-wt-clean-advance-2026-06-01-step-1.md"
+        # Clean gate result — no worktree_teardown failure
+        gate_data = {
+            "failures": [],
+            "files_changed": ["bellows.py"],
+        }
+        pending_file.write_text(_make_verdict_request_content(
+            str(verdict_pending_path), step_number=1, total_steps=2,
+            gate_result_json=gate_data))
+
+        config = {
+            "watched_projects": [str(decisions_dir)],
+            "default_model": "claude-sonnet-4-6",
+            "pushover": {"app_key": "", "user_key": ""},
+            "callback_port": 5999,
+        }
+
+        b = bellows.Bellows(config)
+
+        with patch("bellows.BELLOWS_ROOT", tmp_path), \
+             patch("bellows.verdict.check_verdict", return_value={
+                 "found": True, "verdict": "continue", "reason": "approved"
+             }), \
+             patch("bellows.verdict.log_to_ledger") as mock_ledger, \
+             patch("bellows.notifier.push"), \
+             patch.object(b, "handle_new_plan") as mock_handle:
+            b._consume_verdicts()
+
+        # Plan advances to in-progress, NOT halted
+        inprogress_path = decisions_dir / f"in-progress-{plan_filename}"
+        assert inprogress_path.exists(), f"Plan should advance to in-progress-: {inprogress_path}"
+        halted_path = decisions_dir / f"halted-{plan_filename}"
+        assert not halted_path.exists(), "Plan must NOT be routed to halted- on clean continue"
+
+        # Next step dispatched
+        mock_handle.assert_called_once()
+        call_kwargs = mock_handle.call_args
+        assert call_kwargs[1]["resume_step"] == 2, (
+            f"Expected resume_step=2 (advance), got: {call_kwargs[1]['resume_step']}"
+        )
+
+        # Ledger action is regular continue, not blocked
+        ledger_call = mock_ledger.call_args
+        assert ledger_call[0][3] == "continue", (
+            f"Expected ledger action 'continue', got: {ledger_call[0][3]}"
+        )
