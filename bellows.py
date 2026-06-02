@@ -811,6 +811,38 @@ def _create_worktree(project_path: str, slug: str) -> str:
     # Clean stranded worktree from a prior failed dispatch (mirrors __init__ prune style)
     if os.path.exists(wt_path):
         _log("WARN", f"⚠ stranded worktree found at {wt_path}, removing before re-creation", slug=slug)
+        # --- Gap 2a: preserve un-landed commits before stranded-cleanup ---
+        try:
+            wt_head_result = subprocess.run(
+                ["git", "--no-pager", "-C", wt_path, "rev-parse", "--verify", "HEAD"],
+                capture_output=True, text=True, timeout=10,
+            )
+        except Exception:
+            wt_head_result = None
+        if wt_head_result and wt_head_result.returncode == 0:
+            wt_head = wt_head_result.stdout.strip()
+            try:
+                ancestor_result = subprocess.run(
+                    ["git", "--no-pager", "-C", project_path, "merge-base", "--is-ancestor", wt_head, "main"],
+                    capture_output=True, text=True, timeout=10,
+                )
+                already_landed = (ancestor_result.returncode == 0)
+            except Exception:
+                already_landed = False  # fail-safe: preserve under uncertainty
+            if not already_landed:
+                ts = time.strftime("%Y%m%dT%H%M%SZ", time.gmtime())
+                branch_name = f"bellows-preserved/{slug}-{ts}"
+                try:
+                    br_result = subprocess.run(
+                        ["git", "--no-pager", "-C", project_path, "branch", branch_name, wt_head],
+                        capture_output=True, text=True, timeout=10,
+                    )
+                    if br_result.returncode == 0:
+                        _log("WARN", f"⚠ preserved un-landed worktree commits at {wt_head} on branch {branch_name} before stranded-cleanup", slug=slug)
+                    else:
+                        _log("ERROR", f"⚠ failed to create preservation branch {branch_name} for worktree HEAD {wt_head}: {br_result.stderr.strip()}", slug=slug)
+                except Exception as e:
+                    _log("ERROR", f"⚠ failed to create preservation branch {branch_name} for worktree HEAD {wt_head}: {e}", slug=slug)
         try:
             subprocess.run(
                 ["git", "--no-pager", "worktree", "remove", "--force", wt_path],

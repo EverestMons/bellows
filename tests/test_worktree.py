@@ -350,3 +350,165 @@ def test_pre_check_ignores_bellows_worktrees_dir():
     # Negative control: real untracked file outside .bellows-worktrees/
     assert _is_lifecycle_artifact("?? src/untracked.py") is False
     assert _is_lifecycle_artifact("?? bellows-worktrees-imposter/foo.py") is False
+
+
+# --- Gap 2a: preserve un-landed commits on stranded-cleanup ---
+
+def test_stranded_cleanup_preserves_unlanded_commits(git_repo):
+    """Un-landed commits on a stranded worktree's HEAD are preserved on a branch before destroy."""
+    slug = "preserve-test"
+
+    # Create a worktree and make an un-landed commit on its detached HEAD
+    wt_path = _create_worktree(git_repo, slug)
+    with open(os.path.join(wt_path, "new_work.txt"), "w") as f:
+        f.write("un-landed work\n")
+    subprocess.run(["git", "add", "."], cwd=wt_path, capture_output=True, text=True)
+    subprocess.run(
+        ["git", "commit", "-m", "un-landed commit"], cwd=wt_path,
+        capture_output=True, text=True, check=True,
+    )
+    wt_head = subprocess.run(
+        ["git", "rev-parse", "HEAD"], cwd=wt_path,
+        capture_output=True, text=True,
+    ).stdout.strip()
+
+    main_head = subprocess.run(
+        ["git", "rev-parse", "main"], cwd=git_repo,
+        capture_output=True, text=True,
+    ).stdout.strip()
+    assert wt_head != main_head, "Precondition: worktree HEAD must differ from main"
+
+    # Now call _create_worktree again — triggers stranded-cleanup with preserve
+    result_path = _create_worktree(git_repo, slug)
+    try:
+        # (a) A bellows-preserved/<slug>-* branch exists
+        br_list = subprocess.run(
+            ["git", "branch", "--list", f"bellows-preserved/{slug}-*"], cwd=git_repo,
+            capture_output=True, text=True,
+        )
+        branches = [b.strip() for b in br_list.stdout.strip().splitlines() if b.strip()]
+        assert len(branches) >= 1, f"Expected a bellows-preserved branch, got: {br_list.stdout}"
+
+        # (b) The branch points at the captured wt_head
+        br_sha = subprocess.run(
+            ["git", "rev-parse", branches[0]], cwd=git_repo,
+            capture_output=True, text=True,
+        ).stdout.strip()
+        assert br_sha == wt_head, f"Preserved branch should point at {wt_head}, got {br_sha}"
+
+        # (c) wt_head is still reachable
+        cat_result = subprocess.run(
+            ["git", "cat-file", "-e", wt_head], cwd=git_repo,
+            capture_output=True, text=True,
+        )
+        assert cat_result.returncode == 0, f"wt_head {wt_head} should be reachable"
+
+        # (d) Worktree was removed and recreated (fresh HEAD == main HEAD)
+        assert os.path.isdir(result_path), "Worktree should exist after re-creation"
+        new_head = subprocess.run(
+            ["git", "rev-parse", "HEAD"], cwd=result_path,
+            capture_output=True, text=True,
+        ).stdout.strip()
+        assert new_head == main_head, f"Recreated worktree HEAD should be main HEAD {main_head}, got {new_head}"
+    finally:
+        subprocess.run(
+            ["git", "worktree", "remove", "--force", result_path], cwd=git_repo,
+            capture_output=True, text=True,
+        )
+        # Clean up preservation branches
+        for b in branches:
+            subprocess.run(
+                ["git", "branch", "-D", b], cwd=git_repo,
+                capture_output=True, text=True,
+            )
+
+
+def test_stranded_cleanup_no_preserve_when_already_landed(git_repo):
+    """When stranded worktree HEAD is already on main, no bellows-preserved branch is created."""
+    slug = "landed-test"
+
+    # Create a worktree — its HEAD == main HEAD (already landed, no new commits)
+    wt_path = _create_worktree(git_repo, slug)
+    assert os.path.isdir(wt_path)
+
+    # Call _create_worktree again — triggers stranded-cleanup
+    result_path = _create_worktree(git_repo, slug)
+    try:
+        # No bellows-preserved/* branch should exist
+        br_list = subprocess.run(
+            ["git", "branch", "--list", "bellows-preserved/*"], cwd=git_repo,
+            capture_output=True, text=True,
+        )
+        assert br_list.stdout.strip() == "", \
+            f"No preservation branch expected for already-landed HEAD, got: {br_list.stdout}"
+
+        # Worktree recreated normally
+        assert os.path.isdir(result_path), "Worktree should exist after re-creation"
+    finally:
+        subprocess.run(
+            ["git", "worktree", "remove", "--force", result_path], cwd=git_repo,
+            capture_output=True, text=True,
+        )
+
+
+def test_stranded_cleanup_failsafe_preserves_when_main_unresolvable(git_repo):
+    """When main ref is unresolvable, fail-safe bias preserves the worktree commits."""
+    slug = "failsafe-test"
+
+    # Create a worktree and make a commit on its detached HEAD
+    wt_path = _create_worktree(git_repo, slug)
+    with open(os.path.join(wt_path, "failsafe_work.txt"), "w") as f:
+        f.write("failsafe work\n")
+    subprocess.run(["git", "add", "."], cwd=wt_path, capture_output=True, text=True)
+    subprocess.run(
+        ["git", "commit", "-m", "failsafe commit"], cwd=wt_path,
+        capture_output=True, text=True, check=True,
+    )
+    wt_head = subprocess.run(
+        ["git", "rev-parse", "HEAD"], cwd=wt_path,
+        capture_output=True, text=True,
+    ).stdout.strip()
+
+    # Delete the 'main' branch ref so merge-base --is-ancestor ... main will fail
+    # First detach the main repo HEAD so we can delete the branch
+    subprocess.run(
+        ["git", "checkout", "--detach"], cwd=git_repo,
+        capture_output=True, text=True,
+    )
+    subprocess.run(
+        ["git", "branch", "-D", "main"], cwd=git_repo,
+        capture_output=True, text=True,
+    )
+
+    # Now call _create_worktree — should fail-safe and preserve
+    result_path = _create_worktree(git_repo, slug)
+    try:
+        # A bellows-preserved branch should exist (fail-safe bias)
+        br_list = subprocess.run(
+            ["git", "branch", "--list", f"bellows-preserved/{slug}-*"], cwd=git_repo,
+            capture_output=True, text=True,
+        )
+        branches = [b.strip() for b in br_list.stdout.strip().splitlines() if b.strip()]
+        assert len(branches) >= 1, \
+            f"Fail-safe should create preservation branch when main unresolvable, got: {br_list.stdout}"
+
+        # The branch points at the captured wt_head
+        br_sha = subprocess.run(
+            ["git", "rev-parse", branches[0]], cwd=git_repo,
+            capture_output=True, text=True,
+        ).stdout.strip()
+        assert br_sha == wt_head, f"Preserved branch should point at {wt_head}, got {br_sha}"
+
+        # _create_worktree returned a valid path without raising
+        assert os.path.isdir(result_path), "Worktree should exist after re-creation"
+    finally:
+        subprocess.run(
+            ["git", "worktree", "remove", "--force", result_path], cwd=git_repo,
+            capture_output=True, text=True,
+        )
+        # Clean up preservation branches
+        for b in branches:
+            subprocess.run(
+                ["git", "branch", "-D", b], cwd=git_repo,
+                capture_output=True, text=True,
+            )
