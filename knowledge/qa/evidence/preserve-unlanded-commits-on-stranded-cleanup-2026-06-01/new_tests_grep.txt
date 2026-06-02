@@ -1,0 +1,13 @@
+Evidence: Three regression tests exist in tests/test_worktree.py
+Source: grep output
+
+$ grep -n "test_stranded_cleanup_preserves_unlanded_commits\|test_stranded_cleanup_no_preserve_when_already_landed\|test_stranded_cleanup_failsafe_preserves_when_main_unresolvable" tests/test_worktree.py
+
+357:def test_stranded_cleanup_preserves_unlanded_commits(git_repo):
+426:def test_stranded_cleanup_no_preserve_when_already_landed(git_repo):
+454:def test_stranded_cleanup_failsafe_preserves_when_main_unresolvable(git_repo):
+
+All three present:
+1. test_stranded_cleanup_preserves_unlanded_commits (line 357) - positive case
+2. test_stranded_cleanup_no_preserve_when_already_landed (line 426) - specificity
+3. test_stranded_cleanup_failsafe_preserves_when_main_unresolvable (line 454) - fail-safe

@@ -1,0 +1,29 @@
+Evidence: Destroy/recreate unchanged
+Source: bellows.py lines 846-864
+
+The existing destroy sequence (remove --force → rmtree → prune → add HEAD --detach)
+is byte-unchanged and still runs after the preserve step:
+
+846:        try:
+847:            subprocess.run(
+848:                ["git", "--no-pager", "worktree", "remove", "--force", wt_path],
+849:                cwd=project_path, capture_output=True, text=True, timeout=10,
+850:            )
+851:        except Exception:
+852:            pass  # path may not be a registered worktree
+853:        shutil.rmtree(wt_path, ignore_errors=True)
+854:        try:
+855:            subprocess.run(
+856:                ["git", "--no-pager", "worktree", "prune"],
+857:                cwd=project_path, capture_output=True, text=True, timeout=10,
+858:            )
+859:        except Exception:
+860:            pass
+861:
+862:    try:
+863:        cmd = ["git", "--no-pager", "worktree", "add", wt_path, "HEAD", "--detach"]
+864:        result = subprocess.run(cmd, cwd=project_path, capture_output=True, text=True, timeout=60)
+
+CONFIRMED: The removal (lines 846-860) and recreate-at-HEAD --detach (line 863) are
+structurally and textually identical to pre-edit code. The preserve guard (lines 814-845)
+sits ABOVE the destroy sequence and does not alter its control flow.

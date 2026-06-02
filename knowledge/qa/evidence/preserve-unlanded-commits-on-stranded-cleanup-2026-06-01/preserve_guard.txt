@@ -1,0 +1,48 @@
+Evidence: Preserve guard present at top of stranded-cleanup block
+Source: bellows.py lines 812-845
+
+The guard is inside `if os.path.exists(wt_path):`, AFTER the `stranded worktree found`
+WARN (line 813) and BEFORE `worktree remove --force` (line 848):
+
+812:    if os.path.exists(wt_path):
+813:        _log("WARN", f"⚠ stranded worktree found at {wt_path}, removing before re-creation", slug=slug)
+814:        # --- Gap 2a: preserve un-landed commits before stranded-cleanup ---
+815:        try:
+816:            wt_head_result = subprocess.run(
+817:                ["git", "--no-pager", "-C", wt_path, "rev-parse", "--verify", "HEAD"],
+818:                capture_output=True, text=True, timeout=10,
+819:            )
+820:        except Exception:
+821:            wt_head_result = None
+822:        if wt_head_result and wt_head_result.returncode == 0:
+823:            wt_head = wt_head_result.stdout.strip()
+824:            try:
+825:                ancestor_result = subprocess.run(
+826:                    ["git", "--no-pager", "-C", project_path, "merge-base", "--is-ancestor", wt_head, "main"],
+827:                    capture_output=True, text=True, timeout=10,
+828:                )
+829:                already_landed = (ancestor_result.returncode == 0)
+830:            except Exception:
+831:                already_landed = False  # fail-safe: preserve under uncertainty
+832:            if not already_landed:
+833:                ts = time.strftime("%Y%m%dT%H%M%SZ", time.gmtime())
+834:                branch_name = f"bellows-preserved/{slug}-{ts}"
+835:                try:
+836:                    br_result = subprocess.run(
+837:                        ["git", "--no-pager", "-C", project_path, "branch", branch_name, wt_head],
+838:                        capture_output=True, text=True, timeout=10,
+839:                    )
+840:                    if br_result.returncode == 0:
+841:                        _log("WARN", f"⚠ preserved un-landed worktree commits at {wt_head} on branch {branch_name} before stranded-cleanup", slug=slug)
+842:                    else:
+843:                        _log("ERROR", f"⚠ failed to create preservation branch {branch_name} for worktree HEAD {wt_head}: {br_result.stderr.strip()}", slug=slug)
+844:                except Exception as e:
+845:                    _log("ERROR", f"⚠ failed to create preservation branch {branch_name} for worktree HEAD {wt_head}: {e}", slug=slug)
+846:        try:
+847:            subprocess.run(
+848:                ["git", "--no-pager", "worktree", "remove", "--force", wt_path],
+
+All three components present:
+- HEAD resolve: rev-parse --verify HEAD (line 817)
+- Un-landed check: merge-base --is-ancestor <wt_head> main (line 826)
+- Branch creation: git branch bellows-preserved/<slug>-<ts> <wt_head> (line 837)

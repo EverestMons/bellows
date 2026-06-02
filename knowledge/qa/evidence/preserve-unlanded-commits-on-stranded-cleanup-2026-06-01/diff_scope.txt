@@ -1,0 +1,23 @@
+Evidence: Out-of-scope code untouched — diff confined to stranded-cleanup block
+Source: git diff 9e129eb^..9e129eb -- bellows.py
+
+diff --git a/bellows.py b/bellows.py
+index 93bc8b9..1d7a557 100644
+--- a/bellows.py
++++ b/bellows.py
+@@ -811,6 +811,38 @@ def _create_worktree(project_path: str, slug: str) -> str:
+     # Clean stranded worktree from a prior failed dispatch (mirrors __init__ prune style)
+     if os.path.exists(wt_path):
+         _log("WARN", f"⚠ stranded worktree found at {wt_path}, removing before re-creation", slug=slug)
++        # --- Gap 2a: preserve un-landed commits before stranded-cleanup ---
++        [32 lines of preserve guard added]
+         try:
+             subprocess.run(
+                 ["git", "--no-pager", "worktree", "remove", "--force", wt_path],
+
+SCOPE CONFIRMATION:
+- Only hunk: lines 811+ in _create_worktree, inside `if os.path.exists(wt_path):` block
+- _teardown_worktree: NOT in diff (function at lines 1016-1037, unchanged)
+- _consume_verdicts: NOT in diff (function at ~line 1100+, unchanged)
+- worktree add ... HEAD --detach: NOT in diff (line 863, unchanged)
+- No other files in bellows.py modified outside this single insertion point

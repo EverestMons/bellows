@@ -1,0 +1,18 @@
+Evidence: Specificity check — no spurious branches on already-landed path
+Source: tests/test_worktree.py lines 426-451
+
+test_stranded_cleanup_no_preserve_when_already_landed:
+- Sets up worktree with HEAD == main HEAD (no new commits, already landed)
+- Calls _create_worktree again (triggers stranded-cleanup)
+- Key assertions (lines 438-443):
+
+    br_list = subprocess.run(
+        ["git", "branch", "--list", "bellows-preserved/*"], cwd=git_repo,
+        capture_output=True, text=True,
+    )
+    assert br_list.stdout.strip() == "", \
+        f"No preservation branch expected for already-landed HEAD, got: {br_list.stdout}"
+
+CONFIRMED: The test explicitly asserts that NO bellows-preserved/* branch is created
+when the worktree HEAD is already an ancestor of main. This proves specificity —
+the guard only fires on genuinely un-landed commits, not on the happy path.

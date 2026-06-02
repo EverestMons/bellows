@@ -1,0 +1,27 @@
+Evidence: Full test suite run
+Command: python3 -m pytest tests/ -v 2>&1 | tail -200
+Date: 2026-06-01
+
+Results summary:
+  5 failed, 440 passed, 1 warning in 8.05s
+
+Three new Gap 2a tests — all PASS:
+  tests/test_worktree.py::test_stranded_cleanup_preserves_unlanded_commits PASSED [ 99%]
+  tests/test_worktree.py::test_stranded_cleanup_no_preserve_when_already_landed PASSED [ 99%]
+  tests/test_worktree.py::test_stranded_cleanup_failsafe_preserves_when_main_unresolvable PASSED [100%]
+
+Carry-over failures (same 5 as DEV pre-edit baseline):
+  FAILED tests/test_decisions.py::TestLoadPhrases::test_loads_phrases_from_file
+  FAILED tests/test_decisions.py::TestLoadPhrases::test_includes_known_phrases
+  FAILED tests/test_decisions.py::TestLoadPhrases::test_splits_slash_alternatives
+  FAILED tests/test_decisions.py::TestExtractDecisionBlocks::test_s_class_blocks_from_ground_truth
+  FAILED tests/test_runner_parser.py::test_run_step_timeout
+
+ZERO new failures beyond the carry-over baseline.
+Total pass count: 440 (matches DEV's reported post-edit count).
+
+Failure details (all pre-existing):
+- test_decisions.py (4 tests): phrase file not found at worktree path
+  (INTERMEDIATE_DECISION_PHRASES.md not available in worktree context)
+- test_run_step_timeout: assert result["is_error"] is True → False
+  (known carry-over, timeout handling shape mismatch)

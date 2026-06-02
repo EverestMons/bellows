@@ -1,0 +1,30 @@
+Evidence: Dev log complete
+Source: knowledge/development/preserve-unlanded-commits-on-stranded-cleanup-2026-06-01.md
+
+Filesize: 9535 bytes
+
+First 5 lines:
+  1: # Dev Log — Preserve Un-Landed Commits on Stranded-Worktree Cleanup (Gap 2a)
+  2: (blank)
+  3: **Date:** 2026-06-01
+  4: **Plan:** `executable-preserve-unlanded-commits-on-stranded-cleanup-2026-06-01`
+  5: **Step:** 1 (DEV)
+
+Last 5 lines:
+  204: ### Flags for CEO
+  205: - None
+  206: (blank)
+  207: ### Flags for Next Step
+  208: - The guard is in place; QA should verify the fail-safe bias logic (preservation skipped ONLY on clean ancestor-check return 0 or unreadable HEAD) and confirm no out-of-scope code was touched
+  (+ daemon restart reminder)
+
+Sections present:
+- Guard Placement (before/after snippets) ✓
+- Detection Predicate ✓
+- Fail-Safe Bias Rules ✓
+- Preservation Branch Naming ✓
+- Pre-Edit Verification Query Results (4 queries) ✓
+- Regression Tests (3 test descriptions) ✓
+- Test Results (pre-edit: 5 failed/437 passed; post-edit: 5 failed/440 passed) ✓
+- Anchor Verification (3 grep results) ✓
+- Output Receipt (Status: Complete) ✓

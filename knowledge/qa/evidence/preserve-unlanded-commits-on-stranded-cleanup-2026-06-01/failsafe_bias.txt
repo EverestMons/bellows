@@ -1,0 +1,29 @@
+Evidence: Fail-safe bias is correct
+Source: bellows.py lines 815-845
+
+Preservation is SKIPPED only when:
+1. HEAD is unreadable (lines 820-821): exception → wt_head_result = None → skip
+2. Ancestor check cleanly returns 0 (line 829): already_landed = True → skip
+
+ALL other outcomes create the branch:
+- Line 830-831: except Exception → already_landed = False (preserve under uncertainty)
+- Line 829: ancestor_result.returncode != 0 → already_landed = False (not on main)
+- Unresolvable `main` → merge-base errors → caught by except → already_landed = False
+
+Code path analysis:
+  try:
+      wt_head_result = subprocess.run(["git", ..., "rev-parse", "--verify", "HEAD"], ...)
+  except Exception:
+      wt_head_result = None                          # SKIP: nothing to preserve
+  if wt_head_result and wt_head_result.returncode == 0:
+      wt_head = wt_head_result.stdout.strip()
+      try:
+          ancestor_result = subprocess.run(["git", ..., "merge-base", "--is-ancestor", wt_head, "main"], ...)
+          already_landed = (ancestor_result.returncode == 0)  # ONLY clean 0 → skip
+      except Exception:
+          already_landed = False                      # FAIL-SAFE: preserve
+      if not already_landed:
+          # CREATE PRESERVATION BRANCH              # ALL non-zero/error paths reach here
+
+CONFIRMED: Fail-safe bias to preserve under ALL uncertainty paths. Only definitive
+"already on main" (returncode == 0) or "nothing recoverable" (HEAD unreadable) skips.
