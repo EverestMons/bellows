@@ -15,6 +15,18 @@
 
 5. **"Skip glossary read" instruction remains helpful.** No glossary exists. This note prevents unnecessary file-not-found noise.
 
+## 2026-06-01 — executable-preserve-unlanded-commits-on-stranded-cleanup (QA Step 2)
+
+1. **`governance/GUARDRAILS.md` absent — sixth consecutive occurrence.** Plan instructs "Read your specialist file at `agents/BELLOWS_QA.md` and `governance/GUARDRAILS.md` first." The governance directory does not exist in this worktree. Found it at `/Users/marklehn/Developer/GitHub/governance/GUARDRAILS.md` (sibling repo, not in Bellows worktree). Recurring recommendation: remove or conditionalize this instruction.
+
+2. **`RULE_20_SELF_CHECK_BLOCK.md` located on second try.** QA specialist file references stale path `/Users/marklehn/Desktop/GitHub/RULE_20_SELF_CHECK_BLOCK.md`. Actual location: `/Users/marklehn/Developer/GitHub/RULE_20_SELF_CHECK_BLOCK.md`. Found via filesystem search. Same issue reported in 2026-05-31 QA feedback — still not fixed in the specialist file.
+
+3. **DEV deposit was well-structured — verification was straightforward.** The Output Receipt was Complete, all sections present, before/after snippets accurate, test counts matched. No deliverable verification failure. The format works well.
+
+4. **Rule 20 self-check order is correct: evidence → report → script.** Following the sequence learned from prior feedback (write evidence files and report BEFORE running the self-check) avoided any false FAILED result.
+
+5. **Test count alignment between DEV and QA confirmed immediately.** DEV reported 440 passed; QA independently ran the suite and got 440 passed. Same 5 carry-over failures. No discrepancy investigation needed.
+
 ## 2026-05-31 — executable-no-match-verdict-warning-dedup (QA Step 2)
 
 1. **`governance/GUARDRAILS.md` absent — fourth consecutive occurrence.** Plan instructs "Read your specialist file at `agents/BELLOWS_QA.md` and `governance/GUARDRAILS.md` first." Neither the governance directory nor the file exists in this worktree. The QA specialist file itself references it at governance root (`/Users/marklehn/Developer/GitHub/governance/GUARDRAILS.md`) which exists at the governance sibling repo but is not present in the Bellows worktree. Recommend removing or conditionalizing the `governance/GUARDRAILS.md` read instruction from all QA step templates.
