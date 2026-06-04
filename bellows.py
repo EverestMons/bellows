@@ -1039,6 +1039,41 @@ def _teardown_worktree(project_path: str, wt_path: str, slug: str) -> None:
             _log("WARN", f"⚠ could not force-remove orphaned worktree dir {wt_path}: {e}", slug=slug)
 
 
+def _retry_recoverable_teardown(gate_result: dict, project_path: str, wt_path: str, slug: str) -> bool:
+    """Re-attempt a recoverable (dirty-tree-only) worktree teardown at verdict-consume time.
+
+    Called at the top of the continue branch, BEFORE the Gap-1b halt guard.
+    On success, clears all worktree_teardown failures from gate_result["failures"]
+    so the normal continue/advance proceeds. On any skip or failure, returns False
+    and leaves gate_result unchanged for the Gap-1b guard to halt.
+
+    Never raises. Never removes non-worktree_teardown failures.
+    """
+    wt_fails = [f for f in gate_result.get("failures", []) if f.get("gate") == "worktree_teardown"]
+    if not wt_fails:
+        return False
+
+    if not os.path.isdir(wt_path):
+        _log("INFO", f"continue-resume: worktree gone at {wt_path} — skipping teardown retry (commits, if any, are on a bellows-preserved/* branch); leaving failure for Gap-1b halt", slug=slug)
+        return False
+
+    if not all("worktree_teardown_dirty_tree" in (f.get("evidence") or "") for f in wt_fails):
+        _log("INFO", f"continue-resume: non-dirty-tree teardown failure (content conflict) — not retrying; leaving failure for Gap-1b halt", slug=slug)
+        return False
+
+    try:
+        _teardown_worktree(project_path, wt_path, slug)
+        gate_result["failures"] = [f for f in gate_result.get("failures", []) if f.get("gate") != "worktree_teardown"]
+        _log("EVENT", f"continue-resume: dirty-tree teardown retry SUCCEEDED — commits landed on main, worktree removed; clearing worktree_teardown failure so resume advances", slug=slug)
+        return True
+    except WorktreeTeardownError as e:
+        _log("WARN", f"continue-resume: teardown retry still failing ({e}) — leaving failure for Gap-1b halt", slug=slug)
+        return False
+    except Exception as e:
+        _log("WARN", f"continue-resume: teardown retry errored ({e}) — leaving failure for Gap-1b halt", slug=slug)
+        return False
+
+
 def _source_sha() -> str:
     """Return the short git SHA for bellows.py, or 'unknown' on any failure."""
     try:
@@ -1370,6 +1405,12 @@ class Bellows:
                         gate_result = gate_result_from_request or {"failures": [], "files_changed": []}
 
                         if v == "continue":
+                            # Gap 1c: re-attempt a recoverable (dirty-tree) teardown before the Gap-1b halt decision.
+                            # By verdict time the operator has usually committed the stray dirty file, so the retry
+                            # lands Step N's commits and clears the failure — letting the normal advance proceed.
+                            _c_project_path = os.path.dirname(os.path.dirname(decisions_path))
+                            _c_wt_path = os.path.join(_c_project_path, ".bellows-worktrees", cleanup_slug)
+                            _retry_recoverable_teardown(gate_result, _c_project_path, _c_wt_path, cleanup_slug)
                             # Guard: block continue when prior step's worktree teardown failed (Gap 1b).
                             # An uncleared worktree_teardown failure means Step N's commits were never
                             # cherry-picked to main — advancing would orphan them. Route to halted-

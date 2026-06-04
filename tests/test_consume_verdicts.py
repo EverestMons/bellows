@@ -1021,3 +1021,105 @@ def test_continue_advances_normally_without_teardown_failure():
         assert ledger_call[0][3] == "continue", (
             f"Expected ledger action 'continue', got: {ledger_call[0][3]}"
         )
+
+
+# --- Gap 1c: _retry_recoverable_teardown regression tests ---
+
+
+def test_retry_clears_dirty_tree_teardown_on_success():
+    """Gap 1c: dirty-tree teardown retry succeeds → worktree_teardown failure cleared from gate_result."""
+    with tempfile.TemporaryDirectory() as tmp:
+        wt_path = os.path.join(tmp, "wt")
+        os.makedirs(wt_path)
+
+        gate_result = {
+            "failures": [
+                {"gate": "worktree_teardown", "evidence": "worktree_teardown_dirty_tree: local main has uncommitted changes"},
+            ],
+            "files_changed": ["bellows.py"],
+        }
+
+        with patch("bellows._teardown_worktree") as mock_teardown:
+            result = bellows._retry_recoverable_teardown(gate_result, tmp, wt_path, "test-slug")
+
+        assert result is True
+        assert not any(f.get("gate") == "worktree_teardown" for f in gate_result["failures"]), (
+            f"worktree_teardown failure should be cleared after successful retry, got: {gate_result['failures']}"
+        )
+        mock_teardown.assert_called_once_with(tmp, wt_path, "test-slug")
+
+
+def test_retry_skips_content_conflict():
+    """Gap 1c: content-conflict teardown failure (no dirty_tree token) → skip retry, failure retained."""
+    with tempfile.TemporaryDirectory() as tmp:
+        wt_path = os.path.join(tmp, "wt")
+        os.makedirs(wt_path)
+
+        gate_result = {
+            "failures": [
+                {"gate": "worktree_teardown", "evidence": "cherry-pick conflict on bellows.py"},
+            ],
+            "files_changed": [],
+        }
+
+        calls = []
+
+        def spy_teardown(*args, **kwargs):
+            calls.append(args)
+
+        with patch("bellows._teardown_worktree", side_effect=spy_teardown):
+            result = bellows._retry_recoverable_teardown(gate_result, tmp, wt_path, "test-slug")
+
+        assert result is False
+        assert any(f.get("gate") == "worktree_teardown" for f in gate_result["failures"]), (
+            "worktree_teardown failure must be retained for content-conflict skip"
+        )
+        assert len(calls) == 0, "_teardown_worktree must NOT be called for content-conflict failures"
+
+
+def test_retry_skips_when_worktree_missing():
+    """Gap 1c: dirty-tree failure but worktree dir missing → skip retry, failure retained."""
+    wt_path = "/nonexistent/worktree/path"
+
+    gate_result = {
+        "failures": [
+            {"gate": "worktree_teardown", "evidence": "worktree_teardown_dirty_tree: local main has uncommitted changes"},
+        ],
+        "files_changed": [],
+    }
+
+    calls = []
+
+    def spy_teardown(*args, **kwargs):
+        calls.append(args)
+
+    with patch("bellows._teardown_worktree", side_effect=spy_teardown):
+        result = bellows._retry_recoverable_teardown(gate_result, "/nonexistent", wt_path, "test-slug")
+
+    assert result is False
+    assert any(f.get("gate") == "worktree_teardown" for f in gate_result["failures"]), (
+        "worktree_teardown failure must be retained when worktree is missing"
+    )
+    assert len(calls) == 0, "_teardown_worktree must NOT be called when worktree dir is missing"
+
+
+def test_retry_keeps_failure_when_teardown_raises_again():
+    """Gap 1c: dirty-tree retry still fails (raises WorktreeTeardownError) → failure retained for Gap-1b halt."""
+    with tempfile.TemporaryDirectory() as tmp:
+        wt_path = os.path.join(tmp, "wt")
+        os.makedirs(wt_path)
+
+        gate_result = {
+            "failures": [
+                {"gate": "worktree_teardown", "evidence": "worktree_teardown_dirty_tree: local main has uncommitted changes"},
+            ],
+            "files_changed": [],
+        }
+
+        with patch("bellows._teardown_worktree", side_effect=bellows.WorktreeTeardownError("worktree_teardown_dirty_tree: still dirty")):
+            result = bellows._retry_recoverable_teardown(gate_result, tmp, wt_path, "test-slug")
+
+        assert result is False
+        assert any(f.get("gate") == "worktree_teardown" for f in gate_result["failures"]), (
+            "worktree_teardown failure must be retained when retry raises again"
+        )
