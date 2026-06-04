@@ -413,6 +413,56 @@ def test_scope_check_prefix_allowlist_does_not_suppress_real_violations():
                for f in result["failures"])
 
 
+def test_scope_check_accepts_child_file_under_trailing_slash_dir():
+    plan = """## STEP 1 — DEV
+
+> Deposit evidence to `knowledge/qa/evidence/foo-2026-06-04/`.
+
+## STEP 2
+"""
+    result = gates.check(_clean_parsed(), plan, 1, "/tmp",
+                         files_changed=["knowledge/qa/evidence/foo-2026-06-04/check-a.txt"])
+    assert not any(f["gate"] == "scope_check" for f in result["failures"])
+
+
+def test_scope_check_accepts_child_file_under_dir_placeholder_pattern():
+    plan = """## STEP 1 — DEV
+
+> Capture results at `knowledge/qa/evidence/foo-2026-06-04/<check-name>.txt` for each check.
+
+## STEP 2
+"""
+    result = gates.check(_clean_parsed(), plan, 1, "/tmp",
+                         files_changed=["knowledge/qa/evidence/foo-2026-06-04/check-b.txt"])
+    assert not any(f["gate"] == "scope_check" for f in result["failures"])
+
+
+def test_scope_check_depth_guard_rejects_shallow_dir_mention():
+    plan = """## STEP 1 — DEV
+
+> Touch files under `web/`.
+
+## STEP 2
+"""
+    result = gates.check(_clean_parsed(), plan, 1, "/tmp",
+                         files_changed=["web/unmentioned_file.py"])
+    assert any(f["gate"] == "scope_check" and "web/unmentioned_file.py" in f["evidence"]
+               for f in result["failures"])
+
+
+def test_scope_check_dir_mention_does_not_authorize_unmentioned_sibling_dir():
+    plan = """## STEP 1 — DEV
+
+> Deposit evidence to `knowledge/qa/evidence/foo-2026-06-04/`.
+
+## STEP 2
+"""
+    result = gates.check(_clean_parsed(), plan, 1, "/tmp",
+                         files_changed=["testing/qa/evidence/bar-2026-06-04/other.txt"])
+    assert any(f["gate"] == "scope_check" and "testing/qa/evidence/bar-2026-06-04/other.txt" in f["evidence"]
+               for f in result["failures"])
+
+
 def test_verdict_requested_from_parsed_dict():
     parsed = _clean_parsed()
     parsed["verdict_requested"] = {"requested": True, "reason": "agent found inconsistency"}
