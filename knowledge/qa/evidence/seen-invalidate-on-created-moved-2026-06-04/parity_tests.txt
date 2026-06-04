@@ -1,0 +1,11 @@
+Parity tests — existing on_modified tests still present and passing
+
+Grep results:
+3267:def test_on_modified_invalidates_seen_for_runnable_plan():
+3295:def test_on_modified_preserves_seen_for_lifecycle_renames():
+
+Test run results (from full suite):
+tests/test_bellows.py::test_on_modified_invalidates_seen_for_runnable_plan PASSED
+tests/test_bellows.py::test_on_modified_preserves_seen_for_lifecycle_renames PASSED
+
+Verification: Both existing on_modified tests present and passing unchanged — PASS

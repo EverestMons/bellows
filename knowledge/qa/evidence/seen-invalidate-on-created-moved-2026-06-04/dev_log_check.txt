@@ -1,0 +1,28 @@
+Dev log check — knowledge/development/seen-invalidate-on-created-moved-2026-06-04.md
+
+File exists: YES
+Line count: 122
+
+First 5 lines:
+# Dev Log — Invalidate _seen on Re-Deposit via on_created / on_moved (#7)
+
+**Date:** 2026-06-04
+**Plan:** executable-seen-invalidate-on-created-moved-2026-06-04
+**Step:** 1 (DEV)
+
+Last 5 lines:
+### Flags for CEO
+- None
+
+### Flags for Next Step
+- `_handle` and the rescan path are byte-unchanged — QA can verify via diff
+- Pre-edit baseline: 444 passed / 5 failed; post-edit: 448 passed / 5 failed — same carry-over failures
+
+Content verified:
+- Helper body: present (section "Helper Body — _invalidate_seen_on_redeposit")
+- Wired callbacks: present (section "Wired Callbacks")
+- _handle/rescan no-change confirmation: present (section "_handle and Rescan Path — Byte-Unchanged")
+- Guard parity: present (section "Lifecycle Guard Parity")
+- Pre-edit verification: present (section "Pre-Edit Verification Results" with 4-row table)
+- Both pytest runs: present (sections "Pre-Edit Baseline" and "Post-Edit")
+- Output Receipt: present, Status: Complete

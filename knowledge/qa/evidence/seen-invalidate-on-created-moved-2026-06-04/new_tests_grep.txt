@@ -1,0 +1,8 @@
+Grep for four new tests in tests/test_bellows.py:
+
+3324:def test_on_created_invalidates_seen_for_runnable_plan():
+3352:def test_on_created_preserves_seen_for_lifecycle_renames():
+3381:def test_on_moved_invalidates_seen_for_runnable_plan():
+3408:def test_on_moved_preserves_seen_for_lifecycle_renames():
+
+Verification: All four new tests present in tests/test_bellows.py — PASS

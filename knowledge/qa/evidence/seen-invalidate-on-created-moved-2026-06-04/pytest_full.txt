@@ -1,0 +1,26 @@
+Full test suite run: python3 -m pytest tests/ -v
+
+Result: 448 passed, 5 failed, 1 warning in 7.65s
+
+(a) All four new tests appear in verbose output and PASS:
+tests/test_bellows.py::test_on_created_invalidates_seen_for_runnable_plan PASSED
+tests/test_bellows.py::test_on_created_preserves_seen_for_lifecycle_renames PASSED
+tests/test_bellows.py::test_on_moved_invalidates_seen_for_runnable_plan PASSED
+tests/test_bellows.py::test_on_moved_preserves_seen_for_lifecycle_renames PASSED
+
+(b) Two existing on_modified tests still PASS:
+tests/test_bellows.py::test_on_modified_invalidates_seen_for_runnable_plan PASSED
+tests/test_bellows.py::test_on_modified_preserves_seen_for_lifecycle_renames PASSED
+
+(c) ZERO new failures — same 5 carry-over failures as DEV's pre-edit baseline:
+FAILED tests/test_decisions.py::TestLoadPhrases::test_loads_phrases_from_file
+FAILED tests/test_decisions.py::TestLoadPhrases::test_includes_known_phrases
+FAILED tests/test_decisions.py::TestLoadPhrases::test_splits_slash_alternatives
+FAILED tests/test_decisions.py::TestExtractDecisionBlocks::test_s_class_blocks_from_ground_truth
+FAILED tests/test_runner_parser.py::test_run_step_timeout
+
+(d) Total pass count: 448 — matches DEV's reported post-edit number of 448
+
+Focused run (6 relevant tests only):
+python3 -m pytest tests/test_bellows.py -v -k "test_on_created or test_on_moved or test_on_modified_invalidates or test_on_modified_preserves"
+Result: 11 passed, 122 deselected (includes 5 other on_moved tests) — all 6 _seen tests PASS

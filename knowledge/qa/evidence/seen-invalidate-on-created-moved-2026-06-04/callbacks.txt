@@ -1,0 +1,22 @@
+Three callback bodies — captured from bellows.py lines 1205-1218
+
+    def on_created(self, event):
+        if not event.is_directory:
+            self._invalidate_seen_on_redeposit(event.src_path)
+            self._handle(event.src_path)
+
+    def on_modified(self, event):
+        if not event.is_directory:
+            self._invalidate_seen_on_redeposit(event.src_path)
+            self._handle(event.src_path)
+
+    def on_moved(self, event):
+        if not event.is_directory:
+            self._invalidate_seen_on_redeposit(event.dest_path)
+            self._handle(event.dest_path)
+
+Verification:
+- on_created: calls _invalidate_seen_on_redeposit(event.src_path) BEFORE _handle(event.src_path) — PASS
+- on_modified: calls _invalidate_seen_on_redeposit(event.src_path) BEFORE _handle(event.src_path) — PASS
+- on_moved: calls _invalidate_seen_on_redeposit(event.dest_path) BEFORE _handle(event.dest_path) — PASS
+- All three follow the same pattern: guard is_directory, invalidate, then handle

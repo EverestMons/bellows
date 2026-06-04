@@ -1,0 +1,32 @@
+_handle and rescan path — byte-unchanged verification
+
+_handle method (bellows.py line 1153):
+    def _handle(self, path: str, from_rescan: bool = False):
+        path_parent = str(Path(path).parent)
+        watched = self.orchestrator.config.get("watched_projects", [])
+        if path_parent not in watched:
+            return
+        filename = os.path.basename(path)
+        if not is_runnable_plan(filename):
+            if (filename.endswith(".md")
+                    and not filename.startswith(("in-progress-", "verdict-pending-", "halted-", "roadmap-"))
+                    and verdict.slug_from_path(path) not in self.orchestrator._seen):
+                _log("WARN", f"skipped — prefix not in dispatch whitelist", slug=slug_for(filename))
+                self.orchestrator._seen.add(verdict.slug_from_path(path))
+            return
+        if verdict.slug_from_path(path) in self.orchestrator._seen:
+            return
+
+_seen guard at line 1166:
+    if verdict.slug_from_path(path) in self.orchestrator._seen:
+        return
+
+Rescan path (line 1306):
+    handler._handle(full_path, from_rescan=True)
+
+Verification:
+- _handle still contains the _seen guard — NOT modified
+- No invalidation was added inside _handle
+- No invalidation was added inside the _rescan sweep
+- git diff confirms changes confined to new helper and three callback bodies only
+- _handle is NOT touched by this change — invalidation stays in watcher callbacks only

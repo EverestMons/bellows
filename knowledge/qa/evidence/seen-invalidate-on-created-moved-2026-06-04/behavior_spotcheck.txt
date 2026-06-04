@@ -1,0 +1,33 @@
+Behavioral spot-checks — read from test assertions (no live runs invented)
+
+(i) Create/move invalidate tests:
+
+test_on_created_invalidates_seen_for_runnable_plan (line 3324):
+- Pre-seeds slug in _seen via mock_orch._seen.add(slug)
+- Fires on_created with event.src_path pointing to non-lifecycle runnable plan
+- Patches handler._handle
+- Asserts: slug NOT in mock_orch._seen (discarded before _handle)
+- Asserts: mock_handle.assert_called_once_with(path)
+VERDICT: slug GONE from _seen before _handle called; _handle called once with correct path — PASS
+
+test_on_moved_invalidates_seen_for_runnable_plan (line 3381):
+- Pre-seeds slug in _seen via mock_orch._seen.add(slug)
+- Fires on_moved with event.dest_path pointing to non-lifecycle runnable plan
+- Patches handler._handle
+- Asserts: slug NOT in mock_orch._seen (discarded before _handle)
+- Asserts: mock_handle.assert_called_once_with(dest_path)
+VERDICT: slug GONE from _seen before _handle called; _handle called once with correct dest_path — PASS
+
+(ii) Create/move lifecycle tests:
+
+test_on_created_preserves_seen_for_lifecycle_renames (line 3352):
+- Iterates over all three lifecycle prefixes: in-progress-, verdict-pending-, halted-
+- For each: pre-seeds slug, fires on_created, asserts slug RETAINED in _seen
+- Asserts: mock_handle.assert_called_once_with(path)
+VERDICT: slug RETAINED for all three lifecycle prefixes — PASS
+
+test_on_moved_preserves_seen_for_lifecycle_renames (line 3408):
+- Iterates over all three lifecycle prefixes: in-progress-, verdict-pending-, halted-
+- For each: pre-seeds slug, fires on_moved with dest_path, asserts slug RETAINED in _seen
+- Asserts: mock_handle.assert_called_once_with(dest_path)
+VERDICT: slug RETAINED for all three lifecycle prefixes — PASS

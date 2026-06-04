@@ -1,0 +1,25 @@
+Helper body — PlanHandler._invalidate_seen_on_redeposit
+Captured from bellows.py lines 1190-1203
+
+    def _invalidate_seen_on_redeposit(self, path: str):
+        # Invalidate _seen on a re-deposit at an already-seen slug so a genuinely new plan
+        # file (e.g. a follow-on executable deposited at the same base slug after the prior
+        # plan was closed OUT-OF-BAND via a Planner-direct move to Done/, which the daemon
+        # never observes) can be re-dispatched. Guard: never invalidate on Bellows-managed
+        # lifecycle renames (in-progress-/verdict-pending-/halted-) — that would loop.
+        filename = os.path.basename(path)
+        LIFECYCLE_PREFIXES = ("in-progress-", "verdict-pending-", "halted-")
+        if any(filename.startswith(p) for p in LIFECYCLE_PREFIXES):
+            return
+        slug = verdict.slug_from_path(path)
+        if slug in self.orchestrator._seen:
+            self.orchestrator._seen.discard(slug)
+            _log("INFO", f"re-deposit at seen slug — invalidated _seen so plan can re-dispatch", slug=slug_for(filename))
+
+Verification:
+- Method exists at line 1190
+- Computes filename via os.path.basename(path)
+- Defines LIFECYCLE_PREFIXES = ("in-progress-", "verdict-pending-", "halted-")
+- Early-returns on lifecycle prefix match
+- Discards slug from self.orchestrator._seen only when present
+- Logs only on actual discard

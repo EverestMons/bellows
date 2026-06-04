@@ -1,0 +1,13 @@
+Lifecycle guard check — captured from bellows.py line 1197
+
+Guard tuple in _invalidate_seen_on_redeposit:
+    LIFECYCLE_PREFIXES = ("in-progress-", "verdict-pending-", "halted-")
+
+Guard logic:
+    if any(filename.startswith(p) for p in LIFECYCLE_PREFIXES):
+        return
+
+Verification:
+- Tuple is exactly ("in-progress-", "verdict-pending-", "halted-") — matches original on_modified inline version
+- Early-returns on any lifecycle prefix match — prevents re-dispatch loops on Bellows-managed renames
+- Preserved verbatim from original inline logic
