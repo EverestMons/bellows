@@ -1,0 +1,43 @@
+Full helper body from bellows.py lines 1042-1074:
+
+def _retry_recoverable_teardown(gate_result: dict, project_path: str, wt_path: str, slug: str) -> bool:
+    """Re-attempt a recoverable (dirty-tree-only) worktree teardown at verdict-consume time.
+
+    Called at the top of the continue branch, BEFORE the Gap-1b halt guard.
+    On success, clears all worktree_teardown failures from gate_result["failures"]
+    so the normal continue/advance proceeds. On any skip or failure, returns False
+    and leaves gate_result unchanged for the Gap-1b guard to halt.
+
+    Never raises. Never removes non-worktree_teardown failures.
+    """
+    wt_fails = [f for f in gate_result.get("failures", []) if f.get("gate") == "worktree_teardown"]
+    if not wt_fails:
+        return False
+
+    if not os.path.isdir(wt_path):
+        _log("INFO", f"continue-resume: worktree gone at {wt_path} — skipping teardown retry (commits, if any, are on a bellows-preserved/* branch); leaving failure for Gap-1b halt", slug=slug)
+        return False
+
+    if not all("worktree_teardown_dirty_tree" in (f.get("evidence") or "") for f in wt_fails):
+        _log("INFO", f"continue-resume: non-dirty-tree teardown failure (content conflict) — not retrying; leaving failure for Gap-1b halt", slug=slug)
+        return False
+
+    try:
+        _teardown_worktree(project_path, wt_path, slug)
+        gate_result["failures"] = [f for f in gate_result.get("failures", []) if f.get("gate") != "worktree_teardown"]
+        _log("EVENT", f"continue-resume: dirty-tree teardown retry SUCCEEDED — commits landed on main, worktree removed; clearing worktree_teardown failure so resume advances", slug=slug)
+        return True
+    except WorktreeTeardownError as e:
+        _log("WARN", f"continue-resume: teardown retry still failing ({e}) — leaving failure for Gap-1b halt", slug=slug)
+        return False
+    except Exception as e:
+        _log("WARN", f"continue-resume: teardown retry errored ({e}) — leaving failure for Gap-1b halt", slug=slug)
+        return False
+
+Placement: module level, between _teardown_worktree (ends line 1039) and _source_sha (line 1077).
+Signature: (gate_result: dict, project_path: str, wt_path: str, slug: str) -> bool
+- Collects worktree_teardown failures
+- Returns False early when none / when wt_path missing / when any failure is NOT dirty_tree
+- On success: clears ALL worktree_teardown failures in place, returns True
+- Never raises (try/except on WorktreeTeardownError and Exception)
+- Never removes non-worktree_teardown failures

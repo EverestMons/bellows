@@ -1,0 +1,15 @@
+Dirty-tree discriminator predicate from bellows.py line 1060:
+
+    if not all("worktree_teardown_dirty_tree" in (f.get("evidence") or "") for f in wt_fails):
+        _log("INFO", f"continue-resume: non-dirty-tree teardown failure (content conflict) — not retrying; leaving failure for Gap-1b halt", slug=slug)
+        return False
+
+The retry fires ONLY when every worktree_teardown failure's evidence contains the
+"worktree_teardown_dirty_tree" token. A content-conflict failure (evidence without this
+token) causes the entire retry to be skipped and _teardown_worktree is not called.
+
+Predicate order (all three early-return checks before retry attempt):
+1. No worktree_teardown failures → return False
+2. Worktree directory missing → return False
+3. Any failure is NOT dirty_tree variant → return False (this gate)
+4. Only then: attempt _teardown_worktree

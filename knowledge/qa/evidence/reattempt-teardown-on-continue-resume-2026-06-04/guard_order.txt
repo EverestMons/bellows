@@ -1,0 +1,20 @@
+Call site and Gap-1b guard from bellows.py lines 1407-1424:
+
+                        if v == "continue":
+                            # Gap 1c: re-attempt a recoverable (dirty-tree) teardown before the Gap-1b halt decision.
+                            # By verdict time the operator has usually committed the stray dirty file, so the retry
+                            # lands Step N's commits and clears the failure — letting the normal advance proceed.
+                            _c_project_path = os.path.dirname(os.path.dirname(decisions_path))
+                            _c_wt_path = os.path.join(_c_project_path, ".bellows-worktrees", cleanup_slug)
+                            _retry_recoverable_teardown(gate_result, _c_project_path, _c_wt_path, cleanup_slug)
+                            # Guard: block continue when prior step's worktree teardown failed (Gap 1b).
+                            # An uncleared worktree_teardown failure means Step N's commits were never
+                            # cherry-picked to main — advancing would orphan them. Route to halted-
+                            # for manual R2 recovery instead of silently advancing.
+                            if any(f.get("gate") == "worktree_teardown" for f in gate_result.get("failures", [])):
+                                _log("ERROR", f"continue verdict REJECTED — prior step's worktree_teardown failure uncleared (commits not landed); routing to halted- for manual R2 recovery", slug=plan_slug)
+
+Order confirmed:
+1. Gap 1c call (_retry_recoverable_teardown) is at the TOP of the `if v == "continue":` branch (lines 1408-1413)
+2. Gap-1b guard (if any(...worktree_teardown...)) follows IMMEDIATELY AFTER (line 1418)
+3. The Gap-1b guard body is byte-unchanged from its original form

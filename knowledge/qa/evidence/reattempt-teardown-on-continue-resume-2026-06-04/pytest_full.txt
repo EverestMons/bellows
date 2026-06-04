@@ -1,0 +1,22 @@
+Full test suite run: python3 -m pytest tests/ -v 2>&1 | tail -200
+
+New tests (all PASSED):
+tests/test_consume_verdicts.py::test_retry_clears_dirty_tree_teardown_on_success PASSED
+tests/test_consume_verdicts.py::test_retry_skips_content_conflict PASSED
+tests/test_consume_verdicts.py::test_retry_skips_when_worktree_missing PASSED
+tests/test_consume_verdicts.py::test_retry_keeps_failure_when_teardown_raises_again PASSED
+
+Failures (same 5 carry-over as DEV pre-edit baseline):
+FAILED tests/test_decisions.py::TestLoadPhrases::test_loads_phrases_from_file
+FAILED tests/test_decisions.py::TestLoadPhrases::test_includes_known_phrases
+FAILED tests/test_decisions.py::TestLoadPhrases::test_splits_slash_alternatives
+FAILED tests/test_decisions.py::TestExtractDecisionBlocks::test_s_class_blocks_from_ground_truth
+FAILED tests/test_runner_parser.py::test_run_step_timeout
+
+Summary line:
+5 failed, 444 passed, 1 warning in 7.29s
+
+Verification:
+(a) All four new tests appear in verbose output and PASS: YES
+(b) ZERO new failures beyond carry-over: YES (same 5 as DEV's pre-edit 5 failed / 440 passed)
+(c) Total pass count matches DEV's post-edit: YES (444 passed)

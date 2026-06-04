@@ -1,0 +1,8 @@
+Grep results from tests/test_consume_verdicts.py:
+
+1029:def test_retry_clears_dirty_tree_teardown_on_success():
+1052:def test_retry_skips_content_conflict():
+1080:def test_retry_skips_when_worktree_missing():
+1106:def test_retry_keeps_failure_when_teardown_raises_again():
+
+All four regression tests present.

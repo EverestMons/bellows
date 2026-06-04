@@ -1,0 +1,11 @@
+Failure-clearing list comprehension from bellows.py line 1066 (on successful retry):
+
+        gate_result["failures"] = [f for f in gate_result.get("failures", []) if f.get("gate") != "worktree_teardown"]
+
+This removes ONLY entries where f.get("gate") == "worktree_teardown".
+Any other failure (e.g., gate="deposit_exists", gate="scope_check") is preserved
+in the list. The in-place mutation of gate_result["failures"] means the caller's
+reference sees the updated list immediately.
+
+Scoping confirmation: the filter predicate is `f.get("gate") != "worktree_teardown"` —
+only worktree_teardown entries are dropped.

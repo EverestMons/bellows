@@ -1,0 +1,23 @@
+Dev log: knowledge/development/reattempt-teardown-on-continue-resume-2026-06-04.md
+
+Filesize: 101 lines
+
+First 5 lines:
+# Dev Log — Re-Attempt Recoverable Dirty-Tree Teardown on Continue-Resume (Gap 1c)
+
+**Date:** 2026-06-04
+**Plan:** executable-reattempt-teardown-on-continue-resume-2026-06-04
+**Step:** 1 (DEV)
+
+Last 5 lines:
+- Pre-edit baseline: 5 failed / 440 passed; post-edit: 5 failed / 444 passed
+- The 4 new tests target the helper directly (monkeypatched `_teardown_worktree`) — no live daemon needed
+- Existing Gap-1b tests still pass because the helper's `os.path.isdir(wt_path)` check returns False for the tmp dirs used in those tests (worktree doesn't exist) → helper returns False → Gap-1b guard fires as before
+
+Content verified:
+- Helper placement: between _teardown_worktree and _source_sha ✓
+- Predicate order: documented (no wt failures → missing dir → non-dirty-tree → attempt) ✓
+- Skip rules: dirty-tree only, missing worktree, repeat failure ✓
+- Call-site location: top of continue branch, before Gap-1b guard ✓
+- Pre-edit verification: 5 verification queries, all CONFIRMED ✓
+- Both pytest runs: pre-edit 5f/440p, post-edit 5f/444p ✓

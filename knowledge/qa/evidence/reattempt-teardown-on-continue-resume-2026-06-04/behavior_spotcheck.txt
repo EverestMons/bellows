@@ -1,0 +1,34 @@
+Behavioral spot-checks — read from test bodies in tests/test_consume_verdicts.py:
+
+(i) SUCCESS test (test_retry_clears_dirty_tree_teardown_on_success, line 1029):
+- gate_result has one {"gate": "worktree_teardown", "evidence": "worktree_teardown_dirty_tree: ..."} failure
+- wt_path is a real tmp directory (os.makedirs(wt_path))
+- _teardown_worktree monkeypatched to no-op (success)
+- Asserts: result is True
+- Asserts: `not any(f.get("gate") == "worktree_teardown" for f in gate_result["failures"])` — failure is GONE
+- Asserts: mock_teardown.assert_called_once_with(tmp, wt_path, "test-slug") — called correctly
+CONFIRMED: worktree_teardown failure is GONE from gate_result["failures"] after True return
+
+(ii) CONTENT-CONFLICT test (test_retry_skips_content_conflict, line 1052):
+- Evidence is "cherry-pick conflict on bellows.py" (no worktree_teardown_dirty_tree token)
+- wt_path exists (os.makedirs)
+- _teardown_worktree is a spy recording calls
+- Asserts: result is False
+- Asserts: `any(f.get("gate") == "worktree_teardown" for f in gate_result["failures"])` — failure RETAINED
+- Asserts: `len(calls) == 0` — _teardown_worktree was NOT called
+CONFIRMED: content-conflict skipped, failure retained, _teardown_worktree NOT called
+
+(ii-b) MISSING-WORKTREE test (test_retry_skips_when_worktree_missing, line 1080):
+- Evidence contains worktree_teardown_dirty_tree but wt_path="/nonexistent/worktree/path"
+- _teardown_worktree is a spy recording calls
+- Asserts: result is False
+- Asserts: failure RETAINED
+- Asserts: `len(calls) == 0` — _teardown_worktree NOT called
+CONFIRMED: missing worktree skipped, failure retained, _teardown_worktree NOT called
+
+(iii) RAISES-AGAIN test (test_retry_keeps_failure_when_teardown_raises_again, line 1106):
+- Dirty-tree failure, wt_path exists
+- _teardown_worktree raises WorktreeTeardownError("worktree_teardown_dirty_tree: still dirty")
+- Asserts: result is False
+- Asserts: `any(f.get("gate") == "worktree_teardown" for f in gate_result["failures"])` — failure RETAINED
+CONFIRMED: failure RETAINED so Gap-1b still halts
