@@ -2008,3 +2008,15 @@ The Planner authors plans in a Project conversation with MCP filesystem tools. T
 3. **PROJECT_STATUS.md is very large (33k+ tokens).** Reading required offset/limit parameters due to token cap. The plan instruction to "find the existing topmost Completed entry as anchor" worked well with grep + targeted read. Consider periodic archival of older entries to keep the file manageable.
 
 4. **QA scope note was well-placed and prevented waste.** The explicit "code-level ONLY — do NOT dispatch or simulate a live multi-step plan" instruction saved time by front-loading the constraint. This is a good pattern for plans where live testing would be self-defeating.
+
+---
+
+## 2026-06-04 — executable-seen-invalidate-on-created-moved (DEV Step 1)
+
+1. **`governance/GUARDRAILS.md` absent in worktree (recurring).** Plan instructs "Read your specialist file at `agents/BELLOWS_DEVELOPER.md` and `governance/GUARDRAILS.md` first." GUARDRAILS.md does not exist in this worktree. Ninth consecutive occurrence across plans. Recommend removing or conditionalizing.
+
+2. **Pre-edit verification queries were well-structured and efficient.** All four queries returned exact matches with no false positives. The "locate by symbol/string, not line number" instruction correctly anticipated line drift. No verification mismatches.
+
+3. **Helper extraction spec was precise and complete.** The plan provided the exact helper body including the `_log` addition, and the exact callback wiring. No ambiguity in implementation — zero interpretation required. This is the ideal spec shape for mechanical refactoring tasks.
+
+4. **Test mirroring instruction was clear.** "Mirror the two existing `on_modified` `_seen` tests for the create and move paths" plus explicit test names and assertion expectations left no room for misinterpretation. The existing tests served as a clean template.

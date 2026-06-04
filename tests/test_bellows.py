@@ -3321,6 +3321,119 @@ def test_on_modified_preserves_seen_for_lifecycle_renames():
         mock_handle.assert_called_once_with(path)
 
 
+def test_on_created_invalidates_seen_for_runnable_plan():
+    """on_created must discard the slug from _seen when the created file is a runnable plan
+    without a lifecycle prefix, allowing re-deposits (e.g. follow-on executables after a
+    Planner-direct close) to dispatch."""
+    mock_orch = MagicMock()
+    mock_orch._seen = set()
+    handler = bellows.PlanHandler(mock_orch)
+
+    with tempfile.TemporaryDirectory() as tmp:
+        mock_orch.config = {"watched_projects": [tmp]}
+        fname = "executable-widget-2026-05-11.md"
+        path = os.path.join(tmp, fname)
+        open(path, "w").close()
+
+        slug = verdict.slug_from_path(path)
+        mock_orch._seen.add(slug)
+
+        event = MagicMock()
+        event.is_directory = False
+        event.src_path = path
+
+        with patch.object(handler, "_handle") as mock_handle:
+            handler.on_created(event)
+
+        assert slug not in mock_orch._seen, "slug should be discarded from _seen on non-lifecycle on_created"
+        mock_handle.assert_called_once_with(path)
+
+
+def test_on_created_preserves_seen_for_lifecycle_renames():
+    """on_created must NOT invalidate _seen when the file has a Bellows-managed lifecycle
+    prefix (in-progress-, verdict-pending-, halted-). This prevents re-dispatch loops."""
+    mock_orch = MagicMock()
+    mock_orch._seen = set()
+    handler = bellows.PlanHandler(mock_orch)
+
+    lifecycle_filenames = [
+        "in-progress-executable-widget-2026-05-11.md",
+        "verdict-pending-executable-widget-2026-05-11.md",
+        "halted-executable-widget-2026-05-11.md",
+    ]
+
+    for lf in lifecycle_filenames:
+        path = f"/proj/knowledge/decisions/{lf}"
+        slug = verdict.slug_from_path(path)
+        mock_orch._seen.add(slug)
+
+        event = MagicMock()
+        event.is_directory = False
+        event.src_path = path
+
+        with patch.object(handler, "_handle") as mock_handle:
+            handler.on_created(event)
+
+        assert slug in mock_orch._seen, f"slug should remain in _seen for lifecycle prefix file {lf}"
+        mock_handle.assert_called_once_with(path)
+
+
+def test_on_moved_invalidates_seen_for_runnable_plan():
+    """on_moved must discard the slug from _seen when the dest file is a runnable plan
+    without a lifecycle prefix, allowing re-deposits via cross-directory moves to dispatch."""
+    mock_orch = MagicMock()
+    mock_orch._seen = set()
+    handler = bellows.PlanHandler(mock_orch)
+
+    with tempfile.TemporaryDirectory() as tmp:
+        mock_orch.config = {"watched_projects": [tmp]}
+        fname = "executable-widget-2026-05-11.md"
+        dest_path = os.path.join(tmp, fname)
+        open(dest_path, "w").close()
+
+        slug = verdict.slug_from_path(dest_path)
+        mock_orch._seen.add(slug)
+
+        event = MagicMock()
+        event.is_directory = False
+        event.dest_path = dest_path
+
+        with patch.object(handler, "_handle") as mock_handle:
+            handler.on_moved(event)
+
+        assert slug not in mock_orch._seen, "slug should be discarded from _seen on non-lifecycle on_moved"
+        mock_handle.assert_called_once_with(dest_path)
+
+
+def test_on_moved_preserves_seen_for_lifecycle_renames():
+    """on_moved must NOT invalidate _seen when the dest file has a Bellows-managed lifecycle
+    prefix (in-progress-, verdict-pending-, halted-). This prevents re-dispatch loops."""
+    mock_orch = MagicMock()
+    mock_orch._seen = set()
+    handler = bellows.PlanHandler(mock_orch)
+
+    lifecycle_filenames = [
+        "in-progress-executable-widget-2026-05-11.md",
+        "verdict-pending-executable-widget-2026-05-11.md",
+        "halted-executable-widget-2026-05-11.md",
+    ]
+
+    for lf in lifecycle_filenames:
+        dest_path = f"/proj/knowledge/decisions/{lf}"
+        slug = verdict.slug_from_path(dest_path)
+        mock_orch._seen.add(slug)
+
+        event = MagicMock()
+        event.is_directory = False
+        event.dest_path = dest_path
+
+        with patch.object(handler, "_handle") as mock_handle:
+            handler.on_moved(event)
+
+        assert slug in mock_orch._seen, f"slug should remain in _seen for lifecycle prefix file {lf}"
+        mock_handle.assert_called_once_with(dest_path)
+
+
 def test_apply_defensive_header_defaults_propagates_to_reparsed_header():
     """Item 4 regression: after gates.check() re-parses the header at line ~498, run_plan must
     call _apply_defensive_header_defaults again so header_says_pause() consumers see the default."""
