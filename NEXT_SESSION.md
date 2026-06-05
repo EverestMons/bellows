@@ -18,15 +18,15 @@
 ## State (verified at wrap)
 
 - **bellows** — fix+QA+feedback + this wrap on `main`, pushed (`2fbde94`); tree clean after.
-- **Governance repo (= GitHub top-level repo, NOT an `eluvian-governance/` subdir)** — bellows submodule pointer bumped + pushed (`f09e249`); `git submodule status` shows clean space-prefix at `2fbde94`. LESSONS unchanged this session (see observation below — no durable lesson filed on n=1).
+- **Governance repo (= GitHub top-level repo, NOT an `eluvian-governance/` subdir)** — bellows submodule pointer bumped + pushed (`f09e249`); `git submodule status` shows clean space-prefix at `2fbde94`. LESSONS unchanged this session (see Resolved section — the "no worktree" item was my own mid-session misread, now closed; no lesson).
 - **Daemon:** NO restart owed. The overnight restart already loaded `gates.py @ ee2bb4c`, so the directory-mention clause is already live. Verify exactly one `bellows.py` via `ps aux | grep [b]ellows.py`; confirm heartbeat fingerprint reads `gates.py @ git:ee2bb4c` or later.
 - No in-flight plans, no pending verdicts. (`decisions/` still carries the stale `halted-*` cruft dating 05-01 — triage-and-close hygiene item, unchanged.)
 
 ---
 
-## Observation to verify next session (NOT a filed lesson)
+## Resolved this session (worktree model confirmed intact)
 
-- **This dispatch executed on `main` with no live worktree at the Step-1 pause** (`git worktree list` showed only `main`; DEV/QA commits landed directly on `main`). That contradicts the worktree-per-step model the memory snapshot and prior batons assume — it made the plan's own "runs under pre-edit gates.py / restart owed after ship" reasoning stale (the fix was live before the plan even finished). n=1; could be "this config never uses worktrees" OR "worktree torn down between steps." Worth a deliberate check next session before authoring any plan whose correctness depends on worktree isolation. Did NOT file a LESSONS entry on one observation.
+- **The worktree-per-step model holds for bellows dispatch — earlier "no worktree" read was wrong.** I misread `git worktree list` (run AFTER the Step-1 pause/teardown) as "executes on `main`, no worktree." Closed by code + git forensics: `bellows/.git` is a directory, so `_create_worktree` takes the worktree path (the in-place sentinel only triggers when `.git` is absent); `.bellows-worktrees/` was created then emptied by teardown; and all three commits show author<committer time skew pinned to the gate-pass moments (`ee2bb4c` 17:59:28→17:59:38; `a75e0b6`/`b470a8d` 07:33:2x→07:33:38) — the cherry-pick signature. So DEV/QA committed INSIDE the worktree and `_teardown_worktree` cherry-picked onto `main` at each pause. The only genuinely stale bit in the plan's reasoning was the daemon-binary timing (overnight restart loaded `gates.py @ ee2bb4c` before QA ran), NOT the worktree assumption. No LESSONS entry — this was my own mid-session misread, not a system behavior change.
 
 ---
 
