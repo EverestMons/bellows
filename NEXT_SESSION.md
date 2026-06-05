@@ -1,65 +1,68 @@
 # Bellows — Next Session Baton
 
-**Last session:** 2026-06-04 (#7 `_seen` re-deposit; second 2026-06-04 session, follows the Gap 1c session earlier the same day)
-**Last session focus:** Shipped the `_seen` re-deposit invalidation fix (BACKLOG #7) — mirrored the `on_modified` `_seen`-invalidation into `on_created`/`on_moved` via one helper, so a follow-on plan deposited at a stale slug after a Planner-direct Done/ move re-dispatches without a daemon restart. Full DEV→QA on default Opus, clean close, no R2.
+**Last session:** 2026-06-05 (scope_check directory-mention FP; follows the #7 `_seen` session of 2026-06-04)
+**Last session focus:** Shipped the directory-mention half of the scope_check false-positive pair (was Open 2026-05-28 session 16) — one depth-guarded trailing-slash ancestor-directory clause in `_gate_scope_check`, so child files written under a Deposits-block-named directory pass scope_check without an explicit per-filename mention. Full DEV→QA on default Opus, clean close, no R2.
 
 ---
 
 ## Session summary
 
-- **#7 — SHIPPED and closed (RE-FRAMED).** `executable-seen-invalidate-on-created-moved-2026-06-04.md` (now in `Done/`). The open entry's PRIMARY proposed fix (clear `_seen` at the Done/ transition) was already shipped for daemon-driven closes (`bellows.py:699`, `:1457`) and irrelevant to the real repro — a Planner-direct `Filesystem:move_file` close the daemon never observes. Shipped the entry's ALTERNATIVE, refined: one `PlanHandler._invalidate_seen_on_redeposit(self, path)` helper called from `on_created`/`on_modified`/`on_moved`; lifecycle-prefix guard preserved verbatim; `_handle` + 30s rescan byte-unchanged (invalidation lives ONLY in the watcher callbacks, never in `_handle`, which rescan also calls). 4 tests in `test_bellows.py` mirroring the existing `on_modified` pair (L3267/L3295). Commits `d5fd9c9` (fix) + `6411de2` (QA) + `b9baf75` (feedback). Suite 444→448 passed / 5 carry-over / zero new.
-- **Clean dogfood** — both verdicts clean (read the Gate Result JSON each time; no teardown failure, `main` clean). Only the known `stop_prose` WARN at claim. No R2, no false-positive gate trips.
-- **Organic Opus A/B baseline:** DEV 30 turns / ~197s / $0.82; QA 48 turns / ~304s / $1.62 (`logs/20260604-140708-step.json`, `logs/20260604-170632-step.json`).
-- **Gap 3 DEFERRED** (CEO next-cut decision this session) — see "THE next work item."
+- **scope_check directory-mention FP — SHIPPED and closed.** `executable-scope-check-dir-mention-2026-06-04.md` (now in `Done/`). One additive clause in `_gate_scope_check` (`gates.py`), inserted after `fpath in step_text or basename in step_text` and before `out_of_scope.append(fpath)`: walk the changed file's OWN ancestor dirs (`os.path.dirname`); accept if an ancestor with a trailing slash and >=2 segments (`parent.count("/") >= 1`) appears in the step text. Depth guard blocks shallow `web/`-style blanket authorization; ancestors derived from `fpath` so only a genuine parent matches. Purely additive — only widens scope, never narrows; four pre-existing clauses byte-unchanged. 4 tests in `test_gates.py` (2 positive, 2 NEGATIVE proving teeth). Commits `ee2bb4c` (fix) + `a75e0b6` (QA) + `b470a8d` (feedback). Zero new failures.
+- **Scope decision (CEO this session):** directory-mention half ONLY. The sibling **2026-05-29 blueprint-delegation FP** (same root cause) was excluded as the higher-risk regex shape and is now the SOLE remaining scope_check FP — still Open.
+- **No diagnostic** — direct code read fully established the matcher baseline (Rule 10 bar met, as #7's did); the entry's "appears to require per-filename mention" hypothesis confirmed verbatim against `gates.py`.
+- **Clean dogfood** — both verdicts clean (read the full Gate Result JSON each time; `failures: []`). Only the known `stop_prose` WARN at claim. No R2, no false-positive gate trips.
+- **Organic Opus A/B baseline:** DEV 33 turns / ~276s / $0.93; QA 39 turns / ~246s / $1.37 (`logs/20260604-175500-step.json`, `logs/20260605-072930-step.json`).
 
 ---
 
 ## State (verified at wrap)
 
-- **bellows** — #7 fix+QA+feedback on `main`; tip is this session's lifecycle/BACKLOG/baton wrap commit; tree clean after.
-- **Governance repo (= GitHub top-level repo, NOT an `eluvian-governance/` subdir — memory was stale on this)** — bellows submodule pointer bumped + pushed. LESSONS unchanged this session (the #7 lesson already exists in the "BACKLOG framing lags code" family; no new entry needed).
-- **Daemon:** CEO restarted this session to activate the create/move invalidation (it lives in the watcher callbacks; the running daemon executed the plan under pre-edit code). Verify exactly one `bellows.py` via `ps aux | grep [b]ellows.py`.
-- No in-flight plans, no pending verdicts. (`decisions/` still carries the stale `halted-*` cruft dating 05-01→05-28 — triage-and-close hygiene item, unchanged.)
+- **bellows** — fix+QA+feedback + this wrap on `main`, pushed (`2fbde94`); tree clean after.
+- **Governance repo (= GitHub top-level repo, NOT an `eluvian-governance/` subdir)** — bellows submodule pointer bumped + pushed (`f09e249`); `git submodule status` shows clean space-prefix at `2fbde94`. LESSONS unchanged this session (see observation below — no durable lesson filed on n=1).
+- **Daemon:** NO restart owed. The overnight restart already loaded `gates.py @ ee2bb4c`, so the directory-mention clause is already live. Verify exactly one `bellows.py` via `ps aux | grep [b]ellows.py`; confirm heartbeat fingerprint reads `gates.py @ git:ee2bb4c` or later.
+- No in-flight plans, no pending verdicts. (`decisions/` still carries the stale `halted-*` cruft dating 05-01 — triage-and-close hygiene item, unchanged.)
+
+---
+
+## Observation to verify next session (NOT a filed lesson)
+
+- **This dispatch executed on `main` with no live worktree at the Step-1 pause** (`git worktree list` showed only `main`; DEV/QA commits landed directly on `main`). That contradicts the worktree-per-step model the memory snapshot and prior batons assume — it made the plan's own "runs under pre-edit gates.py / restart owed after ship" reasoning stale (the fix was live before the plan even finished). n=1; could be "this config never uses worktrees" OR "worktree torn down between steps." Worth a deliberate check next session before authoring any plan whose correctness depends on worktree isolation. Did NOT file a LESSONS entry on one observation.
 
 ---
 
 ## THE next work item (decision, not yet authored)
 
-**Pick the next cut on value-per-effort across ALL Open items — do NOT default to "finishing the worktree family."**
+**Pick the next cut on value-per-effort across ALL Open items.**
 
-- **Gap 3 is DEFERRED.** After 1(b) halt-safe + 2(a) commit-preserve + 1(c) auto-recover-common-case, the worktree family holds no remaining correctness or data-safety gap; both leftover cuts (Gap 3, Gap 2(b)/(c)) are friction-reduction. Gap 3's only trigger-removing shape (3(a) auto-stash) injects an unstash-conflict data-risk into the just-hardened teardown cherry-pick path — a strict regression on the protected dimension. Full reasoning in the worktree-family BACKLOG entry, "Status 2026-06-04" note.
-- **If staying in-family:** Gap 2(b)/(c) functional resume recovery is the higher-value target (restart-during-pause regresses the next step's base tree; gates catch it + 2(a) preserves the commits, so it's recovery-friction, not silent loss). Code-level QA only; fiddly test surface (a live multi-step run would trip the bug).
-- **Other live Open candidates (value-per-effort):** scope_check FP pair (2026-05-29 blueprint-delegation + 2026-05-28 directory-mention — same family, batchable, frequent); stop_prose detector FP family (3 sources, low sev — overlaps the parked governance decision below); the cosmetic U+FFFD QA-report mojibake one-char fix (2026-06-01).
+- **scope_check blueprint-delegation FP (2026-05-29)** — now the sole remaining scope_check FP. Higher-value-if-tackled but the flagged 4a regex-fragility risk applies: fix (a) follow blueprint reference + view-and-extract; fix (b) inline `**Target Files:**` block in PLANNER_TEMPLATE (trivial, non-load-bearing). Frequent on SA->DEV->QA blueprint executables.
+- **stop_prose detector FP family (3 sources, low sev)** — overlaps the parked governance decision below; needs a CEO call regardless. Leaning (a) remove the prose from the template.
+- **Worktree Gap 2(b)/(c) functional resume recovery** — in-family, higher-value if staying; code-level QA only, fiddly test surface. (Gap 3 remains DEFERRED — do not resurface; reasoning in the worktree-family BACKLOG "Status 2026-06-04" note.)
+- **U+FFFD QA-report mojibake (2026-06-01)** — cosmetic one-char fix, trivial; fold in as a free add-on, not a target.
 
 ---
 
 ## Parked governance decision (carried)
 
-- **`stop_prose` dispatch-validator vs the PLANNER_TEMPLATE `**STOP. Do NOT proceed...**` block.** Fired its WARN again this session (non-blocking; plan started normally). LIVE contradiction — CEO call between (a) remove the prose from the template vs (b) relax the validator regex. Leaning (a). Tracked in BACKLOG (2026-05-29).
+- **`stop_prose` dispatch-validator vs the PLANNER_TEMPLATE `**STOP. Do NOT proceed...**` block.** Fired its WARN again this session (non-blocking; plan started normally). LIVE contradiction — CEO call between (a) remove the prose from the template vs (b) relax the validator regex. Leaning (a). Tracked in BACKLOG (2026-05-29; note the third source — sentence-final "stop." in QA prose — which (b)'s `Do NOT proceed to Step` anchor would NOT cover).
 
 ---
 
 ## Discipline reminders for next baton
 
-- **Code-verify BACKLOG/blueprint items before authoring — paid off hard this session.** #7's PRIMARY proposed fix was already shipped; only reading `bellows.py` (not trusting the entry text) caught it, and the real fix site was the entry's *alternative*. (LESSONS family 466/489/493; 2026-06-02 freshness-axis.)
-- **Read the verdict-request Gate Result JSON before EVERY verdict** (the `passed=True` log line precedes teardown; a `worktree_teardown` failure appends after it and is invisible there). Did so both verdicts; clean.
-- **Keep `main` clean at pauses** — stray non-lifecycle files trip `_teardown_worktree` (b2). Used `_staging_*` files at repo root for the atomic deposit + verdict moves; each removed by its `mv`.
+- **Code-verify BACKLOG items before authoring.** This session's baseline came from a direct `gates.py` read, not the entry text; that's also what lets you skip the diagnostic (Rule 10) when the read is conclusive.
+- **Read the verdict-request Gate Result JSON before EVERY verdict** (`passed=True` log line precedes any teardown failure; on-main dispatch had no teardown, but keep the habit).
+- **Self-trip avoidance on scope_check/gate-fix plans:** enumerate every evidence basename in the QA `required_evidence_files` list so the QA evidence dir passes the PRE-edit gate; prove the new gate behavior with unit tests, not the plan's own execution.
+- **Keep `main` clean at pauses.** Used `_staging_*` files at repo root for atomic deposit + verdict moves; each removed by its `mv`.
 - **Governance root is the GitHub top level** (`/Users/marklehn/Developer/GitHub`); `LESSONS.md` is there; the submodule bump runs there. Per-project batons live at `<project>/NEXT_SESSION.md`.
 
 ---
 
 ## On the horizon (other)
 
-- Worktree family: Gap 2(b)/(c) (in-family next option), Gap 3 (deferred). `_seen` re-deposit now closed.
-- scope_check FP pair, stop_prose FP family, U+FFFD mojibake one-char fix.
-- 16 stale `halted-*` files in `decisions/` — triage-and-close hygiene pass.
-- Pre-existing test failures (4× `test_decisions.py` + `test_run_step_timeout`) — unrelated carry-over.
+- scope_check blueprint-delegation FP (remaining half), stop_prose FP family (+ parked governance call), worktree Gap 2(b)/(c) (Gap 3 deferred), U+FFFD mojibake one-char fix.
+- Stale `halted-*` files in `decisions/` — triage-and-close hygiene pass.
+- Pre-existing test carry-over (`test_decisions.py` env-variant + `test_run_step_timeout`) — unrelated; varies by environment.
 - Bellows status UI (2026-05-21) — still unscoped.
 - Other projects: anvil (first executable pending), invoice-pulse Phase B / T0.5.1 reconciliation (pending Windows query), forge, study, BrewBuddy, SimpleScreen, freight-kb, ai-career-digest.
 
 ---
-
-## CEO actions before next session
-
-- Daemon restart — DONE this session. Verify a single `bellows.py` process if not already.
-- Top of next session: decide the next cut (see "THE next work item") and authorize.
