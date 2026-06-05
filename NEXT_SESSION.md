@@ -1,68 +1,65 @@
 # Bellows — Next Session Baton
 
-**Last session:** 2026-06-05 (scope_check directory-mention FP; follows the #7 `_seen` session of 2026-06-04)
-**Last session focus:** Shipped the directory-mention half of the scope_check false-positive pair (was Open 2026-05-28 session 16) — one depth-guarded trailing-slash ancestor-directory clause in `_gate_scope_check`, so child files written under a Deposits-block-named directory pass scope_check without an explicit per-filename mention. Full DEV→QA on default Opus, clean close, no R2.
+**Last session:** 2026-06-05 (two ships: scope_check directory-mention FP, then `_teardown_worktree` (b) silent-loss fix)
+**Last session focus:** Closed the last open data-safety gap in the worktree teardown/resume family — `_teardown_worktree` step (b) now raises on a `git log` failure instead of swallowing it into an empty commit list. Earlier the same session: shipped the scope_check directory-mention FP, confirmed Gap 2(b)/(c) is already closed (diagnostic), and found the "template bundle" moot.
 
 ---
 
-## Session summary
+## Session summary (in order)
 
-- **scope_check directory-mention FP — SHIPPED and closed.** `executable-scope-check-dir-mention-2026-06-04.md` (now in `Done/`). One additive clause in `_gate_scope_check` (`gates.py`), inserted after `fpath in step_text or basename in step_text` and before `out_of_scope.append(fpath)`: walk the changed file's OWN ancestor dirs (`os.path.dirname`); accept if an ancestor with a trailing slash and >=2 segments (`parent.count("/") >= 1`) appears in the step text. Depth guard blocks shallow `web/`-style blanket authorization; ancestors derived from `fpath` so only a genuine parent matches. Purely additive — only widens scope, never narrows; four pre-existing clauses byte-unchanged. 4 tests in `test_gates.py` (2 positive, 2 NEGATIVE proving teeth). Commits `ee2bb4c` (fix) + `a75e0b6` (QA) + `b470a8d` (feedback). Zero new failures.
-- **Scope decision (CEO this session):** directory-mention half ONLY. The sibling **2026-05-29 blueprint-delegation FP** (same root cause) was excluded as the higher-risk regex shape and is now the SOLE remaining scope_check FP — still Open.
-- **No diagnostic** — direct code read fully established the matcher baseline (Rule 10 bar met, as #7's did); the entry's "appears to require per-filename mention" hypothesis confirmed verbatim against `gates.py`.
-- **Clean dogfood** — both verdicts clean (read the full Gate Result JSON each time; `failures: []`). Only the known `stop_prose` WARN at claim. No R2, no false-positive gate trips.
-- **Organic Opus A/B baseline:** DEV 33 turns / ~276s / $0.93; QA 39 turns / ~246s / $1.37 (`logs/20260604-175500-step.json`, `logs/20260605-072930-step.json`).
+1. **scope_check directory-mention FP — SHIPPED.** Depth-guarded trailing-slash ancestor clause in `_gate_scope_check`. (Closed 2026-06-05.) Sibling blueprint-delegation FP excluded.
+2. **Gap 2(b)/(c) — confirmed CLOSED by Planner-direct diagnostic.** `_teardown_worktree` lands-or-raises; the continue-advance is gated on no-uncleared-teardown-failure (1b) + the 1c retry; resume worktree is created from a HEAD that holds the prior commit. The 2026-05-30 silent-regression repro is the path 1b/1c now cover. Residual 2(b)/(c) = auto-resume-from-branch = friction + divergence-risk → DEFERRED.
+3. **`_teardown_worktree` (b) silent-loss — FILED then SHIPPED.** The diagnostic surfaced one real uncovered hole: step (b) swallowed a `git log` failure into `commit_shas = []` → silent commit loss, no recorded failure. Fix (a): raise `WorktreeTeardownError` on exception OR non-zero rc; legitimate-empty (rc 0, no commits) still proceeds. 3 tests incl. the empty-case negative; 4 existing teardown tests green. (Closed 2026-06-05.)
+4. **"Template bundle" found MOOT.** The Target-Files convention already exists as **Rule 14(b)** in PLANNER_TEMPLATE v4.59 — the blueprint-delegation FP recurrence was a discipline lapse, not a missing rule. The STOP-block removal is the wrong shape (the block is load-bearing for manual_bootstrap; stop_prose is warn-only and inert under bellows). No template edit made.
 
 ---
 
 ## State (verified at wrap)
 
-- **bellows** — fix+QA+feedback + this wrap on `main`, pushed (`2fbde94`); tree clean after.
-- **Governance repo (= GitHub top-level repo, NOT an `eluvian-governance/` subdir)** — bellows submodule pointer bumped + pushed (`f09e249`); `git submodule status` shows clean space-prefix at `2fbde94`. LESSONS unchanged this session (see Resolved section — the "no worktree" item was my own mid-session misread, now closed; no lesson).
-- **Daemon:** NO restart owed. The overnight restart already loaded `gates.py @ ee2bb4c`, so the directory-mention clause is already live. Verify exactly one `bellows.py` via `ps aux | grep [b]ellows.py`; confirm heartbeat fingerprint reads `gates.py @ git:ee2bb4c` or later.
-- No in-flight plans, no pending verdicts. (`decisions/` still carries the stale `halted-*` cruft dating 05-01 — triage-and-close hygiene item, unchanged.)
+- **bellows** — both ships' fix+QA+feedback + lifecycle/BACKLOG/baton wraps on `main`, pushed; tree clean after.
+- **Governance repo (= GitHub top-level, NOT an `eluvian-governance/` subdir)** — bellows submodule pointer bumped + pushed; `git submodule status` clean (space prefix). LESSONS unchanged (no new durable lesson — the misframings were caught by verify-before-fix, the existing discipline).
+- **Daemon:** ⚠️ **RESTART OWED.** The teardown-(b) fix is in `_teardown_worktree`, loaded at daemon startup; the running daemon still holds the pre-edit teardown. Restart to activate, then confirm the heartbeat fingerprint shows the new `bellows.py` per-file commit. (The scope_check dir-mention fix from earlier today is already live — it shipped before the overnight restart loaded `gates.py @ ee2bb4c`.)
+- No in-flight plans, no pending verdicts. (`decisions/` still carries the stale `halted-*` cruft from 05-01 — hygiene item.)
 
 ---
 
-## Resolved this session (worktree model confirmed intact)
+## THE next work item — note the well has mostly run dry on high-value cuts
 
-- **The worktree-per-step model holds for bellows dispatch — earlier "no worktree" read was wrong.** I misread `git worktree list` (run AFTER the Step-1 pause/teardown) as "executes on `main`, no worktree." Closed by code + git forensics: `bellows/.git` is a directory, so `_create_worktree` takes the worktree path (the in-place sentinel only triggers when `.git` is absent); `.bellows-worktrees/` was created then emptied by teardown; and all three commits show author<committer time skew pinned to the gate-pass moments (`ee2bb4c` 17:59:28→17:59:38; `a75e0b6`/`b470a8d` 07:33:2x→07:33:38) — the cherry-pick signature. So DEV/QA committed INSIDE the worktree and `_teardown_worktree` cherry-picked onto `main` at each pause. The only genuinely stale bit in the plan's reasoning was the daemon-binary timing (overnight restart loaded `gates.py @ ee2bb4c` before QA ran), NOT the worktree assumption. No LESSONS entry — this was my own mid-session misread, not a system behavior change.
+This session's verification established that the high-frequency / correctness items are largely done:
+- **scope_check dir-mention** → shipped. **teardown-(b) silent-loss** → shipped (last data-safety gap). **Gap 2(b)/(c)** → target closed. **blueprint-delegation** → already covered by Rule 14(b) (discipline, not a code fix).
 
----
+Remaining Open candidates are LOW value — weigh carefully before dispatching:
+- **stop_prose FP family** — warn-only, inert under bellows mode (the daemon owns the pause). The real decision is governance: keep-and-suppress vs **delete the vestigial check** in `validators.py:check_stop_prose`. Leaning delete — it prevents no failure under bellows and only produces claim-time noise. CEO call; low value either way.
+- **U+FFFD QA-report mojibake (2026-06-01)** — trivial one-char cosmetic fix to a closed plan's QA report; near-zero value, fine as a free add-on.
+- **Worktree Gap 2(b)/(c) auto-resume + Gap 3 auto-stash** — both DEFERRED (friction-reduction with divergence/unstash data-risk; no correctness gap remains).
+- **Deferred/low Open items** (deposits parenthetical, verdict-filename prefix tolerance, `_extract_step_text` case-sensitivity, Bellows status UI, parallel-teardown conflicts, dirty-PROJECT_STATUS teardown) — each gated on a second occurrence or a separate planning session.
 
-## THE next work item (decision, not yet authored)
-
-**Pick the next cut on value-per-effort across ALL Open items.**
-
-- **scope_check blueprint-delegation FP (2026-05-29)** — now the sole remaining scope_check FP. Higher-value-if-tackled but the flagged 4a regex-fragility risk applies: fix (a) follow blueprint reference + view-and-extract; fix (b) inline `**Target Files:**` block in PLANNER_TEMPLATE (trivial, non-load-bearing). Frequent on SA->DEV->QA blueprint executables.
-- **stop_prose detector FP family (3 sources, low sev)** — overlaps the parked governance decision below; needs a CEO call regardless. Leaning (a) remove the prose from the template.
-- **Worktree Gap 2(b)/(c) functional resume recovery** — in-family, higher-value if staying; code-level QA only, fiddly test surface. (Gap 3 remains DEFERRED — do not resurface; reasoning in the worktree-family BACKLOG "Status 2026-06-04" note.)
-- **U+FFFD QA-report mojibake (2026-06-01)** — cosmetic one-char fix, trivial; fold in as a free add-on, not a target.
+Honest read: consider whether the next session's value is higher on **another project** (anvil first executable, invoice-pulse Phase B / T0.5.1, ai-career-digest Phase 2) than on the remaining Bellows backlog.
 
 ---
 
 ## Parked governance decision (carried)
 
-- **`stop_prose` dispatch-validator vs the PLANNER_TEMPLATE `**STOP. Do NOT proceed...**` block.** Fired its WARN again this session (non-blocking; plan started normally). LIVE contradiction — CEO call between (a) remove the prose from the template vs (b) relax the validator regex. Leaning (a). Tracked in BACKLOG (2026-05-29; note the third source — sentence-final "stop." in QA prose — which (b)'s `Do NOT proceed to Step` anchor would NOT cover).
+- **`stop_prose` check disposition** — now sharper after this session's read: it's warn-only and inert under bellows; the canonical `**STOP…**` block is template-prescribed and load-bearing for manual_bootstrap. Decision is keep-and-suppress-canonical vs delete-the-check. Leaning delete.
 
 ---
 
 ## Discipline reminders for next baton
 
-- **Code-verify BACKLOG items before authoring.** This session's baseline came from a direct `gates.py` read, not the entry text; that's also what lets you skip the diagnostic (Rule 10) when the read is conclusive.
-- **Read the verdict-request Gate Result JSON before EVERY verdict** (`passed=True` log line precedes any teardown failure; on-main dispatch had no teardown, but keep the habit).
-- **Self-trip avoidance on scope_check/gate-fix plans:** enumerate every evidence basename in the QA `required_evidence_files` list so the QA evidence dir passes the PRE-edit gate; prove the new gate behavior with unit tests, not the plan's own execution.
-- **Keep `main` clean at pauses.** Used `_staging_*` files at repo root for atomic deposit + verdict moves; each removed by its `mv`.
-- **Governance root is the GitHub top level** (`/Users/marklehn/Developer/GitHub`); `LESSONS.md` is there; the submodule bump runs there. Per-project batons live at `<project>/NEXT_SESSION.md`.
+- **Verify-before-fix paid off three times this session.** 2(b)/(c) target already closed; blueprint-delegation already covered by Rule 14(b); template-bundle STOP-removal wrong shape. Read the live code/template before authoring against a >7-day BACKLOG entry.
+- **Read the verdict-request Gate Result JSON before EVERY verdict** (teardown failures append after the `passed=True` log line).
+- **Worktree model IS per-step with teardown-cherry-pick-to-main at each pause** (confirmed this session via author<committer skew). `git worktree list` looks empty at a pause because teardown already ran; that's normal, not "no worktree."
+- **Self-trip avoidance on gate/teardown-fix plans:** enumerate every evidence basename in QA `required_evidence_files`; prove new behavior with unit tests, not the plan's own execution; this plan's own teardown runs under pre-edit code (restart owed after ship).
+- **Governance root is the GitHub top level**; LESSONS + submodule bump live there; per-project batons at `<project>/NEXT_SESSION.md`.
 
 ---
 
 ## On the horizon (other)
 
-- scope_check blueprint-delegation FP (remaining half), stop_prose FP family (+ parked governance call), worktree Gap 2(b)/(c) (Gap 3 deferred), U+FFFD mojibake one-char fix.
+- stop_prose disposition (governance), U+FFFD cosmetic, deferred worktree friction (2b/c, Gap 3).
 - Stale `halted-*` files in `decisions/` — triage-and-close hygiene pass.
-- Pre-existing test carry-over (`test_decisions.py` env-variant + `test_run_step_timeout`) — unrelated; varies by environment.
-- Bellows status UI (2026-05-21) — still unscoped.
-- Other projects: anvil (first executable pending), invoice-pulse Phase B / T0.5.1 reconciliation (pending Windows query), forge, study, BrewBuddy, SimpleScreen, freight-kb, ai-career-digest.
+- Pre-existing test carry-over (`test_decisions.py` env-variant + `test_run_step_timeout`).
+- Bellows status UI (2026-05-21) — unscoped.
+- Other projects: anvil (first executable pending), invoice-pulse Phase B / T0.5.1 reconciliation (pending Windows query), forge, study, BrewBuddy, SimpleScreen, freight-kb, ai-career-digest Phase 2.
 
 ---
