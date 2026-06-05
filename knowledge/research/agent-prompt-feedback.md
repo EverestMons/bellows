@@ -3,6 +3,18 @@
 **Date:** 2026-05-29
 **Plans:** diagnostic-claude-settings-permission-gap-2026-05-22, executable-pre-scan-orphan-guard-2026-05-22, executable-bellows-tier-1-batch-2026-05-21, executable-bellows-expected-keys-narrow-2026-05-21, diagnostic-bellows-expected-keys-warning-2026-05-21, diagnostic-bellows-isinstance-asymmetry-2026-05-21, executable-deposit-exists-path-form-normalization-2026-05-27, executable-disable-autoupdater-2026-05-27, diagnostic-planner-authored-contract-validation-2026-05-20, diagnostic-bash-gate-vs-guardrails-2026-05-20, executable-plan-write-time-lessons-reread-2026-05-13, diagnostic-pre-scan-orphan-warn-flood-2026-05-22, executable-remove-pre-scan-processed-rename-v2-2026-05-24, executable-rename-first-ordering-2026-05-24, executable-settings-local-bash-fallback-doc-2026-05-22, executable-mcp-read-class-tools-extension-2026-05-25, diagnostic-file-change-audit-false-negative-2026-05-25, executable-file-change-audit-fix-2026-05-25, executable-planner-template-rule-21-contract-change-2026-05-26, diagnostic-verdict-ledger-gate-result-preservation-2026-05-26, executable-verdict-ledger-gate-result-preservation-2026-05-26, executable-fix-f-guard-removal-2026-05-26, diagnostic-bellows-hardening-batch-freshness-2026-05-26, executable-bellows-hardening-batch-items-1-3-4-2026-05-26, executable-bellows-test-isolation-conftest-2026-05-26, diagnostic-leftover-after-ship-tooling-scope-2026-05-26, executable-leftover-after-ship-tooling-blueprint-2026-05-26, executable-leftover-after-ship-tooling-implementation-2026-05-26, executable-freshness-check-algorithm-v2-blueprint-2026-05-27, executable-freshness-check-algorithm-v2-blueprint-retry-2026-05-27, executable-freshness-check-algorithm-v2-implementation-2026-05-27, executable-worktree-precheck-hardening-2026-05-29
 
+## 2026-06-05 — executable-teardown-b-raise-on-log-failure (QA Step 2)
+
+1. **`governance/GUARDRAILS.md` absent — thirteenth consecutive occurrence.** Plan instructs "Read your specialist file at `agents/BELLOWS_QA.md` and `governance/GUARDRAILS.md` first." The governance directory does not exist in this worktree. Same recommendation as prior twelve entries: remove or conditionalize.
+
+2. **`RULE_20_SELF_CHECK_BLOCK.md` location requires search (recurring).** Plan says "at governance root" but the file lives at `/Users/marklehn/Developer/GitHub/RULE_20_SELF_CHECK_BLOCK.md`, not in a `governance/` subdirectory or the worktree. A `find` command was required to locate it. Second consecutive QA step with this issue.
+
+3. **QA verification table structure was clear and mechanical.** The 8-item deliverable checklist with explicit expected values and evidence file targets made verification straightforward. The "use the literal words PASS / FAIL" instruction prevents glyph ambiguity.
+
+4. **Scope note "code-level ONLY" was helpful.** The explicit prohibition against starting the daemon or depositing plans prevented scope creep and made the QA step self-contained.
+
+---
+
 ## 2026-06-05 — executable-teardown-b-raise-on-log-failure (DEV Step 1)
 
 1. **`governance/GUARDRAILS.md` absent — twelfth consecutive occurrence.** Plan instructs "Read your specialist file at `agents/BELLOWS_DEVELOPER.md` and `governance/GUARDRAILS.md` first." The governance directory does not exist in this worktree. Same recommendation as prior eleven entries: remove or conditionalize.
