@@ -1,0 +1,46 @@
+Full _gate_scope_check loop region from gates.py (lines 661-705):
+
+def _gate_scope_check(plan_text, step_number, files_changed, failures):
+    if not files_changed:
+        return
+
+    # Extract the step's section from the plan
+    step_text = _extract_step_text(plan_text, step_number)
+    if not step_text:
+        return
+
+    out_of_scope = []
+    for fpath in files_changed:
+        basename = os.path.basename(fpath)
+        if basename in SCOPE_ALLOWLIST:
+            continue
+        if any(basename.startswith(p) for p in SCOPE_ALLOWLIST_PREFIXES):
+            continue
+        if fpath in step_text or basename in step_text:
+            continue
+        # Directory-mention authorization (BACKLOG 2026-05-28 scope_check FP):
+        # [... new clause ...]
+        parent = os.path.dirname(fpath)
+        authorized_by_dir = False
+        while parent:
+            if parent.count("/") >= 1 and (parent + "/") in step_text:
+                authorized_by_dir = True
+                break
+            parent = os.path.dirname(parent)
+        if authorized_by_dir:
+            continue
+        out_of_scope.append(fpath)
+
+    if out_of_scope:
+        context = step_text[:200]
+        failures.append({
+            "gate": "scope_check",
+            "evidence": f"out-of-scope files: {', '.join(out_of_scope)} | plan step context: {context}",
+        })
+
+Verification — existing clauses byte-unchanged:
+- Clause 1: `if basename in SCOPE_ALLOWLIST: continue` (lines 673-674) — UNCHANGED
+- Clause 2: `if any(basename.startswith(p) for p in SCOPE_ALLOWLIST_PREFIXES): continue` (lines 675-676) — UNCHANGED
+- Clause 3: `if fpath in step_text or basename in step_text: continue` (lines 677-678) — UNCHANGED
+- `out_of_scope.append(fpath)` (line 697) — UNCHANGED (shifted down by inserted clause)
+- Failure-append and evidence string (lines 699-704) — UNCHANGED

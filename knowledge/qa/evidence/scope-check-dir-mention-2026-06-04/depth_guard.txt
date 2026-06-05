@@ -1,0 +1,9 @@
+Depth guard predicate extracted from gates.py line 691:
+
+            if parent.count("/") >= 1 and (parent + "/") in step_text:
+
+Verification: parent.count("/") >= 1 ensures at least 2 path segments
+(e.g. "knowledge/qa" has 1 slash → accepted; "web" has 0 slashes → rejected).
+
+This rejects single-segment directory mentions like "web/" from blanket-authorizing
+all files beneath them.

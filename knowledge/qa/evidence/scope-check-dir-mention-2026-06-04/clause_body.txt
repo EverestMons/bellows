@@ -1,0 +1,31 @@
+Clause extracted from gates.py lines 679-696, inside _gate_scope_check for-loop:
+
+        # Directory-mention authorization (BACKLOG 2026-05-28 scope_check FP):
+        # accept a changed file when an ANCESTOR directory of its OWN path —
+        # written with a trailing slash and at least 2 path segments deep
+        # (>= 1 slash) — appears in the step text. Covers Deposits blocks /
+        # step prose that name a deposit directory (e.g. an evidence dir) but
+        # reference its child files only collectively. The depth guard stops a
+        # shallow single-segment mention (e.g. "web/") from blanket-authorizing
+        # everything beneath it. Ancestors are derived from fpath itself, so
+        # only a genuine parent of the changed file can match.
+        parent = os.path.dirname(fpath)
+        authorized_by_dir = False
+        while parent:
+            if parent.count("/") >= 1 and (parent + "/") in step_text:
+                authorized_by_dir = True
+                break
+            parent = os.path.dirname(parent)
+        if authorized_by_dir:
+            continue
+
+Placement: AFTER `if fpath in step_text or basename in step_text: continue` (line 677-678)
+          BEFORE `out_of_scope.append(fpath)` (line 697)
+
+Verified components:
+- parent = os.path.dirname(fpath) — present
+- authorized_by_dir flag — present
+- while parent: ancestor walk — present
+- parent.count("/") >= 1 and (parent + "/") in step_text — present
+- parent = os.path.dirname(parent) decrement — present
+- if authorized_by_dir: continue — present

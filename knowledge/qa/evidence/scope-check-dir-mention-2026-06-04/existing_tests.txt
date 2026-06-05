@@ -1,0 +1,14 @@
+$ grep -n "def test_scope_check_passes_when_files_in_plan\|def test_scope_check_fails_when_file_not_in_plan\|def test_scope_check_allowlist\|def test_scope_check_prefix_allowlist_does_not_suppress_real_violations" tests/test_gates.py
+
+172:def test_scope_check_passes_when_files_in_plan():
+178:def test_scope_check_fails_when_file_not_in_plan():
+184:def test_scope_check_allowlist():
+408:def test_scope_check_prefix_allowlist_does_not_suppress_real_violations():
+
+All four existing scope_check tests present and passing:
+
+From pytest -v output:
+tests/test_gates.py::test_scope_check_passes_when_files_in_plan PASSED
+tests/test_gates.py::test_scope_check_fails_when_file_not_in_plan PASSED
+tests/test_gates.py::test_scope_check_allowlist PASSED
+tests/test_gates.py::test_scope_check_prefix_allowlist_does_not_suppress_real_violations PASSED

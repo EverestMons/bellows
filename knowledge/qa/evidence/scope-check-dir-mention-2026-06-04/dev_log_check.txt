@@ -1,0 +1,24 @@
+Dev log: knowledge/development/scope-check-dir-mention-2026-06-04.md
+File size: 6856 bytes
+
+First 5 lines:
+# scope_check Directory-Mention Authorization — Dev Log
+
+**Date:** 2026-06-04
+**Plan:** executable-scope-check-dir-mention-2026-06-04
+**Step:** 1 (DEV)
+
+Last 5 lines:
+### Flags for Next Step
+- Pre-edit baseline: 5 failed, 448 passed
+- Post-edit: 5 failed, 452 passed (+4 new tests, zero new failures)
+- Existing scope_check tests all green
+- The 5 carry-over failures are in `test_decisions.py` (×4) and `test_runner_parser.py` (×1)
+
+Verification of required content:
+- Clause verbatim: PRESENT (section "Inserted Clause (verbatim)")
+- Byte-unchanged confirmation: PRESENT (section "Existing Clauses — Byte-Unchanged Confirmation")
+- Depth-guard rationale: PRESENT (section "Depth-Guard Rationale")
+- Pre-edit verification: PRESENT (section "Pre-edit Verification (Rule 39)")
+- Both pytest runs: PRESENT (section "Pytest Runs" — pre-edit: 5 failed/448 passed; post-edit: 5 failed/452 passed)
+- Output Receipt: PRESENT (Status: Complete)

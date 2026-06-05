@@ -1,0 +1,39 @@
+$ python3 -m pytest tests/ -v 2>&1 | tail -200
+
+[... truncated for brevity — full verbose output below ...]
+
+Scope-check specific results:
+tests/test_gates.py::test_scope_check_passes_when_files_in_plan PASSED
+tests/test_gates.py::test_scope_check_fails_when_file_not_in_plan PASSED
+tests/test_gates.py::test_scope_check_allowlist PASSED
+tests/test_gates.py::test_scope_check_prefix_allowlist_in_progress PASSED
+tests/test_gates.py::test_scope_check_prefix_allowlist_verdict_pending PASSED
+tests/test_gates.py::test_scope_check_prefix_allowlist_halted PASSED
+tests/test_gates.py::test_scope_check_prefix_allowlist_does_not_suppress_real_violations PASSED
+tests/test_gates.py::test_scope_check_accepts_child_file_under_trailing_slash_dir PASSED
+tests/test_gates.py::test_scope_check_accepts_child_file_under_dir_placeholder_pattern PASSED
+tests/test_gates.py::test_scope_check_depth_guard_rejects_shallow_dir_mention PASSED
+tests/test_gates.py::test_scope_check_dir_mention_does_not_authorize_unmentioned_sibling_dir PASSED
+
+New tests (4):
+- test_scope_check_accepts_child_file_under_trailing_slash_dir — PASSED
+- test_scope_check_accepts_child_file_under_dir_placeholder_pattern — PASSED
+- test_scope_check_depth_guard_rejects_shallow_dir_mention — PASSED (NEGATIVE: gate correctly flags shallow dir)
+- test_scope_check_dir_mention_does_not_authorize_unmentioned_sibling_dir — PASSED (NEGATIVE: gate correctly flags unrelated dir)
+
+Existing scope_check tests (7): all PASSED
+
+Failures (5 carry-over, zero new):
+FAILED tests/test_decisions.py::TestLoadPhrases::test_loads_phrases_from_file
+FAILED tests/test_decisions.py::TestLoadPhrases::test_includes_known_phrases
+FAILED tests/test_decisions.py::TestLoadPhrases::test_splits_slash_alternatives
+FAILED tests/test_decisions.py::TestExtractDecisionBlocks::test_s_class_blocks_from_ground_truth
+FAILED tests/test_runner_parser.py::test_run_step_timeout
+
+=================== 5 failed, 452 passed, 1 warning in 9.17s ===================
+
+Verification:
+(a) All four new tests PASSED — both negative tests (depth_guard_rejects, sibling_dir) confirm gate teeth preserved
+(b) All four existing scope_check tests PASSED
+(c) ZERO new failures — same 5 carry-over as DEV's pre-edit baseline
+(d) Total pass count: 452 == DEV's reported post-edit number

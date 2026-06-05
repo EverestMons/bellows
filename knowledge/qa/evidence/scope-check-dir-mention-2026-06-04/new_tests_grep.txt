@@ -1,0 +1,8 @@
+$ grep -n "def test_scope_check_accepts_child_file_under_trailing_slash_dir\|def test_scope_check_accepts_child_file_under_dir_placeholder_pattern\|def test_scope_check_depth_guard_rejects_shallow_dir_mention\|def test_scope_check_dir_mention_does_not_authorize_unmentioned_sibling_dir" tests/test_gates.py
+
+416:def test_scope_check_accepts_child_file_under_trailing_slash_dir():
+428:def test_scope_check_accepts_child_file_under_dir_placeholder_pattern():
+440:def test_scope_check_depth_guard_rejects_shallow_dir_mention():
+453:def test_scope_check_dir_mention_does_not_authorize_unmentioned_sibling_dir():
+
+All four new tests present.
