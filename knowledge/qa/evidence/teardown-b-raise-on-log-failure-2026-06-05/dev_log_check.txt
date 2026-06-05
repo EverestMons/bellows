@@ -1,0 +1,26 @@
+Dev log: knowledge/development/teardown-b-raise-on-log-failure-2026-06-05.md
+
+Filesize: 119 lines
+
+First 5 lines:
+1: # Dev Log — _teardown_worktree (b): raise on git-log failure
+2:
+3: **Date:** 2026-06-05
+4: **Plan:** executable-teardown-b-raise-on-log-failure-2026-06-05
+5: **Step:** 1 (DEV)
+
+Last 5 lines:
+115: ### Flags for CEO
+116: - None
+117:
+118: ### Flags for Next Step
+119: - The 5 carry-over failures are pre-existing and unrelated to this change
+
+Contents confirmed:
+- Replaced block: PRESENT (lines 9-48, both original and replacement verbatim)
+- Byte-unchanged confirmation: PRESENT (line 52)
+- Fail-vs-empty distinction: PRESENT (lines 54-58, three paths documented)
+- Pre-edit verification results: PRESENT (lines 60-65, all 4 queries confirmed)
+- Pre-edit pytest run: PRESENT (line 70: "5 failed, 452 passed, 1 warning in 12.22s")
+- Post-edit pytest run: PRESENT (line 83: "5 failed, 455 passed, 1 warning in 8.56s")
+- Output Receipt: PRESENT, Status: Complete

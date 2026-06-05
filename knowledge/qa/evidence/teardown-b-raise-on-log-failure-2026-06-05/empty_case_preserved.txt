@@ -1,0 +1,15 @@
+Evidence: Legitimate-empty case preserved — bellows.py line 928
+
+After the try/except and the returncode check, the assignment runs unconditionally
+on a successful (returncode 0) git log:
+
+    commit_shas = result.stdout.strip().splitlines()[::-1]  # oldest-first for cherry-pick
+
+When returncode == 0 and stdout is empty, this produces commit_shas = [].
+No raise occurs — teardown proceeds to copy-back (d) and removal (e).
+
+Confirmation: returncode-0-empty does NOT raise. The only raise paths are:
+1. Exception during subprocess.run → WorktreeTeardownError
+2. result.returncode != 0 → WorktreeTeardownError
+
+A successful git log with empty output (no commits in worktree) proceeds normally.

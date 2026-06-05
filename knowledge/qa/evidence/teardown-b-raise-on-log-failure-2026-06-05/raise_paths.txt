@@ -1,0 +1,15 @@
+Evidence: Both raise sites in _teardown_worktree step (b) — bellows.py lines 920-927
+
+Site 1 — Exception path (line 920-923):
+    except Exception as e:
+        raise WorktreeTeardownError(
+            f"worktree commit enumeration failed (git log exception) for slug {slug}: {e}"
+        ) from e
+
+Site 2 — Non-zero returncode path (line 924-927):
+    if result.returncode != 0:
+        raise WorktreeTeardownError(
+            f"worktree commit enumeration failed (git log rc={result.returncode}) for slug {slug}: {result.stderr.strip()}"
+        )
+
+Both raise WorktreeTeardownError, routing to the existing 1b halt / 1c retry path.

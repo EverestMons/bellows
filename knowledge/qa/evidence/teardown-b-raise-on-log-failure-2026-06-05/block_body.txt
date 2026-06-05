@@ -1,0 +1,84 @@
+Full _teardown_worktree body — bellows.py lines 881-1053
+
+def _teardown_worktree(project_path: str, wt_path: str, slug: str) -> None:
+    """Tear down a worktree: cherry-pick commits back, copy dirty files, remove worktree.
+
+    Raises WorktreeTeardownError on cherry-pick conflict (worktree left alive for manual resolution).
+    No-op when wt_path == project_path (in-place execution, no worktree was created).
+    """
+    if wt_path == project_path:
+        return
+
+    # (a) Detect main branch
+    main_branch = "main"
+    try:
+        result = subprocess.run(
+            ["git", "--no-pager", "symbolic-ref", "--short", "refs/remotes/origin/HEAD"],
+            cwd=project_path, capture_output=True, text=True, timeout=10,
+        )
+        if result.returncode == 0 and result.stdout.strip():
+            detected = result.stdout.strip()
+            if detected.startswith("origin/"):
+                detected = detected[len("origin/"):]
+            main_branch = detected
+        else:
+            _log("WARN", f"⚠ could not detect main branch, falling back to 'main'", slug=slug)
+    except Exception:
+        _log("WARN", f"⚠ could not detect main branch, falling back to 'main'", slug=slug)
+
+    # (b) Collect commits made in worktree  [*** CHANGED — see raise_paths.txt ***]
+    # Fail-safe (2026-06-05): a git-log failure here must NOT silently default to
+    # an empty commit list — that would skip the cherry-pick and still remove the
+    # worktree, losing un-landed commits with NO recorded worktree_teardown failure
+    # (uncatchable by the Gap-1b continue-block and Gap-1c retry, both of which key
+    # off a recorded failure). Raise so the failure routes to the 1b halt / 1c retry,
+    # matching the rest of this function's land-or-raise contract. A successful-but-
+    # empty result (returncode 0, no commits made) is legitimate and proceeds.
+    try:
+        result = subprocess.run(
+            ["git", "--no-pager", "log", "--format=%H", "HEAD", "--not", main_branch],
+            cwd=wt_path, capture_output=True, text=True, timeout=30,
+        )
+    except Exception as e:
+        raise WorktreeTeardownError(
+            f"worktree commit enumeration failed (git log exception) for slug {slug}: {e}"
+        ) from e
+    if result.returncode != 0:
+        raise WorktreeTeardownError(
+            f"worktree commit enumeration failed (git log rc={result.returncode}) for slug {slug}: {result.stderr.strip()}"
+        )
+    commit_shas = result.stdout.strip().splitlines()[::-1]  # oldest-first for cherry-pick
+
+    # Detect stale .git/index.lock that would block cherry-pick
+    lock_path = os.path.join(project_path, ".git", "index.lock")
+    if os.path.exists(lock_path):
+        lock_age = time.time() - os.path.getmtime(lock_path)
+        if lock_age > 5:
+            try:
+                os.remove(lock_path)
+                _log("WARN", f"⚠ removed stale .git/index.lock ({lock_age:.0f}s old)", slug=slug)
+            except OSError as e:
+                _log("WARN", f"⚠ could not remove .git/index.lock: {e}", slug=slug)
+        else:
+            # Fresh lock — wait briefly, then remove if still present
+            time.sleep(3)
+            if os.path.exists(lock_path):
+                try:
+                    os.remove(lock_path)
+                    _log("WARN", f"⚠ removed .git/index.lock after 3s wait", slug=slug)
+                except OSError as e:
+                    _log("WARN", f"⚠ could not remove .git/index.lock: {e}", slug=slug)
+
+    # (b2) Pre-cherry-pick dirty-tree check on main checkout
+    [... unchanged — full block present in bellows.py lines 950-992 ...]
+
+    # (c) Cherry-pick each commit onto main checkout
+    [... unchanged — full block present in bellows.py lines 994-1009 ...]
+
+    # (d) Copy uncommitted dirty files back
+    [... unchanged — full block present in bellows.py lines 1011-1034 ...]
+
+    # (e) Remove the worktree
+    [... unchanged — full block present in bellows.py lines 1036-1053 ...]
+
+CONFIRMATION: Only step (b) was modified. Steps (a), index.lock handling, (b2), (c), (d), and (e) are byte-unchanged from the pre-edit version.

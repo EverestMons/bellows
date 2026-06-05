@@ -1,0 +1,36 @@
+Full test suite output: python3 -m pytest tests/ -v 2>&1 | tail -200
+
+(Selected relevant output)
+
+tests/test_worktree.py::test_create_worktree_returns_valid_path_with_tracked_files PASSED
+tests/test_worktree.py::test_worktree_isolation_git_diff PASSED
+tests/test_worktree.py::test_teardown_removes_worktree_directory PASSED
+tests/test_worktree.py::test_teardown_cherry_picks_commits PASSED
+tests/test_worktree.py::test_teardown_copies_uncommitted_files PASSED
+tests/test_worktree.py::test_teardown_aborts_on_cherry_pick_conflict PASSED
+tests/test_worktree.py::test_teardown_raises_on_git_log_exception PASSED
+tests/test_worktree.py::test_teardown_raises_on_git_log_nonzero PASSED
+tests/test_worktree.py::test_teardown_proceeds_on_empty_commit_list PASSED
+tests/test_worktree.py::test_create_worktree_retries_once_on_failure PASSED
+tests/test_worktree.py::test_create_worktree_cleans_stranded_directory PASSED
+tests/test_worktree.py::test_create_worktree_cleans_stranded_registered_worktree PASSED
+tests/test_worktree.py::test_pre_check_recognizes_space_prefixed_lifecycle_line PASSED
+tests/test_worktree.py::test_pre_check_ignores_bellows_worktrees_dir PASSED
+tests/test_worktree.py::test_stranded_cleanup_preserves_unlanded_commits PASSED
+tests/test_worktree.py::test_stranded_cleanup_no_preserve_when_already_landed PASSED
+tests/test_worktree.py::test_stranded_cleanup_failsafe_preserves_when_main_unresolvable PASSED
+
+FAILURES (all 5 are carry-over, pre-existing):
+FAILED tests/test_decisions.py::TestLoadPhrases::test_loads_phrases_from_file
+FAILED tests/test_decisions.py::TestLoadPhrases::test_includes_known_phrases
+FAILED tests/test_decisions.py::TestLoadPhrases::test_splits_slash_alternatives
+FAILED tests/test_decisions.py::TestExtractDecisionBlocks::test_s_class_blocks_from_ground_truth
+FAILED tests/test_runner_parser.py::test_run_step_timeout
+
+SUMMARY: 5 failed, 455 passed, 1 warning in 9.59s
+
+Verification:
+(a) All 3 new tests PASS: test_teardown_raises_on_git_log_exception, test_teardown_raises_on_git_log_nonzero, test_teardown_proceeds_on_empty_commit_list
+(b) All 4 existing teardown tests PASS
+(c) Zero new failures — same 5 carry-over as DEV's pre-edit baseline
+(d) Total pass count 455 == DEV's reported post-edit number

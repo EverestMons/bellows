@@ -1,0 +1,7 @@
+Grep results for three new tests in tests/test_worktree.py:
+
+247:def test_teardown_raises_on_git_log_exception(git_repo):
+274:def test_teardown_raises_on_git_log_nonzero(git_repo):
+305:def test_teardown_proceeds_on_empty_commit_list(git_repo):
+
+All three present.

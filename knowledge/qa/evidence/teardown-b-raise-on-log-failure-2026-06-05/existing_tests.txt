@@ -1,0 +1,13 @@
+Grep results for four existing teardown tests in tests/test_worktree.py:
+
+129:def test_teardown_removes_worktree_directory(git_repo):
+145:def test_teardown_cherry_picks_commits(git_repo):
+173:def test_teardown_copies_uncommitted_files(git_repo):
+195:def test_teardown_aborts_on_cherry_pick_conflict(git_repo):
+
+All four present and passing:
+
+tests/test_worktree.py::test_teardown_removes_worktree_directory PASSED
+tests/test_worktree.py::test_teardown_cherry_picks_commits PASSED
+tests/test_worktree.py::test_teardown_copies_uncommitted_files PASSED
+tests/test_worktree.py::test_teardown_aborts_on_cherry_pick_conflict PASSED
