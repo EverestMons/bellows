@@ -905,14 +905,27 @@ def _teardown_worktree(project_path: str, wt_path: str, slug: str) -> None:
         _log("WARN", f"⚠ could not detect main branch, falling back to 'main'", slug=slug)
 
     # (b) Collect commits made in worktree
+    # Fail-safe (2026-06-05): a git-log failure here must NOT silently default to
+    # an empty commit list — that would skip the cherry-pick and still remove the
+    # worktree, losing un-landed commits with NO recorded worktree_teardown failure
+    # (uncatchable by the Gap-1b continue-block and Gap-1c retry, both of which key
+    # off a recorded failure). Raise so the failure routes to the 1b halt / 1c retry,
+    # matching the rest of this function's land-or-raise contract. A successful-but-
+    # empty result (returncode 0, no commits made) is legitimate and proceeds.
     try:
         result = subprocess.run(
             ["git", "--no-pager", "log", "--format=%H", "HEAD", "--not", main_branch],
             cwd=wt_path, capture_output=True, text=True, timeout=30,
         )
-        commit_shas = result.stdout.strip().splitlines()[::-1]  # oldest-first for cherry-pick
-    except Exception:
-        commit_shas = []
+    except Exception as e:
+        raise WorktreeTeardownError(
+            f"worktree commit enumeration failed (git log exception) for slug {slug}: {e}"
+        ) from e
+    if result.returncode != 0:
+        raise WorktreeTeardownError(
+            f"worktree commit enumeration failed (git log rc={result.returncode}) for slug {slug}: {result.stderr.strip()}"
+        )
+    commit_shas = result.stdout.strip().splitlines()[::-1]  # oldest-first for cherry-pick
 
     # Detect stale .git/index.lock that would block cherry-pick
     lock_path = os.path.join(project_path, ".git", "index.lock")

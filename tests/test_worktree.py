@@ -244,6 +244,77 @@ def test_teardown_aborts_on_cherry_pick_conflict(git_repo):
     )
 
 
+def test_teardown_raises_on_git_log_exception(git_repo):
+    """A git-log exception during commit enumeration must raise WorktreeTeardownError
+    and leave the worktree alive (commits not lost, preserved for recovery)."""
+    wt_path = _create_worktree(git_repo, "log-exc-test")
+    assert os.path.isdir(wt_path)
+
+    real_run = subprocess.run
+
+    def fake_run(*args, **kwargs):
+        cmd = args[0] if args else kwargs.get("args", [])
+        if isinstance(cmd, list) and "log" in cmd and "--not" in cmd:
+            raise OSError("simulated git-log OS error")
+        return real_run(*args, **kwargs)
+
+    with patch("bellows.subprocess.run", side_effect=fake_run):
+        with pytest.raises(WorktreeTeardownError, match="git log exception"):
+            _teardown_worktree(git_repo, wt_path, "log-exc-test")
+
+    assert os.path.isdir(wt_path), "Worktree must still exist after git-log exception"
+
+    # Clean up
+    subprocess.run(
+        ["git", "worktree", "remove", "--force", wt_path], cwd=git_repo,
+        capture_output=True, text=True,
+    )
+
+
+def test_teardown_raises_on_git_log_nonzero(git_repo):
+    """A git-log non-zero returncode must raise WorktreeTeardownError
+    and leave the worktree alive."""
+    wt_path = _create_worktree(git_repo, "log-rc-test")
+    assert os.path.isdir(wt_path)
+
+    real_run = subprocess.run
+
+    def fake_run(*args, **kwargs):
+        cmd = args[0] if args else kwargs.get("args", [])
+        if isinstance(cmd, list) and "log" in cmd and "--not" in cmd:
+            result = MagicMock()
+            result.returncode = 1
+            result.stdout = ""
+            result.stderr = "fatal: bad revision"
+            return result
+        return real_run(*args, **kwargs)
+
+    with patch("bellows.subprocess.run", side_effect=fake_run):
+        with pytest.raises(WorktreeTeardownError, match="git log rc=1"):
+            _teardown_worktree(git_repo, wt_path, "log-rc-test")
+
+    assert os.path.isdir(wt_path), "Worktree must still exist after git-log non-zero rc"
+
+    # Clean up
+    subprocess.run(
+        ["git", "worktree", "remove", "--force", wt_path], cwd=git_repo,
+        capture_output=True, text=True,
+    )
+
+
+def test_teardown_proceeds_on_empty_commit_list(git_repo):
+    """A worktree with no new commits (HEAD == main) must NOT raise —
+    teardown proceeds normally and removes the worktree."""
+    wt_path = _create_worktree(git_repo, "empty-commits-test")
+    assert os.path.isdir(wt_path)
+
+    # No commits made in the worktree — HEAD is identical to main
+    _teardown_worktree(git_repo, wt_path, "empty-commits-test")
+
+    assert not os.path.isdir(wt_path), \
+        "Worktree should be removed when no commits were made (legitimate empty case)"
+
+
 def test_create_worktree_retries_once_on_failure(git_repo):
     """_create_worktree retries once on subprocess failure with a 2s sleep between attempts."""
     call_count = [0]
