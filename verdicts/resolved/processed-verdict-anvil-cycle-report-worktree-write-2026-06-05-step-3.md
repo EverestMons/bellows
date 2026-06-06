@@ -1,0 +1,3 @@
+verdict: continue
+
+Terminal close (Rule 22). Step-3 gate result Passed=True, failures=[]; rule_20_self_check PASS (banner byte-exact, PASSED line present), rule_22 PASS, scope_check PASS, no teardown failure. Substance (b) confirmed: lab.py split correct (write→ANVIL_RUNTIME_ROOT, record→ANVIL_ROOT), template carries explicit report `git add`, 239 passed, write-vs-record proof holds, no artifact leak. Plan A complete — anvil cycle report now writes to the worktree and records canonical, removing the main-advance trigger and unblocking the bellows merge-model redesign (Plan B). Closing to Done.

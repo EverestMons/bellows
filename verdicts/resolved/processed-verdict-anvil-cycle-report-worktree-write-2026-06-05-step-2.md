@@ -1,0 +1,3 @@
+verdict: continue
+
+DEV reviewed (Rule 22). scope_check FAIL is a Planner-interpreted FALSE POSITIVE: it flagged tests/test_cycle.py and tests/test_lab.py, which the plan explicitly mandated editing (§6 / Step 2 item 4) but did not enumerate by literal path. Verified the commit (27fecb2) touches EXACTLY the 6 intended files (src/config.py, src/lab.py, template, dev log, the 2 test files) and nothing out-of-scope. Substance correct: lab.py split (write→ANVIL_RUNTIME_ROOT, record→ANVIL_ROOT), template carries explicit report `git add`, 239 passed (238 baseline + new write-vs-record proof), stray cycle-1-findings artifact removed. rule_22 PASS, rule_20 N/A. Advancing to QA.
