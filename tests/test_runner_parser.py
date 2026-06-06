@@ -52,11 +52,24 @@ def test_parse_blocked_output():
 
 
 def test_run_step_timeout():
-    with patch("runner.subprocess.run", side_effect=subprocess.TimeoutExpired("claude", 300)):
-        result = runner.run_step("test prompt", "/tmp", "claude-sonnet-4-6")
+    class FakeProcess:
+        """Simulates a process that produces no output and never exits on its own."""
+        def __init__(self, *args, **kwargs):
+            self.stdout = iter([])  # empty iterator — reader thread finishes instantly
+            self.stderr = iter([])
+
+        def poll(self):
+            return None  # process appears to still be running
+
+        def kill(self):
+            pass  # accept the kill silently
+
+    with patch("runner.subprocess.Popen", return_value=FakeProcess()), \
+         patch("runner.time.sleep"):
+        result = runner.run_step("test prompt", "/tmp", "claude-sonnet-4-6", timeout=0)
     assert result["is_error"] is True
-    assert result["escalate"] is True
     assert result["stop_reason"] == "timeout"
+    assert result["escalate"] is True
 
 
 def _flag_raw(result_text):

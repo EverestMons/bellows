@@ -7,8 +7,22 @@ from pathlib import Path
 
 logger = logging.getLogger("bellows")
 
-# Governance root is parent of bellows/
-GOVERNANCE_ROOT = Path(__file__).parent.parent.resolve()
+
+def resolve_governance_root() -> Path:
+    """Walk up from this file to the nearest ancestor containing COMPANY.md (governance root)."""
+    current = Path(__file__).resolve().parent
+    while True:
+        if (current / "COMPANY.md").exists():
+            return current
+        parent = current.parent
+        if parent == current:
+            # Filesystem root reached — fall back to legacy two-parent assumption
+            logger.warning("decisions: COMPANY.md marker not found; falling back to __file__.parent.parent")
+            return Path(__file__).resolve().parent.parent
+        current = parent
+
+
+GOVERNANCE_ROOT = resolve_governance_root()
 PHRASES_FILE = GOVERNANCE_ROOT / "INTERMEDIATE_DECISION_PHRASES.md"
 
 _cached_phrases = None
