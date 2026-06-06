@@ -1,0 +1,1 @@
+No matches found — all dead symbols confirmed absent, no rebase references.
