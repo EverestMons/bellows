@@ -1,0 +1,3 @@
+verdict: continue
+
+DEV reviewed (Rule 22). Gate Passed=True; scope_check PASS (3 enumerated files: decisions.py, tests/test_runner_parser.py, dev log); all gates PASS. resolve_governance_root() walk-up to COMPANY.md with safe legacy fallback in place; GOVERNANCE_ROOT derived from it; timeout test rewritten with FakeProcess (Popen mock, timeout=0, no claude launched). Planner independently ran full suite on main (372bd5f): 448 passed, 0 failed — the 5 formerly-red tests (4 test_decisions + test_run_step_timeout) now green, no regressions, suite genuinely green. CANARY leg 2: teardown landed clean via ff-only (linear, no worktree_teardown failure). Advancing to QA.
