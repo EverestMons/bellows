@@ -1,0 +1,8 @@
+GOVERNANCE_ROOT: /Users/marklehn/Developer/GitHub
+COMPANY.md exists: True
+PHRASES_FILE: /Users/marklehn/Developer/GitHub/INTERMEDIATE_DECISION_PHRASES.md
+PHRASES_FILE exists: True
+load_phrases() count: 44
+First 5 phrases: ['had to', 'decided to', 'on initiative', 'noticed that', 'chose to']
+Running from worktree: /Users/marklehn/Developer/GitHub/bellows/.bellows-worktrees/bellows-suite-green-fixes-2026-06-06
+__file__ of decisions module: /Users/marklehn/Developer/GitHub/bellows/.bellows-worktrees/bellows-suite-green-fixes-2026-06-06/decisions.py
