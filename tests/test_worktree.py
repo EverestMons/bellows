@@ -22,7 +22,6 @@ from bellows import (
     WorktreeCreationError,
     WorktreeTeardownError,
     _create_worktree,
-    _is_lifecycle_artifact,
     _teardown_worktree,
 )
 
@@ -73,6 +72,18 @@ def git_repo():
                         capture_output=True, text=True,
                     )
             shutil.rmtree(wt_dir, ignore_errors=True)
+        # Clean up bellows-wt/* branches
+        br_result = subprocess.run(
+            ["git", "branch", "--list", "bellows-wt/*"], cwd=tmp,
+            capture_output=True, text=True,
+        )
+        for b in br_result.stdout.strip().splitlines():
+            b = b.strip()
+            if b:
+                subprocess.run(
+                    ["git", "branch", "-D", b], cwd=tmp,
+                    capture_output=True, text=True,
+                )
         shutil.rmtree(tmp, ignore_errors=True)
 
 
@@ -93,6 +104,12 @@ def test_create_worktree_returns_valid_path_with_tracked_files(git_repo):
         for name in ["README.md", "fileA.txt", "fileB.txt"]:
             assert os.path.isfile(os.path.join(wt_path, name)), \
                 f"Tracked file {name} missing from worktree"
+        # Named branch must exist after creation
+        br_check = subprocess.run(
+            ["git", "rev-parse", "--verify", "refs/heads/bellows-wt/test-slug"],
+            cwd=git_repo, capture_output=True, text=True,
+        )
+        assert br_check.returncode == 0, "Branch bellows-wt/test-slug should exist after creation"
     finally:
         subprocess.run(
             ["git", "worktree", "remove", "--force", wt_path], cwd=git_repo,
@@ -140,15 +157,21 @@ def test_teardown_removes_worktree_directory(git_repo):
     )
     assert wt_path not in result.stdout, \
         f"Removed worktree should not appear in 'git worktree list': {result.stdout}"
+    # Branch must be cleaned up after teardown
+    br_check = subprocess.run(
+        ["git", "rev-parse", "--verify", "refs/heads/bellows-wt/teardown-test"],
+        cwd=git_repo, capture_output=True, text=True,
+    )
+    assert br_check.returncode != 0, "Branch bellows-wt/teardown-test should be deleted after teardown"
 
 
-def test_teardown_cherry_picks_commits(git_repo):
-    """Commits made in the worktree must appear on main after teardown."""
-    wt_path = _create_worktree(git_repo, "cherry-pick-test")
+def test_teardown_merges_commits(git_repo):
+    """Commits made in the worktree must appear on main after teardown (via merge)."""
+    wt_path = _create_worktree(git_repo, "merge-test")
     try:
         with open(os.path.join(wt_path, "README.md"), "a") as f:
             f.write("worktree change\n")
-        subprocess.run(["git", "add", "."], cwd=wt_path, capture_output=True, text=True)
+        subprocess.run(["git", "add", "README.md"], cwd=wt_path, capture_output=True, text=True)
         subprocess.run(
             ["git", "commit", "-m", "commit from worktree"], cwd=wt_path,
             capture_output=True, text=True, check=True,
@@ -160,46 +183,24 @@ def test_teardown_cherry_picks_commits(git_repo):
         )
         raise
 
-    _teardown_worktree(git_repo, wt_path, "cherry-pick-test")
+    _teardown_worktree(git_repo, wt_path, "merge-test")
 
     result = subprocess.run(
         ["git", "--no-pager", "log", "--oneline", "-5"], cwd=git_repo,
         capture_output=True, text=True,
     )
     assert "commit from worktree" in result.stdout, \
-        f"Cherry-picked commit not found on main: {result.stdout}"
+        f"Merged commit not found on main: {result.stdout}"
 
 
-def test_teardown_copies_uncommitted_files(git_repo):
-    """Uncommitted new files in the worktree must be copied back to main on teardown."""
-    wt_path = _create_worktree(git_repo, "dirty-copy-test")
-    try:
-        new_file = os.path.join(wt_path, "new_file.txt")
-        with open(new_file, "w") as f:
-            f.write("uncommitted content\n")
-    except Exception:
-        subprocess.run(
-            ["git", "worktree", "remove", "--force", wt_path], cwd=git_repo,
-            capture_output=True, text=True,
-        )
-        raise
-
-    _teardown_worktree(git_repo, wt_path, "dirty-copy-test")
-
-    main_copy = os.path.join(git_repo, "new_file.txt")
-    assert os.path.isfile(main_copy), f"Uncommitted file should be copied to main: {main_copy}"
-    with open(main_copy) as f:
-        assert f.read() == "uncommitted content\n"
-
-
-def test_teardown_aborts_on_cherry_pick_conflict(git_repo):
-    """Cherry-pick conflict must raise WorktreeTeardownError and leave worktree alive."""
+def test_teardown_aborts_on_merge_conflict(git_repo):
+    """Merge conflict must raise WorktreeTeardownError and leave worktree + branch alive."""
     wt_path = _create_worktree(git_repo, "conflict-test")
     try:
         # In worktree: modify README.md and commit
         with open(os.path.join(wt_path, "README.md"), "w") as f:
             f.write("version 2 from worktree\n")
-        subprocess.run(["git", "add", "."], cwd=wt_path, capture_output=True, text=True)
+        subprocess.run(["git", "add", "README.md"], cwd=wt_path, capture_output=True, text=True)
         subprocess.run(
             ["git", "commit", "-m", "worktree version 2"], cwd=wt_path,
             capture_output=True, text=True, check=True,
@@ -208,7 +209,7 @@ def test_teardown_aborts_on_cherry_pick_conflict(git_repo):
         # In main: modify README.md differently and commit (creates conflict)
         with open(os.path.join(git_repo, "README.md"), "w") as f:
             f.write("version 3 from main\n")
-        subprocess.run(["git", "add", "."], cwd=git_repo, capture_output=True, text=True)
+        subprocess.run(["git", "add", "README.md"], cwd=git_repo, capture_output=True, text=True)
         subprocess.run(
             ["git", "commit", "-m", "main version 3"], cwd=git_repo,
             capture_output=True, text=True, check=True,
@@ -220,22 +221,30 @@ def test_teardown_aborts_on_cherry_pick_conflict(git_repo):
         )
         raise
 
-    with pytest.raises(WorktreeTeardownError):
+    with pytest.raises(WorktreeTeardownError, match="merge conflict"):
         _teardown_worktree(git_repo, wt_path, "conflict-test")
 
-    # Main checkout must be clean (cherry-pick was aborted)
-    cherry_pick_head = os.path.join(git_repo, ".git", "CHERRY_PICK_HEAD")
-    assert not os.path.exists(cherry_pick_head), \
-        "CHERRY_PICK_HEAD should not exist after abort"
+    # Main checkout must be clean (merge was aborted) — only .bellows-worktrees/ may remain (worktree left alive)
+    merge_head = os.path.join(git_repo, ".git", "MERGE_HEAD")
+    assert not os.path.exists(merge_head), \
+        "MERGE_HEAD should not exist after abort"
     result = subprocess.run(
         ["git", "status", "--porcelain"], cwd=git_repo,
         capture_output=True, text=True,
     )
-    assert result.stdout.strip() == "", \
-        f"Main checkout should be clean after abort: {result.stdout}"
+    non_wt_status = [l for l in result.stdout.strip().splitlines() if ".bellows-worktrees" not in l]
+    assert non_wt_status == [], \
+        f"Main checkout should have no merge artifacts after abort: {non_wt_status}"
 
     # Worktree must still exist (left for manual resolution)
     assert os.path.isdir(wt_path), "Worktree should still exist after conflict"
+
+    # Branch must still exist (not fully merged, -d would fail)
+    br_check = subprocess.run(
+        ["git", "rev-parse", "--verify", "refs/heads/bellows-wt/conflict-test"],
+        cwd=git_repo, capture_output=True, text=True,
+    )
+    assert br_check.returncode == 0, "Branch bellows-wt/conflict-test should still exist after conflict"
 
     # Clean up
     subprocess.run(
@@ -313,6 +322,12 @@ def test_teardown_proceeds_on_empty_commit_list(git_repo):
 
     assert not os.path.isdir(wt_path), \
         "Worktree should be removed when no commits were made (legitimate empty case)"
+    # Branch must still be cleaned up even with no commits
+    br_check = subprocess.run(
+        ["git", "rev-parse", "--verify", "refs/heads/bellows-wt/empty-commits-test"],
+        cwd=git_repo, capture_output=True, text=True,
+    )
+    assert br_check.returncode != 0, "Branch bellows-wt/empty-commits-test should be deleted after teardown"
 
 
 def test_create_worktree_retries_once_on_failure(git_repo):
@@ -323,8 +338,17 @@ def test_create_worktree_retries_once_on_failure(git_repo):
         call_count[0] += 1
         result = MagicMock()
         if call_count[0] == 1:
+            # First call: branch-exists check (rev-parse --verify) — branch does not exist
+            result.returncode = 1
+            result.stderr = "not a valid ref"
+        elif call_count[0] == 2:
+            # Second call: worktree add — fail first attempt
             result.returncode = 1
             result.stderr = "fake error"
+        elif call_count[0] == 3:
+            # Third call: worktree add retry — succeed
+            result.returncode = 0
+            result.stderr = ""
         else:
             result.returncode = 0
             result.stderr = ""
@@ -334,7 +358,7 @@ def test_create_worktree_retries_once_on_failure(git_repo):
          patch("bellows.time.sleep") as mock_sleep:
         wt_path = _create_worktree(git_repo, "retry-test")
 
-    assert call_count[0] == 2, f"Expected 2 subprocess calls, got {call_count[0]}"
+    assert call_count[0] == 3, f"Expected 3 subprocess calls (branch check + 2 worktree add), got {call_count[0]}"
     mock_sleep.assert_called_once_with(2)
     expected_path = os.path.join(git_repo, ".bellows-worktrees", "retry-test")
     assert wt_path == expected_path, f"Expected {expected_path}, got {wt_path}"
@@ -397,43 +421,17 @@ def test_create_worktree_cleans_stranded_registered_worktree(git_repo):
         )
 
 
-# --- Item (f): rstrip + leading-space tolerance tests ---
-
-def test_pre_check_recognizes_space_prefixed_lifecycle_line():
-    """A space-prefixed lifecycle artifact on the first porcelain line must be recognized."""
-    # " D" status — deleted lifecycle artifact
-    assert _is_lifecycle_artifact(" D knowledge/decisions/verdict-pending-foo.md") is True
-    # " M" status — modified lifecycle artifact
-    assert _is_lifecycle_artifact(" M verdicts/pending/some-verdict.md") is True
-    # Negative control: space-prefixed REAL dirty file must NOT be treated as lifecycle
-    assert _is_lifecycle_artifact(" M README.md") is False
-    assert _is_lifecycle_artifact(" D src/app.py") is False
-
-
-# --- Item (g): .bellows-worktrees/ lifecycle-ignore tests ---
-
-def test_pre_check_ignores_bellows_worktrees_dir():
-    """Porcelain entries under .bellows-worktrees/ must be treated as lifecycle artifacts."""
-    # Bare directory entry
-    assert _is_lifecycle_artifact("?? .bellows-worktrees/") is True
-    # Child path
-    assert _is_lifecycle_artifact("?? .bellows-worktrees/some-slug/file.py") is True
-    # Negative control: real untracked file outside .bellows-worktrees/
-    assert _is_lifecycle_artifact("?? src/untracked.py") is False
-    assert _is_lifecycle_artifact("?? bellows-worktrees-imposter/foo.py") is False
-
-
 # --- Gap 2a: preserve un-landed commits on stranded-cleanup ---
 
 def test_stranded_cleanup_preserves_unlanded_commits(git_repo):
     """Un-landed commits on a stranded worktree's HEAD are preserved on a branch before destroy."""
     slug = "preserve-test"
 
-    # Create a worktree and make an un-landed commit on its detached HEAD
+    # Create a worktree and make an un-landed commit on its named branch
     wt_path = _create_worktree(git_repo, slug)
     with open(os.path.join(wt_path, "new_work.txt"), "w") as f:
         f.write("un-landed work\n")
-    subprocess.run(["git", "add", "."], cwd=wt_path, capture_output=True, text=True)
+    subprocess.run(["git", "add", "new_work.txt"], cwd=wt_path, capture_output=True, text=True)
     subprocess.run(
         ["git", "commit", "-m", "un-landed commit"], cwd=wt_path,
         capture_output=True, text=True, check=True,
@@ -526,11 +524,11 @@ def test_stranded_cleanup_failsafe_preserves_when_main_unresolvable(git_repo):
     """When main ref is unresolvable, fail-safe bias preserves the worktree commits."""
     slug = "failsafe-test"
 
-    # Create a worktree and make a commit on its detached HEAD
+    # Create a worktree and make a commit on its named branch
     wt_path = _create_worktree(git_repo, slug)
     with open(os.path.join(wt_path, "failsafe_work.txt"), "w") as f:
         f.write("failsafe work\n")
-    subprocess.run(["git", "add", "."], cwd=wt_path, capture_output=True, text=True)
+    subprocess.run(["git", "add", "failsafe_work.txt"], cwd=wt_path, capture_output=True, text=True)
     subprocess.run(
         ["git", "commit", "-m", "failsafe commit"], cwd=wt_path,
         capture_output=True, text=True, check=True,
@@ -583,3 +581,323 @@ def test_stranded_cleanup_failsafe_preserves_when_main_unresolvable(git_repo):
                 ["git", "branch", "-D", b], cwd=git_repo,
                 capture_output=True, text=True,
             )
+
+
+# --- Merge-ff teardown regression tests (6 permanent) ---
+
+def test_landing_tolerates_dirty_main_invariant(git_repo):
+    """INVARIANT: landing must never require a clean main working tree.
+    If this test breaks, a checkout-based teardown step was reintroduced.
+    See: knowledge/research/teardown-dirty-main-rootcause-2026-06-05.md §R3"""
+    wt_path = _create_worktree(git_repo, "dirty-invariant-test")
+    try:
+        # Commit a file in worktree
+        with open(os.path.join(wt_path, "new_file.txt"), "w") as f:
+            f.write("worktree content\n")
+        subprocess.run(["git", "add", "new_file.txt"], cwd=wt_path, capture_output=True, text=True)
+        subprocess.run(
+            ["git", "commit", "-m", "worktree commit"], cwd=wt_path,
+            capture_output=True, text=True, check=True,
+        )
+
+        # Dirty main with a DIFFERENT file (untracked + modified)
+        with open(os.path.join(git_repo, "dirty.txt"), "w") as f:
+            f.write("untracked dirty file\n")
+        with open(os.path.join(git_repo, "README.md"), "a") as f:
+            f.write("dirty modification on main\n")
+    except Exception:
+        subprocess.run(
+            ["git", "worktree", "remove", "--force", wt_path], cwd=git_repo,
+            capture_output=True, text=True,
+        )
+        raise
+
+    _teardown_worktree(git_repo, wt_path, "dirty-invariant-test")
+
+    # Merge landed
+    assert os.path.isfile(os.path.join(git_repo, "new_file.txt")), \
+        "new_file.txt should exist on main (merge landed)"
+    # Dirty files preserved
+    assert os.path.isfile(os.path.join(git_repo, "dirty.txt")), \
+        "dirty.txt should still exist on main (preserved, not cleaned)"
+    with open(os.path.join(git_repo, "README.md")) as f:
+        assert "dirty modification on main" in f.read(), \
+            "README.md modification should be preserved on main"
+    # Worktree removed
+    assert not os.path.isdir(wt_path), "Worktree directory should be removed"
+    # Branch cleaned up
+    br_check = subprocess.run(
+        ["git", "rev-parse", "--verify", "refs/heads/bellows-wt/dirty-invariant-test"],
+        cwd=git_repo, capture_output=True, text=True,
+    )
+    assert br_check.returncode != 0, "Branch should be deleted after successful teardown"
+
+
+def test_landing_aborts_clean_on_dirty_overlap(git_repo):
+    """Dirty-tree overlap: uncommitted changes on main in same file as worktree commit
+    must abort cleanly with no conflict markers."""
+    wt_path = _create_worktree(git_repo, "dirty-overlap-test")
+    try:
+        # Modify file.txt in worktree and commit
+        with open(os.path.join(wt_path, "README.md"), "w") as f:
+            f.write("worktree version\n")
+        subprocess.run(["git", "add", "README.md"], cwd=wt_path, capture_output=True, text=True)
+        subprocess.run(
+            ["git", "commit", "-m", "worktree edit README"], cwd=wt_path,
+            capture_output=True, text=True, check=True,
+        )
+
+        # Dirty main by modifying the SAME file (uncommitted)
+        with open(os.path.join(git_repo, "README.md"), "w") as f:
+            f.write("main dirty version\n")
+    except Exception:
+        subprocess.run(
+            ["git", "worktree", "remove", "--force", wt_path], cwd=git_repo,
+            capture_output=True, text=True,
+        )
+        raise
+
+    with pytest.raises(WorktreeTeardownError):
+        _teardown_worktree(git_repo, wt_path, "dirty-overlap-test")
+
+    # No conflict markers in README.md
+    with open(os.path.join(git_repo, "README.md")) as f:
+        content = f.read()
+    assert "<<<<<<<" not in content, "No conflict markers should be present"
+    # No MERGE_HEAD
+    assert not os.path.exists(os.path.join(git_repo, ".git", "MERGE_HEAD")), \
+        "MERGE_HEAD should not exist after abort"
+    # Worktree still exists
+    assert os.path.isdir(wt_path), "Worktree should still exist for manual resolution"
+    # Branch still exists
+    br_check = subprocess.run(
+        ["git", "rev-parse", "--verify", "refs/heads/bellows-wt/dirty-overlap-test"],
+        cwd=git_repo, capture_output=True, text=True,
+    )
+    assert br_check.returncode == 0, "Branch should still exist after conflict"
+
+    # Clean up
+    subprocess.run(
+        ["git", "worktree", "remove", "--force", wt_path], cwd=git_repo,
+        capture_output=True, text=True,
+    )
+
+
+def test_landing_noff_when_main_advanced(git_repo):
+    """When main advances, ff-only fails and --no-ff merge lands with worktree SHAs reachable."""
+    wt_path = _create_worktree(git_repo, "noff-test")
+    try:
+        # Commit in worktree
+        with open(os.path.join(wt_path, "new_file.txt"), "w") as f:
+            f.write("worktree content\n")
+        subprocess.run(["git", "add", "new_file.txt"], cwd=wt_path, capture_output=True, text=True)
+        subprocess.run(
+            ["git", "commit", "-m", "worktree commit"], cwd=wt_path,
+            capture_output=True, text=True, check=True,
+        )
+        wt_sha = subprocess.run(
+            ["git", "rev-parse", "HEAD"], cwd=wt_path,
+            capture_output=True, text=True,
+        ).stdout.strip()
+
+        # Advance main with a different file
+        with open(os.path.join(git_repo, "main_new.txt"), "w") as f:
+            f.write("main advance\n")
+        subprocess.run(["git", "add", "main_new.txt"], cwd=git_repo, capture_output=True, text=True)
+        subprocess.run(
+            ["git", "commit", "-m", "main advance commit"], cwd=git_repo,
+            capture_output=True, text=True, check=True,
+        )
+    except Exception:
+        subprocess.run(
+            ["git", "worktree", "remove", "--force", wt_path], cwd=git_repo,
+            capture_output=True, text=True,
+        )
+        raise
+
+    _teardown_worktree(git_repo, wt_path, "noff-test")
+
+    # Both files on main
+    assert os.path.isfile(os.path.join(git_repo, "new_file.txt")), \
+        "Worktree file should be on main"
+    assert os.path.isfile(os.path.join(git_repo, "main_new.txt")), \
+        "Main's commit should be preserved"
+    # Merge commit exists
+    log_result = subprocess.run(
+        ["git", "--no-pager", "log", "--oneline", "-1"], cwd=git_repo,
+        capture_output=True, text=True,
+    )
+    assert "Merge" in log_result.stdout, \
+        f"Expected a merge commit, got: {log_result.stdout}"
+    # Worktree SHA reachable from HEAD
+    ancestor_check = subprocess.run(
+        ["git", "merge-base", "--is-ancestor", wt_sha, "HEAD"], cwd=git_repo,
+        capture_output=True, text=True,
+    )
+    assert ancestor_check.returncode == 0, \
+        f"Worktree SHA {wt_sha} should be reachable from HEAD"
+    # Worktree removed and branch cleaned
+    assert not os.path.isdir(wt_path), "Worktree should be removed"
+    br_check = subprocess.run(
+        ["git", "rev-parse", "--verify", "refs/heads/bellows-wt/noff-test"],
+        cwd=git_repo, capture_output=True, text=True,
+    )
+    assert br_check.returncode != 0, "Branch should be deleted after successful teardown"
+
+
+def test_landing_aborts_on_true_conflict_main_advanced(git_repo):
+    """Main advanced + true content conflict: merge --abort, raise, no partial state."""
+    wt_path = _create_worktree(git_repo, "true-conflict-test")
+    try:
+        # Modify README.md in worktree and commit
+        with open(os.path.join(wt_path, "README.md"), "w") as f:
+            f.write("worktree conflicting version\n")
+        subprocess.run(["git", "add", "README.md"], cwd=wt_path, capture_output=True, text=True)
+        subprocess.run(
+            ["git", "commit", "-m", "worktree conflict"], cwd=wt_path,
+            capture_output=True, text=True, check=True,
+        )
+
+        # Modify README.md differently on main and commit (true conflict)
+        with open(os.path.join(git_repo, "README.md"), "w") as f:
+            f.write("main conflicting version\n")
+        subprocess.run(["git", "add", "README.md"], cwd=git_repo, capture_output=True, text=True)
+        subprocess.run(
+            ["git", "commit", "-m", "main conflict"], cwd=git_repo,
+            capture_output=True, text=True, check=True,
+        )
+    except Exception:
+        subprocess.run(
+            ["git", "worktree", "remove", "--force", wt_path], cwd=git_repo,
+            capture_output=True, text=True,
+        )
+        raise
+
+    with pytest.raises(WorktreeTeardownError, match="merge conflict"):
+        _teardown_worktree(git_repo, wt_path, "true-conflict-test")
+
+    # No MERGE_HEAD (abort was clean)
+    assert not os.path.exists(os.path.join(git_repo, ".git", "MERGE_HEAD")), \
+        "MERGE_HEAD should not exist after abort"
+    # No conflict markers
+    with open(os.path.join(git_repo, "README.md")) as f:
+        content = f.read()
+    assert "<<<<<<<" not in content, "No conflict markers"
+    # git status has no merge artifacts (only .bellows-worktrees/ may remain)
+    status = subprocess.run(
+        ["git", "status", "--porcelain"], cwd=git_repo,
+        capture_output=True, text=True,
+    )
+    non_wt_status = [l for l in status.stdout.strip().splitlines() if ".bellows-worktrees" not in l]
+    assert non_wt_status == [], \
+        f"Working tree should have no merge artifacts after abort: {non_wt_status}"
+    # Worktree still exists
+    assert os.path.isdir(wt_path), "Worktree should still exist"
+    # Branch still exists (not fully merged, -d would fail)
+    br_check = subprocess.run(
+        ["git", "rev-parse", "--verify", "refs/heads/bellows-wt/true-conflict-test"],
+        cwd=git_repo, capture_output=True, text=True,
+    )
+    assert br_check.returncode == 0, "Branch should still exist after conflict"
+
+    # Clean up
+    subprocess.run(
+        ["git", "worktree", "remove", "--force", wt_path], cwd=git_repo,
+        capture_output=True, text=True,
+    )
+
+
+def test_sha_identity_ff_and_noff(git_repo):
+    """SHA identity: ff path main tip == worktree tip; no-ff path worktree SHAs reachable."""
+    # Sub-test A: ff path
+    wt_path = _create_worktree(git_repo, "sha-ff-test")
+    try:
+        with open(os.path.join(wt_path, "ff_file.txt"), "w") as f:
+            f.write("ff content\n")
+        subprocess.run(["git", "add", "ff_file.txt"], cwd=wt_path, capture_output=True, text=True)
+        subprocess.run(
+            ["git", "commit", "-m", "ff commit"], cwd=wt_path,
+            capture_output=True, text=True, check=True,
+        )
+        wt_sha_ff = subprocess.run(
+            ["git", "rev-parse", "HEAD"], cwd=wt_path,
+            capture_output=True, text=True,
+        ).stdout.strip()
+    except Exception:
+        subprocess.run(
+            ["git", "worktree", "remove", "--force", wt_path], cwd=git_repo,
+            capture_output=True, text=True,
+        )
+        raise
+
+    _teardown_worktree(git_repo, wt_path, "sha-ff-test")
+    main_head_ff = subprocess.run(
+        ["git", "rev-parse", "HEAD"], cwd=git_repo,
+        capture_output=True, text=True,
+    ).stdout.strip()
+    assert main_head_ff == wt_sha_ff, \
+        f"FF path: main HEAD ({main_head_ff}) should equal worktree SHA ({wt_sha_ff})"
+
+    # Sub-test B: no-ff path
+    wt_path = _create_worktree(git_repo, "sha-noff-test")
+    try:
+        with open(os.path.join(wt_path, "noff_file.txt"), "w") as f:
+            f.write("noff content\n")
+        subprocess.run(["git", "add", "noff_file.txt"], cwd=wt_path, capture_output=True, text=True)
+        subprocess.run(
+            ["git", "commit", "-m", "noff commit"], cwd=wt_path,
+            capture_output=True, text=True, check=True,
+        )
+        wt_sha_noff = subprocess.run(
+            ["git", "rev-parse", "HEAD"], cwd=wt_path,
+            capture_output=True, text=True,
+        ).stdout.strip()
+
+        # Advance main
+        with open(os.path.join(git_repo, "main_advance.txt"), "w") as f:
+            f.write("advance\n")
+        subprocess.run(["git", "add", "main_advance.txt"], cwd=git_repo, capture_output=True, text=True)
+        subprocess.run(
+            ["git", "commit", "-m", "advance main"], cwd=git_repo,
+            capture_output=True, text=True, check=True,
+        )
+    except Exception:
+        subprocess.run(
+            ["git", "worktree", "remove", "--force", wt_path], cwd=git_repo,
+            capture_output=True, text=True,
+        )
+        raise
+
+    _teardown_worktree(git_repo, wt_path, "sha-noff-test")
+    ancestor_check = subprocess.run(
+        ["git", "merge-base", "--is-ancestor", wt_sha_noff, "HEAD"], cwd=git_repo,
+        capture_output=True, text=True,
+    )
+    assert ancestor_check.returncode == 0, \
+        f"No-ff path: worktree SHA ({wt_sha_noff}) should be reachable from HEAD"
+
+
+def test_legacy_branchless_worktree_raises_descriptive_error(git_repo):
+    """A pre-merge-model detached-HEAD worktree raises a descriptive WorktreeTeardownError."""
+    slug = "legacy-test"
+    wt_path = os.path.join(git_repo, ".bellows-worktrees", slug)
+    os.makedirs(os.path.dirname(wt_path), exist_ok=True)
+
+    # Create a DETACHED-HEAD worktree manually (the old model)
+    subprocess.run(
+        ["git", "worktree", "add", wt_path, "HEAD", "--detach"], cwd=git_repo,
+        capture_output=True, text=True, check=True,
+    )
+
+    with pytest.raises(WorktreeTeardownError, match="legacy detached-HEAD") as exc_info:
+        _teardown_worktree(git_repo, wt_path, slug)
+
+    assert f"bellows-wt/{slug}" in str(exc_info.value), \
+        "Error message should contain the expected branch name"
+    assert os.path.isdir(wt_path), "Worktree should still exist after legacy detection"
+
+    # Clean up
+    subprocess.run(
+        ["git", "worktree", "remove", "--force", wt_path], cwd=git_repo,
+        capture_output=True, text=True,
+    )

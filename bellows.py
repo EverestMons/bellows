@@ -35,28 +35,6 @@ MISPLACED_VERDICT_SCAN_VERBOSE = False
 # Module-level scope means daemon startup automatically resets the set.
 _warned_no_match: set[str] = set()
 
-# --- Lifecycle artifact filter for dirty-tree pre-check ---
-# Daemon-managed bookkeeping paths that agents never commit to.
-# These are safe to ignore for cherry-pick conflict purposes.
-# See: knowledge/research/dirty-tree-precheck-false-trip-surface-2026-05-28.md Section 3
-_LIFECYCLE_IGNORE_RE = re.compile(
-    r'^knowledge/decisions/(in-progress-|verdict-pending-|halted-|executable-|diagnostic-).*\.md$'
-    r'|^knowledge/decisions/Done/'
-    r'|^verdicts/(pending|resolved)/'
-    r'|^\.bellows-worktrees(/|$)'
-)
-
-
-def _is_lifecycle_artifact(porcelain_line: str) -> bool:
-    """Return True if the porcelain line is a daemon-managed lifecycle artifact."""
-    if len(porcelain_line) < 4:
-        return False
-    path = porcelain_line[3:]
-    # Handle renamed files: "R  old -> new"
-    if " -> " in path:
-        path = path.split(" -> ", 1)[1]
-    return bool(_LIFECYCLE_IGNORE_RE.match(path.strip()))
-
 
 # --- Terminal output infrastructure ---
 _last_plan_event_time = 0.0
@@ -137,7 +115,7 @@ class WorktreeCreationError(Exception):
 
 
 class WorktreeTeardownError(Exception):
-    """Raised when worktree teardown fails (e.g. cherry-pick conflict)."""
+    """Raised when worktree teardown fails (e.g. merge conflict, legacy worktree)."""
     pass
 
 from watchdog.observers import Observer
@@ -790,7 +768,7 @@ def _parse_diff_stat(post_diff: str, pre_diff: str, project_path: Optional[str] 
 
 
 def _create_worktree(project_path: str, slug: str) -> str:
-    """Create a detached-HEAD git worktree for a plan execution.
+    """Create a named-branch git worktree for a plan execution.
 
     Returns the worktree path on success. Retries once on failure with a 2s delay.
     Raises WorktreeCreationError if both attempts fail or on timeout/OS error.
@@ -858,9 +836,30 @@ def _create_worktree(project_path: str, slug: str) -> str:
             )
         except Exception:
             pass
+        # Clean up the named branch if it exists (prevents sequential-invariant failure)
+        try:
+            subprocess.run(
+                ["git", "--no-pager", "branch", "-D", f"bellows-wt/{slug}"],
+                cwd=project_path, capture_output=True, text=True, timeout=10,
+            )
+        except Exception:
+            pass  # branch may not exist (legacy detached-HEAD worktree)
+
+    branch_name = f"bellows-wt/{re.sub(r'[^a-zA-Z0-9._/-]', '-', slug)}"
+
+    # Fail-fast: branch bellows-wt/<slug> must not pre-exist (sequential invariant)
+    branch_check = subprocess.run(
+        ["git", "--no-pager", "rev-parse", "--verify", f"refs/heads/{branch_name}"],
+        cwd=project_path, capture_output=True, text=True, timeout=10,
+    )
+    if branch_check.returncode == 0:
+        raise WorktreeCreationError(
+            f"branch '{branch_name}' already exists — sequential invariant violated "
+            f"(prior worktree for this slug was not fully cleaned up)"
+        )
 
     try:
-        cmd = ["git", "--no-pager", "worktree", "add", wt_path, "HEAD", "--detach"]
+        cmd = ["git", "--no-pager", "worktree", "add", wt_path, "-b", branch_name, "HEAD"]
         result = subprocess.run(cmd, cwd=project_path, capture_output=True, text=True, timeout=60)
 
         if result.returncode != 0:
@@ -879,9 +878,9 @@ def _create_worktree(project_path: str, slug: str) -> str:
 
 
 def _teardown_worktree(project_path: str, wt_path: str, slug: str) -> None:
-    """Tear down a worktree: cherry-pick commits back, copy dirty files, remove worktree.
+    """Tear down a worktree: merge commits back to main, remove worktree and branch.
 
-    Raises WorktreeTeardownError on cherry-pick conflict (worktree left alive for manual resolution).
+    Raises WorktreeTeardownError on merge conflict (worktree + branch left alive for manual resolution).
     No-op when wt_path == project_path (in-place execution, no worktree was created).
     """
     if wt_path == project_path:
@@ -904,14 +903,29 @@ def _teardown_worktree(project_path: str, wt_path: str, slug: str) -> None:
     except Exception:
         _log("WARN", f"⚠ could not detect main branch, falling back to 'main'", slug=slug)
 
+    # Legacy-worktree migration: detect pre-merge-model detached-HEAD worktrees
+    branch_name = f"bellows-wt/{slug}"
+    branch_check = subprocess.run(
+        ["git", "--no-pager", "rev-parse", "--verify", f"refs/heads/{branch_name}"],
+        cwd=project_path, capture_output=True, text=True, timeout=10,
+    )
+    if branch_check.returncode != 0:
+        raise WorktreeTeardownError(
+            f"legacy detached-HEAD worktree detected for slug {slug}: "
+            f"expected branch '{branch_name}' does not exist. "
+            f"This worktree was created by a pre-merge-model Bellows daemon. "
+            f"Manual resolution required: land commits from the worktree, "
+            f"then remove it with 'git worktree remove --force {wt_path}'."
+        )
+
     # (b) Collect commits made in worktree
     # Fail-safe (2026-06-05): a git-log failure here must NOT silently default to
-    # an empty commit list — that would skip the cherry-pick and still remove the
+    # an empty commit list — that would skip the merge and still remove the
     # worktree, losing un-landed commits with NO recorded worktree_teardown failure
-    # (uncatchable by the Gap-1b continue-block and Gap-1c retry, both of which key
-    # off a recorded failure). Raise so the failure routes to the 1b halt / 1c retry,
-    # matching the rest of this function's land-or-raise contract. A successful-but-
-    # empty result (returncode 0, no commits made) is legitimate and proceeds.
+    # (uncatchable by the Gap-1b continue-block, which keys off a recorded failure).
+    # Raise so the failure routes to the 1b halt, matching this function's
+    # land-or-raise contract. A successful-but-empty result (returncode 0,
+    # no commits made) is legitimate and proceeds.
     try:
         result = subprocess.run(
             ["git", "--no-pager", "log", "--format=%H", "HEAD", "--not", main_branch],
@@ -925,9 +939,9 @@ def _teardown_worktree(project_path: str, wt_path: str, slug: str) -> None:
         raise WorktreeTeardownError(
             f"worktree commit enumeration failed (git log rc={result.returncode}) for slug {slug}: {result.stderr.strip()}"
         )
-    commit_shas = result.stdout.strip().splitlines()[::-1]  # oldest-first for cherry-pick
+    commit_shas = result.stdout.strip().splitlines()  # enumerated for logging; merge uses branch name
 
-    # Detect stale .git/index.lock that would block cherry-pick
+    # Detect stale .git/index.lock that would block merge
     lock_path = os.path.join(project_path, ".git", "index.lock")
     if os.path.exists(lock_path):
         lock_age = time.time() - os.path.getmtime(lock_path)
@@ -947,93 +961,29 @@ def _teardown_worktree(project_path: str, wt_path: str, slug: str) -> None:
                 except OSError as e:
                     _log("WARN", f"⚠ could not remove .git/index.lock: {e}", slug=slug)
 
-    # (b2) Pre-cherry-pick dirty-tree check on main checkout
-    try:
-        dt_result = subprocess.run(
-            ["git", "--no-pager", "status", "--porcelain"],
-            cwd=project_path, capture_output=True, text=True, timeout=10,
-        )
-        # rstrip (not strip): preserve leading status-code space on first porcelain line
-        if dt_result.returncode == 0 and dt_result.stdout.rstrip():
-            dirty_lines = dt_result.stdout.rstrip().splitlines()
-            blocking_lines = [line for line in dirty_lines if not _is_lifecycle_artifact(line)]
-            if blocking_lines:
-                if len(blocking_lines) > 10:
-                    dirty_display = "\n".join(blocking_lines[:10]) + f"\n... ({len(blocking_lines) - 10} more files)"
-                else:
-                    dirty_display = "\n".join(blocking_lines)
-                raise WorktreeTeardownError(
-                    f"worktree_teardown_dirty_tree: local main has uncommitted changes "
-                    f"that would conflict with cherry-pick from worktree.\n"
-                    f"\n"
-                    f"Dirty files in local main ({len(blocking_lines)} blocking file(s)):\n"
-                    f"{dirty_display}\n"
-                    f"({len(dirty_lines) - len(blocking_lines)} lifecycle artifacts filtered, {len(blocking_lines)} blocking file(s) remain)\n"
-                    f"\n"
-                    f"Recovery (choose based on dirty-file type):\n"
-                    f"\n"
-                    f"  Sub-variant A — untracked artifact (e.g., claim-rename):\n"
-                    f"    cd {project_path}\n"
-                    f"    git add <file(s)>\n"
-                    f"    git commit -m 'chore: commit untracked artifact before teardown'\n"
-                    f"\n"
-                    f"  Sub-variant B — dirty bookkeeping file (e.g., PROJECT_STATUS.md):\n"
-                    f"    cd {project_path}\n"
-                    f"    git add <file(s)>\n"
-                    f"    git commit -m 'chore: commit dirty bookkeeping before teardown'\n"
-                    f"\n"
-                    f"  Then: re-issue continue verdict to retry teardown.\n"
-                    f"\n"
-                    f"Reference: LESSONS.md 2026-05-27 R2 recovery shape."
-                )
-    except WorktreeTeardownError:
-        raise
-    except Exception:
-        _log("WARN", f"⚠ dirty-tree pre-check failed (proceeding to cherry-pick)", slug=slug)
-
-    # (c) Cherry-pick each commit onto main checkout
-    for sha in commit_shas:
-        if not sha.strip():
-            continue
+    # (c) Merge worktree branch onto main
+    # Primary: --ff-only (linear history when main has not advanced)
+    result = subprocess.run(
+        ["git", "--no-pager", "merge", "--ff-only", branch_name],
+        cwd=project_path, capture_output=True, text=True, timeout=60,
+    )
+    if result.returncode != 0:
+        # Fallback: --no-ff when main advanced (merge commit preserves worktree SHAs as parents)
         result = subprocess.run(
-            ["git", "--no-pager", "cherry-pick", sha],
+            ["git", "--no-pager", "merge", "--no-ff", "--no-edit", branch_name],
             cwd=project_path, capture_output=True, text=True, timeout=60,
         )
         if result.returncode != 0:
+            # True content conflict or dirty-tree overlap — abort cleanly
             subprocess.run(
-                ["git", "--no-pager", "cherry-pick", "--abort"],
+                ["git", "--no-pager", "merge", "--abort"],
                 cwd=project_path, capture_output=True, text=True, timeout=10,
             )
             raise WorktreeTeardownError(
-                f"cherry-pick conflict on {sha} for slug {slug}: {result.stderr.strip()}"
+                f"merge conflict on {branch_name} for slug {slug}: {result.stderr.strip()}"
             )
 
-    # (d) Copy uncommitted dirty files back
-    try:
-        result = subprocess.run(
-            ["git", "--no-pager", "status", "--porcelain"],
-            cwd=wt_path, capture_output=True, text=True, timeout=10,
-        )
-        for line in result.stdout.splitlines():
-            if len(line) < 3:
-                continue
-            status_code = line[:2]
-            filename = line[3:].strip()
-            # Handle renamed files: "R  old -> new"
-            if " -> " in filename:
-                filename = filename.split(" -> ", 1)[1]
-            # Skip deletions
-            if status_code.strip() == "D":
-                continue
-            src = os.path.join(wt_path, filename)
-            dst = os.path.join(project_path, filename)
-            if os.path.exists(src):
-                os.makedirs(os.path.dirname(dst), exist_ok=True)
-                shutil.copy2(src, dst)
-    except Exception as e:
-        _log("WARN", f"⚠ dirty file copy-back failed: {e}", slug=slug)
-
-    # (e) Remove the worktree
+    # (d) Remove the worktree
     try:
         result = subprocess.run(
             ["git", "--no-pager", "worktree", "remove", wt_path, "--force"],
@@ -1051,40 +1001,15 @@ def _teardown_worktree(project_path: str, wt_path: str, slug: str) -> None:
         except Exception as e:
             _log("WARN", f"⚠ could not force-remove orphaned worktree dir {wt_path}: {e}", slug=slug)
 
-
-def _retry_recoverable_teardown(gate_result: dict, project_path: str, wt_path: str, slug: str) -> bool:
-    """Re-attempt a recoverable (dirty-tree-only) worktree teardown at verdict-consume time.
-
-    Called at the top of the continue branch, BEFORE the Gap-1b halt guard.
-    On success, clears all worktree_teardown failures from gate_result["failures"]
-    so the normal continue/advance proceeds. On any skip or failure, returns False
-    and leaves gate_result unchanged for the Gap-1b guard to halt.
-
-    Never raises. Never removes non-worktree_teardown failures.
-    """
-    wt_fails = [f for f in gate_result.get("failures", []) if f.get("gate") == "worktree_teardown"]
-    if not wt_fails:
-        return False
-
-    if not os.path.isdir(wt_path):
-        _log("INFO", f"continue-resume: worktree gone at {wt_path} — skipping teardown retry (commits, if any, are on a bellows-preserved/* branch); leaving failure for Gap-1b halt", slug=slug)
-        return False
-
-    if not all("worktree_teardown_dirty_tree" in (f.get("evidence") or "") for f in wt_fails):
-        _log("INFO", f"continue-resume: non-dirty-tree teardown failure (content conflict) — not retrying; leaving failure for Gap-1b halt", slug=slug)
-        return False
-
+    # Clean up the worktree branch (safe: branch is fully merged)
     try:
-        _teardown_worktree(project_path, wt_path, slug)
-        gate_result["failures"] = [f for f in gate_result.get("failures", []) if f.get("gate") != "worktree_teardown"]
-        _log("EVENT", f"continue-resume: dirty-tree teardown retry SUCCEEDED — commits landed on main, worktree removed; clearing worktree_teardown failure so resume advances", slug=slug)
-        return True
-    except WorktreeTeardownError as e:
-        _log("WARN", f"continue-resume: teardown retry still failing ({e}) — leaving failure for Gap-1b halt", slug=slug)
-        return False
-    except Exception as e:
-        _log("WARN", f"continue-resume: teardown retry errored ({e}) — leaving failure for Gap-1b halt", slug=slug)
-        return False
+        subprocess.run(
+            ["git", "--no-pager", "branch", "-d", branch_name],
+            cwd=project_path, capture_output=True, text=True, timeout=10,
+        )
+    except Exception:
+        _log("WARN", f"⚠ branch cleanup failed for {branch_name}", slug=slug)
+
 
 
 def _source_sha() -> str:
@@ -1427,15 +1352,9 @@ class Bellows:
                         gate_result = gate_result_from_request or {"failures": [], "files_changed": []}
 
                         if v == "continue":
-                            # Gap 1c: re-attempt a recoverable (dirty-tree) teardown before the Gap-1b halt decision.
-                            # By verdict time the operator has usually committed the stray dirty file, so the retry
-                            # lands Step N's commits and clears the failure — letting the normal advance proceed.
-                            _c_project_path = os.path.dirname(os.path.dirname(decisions_path))
-                            _c_wt_path = os.path.join(_c_project_path, ".bellows-worktrees", cleanup_slug)
-                            _retry_recoverable_teardown(gate_result, _c_project_path, _c_wt_path, cleanup_slug)
                             # Guard: block continue when prior step's worktree teardown failed (Gap 1b).
                             # An uncleared worktree_teardown failure means Step N's commits were never
-                            # cherry-picked to main — advancing would orphan them. Route to halted-
+                            # merged to main — advancing would orphan them. Route to halted-
                             # for manual R2 recovery instead of silently advancing.
                             if any(f.get("gate") == "worktree_teardown" for f in gate_result.get("failures", [])):
                                 _log("ERROR", f"continue verdict REJECTED — prior step's worktree_teardown failure uncleared (commits not landed); routing to halted- for manual R2 recovery", slug=plan_slug)
