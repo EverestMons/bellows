@@ -10,6 +10,7 @@ from pathlib import Path
 from typing import Optional
 
 from bellows import _log
+from bellows_root import resolve_bellows_root
 from parser import parse
 import decisions
 
@@ -17,7 +18,7 @@ import decisions
 # setdefault respects explicit operator overrides.  (executable-disable-autoupdater-2026-05-27)
 os.environ.setdefault("DISABLE_AUTOUPDATER", "1")
 
-BELLOWS_ROOT = Path(__file__).parent.resolve()
+BELLOWS_ROOT = resolve_bellows_root()
 LOGS_DIR = BELLOWS_ROOT / "logs"
 
 BELLOWS_AGENT_SYSTEM_PROMPT = """You are executing as a Bellows-dispatched agent. BINDING CONSTRAINT: You must NEVER move plan files to Done/. You must NEVER execute mv, shutil.move, os.rename, or any equivalent operation targeting a Done/ directory within the knowledge/decisions/ tree. The Planner performs all Done/ moves after verification. Your final operation is ALWAYS the commit. If you find yourself reasoning about moving files to Done/, STOP — that is not your responsibility."""

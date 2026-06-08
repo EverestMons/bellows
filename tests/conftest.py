@@ -7,3 +7,9 @@ def isolate_verdicts_dir(monkeypatch, tmp_path):
     """Redirect verdict.VERDICTS_DIR to tmpdir so tests never write to production verdicts/pending/."""
     import verdict
     monkeypatch.setattr(verdict, "VERDICTS_DIR", tmp_path / "verdicts")
+
+
+@pytest.fixture(autouse=True)
+def isolate_runner_logs_dir(monkeypatch, tmp_path):
+    import runner
+    monkeypatch.setattr(runner, "LOGS_DIR", tmp_path / "logs")

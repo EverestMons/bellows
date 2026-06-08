@@ -3,6 +3,20 @@
 **Date:** 2026-05-29
 **Plans:** diagnostic-claude-settings-permission-gap-2026-05-22, executable-pre-scan-orphan-guard-2026-05-22, executable-bellows-tier-1-batch-2026-05-21, executable-bellows-expected-keys-narrow-2026-05-21, diagnostic-bellows-expected-keys-warning-2026-05-21, diagnostic-bellows-isinstance-asymmetry-2026-05-21, executable-deposit-exists-path-form-normalization-2026-05-27, executable-disable-autoupdater-2026-05-27, diagnostic-planner-authored-contract-validation-2026-05-20, diagnostic-bash-gate-vs-guardrails-2026-05-20, executable-plan-write-time-lessons-reread-2026-05-13, diagnostic-pre-scan-orphan-warn-flood-2026-05-22, executable-remove-pre-scan-processed-rename-v2-2026-05-24, executable-rename-first-ordering-2026-05-24, executable-settings-local-bash-fallback-doc-2026-05-22, executable-mcp-read-class-tools-extension-2026-05-25, diagnostic-file-change-audit-false-negative-2026-05-25, executable-file-change-audit-fix-2026-05-25, executable-planner-template-rule-21-contract-change-2026-05-26, diagnostic-verdict-ledger-gate-result-preservation-2026-05-26, executable-verdict-ledger-gate-result-preservation-2026-05-26, executable-fix-f-guard-removal-2026-05-26, diagnostic-bellows-hardening-batch-freshness-2026-05-26, executable-bellows-hardening-batch-items-1-3-4-2026-05-26, executable-bellows-test-isolation-conftest-2026-05-26, diagnostic-leftover-after-ship-tooling-scope-2026-05-26, executable-leftover-after-ship-tooling-blueprint-2026-05-26, executable-leftover-after-ship-tooling-implementation-2026-05-26, executable-freshness-check-algorithm-v2-blueprint-2026-05-27, executable-freshness-check-algorithm-v2-blueprint-retry-2026-05-27, executable-freshness-check-algorithm-v2-implementation-2026-05-27, executable-worktree-precheck-hardening-2026-05-29
 
+## 2026-06-08 — executable-bellows-root-helper-runner-conversion (DEV Step 1)
+
+1. **`governance/GUARDRAILS.md` absent — fourteenth consecutive occurrence.** Plan instructs "Read your specialist file at `agents/BELLOWS_DEVELOPER.md` and `governance/GUARDRAILS.md` first." The governance directory does not exist in this worktree. Same recommendation as prior thirteen entries: remove or conditionalize.
+
+2. **Pre-edit verification queries were accurate and complete.** All five claims matched the codebase exactly. The config.json verification correctly expected the marker to be absent from the worktree (present only at canonical root) — this is the whole point of the marker-based approach.
+
+3. **Task code blocks were exact-copy-ready.** The plan provided `bellows_root.py` verbatim and the `runner.py` / `conftest.py` changes with exact replacement text. No interpretation needed. This is the gold standard for DEV steps.
+
+4. **Plan's `bellows/` prefix note was necessary.** The Deposits section lists paths with `bellows/` prefix (e.g., `bellows/bellows_root.py`) but the header note "the worktree root IS the bellows project root — strip the `bellows/` prefix" was needed. Same observation as prior entries.
+
+5. **Load-bearing interaction explanation was valuable.** The CEO Context section clearly explained WHY the fixture must land WITH the conversion (post-conversion unpatched writes resolve to canonical logs, not transient worktree). This made the sequencing constraint obvious and prevented any temptation to split the tasks.
+
+---
+
 ## 2026-06-05 — diagnostic-bellows-teardown-dirty-main-rootcause (SA Step 1, manual bootstrap)
 
 1. **Manual-bootstrap execution model worked well for self-referential diagnostics.** The plan correctly identified that "the daemon must not dispatch a worktree run that studies its own teardown" and prescribed in-place SA execution. No worktree complications.
