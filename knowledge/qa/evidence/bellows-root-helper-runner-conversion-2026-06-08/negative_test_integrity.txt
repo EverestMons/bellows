@@ -1,0 +1,32 @@
+Evidence: negative test integrity check
+=========================================
+
+Test body (tests/test_bellows_root.py::test_walks_up_to_config):
+
+def test_walks_up_to_config(tmp_path):
+    """Negative worktree-resolution test.
+
+    Builds a simulated worktree layout:
+        <tmp>/canonical/config.json
+        <tmp>/canonical/.bellows-worktrees/wt1/
+
+    The helper should walk up from wt1 and return <tmp>/canonical (the dir
+    containing config.json).  The legacy `Path(__file__).parent` approach would
+    return the wt1 dir itself — this test FAILS under that legacy behavior and
+    PASSES only under the walk-up helper.
+    """
+    canonical = tmp_path / "canonical"
+    canonical.mkdir()
+    (canonical / "config.json").write_text("{}")
+    wt_dir = canonical / ".bellows-worktrees" / "wt1"
+    wt_dir.mkdir(parents=True)
+
+    result = resolve_bellows_root(_start=wt_dir)
+    assert result == canonical, f"Expected walk-up to canonical {canonical}, got {result}"
+
+JUDGMENT: GENUINE negative test. The test creates a worktree-like directory structure
+(wt1 inside .bellows-worktrees/) and asserts the helper resolves UP to the canonical
+dir containing config.json, NOT the wt1 start dir. Under legacy Path(__file__).parent,
+_start=wt_dir would return wt_dir (no walk-up), failing the assertion
+`result == canonical`. The test is non-trivial and exercises the exact worktree
+resolution contract. PASS.

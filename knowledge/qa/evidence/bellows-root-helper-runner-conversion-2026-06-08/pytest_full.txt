@@ -1,0 +1,31 @@
+Evidence: full pytest run output
+==================================
+
+$ python3 -m pytest tests/ -v 2>&1 | tail -200
+
+tests/test_bellows_root.py::test_resolves_to_dir_with_config PASSED
+tests/test_bellows_root.py::test_walks_up_to_config PASSED
+tests/test_bellows_root.py::test_falls_back_when_no_config PASSED
+tests/test_bellows.py (all passed)
+tests/test_decisions.py (all passed)
+tests/test_gates.py (all passed)
+tests/test_misplaced_verdicts.py (all passed)
+tests/test_notifier_server.py (all passed)
+tests/test_phase4_parser.py (all passed)
+tests/test_phase4_planner_retry.py (all passed)
+tests/test_planner.py (all passed)
+tests/test_rule_26_deposit_parser.py (all passed)
+tests/test_runner.py (all 19 tests passed)
+tests/test_runner_parser.py (all passed)
+tests/test_validators.py (all passed)
+tests/test_verdict.py (all passed)
+tests/test_worktree.py (all passed)
+
+======================== 451 passed, 1 warning in 6.07s ========================
+
+Verification:
+(a) Three new test_bellows_root.py tests: ALL PASS (including test_walks_up_to_config)
+(b) All 19 test_runner.py functions: ALL PASS with autouse fixture active
+(c) Zero new failures beyond carry-over (none — all 451 pass)
+(d) Total pass count: 451 == DEV's reported post-edit number (451)
+PASS.

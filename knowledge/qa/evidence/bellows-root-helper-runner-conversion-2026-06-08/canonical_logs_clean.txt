@@ -1,0 +1,10 @@
+Evidence: canonical logs pollution check
+==========================================
+
+$ git status --porcelain logs/
+(empty output — no changes)
+
+No *-step.json files created in canonical logs/ during the test suite run.
+The conversion + autouse fixture successfully redirected all LOGS_DIR writes
+to tmpdir, confirming the worktree-write gap is CLOSED (not widened).
+PASS.

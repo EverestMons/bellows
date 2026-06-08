@@ -1,0 +1,18 @@
+Evidence: latent three untouched
+==================================
+
+$ git diff HEAD~1 --name-only
+bellows_root.py
+knowledge/development/bellows-root-helper-runner-conversion-2026-06-08.md
+knowledge/research/agent-prompt-feedback.md
+runner.py
+tests/conftest.py
+tests/test_bellows_root.py
+
+Files NOT in the changed set (confirmed absent):
+- bellows.py — NOT MODIFIED
+- planner.py — NOT MODIFIED
+- verdict.py — NOT MODIFIED
+
+Plan A scope respected: only runner.py converted. The three latent instances remain unconverted per CEO decision.
+PASS.

@@ -1,0 +1,13 @@
+Evidence: test_bellows_root.py test function names
+===================================================
+
+$ grep -n "def test_" tests/test_bellows_root.py
+5:def test_resolves_to_dir_with_config(tmp_path):
+11:def test_walks_up_to_config(tmp_path):
+33:def test_falls_back_when_no_config(tmp_path):
+
+All three required tests present:
+- test_resolves_to_dir_with_config — PRESENT
+- test_walks_up_to_config — PRESENT (negative worktree-resolution test)
+- test_falls_back_when_no_config — PRESENT
+PASS.

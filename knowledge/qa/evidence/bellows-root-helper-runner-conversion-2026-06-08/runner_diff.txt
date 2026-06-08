@@ -1,0 +1,30 @@
+Evidence: runner.py diff (git diff HEAD~1 -- runner.py)
+========================================================
+
+diff --git a/runner.py b/runner.py
+index 4d44798..b5bf96d 100644
+--- a/runner.py
++++ b/runner.py
+@@ -10,6 +10,7 @@ from pathlib import Path
+ from typing import Optional
+
+ from bellows import _log
++from bellows_root import resolve_bellows_root
+ from parser import parse
+ import decisions
+
+@@ -17,7 +18,7 @@ import decisions
+ # setdefault respects explicit operator overrides.  (executable-disable-autoupdater-2026-05-27)
+ os.environ.setdefault("DISABLE_AUTOUPDATER", "1")
+
+-BELLOWS_ROOT = Path(__file__).parent.resolve()
++BELLOWS_ROOT = resolve_bellows_root()
+ LOGS_DIR = BELLOWS_ROOT / "logs"
+
+VERDICT:
+- `from bellows_root import resolve_bellows_root` added (line 13)
+- `BELLOWS_ROOT = resolve_bellows_root()` replaces `Path(__file__).parent.resolve()` (line 21)
+- `LOGS_DIR = BELLOWS_ROOT / "logs"` UNCHANGED (still line 22)
+- Diff confined to exactly 2 lines: one import addition, one declaration replacement
+- _write_log(), run_step(), all LOGS_DIR usages: BYTE-UNCHANGED (not in diff)
+PASS.
