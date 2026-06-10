@@ -3,6 +3,7 @@
 import logging
 import os
 import re
+import subprocess
 
 import yaml
 
@@ -347,6 +348,28 @@ def _resolve_deposit_path(path, project_path, wt_path=None):
     return None
 
 
+def _check_deposit_uncommitted(resolved_path, original_path, wt_path, failures):
+    """Check if a resolved deposit path is uncommitted in the worktree.
+
+    Appends a deposit_uncommitted gate failure if the file exists on disk
+    but has uncommitted changes (untracked, unstaged, or staged-only).
+    """
+    if not wt_path:
+        return
+    try:
+        result = subprocess.run(
+            ["git", "--no-pager", "status", "--porcelain", "--", resolved_path],
+            cwd=wt_path, capture_output=True, text=True, timeout=10,
+        )
+        if result.returncode == 0 and result.stdout.strip():
+            failures.append({
+                "gate": "deposit_uncommitted",
+                "evidence": f"{original_path} exists on disk but is not committed — will be lost at teardown",
+            })
+    except Exception:
+        pass  # Git error — don't block on the safety-net check
+
+
 def _gate_deposit_exists(parsed, failures, project_path, plan_text=None, step_number=None, wt_path=None, plan_header=None):
     result_text = parsed.get("result_text", "")
     match = re.search(r"### Files Deposited\s*\n(.*?)(?:\n###|\Z)", result_text, re.DOTALL)
@@ -363,22 +386,35 @@ def _gate_deposit_exists(parsed, failures, project_path, plan_text=None, step_nu
             path = m.group(1) if m else line[2:].strip().strip("`")
             if path:
                 agent_declared.add(_normalize_deposit_path(path, project_path))
-                if _resolve_deposit_path(path, project_path, wt_path=wt_path) is None:
+                resolved = _resolve_deposit_path(path, project_path, wt_path=wt_path)
+                if resolved is None:
                     failures.append({"gate": "deposit_exists", "evidence": f"missing: {path}"})
+                else:
+                    _check_deposit_uncommitted(resolved, path, wt_path, failures)
 
     # Frontmatter-first: if plan_header provides a deposits list, use it as authoritative
     frontmatter_deposits = plan_header.get("deposits") if plan_header is not None else None
     if frontmatter_deposits is not None and isinstance(frontmatter_deposits, list):
         for path in frontmatter_deposits:
-            if _normalize_deposit_path(path, project_path) not in agent_declared and _resolve_deposit_path(path, project_path, wt_path=wt_path) is None:
-                failures.append({"gate": "deposit_exists", "evidence": f"plan-required deposit missing (frontmatter): {path}"})
+            normalized = _normalize_deposit_path(path, project_path)
+            if normalized not in agent_declared:
+                resolved = _resolve_deposit_path(path, project_path, wt_path=wt_path)
+                if resolved is None:
+                    failures.append({"gate": "deposit_exists", "evidence": f"plan-required deposit missing (frontmatter): {path}"})
+                else:
+                    _check_deposit_uncommitted(resolved, path, wt_path, failures)
     elif plan_text and step_number is not None:
         # Prose fallback: extract deposits from step text
         step_text = _extract_step_text(plan_text, step_number)
         if step_text:
             for path in _extract_plan_required_deposits(step_text):
-                if _normalize_deposit_path(path, project_path) not in agent_declared and _resolve_deposit_path(path, project_path, wt_path=wt_path) is None:
-                    failures.append({"gate": "deposit_exists", "evidence": f"plan-required deposit missing (not declared by agent): {path}"})
+                normalized = _normalize_deposit_path(path, project_path)
+                if normalized not in agent_declared:
+                    resolved = _resolve_deposit_path(path, project_path, wt_path=wt_path)
+                    if resolved is None:
+                        failures.append({"gate": "deposit_exists", "evidence": f"plan-required deposit missing (not declared by agent): {path}"})
+                    else:
+                        _check_deposit_uncommitted(resolved, path, wt_path, failures)
 
 
 def _extract_step_text(plan_text: str, step_number: int):

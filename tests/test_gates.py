@@ -1970,3 +1970,132 @@ def test_scope_check_union_does_not_blanket_authorize_across_dirs():
                          files_changed=["src/unrelated/other.py"])
     assert any(f["gate"] == "scope_check" and "src/unrelated/other.py" in f["evidence"]
                for f in result["failures"])
+
+
+# --- deposit_uncommitted gate tests (deposit-loss fix) ---
+
+def test_gate_fails_on_uncommitted_deposit(tmp_path):
+    """Gate fails with deposit_uncommitted when a declared deposit exists on disk
+    but is untracked in the worktree."""
+    project_path = tmp_path / "myproject"
+    project_path.mkdir()
+    wt_path = tmp_path / "worktree"
+    wt_path.mkdir()
+    # Initialize a git repo in the worktree so git status works
+    import subprocess
+    subprocess.run(["git", "init", "-b", "main"], cwd=str(wt_path),
+                   capture_output=True, text=True, check=True)
+    subprocess.run(["git", "config", "user.email", "test@test.com"],
+                   cwd=str(wt_path), capture_output=True, text=True)
+    subprocess.run(["git", "config", "user.name", "Test"],
+                   cwd=str(wt_path), capture_output=True, text=True)
+    # Create initial commit so HEAD exists
+    readme = wt_path / "README.md"
+    readme.write_text("init")
+    subprocess.run(["git", "add", "."], cwd=str(wt_path), capture_output=True, text=True)
+    subprocess.run(["git", "commit", "-m", "init"], cwd=str(wt_path),
+                   capture_output=True, text=True, check=True)
+    # Create deposit file but do NOT git add it — untracked
+    deposit = wt_path / "knowledge" / "development" / "report.md"
+    deposit.parent.mkdir(parents=True)
+    deposit.write_text("# Report\n")
+    plan_text = (
+        "## STEP 1 — DEV\n\n"
+        "> Do work.\n>\n"
+        "> **Deposits:**\n"
+        "> - `knowledge/development/report.md`\n"
+    )
+    parsed = _clean_parsed()
+    parsed["result_text"] = "### Files Deposited\n- `knowledge/development/report.md`\n\n### Next"
+    failures = []
+    gates._gate_deposit_exists(parsed, failures, str(project_path),
+                               plan_text=plan_text, step_number=1, wt_path=str(wt_path))
+    assert any(f["gate"] == "deposit_uncommitted" for f in failures), \
+        f"Expected deposit_uncommitted failure, got: {failures}"
+
+
+def test_gate_deposit_uncommitted_evidence_message(tmp_path):
+    """The deposit_uncommitted failure evidence contains the deposit path and
+    a clear description of the uncommitted state."""
+    project_path = tmp_path / "myproject"
+    project_path.mkdir()
+    wt_path = tmp_path / "worktree"
+    wt_path.mkdir()
+    import subprocess
+    subprocess.run(["git", "init", "-b", "main"], cwd=str(wt_path),
+                   capture_output=True, text=True, check=True)
+    subprocess.run(["git", "config", "user.email", "test@test.com"],
+                   cwd=str(wt_path), capture_output=True, text=True)
+    subprocess.run(["git", "config", "user.name", "Test"],
+                   cwd=str(wt_path), capture_output=True, text=True)
+    readme = wt_path / "README.md"
+    readme.write_text("init")
+    subprocess.run(["git", "add", "."], cwd=str(wt_path), capture_output=True, text=True)
+    subprocess.run(["git", "commit", "-m", "init"], cwd=str(wt_path),
+                   capture_output=True, text=True, check=True)
+    deposit = wt_path / "knowledge" / "qa" / "qa-report.md"
+    deposit.parent.mkdir(parents=True)
+    deposit.write_text("# QA Report\n")
+    plan_text = (
+        "## STEP 1 — DEV\n\n"
+        "> Do work.\n>\n"
+        "> **Deposits:**\n"
+        "> - `knowledge/qa/qa-report.md`\n"
+    )
+    parsed = _clean_parsed()
+    parsed["result_text"] = "### Files Deposited\n- `knowledge/qa/qa-report.md`\n\n### Next"
+    failures = []
+    gates._gate_deposit_exists(parsed, failures, str(project_path),
+                               plan_text=plan_text, step_number=1, wt_path=str(wt_path))
+    uncommitted_failures = [f for f in failures if f["gate"] == "deposit_uncommitted"]
+    assert len(uncommitted_failures) == 1
+    evidence = uncommitted_failures[0]["evidence"]
+    assert "knowledge/qa/qa-report.md" in evidence, \
+        f"Evidence should contain the deposit path: {evidence}"
+    assert "not committed" in evidence, \
+        f"Evidence should describe the uncommitted state: {evidence}"
+    assert "will be lost at teardown" in evidence, \
+        f"Evidence should warn about teardown loss: {evidence}"
+
+
+def test_gate_passes_when_deposit_committed(tmp_path):
+    """Gate passes (no deposit_uncommitted failure) when a declared deposit is
+    already committed in the worktree."""
+    project_path = tmp_path / "myproject"
+    project_path.mkdir()
+    wt_path = tmp_path / "worktree"
+    wt_path.mkdir()
+    import subprocess
+    subprocess.run(["git", "init", "-b", "main"], cwd=str(wt_path),
+                   capture_output=True, text=True, check=True)
+    subprocess.run(["git", "config", "user.email", "test@test.com"],
+                   cwd=str(wt_path), capture_output=True, text=True)
+    subprocess.run(["git", "config", "user.name", "Test"],
+                   cwd=str(wt_path), capture_output=True, text=True)
+    readme = wt_path / "README.md"
+    readme.write_text("init")
+    subprocess.run(["git", "add", "."], cwd=str(wt_path), capture_output=True, text=True)
+    subprocess.run(["git", "commit", "-m", "init"], cwd=str(wt_path),
+                   capture_output=True, text=True, check=True)
+    # Create deposit file AND commit it
+    deposit = wt_path / "knowledge" / "development" / "report.md"
+    deposit.parent.mkdir(parents=True)
+    deposit.write_text("# Report\n")
+    subprocess.run(["git", "add", "--", str(deposit)], cwd=str(wt_path),
+                   capture_output=True, text=True)
+    subprocess.run(["git", "commit", "-m", "add deposit"], cwd=str(wt_path),
+                   capture_output=True, text=True, check=True)
+    plan_text = (
+        "## STEP 1 — DEV\n\n"
+        "> Do work.\n>\n"
+        "> **Deposits:**\n"
+        "> - `knowledge/development/report.md`\n"
+    )
+    parsed = _clean_parsed()
+    parsed["result_text"] = "### Files Deposited\n- `knowledge/development/report.md`\n\n### Next"
+    failures = []
+    gates._gate_deposit_exists(parsed, failures, str(project_path),
+                               plan_text=plan_text, step_number=1, wt_path=str(wt_path))
+    assert not any(f["gate"] == "deposit_uncommitted" for f in failures), \
+        f"No deposit_uncommitted failure expected for committed deposit: {failures}"
+    assert failures == [], f"No failures expected at all: {failures}"

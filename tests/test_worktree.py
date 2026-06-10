@@ -21,6 +21,7 @@ import bellows
 from bellows import (
     WorktreeCreationError,
     WorktreeTeardownError,
+    _auto_stage_deposits,
     _create_worktree,
     _teardown_worktree,
 )
@@ -901,3 +902,126 @@ def test_legacy_branchless_worktree_raises_descriptive_error(git_repo):
         ["git", "worktree", "remove", "--force", wt_path], cwd=git_repo,
         capture_output=True, text=True,
     )
+
+
+def test_auto_stage_preserves_untracked_deposit_on_teardown(git_repo):
+    """An untracked file matching a declared deposit is auto-staged, committed,
+    and survives teardown (merged to main)."""
+    wt_path = _create_worktree(git_repo, "auto-stage-test")
+    deposit_rel = "knowledge/development/test-deposit.md"
+    deposit_abs = os.path.join(wt_path, deposit_rel)
+    os.makedirs(os.path.dirname(deposit_abs), exist_ok=True)
+    with open(deposit_abs, "w") as f:
+        f.write("# Test deposit\n")
+
+    # Confirm the file is untracked
+    st = subprocess.run(
+        ["git", "status", "--porcelain", "--", deposit_abs],
+        cwd=wt_path, capture_output=True, text=True,
+    )
+    assert st.stdout.strip().startswith("??"), f"File should be untracked: {st.stdout}"
+
+    # Plan text that declares the deposit
+    plan_text = f"""## STEP 1 — DEV
+> Do work.
+> **Deposits:**
+> - `{deposit_rel}`
+"""
+    _auto_stage_deposits(plan_text, {}, git_repo, wt_path, "auto-stage-test")
+
+    # Verify the file is now committed
+    st2 = subprocess.run(
+        ["git", "status", "--porcelain", "--", deposit_abs],
+        cwd=wt_path, capture_output=True, text=True,
+    )
+    assert st2.stdout.strip() == "", f"File should be committed (clean): {st2.stdout}"
+
+    _teardown_worktree(git_repo, wt_path, "auto-stage-test")
+
+    # Verify the file exists on main after merge
+    main_deposit = os.path.join(git_repo, deposit_rel)
+    assert os.path.isfile(main_deposit), \
+        f"Auto-staged deposit should survive teardown and exist on main: {main_deposit}"
+
+
+def test_auto_stage_handles_multiple_deposits(git_repo):
+    """Multiple declared deposits: one committed, one untracked, one staged-only
+    — all three survive teardown after auto-staging."""
+    wt_path = _create_worktree(git_repo, "multi-deposit-test")
+    os.makedirs(os.path.join(wt_path, "knowledge", "development"), exist_ok=True)
+
+    # Deposit 1: already committed
+    d1 = os.path.join(wt_path, "knowledge", "development", "committed.md")
+    with open(d1, "w") as f:
+        f.write("# Already committed\n")
+    subprocess.run(["git", "add", "--", d1], cwd=wt_path, capture_output=True, text=True)
+    subprocess.run(
+        ["git", "commit", "-m", "commit deposit 1"], cwd=wt_path,
+        capture_output=True, text=True, check=True,
+    )
+
+    # Deposit 2: untracked
+    d2 = os.path.join(wt_path, "knowledge", "development", "untracked.md")
+    with open(d2, "w") as f:
+        f.write("# Untracked deposit\n")
+
+    # Deposit 3: staged but not committed
+    d3 = os.path.join(wt_path, "knowledge", "development", "staged-only.md")
+    with open(d3, "w") as f:
+        f.write("# Staged only\n")
+    subprocess.run(["git", "add", "--", d3], cwd=wt_path, capture_output=True, text=True)
+
+    plan_text = """## STEP 1 — DEV
+> Do work.
+> **Deposits:**
+> - `knowledge/development/committed.md`
+> - `knowledge/development/untracked.md`
+> - `knowledge/development/staged-only.md`
+"""
+    _auto_stage_deposits(plan_text, {}, git_repo, wt_path, "multi-deposit-test")
+    _teardown_worktree(git_repo, wt_path, "multi-deposit-test")
+
+    for name in ("committed.md", "untracked.md", "staged-only.md"):
+        path = os.path.join(git_repo, "knowledge", "development", name)
+        assert os.path.isfile(path), f"Deposit {name} should survive teardown on main"
+
+
+def test_auto_stage_noop_when_all_committed(git_repo):
+    """When all declared deposits are already committed, no extra commit is created."""
+    wt_path = _create_worktree(git_repo, "noop-test")
+    deposit_rel = "knowledge/development/already-committed.md"
+    deposit_abs = os.path.join(wt_path, deposit_rel)
+    os.makedirs(os.path.dirname(deposit_abs), exist_ok=True)
+    with open(deposit_abs, "w") as f:
+        f.write("# Already committed\n")
+    subprocess.run(["git", "add", "--", deposit_abs], cwd=wt_path, capture_output=True, text=True)
+    subprocess.run(
+        ["git", "commit", "-m", "commit deposit"], cwd=wt_path,
+        capture_output=True, text=True, check=True,
+    )
+
+    # Record commit count before auto-stage
+    log_before = subprocess.run(
+        ["git", "log", "--oneline"], cwd=wt_path,
+        capture_output=True, text=True,
+    )
+    count_before = len(log_before.stdout.strip().splitlines())
+
+    plan_text = f"""## STEP 1 — DEV
+> Do work.
+> **Deposits:**
+> - `{deposit_rel}`
+"""
+    _auto_stage_deposits(plan_text, {}, git_repo, wt_path, "noop-test")
+
+    # No new commit should be created
+    log_after = subprocess.run(
+        ["git", "log", "--oneline"], cwd=wt_path,
+        capture_output=True, text=True,
+    )
+    count_after = len(log_after.stdout.strip().splitlines())
+    assert count_after == count_before, \
+        f"No extra commit should be created when all deposits are committed (before={count_before}, after={count_after})"
+
+    # Clean up
+    _teardown_worktree(git_repo, wt_path, "noop-test")

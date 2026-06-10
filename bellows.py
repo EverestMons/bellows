@@ -491,6 +491,9 @@ def run_plan(plan_path: str, config: dict, response_server: server.ResponseServe
             else:
                 _log("WARN", f"⚠ in-progress file missing — possible agent file deletion", slug=slug_for(plan_name))
 
+        # Auto-stage declared deposits before gates (deposit-loss fix)
+        _auto_stage_deposits(plan_text, header, project_path, wt_path, plan_slug)
+
         # Capture post-step file state and run gates
         post_diff = _capture_git_diff(wt_path)
         files_changed = _parse_diff_stat(post_diff, pre_diff, wt_path)
@@ -583,6 +586,9 @@ def run_plan(plan_path: str, config: dict, response_server: server.ResponseServe
                         mode_a_detected = True
                 else:
                     _log("WARN", f"⚠ in-progress file missing — possible agent file deletion", slug=slug_for(plan_name))
+
+            # Auto-stage declared deposits before gates (deposit-loss fix)
+            _auto_stage_deposits(plan_text, header, project_path, wt_path, plan_slug)
 
             # Capture post-step file state and run gates
             post_diff = _capture_git_diff(wt_path)
@@ -875,6 +881,77 @@ def _create_worktree(project_path: str, slug: str) -> str:
         raise WorktreeCreationError(f"worktree creation timed out for {slug}: {e}") from e
     except OSError as e:
         raise WorktreeCreationError(f"worktree creation OS error for {slug}: {e}") from e
+
+
+def _auto_stage_deposits(plan_text, plan_header, project_path, wt_path, slug):
+    """Auto-stage and commit plan-declared deposits that are uncommitted in the worktree.
+
+    Called immediately before gates.check() at step completion so that
+    deposit_exists evaluates post-commit state and the teardown merge lands them.
+    Clean no-op when all declared deposits are already committed.
+    """
+    if wt_path == project_path:
+        return  # In-place execution, no worktree — nothing to protect
+
+    # (1) Extract plan-declared deposit paths from both sources
+    deposit_paths = []
+    prose_deposits = gates._extract_plan_required_deposits(plan_text)
+    if prose_deposits:
+        deposit_paths.extend(prose_deposits)
+    frontmatter_deposits = plan_header.get("deposits") if plan_header else None
+    if frontmatter_deposits and isinstance(frontmatter_deposits, list):
+        for p in frontmatter_deposits:
+            if p not in deposit_paths:
+                deposit_paths.append(p)
+
+    if not deposit_paths:
+        return
+
+    staged_any = False
+    for path in deposit_paths:
+        # (2) Resolve against worktree
+        resolved = gates._resolve_deposit_path(path, project_path, wt_path=wt_path)
+        if resolved is None:
+            continue  # File doesn't exist on disk — nothing to stage
+
+        # (3) Check if untracked/unstaged via git status --porcelain
+        try:
+            result = subprocess.run(
+                ["git", "--no-pager", "status", "--porcelain", "--", resolved],
+                cwd=wt_path, capture_output=True, text=True, timeout=10,
+            )
+        except Exception:
+            continue
+
+        if result.returncode != 0 or not result.stdout.strip():
+            continue  # Already committed or git error
+
+        # File has uncommitted changes — path-scoped git add (NEVER git add -A)
+        try:
+            add_result = subprocess.run(
+                ["git", "--no-pager", "add", "--", resolved],
+                cwd=wt_path, capture_output=True, text=True, timeout=10,
+            )
+            if add_result.returncode == 0:
+                staged_any = True
+                _log("INFO", f"auto-staged declared deposit: {path}", slug=slug)
+        except Exception:
+            _log("WARN", f"⚠ failed to auto-stage deposit: {path}", slug=slug)
+
+    # (4) Commit if anything was staged
+    if staged_any:
+        try:
+            result = subprocess.run(
+                ["git", "--no-pager", "commit", "-m",
+                 "bellows: auto-stage declared deposits before teardown"],
+                cwd=wt_path, capture_output=True, text=True, timeout=30,
+            )
+            if result.returncode == 0:
+                _log("INFO", "committed auto-staged deposits", slug=slug)
+            else:
+                _log("WARN", f"⚠ auto-stage commit failed: {result.stderr.strip()}", slug=slug)
+        except Exception as e:
+            _log("WARN", f"⚠ auto-stage commit exception: {e}", slug=slug)
 
 
 def _teardown_worktree(project_path: str, wt_path: str, slug: str) -> None:
