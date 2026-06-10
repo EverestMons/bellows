@@ -3,6 +3,18 @@
 **Date:** 2026-05-29
 **Plans:** diagnostic-claude-settings-permission-gap-2026-05-22, executable-pre-scan-orphan-guard-2026-05-22, executable-bellows-tier-1-batch-2026-05-21, executable-bellows-expected-keys-narrow-2026-05-21, diagnostic-bellows-expected-keys-warning-2026-05-21, diagnostic-bellows-isinstance-asymmetry-2026-05-21, executable-deposit-exists-path-form-normalization-2026-05-27, executable-disable-autoupdater-2026-05-27, diagnostic-planner-authored-contract-validation-2026-05-20, diagnostic-bash-gate-vs-guardrails-2026-05-20, executable-plan-write-time-lessons-reread-2026-05-13, diagnostic-pre-scan-orphan-warn-flood-2026-05-22, executable-remove-pre-scan-processed-rename-v2-2026-05-24, executable-rename-first-ordering-2026-05-24, executable-settings-local-bash-fallback-doc-2026-05-22, executable-mcp-read-class-tools-extension-2026-05-25, diagnostic-file-change-audit-false-negative-2026-05-25, executable-file-change-audit-fix-2026-05-25, executable-planner-template-rule-21-contract-change-2026-05-26, diagnostic-verdict-ledger-gate-result-preservation-2026-05-26, executable-verdict-ledger-gate-result-preservation-2026-05-26, executable-fix-f-guard-removal-2026-05-26, diagnostic-bellows-hardening-batch-freshness-2026-05-26, executable-bellows-hardening-batch-items-1-3-4-2026-05-26, executable-bellows-test-isolation-conftest-2026-05-26, diagnostic-leftover-after-ship-tooling-scope-2026-05-26, executable-leftover-after-ship-tooling-blueprint-2026-05-26, executable-leftover-after-ship-tooling-implementation-2026-05-26, executable-freshness-check-algorithm-v2-blueprint-2026-05-27, executable-freshness-check-algorithm-v2-blueprint-retry-2026-05-27, executable-freshness-check-algorithm-v2-implementation-2026-05-27, executable-worktree-precheck-hardening-2026-05-29
 
+## 2026-06-09 — diagnostic-bellows-scope-check-fp-fix (SA Step 1)
+
+1. **`governance/GUARDRAILS.md` absent — sixteenth consecutive occurrence.** Plan references specialist file at `agents/BELLOWS_SYSTEMS_ANALYST.md` with implicit governance read. The governance directory does not exist in this worktree. Same recommendation as prior entries: remove or conditionalize.
+
+2. **Liveness-anchor instructions were clear and followed.** The "post a short visible chat message confirming you are starting" and "post a 1-line Read X. after each file read" kept the inactivity timer warm and provided good observability.
+
+3. **Dual-BACKLOG-entry framing was valuable.** Providing both #2 and #9 with the explicit shared-root-cause thesis ("both reduce to: the allowed-set is derived from one step's prompt text while the checked-set is the whole-plan cumulative diff") focused the investigation on proving/disproving that thesis rather than treating them as independent bugs.
+
+4. **Self-fix constraint callout prevented circular failure.** The explicit note "the executable's own DEV scope must be tight (gates.py + tests/test_gates.py, explicitly enumerated, no blueprint delegation) so it does not trip the very bug it is fixing" is a pattern worth reusing for any fix that touches gates.py.
+
+---
+
 ## 2026-06-08 — executable-bellows-root-helper-runner-conversion (QA Step 2)
 
 1. **`governance/GUARDRAILS.md` absent — fifteenth consecutive occurrence.** Plan instructs "Read your specialist file at `agents/BELLOWS_QA.md` and `governance/GUARDRAILS.md` first." The governance directory does not exist in this worktree. Same recommendation as prior entries: remove or conditionalize.
