@@ -1,0 +1,34 @@
+=== Deliverable Verification Grep Evidence ===
+
+--- 1. _auto_stage_deposits defined in bellows.py ---
+886:def _auto_stage_deposits(plan_text, plan_header, project_path, wt_path, slug):
+
+--- 2. _auto_stage_deposits precedes gates.check() (call site 1, first step) ---
+495:        _auto_stage_deposits(plan_text, header, project_path, wt_path, plan_slug)
+500:        gate_result = gates.check(parsed, plan_text, current_step, project_path, files_changed=files_changed, wt_path=wt_path)
+591:            _auto_stage_deposits(plan_text, header, project_path, wt_path, plan_slug)
+596:            gate_result = gates.check(parsed, plan_text, current_step, project_path, files_changed=files_changed, wt_path=wt_path)
+886:def _auto_stage_deposits(plan_text, plan_header, project_path, wt_path, slug):
+889:    Called immediately before gates.check() at step completion so that
+
+--- 3. _check_deposit_uncommitted + git status --porcelain in gates.py ---
+351:def _check_deposit_uncommitted(resolved_path, original_path, wt_path, failures):
+354:    Appends a deposit_uncommitted gate failure if the file exists on disk
+361:            ["git", "--no-pager", "status", "--porcelain", "--", resolved_path],
+366:                "gate": "deposit_uncommitted",
+393:                    _check_deposit_uncommitted(resolved, path, wt_path, failures)
+405:                    _check_deposit_uncommitted(resolved, path, wt_path, failures)
+417:                        _check_deposit_uncommitted(resolved, path, wt_path, failures)
+
+--- 4. Six new tests exist by name ---
+tests/test_worktree.py:907:def test_auto_stage_preserves_untracked_deposit_on_teardown(git_repo):
+tests/test_worktree.py:947:def test_auto_stage_handles_multiple_deposits(git_repo):
+tests/test_worktree.py:989:def test_auto_stage_noop_when_all_committed(git_repo):
+tests/test_gates.py:1977:def test_gate_fails_on_uncommitted_deposit(tmp_path):
+tests/test_gates.py:2017:def test_gate_deposit_uncommitted_evidence_message(tmp_path):
+tests/test_gates.py:2061:def test_gate_passes_when_deposit_committed(tmp_path):
+
+--- 5. Ordering confirmation: _auto_stage_deposits line < gates.check line at both sites ---
+Site 1: _auto_stage_deposits at 495, gates.check at 500
+Site 2: _auto_stage_deposits at 591, gates.check at 596
+Both precede gate, not teardown. Ordering correction confirmed.

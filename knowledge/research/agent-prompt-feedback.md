@@ -2136,3 +2136,13 @@ The Planner authors plans in a Project conversation with MCP filesystem tools. T
 3. **Helper extraction spec was precise and complete.** The plan provided the exact helper body including the `_log` addition, and the exact callback wiring. No ambiguity in implementation — zero interpretation required. This is the ideal spec shape for mechanical refactoring tasks.
 
 4. **Test mirroring instruction was clear.** "Mirror the two existing `on_modified` `_seen` tests for the create and move paths" plus explicit test names and assertion expectations left no room for misinterpretation. The existing tests served as a clean template.
+
+## 2026-06-10 — executable-bellows-deposit-loss-fix (DEV Step 1, QA Step 2)
+
+1. **Ordering correction was clear and well-motivated.** The plan explicitly overrode the design's "before `_teardown_worktree`" placement to "before `gates.check()`" with a clear rationale (so `deposit_exists` evaluates post-commit state and `files_changed` captures auto-committed deposits). The design Section 3 referenced three teardown call sites; the ordering correction redirected to the two `gates.check()` call sites. No ambiguity.
+
+2. **Design Section 6 Verification Blocks were efficient for pre-edit validation.** All six queries executed cleanly and confirmed design assumptions matched current code. The "read file:line" queries were more reliable than line-number-based assertions since code had shifted by a few lines from the design's estimates.
+
+3. **Specialist file reference still absent.** Plan instructed "read your specialist file" but no specialist file exists in the worktree. Tenth consecutive occurrence. Same feedback as prior entries.
+
+4. **`_extract_plan_required_deposits(plan_text)` spec is ambiguous when `plan_text` is the full plan text.** The function is designed for step text (uses `re.search` → first match only). Passing the full plan text extracts only the first step's `**Deposits:**` block. For step 1 this works; for step 2+ the function returns step 1's (already-committed) deposits. The `plan_header.get("deposits")` supplement and the (b) FAIL-LOUD gate provide coverage, but a future refinement could extract from the current step's text specifically.
