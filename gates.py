@@ -662,10 +662,18 @@ def _gate_scope_check(plan_text, step_number, files_changed, failures):
     if not files_changed:
         return
 
-    # Extract the step's section from the plan
-    step_text = _extract_step_text(plan_text, step_number)
-    if not step_text:
+    # Build union of all step contexts (steps 1 through step_number)
+    all_step_texts = []
+    for s in range(1, step_number + 1):
+        st = _extract_step_text(plan_text, s)
+        if st:
+            all_step_texts.append(st)
+    if not all_step_texts:
         return
+    union_text = "\n".join(all_step_texts)
+
+    # Retain current step text for evidence display
+    step_text = _extract_step_text(plan_text, step_number) or ""
 
     out_of_scope = []
     for fpath in files_changed:
@@ -674,12 +682,12 @@ def _gate_scope_check(plan_text, step_number, files_changed, failures):
             continue
         if any(basename.startswith(p) for p in SCOPE_ALLOWLIST_PREFIXES):
             continue
-        if fpath in step_text or basename in step_text:
+        if fpath in union_text or basename in union_text:
             continue
         # Directory-mention authorization (BACKLOG 2026-05-28 scope_check FP):
         # accept a changed file when an ANCESTOR directory of its OWN path —
         # written with a trailing slash and at least 2 path segments deep
-        # (>= 1 slash) — appears in the step text. Covers Deposits blocks /
+        # (>= 1 slash) — appears in the union text. Covers Deposits blocks /
         # step prose that name a deposit directory (e.g. an evidence dir) but
         # reference its child files only collectively. The depth guard stops a
         # shallow single-segment mention (e.g. "web/") from blanket-authorizing
@@ -688,7 +696,7 @@ def _gate_scope_check(plan_text, step_number, files_changed, failures):
         parent = os.path.dirname(fpath)
         authorized_by_dir = False
         while parent:
-            if parent.count("/") >= 1 and (parent + "/") in step_text:
+            if parent.count("/") >= 1 and (parent + "/") in union_text:
                 authorized_by_dir = True
                 break
             parent = os.path.dirname(parent)

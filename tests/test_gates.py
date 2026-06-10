@@ -1916,3 +1916,57 @@ def test_rule_22_d_pending_in_status_cell_still_fires(tmp_path):
     d_failures = [f for f in failures if f["gate"] == "rule_22_verification" and "(d)" in f["evidence"]]
     assert len(d_failures) == 1
     assert "pending" in d_failures[0]["evidence"]
+
+
+# --- scope_check union-of-all-step-texts tests ---
+
+UNION_3STEP_PLAN = """\
+## STEP 1 — SA (Systems Analyst)
+
+> Deposit the blueprint to `knowledge/architecture/blueprint.md`.
+
+## STEP 2 — DEV (Developer)
+
+> Implement gates.py per the blueprint deposited in Step 1.
+
+## STEP 3 — QA (QA Engineer)
+
+> Run all tests and verify deliverables in tests/test_gates.py.
+"""
+
+
+def test_scope_check_union_authorizes_earlier_step_file():
+    result = gates.check(_clean_parsed(), UNION_3STEP_PLAN, 3, "/tmp",
+                         files_changed=["knowledge/architecture/blueprint.md"])
+    assert not any(f["gate"] == "scope_check" for f in result["failures"])
+
+
+UNION_2STEP_PLAN = """\
+## STEP 1 — DEV (Developer)
+
+> Modify gates.py to implement the union fix.
+
+## STEP 2 — QA (QA Engineer)
+
+> Verify tests/test_gates.py passes.
+"""
+
+
+def test_scope_check_union_authorizes_file_from_step_1_at_step_2():
+    result = gates.check(_clean_parsed(), UNION_2STEP_PLAN, 2, "/tmp",
+                         files_changed=["gates.py", "tests/test_gates.py"])
+    assert not any(f["gate"] == "scope_check" for f in result["failures"])
+
+
+def test_scope_check_union_still_rejects_unmentioned_file():
+    result = gates.check(_clean_parsed(), UNION_3STEP_PLAN, 3, "/tmp",
+                         files_changed=["totally_unrelated.py"])
+    assert any(f["gate"] == "scope_check" and "totally_unrelated.py" in f["evidence"]
+               for f in result["failures"])
+
+
+def test_scope_check_union_does_not_blanket_authorize_across_dirs():
+    result = gates.check(_clean_parsed(), UNION_3STEP_PLAN, 3, "/tmp",
+                         files_changed=["src/unrelated/other.py"])
+    assert any(f["gate"] == "scope_check" and "src/unrelated/other.py" in f["evidence"]
+               for f in result["failures"])
