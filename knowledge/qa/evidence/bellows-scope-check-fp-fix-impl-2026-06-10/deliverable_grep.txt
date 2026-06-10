@@ -1,0 +1,13 @@
+=== gates.py: range(1, step_number + 1) ===
+667:    for s in range(1, step_number + 1):
+
+=== gates.py: union_text ===
+673:    union_text = "\n".join(all_step_texts)
+685:        if fpath in union_text or basename in union_text:
+699:            if parent.count("/") >= 1 and (parent + "/") in union_text:
+
+=== tests/test_gates.py: test_scope_check_union_* ===
+1938:def test_scope_check_union_authorizes_earlier_step_file():
+1955:def test_scope_check_union_authorizes_file_from_step_1_at_step_2():
+1961:def test_scope_check_union_still_rejects_unmentioned_file():
+1968:def test_scope_check_union_does_not_blanket_authorize_across_dirs():
