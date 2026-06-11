@@ -1,0 +1,37 @@
+============================= test session starts ==============================
+platform darwin -- Python 3.9.6, pytest-8.4.2, pluggy-1.6.0
+rootdir: /Users/marklehn/Developer/GitHub/bellows/.bellows-worktrees/bellows-id-threading-lifecycle-mint-v2-2026-06-11
+plugins: anyio-4.12.1, xdist-3.8.0, timeout-2.4.0, cov-7.0.0
+collected 480 items
+
+tests/test_bellows.py .................................................. [ 10%]
+........................................................................ [ 25%]
+........                                                                 [ 27%]
+tests/test_bellows_root.py ...                                           [ 27%]
+tests/test_cleanup_verdicts.py ....                                      [ 28%]
+tests/test_consume_verdicts.py .................                         [ 32%]
+tests/test_decisions.py ..................                               [ 35%]
+tests/test_extract_primary_deposit_blocks.py .........                   [ 37%]
+tests/test_gates.py .................................................... [ 48%]
+........................................................................ [ 63%]
+....................                                                     [ 67%]
+tests/test_lifecycle.py ...........                                      [ 70%]
+tests/test_misplaced_verdicts.py .......                                 [ 71%]
+tests/test_notifier_server.py ......                                     [ 72%]
+tests/test_phase4_parser.py ...                                          [ 73%]
+tests/test_phase4_planner_retry.py ..                                    [ 73%]
+tests/test_planner.py ...                                                [ 74%]
+tests/test_rule_26_deposit_parser.py .........                           [ 76%]
+tests/test_runner.py ...................                                 [ 80%]
+tests/test_runner_parser.py .........                                    [ 82%]
+tests/test_validators.py ........................                        [ 87%]
+tests/test_verdict.py .......................................            [ 95%]
+tests/test_worktree.py .......................                           [100%]
+
+=============================== warnings summary ===============================
+../../../../../Library/Python/3.9/lib/python/site-packages/urllib3/__init__.py:35
+  /Users/marklehn/Library/Python/3.9/lib/python/site-packages/urllib3/__init__.py:35: NotOpenSSLWarning: urllib3 v2 only supports OpenSSL 1.1.1+, currently the 'ssl' module is compiled with 'LibreSSL 2.8.3'. See: https://github.com/urllib3/urllib3/issues/3020
+    warnings.warn(
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+======================== 480 passed, 1 warning in 8.25s ========================
