@@ -1,0 +1,2 @@
+verdict: stop
+All gates passed mechanically, but Rule 22(b) review found an instructed-design deviation: the DEV replaced blueprint 3.4's step_id surrogate-key indirection with a composite plan_id+step_number key pattern on the child tables. Work quality is otherwise high (507/507 suite, all seven boundaries wired, log-and-continue proven), but CEO disposition is to enforce the blueprint DDL exactly. Planner will reset the landed step-1 commits off local main and redeposit with the DDL made an explicit non-negotiable (deviation = halt-and-report condition).
