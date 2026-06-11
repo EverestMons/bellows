@@ -2146,3 +2146,15 @@ The Planner authors plans in a Project conversation with MCP filesystem tools. T
 3. **Specialist file reference still absent.** Plan instructed "read your specialist file" but no specialist file exists in the worktree. Tenth consecutive occurrence. Same feedback as prior entries.
 
 4. **`_extract_plan_required_deposits(plan_text)` spec is ambiguous when `plan_text` is the full plan text.** The function is designed for step text (uses `re.search` → first match only). Passing the full plan text extracts only the first step's `**Deposits:**` block. For step 1 this works; for step 2+ the function returns step 1's (already-committed) deposits. The `plan_header.get("deposits")` supplement and the (b) FAIL-LOUD gate provide coverage, but a future refinement could extract from the current step's text specifically.
+
+## 2026-06-11 — diagnostic-bellows-lifecycle-db-id-threading-surface (SA Step 1)
+
+1. **Coverage map as locked blueprint was effective.** The plan instructed "read the locked design — your blueprint must conform to it, not redesign it." Having all architectural decisions locked in a separate document meant the diagnostic could focus on implementation surface analysis rather than re-debating design choices. The coverage map's schema, phasing, and resolved decisions were authoritative constraints that scoped the work cleanly.
+
+2. **Census-first ordering was correct.** The plan mandated the filename/slug consumer census (Section 1) as the "load-bearing deliverable" before any other section. This was right: the census revealed two latent substring-match bugs (bellows.py:1424, :1521-1538) that would have been missed by a top-down design approach. Grounding every claim in `file:line` prevented false confidence.
+
+3. **Specialist file found and useful.** `agents/BELLOWS_SYSTEMS_ANALYST.md` provided clear scoping (Layer 1 only, no domain judgment) that informed the Layer Impact section. Eleventh plan where the specialist file was referenced; this is the first where it was actually located and read.
+
+4. **Verification Blocks (Rule 39) at Section 7 are well-suited for this diagnostic type.** The 10 triples cover the load-bearing current-state facts that the executable will modify. The "query" form (grep/python one-liners) is executable at edit time without requiring test infrastructure.
+
+5. **Liveness anchors (post after each file read, post at section start) worked.** The inactivity timer stayed warm throughout. Recommend keeping this for all SA diagnostics of this length.
