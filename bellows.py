@@ -128,6 +128,7 @@ import verdict
 import notifier
 import server
 import validators
+import lifecycle
 
 
 def load_config(path: str = "config.json") -> dict:
@@ -407,9 +408,42 @@ def run_plan(plan_path: str, config: dict, response_server: server.ResponseServe
 
         # Claim the plan atomically before calling the runner.
         # If already in-progress (e.g. resume path), skip the move.
+        plan_id = None
         if not plan_filename.startswith("in-progress-"):
+            # Parse plan type from filename prefix
+            plan_type = "executable"
+            for _tp in ("diagnostic-", "executable-", "qa-"):
+                if base_filename.startswith(_tp):
+                    plan_type = _tp.rstrip("-")
+                    break
+            # Extract title from the plan's first # heading
+            plan_title = None
+            for _line in plan_text.splitlines():
+                if _line.startswith("# "):
+                    plan_title = _line[2:].strip()
+                    break
+            # Mint id + write plans row atomically
+            dispatch_mode = header.get("dispatch_mode", header.get("Dispatch Mode", ""))
+            tier = header.get("tier", header.get("Tier", ""))
+            plan_id = lifecycle.mint_and_claim(
+                plan_type=plan_type,
+                target_project=project_path,
+                title=plan_title,
+                dispatch_mode=dispatch_mode,
+                tier=tier,
+                total_steps=total_steps,
+                deposit_placeholder_name=base_filename,
+            )
+            # Single rename: deposit placeholder → in-progress-<type>-<id>.md
+            id_canonical = f"{plan_type}-{plan_id}.md"
+            inprogress_path = os.path.join(plan_dir, f"in-progress-{id_canonical}")
             shutil.move(plan_path, inprogress_path)
             plan_path = inprogress_path
+            # Update derived names to reflect the id-canonical form
+            base_filename = id_canonical
+            plan_filename = os.path.basename(plan_path)
+            plan_slug = verdict.slug_from_path(base_filename)
+            _log("INFO", f"minted id {plan_id} — renamed to {plan_filename}", slug=slug_for(plan_filename))
             # Write shadow copy immediately after claim — preserves pristine content
             _write_shadow(plan_filename, plan_text)
 
@@ -430,12 +464,13 @@ def run_plan(plan_path: str, config: dict, response_server: server.ResponseServe
 
         shadow_prompt_path = str(_shadow_path(plan_filename))
 
+        _id_tag_instruction = f" Tag all commits with [{plan_id}] in the commit message." if plan_id else ""
         if is_diagnostic:
-            bootstrap_prompt = f"Read the diagnostic at {shadow_prompt_path}. Execute it fully — this is a single-step investigation. Deposit your findings and report Complete when done."
+            bootstrap_prompt = f"Read the diagnostic at {shadow_prompt_path}. Execute it fully — this is a single-step investigation. Deposit your findings and report Complete when done.{_id_tag_instruction}"
         elif resume_step is not None:
-            bootstrap_prompt = f"Read the plan at {shadow_prompt_path}. Execute Step {resume_step}. After completing Step {resume_step}, STOP and wait for my confirmation."
+            bootstrap_prompt = f"Read the plan at {shadow_prompt_path}. Execute Step {resume_step}. After completing Step {resume_step}, STOP and wait for my confirmation.{_id_tag_instruction}"
         else:
-            bootstrap_prompt = f"Read the plan at {shadow_prompt_path}. Execute Step 1 ONLY. After completing Step 1, STOP and wait for my confirmation before proceeding to Step 2."
+            bootstrap_prompt = f"Read the plan at {shadow_prompt_path}. Execute Step 1 ONLY. After completing Step 1, STOP and wait for my confirmation before proceeding to Step 2.{_id_tag_instruction}"
 
         # Create per-plan worktree for isolation
         try:
@@ -492,7 +527,7 @@ def run_plan(plan_path: str, config: dict, response_server: server.ResponseServe
                 _log("WARN", f"⚠ in-progress file missing — possible agent file deletion", slug=slug_for(plan_name))
 
         # Auto-stage declared deposits before gates (deposit-loss fix)
-        _auto_stage_deposits(plan_text, header, project_path, wt_path, plan_slug)
+        _auto_stage_deposits(plan_text, header, project_path, wt_path, plan_slug, plan_id=plan_id)
 
         # Capture post-step file state and run gates
         post_diff = _capture_git_diff(wt_path)
@@ -531,7 +566,7 @@ def run_plan(plan_path: str, config: dict, response_server: server.ResponseServe
                     _pause_reason = "header_pause"
                 # Tear down worktree before pausing
                 try:
-                    _teardown_worktree(project_path, wt_path, plan_slug)
+                    _teardown_worktree(project_path, wt_path, plan_slug, plan_id=plan_id)
                 except WorktreeTeardownError as e:
                     _pause_reason = "gate_failure"
                     gate_result["failures"].append({"gate": "worktree_teardown", "evidence": str(e)})
@@ -550,7 +585,7 @@ def run_plan(plan_path: str, config: dict, response_server: server.ResponseServe
                 return
 
             # All gates passed and not QA — continue to next step
-            default_next_prompt = f"Read the plan at {shadow_prompt_path}. Execute Step {current_step + 1}."
+            default_next_prompt = f"Read the plan at {shadow_prompt_path}. Execute Step {current_step + 1}.{_id_tag_instruction}"
 
             # Capture pre-step file state
             pre_diff = _capture_git_diff(wt_path)
@@ -588,7 +623,7 @@ def run_plan(plan_path: str, config: dict, response_server: server.ResponseServe
                     _log("WARN", f"⚠ in-progress file missing — possible agent file deletion", slug=slug_for(plan_name))
 
             # Auto-stage declared deposits before gates (deposit-loss fix)
-            _auto_stage_deposits(plan_text, header, project_path, wt_path, plan_slug)
+            _auto_stage_deposits(plan_text, header, project_path, wt_path, plan_slug, plan_id=plan_id)
 
             # Capture post-step file state and run gates
             post_diff = _capture_git_diff(wt_path)
@@ -627,7 +662,7 @@ def run_plan(plan_path: str, config: dict, response_server: server.ResponseServe
                 _pause_reason = "auto_close_disabled"
             # Tear down worktree before pausing
             try:
-                _teardown_worktree(project_path, wt_path, plan_slug)
+                _teardown_worktree(project_path, wt_path, plan_slug, plan_id=plan_id)
             except WorktreeTeardownError as e:
                 _pause_reason = "gate_failure"
                 gate_result["failures"].append({"gate": "worktree_teardown", "evidence": str(e)})
@@ -655,7 +690,7 @@ def run_plan(plan_path: str, config: dict, response_server: server.ResponseServe
                 and effective_auto_close):
             # Tear down worktree before auto-close
             try:
-                _teardown_worktree(project_path, wt_path, plan_slug)
+                _teardown_worktree(project_path, wt_path, plan_slug, plan_id=plan_id)
             except WorktreeTeardownError as e:
                 # Cherry-pick conflict on auto-close — convert to gate_failure pause
                 _log("ERROR", f"❌ worktree teardown failed on auto-close: {e}", slug=slug_for(plan_name))
@@ -883,7 +918,7 @@ def _create_worktree(project_path: str, slug: str) -> str:
         raise WorktreeCreationError(f"worktree creation OS error for {slug}: {e}") from e
 
 
-def _auto_stage_deposits(plan_text, plan_header, project_path, wt_path, slug):
+def _auto_stage_deposits(plan_text, plan_header, project_path, wt_path, slug, plan_id=None):
     """Auto-stage and commit plan-declared deposits that are uncommitted in the worktree.
 
     Called immediately before gates.check() at step completion so that
@@ -943,7 +978,7 @@ def _auto_stage_deposits(plan_text, plan_header, project_path, wt_path, slug):
         try:
             result = subprocess.run(
                 ["git", "--no-pager", "commit", "-m",
-                 "bellows: auto-stage declared deposits before teardown"],
+                 f"bellows: auto-stage declared deposits before teardown{f' [{plan_id}]' if plan_id else ''}"],
                 cwd=wt_path, capture_output=True, text=True, timeout=30,
             )
             if result.returncode == 0:
@@ -954,7 +989,7 @@ def _auto_stage_deposits(plan_text, plan_header, project_path, wt_path, slug):
             _log("WARN", f"⚠ auto-stage commit exception: {e}", slug=slug)
 
 
-def _teardown_worktree(project_path: str, wt_path: str, slug: str) -> None:
+def _teardown_worktree(project_path: str, wt_path: str, slug: str, plan_id: int = None) -> None:
     """Tear down a worktree: merge commits back to main, remove worktree and branch.
 
     Raises WorktreeTeardownError on merge conflict (worktree + branch left alive for manual resolution).
@@ -1047,7 +1082,8 @@ def _teardown_worktree(project_path: str, wt_path: str, slug: str) -> None:
     if result.returncode != 0:
         # Fallback: --no-ff when main advanced (merge commit preserves worktree SHAs as parents)
         result = subprocess.run(
-            ["git", "--no-pager", "merge", "--no-ff", "--no-edit", branch_name],
+            ["git", "--no-pager", "merge", "--no-ff", "-m",
+             f"Merge branch '{branch_name}'{f' [{plan_id}]' if plan_id else ''}", branch_name],
             cwd=project_path, capture_output=True, text=True, timeout=60,
         )
         if result.returncode != 0:
@@ -1421,7 +1457,7 @@ class Bellows:
                 if not os.path.isdir(decisions_path):
                     continue
                 for pname in os.listdir(decisions_path):
-                    if pname.startswith("verdict-pending-") and plan_slug in pname:
+                    if pname.startswith("verdict-pending-") and verdict.slug_from_path(pname) == lookup_slug:
                         plan_matched = True
                         full_plan_path = os.path.join(decisions_path, pname)
                         original_name = pname.replace("verdict-pending-", "", 1)
@@ -1523,7 +1559,7 @@ class Bellows:
                     done_dir = os.path.join(decisions_path, "Done")
                     if os.path.isdir(done_dir):
                         for dname in os.listdir(done_dir):
-                            if plan_slug in dname:
+                            if verdict.slug_from_path(dname) == lookup_slug:
                                 stale = True
                                 break
                     if stale:
@@ -1531,7 +1567,7 @@ class Bellows:
                     # Also check decisions/ itself for halted-* plans (S3 Bug C fix)
                     if os.path.isdir(decisions_path):
                         for dname in os.listdir(decisions_path):
-                            if dname.startswith("halted-") and plan_slug in dname:
+                            if dname.startswith("halted-") and verdict.slug_from_path(dname[len("halted-"):]) == lookup_slug:
                                 stale = True
                                 break
                     if stale:
@@ -1678,6 +1714,13 @@ if __name__ == "__main__":
     _bellows_logger.addHandler(_file_handler)
 
     migrate_db()
+    lifecycle.init_lifecycle_db()
+    # Startup recovery: re-rename half-claimed plans (blueprint 2.4a)
+    for decisions_path in config.get("watched_projects", []):
+        if os.path.isdir(decisions_path):
+            actions = lifecycle.recover_half_claimed(decisions_path)
+            for pid, action in actions:
+                _log("INFO", f"lifecycle recovery: plan {pid} — {action}")
     notifier.init_notifications(config)
     b = Bellows(config)
     b.start(_session_log_path, _log_existed)

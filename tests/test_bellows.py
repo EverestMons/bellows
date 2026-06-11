@@ -229,7 +229,8 @@ def test_diagnostic_auto_close_moves_to_done():
             response_server = MagicMock()
             bellows.run_plan(plan_path, config, response_server)
 
-        done_path = os.path.join(decisions_dir, "Done", plan_filename)
+        # After claim, plan is renamed to id-canonical: diagnostic-1.md (fresh DB → id=1)
+        done_path = os.path.join(decisions_dir, "Done", "diagnostic-1.md")
         assert os.path.isfile(done_path), f"plan not moved to Done/: {done_path}"
         assert not os.path.exists(plan_path), "original plan file should be moved"
         mock_ledger.assert_called_once()
@@ -358,7 +359,8 @@ def test_clean_diagnostic_auto_close_true_moves_to_done():
             response_server = MagicMock()
             bellows.run_plan(plan_path, config, response_server)
 
-        done_path = os.path.join(decisions_dir, "Done", plan_filename)
+        # After claim, plan is renamed to id-canonical: diagnostic-1.md (fresh DB → id=1)
+        done_path = os.path.join(decisions_dir, "Done", "diagnostic-1.md")
         assert os.path.isfile(done_path), f"plan not moved to Done/: {done_path}"
         assert not os.path.exists(plan_path), "original plan file should be moved"
         mock_ledger.assert_called_once()
@@ -461,7 +463,8 @@ def test_executable_explicit_auto_close_true_still_closes():
             response_server = MagicMock()
             bellows.run_plan(plan_path, config, response_server)
 
-        done_path = os.path.join(decisions_dir, "Done", plan_filename)
+        # After claim, plan is renamed to id-canonical: executable-1.md (fresh DB → id=1)
+        done_path = os.path.join(decisions_dir, "Done", "executable-1.md")
         assert os.path.isfile(done_path), f"explicit auto_close:true plan not moved to Done/: {done_path}"
         assert not os.path.exists(plan_path), "original plan file should be moved"
         mock_ledger.assert_called_once()
@@ -1171,15 +1174,14 @@ def _clean_gates(auto_close="true"):
 
 
 def test_run_plan_claims_file_before_runner_runs():
-    """run_plan must move the original plan to in-progress- before calling runner.run_step."""
+    """run_plan must mint an id and rename to in-progress-<type>-<id>.md before calling runner.run_step."""
     with tempfile.TemporaryDirectory() as tmp:
         decisions_dir = os.path.join(tmp, "proj", "knowledge", "decisions")
         os.makedirs(decisions_dir)
         plan_filename = "executable-claim-test-2026-04-16.md"
         plan_path = os.path.join(decisions_dir, plan_filename)
-        inprogress_path = os.path.join(decisions_dir, f"in-progress-{plan_filename}")
         with open(plan_path, "w") as f:
-            f.write("## STEP 1\nDo stuff.\n")
+            f.write("# Claim Test\n## STEP 1\nDo stuff.\n")
 
         config = {
             "default_model": "claude-sonnet-4-6",
@@ -1192,7 +1194,11 @@ def test_run_plan_claims_file_before_runner_runs():
 
         def fake_run_step(prompt, *args, **kwargs):
             claim_state["original_exists"] = os.path.exists(plan_path)
-            claim_state["inprogress_exists"] = os.path.exists(inprogress_path)
+            # Check for any in-progress file (id-canonical naming: in-progress-executable-<id>.md)
+            inprogress_files = [f for f in os.listdir(decisions_dir) if f.startswith("in-progress-")]
+            claim_state["inprogress_exists"] = len(inprogress_files) > 0
+            if inprogress_files:
+                claim_state["inprogress_name"] = inprogress_files[0]
             return _make_fake_run_step_result()
 
         with patch("bellows.runner.run_step", side_effect=fake_run_step), \
@@ -1211,6 +1217,10 @@ def test_run_plan_claims_file_before_runner_runs():
             "Original plan file must not exist when runner.run_step is called"
         assert claim_state.get("inprogress_exists", False), \
             "in-progress- file must exist when runner.run_step is called"
+        # Verify id-canonical naming: in-progress-executable-<N>.md
+        import re
+        assert re.match(r"^in-progress-executable-\d+\.md$", claim_state.get("inprogress_name", "")), \
+            f"Claim must produce id-canonical name, got: {claim_state.get('inprogress_name')}"
 
 
 def test_run_plan_skips_claim_if_already_inprogress():
@@ -1458,7 +1468,13 @@ def test_shadow_path_resolves_after_claim():
 
         def fake_run_step(prompt, *args, **kwargs):
             # Capture shadow file state during execution (before auto-close deletes it)
-            shadow_file = bellows._shadow_path(plan_filename)
+            # After id-canonical rename, the shadow is keyed by the new name.
+            # Find the actual in-progress file to derive the shadow path.
+            inprogress_files = [f for f in os.listdir(decisions_dir) if f.startswith("in-progress-")]
+            if inprogress_files:
+                shadow_file = bellows._shadow_path(inprogress_files[0])
+            else:
+                shadow_file = bellows._shadow_path(plan_filename)
             shadow_state["exists"] = shadow_file.exists()
             if shadow_file.exists():
                 shadow_state["content"] = shadow_file.read_text()
@@ -2132,7 +2148,8 @@ def test_run_plan_tears_down_worktree_after_final_gate():
         assert gates_idx < teardown_idx, \
             f"gates.check ({gates_idx}) must precede _teardown_worktree ({teardown_idx})"
         # Verify plan reached Done (teardown happened before move)
-        done_path = os.path.join(decisions_dir, "Done", plan_filename)
+        # After claim, plan is renamed to id-canonical: executable-1.md (fresh DB → id=1)
+        done_path = os.path.join(decisions_dir, "Done", "executable-1.md")
         assert os.path.isfile(done_path), f"plan not moved to Done/: {done_path}"
 
 
@@ -2169,10 +2186,10 @@ def test_run_plan_strict_pause_on_creation_failure():
         # Runner was never called
         mock_runner.assert_not_called()
 
-        # Plan renamed to verdict-pending-
-        verdict_pending = os.path.join(decisions_dir, f"verdict-pending-{plan_filename}")
+        # Plan renamed to verdict-pending- with id-canonical name (fresh DB → id=1)
+        verdict_pending = os.path.join(decisions_dir, "verdict-pending-executable-1.md")
         assert os.path.exists(verdict_pending), "Plan should be renamed to verdict-pending-"
-        assert not os.path.exists(os.path.join(decisions_dir, "Done", plan_filename)), \
+        assert not os.path.exists(os.path.join(decisions_dir, "Done", "executable-1.md")), \
             "Plan must not be in Done/"
 
 
@@ -2216,10 +2233,10 @@ def test_run_plan_pauses_on_merge_conflict():
         assert any(f["gate"] == "worktree_teardown" for f in failures), \
             f"Failures should reference teardown: {failures}"
 
-        # Plan renamed to verdict-pending-
-        verdict_pending = os.path.join(decisions_dir, f"verdict-pending-{plan_filename}")
+        # Plan renamed to verdict-pending- with id-canonical name (fresh DB → id=1)
+        verdict_pending = os.path.join(decisions_dir, "verdict-pending-executable-1.md")
         assert os.path.exists(verdict_pending), "Plan should be renamed to verdict-pending-"
-        assert not os.path.exists(os.path.join(decisions_dir, "Done", plan_filename)), \
+        assert not os.path.exists(os.path.join(decisions_dir, "Done", "executable-1.md")), \
             "Plan must not be in Done/"
 
 
@@ -2289,7 +2306,8 @@ def test_mode_a_detected_and_recovered():
         os.makedirs(done_dir)
         plan_filename = "executable-mode-a-test-2026-05-06.md"
         plan_path = os.path.join(decisions_dir, plan_filename)
-        inprogress_path = os.path.join(decisions_dir, f"in-progress-{plan_filename}")
+        # After claim, id-canonical name is executable-1.md (fresh DB → id=1)
+        id_canonical = "executable-1.md"
         with open(plan_path, "w") as f:
             f.write("## STEP 1\nDo stuff.\n")
 
@@ -2302,8 +2320,9 @@ def test_mode_a_detected_and_recovered():
 
         def agent_moves_to_done(*args, **kwargs):
             """Simulate agent moving in-progress file to Done/ during execution."""
-            if os.path.exists(inprogress_path):
-                os.rename(inprogress_path, os.path.join(done_dir, plan_filename))
+            ip = os.path.join(decisions_dir, f"in-progress-{id_canonical}")
+            if os.path.exists(ip):
+                os.rename(ip, os.path.join(done_dir, id_canonical))
             return _make_fake_run_step_result()
 
         with patch("bellows._create_worktree", return_value="/tmp/wt"), \
@@ -2320,10 +2339,11 @@ def test_mode_a_detected_and_recovered():
             bellows.run_plan(plan_path, config, response_server)
 
         # File should be recovered to verdict-pending- (via normal pause flow after gate failure)
-        verdict_pending = os.path.join(decisions_dir, f"verdict-pending-{plan_filename}")
+        inprogress_path = os.path.join(decisions_dir, f"in-progress-{id_canonical}")
+        verdict_pending = os.path.join(decisions_dir, f"verdict-pending-{id_canonical}")
         assert os.path.exists(inprogress_path) or os.path.exists(verdict_pending), \
             "Plan should be recovered from Done/ (at in-progress or verdict-pending)"
-        assert not os.path.exists(os.path.join(done_dir, plan_filename)), \
+        assert not os.path.exists(os.path.join(done_dir, id_canonical)), \
             "Plan must not remain in Done/"
 
         # Verdict posted with gate_failure containing unauthorized_done_move
@@ -2431,7 +2451,8 @@ def test_mode_a_recovery_failure():
         os.makedirs(done_dir)
         plan_filename = "executable-mode-a-recovery-fail-2026-05-06.md"
         plan_path = os.path.join(decisions_dir, plan_filename)
-        inprogress_path = os.path.join(decisions_dir, f"in-progress-{plan_filename}")
+        # After claim, id-canonical name is executable-1.md (fresh DB → id=1)
+        id_canonical = "executable-1.md"
         with open(plan_path, "w") as f:
             f.write("## STEP 1\nDo stuff.\n")
 
@@ -2443,8 +2464,9 @@ def test_mode_a_recovery_failure():
         }
 
         def agent_moves_to_done(*args, **kwargs):
-            if os.path.exists(inprogress_path):
-                os.rename(inprogress_path, os.path.join(done_dir, plan_filename))
+            ip = os.path.join(decisions_dir, f"in-progress-{id_canonical}")
+            if os.path.exists(ip):
+                os.rename(ip, os.path.join(done_dir, id_canonical))
             return _make_fake_run_step_result()
 
         original_shutil_move = shutil.move
@@ -2487,7 +2509,8 @@ def test_mode_a_synthetic_failure_in_verdict_request():
         os.makedirs(done_dir)
         plan_filename = "executable-mode-a-e2e-2026-05-06.md"
         plan_path = os.path.join(decisions_dir, plan_filename)
-        inprogress_path = os.path.join(decisions_dir, f"in-progress-{plan_filename}")
+        # After claim, id-canonical name is executable-1.md (fresh DB → id=1)
+        id_canonical = "executable-1.md"
         with open(plan_path, "w") as f:
             f.write("## STEP 1\nDo stuff.\n")
 
@@ -2499,8 +2522,9 @@ def test_mode_a_synthetic_failure_in_verdict_request():
         }
 
         def agent_moves_to_done(*args, **kwargs):
-            if os.path.exists(inprogress_path):
-                os.rename(inprogress_path, os.path.join(done_dir, plan_filename))
+            ip = os.path.join(decisions_dir, f"in-progress-{id_canonical}")
+            if os.path.exists(ip):
+                os.rename(ip, os.path.join(done_dir, id_canonical))
             return _make_fake_run_step_result()
 
         # Use real gates.check but mock runner — allows end-to-end gate flow
@@ -3326,7 +3350,8 @@ def test_auto_close_yaml_bool_does_not_crash():
             bellows.run_plan(plan_path, config, response_server)
 
         # effective_auto_close should be True — plan moves to Done
-        done_path = os.path.join(decisions_dir, "Done", plan_filename)
+        # After claim, plan is renamed to id-canonical: executable-1.md (fresh DB → id=1)
+        done_path = os.path.join(decisions_dir, "Done", "executable-1.md")
         assert os.path.isfile(done_path), f"plan not moved to Done/ with bool True: {done_path}"
         mock_ledger.assert_called_once()
         assert mock_ledger.call_args[0][3] == "auto-close"
@@ -3928,3 +3953,152 @@ def test_gates_log_includes_failure_gates_and_files_changed_count():
         assert "scope_check" in msg, f"Expected 'scope_check' in gate log, got: {msg}"
         assert "deposit_exists" in msg, f"Expected 'deposit_exists' in gate log, got: {msg}"
         assert "files_changed=3" in msg, f"Expected 'files_changed=3' in gate log, got: {msg}"
+
+
+# ---------------------------------------------------------------------------
+# Id-threading: substring-match fix regression tests
+# ---------------------------------------------------------------------------
+
+def test_consume_verdicts_numeric_slug_no_false_match():
+    """Regression: slug '142' must NOT match verdict-pending-diagnostic-1423.md."""
+    import verdict as verdict_mod
+    slug_142 = verdict_mod.slug_from_path("verdict-pending-diagnostic-142.md")
+    slug_1423 = verdict_mod.slug_from_path("verdict-pending-diagnostic-1423.md")
+    assert slug_142 == "142"
+    assert slug_1423 == "1423"
+    assert slug_142 != slug_1423, "Exact comparison must reject 142 vs 1423"
+
+
+def test_stale_scan_numeric_slug_no_false_match_done():
+    """Regression: slug '142' must NOT match diagnostic-1423.md in Done/."""
+    import verdict as verdict_mod
+    slug_target = "142"
+    done_name = "diagnostic-1423.md"
+    slug_done = verdict_mod.slug_from_path(done_name)
+    assert slug_done != slug_target, "Exact slug comparison must reject 142 vs 1423 in Done/ scan"
+
+
+def test_stale_scan_numeric_slug_no_false_match_halted():
+    """Regression: slug '142' must NOT match halted-diagnostic-1423.md."""
+    import verdict as verdict_mod
+    slug_target = "142"
+    halted_name = "halted-diagnostic-1423.md"
+    # Strip halted- prefix before calling slug_from_path (mirrors bellows.py fix)
+    slug_halted = verdict_mod.slug_from_path(halted_name[len("halted-"):])
+    assert slug_halted != slug_target, "Exact slug comparison must reject 142 vs 1423 in halted scan"
+
+
+def test_exact_match_still_works_for_legacy_slugs():
+    """Dual-format: legacy slug foo-bar-2026-06-10 still matches exactly."""
+    import verdict as verdict_mod
+    slug = "foo-bar-2026-06-10"
+    pname_match = "verdict-pending-diagnostic-foo-bar-2026-06-10.md"
+    pname_no_match = "verdict-pending-diagnostic-foo-bar-2026-06-10-extra.md"
+    assert verdict_mod.slug_from_path(pname_match) == slug
+    assert verdict_mod.slug_from_path(pname_no_match) != slug
+
+
+def test_exact_match_done_legacy():
+    """Dual-format: legacy slug in Done/ still matches exactly."""
+    import verdict as verdict_mod
+    slug = "foo-bar-2026-06-10"
+    assert verdict_mod.slug_from_path("diagnostic-foo-bar-2026-06-10.md") == slug
+    assert verdict_mod.slug_from_path("diagnostic-foo-bar-2026-06-10-extra.md") != slug
+
+
+def test_exact_match_halted_legacy():
+    """Dual-format: legacy slug in halted- file still matches exactly."""
+    import verdict as verdict_mod
+    slug = "foo-bar-2026-06-10"
+    halted_name = "halted-diagnostic-foo-bar-2026-06-10.md"
+    assert verdict_mod.slug_from_path(halted_name[len("halted-"):]) == slug
+
+
+# ---------------------------------------------------------------------------
+# Id-threading: claim-rename contract tests
+# ---------------------------------------------------------------------------
+
+def test_claim_rename_draft_placeholder():
+    """diagnostic-draft-143022.md claims to in-progress-diagnostic-<id>.md, verifiable during execution."""
+    import re
+    with tempfile.TemporaryDirectory() as tmp:
+        decisions_dir = os.path.join(tmp, "proj", "knowledge", "decisions")
+        os.makedirs(decisions_dir)
+        plan_path = os.path.join(decisions_dir, "diagnostic-draft-143022.md")
+        with open(plan_path, "w") as f:
+            f.write("# Draft Diagnostic\n## STEP 1\nInvestigate.\n")
+
+        config = {
+            "default_model": "claude-sonnet-4-6",
+            "pushover": {"app_key": "", "user_key": ""},
+            "callback_port": 5999,
+            "step_timeout_seconds": 600,
+        }
+
+        claim_state = {}
+
+        def capture_claim(prompt, *args, **kwargs):
+            inprogress_files = [f for f in os.listdir(decisions_dir) if f.startswith("in-progress-")]
+            claim_state["inprogress_files"] = inprogress_files
+            return _make_fake_run_step_result()
+
+        with patch("bellows.runner.run_step", side_effect=capture_claim), \
+             patch("bellows.gates.check", return_value=_clean_gates()), \
+             patch("bellows.notifier.push"), \
+             patch("bellows.verdict.log_to_ledger"), \
+             patch("bellows._capture_git_diff", return_value=""), \
+             patch("bellows._create_worktree", return_value="/tmp/wt"), \
+             patch("bellows._teardown_worktree"), \
+             patch("bellows.record_run"), \
+             patch("bellows.validators.validate_at_claim", return_value={"rejected": False, "reject_reason": "", "warnings": []}):
+            response_server = MagicMock()
+            bellows.run_plan(plan_path, config, response_server)
+
+        inprogress = claim_state.get("inprogress_files", [])
+        assert len(inprogress) >= 1, f"Expected in-progress-diagnostic-<id>.md during execution, got: {inprogress}"
+        assert re.match(r"^in-progress-diagnostic-\d+\.md$", inprogress[0]), \
+            f"Expected id-canonical name, got: {inprogress[0]}"
+        assert not os.path.exists(plan_path), "Original draft file must be removed"
+
+
+def test_claim_rename_legacy_descriptive_slug():
+    """diagnostic-foo-bar-2026-06-10.md claims to in-progress-diagnostic-<id>.md, verifiable during execution."""
+    import re
+    with tempfile.TemporaryDirectory() as tmp:
+        decisions_dir = os.path.join(tmp, "proj", "knowledge", "decisions")
+        os.makedirs(decisions_dir)
+        plan_path = os.path.join(decisions_dir, "diagnostic-foo-bar-2026-06-10.md")
+        with open(plan_path, "w") as f:
+            f.write("# Legacy Diagnostic\n## STEP 1\nInvestigate.\n")
+
+        config = {
+            "default_model": "claude-sonnet-4-6",
+            "pushover": {"app_key": "", "user_key": ""},
+            "callback_port": 5999,
+            "step_timeout_seconds": 600,
+        }
+
+        claim_state = {}
+
+        def capture_claim(prompt, *args, **kwargs):
+            inprogress_files = [f for f in os.listdir(decisions_dir) if f.startswith("in-progress-")]
+            claim_state["inprogress_files"] = inprogress_files
+            return _make_fake_run_step_result()
+
+        with patch("bellows.runner.run_step", side_effect=capture_claim), \
+             patch("bellows.gates.check", return_value=_clean_gates()), \
+             patch("bellows.notifier.push"), \
+             patch("bellows.verdict.log_to_ledger"), \
+             patch("bellows._capture_git_diff", return_value=""), \
+             patch("bellows._create_worktree", return_value="/tmp/wt"), \
+             patch("bellows._teardown_worktree"), \
+             patch("bellows.record_run"), \
+             patch("bellows.validators.validate_at_claim", return_value={"rejected": False, "reject_reason": "", "warnings": []}):
+            response_server = MagicMock()
+            bellows.run_plan(plan_path, config, response_server)
+
+        inprogress = claim_state.get("inprogress_files", [])
+        assert len(inprogress) >= 1, f"Expected in-progress-diagnostic-<id>.md during execution, got: {inprogress}"
+        assert re.match(r"^in-progress-diagnostic-\d+\.md$", inprogress[0]), \
+            f"Expected id-canonical name, got: {inprogress[0]}"
+        assert not os.path.exists(plan_path), "Original legacy file must be removed"
