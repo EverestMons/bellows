@@ -4102,3 +4102,163 @@ def test_claim_rename_legacy_descriptive_slug():
         assert re.match(r"^in-progress-diagnostic-\d+\.md$", inprogress[0]), \
             f"Expected id-canonical name, got: {inprogress[0]}"
         assert not os.path.exists(plan_path), "Original legacy file must be removed"
+
+
+# ---------------------------------------------------------------------------
+# Executable B — lifecycle DB integration tests
+# ---------------------------------------------------------------------------
+
+def test_lifecycle_writes_auto_close_flow():
+    """Full auto-close lifecycle: claim → step start → step end → auto-close.
+    Verifies steps, gate_events, and plans.closed_at rows are written."""
+    import lifecycle
+    import sqlite3
+
+    with tempfile.TemporaryDirectory() as tmp:
+        decisions_dir = os.path.join(tmp, "proj", "knowledge", "decisions")
+        os.makedirs(decisions_dir)
+        plan_filename = "diagnostic-lc-auto-close-2026-06-11.md"
+        plan_path = os.path.join(decisions_dir, plan_filename)
+        with open(plan_path, "w") as f:
+            f.write("## Diagnostic\nSingle-step.\n")
+
+        config = {
+            "default_model": "claude-sonnet-4-6",
+            "pushover": {"app_key": "", "user_key": ""},
+            "callback_port": 5999,
+            "step_timeout_seconds": 600,
+        }
+
+        with patch("bellows.runner.run_step", return_value=_make_fake_run_step_result()), \
+             patch("bellows.gates.check", return_value=_clean_gates()), \
+             patch("bellows.notifier.notify_plan_complete"), \
+             patch("bellows.verdict.log_to_ledger"), \
+             patch("bellows._capture_git_diff", return_value=""), \
+             patch("bellows._create_worktree", return_value="/tmp/wt"), \
+             patch("bellows._teardown_worktree", return_value=[]), \
+             patch("bellows.record_run"), \
+             patch("bellows.validators.validate_at_claim", return_value={"rejected": False, "reject_reason": "", "warnings": []}), \
+             patch("bellows._build_deposit_records", return_value=[]):
+            response_server = MagicMock()
+            bellows.run_plan(plan_path, config, response_server)
+
+        conn = sqlite3.connect(lifecycle.LIFECYCLE_DB_PATH)
+        # Plan should exist and be closed
+        plan_row = conn.execute("SELECT lifecycle_state, closed_at FROM plans WHERE id = 1").fetchone()
+        assert plan_row is not None, "plans row not found"
+        assert plan_row[0] == "closed"
+        assert plan_row[1] is not None  # closed_at populated
+
+        # Steps row should exist
+        step_row = conn.execute("SELECT plan_id, step_number, status FROM steps WHERE plan_id = 1").fetchone()
+        assert step_row is not None, "steps row not found"
+        assert step_row[1] == 1
+        # Status should be 'complete' (auto-close path = gates passed)
+        assert step_row[2] == "complete"
+
+        # Gate events should exist
+        ge_count = conn.execute("SELECT COUNT(*) FROM gate_events WHERE step_id = 1").fetchone()[0]
+        assert ge_count > 0, "gate_events rows not found"
+        conn.close()
+
+
+def test_lifecycle_writes_verdict_pause_flow():
+    """Verdict-pause lifecycle: claim → step start → step end → verdict request.
+    Verifies verdicts row is written with pause_reason_code."""
+    import lifecycle
+    import sqlite3
+
+    with tempfile.TemporaryDirectory() as tmp:
+        decisions_dir = os.path.join(tmp, "proj", "knowledge", "decisions")
+        os.makedirs(decisions_dir)
+        plan_filename = "executable-lc-verdict-2026-06-11.md"
+        plan_path = os.path.join(decisions_dir, plan_filename)
+        with open(plan_path, "w") as f:
+            f.write("# LC Verdict Test\n**pause_for_verdict:** always\n## STEP 1\nDo stuff.\n## STEP 2\nMore stuff.\n")
+
+        config = {
+            "default_model": "claude-sonnet-4-6",
+            "pushover": {"app_key": "", "user_key": ""},
+            "callback_port": 5999,
+            "step_timeout_seconds": 600,
+        }
+
+        with patch("bellows.runner.run_step", return_value=_make_fake_run_step_result()), \
+             patch("bellows.gates.check", return_value=_clean_gates(auto_close="false")), \
+             patch("bellows.notifier.push"), \
+             patch("bellows.notifier.notify_verdict_request"), \
+             patch("bellows.verdict.post_verdict_request", return_value="/path/to/vr.md") as mock_post_vr, \
+             patch("bellows._capture_git_diff", return_value=""), \
+             patch("bellows._create_worktree", return_value="/tmp/wt"), \
+             patch("bellows._teardown_worktree", return_value=[]), \
+             patch("bellows.record_run"), \
+             patch("bellows.validators.validate_at_claim", return_value={"rejected": False, "reject_reason": "", "warnings": []}), \
+             patch("bellows._build_deposit_records", return_value=[]):
+            response_server = MagicMock()
+            bellows.run_plan(plan_path, config, response_server)
+
+        conn = sqlite3.connect(lifecycle.LIFECYCLE_DB_PATH)
+        # Verdicts row should be written
+        vr_row = conn.execute("SELECT plan_id, step_number, outcome, pause_reason_code, verdict_file_ref FROM verdicts WHERE plan_id = 1").fetchone()
+        assert vr_row is not None, "verdicts row not found"
+        assert vr_row[2] is None  # outcome pending
+        assert vr_row[3] == "header_pause"
+        assert vr_row[4] == "/path/to/vr.md"
+
+        # Steps row should exist with status reflecting the pause
+        step_row = conn.execute("SELECT status FROM steps WHERE plan_id = 1 AND step_number = 1").fetchone()
+        assert step_row is not None
+        conn.close()
+
+
+def test_lifecycle_meta_and_derivations_at_claim():
+    """Verify record_meta and record_derivations are called at claim time."""
+    import lifecycle
+    import sqlite3
+
+    with tempfile.TemporaryDirectory() as tmp:
+        decisions_dir = os.path.join(tmp, "proj", "knowledge", "decisions")
+        os.makedirs(decisions_dir)
+        plan_filename = "executable-lc-derivations-2026-06-11.md"
+        plan_path = os.path.join(decisions_dir, plan_filename)
+        with open(plan_path, "w") as f:
+            f.write("# LC Derivations Test\n## STEP 1\nThis implements diagnostic 42.\n")
+
+        config = {
+            "default_model": "claude-sonnet-4-6",
+            "pushover": {"app_key": "", "user_key": ""},
+            "callback_port": 5999,
+            "step_timeout_seconds": 600,
+        }
+
+        # Pre-create diagnostic 42 in the lifecycle DB so the FK constraint is satisfied
+        lifecycle.mint_and_claim("diagnostic", "/proj", "Diag42", "bellows", "small", 1, "d.md")
+        # Burn ids until we reach 42
+        for _ in range(40):
+            lifecycle.mint_and_claim("diagnostic", "/proj", "Filler", "bellows", "small", 1, "f.md")
+        diag_42_id = lifecycle.mint_and_claim("diagnostic", "/proj", "Diag42Real", "bellows", "small", 1, "d42.md")
+        assert diag_42_id == 42
+
+        with patch("bellows.runner.run_step", return_value=_make_fake_run_step_result()), \
+             patch("bellows.gates.check", return_value=_clean_gates()), \
+             patch("bellows.notifier.notify_plan_complete"), \
+             patch("bellows.verdict.log_to_ledger"), \
+             patch("bellows._capture_git_diff", return_value=""), \
+             patch("bellows._create_worktree", return_value="/tmp/wt"), \
+             patch("bellows._teardown_worktree", return_value=[]), \
+             patch("bellows.record_run"), \
+             patch("bellows.validators.validate_at_claim", return_value={"rejected": False, "reject_reason": "", "warnings": []}), \
+             patch("bellows._build_deposit_records", return_value=[]):
+            response_server = MagicMock()
+            bellows.run_plan(plan_path, config, response_server)
+
+        conn = sqlite3.connect(lifecycle.LIFECYCLE_DB_PATH)
+        # executable_meta should be written
+        meta_row = conn.execute("SELECT plan_id FROM executable_meta").fetchone()
+        assert meta_row is not None
+
+        # derivations should link to diagnostic 42
+        deriv_row = conn.execute("SELECT executable_id, diagnostic_id FROM derivations").fetchone()
+        assert deriv_row is not None
+        assert deriv_row[1] == 42
+        conn.close()

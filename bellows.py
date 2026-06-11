@@ -446,6 +446,11 @@ def run_plan(plan_path: str, config: dict, response_server: server.ResponseServe
             _log("INFO", f"minted id {plan_id} — renamed to {plan_filename}", slug=slug_for(plan_filename))
             # Write shadow copy immediately after claim — preserves pristine content
             _write_shadow(plan_filename, plan_text)
+            # Lifecycle DB: record meta + derivations at claim
+            lifecycle.record_meta(plan_id, plan_type, header)
+            diag_ids = lifecycle.parse_derivations(plan_text)
+            if diag_ids:
+                lifecycle.record_derivations(plan_id, diag_ids)
 
         if shadow_text is not None:
             _log("INFO", f"using cached plan content ({total_steps} steps)", slug=slug_for(plan_name))
@@ -485,22 +490,27 @@ def run_plan(plan_path: str, config: dict, response_server: server.ResponseServe
             if os.path.exists(inprogress_path):
                 shutil.move(inprogress_path, verdict_pending_path)
             # Precondition-failure signal (item #5, 2026-05-24): worktree creation failed → step never ran → consumer must retry, not advance.
-            verdict.post_verdict_request(plan_path, project_path, 1, log_path, gate_result,
+            _vr_path = verdict.post_verdict_request(plan_path, project_path, 1, log_path, gate_result,
                                          pause_reason="gate_failure", total_steps=total_steps, step_text=plan_text,
                                          precondition_failure=True)
+            lifecycle.record_verdict_request(plan_id, 1, pause_reason_code="gate_failure", verdict_file_ref=_vr_path)
             _log("PAUSE", f"⏸️ worktree creation failed, awaiting CEO verdict", slug=slug_for(plan_name))
             return
 
         # Capture pre-step file state
         pre_diff = _capture_git_diff(wt_path)
 
+        current_step = resume_step if resume_step is not None else 1
+        # Lifecycle DB: record step start
+        _lc_step_id = lifecycle.record_step_start(plan_id, current_step) if plan_id else None
+        _lc_step_start = time.monotonic()
+
         parsed = runner.run_step(bootstrap_prompt, wt_path, model,
                                   timeout=config.get("step_inactivity_timeout_seconds",
                                                      config.get("step_timeout_seconds", 300)),
                                   plan_slug=slug_for(plan_name),
-                                  step_num=resume_step if resume_step is not None else 1)
+                                  step_num=current_step)
 
-        current_step = resume_step if resume_step is not None else 1
         total_cost = parsed["cost_usd"] or 0.0
 
         record_run(
@@ -542,6 +552,14 @@ def run_plan(plan_path: str, config: dict, response_server: server.ResponseServe
         failure_gates = ", ".join(f["gate"] for f in gate_result["failures"]) if gate_result["failures"] else "none"
         _log("EVENT", f"gates step {current_step}: passed={gate_result['passed']}, failures={len(gate_result['failures'])} ({failure_gates}), files_changed={len(gate_result.get('files_changed', []))}", slug=slug_for(plan_name))
 
+        # Lifecycle DB: record step end + gate events + deposits
+        _lc_step_duration = time.monotonic() - _lc_step_start if _lc_step_id else None
+        lifecycle.record_step_end(_lc_step_id, status="complete" if gate_result["passed"] else "awaiting_verdict",
+                                  cost_usd=parsed.get("cost_usd"), duration_s=_lc_step_duration)
+        lifecycle.record_gate_events(_lc_step_id, gate_result)
+        _lc_deposits = _build_deposit_records(plan_text, header, project_path, wt_path)
+        lifecycle.record_deposits(_lc_step_id, _lc_deposits)
+
         header = gate_result.get("plan_header", {})
         _apply_defensive_header_defaults(header, total_steps)
         effective_auto_close = str(header.get("auto_close", "false")).lower() == "true"
@@ -566,7 +584,8 @@ def run_plan(plan_path: str, config: dict, response_server: server.ResponseServe
                     _pause_reason = "header_pause"
                 # Tear down worktree before pausing
                 try:
-                    _teardown_worktree(project_path, wt_path, plan_slug, plan_id=plan_id)
+                    _lc_commit_shas = _teardown_worktree(project_path, wt_path, plan_slug, plan_id=plan_id)
+                    lifecycle.record_commits(_lc_step_id, os.path.basename(project_path), _lc_commit_shas)
                 except WorktreeTeardownError as e:
                     _pause_reason = "gate_failure"
                     gate_result["failures"].append({"gate": "worktree_teardown", "evidence": str(e)})
@@ -575,7 +594,8 @@ def run_plan(plan_path: str, config: dict, response_server: server.ResponseServe
                 verdict_pending_path = os.path.join(plan_dir, f"verdict-pending-{base_filename}")
                 if os.path.exists(inprogress_path):
                     shutil.move(inprogress_path, verdict_pending_path)
-                verdict.post_verdict_request(plan_path, project_path, current_step, log_path, gate_result, pause_reason=_pause_reason, total_steps=total_steps, step_text=plan_text, intermediate_decisions=parsed.get("intermediate_decisions", []))
+                _vr_path = verdict.post_verdict_request(plan_path, project_path, current_step, log_path, gate_result, pause_reason=_pause_reason, total_steps=total_steps, step_text=plan_text, intermediate_decisions=parsed.get("intermediate_decisions", []))
+                lifecycle.record_verdict_request(plan_id, current_step, pause_reason_code=_pause_reason, verdict_file_ref=_vr_path)
                 notifier.notify_verdict_request(
                     app_key, user_key, plan_name, current_step, gate_result["failures"]
                 )
@@ -589,6 +609,10 @@ def run_plan(plan_path: str, config: dict, response_server: server.ResponseServe
 
             # Capture pre-step file state
             pre_diff = _capture_git_diff(wt_path)
+
+            # Lifecycle DB: record next step start
+            _lc_step_id = lifecycle.record_step_start(plan_id, current_step + 1) if plan_id else None
+            _lc_step_start = time.monotonic()
 
             parsed = runner.run_step(
                 default_next_prompt, wt_path, model,
@@ -638,6 +662,14 @@ def run_plan(plan_path: str, config: dict, response_server: server.ResponseServe
             failure_gates = ", ".join(f["gate"] for f in gate_result["failures"]) if gate_result["failures"] else "none"
             _log("EVENT", f"gates step {current_step}: passed={gate_result['passed']}, failures={len(gate_result['failures'])} ({failure_gates}), files_changed={len(gate_result.get('files_changed', []))}", slug=slug_for(plan_name))
 
+            # Lifecycle DB: record step end + gate events + deposits (while-loop step)
+            _lc_step_duration = time.monotonic() - _lc_step_start if _lc_step_id else None
+            lifecycle.record_step_end(_lc_step_id, status="complete" if gate_result["passed"] else "awaiting_verdict",
+                                      cost_usd=parsed.get("cost_usd"), duration_s=_lc_step_duration)
+            lifecycle.record_gate_events(_lc_step_id, gate_result)
+            _lc_deposits = _build_deposit_records(plan_text, header, project_path, wt_path)
+            lifecycle.record_deposits(_lc_step_id, _lc_deposits)
+
         # Final step completed — check gates one last time. Mirrors the while-loop
         # pause conditions plus `not effective_auto_close` so single-step plans
         # (where the loop is never entered) get the full set of pause checks.
@@ -662,7 +694,8 @@ def run_plan(plan_path: str, config: dict, response_server: server.ResponseServe
                 _pause_reason = "auto_close_disabled"
             # Tear down worktree before pausing
             try:
-                _teardown_worktree(project_path, wt_path, plan_slug, plan_id=plan_id)
+                _lc_commit_shas = _teardown_worktree(project_path, wt_path, plan_slug, plan_id=plan_id)
+                lifecycle.record_commits(_lc_step_id, os.path.basename(project_path), _lc_commit_shas)
             except WorktreeTeardownError as e:
                 _pause_reason = "gate_failure"
                 gate_result["failures"].append({"gate": "worktree_teardown", "evidence": str(e)})
@@ -671,7 +704,8 @@ def run_plan(plan_path: str, config: dict, response_server: server.ResponseServe
             verdict_pending_path = os.path.join(plan_dir, f"verdict-pending-{base_filename}")
             if os.path.exists(inprogress_path):
                 shutil.move(inprogress_path, verdict_pending_path)
-            verdict.post_verdict_request(plan_path, project_path, current_step, log_path, gate_result, pause_reason=_pause_reason, total_steps=total_steps, step_text=plan_text, intermediate_decisions=parsed.get("intermediate_decisions", []))
+            _vr_path = verdict.post_verdict_request(plan_path, project_path, current_step, log_path, gate_result, pause_reason=_pause_reason, total_steps=total_steps, step_text=plan_text, intermediate_decisions=parsed.get("intermediate_decisions", []))
+            lifecycle.record_verdict_request(plan_id, current_step, pause_reason_code=_pause_reason, verdict_file_ref=_vr_path)
             notifier.notify_verdict_request(
                 app_key, user_key, plan_name, current_step, gate_result["failures"]
             )
@@ -690,7 +724,8 @@ def run_plan(plan_path: str, config: dict, response_server: server.ResponseServe
                 and effective_auto_close):
             # Tear down worktree before auto-close
             try:
-                _teardown_worktree(project_path, wt_path, plan_slug, plan_id=plan_id)
+                _lc_commit_shas = _teardown_worktree(project_path, wt_path, plan_slug, plan_id=plan_id)
+                lifecycle.record_commits(_lc_step_id, os.path.basename(project_path), _lc_commit_shas)
             except WorktreeTeardownError as e:
                 # Cherry-pick conflict on auto-close — convert to gate_failure pause
                 _log("ERROR", f"❌ worktree teardown failed on auto-close: {e}", slug=slug_for(plan_name))
@@ -702,8 +737,9 @@ def run_plan(plan_path: str, config: dict, response_server: server.ResponseServe
                 verdict_pending_path = os.path.join(plan_dir, f"verdict-pending-{base_filename}")
                 if os.path.exists(inprogress_path):
                     shutil.move(inprogress_path, verdict_pending_path)
-                verdict.post_verdict_request(plan_path, project_path, current_step, log_path, gate_result,
+                _vr_path = verdict.post_verdict_request(plan_path, project_path, current_step, log_path, gate_result,
                                              pause_reason="gate_failure", total_steps=total_steps, step_text=plan_text, intermediate_decisions=parsed.get("intermediate_decisions", []))
+                lifecycle.record_verdict_request(plan_id, current_step, pause_reason_code="gate_failure", verdict_file_ref=_vr_path)
                 _log("PAUSE", f"⏸️ worktree teardown failed, awaiting CEO verdict", slug=slug_for(plan_name))
                 return
             verdict.log_to_ledger(plan_path, current_step, gate_result, "auto-close",
@@ -719,6 +755,7 @@ def run_plan(plan_path: str, config: dict, response_server: server.ResponseServe
             if os.path.exists(source):
                 shutil.move(source, done_path)
             _delete_shadow(plan_filename)
+            lifecycle.mark_plan_state(plan_id, "closed", closed_at=datetime.now().isoformat()) if plan_id else None
             notifier.notify_plan_complete(plan_name, total_cost)
             _log("EVENT", f"✅ AUTO-CLOSED", slug=slug_for(plan_name))
             return
@@ -989,14 +1026,44 @@ def _auto_stage_deposits(plan_text, plan_header, project_path, wt_path, slug, pl
             _log("WARN", f"⚠ auto-stage commit exception: {e}", slug=slug)
 
 
-def _teardown_worktree(project_path: str, wt_path: str, slug: str, plan_id: int = None) -> None:
+def _build_deposit_records(plan_text, plan_header, project_path, wt_path):
+    """Build deposit records list for lifecycle DB from plan-declared deposits.
+
+    Returns list of dicts: [{declared_path, type, landed}, ...].
+    """
+    records = []
+    prose_deposits = gates._extract_plan_required_deposits(plan_text)
+    if prose_deposits:
+        for p in prose_deposits:
+            resolved = gates._resolve_deposit_path(p, project_path, wt_path=wt_path)
+            records.append({
+                "declared_path": p,
+                "type": "plan_required",
+                "landed": resolved is not None and os.path.exists(resolved),
+            })
+    frontmatter_deposits = plan_header.get("deposits") if plan_header else None
+    if frontmatter_deposits and isinstance(frontmatter_deposits, list):
+        seen = {r["declared_path"] for r in records}
+        for p in frontmatter_deposits:
+            if p not in seen:
+                resolved = gates._resolve_deposit_path(p, project_path, wt_path=wt_path)
+                records.append({
+                    "declared_path": p,
+                    "type": "frontmatter",
+                    "landed": resolved is not None and os.path.exists(resolved),
+                })
+    return records
+
+
+def _teardown_worktree(project_path: str, wt_path: str, slug: str, plan_id: int = None) -> list:
     """Tear down a worktree: merge commits back to main, remove worktree and branch.
 
     Raises WorktreeTeardownError on merge conflict (worktree + branch left alive for manual resolution).
     No-op when wt_path == project_path (in-place execution, no worktree was created).
+    Returns list of commit SHAs that were landed (empty list if no commits or no-op).
     """
     if wt_path == project_path:
-        return
+        return []
 
     # (a) Detect main branch
     main_branch = "main"
@@ -1123,6 +1190,7 @@ def _teardown_worktree(project_path: str, wt_path: str, slug: str, plan_id: int 
     except Exception:
         _log("WARN", f"⚠ branch cleanup failed for {branch_name}", slug=slug)
 
+    return commit_shas
 
 
 def _source_sha() -> str:
@@ -1463,6 +1531,13 @@ class Bellows:
                         original_name = pname.replace("verdict-pending-", "", 1)
                         cleanup_slug = verdict.slug_from_path(original_name)
                         gate_result = gate_result_from_request or {"failures": [], "files_changed": []}
+                        # Derive plan_id from slug for lifecycle DB writes (id-native plans only)
+                        _lc_plan_id = None
+                        try:
+                            _lc_plan_id = int(lookup_slug)
+                        except (ValueError, TypeError):
+                            pass  # legacy plan — no lifecycle DB id
+                        lifecycle.record_verdict_outcome(_lc_plan_id, step_number, v, decided_by="ceo", disposition_summary=reason)
 
                         if v == "continue":
                             # Guard: block continue when prior step's worktree teardown failed (Gap 1b).
@@ -1481,6 +1556,7 @@ class Bellows:
                                 self._seen.discard(cleanup_slug)
                                 shutil.move(full_plan_path, halted_path)
                                 _delete_shadow(original_name)
+                                lifecycle.mark_plan_state(_lc_plan_id, "halted", closed_at=datetime.now().isoformat()) if _lc_plan_id else None
                                 notifier.notify_plan_halted(original_name)
                                 break
                             is_diag = original_name.startswith("diagnostic-")
@@ -1511,6 +1587,7 @@ class Bellows:
                                 self._seen.discard(cleanup_slug)
                                 shutil.move(full_plan_path, done_path)
                                 _delete_shadow(original_name)
+                                lifecycle.mark_plan_state(_lc_plan_id, "closed", closed_at=datetime.now().isoformat()) if _lc_plan_id else None
                                 notifier.notify_plan_complete(original_name, 0.0)
                                 _log("EVENT", f"verdict continue-to-done", slug=slug_for(original_name))
                             else:
@@ -1537,6 +1614,7 @@ class Bellows:
                             self._seen.discard(cleanup_slug)
                             shutil.move(full_plan_path, halted_path)
                             _delete_shadow(original_name)
+                            lifecycle.mark_plan_state(_lc_plan_id, "halted", closed_at=datetime.now().isoformat()) if _lc_plan_id else None
                             _log("EVENT", f"verdict stop — halting", slug=slug_for(original_name))
                             notifier.notify_plan_halted(original_name)
                         break  # only one match per verdict

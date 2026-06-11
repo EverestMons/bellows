@@ -1,7 +1,8 @@
-"""Tests for lifecycle.py — id minting, plan state, and crash recovery."""
+"""Tests for lifecycle.py — id minting, plan state, crash recovery, and write helpers."""
 
 import os
 import sqlite3
+import stat
 import pytest
 import lifecycle
 
@@ -144,3 +145,332 @@ class TestInitIdempotent:
         count = conn.execute("SELECT COUNT(*) FROM id_sequence").fetchone()[0]
         conn.close()
         assert count == 1
+
+
+# ---------------------------------------------------------------------------
+# Executable B tests — schema upgrade, write helpers, log-and-continue, derivations
+# ---------------------------------------------------------------------------
+
+class TestSchemaUpgradeInPlace:
+    """Verify that init_lifecycle_db() upgrades an A-era DB (id_sequence + plans only)
+    without losing existing rows."""
+
+    def test_upgrade_from_a_era_preserves_data(self, tmp_path):
+        db_path = str(tmp_path / "a_era.db")
+        # Simulate A-era DB: only id_sequence + plans
+        conn = sqlite3.connect(db_path)
+        conn.execute("PRAGMA journal_mode=WAL")
+        conn.execute("""CREATE TABLE id_sequence (
+            id INTEGER PRIMARY KEY CHECK (id = 1),
+            next_id INTEGER NOT NULL DEFAULT 1
+        )""")
+        conn.execute("INSERT INTO id_sequence (id, next_id) VALUES (1, 5)")
+        conn.execute("""CREATE TABLE plans (
+            id INTEGER PRIMARY KEY,
+            type TEXT NOT NULL CHECK (type IN ('diagnostic', 'executable', 'qa')),
+            target_project TEXT NOT NULL,
+            title TEXT,
+            dispatch_mode TEXT,
+            tier TEXT,
+            lifecycle_state TEXT NOT NULL DEFAULT 'claimed',
+            total_steps INTEGER,
+            deposit_placeholder_name TEXT,
+            created_at TEXT NOT NULL,
+            closed_at TEXT
+        )""")
+        conn.execute(
+            "INSERT INTO plans (id, type, target_project, title, lifecycle_state, created_at) VALUES (1, 'diagnostic', '/proj', 'Seeded', 'closed', '2026-06-01T00:00:00')"
+        )
+        conn.commit()
+        conn.close()
+
+        # Run init — should add B-era tables without error
+        lifecycle.init_lifecycle_db(db_path)
+
+        conn = sqlite3.connect(db_path)
+        # All B-era tables present
+        tables = {row[0] for row in conn.execute("SELECT name FROM sqlite_master WHERE type='table'").fetchall()}
+        expected_tables = {"id_sequence", "plans", "diagnostic_meta", "executable_meta",
+                           "derivations", "steps", "commits", "deposits", "verdicts", "gate_events"}
+        assert expected_tables.issubset(tables), f"Missing tables: {expected_tables - tables}"
+
+        # Seeded row intact
+        row = conn.execute("SELECT title, lifecycle_state FROM plans WHERE id = 1").fetchone()
+        assert row == ("Seeded", "closed")
+
+        # id_sequence not overwritten
+        next_id = conn.execute("SELECT next_id FROM id_sequence WHERE id = 1").fetchone()[0]
+        assert next_id == 5
+        conn.close()
+
+    def test_no_content_blob_columns(self, tmp_path):
+        db_path = str(tmp_path / "no_blob.db")
+        lifecycle.init_lifecycle_db(db_path)
+        conn = sqlite3.connect(db_path)
+        tables = conn.execute("SELECT name FROM sqlite_master WHERE type='table'").fetchall()
+        for (tname,) in tables:
+            cols = conn.execute(f"PRAGMA table_info({tname})").fetchall()
+            for col in cols:
+                col_type = col[2].upper() if col[2] else ""
+                assert "BLOB" not in col_type, f"Table {tname} column {col[1]} has BLOB type"
+        conn.close()
+
+
+class TestRecordStepStart:
+    def test_happy_path(self):
+        pid = lifecycle.mint_and_claim("diagnostic", "/proj", "T", "bellows", "small", 1, "d.md")
+        step_id = lifecycle.record_step_start(pid, 1, role="DEV")
+        assert step_id is not None
+        conn = sqlite3.connect(lifecycle.LIFECYCLE_DB_PATH)
+        row = conn.execute("SELECT plan_id, step_number, role, status FROM steps WHERE id = ?", (step_id,)).fetchone()
+        conn.close()
+        assert row[0] == pid
+        assert row[1] == 1
+        assert row[2] == "DEV"
+        assert row[3] == "running"
+
+    def test_returns_none_on_failure(self, tmp_path):
+        # Point at a read-only path to force failure
+        ro_path = str(tmp_path / "ro.db")
+        lifecycle.init_lifecycle_db(ro_path)
+        os.chmod(ro_path, stat.S_IRUSR)
+        result = lifecycle.record_step_start(1, 1, role="DEV", db_path=ro_path)
+        os.chmod(ro_path, stat.S_IRUSR | stat.S_IWUSR)  # restore for cleanup
+        assert result is None
+
+
+class TestRecordStepEnd:
+    def test_updates_step(self):
+        pid = lifecycle.mint_and_claim("diagnostic", "/proj", "T", "bellows", "small", 1, "d.md")
+        step_id = lifecycle.record_step_start(pid, 1)
+        lifecycle.record_step_end(step_id, status="complete", cost_usd=0.05, duration_s=12.3)
+        conn = sqlite3.connect(lifecycle.LIFECYCLE_DB_PATH)
+        row = conn.execute("SELECT status, cost_usd, duration_s FROM steps WHERE id = ?", (step_id,)).fetchone()
+        conn.close()
+        assert row[0] == "complete"
+        assert abs(row[1] - 0.05) < 0.001
+        assert abs(row[2] - 12.3) < 0.1
+
+    def test_noop_on_none_step_id(self):
+        # Should not raise
+        lifecycle.record_step_end(None, status="complete")
+
+
+class TestRecordGateEvents:
+    def test_records_pass_and_fail(self):
+        pid = lifecycle.mint_and_claim("diagnostic", "/proj", "T", "bellows", "small", 1, "d.md")
+        step_id = lifecycle.record_step_start(pid, 1)
+        gate_result = {
+            "failures": [{"gate": "deposit_exists", "evidence": "file missing"}],
+            "passed": False,
+        }
+        lifecycle.record_gate_events(step_id, gate_result)
+        conn = sqlite3.connect(lifecycle.LIFECYCLE_DB_PATH)
+        rows = conn.execute("SELECT gate_name, result, reason_code FROM gate_events WHERE step_id = ?", (step_id,)).fetchall()
+        conn.close()
+        gate_dict = {r[0]: (r[1], r[2]) for r in rows}
+        assert gate_dict["deposit_exists"] == ("fail", "file missing")
+        assert gate_dict["receipt_status"] == ("pass", None)
+
+    def test_noop_on_none_step_id(self):
+        lifecycle.record_gate_events(None, {"failures": []})
+
+
+class TestRecordDeposits:
+    def test_records_deposits(self):
+        pid = lifecycle.mint_and_claim("diagnostic", "/proj", "T", "bellows", "small", 1, "d.md")
+        step_id = lifecycle.record_step_start(pid, 1)
+        deposits = [
+            {"declared_path": "knowledge/foo.md", "type": "plan_required", "landed": True},
+            {"declared_path": "knowledge/bar.md", "type": "frontmatter", "landed": False},
+        ]
+        lifecycle.record_deposits(step_id, deposits)
+        conn = sqlite3.connect(lifecycle.LIFECYCLE_DB_PATH)
+        rows = conn.execute("SELECT declared_path, type, landed FROM deposits WHERE step_id = ?", (step_id,)).fetchall()
+        conn.close()
+        assert len(rows) == 2
+        paths = {r[0]: (r[1], r[2]) for r in rows}
+        assert paths["knowledge/foo.md"] == ("plan_required", 1)
+        assert paths["knowledge/bar.md"] == ("frontmatter", 0)
+
+
+class TestRecordCommits:
+    def test_records_multiple_shas(self):
+        pid = lifecycle.mint_and_claim("diagnostic", "/proj", "T", "bellows", "small", 1, "d.md")
+        step_id = lifecycle.record_step_start(pid, 1)
+        lifecycle.record_commits(step_id, "bellows", ["abc123", "def456"])
+        conn = sqlite3.connect(lifecycle.LIFECYCLE_DB_PATH)
+        rows = conn.execute("SELECT repo, sha FROM commits WHERE step_id = ?", (step_id,)).fetchall()
+        conn.close()
+        assert len(rows) == 2
+        shas = {r[1] for r in rows}
+        assert shas == {"abc123", "def456"}
+
+    def test_noop_on_empty_shas(self):
+        pid = lifecycle.mint_and_claim("diagnostic", "/proj", "T", "bellows", "small", 1, "d.md")
+        step_id = lifecycle.record_step_start(pid, 1)
+        lifecycle.record_commits(step_id, "bellows", [])
+
+
+class TestRecordVerdicts:
+    def test_verdict_request_and_outcome(self):
+        pid = lifecycle.mint_and_claim("diagnostic", "/proj", "T", "bellows", "small", 1, "d.md")
+        lifecycle.record_verdict_request(pid, 1, pause_reason_code="header_pause", verdict_file_ref="/path/to/vr.md")
+        conn = sqlite3.connect(lifecycle.LIFECYCLE_DB_PATH)
+        row = conn.execute("SELECT outcome, pause_reason_code, verdict_file_ref FROM verdicts WHERE plan_id = ?", (pid,)).fetchone()
+        assert row[0] is None  # pending
+        assert row[1] == "header_pause"
+        assert row[2] == "/path/to/vr.md"
+        conn.close()
+
+        lifecycle.record_verdict_outcome(pid, 1, "continue", decided_by="ceo", disposition_summary="looks good")
+        conn = sqlite3.connect(lifecycle.LIFECYCLE_DB_PATH)
+        row = conn.execute("SELECT outcome, decided_by, disposition_summary FROM verdicts WHERE plan_id = ?", (pid,)).fetchone()
+        conn.close()
+        assert row[0] == "continue"
+        assert row[1] == "ceo"
+        assert row[2] == "looks good"
+
+
+class TestRecordMeta:
+    def test_diagnostic_meta(self):
+        pid = lifecycle.mint_and_claim("diagnostic", "/proj", "T", "bellows", "small", 1, "d.md")
+        lifecycle.record_meta(pid, "diagnostic", header={"scope": "bellows.py", "hypothesis": "bug in X"})
+        conn = sqlite3.connect(lifecycle.LIFECYCLE_DB_PATH)
+        row = conn.execute("SELECT scope, hypothesis FROM diagnostic_meta WHERE plan_id = ?", (pid,)).fetchone()
+        conn.close()
+        assert row[0] == "bellows.py"
+        assert row[1] == "bug in X"
+
+    def test_executable_meta(self):
+        pid = lifecycle.mint_and_claim("executable", "/proj", "T", "bellows", "small", 1, "e.md")
+        lifecycle.record_meta(pid, "executable", header={"test_scope": "tests/"})
+        conn = sqlite3.connect(lifecycle.LIFECYCLE_DB_PATH)
+        row = conn.execute("SELECT test_scope FROM executable_meta WHERE plan_id = ?", (pid,)).fetchone()
+        conn.close()
+        assert row[0] == "tests/"
+
+    def test_noop_on_none_plan_id(self):
+        lifecycle.record_meta(None, "diagnostic")
+
+
+class TestParseDerivations:
+    def test_numeric_id_citation(self):
+        text = "This executable implements diagnostic 42 and extends the work."
+        ids = lifecycle.parse_derivations(text)
+        assert ids == [42]
+
+    def test_multiple_citations(self):
+        text = "Implements diagnostic 10, also implements diagnostic 20."
+        ids = lifecycle.parse_derivations(text)
+        assert ids == [10, 20]
+
+    def test_legacy_slug_citation_not_returned(self):
+        text = "Implements diagnostic foo-bar-2026-06-10."
+        ids = lifecycle.parse_derivations(text)
+        assert ids == []
+
+    def test_no_citation(self):
+        text = "This plan has no diagnostic reference."
+        ids = lifecycle.parse_derivations(text)
+        assert ids == []
+
+    def test_case_insensitive(self):
+        text = "Implements Diagnostic 7."
+        ids = lifecycle.parse_derivations(text)
+        assert ids == [7]
+
+
+class TestRecordDerivations:
+    def test_records_derivation_link(self):
+        diag_id = lifecycle.mint_and_claim("diagnostic", "/proj", "D", "bellows", "small", 1, "d.md")
+        exec_id = lifecycle.mint_and_claim("executable", "/proj", "E", "bellows", "small", 1, "e.md")
+        lifecycle.record_derivations(exec_id, [diag_id])
+        conn = sqlite3.connect(lifecycle.LIFECYCLE_DB_PATH)
+        row = conn.execute("SELECT executable_id, diagnostic_id FROM derivations").fetchone()
+        conn.close()
+        assert row == (exec_id, diag_id)
+
+    def test_duplicate_ignored(self):
+        diag_id = lifecycle.mint_and_claim("diagnostic", "/proj", "D", "bellows", "small", 1, "d.md")
+        exec_id = lifecycle.mint_and_claim("executable", "/proj", "E", "bellows", "small", 1, "e.md")
+        lifecycle.record_derivations(exec_id, [diag_id])
+        lifecycle.record_derivations(exec_id, [diag_id])  # should not raise
+        conn = sqlite3.connect(lifecycle.LIFECYCLE_DB_PATH)
+        count = conn.execute("SELECT COUNT(*) FROM derivations").fetchone()[0]
+        conn.close()
+        assert count == 1
+
+
+class TestGetStepId:
+    def test_returns_step_id(self):
+        pid = lifecycle.mint_and_claim("diagnostic", "/proj", "T", "bellows", "small", 1, "d.md")
+        step_id = lifecycle.record_step_start(pid, 1)
+        result = lifecycle.get_step_id(pid, 1)
+        assert result == step_id
+
+    def test_returns_none_for_missing(self):
+        pid = lifecycle.mint_and_claim("diagnostic", "/proj", "T", "bellows", "small", 1, "d.md")
+        assert lifecycle.get_step_id(pid, 99) is None
+
+
+class TestLogAndContinueContract:
+    """Verify that every write helper logs WARN and does NOT propagate exceptions
+    when the DB is unwritable."""
+
+    def _make_readonly_db(self, tmp_path):
+        db_path = str(tmp_path / "readonly.db")
+        lifecycle.init_lifecycle_db(db_path)
+        pid = lifecycle.mint_and_claim("diagnostic", "/proj", "T", "bellows", "small", 1, "d.md", db_path=db_path)
+        step_id = lifecycle.record_step_start(pid, 1, db_path=db_path)
+        os.chmod(db_path, stat.S_IRUSR)
+        return db_path, pid, step_id
+
+    def _restore(self, db_path):
+        os.chmod(db_path, stat.S_IRUSR | stat.S_IWUSR)
+
+    def test_record_step_start_no_raise(self, tmp_path):
+        db_path, pid, _ = self._make_readonly_db(tmp_path)
+        result = lifecycle.record_step_start(pid, 2, db_path=db_path)
+        self._restore(db_path)
+        assert result is None
+
+    def test_record_step_end_no_raise(self, tmp_path):
+        db_path, _, step_id = self._make_readonly_db(tmp_path)
+        lifecycle.record_step_end(step_id, db_path=db_path)
+        self._restore(db_path)
+
+    def test_record_gate_events_no_raise(self, tmp_path):
+        db_path, _, step_id = self._make_readonly_db(tmp_path)
+        lifecycle.record_gate_events(step_id, {"failures": [{"gate": "x", "evidence": "y"}]}, db_path=db_path)
+        self._restore(db_path)
+
+    def test_record_deposits_no_raise(self, tmp_path):
+        db_path, _, step_id = self._make_readonly_db(tmp_path)
+        lifecycle.record_deposits(step_id, [{"declared_path": "x.md", "type": "plan_required", "landed": False}], db_path=db_path)
+        self._restore(db_path)
+
+    def test_record_commits_no_raise(self, tmp_path):
+        db_path, _, step_id = self._make_readonly_db(tmp_path)
+        lifecycle.record_commits(step_id, "repo", ["abc"], db_path=db_path)
+        self._restore(db_path)
+
+    def test_record_verdict_request_no_raise(self, tmp_path):
+        db_path, pid, _ = self._make_readonly_db(tmp_path)
+        lifecycle.record_verdict_request(pid, 1, db_path=db_path)
+        self._restore(db_path)
+
+    def test_record_verdict_outcome_no_raise(self, tmp_path):
+        db_path, pid, _ = self._make_readonly_db(tmp_path)
+        lifecycle.record_verdict_outcome(pid, 1, "continue", db_path=db_path)
+        self._restore(db_path)
+
+    def test_record_meta_no_raise(self, tmp_path):
+        db_path, pid, _ = self._make_readonly_db(tmp_path)
+        lifecycle.record_meta(pid, "diagnostic", db_path=db_path)
+        self._restore(db_path)
+
+    def test_record_derivations_no_raise(self, tmp_path):
+        db_path, pid, _ = self._make_readonly_db(tmp_path)
+        lifecycle.record_derivations(pid, [1], db_path=db_path)
+        self._restore(db_path)
