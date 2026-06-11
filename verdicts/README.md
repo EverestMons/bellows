@@ -15,10 +15,10 @@ Bellows pauses plan execution under five conditions. The Planner writes a verdic
 ## Naming
 
 ```
-verdict-<plan-slug>-step-<N>.md
+verdict-<id>-step-<N>.md
 ```
 
-`<plan-slug>` = plan filename with leading prefix (`in-progress-`, `verdict-pending-`, `executable-`, `diagnostic-`) and `.md` stripped.
+`<id>` = the plan's integer id (id-native plans). Legacy plans: `<plan-slug>` = plan filename with leading prefix (`in-progress-`, `verdict-pending-`, `executable-`, `diagnostic-`) and `.md` stripped — dual-format tolerance accepts both. In all cases the mechanical rule: copy the verdict-request filename and replace `verdict-request-` with `verdict-`.
 
 Example: `diagnostic-foo-bar-2026-04-16.md` → `verdict-foo-bar-2026-04-16-step-1.md`
 
