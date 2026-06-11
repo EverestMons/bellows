@@ -1,0 +1,23 @@
+QA Verification: PLANNER_TEMPLATE.md v4.61 version check
+=========================================================
+Date: 2026-06-11
+File: /Users/marklehn/Developer/GitHub/PLANNER_TEMPLATE.md
+
+Test 1: grep -cF "**Version:** 4.61" — expected 1
+Result: 1
+Status: PASS
+
+Test 2: grep -nF "**Version:** 4.61" — show the line
+Result: 5:**Version:** 4.61
+Status: PASS
+
+Test 3: grep -nF "v4.61" — should show at least the changelog row
+Result: 1753:| 2026-06-11 | v4.61: Reporting Phase 1 conventions codified. Id-native naming (deposit placeholder `<type>-draft-<HHMMSS>.md`, mint-at-claim rename to `in-progress-<type>-<id>.md`, id-canonical Done filing, `[id]` commit tags); plan_slug redefined as authoring-time descriptive slug (Rule 18/20 + RULE_20_SELF_CHECK_BLOCK.md placeholders); Rule 25 id-correlation via lifecycle.db placeholder lookup with filesystem fallback; verdict filenames id-keyed with format-agnostic copy-the-request-filename rule; new Lifecycle DB Read Protocol section (read-only URI, DB-as-index/filesystem-as-ground-truth, canonical queries, integer-only `implements diagnostic <id>` derivations citation); Checklist items 19-22 (placeholder filename check; derivations citation; implied test-infrastructure scope; no inline paraphrase of artifact-authoritative specifics -- folds both 2026-06-11 LESSONS). |
+Status: PASS
+
+Test 4: grep -cF "**Version:** 4.60" — expected 0 (old version gone)
+Result: 0
+Status: PASS
+
+=========================================================
+Overall Verdict: PASS (4/4 checks passed)

@@ -1,0 +1,108 @@
+PLANNER_TEMPLATE v4.61 — Edit Landing QA Verification
+Generated: 2026-06-11T17:42:09.044896
+Target files:
+  PT = /Users/marklehn/Developer/GitHub/PLANNER_TEMPLATE.md
+  R20 = /Users/marklehn/Developer/GitHub/RULE_20_SELF_CHECK_BLOCK.md
+================================================================================
+
+── E1 — Version bump ──
+  NEW '**Version:** 4.61' present in PT: True
+    5:**Version:** 4.61
+  OLD '**Version:** 4.60' absent in PT: True
+  RESULT: PASS
+
+── E2 — Plan file naming ──
+  NEW '<type>-draft-<HHMMSS>.md' present in PT: True
+    407:- Bellows-watched deposits (executable / diagnostic / qa): `<type>-draft-<HHMMSS>.md` — transient placeholder; see "Id-Native Naming" below
+    410:**Id-Native Naming (in force 2026-06-11).** Any file with an `executable-`, `diagnostic-`, or `qa-` prefix deposited to a Bellows-watched `knowledge/decisions/` directory is claimed by filename pattern regardless of `dispatch_mode`. Deposit with the transient placeholder `<type>-draft-<HHMMSS>.md` (current clock time; uniqueness within the directory at deposit time is the only requirement). No descriptive slug and no date in the filename: the date lives in the header `**Date:**` field and descriptive identity lives in the `# Title` line only. Bellows mints a global-monotonic integer id at claim and renames the file to `in-progress-<type>-<id>.md`; the lifecycle thereafter is `verdict-pending-<type>-<id>.md`, `halted-<type>-<id>.md`, and id-canonical Done filing as `Done/<type>-<id>.md`. Legacy `<type>-<slug>-YYYY-MM-DD.md` names remain accepted everywhere (dual-format tolerance) for historical artifacts — never use them for new deposits to watched directories. Non-watched locations (roadmaps, research, architecture docs) keep descriptive+date naming.
+    466:The plan itself is a knowledge artifact. Plans deposited to Bellows-watched directories use the `<type>-draft-<HHMMSS>.md` placeholder (Bellows renames to the id-canonical name at claim); roadmaps use `roadmap-[feature]-[YYYY-MM-DD].md`. Executable files must include an Execution Map in the header showing `→` for sequential and `∥` for parallel steps. Do not leave plans only in conversation history.
+    1753:| 2026-06-11 | v4.61: Reporting Phase 1 conventions codified. Id-native naming (deposit placeholder `<type>-draft-<HHMMSS>.md`, mint-at-claim rename to `in-progress-<type>-<id>.md`, id-canonical Done filing, `[id]` commit tags); plan_slug redefined as authoring-time descriptive slug (Rule 18/20 + RULE_20_SELF_CHECK_BLOCK.md placeholders); Rule 25 id-correlation via lifecycle.db placeholder lookup with filesystem fallback; verdict filenames id-keyed with format-agnostic copy-the-request-filename rule; new Lifecycle DB Read Protocol section (read-only URI, DB-as-index/filesystem-as-ground-truth, canonical queries, integer-only `implements diagnostic <id>` derivations citation); Checklist items 19–22 (placeholder filename check; derivations citation; implied test-infrastructure scope; no inline paraphrase of artifact-authoritative specifics — folds both 2026-06-11 LESSONS). |
+  NEW 'Id-Native Naming (in force 2026-06-11)' present in PT: True
+    410:**Id-Native Naming (in force 2026-06-11).** Any file with an `executable-`, `diagnostic-`, or `qa-` prefix deposited to a Bellows-watched `knowledge/decisions/` directory is claimed by filename pattern regardless of `dispatch_mode`. Deposit with the transient placeholder `<type>-draft-<HHMMSS>.md` (current clock time; uniqueness within the directory at deposit time is the only requirement). No descriptive slug and no date in the filename: the date lives in the header `**Date:**` field and descriptive identity lives in the `# Title` line only. Bellows mints a global-monotonic integer id at claim and renames the file to `in-progress-<type>-<id>.md`; the lifecycle thereafter is `verdict-pending-<type>-<id>.md`, `halted-<type>-<id>.md`, and id-canonical Done filing as `Done/<type>-<id>.md`. Legacy `<type>-<slug>-YYYY-MM-DD.md` names remain accepted everywhere (dual-format tolerance) for historical artifacts — never use them for new deposits to watched directories. Non-watched locations (roadmaps, research, architecture docs) keep descriptive+date naming.
+  OLD 'executable-[feature]-[YYYY-MM-DD].md` — copy-paste-ready' absent in PT: True
+  OLD 'diagnostic-[feature]-[YYYY-MM-DD].md' absent as bullet in PT: True
+  RESULT: PASS
+
+── E3 — Knowledge-artifact save convention ──
+  NEW 'Bellows renames to the id-canonical name at claim' present in PT: True
+    466:The plan itself is a knowledge artifact. Plans deposited to Bellows-watched directories use the `<type>-draft-<HHMMSS>.md` placeholder (Bellows renames to the id-canonical name at claim); roadmaps use `roadmap-[feature]-[YYYY-MM-DD].md`. Executable files must include an Execution Map in the header showing `→` for sequential and `∥` for parallel steps. Do not leave plans only in conversation history.
+  OLD 'Save it with the naming convention:' absent in PT: True
+  RESULT: PASS
+
+── E4 — plan_slug redefinition ──
+  NEW 'authoring-time descriptive slug the Planner fixes at plan-authoring time' present in PT: False
+  [INVESTIGATION] broader grep for 'authoring-time descriptive slug' in PT: True
+    1753:| 2026-06-11 | v4.61: Reporting Phase 1 conventions codified. Id-native naming (deposit placeholder `<type>-draft-<HHMMSS>.md`, mint-at-claim rename to `in-progress-<type>-<id>.md`, id-canonical Done filing, `[id]` commit tags); plan_slug redefined as authoring-time descriptive slug (Rule 18/20 + RULE_20_SELF_CHECK_BLOCK.md placeholders); Rule 25 id-correlation via lifecycle.db placeholder lookup with filesystem fallback; verdict filenames id-keyed with format-agnostic copy-the-request-filename rule; new Lifecycle DB Read Protocol section (read-only URI, DB-as-index/filesystem-as-ground-truth, canonical queries, integer-only `implements diagnostic <id>` derivations citation); Checklist items 19–22 (placeholder filename check; derivations citation; implied test-infrastructure scope; no inline paraphrase of artifact-authoritative specifics — folds both 2026-06-11 LESSONS). |
+  NEW 'authoring-time descriptive slug' present in R20: True
+    17:> - `plan_slug`: `<authoring-time descriptive slug — title-derived plus date, NOT the filename>`
+  NEW 'authoring-time-descriptive-slug' present in R20: True
+    35:plan_slug = "<authoring-time-descriptive-slug>"  # PLACEHOLDER — set from plan prompt
+  OLD 'plan-filename-without-md' absent in PT: False
+    [UNEXPECTED — old text still present] 532:> - `plan_slug`: `<plan-filename-without-md>`
+  OLD 'plan-filename-without-md' absent in R20: True
+  PT side landed: False  |  R20 side landed: True
+  RESULT: FAIL
+  ** FAILURE DETAIL: PT line 532 still reads: `plan_slug`: `<plan-filename-without-md>`
+     Expected replacement: `plan_slug`: `<authoring-time descriptive slug ...>`
+     The R20 side landed correctly; only the PLANNER_TEMPLATE.md side of E4 is missing.
+
+── E5 — Rule 25 id-correlation ──
+  NEW 'by integer id once minted' present in PT: True
+    692:**What counts as a session-dispatched plan:** Any plan the Planner has deposited to `knowledge/decisions/` during the current conversation, AND any plan the Planner has re-authorized during the current conversation (e.g., via manual bootstrap after a Bellows bypass). The Planner tracks these plans internally — by integer id once minted, and by deposit placeholder name during the brief pre-claim window — as part of normal conversation state. Verdicts from plans dispatched in prior sessions or by other Planner instances are NOT this Planner's responsibility and should be ignored by Rule 25's scan (the CEO handles those via the normal Bellows notification path).
+  NEW 'Id correlation at deposit' present in PT: True
+    696:**Id correlation at deposit.** Immediately after the atomic deposit, the Planner learns the minted id by querying the lifecycle DB read-only: `sqlite3 "file:/Users/marklehn/Developer/GitHub/bellows/lifecycle.db?mode=ro" "SELECT id, lifecycle_state FROM plans WHERE deposit_placeholder_name = '<placeholder-filename>';"` — the claim lands within seconds of deposit. If the query returns no row (claim still pending, or a log-and-continue write failure left the DB stale), fall back to `Filesystem:list_directory` on the watched decisions/ directory and read the id from the new `in-progress-<type>-<id>.md` filename. Track the session plan by that integer id for all subsequent Rule 25 scans and verdict filenames.
+    980:**Canonical queries.** (1) Placeholder→id correlation at deposit — see Rule 25's "Id correlation at deposit." (2) Diagnostic id for a derivations citation: `SELECT id, title, lifecycle_state FROM plans WHERE type='diagnostic' ORDER BY id DESC LIMIT 10;` — copy the integer from query output, never from recall (Checklist item 15). (3) Session state spot-check: `SELECT id, title, lifecycle_state FROM plans WHERE closed_at IS NULL;` — replaces queue-heartbeat inference and ad-hoc decisions/ scans for status questions; NULL `closed_at` means in-flight. (4) Session-wrap cost roll-up: `SELECT plan_id, SUM(cost_usd), SUM(turns), SUM(duration_s) FROM steps WHERE plan_id IN (<session ids>) GROUP BY plan_id;` — replaces regex-on-raw_output step-log spelunking for closed session plans; step JSON logs remain the source for in-flight forensic detail.
+  NEW 'verdict-request-<id>-step-' present in PT: True
+    694:**Scan mechanics:** Once per conversation turn where an active session-plan exists, the Planner calls `Filesystem:list_directory` on the `bellows/verdicts/pending/` directory (read-only; the Planner has no write access there and does not need any). It filters the listing for filenames matching the pattern `verdict-request-<id>-step-*.md` where `<id>` is the integer id of any plan the Planner has dispatched this session (legacy in-flight plans: the historical slug). For any match, the Planner calls `Filesystem:read_text_file` on the verdict file and extracts four fields: `Plan:`, `Step:`, `Pause Reason Code:`, and `Deposit:`. If the file is missing any of those fields, that is itself a Rule 22 verification failure — the Planner stops and reports the schema violation to the CEO.
+  OLD 'by slug — as part of normal' absent in PT: True
+  OLD 'verdict-request-<session-plan-slug>-step-' absent in PT: True
+  RESULT: PASS
+
+── E6 — Verdict filename terminology ──
+  NEW 'format-agnostic and authoritative' present in PT: True
+    1460:where `{id}` is the plan's integer id for id-native plans (legacy plans: the historical slug — filename minus lifecycle prefix, type prefix, and `.md`). In all cases the mechanical rule is format-agnostic and authoritative: copy the verdict-request filename and replace the `verdict-request-` prefix with `verdict-`. and `{N}` is the step that just completed (matching the verdict request filename `verdict-request-{slug}-step-{N}.md`). Bellows's `_consume_verdicts()` parses the filename, dispatches step N+1, and renames the plan back to `in-progress-*`.
+  NEW 'verdict-<id>-step-<N>.md' present in PT: True
+    727:2. If Rule 22 passes: deposit a continue verdict to `bellows/verdicts/resolved/verdict-<id>-step-<N>.md` with content `verdict: continue\nRule 22 passed — terminal close authorized.` Bellows's parser requires the literal `verdict:` prefix on line 1 (case-insensitive) per `bellows/verdicts/README.md` regex `^verdict:\s*(continue|stop)$`. Files lacking the prefix are silently rejected.
+  OLD 'where {slug} is the plan's slug (filename minus lifecycle prefix and .md extension)' absent in PT: True
+  OLD 'verdict-[slug]-step-[N].md' absent in PT: True
+  RESULT: PASS
+
+── E7 — Commit lookup by id tag ──
+  NEW 'id-based lookup via' present in PT: True
+    660:**Dev-log commit SHA self-reference is structurally impossible.** When authoring a DEV step that commits a dev log, do NOT require the dev log to embed its own commit SHA. A commit's SHA is computed over its full tree contents including the dev-log text; editing the dev log to insert the SHA produces a new tree, which produces a new SHA, which does not match the embedded value. The amend loop cannot converge. Two acceptable patterns: (a) defer SHA capture to QA — the DEV step commits the dev log with a placeholder or omits the SHA, and the QA step records the stabilized DEV commit SHA in the QA report (which is a separate commit and does not face the self-reference problem); (b) omit the embedded SHA entirely and rely on id-based lookup via `git log --grep='\[<id>\]'` (the `[<id>]` commit tag Bellows injects into every agent prompt; slug-grep remains for legacy plans) or `git log --oneline -- <changed-file>`. Plans that instruct the DEV agent to "amend the dev log to include the commit SHA" are authoring errors and produce stranded amend loops.
+  OLD 'slug-based lookup via' as standalone absent in PT: True
+  RESULT: PASS
+
+── E8 — Lifecycle DB Read Protocol ──
+  NEW '## Lifecycle DB Read Protocol (Planner)' present in PT: True
+    974:## Lifecycle DB Read Protocol (Planner)
+  NEW 'DB-as-index, filesystem-as-ground-truth' present in PT: True
+    978:**Authority model: DB-as-index, filesystem-as-ground-truth.** Every lifecycle write is log-and-continue (best-effort by design): a write failure WARNs and the daemon proceeds, so the DB can be silently stale or incomplete. Route, correlate, and report on the DB; verify terminal states, deposits, and anything authorizing an irreversible action directly on disk (Rule 22 is unchanged by this protocol). Every DB read on an operational path requires a filesystem fallback.
+  RESULT: PASS
+
+── E9 — Plan Authoring Checklist items 19-22 ──
+  NEW '### 19. Deposited filename is the draft placeholder' present in PT: True
+    1100:### 19. Deposited filename is the draft placeholder
+  NEW '### 20. Derivations citation present and integer' present in PT: True
+    1106:### 20. Derivations citation present and integer
+  NEW '### 21. Scope enumerations include implied test-infrastructure files' present in PT: True
+    1112:### 21. Scope enumerations include implied test-infrastructure files
+  NEW '### 22. Never re-enumerate artifact-authoritative specifics inline' present in PT: True
+    1118:### 22. Never re-enumerate artifact-authoritative specifics inline
+  RESULT: PASS
+
+── E10 — Changelog row ──
+  NEW 'v4.61: Reporting Phase 1 conventions codified' present in PT: True
+    1753:| 2026-06-11 | v4.61: Reporting Phase 1 conventions codified. Id-native naming (deposit placeholder `<type>-draft-<HHMMSS>.md`, mint-at-claim rename to `in-progress-<type>-<id>.md`, id-canonical Done filing, `[id]` commit tags); plan_slug redefined as authoring-time descriptive slug (Rule 18/20 + RULE_20_SELF_CHECK_BLOCK.md placeholders); Rule 25 id-correlation via lifecycle.db placeholder lookup with filesystem fallback; verdict filenames id-keyed with format-agnostic copy-the-request-filename rule; new Lifecycle DB Read Protocol section (read-only URI, DB-as-index/filesystem-as-ground-truth, canonical queries, integer-only `implements diagnostic <id>` derivations citation); Checklist items 19–22 (placeholder filename check; derivations citation; implied test-infrastructure scope; no inline paraphrase of artifact-authoritative specifics — folds both 2026-06-11 LESSONS). |
+  RESULT: PASS
+
+================================================================================
+SUMMARY: 9/10 PASS, 1/10 FAIL
+OVERALL: SOME EDITS FAILED
+
+FAILURES:
+  E4 (plan_slug redefinition) — PT side: OLD text `<plan-filename-without-md>` persists at line 532.
+       R20 side landed correctly. Only the PLANNER_TEMPLATE.md placeholder replacement is missing.
+       The expected new text `<authoring-time descriptive slug ...>` does not appear in the
+       plan-side template block. This appears to be a missed edit in the PT file.
+================================================================================

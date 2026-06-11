@@ -1,0 +1,73 @@
+RULE_20_SELF_CHECK_BLOCK.md Diff Verification
+==============================================
+Date: 2026-06-11
+Context: PLANNER_TEMPLATE v4.61 edits E4b/E4c — plan_slug placeholder description update
+
+1. FULL DIFF OUTPUT
+-------------------
+diff --git a/RULE_20_SELF_CHECK_BLOCK.md b/RULE_20_SELF_CHECK_BLOCK.md
+index 4aeacbe..ee0ee2e 100644
+--- a/RULE_20_SELF_CHECK_BLOCK.md
++++ b/RULE_20_SELF_CHECK_BLOCK.md
+@@ -14,7 +14,7 @@ Every QA step in every executable plan instructs the QA agent to run the canonic
+ 
+ > Run the canonical Rule 20 self-check from `RULE_20_SELF_CHECK_BLOCK.md` at the governance root. Use these values when filling in the template:
+ >
+-> - `plan_slug`: `<plan-filename-without-md>`
++> - `plan_slug`: `<authoring-time descriptive slug — title-derived plus date, NOT the filename>`
+ > - `qa_report_path`: `<absolute-path-to-qa-report>`
+ > - `evidence_dir`: `<absolute-path-to-evidence-directory>`
+ > - `required_evidence_files`: `[<filename1>, <filename2>, ...]`
+@@ -32,7 +32,7 @@ Copy the block below verbatim. Replace ONLY the four placeholder lines marked `#
+ ```python
+ # Rule 20 — Mandatory QA Self-Check
+ import os, sys
+-plan_slug = "<plan-filename-without-md>"  # PLACEHOLDER — set from plan prompt
++plan_slug = "<authoring-time-descriptive-slug>"  # PLACEHOLDER — set from plan prompt
+ qa_report_path = "<absolute-path-to-qa-report.md>"  # PLACEHOLDER — set from plan prompt
+ evidence_dir = "<absolute-path-to-evidence-dir>/"  # PLACEHOLDER — set from plan prompt
+ required_evidence_files = [
+
+
+2. ANALYSIS
+-----------
+Lines removed (2):
+  -> - `plan_slug`: `<plan-filename-without-md>`
+  -plan_slug = "<plan-filename-without-md>"  # PLACEHOLDER — set from plan prompt
+
+Lines added (2):
+  +> - `plan_slug`: `<authoring-time descriptive slug — title-derived plus date, NOT the filename>`
+  +plan_slug = "<authoring-time-descriptive-slug>"  # PLACEHOLDER — set from plan prompt
+
+Change summary:
+  - Hunk 1 (line 17): Instruction block plan_slug description changed from
+    "<plan-filename-without-md>" to "<authoring-time descriptive slug — title-derived plus date, NOT the filename>"
+  - Hunk 2 (line 35): Code block plan_slug placeholder changed from
+    "<plan-filename-without-md>" to "<authoring-time-descriptive-slug>"
+
+Both changes update the plan_slug placeholder description to reflect
+the new authoring-time descriptive slug convention (E4b/E4c edits).
+
+3. BANNER STRING VERIFICATION
+------------------------------
+Previous version banner lines:
+  ('banner', 'print("Rule 20 — QA Self-Check Results")')
+  ('passed', 'print("PASSED — SELF-CHECK PASSED — all evidence files present, no hedging keywords found.")')
+
+Current version banner lines:
+  ('banner', 'print("Rule 20 — QA Self-Check Results")')
+  ('passed', 'print("PASSED — SELF-CHECK PASSED — all evidence files present, no hedging keywords found.")')
+
+Banner strings byte-identical: True
+  - "Rule 20 — QA Self-Check Results": UNCHANGED
+  - "PASSED — SELF-CHECK PASSED": UNCHANGED
+
+4. CHECKS
+----------
+[PASS] Only two plan_slug placeholder lines changed: True
+[PASS] All changes are plan_slug-related: True
+[PASS] Banner strings remain byte-identical: True
+
+5. VERDICT
+----------
+PASS

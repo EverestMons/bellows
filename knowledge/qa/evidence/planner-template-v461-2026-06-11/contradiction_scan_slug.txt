@@ -1,0 +1,25 @@
+contradiction_scan_slug.txt — QA evidence for PLANNER_TEMPLATE v4.61
+Date: 2026-06-11
+
+Command run:
+  grep -n "filename minus" /Users/marklehn/Developer/GitHub/PLANNER_TEMPLATE.md /Users/marklehn/Developer/GitHub/RULE_20_SELF_CHECK_BLOCK.md
+
+--- grep output (verbatim) ---
+/Users/marklehn/Developer/GitHub/PLANNER_TEMPLATE.md:1460:where `{id}` is the plan's integer id for id-native plans (legacy plans: the historical slug — filename minus lifecycle prefix, type prefix, and `.md`). In all cases the mechanical rule is format-agnostic and authoritative: copy the verdict-request filename and replace the `verdict-request-` prefix with `verdict-`. and `{N}` is the step that just completed (matching the verdict request filename `verdict-request-{slug}-step-{N}.md`). Bellows's `_consume_verdicts()` parses the filename, dispatches step N+1, and renames the plan back to `in-progress-*`.
+--- end grep output ---
+
+Hit count: 1
+
+Analysis:
+  PLANNER_TEMPLATE.md:1460 — This hit is inside E6(a)'s replacement text.
+    The phrase is "filename minus lifecycle prefix, type prefix, and .md"
+    within a legacy-tolerance parenthetical ("legacy plans: the historical
+    slug — filename minus ..."). This is the ONLY allowed survivor per the
+    acceptance criteria.
+
+  RULE_20_SELF_CHECK_BLOCK.md — zero hits (file not listed in grep output).
+
+  No surviving filename-derived plan_slug definition (e.g., "filename minus
+  the .md extension") exists anywhere in either file.
+
+Verdict: PASS

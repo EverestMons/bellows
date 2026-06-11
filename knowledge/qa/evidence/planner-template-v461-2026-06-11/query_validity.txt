@@ -1,0 +1,71 @@
+Lifecycle DB Read Protocol — Canonical Query Validity Check
+===========================================================
+Date: 2026-06-11
+DB:   file:/Users/marklehn/Developer/GitHub/bellows/lifecycle.db?mode=ro
+
+All queries executed via sqlite3 with read-only URI to prevent accidental writes.
+
+------------------------------------------------------------------------
+Query 1: Placeholder→id correlation
+------------------------------------------------------------------------
+Command:
+  sqlite3 "file:/Users/marklehn/Developer/GitHub/bellows/lifecycle.db?mode=ro" \
+    "SELECT id, lifecycle_state FROM plans WHERE deposit_placeholder_name = 'test-placeholder';"
+
+Output:
+  (empty result set — no rows match 'test-placeholder')
+
+Exit code: 0
+Verdict:   PASS — query executed without SQL error; empty result is expected
+           (no plan uses that placeholder name).
+
+------------------------------------------------------------------------
+Query 2: Diagnostic id lookup
+------------------------------------------------------------------------
+Command:
+  sqlite3 "file:/Users/marklehn/Developer/GitHub/bellows/lifecycle.db?mode=ro" \
+    "SELECT id, title, lifecycle_state FROM plans WHERE type='diagnostic' ORDER BY id DESC LIMIT 10;"
+
+Output:
+  (empty result set — no diagnostic-type plans in the DB)
+
+Exit code: 0
+Verdict:   PASS — query executed without SQL error; empty result is expected
+           (no plans with type='diagnostic' currently exist).
+
+------------------------------------------------------------------------
+Query 3: Session state spot-check
+------------------------------------------------------------------------
+Command:
+  sqlite3 "file:/Users/marklehn/Developer/GitHub/bellows/lifecycle.db?mode=ro" \
+    "SELECT id, title, lifecycle_state FROM plans WHERE closed_at IS NULL;"
+
+Output:
+  4|PLANNER_TEMPLATE v4.61 — Id-Native Naming + Lifecycle DB Read Protocol Codification|claimed
+
+Exit code: 0
+Verdict:   PASS — query executed without SQL error; returned 1 open plan
+           (plan 4, currently claimed, closed_at IS NULL as expected).
+
+------------------------------------------------------------------------
+Query 4: Session-wrap cost roll-up (plan_id=3)
+------------------------------------------------------------------------
+Command:
+  sqlite3 "file:/Users/marklehn/Developer/GitHub/bellows/lifecycle.db?mode=ro" \
+    "SELECT plan_id, SUM(cost_usd), SUM(turns), SUM(duration_s) FROM steps WHERE plan_id IN (3) GROUP BY plan_id;"
+
+Output:
+  (empty result set — no step rows for plan_id=3)
+
+Exit code: 0
+Verdict:   PASS — query executed without SQL error; empty result is expected
+           (plan 3 has no recorded steps in the steps table).
+
+========================================================================
+OVERALL VERDICT: PASS
+========================================================================
+All four canonical queries executed successfully against the live
+lifecycle.db schema via read-only URI. No SQL errors were produced.
+Column references (id, lifecycle_state, title, type, deposit_placeholder_name,
+closed_at, plan_id, cost_usd, turns, duration_s) all resolve correctly,
+confirming the schema supports the Lifecycle DB Read Protocol as documented.

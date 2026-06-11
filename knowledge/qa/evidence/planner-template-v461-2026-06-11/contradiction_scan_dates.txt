@@ -1,0 +1,74 @@
+contradiction_scan_dates.txt
+=================================
+QA Scan: YYYY-MM-DD occurrences in PLANNER_TEMPLATE.md
+Template version: v4.61
+Scan date: 2026-06-11
+
+Command: grep -n "YYYY-MM-DD" /Users/marklehn/Developer/GitHub/PLANNER_TEMPLATE.md
+
+--- grep output with classifications ---
+
+Line 353:
+  **Date:** YYYY-MM-DD | **Tier:** [tier] | **Dispatch Mode:** [bellows | manual_bootstrap] | ...
+  Classification: header **Date:** field template
+  Verdict: PASS — this is the plan header template showing where the date goes as metadata,
+  not a date-bearing deposit filename. The date field is explicitly the correct place for dates
+  per Id-Native Naming ("the date lives in the header **Date:** field").
+
+Line 408:
+  - `roadmap-[feature]-[YYYY-MM-DD].md` — multi-phase master plans (not directly executable)
+  Classification: roadmap naming
+  Verdict: PASS — roadmaps are explicitly non-executable ("not directly executable") and
+  non-watched. Id-Native Naming says "Non-watched locations (roadmaps, research, architecture
+  docs) keep descriptive+date naming." Date in roadmap filenames is by design.
+
+Line 410:
+  **Id-Native Naming (in force 2026-06-11).** ... Legacy `<type>-<slug>-YYYY-MM-DD.md` names
+  remain accepted everywhere (dual-format tolerance) for historical artifacts — never use them
+  for new deposits to watched directories.
+  Classification: explicit legacy-tolerance text
+  Verdict: PASS — this is the Id-Native Naming paragraph. It mentions the old date-bearing
+  format solely to say it is legacy-tolerated but "never use them for new deposits." This is
+  the opposite of prescribing date-bearing deposit filenames; it explicitly forbids them for
+  new deposits.
+
+Line 466:
+  Plans deposited to Bellows-watched directories use the `<type>-draft-<HHMMSS>.md` placeholder
+  (Bellows renames to the id-canonical name at claim); roadmaps use
+  `roadmap-[feature]-[YYYY-MM-DD].md`.
+  Classification: roadmap naming (repeated) + plan deposit rule reference
+  Verdict: PASS — the executable/diagnostic/qa deposit instruction says to use `<type>-draft-<HHMMSS>.md`
+  (no date). The YYYY-MM-DD reference applies only to roadmaps (non-executable, non-watched).
+  No date-bearing filename is prescribed for executable/diagnostic/qa deposits.
+
+Line 586:
+  This produces a single cumulative `session-YYYY-MM-DD/pytest_session_end.txt` evidence file ...
+  Classification: session-YYYY-MM-DD evidence path
+  Verdict: PASS — this is a QA evidence directory path pattern, not a plan deposit filename.
+  Evidence directories are not plan deposits to watched `knowledge/decisions/` directories;
+  they go to `knowledge/qa/evidence/`. Date in evidence paths is appropriate for session-level
+  organization.
+
+Line 1492:
+  The output is deposited to `[project]/knowledge/qa/evidence/session-YYYY-MM-DD/pytest_session_end.txt`.
+  Classification: session-YYYY-MM-DD evidence path (repeated)
+  Verdict: PASS — same as line 586; evidence directory path, not a plan deposit filename.
+
+--- Summary ---
+
+Total hits: 6 lines (353, 408, 410, 466, 586, 1492)
+
+Classifications:
+  - header **Date:** field template:       1 (line 353)
+  - roadmap naming:                        2 (lines 408, 466)
+  - explicit legacy-tolerance text:        1 (line 410)
+  - session-YYYY-MM-DD evidence paths:     2 (lines 586, 1492)
+
+Hits prescribing date-bearing deposit filenames for executable/diagnostic/qa plans: 0
+
+VERDICT: PASS
+
+No line prescribes a date-bearing deposit filename for executable, diagnostic, or qa plans.
+All YYYY-MM-DD references are either: (a) the header Date field template, (b) roadmap naming
+(non-executable, non-watched), (c) legacy-tolerance text explicitly forbidding new date-bearing
+deposits, or (d) evidence directory paths (not plan deposits).
