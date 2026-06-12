@@ -1,0 +1,4 @@
+$ sqlite3 "file:/Users/marklehn/Developer/GitHub/bellows/lifecycle.db?mode=ro" "SELECT id, type, lifecycle_state, total_steps FROM plans WHERE id = 7;"
+7|executable|abandoned|2
+
+Verification: one row returned. type='executable', total_steps=2. PASS.

@@ -1,0 +1,31 @@
+$ git log --oneline -25
+4e905cc docs(qa): diagnostic-6 fix verified — all 4 gaps present, 524 tests green, self-check PASSED [7]
+2df6d91 fix: recover plan_id on resume path + num_turns passthrough
+5d6f1a1 chore: lifecycle artifacts (diagnostic 6 close)
+ed80c16 docs(research): steps-table coverage + turns NULL forensics [6]
+c893e56 chore: lifecycle artifacts plans [4] [5] — Done filings, processed verdicts, session baton
+a3d0659 docs(qa): PLANNER_TEMPLATE v4.62 QA verified — all 6 edits landed, self-check PASSED [5]
+6d0fa5f docs(dev): shop-level DB references dev log — edits E1-E6 with spot-checks [5]
+a6432ab docs(verdicts): README id-native filename authority with legacy tolerance [5]
+108eef2 docs(qa): PLANNER_TEMPLATE v4.61 QA verified — all 10 edits landed, self-check PASSED [4]
+3c1387c docs(dev): PLANNER_TEMPLATE v4.61 dev log — edits E1-E10 with spot-checks [4]
+7b1e1a1 docs(baton): Reporting Phase 1 shipped — NEXT_SESSION rewrite + BACKLOG stream-persistence item
+72fabf5 chore(lifecycle): close Reporting Phase 1 — plans to Done/halted, processed verdicts, gitignore lifecycle.db
+c7b1c37 docs(qa): lifecycle DB transition writes QA verified [3] (Reporting Phase 1 Exec B Step 2)
+4667e0b feat(lifecycle): lifecycle DB transition writes at all 7 boundaries [3] (Reporting Phase 1 Exec B Step 1)
+ff16252 docs(qa): id-threading + lifecycle mint QA verified (Reporting Phase 1 Exec A Step 2)
+0f0d4fd feat(lifecycle): monotonic id-threading + lifecycle DB mint (Reporting Phase 1 Exec A)
+67d9827 docs(architecture): lifecycle DB + id-threading blueprint (Reporting Phase 1 diagnostic)
+71954fe feat(bellows): auto-commit declared deposits before gates + fail-loud deposit_exists (BACKLOG #1) + close lifecycle
+08db1dd docs(qa): deposit-loss fix QA verified, PROJECT_STATUS + BACKLOG updated
+ae3afed feat(deposits): auto-commit declared deposits + fail-loud gate (BACKLOG #1 fix)
+f5c0dde chore(lifecycle): close silent-deposit-loss diagnostic — plan to Done, design deposit, processed verdict
+b4c038e docs(feedback): agent prompt feedback for silent-deposit-loss diagnostic
+665eff6 docs(architecture): silent deposit-loss teardown fix design (BACKLOG #1 diagnostic)
+d107935 feat(gates): scope_check union-of-all-step-texts fix + close lifecycle (BACKLOG #2)
+0170383 chore(qa): scope_check union fix — QA verified, PROJECT_STATUS updated
+
+Grep for [7]:
+4e905cc docs(qa): diagnostic-6 fix verified — all 4 gaps present, 524 tests green, self-check PASSED [7]
+
+Verification: Step 1's deposit commit carries the literal [7] tag. PASS.

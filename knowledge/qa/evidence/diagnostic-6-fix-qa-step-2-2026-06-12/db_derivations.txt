@@ -1,0 +1,4 @@
+$ sqlite3 "file:/Users/marklehn/Developer/GitHub/bellows/lifecycle.db?mode=ro" "SELECT executable_id, diagnostic_id FROM derivations WHERE executable_id = 7;"
+7|6
+
+Verification: one row returned. executable_id=7, diagnostic_id=6. PASS.

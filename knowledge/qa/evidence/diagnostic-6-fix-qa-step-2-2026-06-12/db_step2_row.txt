@@ -1,0 +1,6 @@
+$ sqlite3 "file:/Users/marklehn/Developer/GitHub/bellows/lifecycle.db?mode=ro" "SELECT step_number, status, step_started_at FROM steps WHERE plan_id = 7 AND step_number = 2;"
+2|running|2026-06-12T11:41:42.192080
+
+Verification: one row returned. step_number=2, status='running'. This is the in-flight row
+for this very dispatch. Before the fix (commit 2df6d91), the resume path left plan_id=None
+and skipped the INSERT — so this row's existence proves G1 (plan_id recovery) end-to-end. PASS.

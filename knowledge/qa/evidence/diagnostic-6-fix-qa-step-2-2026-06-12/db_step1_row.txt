@@ -1,0 +1,4 @@
+$ sqlite3 "file:/Users/marklehn/Developer/GitHub/bellows/lifecycle.db?mode=ro" "SELECT step_number, status, cost_usd, turns, duration_s FROM steps WHERE plan_id = 7 AND step_number = 1;"
+1|complete|0.63424825|25|159.724686792
+
+Verification: one row returned. status='complete', turns=25 (positive integer, NOT NULL), cost_usd=0.63424825 (NOT NULL). PASS.
