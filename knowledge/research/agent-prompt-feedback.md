@@ -3,6 +3,16 @@
 **Date:** 2026-05-29
 **Plans:** diagnostic-claude-settings-permission-gap-2026-05-22, executable-pre-scan-orphan-guard-2026-05-22, executable-bellows-tier-1-batch-2026-05-21, executable-bellows-expected-keys-narrow-2026-05-21, diagnostic-bellows-expected-keys-warning-2026-05-21, diagnostic-bellows-isinstance-asymmetry-2026-05-21, executable-deposit-exists-path-form-normalization-2026-05-27, executable-disable-autoupdater-2026-05-27, diagnostic-planner-authored-contract-validation-2026-05-20, diagnostic-bash-gate-vs-guardrails-2026-05-20, executable-plan-write-time-lessons-reread-2026-05-13, diagnostic-pre-scan-orphan-warn-flood-2026-05-22, executable-remove-pre-scan-processed-rename-v2-2026-05-24, executable-rename-first-ordering-2026-05-24, executable-settings-local-bash-fallback-doc-2026-05-22, executable-mcp-read-class-tools-extension-2026-05-25, diagnostic-file-change-audit-false-negative-2026-05-25, executable-file-change-audit-fix-2026-05-25, executable-planner-template-rule-21-contract-change-2026-05-26, diagnostic-verdict-ledger-gate-result-preservation-2026-05-26, executable-verdict-ledger-gate-result-preservation-2026-05-26, executable-fix-f-guard-removal-2026-05-26, diagnostic-bellows-hardening-batch-freshness-2026-05-26, executable-bellows-hardening-batch-items-1-3-4-2026-05-26, executable-bellows-test-isolation-conftest-2026-05-26, diagnostic-leftover-after-ship-tooling-scope-2026-05-26, executable-leftover-after-ship-tooling-blueprint-2026-05-26, executable-leftover-after-ship-tooling-implementation-2026-05-26, executable-freshness-check-algorithm-v2-blueprint-2026-05-27, executable-freshness-check-algorithm-v2-blueprint-retry-2026-05-27, executable-freshness-check-algorithm-v2-implementation-2026-05-27, executable-worktree-precheck-hardening-2026-05-29
 
+## 2026-06-12 — partial-output-timeout-loss (SA Step 1)
+
+1. **Specialist file present in worktree.** `agents/BELLOWS_SYSTEMS_ANALYST.md` existed and was read. First occurrence in recent memory where the specialist file was actually available — likely because this worktree includes the agents/ directory.
+
+2. **Liveness-anchor instructions worked well.** The "post a 1-line Read X. after each file read and a 1-line Drafting Section N." cadence kept the inactivity timer warm during a multi-section investigation.
+
+3. **Evidence pointer precision was high.** The diagnostic pointed to specific line numbers for `raw_output` write sites (runner.py:192/231/256/280) with a "re-verify by grep, never trust line numbers" caveat. The actual lines were close but not exact (192→192, 231→231, 256→256, 280→280 — all matched). The caveat was still the right instruction since line numbers drift across commits.
+
+4. **BACKLOG-ARCHIVE cross-reference was useful.** The "Added 2026-06-11" entry in BACKLOG-ARCHIVE had the executable ID and timestamp, which directly led to the correct daemon log and step JSON.
+
 ## 2026-06-12 — steps-table-coverage-forensics (SA Step 1)
 
 1. **Specialist file absent — nineteenth consecutive occurrence.** Plan references "Read your specialist file first" but no specialist directory exists in worktree. Recommendation unchanged: remove or conditionalize the instruction.
