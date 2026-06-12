@@ -530,8 +530,9 @@ def run_plan(plan_path: str, config: dict, response_server: server.ResponseServe
             _log("PAUSE", f"⏸️ worktree creation failed, awaiting CEO verdict", slug=slug_for(plan_name))
             return
 
-        # Capture pre-step file state
-        pre_diff = _capture_git_diff(wt_path)
+        # Capture plan diff baseline — stored once at dispatch start (per-plan isolation, plan 28)
+        plan_baseline_sha = _capture_git_diff(wt_path)
+        pre_diff = plan_baseline_sha
 
         current_step = resume_step if resume_step is not None else 1
         # Lifecycle DB: record step start
@@ -823,16 +824,20 @@ def _capture_git_diff(project_path: str) -> str:
 
 
 def _parse_diff_stat(post_diff: str, pre_diff: str, project_path: Optional[str] = None) -> list:
-    """Return list of files changed between pre_diff (HEAD SHA before step) and the
-    current working-tree state, scoped to project_path.
+    """Return list of files changed between pre_diff and post_diff, scoped to project_path.
 
-    Uses `git diff --stat <pre_diff> -- .` (run with cwd=project_path) which captures
-    BOTH committed and uncommitted changes since pre_diff. This covers the agent's
-    standard commit-during-step pattern as well as edge cases where the agent edits
-    but does not commit.
+    When post_diff is provided (non-empty), diffs between two commit SHAs:
+    `git diff --stat <pre_diff> <post_diff> -- .`. This isolates the diff to committed
+    changes between the two captures, excluding concurrent plan commits that land after
+    post_diff capture (per-plan diff baseline fix, plan 28).
 
-    Parameters retain legacy names for backward compatibility:
-      - `post_diff`: currently unused; retained so call-site signatures don't change.
+    When post_diff is empty, falls back to diffing against the working tree:
+    `git diff --stat <pre_diff> -- .`, which captures both committed and uncommitted
+    changes since pre_diff.
+
+    Parameters:
+      - `post_diff`: HEAD SHA captured at step end by `_capture_git_diff`. When non-empty,
+        used as the diff endpoint to isolate from concurrent plan changes.
       - `pre_diff`: HEAD SHA captured at step start by `_capture_git_diff`.
       - `project_path`: directory to run git in AND the scope filter for `..` paths.
 
@@ -848,10 +853,15 @@ def _parse_diff_stat(post_diff: str, pre_diff: str, project_path: Optional[str] 
     # cwd must be the same directory where _capture_git_diff captured pre_diff.
     # Callers pass project_path consistently across both calls.
     cwd = project_path if project_path else None
+    # When post_diff is provided, diff between two commits to isolate from concurrent
+    # plan changes (plan 28). When empty, fall back to diffing against working tree.
+    if post_diff:
+        cmd = ["git", "--no-pager", "diff", "--stat=300", "--relative", pre_diff, post_diff, "--", "."]
+    else:
+        cmd = ["git", "--no-pager", "diff", "--stat=300", "--relative", pre_diff, "--", "."]
     try:
         result = subprocess.run(
-            ["git", "--no-pager", "diff", "--stat=300", "--relative", pre_diff, "--", "."],
-            cwd=cwd, capture_output=True, text=True, timeout=10,
+            cmd, cwd=cwd, capture_output=True, text=True, timeout=10,
         )
     except Exception:
         return []

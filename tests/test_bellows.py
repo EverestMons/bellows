@@ -645,6 +645,113 @@ def test_parse_diff_stat_filters_dotdot_paths():
 
 
 # ---------------------------------------------------------------------------
+# Per-plan diff baseline fix — concurrent plan isolation (plan 28)
+# ---------------------------------------------------------------------------
+
+def test_parse_diff_stat_excludes_concurrent_plan_changes():
+    """Per-plan diff baseline fix: files committed by a concurrent plan AFTER
+    post_diff capture must NOT appear in files_changed (plan 28)."""
+    with tempfile.TemporaryDirectory() as tmpdir:
+        subprocess.run(["git", "init"], cwd=tmpdir, capture_output=True, check=True)
+        subprocess.run(["git", "config", "user.email", "test@test"], cwd=tmpdir, capture_output=True, check=True)
+        subprocess.run(["git", "config", "user.name", "test"], cwd=tmpdir, capture_output=True, check=True)
+        with open(os.path.join(tmpdir, "init.txt"), "w") as f:
+            f.write("init")
+        subprocess.run(["git", "add", "."], cwd=tmpdir, capture_output=True, check=True)
+        subprocess.run(["git", "commit", "-m", "init"], cwd=tmpdir, capture_output=True, check=True)
+
+        # Plan A captures pre_diff (baseline)
+        pre_diff = bellows._capture_git_diff(tmpdir)
+
+        # Plan A's agent commits its own file
+        with open(os.path.join(tmpdir, "plan_a_file.txt"), "w") as f:
+            f.write("plan A's work")
+        subprocess.run(["git", "add", "."], cwd=tmpdir, capture_output=True, check=True)
+        subprocess.run(["git", "commit", "-m", "plan A commit"], cwd=tmpdir, capture_output=True, check=True)
+
+        # Plan A captures post_diff
+        post_diff = bellows._capture_git_diff(tmpdir)
+
+        # Concurrent plan B commits a file AFTER plan A's post_diff capture
+        with open(os.path.join(tmpdir, "plan_b_foreign.txt"), "w") as f:
+            f.write("plan B's foreign change")
+        subprocess.run(["git", "add", "."], cwd=tmpdir, capture_output=True, check=True)
+        subprocess.run(["git", "commit", "-m", "plan B foreign commit"], cwd=tmpdir, capture_output=True, check=True)
+
+        # Plan A computes files_changed — must exclude plan B's file
+        files_changed = bellows._parse_diff_stat(post_diff, pre_diff, tmpdir)
+        assert "plan_a_file.txt" in files_changed, \
+            f"Plan A's own file must appear in files_changed: {files_changed}"
+        assert "plan_b_foreign.txt" not in files_changed, \
+            f"Concurrent plan B's file must NOT appear in files_changed: {files_changed}"
+
+
+def test_parse_diff_stat_includes_own_step_changes_with_post_diff():
+    """Per-plan diff baseline fix: plan's own committed changes between
+    pre_diff and post_diff still appear in files_changed (plan 28)."""
+    with tempfile.TemporaryDirectory() as tmpdir:
+        subprocess.run(["git", "init"], cwd=tmpdir, capture_output=True, check=True)
+        subprocess.run(["git", "config", "user.email", "test@test"], cwd=tmpdir, capture_output=True, check=True)
+        subprocess.run(["git", "config", "user.name", "test"], cwd=tmpdir, capture_output=True, check=True)
+        with open(os.path.join(tmpdir, "init.txt"), "w") as f:
+            f.write("init")
+        subprocess.run(["git", "add", "."], cwd=tmpdir, capture_output=True, check=True)
+        subprocess.run(["git", "commit", "-m", "init"], cwd=tmpdir, capture_output=True, check=True)
+
+        pre_diff = bellows._capture_git_diff(tmpdir)
+
+        # Agent commits two files
+        for name in ["change_a.py", "change_b.py"]:
+            with open(os.path.join(tmpdir, name), "w") as f:
+                f.write(f"content of {name}")
+        subprocess.run(["git", "add", "."], cwd=tmpdir, capture_output=True, check=True)
+        subprocess.run(["git", "commit", "-m", "agent work"], cwd=tmpdir, capture_output=True, check=True)
+
+        post_diff = bellows._capture_git_diff(tmpdir)
+
+        files_changed = bellows._parse_diff_stat(post_diff, pre_diff, tmpdir)
+        assert "change_a.py" in files_changed, f"change_a.py must appear: {files_changed}"
+        assert "change_b.py" in files_changed, f"change_b.py must appear: {files_changed}"
+
+
+def test_parse_diff_stat_multistep_per_step_isolation():
+    """Per-plan diff baseline fix: in a multi-step plan, step 2's files_changed
+    reflects only step 2's changes, not step 1's (plan 28)."""
+    with tempfile.TemporaryDirectory() as tmpdir:
+        subprocess.run(["git", "init"], cwd=tmpdir, capture_output=True, check=True)
+        subprocess.run(["git", "config", "user.email", "test@test"], cwd=tmpdir, capture_output=True, check=True)
+        subprocess.run(["git", "config", "user.name", "test"], cwd=tmpdir, capture_output=True, check=True)
+        with open(os.path.join(tmpdir, "init.txt"), "w") as f:
+            f.write("init")
+        subprocess.run(["git", "add", "."], cwd=tmpdir, capture_output=True, check=True)
+        subprocess.run(["git", "commit", "-m", "init"], cwd=tmpdir, capture_output=True, check=True)
+
+        # Step 1
+        step1_pre = bellows._capture_git_diff(tmpdir)
+        with open(os.path.join(tmpdir, "step1_file.txt"), "w") as f:
+            f.write("step 1 content")
+        subprocess.run(["git", "add", "."], cwd=tmpdir, capture_output=True, check=True)
+        subprocess.run(["git", "commit", "-m", "step 1"], cwd=tmpdir, capture_output=True, check=True)
+        step1_post = bellows._capture_git_diff(tmpdir)
+
+        step1_files = bellows._parse_diff_stat(step1_post, step1_pre, tmpdir)
+        assert "step1_file.txt" in step1_files, f"Step 1 must include step1_file.txt: {step1_files}"
+
+        # Step 2: re-capture pre_diff (simulates line 644 re-capture between steps)
+        step2_pre = bellows._capture_git_diff(tmpdir)
+        with open(os.path.join(tmpdir, "step2_file.txt"), "w") as f:
+            f.write("step 2 content")
+        subprocess.run(["git", "add", "."], cwd=tmpdir, capture_output=True, check=True)
+        subprocess.run(["git", "commit", "-m", "step 2"], cwd=tmpdir, capture_output=True, check=True)
+        step2_post = bellows._capture_git_diff(tmpdir)
+
+        step2_files = bellows._parse_diff_stat(step2_post, step2_pre, tmpdir)
+        assert "step2_file.txt" in step2_files, f"Step 2 must include step2_file.txt: {step2_files}"
+        assert "step1_file.txt" not in step2_files, \
+            f"Step 2 must NOT include step 1's file: {step2_files}"
+
+
+# ---------------------------------------------------------------------------
 # resume_step threading — Bug 1 fix
 # ---------------------------------------------------------------------------
 
