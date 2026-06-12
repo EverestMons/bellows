@@ -1,0 +1,11 @@
+=== Cross-ref: Id-Native Naming heading in PLANNER_TEMPLATE.md ===
+407:- Bellows-watched deposits (executable / diagnostic / qa): `<type>-draft-<HHMMSS>.md` — transient placeholder; see "Id-Native Naming" below
+410:**Id-Native Naming (in force 2026-06-11).** Any file with an `executable-`, `diagnostic-`, or `qa-` prefix deposited to a Bellows-watched `knowledge/decisions/` directory is claimed by filename pattern regardless of `dispatch_mode`. Deposit with the transient placeholder `<type>-draft-<HHMMSS>.md` (current clock time; uniqueness within the directory at deposit time is the only requirement). No descriptive slug and no date in the filename: the date lives in the header `**Date:**` field and descriptive identity lives in the `# Title` line only. Bellows mints a global-monotonic integer id at claim and renames the file to `in-progress-<type>-<id>.md`; the lifecycle thereafter is `verdict-pending-<type>-<id>.md`, `halted-<type>-<id>.md`, and id-canonical Done filing as `Done/<type>-<id>.md`. Legacy `<type>-<slug>-YYYY-MM-DD.md` names remain accepted everywhere (dual-format tolerance) for historical artifacts — never use them for new deposits to watched directories. Non-watched locations (roadmaps, research, architecture docs) keep descriptive+date naming.
+Present: PASS
+
+=== Cross-ref: Lifecycle DB Read Protocol (Planner) heading ===
+974:## Lifecycle DB Read Protocol (Planner)
+Present: PASS
+
+=== Cross-ref: roadmap-reporting-vs-backlog-2026-06-09.md exists on disk ===
+Exists: PASS

@@ -1,0 +1,40 @@
+=== E1 — Embedded plan-side template sync ===
+NEW text (authoring-time descriptive slug) PRESENT:
+532:> - `plan_slug`: `<authoring-time descriptive slug — title-derived plus date, NOT the filename>`
+1753:| 2026-06-11 | v4.61: Reporting Phase 1 conventions codified. Id-native naming (deposit placeholder `<type>-draft-<HHMMSS>.md`, mint-at-claim rename to `in-progress-<type>-<id>.md`, id-canonical Done filing, `[id]` commit tags); plan_slug redefined as authoring-time descriptive slug (Rule 18/20 + RULE_20_SELF_CHECK_BLOCK.md placeholders); Rule 25 id-correlation via lifecycle.db placeholder lookup with filesystem fallback; verdict filenames id-keyed with format-agnostic copy-the-request-filename rule; new Lifecycle DB Read Protocol section (read-only URI, DB-as-index/filesystem-as-ground-truth, canonical queries, integer-only `implements diagnostic <id>` derivations citation); Checklist items 19–22 (placeholder filename check; derivations citation; implied test-infrastructure scope; no inline paraphrase of artifact-authoritative specifics — folds both 2026-06-11 LESSONS). |
+OLD text (plan-filename-without-md) in PLANNER_TEMPLATE.md:
+ZERO HITS (correct)
+
+=== E2 — COMPANY.md decisions naming ===
+NEW text (Bellows mints) PRESENT:
+152:Prefixed by type. Bellows-watched deposits (executable / diagnostic / qa) use the transient placeholder `<type>-draft-<HHMMSS>.md`; Bellows mints a global-monotonic integer id at claim, renames to `in-progress-<type>-<id>.md`, and files completed plans id-canonically as `Done/<type>-<id>.md`. Descriptive identity lives in the plan's `# Title` line; the date lives in the header `**Date:**` field. Roadmaps (`roadmap-[feature]-[YYYY-MM-DD].md`, multi-phase master plans, not claimable) keep descriptive+date naming. Full protocol: PLANNER_TEMPLATE.md "Id-Native Naming" and "Lifecycle DB Read Protocol (Planner)".
+OLD text (executable-[feature]-[YYYY-MM-DD]) in COMPANY.md:
+ZERO HITS (correct)
+
+=== E3 — COMPANY.md plan-lifecycle system of record ===
+NEW text (Plan lifecycle system of record) PRESENT:
+45:**Plan lifecycle system of record.** Bellows records every plan transition in `bellows/lifecycle.db` (10 tables: id_sequence, plans, diagnostic_meta, executable_meta, derivations, steps, commits, deposits, verdicts, gate_events) — integer ids, state transitions, per-step cost/turns/duration, gate events, deposits, landed commit SHAs, and verdict outcomes. The daemon is the SOLE writer; the Planner reads it strictly read-only as an index (the filesystem remains ground truth — lifecycle writes are best-effort log-and-continue). Diagnostic→executable lineage is recorded from the literal plan-text citation `implements diagnostic <id>` (integer ids only). Reporting Phase 2 will generate cycle reports from this DB, replacing hand-maintained backward-looking BACKLOG content (see `roadmap-reporting-vs-backlog-2026-06-09.md`).
+lifecycle.db reference PRESENT:
+45:**Plan lifecycle system of record.** Bellows records every plan transition in `bellows/lifecycle.db` (10 tables: id_sequence, plans, diagnostic_meta, executable_meta, derivations, steps, commits, deposits, verdicts, gate_events) — integer ids, state transitions, per-step cost/turns/duration, gate events, deposits, landed commit SHAs, and verdict outcomes. The daemon is the SOLE writer; the Planner reads it strictly read-only as an index (the filesystem remains ground truth — lifecycle writes are best-effort log-and-continue). Diagnostic→executable lineage is recorded from the literal plan-text citation `implements diagnostic <id>` (integer ids only). Reporting Phase 2 will generate cycle reports from this DB, replacing hand-maintained backward-looking BACKLOG content (see `roadmap-reporting-vs-backlog-2026-06-09.md`).
+
+=== E4 — SPECIALIST_TEMPLATE.md execution context ===
+NEW text (Bellows execution context) PRESENT:
+86:**Bellows execution context.** When dispatched by Bellows, your bootstrap prompt includes the plan's integer id and an instruction to tag every commit message with `[<id>]` — comply exactly; that tag is the shop's commit→plan linkage. Plan lifecycle (steps, costs, gate results, deposits, commit SHAs) is recorded mechanically by the daemon in `bellows/lifecycle.db` — no specialist action is required, and specialists never write that DB. Do not rename plan files; Bellows owns all lifecycle renames.
+commit-tag reference PRESENT:
+NOT FOUND
+
+=== E5 — Verdicts README id-native filename authority ===
+NEW text (verdict-<id>-step-<N>) PRESENT:
+18:verdict-<id>-step-<N>.md
+OLD text (verdict-<plan-slug>-step-<N>) in verdicts/README.md:
+ZERO HITS (correct)
+Legacy tolerance text PRESENT:
+21:`<id>` = the plan's integer id (id-native plans). Legacy plans: `<plan-slug>` = plan filename with leading prefix (`in-progress-`, `verdict-pending-`, `executable-`, `diagnostic-`) and `.md` stripped — dual-format tolerance accepts both. In all cases the mechanical rule: copy the verdict-request filename and replace `verdict-request-` with `verdict-`.
+
+=== E6 — Version bump + changelog ===
+NEW version (4.62) PRESENT:
+5:**Version:** 4.62
+OLD version (4.61) in header:
+ZERO HITS (correct — replaced)
+v4.62 changelog row PRESENT:
+1754:| 2026-06-11 | v4.62: Shop-level lifecycle DB reference sync. Embedded Rule 20 plan-side template copy synced to authoring-time plan_slug (plan-4 QA flag); COMPANY.md decisions naming updated to id-native convention with PLANNER_TEMPLATE pointer; COMPANY.md gains plan-lifecycle system-of-record paragraph (lifecycle.db, sole-writer/read-only roles, derivations citation, Reporting Phase 2 pointer); SPECIALIST_TEMPLATE.md gains Bellows execution-context paragraph ([id] commit-tag compliance, mechanical lifecycle recording, no plan-file renames); bellows/verdicts/README.md verdict-filename authority updated to id form with legacy tolerance. ARCHITECTURE.md deliberately omitted (no Bellows content). |

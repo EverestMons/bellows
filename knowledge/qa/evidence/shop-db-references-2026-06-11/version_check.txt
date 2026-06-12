@@ -1,0 +1,8 @@
+**Version:** 4.62 occurrences: 1
+Exactly once: PASS
+
+v4.62 changelog row:
+1754:| 2026-06-11 | v4.62: Shop-level lifecycle DB reference sync. Embedded Rule 20 plan-side template copy synced to authoring-time plan_slug (plan-4 QA flag); COMPANY.md decisions naming updated to id-native convention with PLANNER_TEMPLATE pointer; COMPANY.md gains plan-lifecycle system-of-record paragraph (lifecycle.db, sole-writer/read-only roles, derivations citation, Reporting Phase 2 pointer); SPECIALIST_TEMPLATE.md gains Bellows execution-context paragraph ([id] commit-tag compliance, mechanical lifecycle recording, no plan-file renames); bellows/verdicts/README.md verdict-filename authority updated to id form with legacy tolerance. ARCHITECTURE.md deliberately omitted (no Bellows content). |
+Row present: PASS
+
+Old **Version:** 4.61 in file: ZERO HITS (correct — replaced)

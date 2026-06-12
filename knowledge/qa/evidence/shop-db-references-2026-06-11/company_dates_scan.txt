@@ -1,0 +1,19 @@
+=== COMPANY.md YYYY-MM-DD scan ===
+Total hits: 5
+
+L148: `[topic]-[YYYY-MM-DD].md`
+  Classification: PERMITTED — general knowledge-artifact naming convention
+
+L152: Prefixed by type. Bellows-watched deposits (executable / diagnostic / qa) use the transient placeholder `<type>-draft-<HHMMSS>.md`; Bellows mints a global-monotonic integer id at claim, renames to `in-progress-<type>-<id>.md`, and files completed plans id-canonically as `Done/<type>-<id>.md`. Descriptive identity lives in the plan's `# Title` line; the date lives in the header `**Date:**` field. Roadmaps (`roadmap-[feature]-[YYYY-MM-DD].md`, multi-phase master plans, not claimable) keep descriptive+date naming. Full protocol: PLANNER_TEMPLATE.md "Id-Native Naming" and "Lifecycle DB Read Protocol (Planner)".
+  Classification: PERMITTED — roadmap naming
+
+L229: Save to `/knowledge/flags/[topic]-flag-[YYYY-MM-DD].md`:
+  Classification: PERMITTED — general knowledge-artifact naming
+
+L236: **Date:** YYYY-MM-DD
+  Classification: PERMITTED — header Date-field template
+
+L252: **Date:** YYYY-MM-DD
+  Classification: PERMITTED — header Date-field template
+
+Overall: PASS — no hits prescribe date-bearing deposit filenames for executable/diagnostic/qa plans
