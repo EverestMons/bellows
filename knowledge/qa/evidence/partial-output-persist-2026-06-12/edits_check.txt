@@ -1,0 +1,39 @@
+G1/G2 Edit Verification — git diff HEAD~1 -- runner.py
+
+Diff (scoped to timeout branch only):
+
+diff --git a/runner.py b/runner.py
+index b5bf96d..c5d3499 100644
+--- a/runner.py
++++ b/runner.py
+@@ -156,6 +156,7 @@ def run_step(
+             "timeout_type": timeout_type,
+             "elapsed_seconds": round(elapsed, 1),
+             "stderr_partial": result_stderr[:5000],
++            "raw_output": result_stdout[:5000],
+         })
+         return {
+             "is_error": True,
+@@ -166,7 +167,7 @@ def run_step(
+             "ceo_flags": [f"Step timed out ({timeout_type}) after {int(elapsed)}s"],
+             "cost_usd": None,
+             "stop_reason": "timeout",
+-            "result_text": "",
++            "result_text": result_stdout[:5000],
+             "permission_denials": [],
+             "verdict_requested": {"requested": False, "reason": None},
+         }
+
+Confirmation:
+- G1: "raw_output": result_stdout[:5000] added at line 159 (timeout _write_log dict). PASS.
+- G2: "result_text": "" changed to result_stdout[:5000] at line 170 (timeout return dict). PASS.
+- No other raw_output or result_text sites changed — diff is strictly within the timeout branch.
+
+raw_output census (grep runner.py for raw_output):
+  159: "raw_output": result_stdout[:5000],   <- NEW (timeout path, G1)
+  193: "raw_output": result_stdout[:5000],   (non-zero exit — unchanged)
+  232: "raw_output": result_stdout[:5000],   (no-result-event — unchanged)
+  257: "raw_output": result_stdout[:5000],   (parse-error — unchanged)
+  281: "raw_output": result_stdout,           (success, full — unchanged)
+
+5 total occurrences: 4x [:5000], 1x full. Matches diagnostic V3 expectation (was 4 occurrences, now 5 with the new timeout entry).
