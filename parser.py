@@ -9,6 +9,7 @@ def parse(raw: dict) -> dict:
     stop_reason = raw.get("stop_reason", "")
     result_text = raw.get("result", "")
     cost_usd = float(raw.get("total_cost_usd", 0.0))
+    turns = raw.get("num_turns")
     permission_denials = raw.get("permission_denials", [])
 
     # Infer receipt_status from stop_reason (Phase 4 fix — text scan was unreliable)
@@ -49,6 +50,7 @@ def parse(raw: dict) -> dict:
         "stop_reason": stop_reason,
         "result_text": result_text,
         "cost_usd": cost_usd,
+        "turns": turns,
         "permission_denials": permission_denials,
         "receipt_status": receipt_status,
         "ceo_flags": ceo_flags,

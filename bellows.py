@@ -309,6 +309,24 @@ def is_final_step(step: int, total_steps: int) -> bool:
     return step >= total_steps
 
 
+def recover_plan_id_from_filename(plan_filename: str) -> Optional[int]:
+    """Recover the integer plan_id from an id-canonical in-progress filename of
+    the form in-progress-<type>-<id>.md (G1, diagnostic 6).
+
+    The resume path re-enters run_plan() with the plan file already named
+    in-progress-*, so the mint-and-claim block is skipped and plan_id would
+    otherwise stay None — silently dropping every lifecycle write (and the [id]
+    commit tag) for resumed steps. This recovers the id from the filename.
+
+    Legacy slug+date in-progress names (e.g. in-progress-executable-foo-bar-
+    2026-05-28.md) are tolerated indefinitely: only the exact <type>-<int>.md
+    form matches, so anything else returns None and lifecycle writes degrade
+    silently exactly as before — no exception, no WARN spam.
+    """
+    m = re.fullmatch(r"in-progress-(?:diagnostic|executable|qa)-(\d+)\.md", plan_filename)
+    return int(m.group(1)) if m else None
+
+
 def header_says_pause(header: dict, current_step: int, total_steps: int, is_qa_step: bool) -> bool:
     """Return True if plan header's pause_for_verdict field matches current step."""
     pv = header.get("pause_for_verdict", "")
@@ -451,6 +469,15 @@ def run_plan(plan_path: str, config: dict, response_server: server.ResponseServe
             diag_ids = lifecycle.parse_derivations(plan_text)
             if diag_ids:
                 lifecycle.record_derivations(plan_id, diag_ids)
+        else:
+            # Resume path (G1, diagnostic 6): the file is already named
+            # in-progress-<type>-<id>.md, so the mint-and-claim block above is
+            # skipped. Recover plan_id from the id-canonical filename so that
+            # resumed-step lifecycle writes (step start/end, gate events,
+            # deposits, commits) and the [id] commit tag (G4) are restored.
+            # Legacy slug+date in-progress names recover nothing → plan_id stays
+            # None and lifecycle writes degrade silently, exactly as before.
+            plan_id = recover_plan_id_from_filename(plan_filename)
 
         if shadow_text is not None:
             _log("INFO", f"using cached plan content ({total_steps} steps)", slug=slug_for(plan_name))
@@ -555,7 +582,7 @@ def run_plan(plan_path: str, config: dict, response_server: server.ResponseServe
         # Lifecycle DB: record step end + gate events + deposits
         _lc_step_duration = time.monotonic() - _lc_step_start if _lc_step_id else None
         lifecycle.record_step_end(_lc_step_id, status="complete" if gate_result["passed"] else "awaiting_verdict",
-                                  cost_usd=parsed.get("cost_usd"), duration_s=_lc_step_duration)
+                                  cost_usd=parsed.get("cost_usd"), turns=parsed.get("turns"), duration_s=_lc_step_duration)
         lifecycle.record_gate_events(_lc_step_id, gate_result)
         _lc_deposits = _build_deposit_records(plan_text, header, project_path, wt_path)
         lifecycle.record_deposits(_lc_step_id, _lc_deposits)
@@ -665,7 +692,7 @@ def run_plan(plan_path: str, config: dict, response_server: server.ResponseServe
             # Lifecycle DB: record step end + gate events + deposits (while-loop step)
             _lc_step_duration = time.monotonic() - _lc_step_start if _lc_step_id else None
             lifecycle.record_step_end(_lc_step_id, status="complete" if gate_result["passed"] else "awaiting_verdict",
-                                      cost_usd=parsed.get("cost_usd"), duration_s=_lc_step_duration)
+                                      cost_usd=parsed.get("cost_usd"), turns=parsed.get("turns"), duration_s=_lc_step_duration)
             lifecycle.record_gate_events(_lc_step_id, gate_result)
             _lc_deposits = _build_deposit_records(plan_text, header, project_path, wt_path)
             lifecycle.record_deposits(_lc_step_id, _lc_deposits)

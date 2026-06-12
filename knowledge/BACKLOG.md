@@ -7,6 +7,8 @@
 ## Open
 
 
+- Added 2026-06-12: plans.lifecycle_state intermediate states (in_progress, awaiting_verdict) are never written — only close/halt/abandon update the column; a verdict-pending plan reads 'claimed'. Canonical query 3 unaffected (keys on closed_at). Either write intermediate states or document the column as coarse. (Observed: plan 6, 2026-06-12.)
+
 - **Added 2026-06-11:** Persist partial agent output stream on inactivity-timeout kill. When the runner kills a stalled step (600s no-output), the step JSON lands with empty raw_output — the ~2 min of pre-stall output plan-1 produced was lost, leaving zero forensics. Capture the stream incrementally or dump the buffer on kill. (Observed: executable id 1, 2026-06-11 14:42.)
 
 
