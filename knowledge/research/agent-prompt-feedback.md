@@ -3,6 +3,16 @@
 **Date:** 2026-05-29
 **Plans:** diagnostic-claude-settings-permission-gap-2026-05-22, executable-pre-scan-orphan-guard-2026-05-22, executable-bellows-tier-1-batch-2026-05-21, executable-bellows-expected-keys-narrow-2026-05-21, diagnostic-bellows-expected-keys-warning-2026-05-21, diagnostic-bellows-isinstance-asymmetry-2026-05-21, executable-deposit-exists-path-form-normalization-2026-05-27, executable-disable-autoupdater-2026-05-27, diagnostic-planner-authored-contract-validation-2026-05-20, diagnostic-bash-gate-vs-guardrails-2026-05-20, executable-plan-write-time-lessons-reread-2026-05-13, diagnostic-pre-scan-orphan-warn-flood-2026-05-22, executable-remove-pre-scan-processed-rename-v2-2026-05-24, executable-rename-first-ordering-2026-05-24, executable-settings-local-bash-fallback-doc-2026-05-22, executable-mcp-read-class-tools-extension-2026-05-25, diagnostic-file-change-audit-false-negative-2026-05-25, executable-file-change-audit-fix-2026-05-25, executable-planner-template-rule-21-contract-change-2026-05-26, diagnostic-verdict-ledger-gate-result-preservation-2026-05-26, executable-verdict-ledger-gate-result-preservation-2026-05-26, executable-fix-f-guard-removal-2026-05-26, diagnostic-bellows-hardening-batch-freshness-2026-05-26, executable-bellows-hardening-batch-items-1-3-4-2026-05-26, executable-bellows-test-isolation-conftest-2026-05-26, diagnostic-leftover-after-ship-tooling-scope-2026-05-26, executable-leftover-after-ship-tooling-blueprint-2026-05-26, executable-leftover-after-ship-tooling-implementation-2026-05-26, executable-freshness-check-algorithm-v2-blueprint-2026-05-27, executable-freshness-check-algorithm-v2-blueprint-retry-2026-05-27, executable-freshness-check-algorithm-v2-implementation-2026-05-27, executable-worktree-precheck-hardening-2026-05-29
 
+## 2026-06-12 — steps-table-coverage-forensics (SA Step 1)
+
+1. **Specialist file absent — nineteenth consecutive occurrence.** Plan references "Read your specialist file first" but no specialist directory exists in worktree. Recommendation unchanged: remove or conditionalize the instruction.
+
+2. **Rule 27 context framing was effective.** Presenting three candidate causes upfront (write-surface gap, silent WARN, semantics mismatch) gave structure to the investigation. Two of three were confirmed, one eliminated — the framing prevented tunnel-vision on a single hypothesis.
+
+3. **Read-only DB URI constraint was well-enforced.** The explicit URI form instruction (`?mode=ro`) prevented accidental writes to the live lifecycle.db — important since this diagnostic's own rows are live evidence of the write path under investigation.
+
+4. **Liveness-anchor instructions worked well.** The "post a 1-line Read X. / Drafting Section N." cadence kept the inactivity timer warm throughout a large multi-section investigation.
+
 ## 2026-06-10 — diagnostic-bellows-silent-deposit-loss-teardown (SA Step 1)
 
 1. **Specialist file absent — eighteenth consecutive occurrence.** Plan references "Read your specialist file first" but no specialist directory exists in worktree. Recommendation unchanged: remove or conditionalize the instruction.
