@@ -1,0 +1,11 @@
+=== FORWARD row 21 verification ===
+
+Row count: 23 lines with | (header + separator + 21 data rows) = 21 data rows — PASS
+
+Row 21 content (line 33):
+| 21 | 2026-06-12 | Parallel-plan worktree diff contamination trips scope_check — a concurrent plan's merged artifacts appear in a later-pausing plan's files_changed (observed: plan 19 QA artifacts flagged in plan 20's gate; CEO override required) (context: processed-verdict-20-step-1) | deferred-work | — | open |
+
+Matches E2 payload — PASS
+Table has exactly 21 data rows — PASS
+
+VERDICT: PASS

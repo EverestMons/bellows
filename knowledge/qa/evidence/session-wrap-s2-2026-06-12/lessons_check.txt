@@ -1,0 +1,14 @@
+=== LESSONS entry verification ===
+
+Search: grep -c "Gates do not enforce step composition" /Users/marklehn/Developer/GitHub/LESSONS.md
+Result: 1 (exactly one occurrence)
+
+Entry at line 1540:
+## 2026-06-12: Gates do not enforce step composition — Position A lives in the Planner's checklist  [tag: planner-discipline]
+
+- Date: 2026-06-12 — PASS
+- Tag: planner-discipline — PASS
+- Title matches E1 payload — PASS
+- Exactly one occurrence — PASS
+
+VERDICT: PASS

@@ -1,0 +1,40 @@
+=== Baton accuracy spot-check ===
+
+== Plan-id range 13-24: existence in Done/ dirs ==
+
+Plan 13: governance/knowledge/decisions/Done/diagnostic-13.md — EXISTS
+Plan 14: forge/knowledge/decisions/Done/executable-14.md — EXISTS
+Plan 15: anvil/knowledge/decisions/Done/executable-15.md — EXISTS
+Plan 16: invoice-pulse/knowledge/decisions/Done/executable-16.md — EXISTS
+Plan 17: bellows/knowledge/decisions/Done/executable-17.md — EXISTS
+Plan 18: invoice-pulse/knowledge/decisions/Done/executable-18.md — EXISTS
+Plan 19: governance/knowledge/decisions/Done/executable-19.md — EXISTS
+Plan 20: governance/knowledge/decisions/Done/executable-20.md — EXISTS
+Plan 21: bellows/knowledge/decisions/Done/diagnostic-21.md — EXISTS
+Plan 22: bellows/knowledge/decisions/Done/executable-22.md — EXISTS
+Plan 23: bellows/knowledge/decisions/Done/diagnostic-23.md — EXISTS
+Plan 24: bellows/knowledge/decisions/Done/executable-24.md — EXISTS
+All 12 plans (13-24) found in Done/ dirs — PASS
+
+== SHAs cited in baton ==
+
+Morning-wrap SHA 8ddf151:
+  git log: 8ddf151 session wrap 2026-06-12: Reporting Phase 2 shipped [7][8][9][10] — 2 LESSONS (planner-discipline), baton, BACKLOG recovery-race, pointer bumps [11]
+  Matches baton "Prior wrap" section citing commit 8ddf151 — PASS
+
+Plan 24 commit f89226b:
+  git log: f89226b fix: persist partial output on inactivity-timeout kill path [24]
+  Matches baton pending-action section — PASS
+
+== Function/file names cited in baton ==
+
+lifecycle_state: found in lifecycle.py, tests/test_lifecycle.py, etc. — EXISTS
+in_progress: found in bellows.py — EXISTS
+flock: found in bellows.py — EXISTS
+raw_output: found in runner.py — EXISTS
+FORWARD.md: exists at knowledge/FORWARD.md — EXISTS
+All cited names verified — PASS
+
+No fabricated specifics detected.
+
+VERDICT: PASS
