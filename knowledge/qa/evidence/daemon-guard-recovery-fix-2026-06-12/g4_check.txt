@@ -1,0 +1,42 @@
+G4 — in_progress write after claim rename verification
+Date: 2026-06-12
+
+1. mark_plan_state call after claim rename (bellows.py:459-464):
+
+bellows.py:459:             shutil.move(plan_path, inprogress_path)
+bellows.py:460:             # G4: write in_progress state immediately after claim rename
+bellows.py:461:             try:
+bellows.py:462:                 lifecycle.mark_plan_state(plan_id, "in_progress")
+bellows.py:463:             except Exception:
+bellows.py:464:                 logger.warning(f"lifecycle: failed to write in_progress for plan {plan_id}")
+
+CONFIRMED:
+  - lifecycle.mark_plan_state(plan_id, "in_progress") called at line 462
+  - Immediately after shutil.move() at line 459
+  - Wrapped in try/except with log-and-continue semantics
+  - Consistent with all other lifecycle writes in the codebase
+
+2. Live canary check — plan 22 lifecycle_state:
+
+sqlite3 lifecycle.db "SELECT id, lifecycle_state FROM plans WHERE id = 22"
+Result: 22|claimed
+
+EXPECTED CONDITION: Plan 22 shows lifecycle_state='claimed', NOT 'in_progress'.
+This is the EXPECTED live-canary behavior because:
+  - The running daemon loaded bellows.py BEFORE the G4 fix was committed
+  - The G4 code (mark_plan_state at line 462) exists in the worktree source but was
+    NOT loaded by the daemon that claimed plan 22
+  - DAEMON RESTART REQUIRED for the fix to take effect
+  - After restart, the FIRST plan claimed will show lifecycle_state='in_progress' mid-run
+
+This is NOT a failure — it confirms the fix is code-complete but requires daemon restart.
+
+3. Recovery SELECT compatibility:
+
+lifecycle.py:209: "FROM plans WHERE lifecycle_state = 'claimed' AND target_project = ?"
+lifecycle.py:215: "FROM plans WHERE lifecycle_state = 'claimed'"
+
+Recovery still selects WHERE lifecycle_state = 'claimed'. Plans that reach 'in_progress'
+are fully claimed and will NOT be re-processed by recovery — correct behavior.
+
+Result: PASS

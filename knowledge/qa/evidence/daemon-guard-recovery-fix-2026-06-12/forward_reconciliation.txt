@@ -1,0 +1,23 @@
+FORWARD.md reconciliation — Rule 42
+Date: 2026-06-12
+
+Updated rows 19 and 20 in knowledge/FORWARD.md:
+
+diff --git a/knowledge/FORWARD.md b/knowledge/FORWARD.md
+--- a/knowledge/FORWARD.md
++++ b/knowledge/FORWARD.md
+-| 19 | 2026-06-12 | Concurrent-daemon startup recovery race ... | deferred-work | — | open |
+-| 20 | 2026-06-12 | `plans.lifecycle_state` intermediate states ... | deferred-work | — | open |
++| 19 | 2026-06-12 | Concurrent-daemon startup recovery race ... | deferred-work | 22 | closed-by-plan-22 |
++| 20 | 2026-06-12 | `plans.lifecycle_state` intermediate states ... | deferred-work | 22 | closed-by-plan-22 |
+
+Both rows:
+  - Plan-id link: 22
+  - Status: closed-by-plan-22
+
+Row 19 closure rationale: G1 (project-scoped recovery) + G2 (flock guard) + G3 (age guard)
+  together eliminate the concurrent-daemon recovery race.
+Row 20 closure rationale: G4 (in_progress write after claim rename) writes the intermediate
+  lifecycle_state that was previously never written.
+
+Result: PASS

@@ -1,0 +1,43 @@
+G2 — flock single-instance guard verification
+Date: 2026-06-12
+
+1. Import confirmed:
+
+bellows.py:3: import fcntl
+
+2. flock acquisition in __main__ (bellows.py:1827-1835):
+
+bellows.py:1827:     # G2: flock single-instance guard — must precede all DB/recovery/watcher work
+bellows.py:1828:     _lock_path = str(BELLOWS_ROOT / ".bellows.lock")
+bellows.py:1829:     _lock_fd = open(_lock_path, "w")
+bellows.py:1830:     try:
+bellows.py:1831:         fcntl.flock(_lock_fd, fcntl.LOCK_EX | fcntl.LOCK_NB)
+bellows.py:1832:     except (BlockingIOError, OSError):
+bellows.py:1833:         _log("ERROR", "another Bellows instance holds .bellows.lock — exiting")
+bellows.py:1834:         sys.exit(1)
+bellows.py:1835:     # _lock_fd intentionally kept open — kernel releases flock on process death
+
+3. Ordering verification — flock BEFORE migration/recovery/watcher:
+
+bellows.py:1837:     migrate_db()                    ← first DB operation (AFTER flock at 1831)
+bellows.py:1838:     lifecycle.init_lifecycle_db()    ← second DB operation
+bellows.py:1839-1847:                                ← recovery loop
+bellows.py:1848:     notifier.init_notifications     ← notifications
+bellows.py:1849:     b = Bellows(config)             ← watcher startup
+
+CONFIRMED: flock acquisition at line 1831 precedes ALL of:
+  - migrate_db() at line 1837
+  - lifecycle.init_lifecycle_db() at line 1838
+  - recovery loop at lines 1839-1847
+  - watcher startup at line 1849
+
+4. Contention branch:
+  - Catches BlockingIOError and OSError
+  - Logs: "another Bellows instance holds .bellows.lock — exiting"
+  - Exits non-zero: sys.exit(1)
+
+5. Lock handle persistence:
+  - _lock_fd kept open at module scope (not closed)
+  - Comment confirms: kernel releases flock on process death
+
+Result: PASS

@@ -1,0 +1,43 @@
+G3 — 5-minute age guard verification
+Date: 2026-06-12
+
+1. created_at added to SELECT (lifecycle.py:208-209, 214-215):
+
+lifecycle.py:208:             "SELECT id, type, deposit_placeholder_name, created_at "
+lifecycle.py:214:             "SELECT id, type, deposit_placeholder_name, created_at "
+
+CONFIRMED: created_at is included in the SELECT for both filtered and unfiltered queries.
+
+2. Age guard check BEFORE abandoned branch (lifecycle.py:240-252):
+
+lifecycle.py:240:         # Age guard (G3): skip plans younger than age_guard_seconds
+lifecycle.py:241:         if created_at:
+lifecycle.py:242:             try:
+lifecycle.py:243:                 age = (datetime.now() - datetime.fromisoformat(created_at)).total_seconds()
+lifecycle.py:244:                 if age < age_guard_seconds:
+lifecycle.py:245:                     logger.info(
+lifecycle.py:246:                         f"recovery: plan {plan_id} younger than "
+lifecycle.py:247:                         f"{age_guard_seconds // 60}m — skipping"
+lifecycle.py:248:                     )
+lifecycle.py:249:                     actions.append((plan_id, "skipped_too_recent"))
+lifecycle.py:250:                     continue
+lifecycle.py:251:             except (ValueError, TypeError):
+lifecycle.py:252:                 pass  # malformed timestamp — fall through to abandon
+
+3. Abandoned branch follows AFTER age guard (lifecycle.py:253-258):
+
+lifecycle.py:253:         # Neither the in-progress file nor the deposit exists — abandon
+lifecycle.py:254:         conn.execute(
+lifecycle.py:255:             "UPDATE plans SET lifecycle_state = 'abandoned', closed_at = ? WHERE id = ?",
+lifecycle.py:256:             (datetime.now().isoformat(), plan_id),
+lifecycle.py:257:         )
+lifecycle.py:258:         actions.append((plan_id, "abandoned"))
+
+CONFIRMED:
+  - age_guard_seconds defaults to 300 (5 minutes per DF3)
+  - Age check occurs BEFORE the abandoned fallthrough
+  - Plans younger than 5 minutes → skipped_too_recent (not abandoned)
+  - Log message matches plan spec: "recovery: plan <id> younger than 5m — skipping"
+  - Malformed timestamps handled gracefully (fall through to abandon)
+
+Result: PASS

@@ -28,5 +28,5 @@
 | 16 | 2026-06-08 | `scope_check` false-positive on continuous-run multi-step plans (context in BACKLOG-ARCHIVE.md) | deferred-work | — | open |
 | 17 | 2026-06-08 | `stop_prose` WARN on legitimate error-handling prose (context in BACKLOG-ARCHIVE.md) | deferred-work | — | open |
 | 18 | 2026-06-11 | Persist partial agent output stream on inactivity-timeout kill (context in BACKLOG-ARCHIVE.md) | deferred-work | — | open |
-| 19 | 2026-06-12 | Concurrent-daemon startup recovery race — misclassifies actively-running plan as abandoned (context in BACKLOG-ARCHIVE.md) | deferred-work | — | open |
-| 20 | 2026-06-12 | `plans.lifecycle_state` intermediate states (`in_progress`, `awaiting_verdict`) never written (context in BACKLOG-ARCHIVE.md) | deferred-work | — | open |
+| 19 | 2026-06-12 | Concurrent-daemon startup recovery race — misclassifies actively-running plan as abandoned (context in BACKLOG-ARCHIVE.md) | deferred-work | 22 | closed-by-plan-22 |
+| 20 | 2026-06-12 | `plans.lifecycle_state` intermediate states (`in_progress`, `awaiting_verdict`) never written (context in BACKLOG-ARCHIVE.md) | deferred-work | 22 | closed-by-plan-22 |

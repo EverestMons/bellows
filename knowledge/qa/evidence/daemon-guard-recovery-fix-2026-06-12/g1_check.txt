@@ -1,0 +1,36 @@
+G1 — Project-scoped recovery verification
+Date: 2026-06-12
+
+1. Code grep — project filter in recover_half_claimed (lifecycle.py:190-216):
+
+lifecycle.py:190: def recover_half_claimed(decisions_dir, db_path=None, project_root=None,
+lifecycle.py:191:                          age_guard_seconds=300):
+lifecycle.py:206:     if project_root:
+lifecycle.py:207:         rows = conn.execute(
+lifecycle.py:208:             "SELECT id, type, deposit_placeholder_name, created_at "
+lifecycle.py:209:             "FROM plans WHERE lifecycle_state = 'claimed' AND target_project = ?",
+lifecycle.py:210:             (project_root,),
+lifecycle.py:211:         ).fetchall()
+
+CONFIRMED: When project_root is provided, SELECT filters by target_project = ?.
+
+2. Callsite in bellows.py:1840-1845:
+
+bellows.py:1842:             _project_root = str(Path(decisions_path).parent.parent)
+bellows.py:1843:             actions = lifecycle.recover_half_claimed(
+bellows.py:1844:                 decisions_path, project_root=_project_root,
+bellows.py:1845:             )
+
+CONFIRMED: Callsite derives project_root from decisions_path via Path().parent.parent
+and passes it to recover_half_claimed().
+
+3. Live sanity query — plans carry target_project values the filter can key on:
+
+sqlite3 lifecycle.db "SELECT id, lifecycle_state, target_project FROM plans WHERE lifecycle_state IN ('claimed','in_progress') LIMIT 5"
+Result: 22|claimed|/Users/marklehn/Developer/GitHub/bellows
+
+CONFIRMED: Plan rows carry target_project values (e.g., /Users/marklehn/Developer/GitHub/bellows)
+that the filter can key on. The project_root derived from decisions_path
+(.../bellows/knowledge/decisions → parent.parent → .../bellows) matches the stored target_project.
+
+Result: PASS
