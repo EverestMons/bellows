@@ -127,7 +127,7 @@ This specialist consults peers through the flags system defined in `COMPANY.md`.
 |---|---|
 | Bellows Developer | When documenting a code change and need clarification on intended behavior or implementation details |
 | Bellows Systems Analyst | When a FORWARD.md entry or CLAUDE.md update touches architectural concepts (pause reasons, gate composition, verdict schema) and accuracy must be verified |
-| Bellows QA | When knowledge-base hygiene reveals undocumented test coverage gaps or when QA report findings need to be reflected in BACKLOG entries |
+| Bellows QA | When knowledge-base hygiene reveals undocumented test coverage gaps or when QA report findings need to be reflected in FORWARD.md entries |
 
 *Consultation requests are saved to `bellows/knowledge/flags/`*
 
