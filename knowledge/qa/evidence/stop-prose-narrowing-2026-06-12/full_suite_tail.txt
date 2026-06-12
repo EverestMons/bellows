@@ -1,0 +1,25 @@
+Full test suite output (last 15 lines) — run by Bellows QA, Step 2, 2026-06-12
+
+$ python3 -m pytest tests/
+
+tests/test_planner.py ...                                                [ 75%]
+tests/test_rule_26_deposit_parser.py .........                           [ 77%]
+tests/test_runner.py ......................                               [ 81%]
+tests/test_runner_parser.py .........                                    [ 82%]
+tests/test_validators.py ...............................                 [ 88%]
+tests/test_verdict.py .......................................            [ 95%]
+tests/test_worktree.py .......................                           [100%]
+
+=============================== warnings summary ===============================
+../../../../../Library/Python/3.9/lib/python/site-packages/urllib3/__init__.py:35
+  /Users/marklehn/Library/Python/3.9/lib/python/site-packages/urllib3/__init__.py:35: NotOpenSSLWarning: urllib3 v2 only supports OpenSSL 1.1.1+, currently the 'ssl' module is compiled with 'LibreSSL 2.8.3'. See: https://github.com/urllib3/urllib3/issues/3020
+    warnings.warn(
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+======================== 545 passed, 1 warning in 9.88s ========================
+
+Verification:
+- Total tests: 545 (matches dev log count of 545)
+- Failures: 0
+- Errors: 0
+- New tests (per dev log): 7 (tests 25-31 in test_validators.py)

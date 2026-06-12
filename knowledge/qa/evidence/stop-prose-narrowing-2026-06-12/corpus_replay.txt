@@ -1,0 +1,76 @@
+Corpus replay — stop_prose narrowed patterns
+Run by Bellows QA, Step 2, 2026-06-12
+
+======================================================================
+CORPUS REPLAY — stop_prose narrowed patterns
+======================================================================
+
+--- PART 1: Diagnostic FP-class examples (expect ZERO matches) ---
+
+  Class 1 (PLANNER_TEMPLATE step-boundary):
+    Line: **STOP. Do NOT proceed to Step 2. Do NOT move the plan to Done. Wait for CEO verdict before continui
+    Result: NO MATCH (correct)
+
+  Class 2 (error-handling prose):
+    Line: capture the full traceback and STOP.
+    Result: NO MATCH (correct)
+
+  Class 2b (error-handling prose):
+    Line: Any failure -> flag and stop.
+    Result: NO MATCH (correct)
+
+  Class 3 (Rule 20 instructional):
+    Line: If the block prints FAILED, do not proceed with closure
+    Result: NO MATCH (correct)
+
+  Class 3b (conditional instructional):
+    Line: MANDATORY — READ THIS FIRST: if the gate fails, do not proceed.
+    Result: NO MATCH (correct)
+
+  Class 4 (self-referencing prose):
+    Line: The check_stop_prose validator flags lines containing do not proceed
+    Result: NO MATCH (correct)
+
+FP-class examples result: PASS — zero matches
+
+--- PART 2: Plan file step text scan (expect ZERO matches) ---
+
+  No matches found in plan file
+Plan file result: PASS — 0 matches
+
+--- PART 3: Synthetic dangerous directives (expect MATCH) ---
+
+  Bare STOP. at line start:
+    Line: STOP. Do not continue.
+    Result: MATCH pattern(s) [0] (correct)
+
+  STOP. with leading whitespace:
+    Line:   STOP. Halt immediately.
+    Result: MATCH pattern(s) [0] (correct)
+
+  Blockquote STOP.:
+    Line: > STOP. Wait here.
+    Result: MATCH pattern(s) [0] (correct)
+
+  Bare do not proceed at line start:
+    Line: Do not proceed until verified.
+    Result: MATCH pattern(s) [1] (correct)
+
+  not proceed at line start:
+    Line: not proceed with any changes.
+    Result: MATCH pattern(s) [1] (correct)
+
+  Blockquote do not proceed:
+    Line: > Do not proceed.
+    Result: MATCH pattern(s) [1] (correct)
+
+Dangerous directives result: PASS — all matched
+
+======================================================================
+OVERALL CORPUS REPLAY: PASS
+======================================================================
+
+Summary:
+- FP-class examples (4 classes, 6 test lines): 0 matches — all FP classes eliminated
+- Plan file (own step text with instructional phrases): 0 matches — no self-triggering
+- Dangerous directives (6 synthetic line-start imperatives): 6/6 matched — safety net intact
