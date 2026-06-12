@@ -9,7 +9,7 @@
 ## Commits
 
 1. **governance root:** `c8eca1b` — session wrap 2026-06-12 s2: Phase 3 cutover [13]-[20] + reliability queue [21]-[24] — LESSONS (Position A composition), baton, FORWARD row 21, lifecycle artifacts, pointer bumps [25]
-2. **bellows worktree:** this commit — docs: session wrap s2 FORWARD row 21 + dev log [25]
+2. **bellows worktree:** `28de50f` — docs: session wrap s2 FORWARD row 21 + dev log [25]
 
 ## Notes
 
