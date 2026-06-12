@@ -16,7 +16,7 @@
 | 4 | 2026-05-22 | Worktree teardown cherry-pick conflict when local `main` has uncommitted `PROJECT_STATUS.md` edits (context in BACKLOG-ARCHIVE.md) | deferred-work | — | open |
 | 5 | 2026-05-22 | Parallel-diagnostic cherry-pick conflicts on shared append-only bookkeeping files at teardown (context in BACKLOG-ARCHIVE.md) | deferred-work | — | open |
 | 6 | 2026-05-27 | Verdict-response filename prefix tolerance vs. README convention — investigate matching logic (context in BACKLOG-ARCHIVE.md) | deferred-work | — | open |
-| 7 | 2026-05-27 | `lessons-forge.db` tracked-but-gitignored disposition — commit-on-change vs un-track (context in BACKLOG-ARCHIVE.md) | ceo-decision-fork | — | open |
+| 7 | 2026-05-27 | `lessons-forge.db` tracked-but-gitignored disposition — commit-on-change vs un-track (context in BACKLOG-ARCHIVE.md) | ceo-decision-fork | 30 | closed-by-plan-30 |
 | 8 | 2026-05-28 | `stop_prose` false-positive on `do not proceed` inside Rule 20 instructional prose — closed 2026-06-12: subsumed by row 17 fix (diagnostic 27) (context in BACKLOG-ARCHIVE.md) | deferred-work | 29 | closed-by-plan-29 |
 | 9 | 2026-05-28 | Pre-deposit plan-lint script for strict-convention strings (context in BACKLOG-ARCHIVE.md) | deferred-work | — | open |
 | 10 | 2026-05-29 | `scope_check` cannot evaluate plans delegating file lists to a referenced blueprint (context in BACKLOG-ARCHIVE.md) | deferred-work | — | open |
