@@ -1,0 +1,65 @@
+Mechanism Landed Check — Per-Plan Diff Baseline Fix
+Run: 2026-06-12 | Plan: 28 | Step: 2 (QA)
+
+=== 1. Baseline Storage at Dispatch Start ===
+
+grep -n "_capture_git_diff\|_parse_diff_stat" bellows.py (callsite lines):
+
+  534:        plan_baseline_sha = _capture_git_diff(wt_path)
+  577:        post_diff = _capture_git_diff(wt_path)
+  578:        files_changed = _parse_diff_stat(post_diff, pre_diff, wt_path)
+  645:            pre_diff = _capture_git_diff(wt_path)
+  687:            post_diff = _capture_git_diff(wt_path)
+  688:            files_changed = _parse_diff_stat(post_diff, pre_diff, wt_path)
+
+Verification:
+- Line 534: plan_baseline_sha captured ONCE at dispatch start via _capture_git_diff(wt_path) ✓
+- Line 535 (from diff): pre_diff = plan_baseline_sha — initial pre_diff set from baseline ✓
+- Lines 577-578: post_diff captured at step end, passed to _parse_diff_stat as first arg ✓
+- Lines 687-688: same pattern for subsequent steps ✓
+
+=== 2. _capture_git_diff Returns HEAD SHA ===
+
+bellows.py:802-822 (Read output):
+  def _capture_git_diff(project_path: str) -> str:
+      ...
+      result = subprocess.run(
+          ["git", "--no-pager", "rev-parse", "HEAD"],   # line 816
+          cwd=project_path, capture_output=True, text=True, timeout=10,
+      )
+
+Matches diagnostic Section 5 Verification Block: _capture_git_diff returns HEAD SHA via git rev-parse HEAD ✓
+
+=== 3. _parse_diff_stat Uses post_diff (per diagnostic Gap row) ===
+
+git diff HEAD~1 -- bellows.py (relevant hunks):
+
+@@ -530,8 +530,9 @@
+-        # Capture pre-step file state
+-        pre_diff = _capture_git_diff(wt_path)
++        # Capture plan diff baseline — stored once at dispatch start (per-plan isolation, plan 28)
++        plan_baseline_sha = _capture_git_diff(wt_path)
++        pre_diff = plan_baseline_sha
+
+@@ -823,16 +824,20 @@ (docstring update)
+-    """Return list of files changed between pre_diff (HEAD SHA before step) and the
+-    current working-tree state, scoped to project_path.
++    """Return list of files changed between pre_diff and post_diff, scoped to project_path.
+
+@@ -848,10 +853,15 @@ (core mechanism change)
++    if post_diff:
++        cmd = ["git", "--no-pager", "diff", "--stat=300", "--relative", pre_diff, post_diff, "--", "."]
++    else:
++        cmd = ["git", "--no-pager", "diff", "--stat=300", "--relative", pre_diff, "--", "."]
+     try:
+         result = subprocess.run(
+-            ["git", "--no-pager", "diff", "--stat=300", "--relative", pre_diff, "--", "."],
+-            cwd=cwd, capture_output=True, text=True, timeout=10,
++            cmd, cwd=cwd, capture_output=True, text=True, timeout=10,
+         )
+
+Verification:
+- _parse_diff_stat now uses post_diff as diff endpoint when non-empty ✓
+- Two-commit diff (pre_diff..post_diff) isolates from concurrent plan changes ✓
+- Empty post_diff falls back to working-tree diff (backward-compatible) ✓
+- Matches diagnostic Section 4 Option A recommendation exactly ✓
