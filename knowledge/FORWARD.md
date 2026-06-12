@@ -30,3 +30,4 @@
 | 18 | 2026-06-11 | Persist partial agent output stream on inactivity-timeout kill (context in BACKLOG-ARCHIVE.md) | deferred-work | 24 | closed-by-plan-24 |
 | 19 | 2026-06-12 | Concurrent-daemon startup recovery race — misclassifies actively-running plan as abandoned (context in BACKLOG-ARCHIVE.md) | deferred-work | 22 | closed-by-plan-22 |
 | 20 | 2026-06-12 | `plans.lifecycle_state` intermediate states (`in_progress`, `awaiting_verdict`) never written (context in BACKLOG-ARCHIVE.md) | deferred-work | 22 | closed-by-plan-22 |
+| 21 | 2026-06-12 | Parallel-plan worktree diff contamination trips scope_check — a concurrent plan's merged artifacts appear in a later-pausing plan's files_changed (observed: plan 19 QA artifacts flagged in plan 20's gate; CEO override required) (context: processed-verdict-20-step-1) | deferred-work | — | open |
