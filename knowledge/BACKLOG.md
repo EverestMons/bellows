@@ -6,6 +6,7 @@
 
 ## Open
 
+- Added 2026-06-12: Concurrent-daemon startup recovery raced an in-flight claim — at 11:31:55 a second daemon instance's recover_half_claimed marked actively-RUNNING plan 7 'abandoned' even though in-progress-executable-7.md existed on disk (expected classification: already_renamed → in_progress). Self-healed at close (close path overwrites lifecycle_state unconditionally), but the misclassification window is real and a collision also risks double-dispatch and double verdict-consumption. Root-cause diagnostic queued (recovery's existence check vs the rename timing; consider a daemon pidfile/single-instance lock). (Observed: plan 7, 2026-06-12; second instance killed at 11:33.)
 
 - Added 2026-06-12: plans.lifecycle_state intermediate states (in_progress, awaiting_verdict) are never written — only close/halt/abandon update the column; a verdict-pending plan reads 'claimed'. Canonical query 3 unaffected (keys on closed_at). Either write intermediate states or document the column as coarse. (Observed: plan 6, 2026-06-12.)
 
