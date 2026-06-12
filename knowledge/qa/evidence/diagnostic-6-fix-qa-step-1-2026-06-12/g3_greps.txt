@@ -1,0 +1,3 @@
+=== G3: record_step_end callsites with turns= ===
+585:                                  cost_usd=parsed.get("cost_usd"), turns=parsed.get("turns"), duration_s=_lc_step_duration)
+695:                                      cost_usd=parsed.get("cost_usd"), turns=parsed.get("turns"), duration_s=_lc_step_duration)

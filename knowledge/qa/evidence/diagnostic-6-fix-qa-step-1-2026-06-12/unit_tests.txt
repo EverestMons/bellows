@@ -1,0 +1,23 @@
+============================= test session starts ==============================
+platform darwin -- Python 3.9.6, pytest-8.4.2, pluggy-1.6.0 -- /Applications/Xcode.app/Contents/Developer/usr/bin/python3
+cachedir: .pytest_cache
+rootdir: /Users/marklehn/Developer/GitHub/bellows/.bellows-worktrees/7
+plugins: anyio-4.12.1, xdist-3.8.0, timeout-2.4.0, cov-7.0.0
+collecting ... collected 8 items
+
+tests/test_diagnostic_6_coverage.py::TestRecoverPlanIdFromFilename::test_recovers_executable_id PASSED [ 12%]
+tests/test_diagnostic_6_coverage.py::TestRecoverPlanIdFromFilename::test_recovers_diagnostic_id PASSED [ 25%]
+tests/test_diagnostic_6_coverage.py::TestRecoverPlanIdFromFilename::test_recovers_qa_id PASSED [ 37%]
+tests/test_diagnostic_6_coverage.py::TestRecoverPlanIdFromFilename::test_legacy_slug_date_name_returns_none_no_exception PASSED [ 50%]
+tests/test_diagnostic_6_coverage.py::TestRecoverPlanIdFromFilename::test_multidigit_id PASSED [ 62%]
+tests/test_diagnostic_6_coverage.py::TestParserTurnsPassthrough::test_num_turns_mapped_to_turns PASSED [ 75%]
+tests/test_diagnostic_6_coverage.py::TestParserTurnsPassthrough::test_turns_none_when_field_absent PASSED [ 87%]
+tests/test_diagnostic_6_coverage.py::TestTurnsReachesDb::test_parsed_turns_lands_in_steps_row PASSED [100%]
+
+=============================== warnings summary ===============================
+../../../../../Library/Python/3.9/lib/python/site-packages/urllib3/__init__.py:35
+  /Users/marklehn/Library/Python/3.9/lib/python/site-packages/urllib3/__init__.py:35: NotOpenSSLWarning: urllib3 v2 only supports OpenSSL 1.1.1+, currently the 'ssl' module is compiled with 'LibreSSL 2.8.3'. See: https://github.com/urllib3/urllib3/issues/3020
+    warnings.warn(
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+========================= 8 passed, 1 warning in 0.16s =========================

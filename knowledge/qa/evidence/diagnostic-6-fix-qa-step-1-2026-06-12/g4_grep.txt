@@ -1,0 +1,2 @@
+=== G4: _id_tag_instruction (fixed transitively by G1) ===
+499:        _id_tag_instruction = f" Tag all commits with [{plan_id}] in the commit message." if plan_id else ""

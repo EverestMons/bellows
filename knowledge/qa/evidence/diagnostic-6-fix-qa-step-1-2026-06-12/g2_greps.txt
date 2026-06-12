@@ -1,0 +1,6 @@
+=== G2: num_turns extraction ===
+12:    turns = raw.get("num_turns")
+
+=== G2: turns in return dict ===
+12:    turns = raw.get("num_turns")
+53:        "turns": turns,
