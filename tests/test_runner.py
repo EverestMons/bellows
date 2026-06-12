@@ -117,6 +117,94 @@ def test_timeout_writes_log_file(tmp_path):
     assert data["error"] == "timeout"
 
 
+def test_timeout_persists_accumulated_output(tmp_path):
+    """Timeout-killed process with accumulated stdout carries output in result_text and log raw_output."""
+    accumulated_output = "line1: agent starting work\nline2: reading files\n"
+    proc = MagicMock()
+    proc.stdout = io.StringIO(accumulated_output)
+    proc.stderr = io.StringIO("")
+    proc.returncode = -9
+    proc.poll = MagicMock(return_value=None)
+    proc.kill = MagicMock()
+
+    call_count = [0]
+    def fake_monotonic():
+        call_count[0] += 1
+        return float(call_count[0])
+
+    with patch("runner.LOGS_DIR", tmp_path), \
+         patch("runner.subprocess.Popen", return_value=proc), \
+         patch("runner.time.monotonic", side_effect=fake_monotonic), \
+         patch("runner.time.sleep"):
+        result = runner.run_step("test", "/tmp", "claude-sonnet-4-6", timeout=1)
+
+    # result_text carries the accumulated output
+    assert "line1: agent starting work" in result["result_text"]
+    assert "line2: reading files" in result["result_text"]
+    assert result["is_error"] is True
+    assert result["error"] == "timeout"
+
+    # Step JSON log carries raw_output
+    log_files = list(tmp_path.glob("*.json"))
+    assert len(log_files) == 1
+    data = json.loads(log_files[0].read_text())
+    assert "line1: agent starting work" in data["raw_output"]
+    assert "line2: reading files" in data["raw_output"]
+
+
+def test_timeout_truncates_output_at_5000(tmp_path):
+    """Timeout output is capped at 5000 characters in both result_text and raw_output."""
+    long_output = "x" * 10000 + "\n"
+    proc = MagicMock()
+    proc.stdout = io.StringIO(long_output)
+    proc.stderr = io.StringIO("")
+    proc.returncode = -9
+    proc.poll = MagicMock(return_value=None)
+    proc.kill = MagicMock()
+
+    call_count = [0]
+    def fake_monotonic():
+        call_count[0] += 1
+        return float(call_count[0])
+
+    with patch("runner.LOGS_DIR", tmp_path), \
+         patch("runner.subprocess.Popen", return_value=proc), \
+         patch("runner.time.monotonic", side_effect=fake_monotonic), \
+         patch("runner.time.sleep"):
+        result = runner.run_step("test", "/tmp", "claude-sonnet-4-6", timeout=1)
+
+    assert len(result["result_text"]) == 5000
+
+    log_files = list(tmp_path.glob("*.json"))
+    data = json.loads(log_files[0].read_text())
+    assert len(data["raw_output"]) == 5000
+
+
+def test_timeout_silent_stall_empty_strings(tmp_path):
+    """Genuinely-silent stall (no output before timeout) yields empty result_text and raw_output, no exception."""
+    proc = MagicMock()
+    proc.stdout = io.StringIO("")
+    proc.stderr = io.StringIO("")
+    proc.returncode = -9
+    proc.poll = MagicMock(return_value=None)
+    proc.kill = MagicMock()
+
+    with patch("runner.LOGS_DIR", tmp_path), \
+         patch("runner.subprocess.Popen", return_value=proc), \
+         patch("runner.time.monotonic", side_effect=[0.0, 0.0, 301.0, 301.0]), \
+         patch("runner.time.sleep"):
+        result = runner.run_step("test", "/tmp", "claude-sonnet-4-6")
+
+    assert result["result_text"] == ""
+    assert result["is_error"] is True
+    assert result["error"] == "timeout"
+
+    log_files = list(tmp_path.glob("*.json"))
+    assert len(log_files) == 1
+    data = json.loads(log_files[0].read_text())
+    assert data["raw_output"] == ""
+
+
 # --- Generic exception (Popen fails to launch) ---
 
 def test_generic_exception_returns_cost_none():

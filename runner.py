@@ -156,6 +156,7 @@ def run_step(
             "timeout_type": timeout_type,
             "elapsed_seconds": round(elapsed, 1),
             "stderr_partial": result_stderr[:5000],
+            "raw_output": result_stdout[:5000],
         })
         return {
             "is_error": True,
@@ -166,7 +167,7 @@ def run_step(
             "ceo_flags": [f"Step timed out ({timeout_type}) after {int(elapsed)}s"],
             "cost_usd": None,
             "stop_reason": "timeout",
-            "result_text": "",
+            "result_text": result_stdout[:5000],
             "permission_denials": [],
             "verdict_requested": {"requested": False, "reason": None},
         }
