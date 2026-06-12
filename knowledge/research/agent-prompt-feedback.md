@@ -23,6 +23,16 @@
 
 4. **Liveness-anchor instructions worked well.** The "post a 1-line Read X. / Drafting Section N." cadence kept the inactivity timer warm throughout a large multi-section investigation.
 
+## 2026-06-12 — status-cli-v2 (Dev Step 1)
+
+1. **Specialist file present in worktree.** `agents/BELLOWS_DEVELOPER.md` existed and was read.
+
+2. **CEO-amended mock override was clear.** The plan explicitly stated that the CEO-amended mock overrides the spec's Mocks A/B, with precise scope: "the COMPLETED TODAY section and the totals footer are REMOVED." This prevented confusion about which mock to target.
+
+3. **SA spec data contract queries were directly usable.** The SQL from the spec (section 4d) worked against the live lifecycle.db with minimal adjustment. The only change needed: extracting basename from `target_project` (stored as full path in DB, displayed as short name in mock).
+
+4. **`with open()` instruction for dev log writing was effective.** Prevents shell interpolation issues with code blocks containing backticks — a real problem when using heredocs in zsh.
+
 ## 2026-06-10 — diagnostic-bellows-silent-deposit-loss-teardown (SA Step 1)
 
 1. **Specialist file absent — eighteenth consecutive occurrence.** Plan references "Read your specialist file first" but no specialist directory exists in worktree. Recommendation unchanged: remove or conditionalize the instruction.
