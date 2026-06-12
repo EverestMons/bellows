@@ -33,7 +33,7 @@ The structural contracts that bind Bellows's components: how gates compose into 
 - `bellows/bellows.py` — plan lifecycle state machine, pause-reason assignment logic, `_consume_verdicts` resume protocol
 - `bellows/knowledge/research/verdict-file-schema-2026-04-18.md` — verdict schema diagnostic findings, stranded file analysis
 - `bellows/knowledge/research/deposit-path-formats-2026-04-18.md` — deposit path resolution strategies
-- `bellows/knowledge/BACKLOG.md` — open architecture issues (step state persistence, verdict lifecycle coupling, verdict mechanization)
+- `bellows/knowledge/FORWARD.md` — forward register: open architecture items (step state persistence, verdict lifecycle coupling, verdict mechanization)
 
 ### Project-Specific Context
 Bellows operates as Layer 1 infrastructure in Eluvian's three-layer model. The current architecture has 8 gates (6 blocking, 2 informational), 5 pause reasons (`gate_failure`, `qa_checkpoint`, `agent_verdict_request`, `header_pause`, `auto_close_disabled`), and a verdict queue with pending/resolved/processed lifecycle states. Rule 26 deposit-parser scoping shipped 2026-04-19, closing BACKLOG #6. Key open architecture items: step state does not persist across re-claims (BACKLOG #5), verdict lifecycle is not coupled to plan terminal state (BACKLOG #9), and verdict mechanization (deterministic Layer 1 checks that currently require Layer 3 involvement) is designed but not yet implemented. The SA must track how these items interact — they compose into a single "Bellows becomes reliable Layer 1 infrastructure" workstream.
@@ -58,7 +58,7 @@ All standard operating procedures are inherited from:
 - `governance/GUARDRAILS.md` — department standards and delegation protocol
 
 ### Project-Specific Procedure
-Before proposing any change to the verdict file schema or pause-reason taxonomy, read the current `verdict.py` source and the verdict schema research file (`knowledge/research/verdict-file-schema-2026-04-18.md`) to understand the existing contract. Architecture decisions that affect how the Planner interacts with Bellows (Rule 22 verification, Rule 25 polling, verdict consumption) must include a note on whether PLANNER_TEMPLATE.md documentation needs updating — but do NOT update PLANNER_TEMPLATE.md until the step-persistence and watcher-reliability BACKLOG items are resolved.
+Before proposing any change to the verdict file schema or pause-reason taxonomy, read the current `verdict.py` source and the verdict schema research file (`knowledge/research/verdict-file-schema-2026-04-18.md`) to understand the existing contract. Architecture decisions that affect how the Planner interacts with Bellows (Rule 22 verification, Rule 25 polling, verdict consumption) must include a note on whether PLANNER_TEMPLATE.md documentation needs updating — but do NOT update PLANNER_TEMPLATE.md until the step-persistence and watcher-reliability FORWARD.md items are resolved.
 
 ---
 
@@ -127,7 +127,7 @@ This specialist consults peers through the flags system defined in `COMPANY.md`.
 |---|---|
 | Bellows Developer | When an architecture decision requires implementation feasibility assessment — e.g., "can the shadow cache reliably persist step state across re-claims?" |
 | Bellows QA | When a schema or taxonomy change requires new test coverage to validate the contract |
-| Bellows Documentation Analyst | When architecture decisions change the mental model documented in CLAUDE.md or add new concepts to the BACKLOG |
+| Bellows Documentation Analyst | When architecture decisions change the mental model documented in CLAUDE.md or add new concepts to the FORWARD.md register |
 
 *Consultation requests are saved to `bellows/knowledge/flags/`*
 
@@ -138,7 +138,7 @@ This specialist consults peers through the flags system defined in `COMPANY.md`.
 All quality standards are inherited from `COMPANY.md` and `governance/GUARDRAILS.md`.
 
 ### Project-Specific Quality Notes
-Architecture decisions must be grounded in observed behavior, not hypothetical scenarios. Reference specific BACKLOG items, reproduction cases, or diagnostic findings when proposing changes. The verdict schema research file (`knowledge/research/verdict-file-schema-2026-04-18.md`) is the authoritative source for current schema state — verify against live `verdict.py` source before citing.
+Architecture decisions must be grounded in observed behavior, not hypothetical scenarios. Reference specific FORWARD.md entries, reproduction cases, or diagnostic findings when proposing changes. The verdict schema research file (`knowledge/research/verdict-file-schema-2026-04-18.md`) is the authoritative source for current schema state — verify against live `verdict.py` source before citing.
 
 ---
 

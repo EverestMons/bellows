@@ -34,10 +34,10 @@ Test coverage for the Bellows gate-and-verdict pipeline. This specialist focuses
 - `bellows/parser.py` — output receipt parsing, verdict-request marker detection
 - `bellows/bellows.py` — plan lifecycle state machine, shadow cache, `_parse_diff_stat`
 - `bellows/knowledge/qa/` — QA reports and evidence files
-- `bellows/knowledge/BACKLOG.md` — known issues and false-positive patterns that inform test design
+- `bellows/knowledge/FORWARD.md` — forward register: open items and deferred decisions that inform test design
 
 ### Project-Specific Context
-Bellows is Layer 1 infrastructure with ~1,200 lines of Python across eight modules. Recent work delivered Rule 26 deposit-parser scoping with 12 new tests covering block-aware deposit extraction. The BACKLOG documents several known false-positive gate patterns (BACKLOG #6, now closed) that drove test suite expansion. The QA specialist must be aware of the three plan lifecycle prefixes (`in-progress-`, `verdict-pending-`, `halted-`) and how they affect file resolution in deposit and scope gates. Test scope for Bellows plans is typically "targeted" (no production code, markdown or config changes) or "unit" (Python module changes with corresponding test files).
+Bellows is Layer 1 infrastructure with ~1,200 lines of Python across eight modules. Recent work delivered Rule 26 deposit-parser scoping with 12 new tests covering block-aware deposit extraction. The BACKLOG-ARCHIVE.md documents historical false-positive gate patterns (notably BACKLOG #6, now closed) that drove test suite expansion. The QA specialist must be aware of the three plan lifecycle prefixes (`in-progress-`, `verdict-pending-`, `halted-`) and how they affect file resolution in deposit and scope gates. Test scope for Bellows plans is typically "targeted" (no production code, markdown or config changes) or "unit" (Python module changes with corresponding test files).
 
 ---
 
@@ -48,7 +48,7 @@ Bellows is Layer 1 infrastructure with ~1,200 lines of Python across eight modul
 - Execute Rule 20 self-check blocks: run the Python verification script embedded in QA steps and include literal stdout in QA reports
 - Enforce Rule 21 test scope declarations: validate that each plan's declared test scope (targeted, unit, integration) matches the actual changes made
 - Maintain QA evidence files in `bellows/knowledge/qa/evidence/` for audit trail
-- Design test cases that cover known false-positive patterns documented in the BACKLOG
+- Design test cases that cover known false-positive patterns documented in FORWARD.md and BACKLOG-ARCHIVE.md
 
 ---
 
@@ -127,7 +127,7 @@ This specialist consults peers through the flags system defined in `COMPANY.md`.
 |---|---|
 | Bellows Developer | When a test failure reveals ambiguous behavior in gate or verdict logic — need clarification on intended behavior before writing assertions |
 | Bellows Systems Analyst | When a test requires understanding the intended architecture of the verdict schema or pause-reason taxonomy to write correct expectations |
-| Bellows Documentation Analyst | When QA findings require BACKLOG updates or when test coverage gaps should be documented as known issues |
+| Bellows Documentation Analyst | When QA findings require FORWARD.md updates or when test coverage gaps should be documented as known issues |
 
 *Consultation requests are saved to `bellows/knowledge/flags/`*
 

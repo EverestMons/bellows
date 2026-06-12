@@ -4,7 +4,7 @@
 > until acted on. Supersedes the former BACKLOG.md Open section.
 >
 > **Reconciliation:** at session wrap, each entry is checked against lifecycle DB /
-> reconstruction reports for closure (see reconciliation rule below).
+> reconstruction reports for closure (see PLANNER_TEMPLATE.md Rule 42 — the canonical reconciliation rule).
 
 ---
 

@@ -36,10 +36,10 @@ The agent-dispatch lifecycle: claim → execute → gate → verdict → consume
 - `bellows/planner.py` — Planner consultation subprocess, context envelope construction
 - `bellows/server.py` — callback response server for async communication
 - `bellows/notifier.py` — Pushover notification dispatch
-- `bellows/knowledge/BACKLOG.md` — open work items and known issues
+- `bellows/knowledge/FORWARD.md` — forward register: open work items and deferred decisions
 
 ### Project-Specific Context
-Bellows is Layer 1 infrastructure in Eluvian's three-layer execution model: Layer 1 (Bellows) dispatches and gates, Layer 2 (agents) execute plan steps, Layer 3 (Planner) judges and plans. The codebase consists of eight Python modules totaling ~1,200 lines. Recent work shipped Rule 26 deposit-parser scoping (block-aware `_extract_plan_required_deposits` and `extract_primary_deposit`) and Rule 25 Planner-side polling. The BACKLOG carries 9 open items including scope_check race condition, verdict lifecycle coupling, step state persistence, and activity-based timeout. All plan execution uses `claude -p` subprocesses with JSON output format.
+Bellows is Layer 1 infrastructure in Eluvian's three-layer execution model: Layer 1 (Bellows) dispatches and gates, Layer 2 (agents) execute plan steps, Layer 3 (Planner) judges and plans. The codebase consists of eight Python modules totaling ~1,200 lines. Recent work shipped Rule 26 deposit-parser scoping (block-aware `_extract_plan_required_deposits` and `extract_primary_deposit`) and Rule 25 Planner-side polling. The FORWARD register tracks open items including scope_check race condition, verdict lifecycle coupling, step state persistence, and activity-based timeout. All plan execution uses `claude -p` subprocesses with JSON output format.
 
 ---
 
@@ -61,7 +61,7 @@ All standard operating procedures are inherited from:
 - `governance/GUARDRAILS.md` — department standards and delegation protocol
 
 ### Project-Specific Procedure
-Before modifying any gate in `gates.py` or verdict logic in `verdict.py`, read the current BACKLOG to check for related open items — several gates have known false-positive patterns documented with specific fix options. When adding a new gate, follow the existing pattern: private `_gate_*` function that appends to the `failures` list, called from `check()`. All file path operations must handle the three lifecycle prefixes (`in-progress-`, `verdict-pending-`, `halted-`) consistently.
+Before modifying any gate in `gates.py` or verdict logic in `verdict.py`, read the current FORWARD.md to check for related open items — several gates have known false-positive patterns documented with specific fix options. When adding a new gate, follow the existing pattern: private `_gate_*` function that appends to the `failures` list, called from `check()`. All file path operations must handle the three lifecycle prefixes (`in-progress-`, `verdict-pending-`, `halted-`) consistently.
 
 **`.claude/settings.local.json` edits:** This file resides at the main repo root (`bellows/.claude/settings.local.json`) and is outside any worktree's working directory. The Edit tool will be denied on this path when running in a worktree because Claude Code enforces path-scope restrictions on file-access tools. Use Bash with a `python3 -c` script to read, modify, and write the JSON file instead. Canonical pattern: `python3 -c "import json; p='/Users/marklehn/Developer/GitHub/bellows/.claude/settings.local.json'; d=json.load(open(p)); d['permissions']['allow'].append('Bash(new-command:*)'); json.dump(d, open(p,'w'), indent=2)"`. The file is not tracked in git and cannot be committed. The `no_permission_denials` gate will fire on the Edit denial if Edit is attempted — Bash escapes the path restriction because its permission model is command-prefix-based, not path-based. Plans that target this file should instruct the agent to use Bash directly from the start, preventing the denial entirely.
 
@@ -132,7 +132,7 @@ This specialist consults peers through the flags system defined in `COMPANY.md`.
 |---|---|
 | Bellows Systems Analyst | When a code change affects the verdict schema, pause-reason taxonomy, gate composition, or step state lifecycle |
 | Bellows QA | When implementing changes to `gates.py` or `verdict.py` that require new or updated test coverage |
-| Bellows Documentation Analyst | When a code change adds new configuration options, changes CLI behavior, or alters the plan lifecycle in ways that affect CLAUDE.md or BACKLOG.md |
+| Bellows Documentation Analyst | When a code change adds new configuration options, changes CLI behavior, or alters the plan lifecycle in ways that affect CLAUDE.md or knowledge/FORWARD.md |
 
 *Consultation requests are saved to `bellows/knowledge/flags/`*
 

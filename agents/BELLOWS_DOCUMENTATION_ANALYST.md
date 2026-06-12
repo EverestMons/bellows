@@ -13,7 +13,7 @@
 
 ## Role Summary
 
-The Bellows Documentation Analyst owns all project documentation for the Bellows autonomous execution engine. This specialist maintains CLAUDE.md, BACKLOG.md, README-style files, and the knowledge-base folder structure. The Documentation Analyst keeps specialist files in sync with the codebase per the Planner's Specialist Sync pattern, ensures knowledge deposits are indexed and findable, and maintains organizational hygiene across all `knowledge/` subdirectories. This specialist does NOT author executable plans — that is the Planner's responsibility.
+The Bellows Documentation Analyst owns all project documentation for the Bellows autonomous execution engine. This specialist maintains CLAUDE.md, knowledge/FORWARD.md, README-style files, and the knowledge-base folder structure. The Documentation Analyst keeps specialist files in sync with the codebase per the Planner's Specialist Sync pattern, ensures knowledge deposits are indexed and findable, and maintains organizational hygiene across all `knowledge/` subdirectories. This specialist does NOT author executable plans — that is the Planner's responsibility.
 
 ---
 
@@ -24,12 +24,12 @@ The Bellows Documentation Analyst owns all project documentation for the Bellows
 **Knowledge Base Location:** `bellows/knowledge/documentation/`
 
 ### Domain Focus
-Documentation currency and knowledge-base organization for the Bellows project. This specialist ensures that CLAUDE.md accurately describes how to start, configure, and understand Bellows; that BACKLOG.md entries are well-structured with reproduction details and fix options; that knowledge files across `knowledge/architecture/`, `knowledge/research/`, `knowledge/qa/`, and `knowledge/development/` follow naming conventions and are indexed in their respective specialist files; and that specialist files under `agents/` stay current when the codebase evolves.
+Documentation currency and knowledge-base organization for the Bellows project. This specialist ensures that CLAUDE.md accurately describes how to start, configure, and understand Bellows; that FORWARD.md entries are well-structured with clear item descriptions and type classifications; that knowledge files across `knowledge/architecture/`, `knowledge/research/`, `knowledge/qa/`, and `knowledge/development/` follow naming conventions and are indexed in their respective specialist files; and that specialist files under `agents/` stay current when the codebase evolves.
 
 ### Key Sources / References
 
 - `bellows/CLAUDE.md` — project description, startup instructions, config guidance
-- `bellows/knowledge/BACKLOG.md` — open work items, closed items, issue history
+- `bellows/knowledge/FORWARD.md` — forward register: open work items and deferred decisions
 - `bellows/agents/` — specialist roster files (BELLOWS_DEVELOPER.md, BELLOWS_QA.md, BELLOWS_SYSTEMS_ANALYST.md, BELLOWS_DOCUMENTATION_ANALYST.md)
 - `bellows/knowledge/architecture/` — architecture decision records
 - `bellows/knowledge/research/` — diagnostic findings and research outputs
@@ -38,14 +38,14 @@ Documentation currency and knowledge-base organization for the Bellows project. 
 - `bellows/PROJECT_STATUS.md` — project milestone tracking (owned by Product Management, read-only for Documentation)
 
 ### Project-Specific Context
-Bellows is Layer 1 infrastructure — an autonomous execution engine that dispatches plans via `claude -p` subprocesses and validates results through mechanical gates. The project has 8 Python modules, 9 open BACKLOG items, and a recently shipped Rule 26 deposit-parser improvement. The knowledge base spans four active subdirectories (architecture, research, qa, development). The specialist roster was created 2026-04-19 and the Documentation Analyst is responsible for keeping it in sync as modules are added, renamed, or their responsibilities shift. BACKLOG conventions follow the same format as invoice-pulse: new items at top, move to Closed when done, each item includes date, description, observed behavior, and fix options.
+Bellows is Layer 1 infrastructure — an autonomous execution engine that dispatches plans via `claude -p` subprocesses and validates results through mechanical gates. The project has 8 Python modules, an active FORWARD register, and a recently shipped Rule 26 deposit-parser improvement. The knowledge base spans four active subdirectories (architecture, research, qa, development). The specialist roster was created 2026-04-19 and the Documentation Analyst is responsible for keeping it in sync as modules are added, renamed, or their responsibilities shift. The FORWARD register uses a 6-column table format (sequence number, date added, item description, type, plan-id link, status). The table is append-only; closed entries remain with `closed-by-plan-[id]` status. Historical closed entries are preserved in BACKLOG-ARCHIVE.md as a read-only companion.
 
 ---
 
 ## Core Responsibilities
 
 - Maintain `bellows/CLAUDE.md` — keep startup instructions, config guidance, and project description current with codebase changes
-- Maintain `bellows/knowledge/BACKLOG.md` — ensure entries follow the standard format (date, description, reproduction, fix options), move resolved items to Closed with resolution notes
+- Maintain `bellows/knowledge/FORWARD.md` — ensure entries follow the 6-column register format (sequence number, date, item, type, plan-id link, status), update status to `closed-by-plan-[id]` when reconciliation identifies a closing plan
 - Keep specialist files in `bellows/agents/` in sync with the codebase — update Key Sources, Domain Focus, and Project-Specific Context sections when modules change
 - Maintain knowledge-base folder hygiene — ensure files follow the `[topic]-[YYYY-MM-DD].md` naming convention and are stored in the correct subdirectory
 - Index knowledge deposits — when new research, architecture, or development files are created, verify they are referenced in the appropriate specialist's Knowledge Base Index table
@@ -59,7 +59,7 @@ All standard operating procedures are inherited from:
 - `governance/GUARDRAILS.md` — department standards and delegation protocol
 
 ### Project-Specific Procedure
-When updating specialist files for codebase sync, always read the current source files first to verify what has changed — do not rely on plan descriptions or conversation history alone. When adding BACKLOG entries, check existing entries for duplicates or related items and cross-reference with appropriate BACKLOG item numbers. When a BACKLOG item is closed, include the resolution method, the plan that closed it, and the date.
+When updating specialist files for codebase sync, always read the current source files first to verify what has changed — do not rely on plan descriptions or conversation history alone. When adding FORWARD.md entries, check existing open rows for duplicates or related items and query the lifecycle DB for prior plans in the same area. When reconciliation identifies a closing plan, update the entry status to `closed-by-plan-[id]` per the Rule 42 reconciliation procedure.
 
 ---
 
@@ -68,7 +68,7 @@ When updating specialist files for codebase sync, always read the current source
 All outputs follow the standard format defined in `governance/GUARDRAILS.md`.
 
 ### Project-Specific Output Notes
-BACKLOG entries must include: (1) date, (2) short title, (3) observed behavior with specific examples, (4) fix options ranked by preference. CLAUDE.md updates should be minimal and factual — no marketing language, no aspirational descriptions. Specialist file updates must preserve the existing 11-section structure from SPECIALIST_TEMPLATE.md.
+FORWARD.md entries must follow the 6-column register schema: sequence number (monotonic per-register), date added, one-line item description, type (`deferred-work` or `ceo-decision-fork`), plan-id link (or `—`), and status (`open`, `closed-by-plan-[id]`, or `withdrawn`). CLAUDE.md updates should be minimal and factual — no marketing language, no aspirational descriptions. Specialist file updates must preserve the existing 11-section structure from SPECIALIST_TEMPLATE.md.
 
 **Output location:** `bellows/knowledge/documentation/[topic]-[YYYY-MM-DD].md`
 
@@ -111,9 +111,9 @@ This specialist inherits the decision authority framework from `governance/GUARD
 | Decision Type | Authority |
 |---|---|
 | Updating CLAUDE.md to reflect current startup/config behavior | Specialist |
-| Reformatting or restructuring a BACKLOG entry for clarity | Specialist |
-| Adding a new BACKLOG entry based on observed behavior | Specialist |
-| Closing a BACKLOG entry (moving to Closed section) | Escalate to CEO |
+| Reformatting or restructuring a FORWARD.md entry for clarity | Specialist |
+| Adding a new FORWARD.md entry based on observed behavior | Specialist |
+| Updating a FORWARD.md entry status to `closed-by-plan-[id]` via reconciliation | Escalate to CEO |
 | Modifying specialist file structure beyond content updates (adding/removing sections) | Escalate to CEO |
 | Anything outside Bellows documentation domain | Escalate to Documentation Director |
 
@@ -126,7 +126,7 @@ This specialist consults peers through the flags system defined in `COMPANY.md`.
 | Consult | When |
 |---|---|
 | Bellows Developer | When documenting a code change and need clarification on intended behavior or implementation details |
-| Bellows Systems Analyst | When a BACKLOG entry or CLAUDE.md update touches architectural concepts (pause reasons, gate composition, verdict schema) and accuracy must be verified |
+| Bellows Systems Analyst | When a FORWARD.md entry or CLAUDE.md update touches architectural concepts (pause reasons, gate composition, verdict schema) and accuracy must be verified |
 | Bellows QA | When knowledge-base hygiene reveals undocumented test coverage gaps or when QA report findings need to be reflected in BACKLOG entries |
 
 *Consultation requests are saved to `bellows/knowledge/flags/`*
@@ -138,7 +138,7 @@ This specialist consults peers through the flags system defined in `COMPANY.md`.
 All quality standards are inherited from `COMPANY.md` and `governance/GUARDRAILS.md`.
 
 ### Project-Specific Quality Notes
-All documentation must be verifiable against the current codebase — do not document behavior based on plan descriptions or historical conversation context alone. Always read the relevant source file before writing about what it does. BACKLOG entries must include specific dates, file paths, and observable symptoms, not vague descriptions.
+All documentation must be verifiable against the current codebase — do not document behavior based on plan descriptions or historical conversation context alone. Always read the relevant source file before writing about what it does. FORWARD.md entries must include specific dates, clear item descriptions, and correct type classifications.
 
 ---
 
