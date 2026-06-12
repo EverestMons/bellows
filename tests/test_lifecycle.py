@@ -3,6 +3,8 @@
 import os
 import sqlite3
 import stat
+from datetime import datetime
+
 import pytest
 import lifecycle
 
@@ -97,6 +99,13 @@ class TestRecoverHalfClaimed:
         # Mint without creating a deposit file on disk
         pid = lifecycle.mint_and_claim("executable", "/proj", "Ghost", "bellows", "small", 1,
                                        "executable-draft-999999.md", db_path=db_path)
+        # Backdate created_at past the age guard window so abandoned branch fires
+        from datetime import timedelta
+        old_ts = (datetime.now() - timedelta(minutes=10)).isoformat()
+        conn = sqlite3.connect(db_path)
+        conn.execute("UPDATE plans SET created_at = ? WHERE id = ?", (old_ts, pid))
+        conn.commit()
+        conn.close()
         actions = lifecycle.recover_half_claimed(str(decisions), db_path=db_path)
         assert len(actions) == 1
         assert actions[0] == (pid, "abandoned")
@@ -123,6 +132,168 @@ class TestRecoverHalfClaimed:
         state = conn.execute("SELECT lifecycle_state FROM plans WHERE id = ?", (pid,)).fetchone()[0]
         conn.close()
         assert state == "in_progress"
+
+
+class TestRecoverCrossProjectIsolation:
+    """G1: recovery must only classify plans belonging to the scanned project."""
+
+    def test_plan_for_project_x_not_touched_when_scanning_project_y(self, tmp_path):
+        db_path = str(tmp_path / "cross.db")
+        lifecycle.init_lifecycle_db(db_path)
+        # Two projects with separate decisions dirs
+        proj_x = tmp_path / "project_x"
+        proj_y = tmp_path / "project_y"
+        decisions_x = proj_x / "knowledge" / "decisions"
+        decisions_y = proj_y / "knowledge" / "decisions"
+        decisions_x.mkdir(parents=True)
+        decisions_y.mkdir(parents=True)
+        # Mint a plan for project X and place its in-progress file in X's dir
+        pid = lifecycle.mint_and_claim(
+            "executable", str(proj_x), "Plan X", "bellows", "small", 1,
+            "executable-draft-001.md", db_path=db_path,
+        )
+        inprog = decisions_x / f"in-progress-executable-{pid}.md"
+        inprog.write_text("# Plan X")
+        # Scan project Y's directory — should NOT touch project X's plan
+        actions = lifecycle.recover_half_claimed(
+            str(decisions_y), db_path=db_path, project_root=str(proj_y),
+        )
+        assert len(actions) == 0
+        # Plan X still claimed (not abandoned, not re-classified)
+        conn = sqlite3.connect(db_path)
+        state = conn.execute(
+            "SELECT lifecycle_state FROM plans WHERE id = ?", (pid,)
+        ).fetchone()[0]
+        conn.close()
+        assert state == "claimed"
+
+    def test_plan_for_project_x_found_when_scanning_project_x(self, tmp_path):
+        db_path = str(tmp_path / "cross2.db")
+        lifecycle.init_lifecycle_db(db_path)
+        proj_x = tmp_path / "project_x"
+        decisions_x = proj_x / "knowledge" / "decisions"
+        decisions_x.mkdir(parents=True)
+        pid = lifecycle.mint_and_claim(
+            "executable", str(proj_x), "Plan X", "bellows", "small", 1,
+            "executable-draft-002.md", db_path=db_path,
+        )
+        inprog = decisions_x / f"in-progress-executable-{pid}.md"
+        inprog.write_text("# Plan X")
+        # Scan project X — should find and classify the plan
+        actions = lifecycle.recover_half_claimed(
+            str(decisions_x), db_path=db_path, project_root=str(proj_x),
+        )
+        assert len(actions) == 1
+        assert actions[0] == (pid, "already_renamed")
+
+
+class TestRecoverAgeGuard:
+    """G3: plans younger than 5 minutes must not be marked abandoned."""
+
+    def test_young_plan_not_abandoned(self, tmp_path):
+        db_path = str(tmp_path / "age.db")
+        lifecycle.init_lifecycle_db(db_path)
+        decisions = tmp_path / "decisions"
+        decisions.mkdir()
+        # Mint a plan (created_at = now, so < 5 min old)
+        pid = lifecycle.mint_and_claim(
+            "executable", "/proj", "Young", "bellows", "small", 1,
+            "executable-draft-young.md", db_path=db_path,
+        )
+        actions = lifecycle.recover_half_claimed(str(decisions), db_path=db_path)
+        assert len(actions) == 1
+        assert actions[0] == (pid, "skipped_too_recent")
+        # State must remain claimed
+        conn = sqlite3.connect(db_path)
+        state = conn.execute(
+            "SELECT lifecycle_state FROM plans WHERE id = ?", (pid,)
+        ).fetchone()[0]
+        conn.close()
+        assert state == "claimed"
+
+    def test_old_plan_is_abandoned(self, tmp_path):
+        db_path = str(tmp_path / "age2.db")
+        lifecycle.init_lifecycle_db(db_path)
+        decisions = tmp_path / "decisions"
+        decisions.mkdir()
+        pid = lifecycle.mint_and_claim(
+            "executable", "/proj", "Old", "bellows", "small", 1,
+            "executable-draft-old.md", db_path=db_path,
+        )
+        # Backdate created_at to 10 minutes ago
+        from datetime import timedelta
+        old_ts = (datetime.now() - timedelta(minutes=10)).isoformat()
+        conn = sqlite3.connect(db_path)
+        conn.execute("UPDATE plans SET created_at = ? WHERE id = ?", (old_ts, pid))
+        conn.commit()
+        conn.close()
+        actions = lifecycle.recover_half_claimed(str(decisions), db_path=db_path)
+        assert len(actions) == 1
+        assert actions[0] == (pid, "abandoned")
+        conn = sqlite3.connect(db_path)
+        state = conn.execute(
+            "SELECT lifecycle_state FROM plans WHERE id = ?", (pid,)
+        ).fetchone()[0]
+        conn.close()
+        assert state == "abandoned"
+
+
+class TestFlockGuard:
+    """G2: acquiring the flock twice must fail the second acquisition."""
+
+    def test_second_flock_acquisition_fails(self, tmp_path):
+        import fcntl
+        lock_path = str(tmp_path / ".bellows.lock")
+        fd1 = open(lock_path, "w")
+        fcntl.flock(fd1, fcntl.LOCK_EX | fcntl.LOCK_NB)
+        # Second acquisition in same process must raise
+        fd2 = open(lock_path, "w")
+        with pytest.raises((BlockingIOError, OSError)):
+            fcntl.flock(fd2, fcntl.LOCK_EX | fcntl.LOCK_NB)
+        fd2.close()
+        fd1.close()
+
+    def test_flock_released_after_fd_close(self, tmp_path):
+        import fcntl
+        lock_path = str(tmp_path / ".bellows.lock")
+        fd1 = open(lock_path, "w")
+        fcntl.flock(fd1, fcntl.LOCK_EX | fcntl.LOCK_NB)
+        fd1.close()
+        # After close, a new fd should acquire successfully
+        fd2 = open(lock_path, "w")
+        fcntl.flock(fd2, fcntl.LOCK_EX | fcntl.LOCK_NB)  # should not raise
+        fd2.close()
+
+
+class TestInProgressAfterClaim:
+    """G4: mark_plan_state('in_progress') is called after claim rename."""
+
+    def test_mark_in_progress_updates_state(self):
+        pid = lifecycle.mint_and_claim(
+            "executable", "/proj", "T", "bellows", "small", 1, "e.md"
+        )
+        # Simulate what bellows.py now does after shutil.move
+        lifecycle.mark_plan_state(pid, "in_progress")
+        conn = sqlite3.connect(lifecycle.LIFECYCLE_DB_PATH)
+        state = conn.execute(
+            "SELECT lifecycle_state FROM plans WHERE id = ?", (pid,)
+        ).fetchone()[0]
+        conn.close()
+        assert state == "in_progress"
+
+    def test_in_progress_plan_not_selected_by_recovery(self, tmp_path):
+        """Once in_progress, recovery must not re-process the plan."""
+        db_path = str(tmp_path / "g4.db")
+        lifecycle.init_lifecycle_db(db_path)
+        decisions = tmp_path / "decisions"
+        decisions.mkdir()
+        pid = lifecycle.mint_and_claim(
+            "executable", "/proj", "T", "bellows", "small", 1,
+            "executable-draft-g4.md", db_path=db_path,
+        )
+        lifecycle.mark_plan_state(pid, "in_progress", db_path=db_path)
+        actions = lifecycle.recover_half_claimed(str(decisions), db_path=db_path)
+        assert len(actions) == 0
 
 
 class TestDbPath:

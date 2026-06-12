@@ -187,23 +187,35 @@ def mark_plan_state(plan_id, state, closed_at=None, db_path=None):
     conn.close()
 
 
-def recover_half_claimed(decisions_dir, db_path=None):
+def recover_half_claimed(decisions_dir, db_path=None, project_root=None,
+                         age_guard_seconds=300):
     """Startup recovery for half-claimed plans (blueprint 2.4a).
 
     For each plans row with lifecycle_state='claimed' whose
     in-progress-<type>-<id>.md is absent:
       - If deposit_placeholder_name still exists on disk, re-execute the rename.
-      - Otherwise mark the row 'abandoned'.
+      - Otherwise mark the row 'abandoned' (unless younger than age_guard_seconds).
+
+    When project_root is provided, only plans whose target_project matches
+    are considered — prevents cross-project misclassification (G1 fix).
 
     Returns list of (plan_id, action) tuples describing what was done.
     """
     path = db_path or LIFECYCLE_DB_PATH
     conn = sqlite3.connect(path)
-    rows = conn.execute(
-        "SELECT id, type, deposit_placeholder_name FROM plans WHERE lifecycle_state = 'claimed'"
-    ).fetchall()
+    if project_root:
+        rows = conn.execute(
+            "SELECT id, type, deposit_placeholder_name, created_at "
+            "FROM plans WHERE lifecycle_state = 'claimed' AND target_project = ?",
+            (project_root,),
+        ).fetchall()
+    else:
+        rows = conn.execute(
+            "SELECT id, type, deposit_placeholder_name, created_at "
+            "FROM plans WHERE lifecycle_state = 'claimed'"
+        ).fetchall()
     actions = []
-    for plan_id, plan_type, deposit_name in rows:
+    for plan_id, plan_type, deposit_name, created_at in rows:
         expected_name = f"in-progress-{plan_type}-{plan_id}.md"
         expected_path = os.path.join(decisions_dir, expected_name)
         if os.path.exists(expected_path):
@@ -225,6 +237,19 @@ def recover_half_claimed(decisions_dir, db_path=None):
                 )
                 actions.append((plan_id, "re_renamed"))
                 continue
+        # Age guard (G3): skip plans younger than age_guard_seconds
+        if created_at:
+            try:
+                age = (datetime.now() - datetime.fromisoformat(created_at)).total_seconds()
+                if age < age_guard_seconds:
+                    logger.info(
+                        f"recovery: plan {plan_id} younger than "
+                        f"{age_guard_seconds // 60}m — skipping"
+                    )
+                    actions.append((plan_id, "skipped_too_recent"))
+                    continue
+            except (ValueError, TypeError):
+                pass  # malformed timestamp — fall through to abandon
         # Neither the in-progress file nor the deposit exists — abandon
         conn.execute(
             "UPDATE plans SET lifecycle_state = 'abandoned', closed_at = ? WHERE id = ?",

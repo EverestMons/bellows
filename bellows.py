@@ -1,5 +1,6 @@
 """Entry point. Initializes watcher and starts the orchestration loop."""
 
+import fcntl
 import json
 import logging
 from logging.handlers import RotatingFileHandler
@@ -456,6 +457,11 @@ def run_plan(plan_path: str, config: dict, response_server: server.ResponseServe
             id_canonical = f"{plan_type}-{plan_id}.md"
             inprogress_path = os.path.join(plan_dir, f"in-progress-{id_canonical}")
             shutil.move(plan_path, inprogress_path)
+            # G4: write in_progress state immediately after claim rename
+            try:
+                lifecycle.mark_plan_state(plan_id, "in_progress")
+            except Exception:
+                logger.warning(f"lifecycle: failed to write in_progress for plan {plan_id}")
             plan_path = inprogress_path
             # Update derived names to reflect the id-canonical form
             base_filename = id_canonical
@@ -1818,12 +1824,25 @@ if __name__ == "__main__":
     _file_handler.setFormatter(logging.Formatter('%(message)s'))
     _bellows_logger.addHandler(_file_handler)
 
+    # G2: flock single-instance guard — must precede all DB/recovery/watcher work
+    _lock_path = str(BELLOWS_ROOT / ".bellows.lock")
+    _lock_fd = open(_lock_path, "w")
+    try:
+        fcntl.flock(_lock_fd, fcntl.LOCK_EX | fcntl.LOCK_NB)
+    except (BlockingIOError, OSError):
+        _log("ERROR", "another Bellows instance holds .bellows.lock — exiting")
+        sys.exit(1)
+    # _lock_fd intentionally kept open — kernel releases flock on process death
+
     migrate_db()
     lifecycle.init_lifecycle_db()
     # Startup recovery: re-rename half-claimed plans (blueprint 2.4a)
     for decisions_path in config.get("watched_projects", []):
         if os.path.isdir(decisions_path):
-            actions = lifecycle.recover_half_claimed(decisions_path)
+            _project_root = str(Path(decisions_path).parent.parent)
+            actions = lifecycle.recover_half_claimed(
+                decisions_path, project_root=_project_root,
+            )
             for pid, action in actions:
                 _log("INFO", f"lifecycle recovery: plan {pid} — {action}")
     notifier.init_notifications(config)
