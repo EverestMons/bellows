@@ -98,7 +98,7 @@ def test_no_warn_manual_bootstrap_not_in_watched_dir():
 # --- Test 6: warn — STOP-prose in bellows mode ---
 
 def test_warn_stop_prose_in_bellows_mode():
-    text = _plan_text("bellows", step_body="The agent must do not proceed until verified.")
+    text = _plan_text("bellows", step_body="Do not proceed until verified.")
     header = _header_for(text)
     config = _config_with_watched()
     plan_path = "/tmp/project/knowledge/decisions/executable-test.md"
@@ -111,7 +111,7 @@ def test_warn_stop_prose_in_bellows_mode():
 # --- Test 7: no warn — STOP-prose in manual_bootstrap mode ---
 
 def test_no_warn_stop_prose_in_manual_bootstrap_mode():
-    text = _plan_text("manual_bootstrap", step_body="The agent must do not proceed until verified.")
+    text = _plan_text("manual_bootstrap", step_body="Do not proceed until verified.")
     header = _header_for(text)
     config = _config_with_watched("/tmp/other/knowledge/decisions")
     plan_path = "/tmp/project/knowledge/decisions/executable-test.md"
@@ -172,7 +172,7 @@ def test_stop_prose_in_deposits_block_excluded():
 # --- Test 12: multiple STOP-prose patterns detected ---
 
 def test_multiple_stop_prose_patterns_detected():
-    step_body = "The agent should STOP. here.\nThen wait for confirmation before continuing."
+    step_body = "STOP. Wait here.\nDo not proceed until verified."
     text = _plan_text("bellows", step_body=step_body)
     header = _header_for(text)
     config = _config_with_watched()
@@ -324,3 +324,112 @@ def test_header_field_types_warn_surfaces_in_validate_at_claim():
     assert result["rejected"] is False
     type_warns = [w for w in result["warnings"] if w["check"] == "header_field_type"]
     assert len(type_warns) == 1
+
+
+# ===================================================================
+# V4 — stop_prose pattern narrowing (plan 29)
+# ===================================================================
+
+# --- Test 25: FP Class 1 — PLANNER_TEMPLATE step-boundary language no longer fires ---
+
+def test_stop_prose_fp_class1_planner_template_no_fire():
+    """The canonical PLANNER_TEMPLATE step-boundary block no longer triggers stop_prose."""
+    step_body = (
+        "Do the work.\n\n"
+        "**STOP. Do NOT proceed to Step 2. Do NOT move the plan to Done. "
+        "Wait for CEO verdict before continuing.**"
+    )
+    text = _plan_text("bellows", step_body=step_body)
+    header = _header_for(text)
+    config = _config_with_watched()
+    plan_path = "/tmp/project/knowledge/decisions/executable-test.md"
+    result = validators.validate_at_claim(header, plan_path, config, text)
+    stop_warns = [w for w in result["warnings"] if w["check"] == "stop_prose"]
+    assert len(stop_warns) == 0
+
+
+# --- Test 26: FP Class 2 — error-handling prose no longer fires ---
+
+def test_stop_prose_fp_class2_error_handling_no_fire():
+    """Mid-sentence error-handling 'STOP.' no longer triggers stop_prose."""
+    step_body = (
+        "If an error occurs, capture the full traceback and STOP.\n"
+        "Any failure -> flag and stop."
+    )
+    text = _plan_text("bellows", step_body=step_body)
+    header = _header_for(text)
+    config = _config_with_watched()
+    plan_path = "/tmp/project/knowledge/decisions/executable-test.md"
+    result = validators.validate_at_claim(header, plan_path, config, text)
+    stop_warns = [w for w in result["warnings"] if w["check"] == "stop_prose"]
+    assert len(stop_warns) == 0
+
+
+# --- Test 27: FP Class 3 — Rule 20 instructional prose no longer fires ---
+
+def test_stop_prose_fp_class3_rule20_instructional_no_fire():
+    """Conditional 'do not proceed' in Rule 20 instructional prose no longer triggers."""
+    step_body = "If the block prints FAILED, do not proceed with closure."
+    text = _plan_text("bellows", step_body=step_body)
+    header = _header_for(text)
+    config = _config_with_watched()
+    plan_path = "/tmp/project/knowledge/decisions/executable-test.md"
+    result = validators.validate_at_claim(header, plan_path, config, text)
+    stop_warns = [w for w in result["warnings"] if w["check"] == "stop_prose"]
+    assert len(stop_warns) == 0
+
+
+# --- Test 28: FP Class 4 — self-referencing prose no longer fires ---
+
+def test_stop_prose_fp_class4_self_referencing_no_fire():
+    """Self-referencing prose mentioning 'do not proceed' no longer triggers."""
+    step_body = "The stop_prose validator checks for do not proceed in step bodies."
+    text = _plan_text("bellows", step_body=step_body)
+    header = _header_for(text)
+    config = _config_with_watched()
+    plan_path = "/tmp/project/knowledge/decisions/executable-test.md"
+    result = validators.validate_at_claim(header, plan_path, config, text)
+    stop_warns = [w for w in result["warnings"] if w["check"] == "stop_prose"]
+    assert len(stop_warns) == 0
+
+
+# --- Test 29: positive — dangerous STOP. at line start still fires ---
+
+def test_stop_prose_dangerous_stop_at_line_start_fires():
+    """A bare STOP. imperative at line start still triggers stop_prose."""
+    step_body = "STOP. Wait for further instructions."
+    text = _plan_text("bellows", step_body=step_body)
+    header = _header_for(text)
+    config = _config_with_watched()
+    plan_path = "/tmp/project/knowledge/decisions/executable-test.md"
+    result = validators.validate_at_claim(header, plan_path, config, text)
+    stop_warns = [w for w in result["warnings"] if w["check"] == "stop_prose"]
+    assert len(stop_warns) == 1
+
+
+# --- Test 30: positive — dangerous "Do not proceed" at line start still fires ---
+
+def test_stop_prose_dangerous_do_not_proceed_at_line_start_fires():
+    """A bare 'Do not proceed' imperative at line start still triggers stop_prose."""
+    step_body = "Do not proceed until the CEO has reviewed."
+    text = _plan_text("bellows", step_body=step_body)
+    header = _header_for(text)
+    config = _config_with_watched()
+    plan_path = "/tmp/project/knowledge/decisions/executable-test.md"
+    result = validators.validate_at_claim(header, plan_path, config, text)
+    stop_warns = [w for w in result["warnings"] if w["check"] == "stop_prose"]
+    assert len(stop_warns) == 1
+
+
+# --- Test 31: regression — removed 'wait for confirmation' pattern no longer triggers ---
+
+def test_stop_prose_removed_wait_for_confirmation_no_trigger():
+    """The removed 'wait for confirmation' pattern no longer triggers anything."""
+    step_body = "Wait for confirmation before continuing with the next step."
+    text = _plan_text("bellows", step_body=step_body)
+    header = _header_for(text)
+    config = _config_with_watched()
+    plan_path = "/tmp/project/knowledge/decisions/executable-test.md"
+    result = validators.validate_at_claim(header, plan_path, config, text)
+    stop_warns = [w for w in result["warnings"] if w["check"] == "stop_prose"]
+    assert len(stop_warns) == 0

@@ -10,9 +10,8 @@ from typing import Optional
 
 
 STOP_PROSE_PATTERNS = [
-    re.compile(r"STOP\.", re.IGNORECASE),
-    re.compile(r"wait for confirmation", re.IGNORECASE),
-    re.compile(r"do not proceed", re.IGNORECASE),
+    re.compile(r"^\s*(?:>\s*)*STOP\.", re.IGNORECASE),
+    re.compile(r"^\s*(?:>\s*)*(?:do )?not proceed", re.IGNORECASE),
 ]
 
 
