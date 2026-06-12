@@ -127,3 +127,11 @@ Classified all 131 BACKLOG.md entries across Open (24) and Closed (107) sections
 
 ### Flags for Next Step
 - Step 2 performs `git rm knowledge/BACKLOG.md` — FORWARD.md and BACKLOG-ARCHIVE.md must be committed first
+
+---
+
+## STEP 2 — Trim (BACKLOG.md deletion)
+
+- **Deletion commit:** `cc7ef5e` — `chore: BACKLOG.md retired — FORWARD.md + BACKLOG-ARCHIVE.md per Phase 3 cutover (implements diagnostic 13) [17]`
+- **`git status`:** clean — `nothing to commit, working tree clean`
+- **`ls knowledge/ | grep -i backlog`:** `BACKLOG-ARCHIVE.md` only (BACKLOG.md absent)
