@@ -1,0 +1,27 @@
+Trim Landed Check
+=================
+Date: 2026-06-12 | Plan: 17 | Agent: Bellows QA | Step: 3
+
+Check 1 — BACKLOG.md absent from working tree
+
+  $ ls knowledge/ | grep -i backlog
+  BACKLOG-ARCHIVE.md
+
+  Only BACKLOG-ARCHIVE.md present. BACKLOG.md absent.
+  Result: PASS
+
+Check 2 — Deletion commit carries [17] tag
+
+  $ git log --oneline cc7ef5e -1
+  cc7ef5e chore: BACKLOG.md retired — FORWARD.md + BACKLOG-ARCHIVE.md per Phase 3 cutover (implements diagnostic 13) [17]
+
+  Commit message ends with [17] — plan id tag present.
+  Result: PASS
+
+Check 3 — Deletion commit is the correct operation
+
+  The commit cc7ef5e removed knowledge/BACKLOG.md via git rm as specified in Step 2.
+  Working tree is clean (confirmed by Step 2 dev log entry: "nothing to commit, working tree clean").
+  Result: PASS
+
+OVERALL: PASS — BACKLOG.md deleted, commit tagged [17].

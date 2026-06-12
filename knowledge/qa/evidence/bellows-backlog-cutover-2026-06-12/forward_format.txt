@@ -1,0 +1,61 @@
+Forward Register Format Conformance Check
+==========================================
+Date: 2026-06-12 | Plan: 17 | Agent: Bellows QA | Step: 3
+
+Spec source: governance diagnostic Section 4
+(reporting-phase-3-pre-cutover-unknowns-2026-06-12.md)
+
+File under test: knowledge/FORWARD.md
+
+Check 1 — Title line
+  Spec:     # [Project Name] — Forward Register
+  Actual:   # Bellows — Forward Register
+  Result:   PASS
+
+Check 2 — Standing-queue preamble blockquote
+  Spec requires blockquote starting with:
+    > Standing queue of deferred work and parked CEO decisions. Persists across sessions
+    > until acted on. Supersedes the former BACKLOG.md Open section.
+    >
+    > **Reconciliation:** at session wrap, each entry is checked against lifecycle DB /
+    > reconstruction reports for closure (see reconciliation rule below).
+  Actual (lines 3-7): matches spec verbatim
+  Result:   PASS
+
+Check 3 — Separator (---) after preamble
+  Spec:     --- on its own line after blockquote
+  Actual:   line 9: ---
+  Result:   PASS
+
+Check 4 — 6-column table header
+  Spec:     | # | Added | Item | Type | Plan-id link | Status |
+  Actual:   | # | Added | Item | Type | Plan-id link | Status |
+  Result:   PASS
+
+Check 5 — Table separator row
+  Spec:     |---|---|---|---|---|---|
+  Actual:   |---|---|---|---|---|---|
+  Result:   PASS
+
+Check 6 — Row count
+  Expected: 20 open-class entries (per independent classification)
+  Actual:   20 data rows (numbered 1-20)
+  Result:   PASS
+
+Check 7 — Chronological ordering
+  Row 1:  2026-05-13
+  Row 20: 2026-06-12
+  All intermediate rows monotonically non-decreasing by date
+  Result:   PASS
+
+Check 8 — Type values
+  Spec allows: deferred-work | ceo-decision-fork
+  Actual:  18 deferred-work, 2 ceo-decision-fork (#2, #7)
+  No invalid type values found
+  Result:   PASS
+
+Check 9 — Status values
+  All 20 rows: open
+  Result:   PASS
+
+OVERALL: PASS — FORWARD.md conforms to diagnostic Section 4 spec in all 9 checks.

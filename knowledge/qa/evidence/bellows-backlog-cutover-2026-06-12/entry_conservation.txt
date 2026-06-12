@@ -1,0 +1,87 @@
+Entry Conservation Check
+========================
+Date: 2026-06-12 | Plan: 17 | Agent: Bellows QA | Step: 3
+
+Source: BACKLOG-ARCHIVE.md body (byte-identical to deleted knowledge/BACKLOG.md)
+Target: knowledge/FORWARD.md
+
+Independent classification of all 24 Open-section top-level bullets:
+
+| # | Date | Short title | Classification | Justification |
+|---|---|---|---|---|
+| 1 | 2026-06-12 | Concurrent-daemon startup recovery race | truly-open | No shipped/closed annotation |
+| 2 | 2026-06-12 | lifecycle_state intermediate states | truly-open | No shipped/closed annotation |
+| 3 | 2026-06-11 | Persist partial agent output on timeout kill | truly-open | No shipped/closed annotation |
+| 4 | 2026-06-08 | Deposits to non-auto-staged dirs | closed-inline | Title: "SHIPPED 2026-06-10"; body: "FIX: shipped both shapes" |
+| 5 | 2026-06-08 | scope_check continuous-run multi-step FP | truly-open | No shipped/closed annotation |
+| 6 | 2026-06-08 | stop_prose WARN on error-handling prose | truly-open | No shipped/closed annotation |
+| 7 | 2026-06-06 | __file__-relative root resolution | shipped-with-open-residual | "Status 2026-06-08 (audit + Plan A SHIPPED)" but 3 latent instances deferred by CEO disposition |
+| 8 | 2026-06-06 | 16 stale halted-* plans | closed-inline | "Status 2026-06-08 (DONE — archived)" |
+| 9 | 2026-06-01 | QA report U+FFFD mojibake | truly-open | No shipped/closed annotation; cosmetic fix pending |
+| 10 | 2026-05-31 | Worktree teardown/resume regression (family) | shipped-with-open-residual | Gaps 1b, 1c, 2a, teardown-b SHIPPED; residual: Gap 2(b)/(c) + Gap 3, both DEFERRED |
+| 11 | 2026-05-30 | Worktree re-creation on resume | truly-open | No inline shipped/closed annotation; subsumed into family but no closure marker |
+| 12 | 2026-05-29 | scope_check blueprint-delegation FP | truly-open | Sibling directory-mention FP shipped but this half open |
+| 13 | 2026-05-29 | stop_prose matches PLANNER_TEMPLATE | truly-open | No shipped/closed annotation; recurrence noted 2026-06-03 |
+| 14 | 2026-05-28 | stop_prose "do not proceed" in prose | truly-open | No shipped/closed annotation |
+| 15 | 2026-05-28 | Pre-deposit plan-lint script | truly-open | No shipped/closed annotation; deferred until 4th occurrence |
+| 16 | 2026-05-27 | Verdict-response filename prefix | truly-open | No shipped/closed annotation; investigation pending |
+| 17 | 2026-05-27 | lessons-forge.db disposition | truly-open | CEO decision fork between a/b |
+| 18 | 2026-05-27 | Orphan-guard renormalization | closed-inline | "[RETIRED 2026-05-31 -> moved to Closed; premise overturned...]" |
+| 19 | 2026-05-22 | Worktree teardown cherry-pick conflict | truly-open | No shipped/closed annotation |
+| 20 | 2026-05-22 | Parallel-diagnostic cherry-pick conflicts | truly-open | No shipped/closed annotation; deferred |
+| 21 | 2026-05-21 | Bellows status UI | truly-open | CEO design shape decision pending |
+| 22 | 2026-05-21 | Deposits parser parenthetical qualifiers | truly-open | No shipped/closed annotation; deferred |
+| 23 | 2026-05-21 | No-match verdict warning rate-limit | closed-inline | "[SHIPPED 2026-05-31 -> moved to Closed.]" |
+| 24 | 2026-05-13 | _extract_step_text regex case-sensitivity | truly-open | No shipped/closed annotation; deferred |
+
+Closed Section: 107 entries (all carry explicit "Closed YYYY-MM-DD:" prefixes).
+Zero misfiled-open entries found (every Closed-section entry describes completed/shipped work).
+
+Totals:
+
+| Classification | Count |
+|---|---|
+| truly-open | 18 |
+| shipped-with-open-residual | 2 |
+| closed-inline | 4 |
+| misfiled-open | 0 |
+| closed (Closed section) | 107 |
+| Total | 131 |
+
+Open-class total: 18 + 2 = 20
+
+Conservation verification against FORWARD.md:
+
+| FORWARD # | Date | BACKLOG # | Match |
+|---|---|---|---|
+| 1 | 2026-05-13 | 24 (_extract_step_text regex) | confirmed |
+| 2 | 2026-05-21 | 21 (Bellows status UI) | confirmed |
+| 3 | 2026-05-21 | 22 (Deposits parser) | confirmed |
+| 4 | 2026-05-22 | 19 (Worktree teardown cherry-pick) | confirmed |
+| 5 | 2026-05-22 | 20 (Parallel-diagnostic cherry-pick) | confirmed |
+| 6 | 2026-05-27 | 16 (Verdict-response prefix) | confirmed |
+| 7 | 2026-05-27 | 17 (lessons-forge.db) | confirmed |
+| 8 | 2026-05-28 | 14 (stop_prose "do not proceed") | confirmed |
+| 9 | 2026-05-28 | 15 (Pre-deposit plan-lint) | confirmed |
+| 10 | 2026-05-29 | 12 (scope_check blueprint) | confirmed |
+| 11 | 2026-05-29 | 13 (stop_prose PLANNER_TEMPLATE) | confirmed |
+| 12 | 2026-05-30 | 11 (Worktree re-creation) | confirmed |
+| 13 | 2026-05-31 | 10 (Worktree teardown/resume residual) | confirmed |
+| 14 | 2026-06-01 | 9 (QA report U+FFFD) | confirmed |
+| 15 | 2026-06-06 | 7 (__file__ residual) | confirmed |
+| 16 | 2026-06-08 | 5 (scope_check continuous-run) | confirmed |
+| 17 | 2026-06-08 | 6 (stop_prose WARN) | confirmed |
+| 18 | 2026-06-11 | 3 (Persist partial output) | confirmed |
+| 19 | 2026-06-12 | 1 (Concurrent-daemon startup) | confirmed |
+| 20 | 2026-06-12 | 2 (lifecycle_state) | confirmed |
+
+Leak check:
+- closed-inline entries (#4, #8, #18, #23): NONE appear in FORWARD.md — PASS
+- closed-section entries (107): NONE appear in FORWARD.md — PASS
+
+Agreement with dev log (Step 1):
+- Dev log classification: 18 truly-open, 2 shipped-with-open-residual, 4 closed-inline, 0 misfiled-open
+- QA classification: 18 truly-open, 2 shipped-with-open-residual, 4 closed-inline, 0 misfiled-open
+- Result: EXACT MATCH on all five classes
+
+OVERALL: PASS — 20 open-class entries conserved, 0 closed/closed-inline leaks, independent classification matches dev log.

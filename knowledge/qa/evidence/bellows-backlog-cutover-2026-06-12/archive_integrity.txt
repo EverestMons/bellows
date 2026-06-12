@@ -1,0 +1,31 @@
+Archive Integrity Check
+=======================
+Date: 2026-06-12 | Plan: 17 | Agent: Bellows QA | Step: 3
+
+Method: Extract BACKLOG-ARCHIVE.md body (lines 7+, after frozen-header block),
+diff against the original BACKLOG.md from git history.
+
+Pre-deletion reference: commit e1cc52c (last commit where BACKLOG.md existed)
+
+Header block (lines 1-6 of BACKLOG-ARCHIVE.md):
+  Line 1: # Bellows — BACKLOG Archive (frozen 2026-06-12)
+  Line 2: (blank)
+  Line 3: > Read-only freeze of BACKLOG.md at the Reporting Phase 3 cutover...
+  Line 4: (blank)
+  Line 5: ---
+  Line 6: (blank)
+
+Commands executed:
+  $ tail -n +7 knowledge/BACKLOG-ARCHIVE.md > /tmp/archive_body.md
+  $ git show e1cc52c:knowledge/BACKLOG.md > /tmp/original_backlog.md
+  $ diff /tmp/original_backlog.md /tmp/archive_body.md
+  Exit code: 0
+
+Byte counts:
+  $ wc -c /tmp/original_backlog.md /tmp/archive_body.md
+  183650 /tmp/original_backlog.md
+  183650 /tmp/archive_body.md
+
+Result: Zero diff, byte counts identical (183,650 bytes each).
+
+OVERALL: PASS — archive body is byte-identical to the deleted BACKLOG.md.
