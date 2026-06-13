@@ -1,0 +1,21 @@
+=== Parser Channel Verification ===
+
+1. Extraction with feedback present:
+   ledger_updates key present: True
+   feedback value (first 80 chars): '**2026-06-13 — test-plan (DEV Step 1)**\n1. This is feedback entry one.\n2. This i'...
+   ceo_flags also extracted: ['Some CEO flag']
+
+2. Absent ### Ledger Updates section:
+   ledger_updates key present: True
+   feedback is None: True
+
+3. None/N/A exclusion:
+   feedback is None when text is "None": True
+
+4. Pattern mirror check (ceo_flags vs ledger_updates):
+   ceo_flags regex:       r"### Flags for CEO\s*\n(.*?)(?=\n##|\Z)"
+   ledger_updates regex:  r"### Ledger Updates\s*\n(.*?)(?=\n## |\Z)"
+   Both: re.DOTALL, exclude None/N/A, section-bounded
+   Non-interference: ceo_flags and ledger_updates extracted independently
+
+=== All parser channel checks passed ===

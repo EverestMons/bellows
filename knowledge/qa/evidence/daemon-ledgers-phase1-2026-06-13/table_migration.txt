@@ -1,0 +1,10 @@
+=== prompt_feedback table columns ===
+  id              INTEGER    nullable=True  default=None  pk=1
+  plan_id         INTEGER    nullable=True  default=None  pk=0
+  step_number     INTEGER    nullable=True  default=None  pk=0
+  agent           TEXT       nullable=True  default=None  pk=0
+  project         TEXT       nullable=False  default=None  pk=0
+  entry_text      TEXT       nullable=False  default=None  pk=0
+  created_at      TEXT       nullable=False  default=None  pk=0
+
+=== Re-init idempotency: columns unchanged = True ===

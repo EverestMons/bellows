@@ -1,0 +1,18 @@
+ bellows.py                                         |  39 +++++++
+ ...n-ledgers-phase1-feedback-dev-log-2026-06-13.md |  96 ++++++++++++++++
+ knowledge/research/agent-prompt-feedback.md        |  12 ++
+ lifecycle.py                                       |  59 ++++++++++
+ parser.py                                          |  18 +++
+ tests/test_bellows.py                              |  95 ++++++++++++++++
+ tests/test_lifecycle.py                            | 125 +++++++++++++++++++++
+ tests/test_parser.py                               | 118 +++++++++++++++++++
+ 8 files changed, 562 insertions(+)
+---
+Scope verification: only in-scope files changed
+
+In-scope code files: bellows.py, lifecycle.py, parser.py
+In-scope test files: tests/test_bellows.py, tests/test_lifecycle.py, tests/test_parser.py
+Deposits: knowledge/development/daemon-ledgers-phase1-feedback-dev-log-2026-06-13.md, knowledge/research/agent-prompt-feedback.md
+
+PROJECT_STATUS/FORWARD check:
+(no output = untouched)

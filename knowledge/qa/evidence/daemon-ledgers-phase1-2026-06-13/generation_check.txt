@@ -1,0 +1,28 @@
+=== Generation Function Verification ===
+
+1. generate_feedback_md output for /test/project (3 rows, newest-first):
+---
+# Agent Prompt Feedback
+
+Third entry text (newest)
+
+Second entry text (middle)
+
+First entry text (oldest)
+
+
+---
+
+2. Entry ordering (should be newest-first):
+   [0] Third entry text (newest)
+   [1] Second entry text (middle)
+   [2] First entry text (oldest)
+   Order verified: newest → oldest
+
+3. Project filter:
+   Other project entry appears: False
+   Confirmed: filtered to /test/project only
+
+4. Read-only check: row count before=4, after=4, unchanged=True
+
+=== All generation checks passed ===
