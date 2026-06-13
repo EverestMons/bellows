@@ -3,6 +3,18 @@
 **Date:** 2026-05-29
 **Plans:** diagnostic-claude-settings-permission-gap-2026-05-22, executable-pre-scan-orphan-guard-2026-05-22, executable-bellows-tier-1-batch-2026-05-21, executable-bellows-expected-keys-narrow-2026-05-21, diagnostic-bellows-expected-keys-warning-2026-05-21, diagnostic-bellows-isinstance-asymmetry-2026-05-21, executable-deposit-exists-path-form-normalization-2026-05-27, executable-disable-autoupdater-2026-05-27, diagnostic-planner-authored-contract-validation-2026-05-20, diagnostic-bash-gate-vs-guardrails-2026-05-20, executable-plan-write-time-lessons-reread-2026-05-13, diagnostic-pre-scan-orphan-warn-flood-2026-05-22, executable-remove-pre-scan-processed-rename-v2-2026-05-24, executable-rename-first-ordering-2026-05-24, executable-settings-local-bash-fallback-doc-2026-05-22, executable-mcp-read-class-tools-extension-2026-05-25, diagnostic-file-change-audit-false-negative-2026-05-25, executable-file-change-audit-fix-2026-05-25, executable-planner-template-rule-21-contract-change-2026-05-26, diagnostic-verdict-ledger-gate-result-preservation-2026-05-26, executable-verdict-ledger-gate-result-preservation-2026-05-26, executable-fix-f-guard-removal-2026-05-26, diagnostic-bellows-hardening-batch-freshness-2026-05-26, executable-bellows-hardening-batch-items-1-3-4-2026-05-26, executable-bellows-test-isolation-conftest-2026-05-26, diagnostic-leftover-after-ship-tooling-scope-2026-05-26, executable-leftover-after-ship-tooling-blueprint-2026-05-26, executable-leftover-after-ship-tooling-implementation-2026-05-26, executable-freshness-check-algorithm-v2-blueprint-2026-05-27, executable-freshness-check-algorithm-v2-blueprint-retry-2026-05-27, executable-freshness-check-algorithm-v2-implementation-2026-05-27, executable-worktree-precheck-hardening-2026-05-29
 
+## 2026-06-13 — worktree-teardown-resume-cluster (SA Step 1)
+
+1. **Specialist file present in worktree.** `agents/BELLOWS_SYSTEMS_ANALYST.md` was read successfully — second consecutive occurrence with the specialist file available.
+
+2. **Cluster diagnostic structure worked well.** Grouping four FORWARD rows into one diagnostic with per-row root causes in Section 3 produced a coherent analysis. The shared teardown/resume surface meant findings in Sections 1–2 directly informed all four rows without redundant investigation.
+
+3. **Prior-work plan lineage was valuable.** Reading the five Done/ plans gave critical context — particularly `executable-bellows-teardown-merge-model-2026-06-05`, which revealed that the cherry-pick mechanism described in Rows 4/5 no longer exists. Without this context, the diagnostic would have analyzed a stale mechanism.
+
+4. **Line number anchors were accurate.** `_create_worktree` anchor (893) and `_teardown_worktree` anchor (1103) both matched exactly. The "re-verify by grep" caveat remains good practice.
+
+5. **BACKLOG-ARCHIVE entries provided sufficient incident detail.** Each row's archive entry contained reproduction scenarios, error messages, and resolution status that grounded the root-cause analysis without needing to review raw logs.
+
 ## 2026-06-12 — partial-output-timeout-loss (SA Step 1)
 
 1. **Specialist file present in worktree.** `agents/BELLOWS_SYSTEMS_ANALYST.md` existed and was read. First occurrence in recent memory where the specialist file was actually available — likely because this worktree includes the agents/ directory.
