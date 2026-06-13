@@ -1,0 +1,26 @@
+Backfill accounting verification
+==================================
+Date: 2026-06-13
+
+Dev log claim: "37 backfilled, 0 left NULL"
+
+Live DB query:
+  sqlite3 "file:lifecycle.db?mode=ro"
+  "SELECT COUNT(*) AS total,
+         SUM(CASE WHEN plan_doc_ref IS NOT NULL THEN 1 ELSE 0 END) AS populated,
+         SUM(CASE WHEN plan_doc_ref IS NULL THEN 1 ELSE 0 END) AS null_count
+   FROM plans"
+
+Result: 37|37|0
+
+  Total rows:     37
+  Populated:      37
+  NULL:            0
+
+Dev log says 37 backfilled, 0 NULL — MATCHES live DB exactly.
+
+NULL row analysis: No NULL rows exist. All 37 rows resolved to a valid path.
+This is consistent with the project history — all plans have corresponding files
+in Done/, halted-, or in-progress- locations.
+
+PASS.

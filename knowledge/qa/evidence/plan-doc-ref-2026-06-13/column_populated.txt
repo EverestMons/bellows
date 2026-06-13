@@ -1,0 +1,54 @@
+Column present + populated — sqlite3 query (read-only)
+=======================================================
+Executed: sqlite3 "file:/Users/marklehn/Developer/GitHub/bellows/lifecycle.db?mode=ro"
+         "SELECT id, type, lifecycle_state, plan_doc_ref FROM plans ORDER BY id"
+Date: 2026-06-13
+
+1|executable|abandoned|knowledge/decisions/halted-executable-1.md
+2|executable|abandoned|knowledge/decisions/halted-executable-2.md
+3|executable|closed|knowledge/decisions/Done/executable-3.md
+4|executable|closed|knowledge/decisions/Done/executable-4.md
+5|executable|closed|knowledge/decisions/Done/executable-5.md
+6|diagnostic|closed|knowledge/decisions/Done/diagnostic-6.md
+7|executable|closed|knowledge/decisions/Done/executable-7.md
+8|executable|closed|knowledge/decisions/Done/executable-8.md
+9|diagnostic|closed|knowledge/decisions/Done/diagnostic-9.md
+10|executable|closed|knowledge/decisions/Done/executable-10.md
+11|executable|closed|knowledge/decisions/Done/executable-11.md
+12|executable|closed|knowledge/decisions/Done/executable-12.md
+13|diagnostic|closed|knowledge/decisions/Done/diagnostic-13.md
+14|executable|closed|knowledge/decisions/Done/executable-14.md
+15|executable|closed|knowledge/decisions/Done/executable-15.md
+16|executable|closed|knowledge/decisions/Done/executable-16.md
+17|executable|closed|knowledge/decisions/Done/executable-17.md
+18|executable|closed|knowledge/decisions/Done/executable-18.md
+19|executable|closed|knowledge/decisions/Done/executable-19.md
+20|executable|closed|knowledge/decisions/Done/executable-20.md
+21|diagnostic|closed|knowledge/decisions/Done/diagnostic-21.md
+22|executable|closed|knowledge/decisions/Done/executable-22.md
+23|diagnostic|closed|knowledge/decisions/Done/diagnostic-23.md
+24|executable|closed|knowledge/decisions/Done/executable-24.md
+25|executable|closed|knowledge/decisions/Done/executable-25.md
+26|executable|closed|knowledge/decisions/Done/executable-26.md
+27|diagnostic|closed|knowledge/decisions/Done/diagnostic-27.md
+28|executable|closed|knowledge/decisions/Done/executable-28.md
+29|executable|closed|knowledge/decisions/Done/executable-29.md
+30|executable|closed|knowledge/decisions/Done/executable-30.md
+31|executable|halted|knowledge/decisions/halted-executable-31.md
+32|executable|closed|knowledge/decisions/Done/executable-32.md
+33|executable|closed|knowledge/decisions/Done/executable-33.md
+34|diagnostic|closed|knowledge/decisions/Done/diagnostic-34.md
+35|executable|closed|knowledge/decisions/Done/executable-35.md
+36|executable|closed|knowledge/decisions/Done/executable-36.md
+37|executable|in_progress|knowledge/decisions/in-progress-executable-37.md
+
+Verification:
+- All 37 rows have plan_doc_ref populated (0 NULL).
+- Closed rows carry knowledge/decisions/Done/<type>-<id>.md — CONFIRMED.
+- Basename matches <type>-<id> pattern — CONFIRMED.
+- Halted rows carry knowledge/decisions/halted-<type>-<id>.md — CONFIRMED.
+- In-progress row (37) carries knowledge/decisions/in-progress-executable-37.md — CONFIRMED.
+
+Spot-check: executable-36.md
+  ls -la /Users/marklehn/Developer/GitHub/bellows/knowledge/decisions/Done/executable-36.md
+  -rw-r--r--@ 1 marklehn staff 6358 Jun 12 23:54 — FILE EXISTS ON DISK.

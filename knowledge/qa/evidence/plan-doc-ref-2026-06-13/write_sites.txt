@@ -1,0 +1,35 @@
+Writer covers all transitions — plan_doc_ref grep
+==================================================
+Executed: rg plan_doc_ref bellows.py -n -B5 -A2
+Date: 2026-06-13
+
+Site 1 — Claim (in_progress) — bellows.py:463
+  461:  _claim_doc_ref = os.path.relpath(inprogress_path, project_path)
+  463:  lifecycle.mark_plan_state(plan_id, "in_progress", plan_doc_ref=_claim_doc_ref)
+
+Site 2 — Auto-close (closed) — bellows.py:794
+  793:  _done_doc_ref = os.path.relpath(done_path, project_path)
+  794:  lifecycle.mark_plan_state(plan_id, "closed", closed_at=..., plan_doc_ref=_done_doc_ref)
+
+Site 3 — Verdict halt / worktree teardown blocked (halted) — bellows.py:1606
+  1605: _halt_doc_ref = os.path.relpath(halted_path, _halt_project_root)
+  1606: lifecycle.mark_plan_state(_lc_plan_id, "halted", closed_at=..., plan_doc_ref=_halt_doc_ref)
+
+Site 4 — Verdict continue-to-done (closed) — bellows.py:1639
+  1638: _done_doc_ref = os.path.relpath(done_path, _done_project_root)
+  1639: lifecycle.mark_plan_state(_lc_plan_id, "closed", closed_at=..., plan_doc_ref=_done_doc_ref)
+
+Site 5 — Verdict stop / halt (halted) — bellows.py:1668
+  1667: _stop_doc_ref = os.path.relpath(halted_path, _stop_project_root)
+  1668: lifecycle.mark_plan_state(_lc_plan_id, "halted", closed_at=..., plan_doc_ref=_stop_doc_ref)
+
+lifecycle.py writer:
+  177: def mark_plan_state(plan_id, state, closed_at=None, plan_doc_ref=None, db_path=None):
+  186-188: if plan_doc_ref is not None: sets.append("plan_doc_ref = ?"); params.append(plan_doc_ref)
+
+Recovery paths in lifecycle.py:
+  230: UPDATE plans SET lifecycle_state = 'in_progress', plan_doc_ref = ? WHERE id = ?  (already_renamed)
+  242: UPDATE plans SET lifecycle_state = 'in_progress', plan_doc_ref = ? WHERE id = ?  (re_renamed)
+  (abandoned: leaves plan_doc_ref unchanged — no file on disk)
+
+Summary: All 5 state-transitioning callsites + 2 recovery paths pass plan_doc_ref. PASS.

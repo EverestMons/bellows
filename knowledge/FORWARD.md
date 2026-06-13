@@ -31,3 +31,4 @@
 | 19 | 2026-06-12 | Concurrent-daemon startup recovery race — misclassifies actively-running plan as abandoned (context in BACKLOG-ARCHIVE.md) | deferred-work | 22 | closed-by-plan-22 |
 | 20 | 2026-06-12 | `plans.lifecycle_state` intermediate states (`in_progress`, `awaiting_verdict`) never written (context in BACKLOG-ARCHIVE.md) | deferred-work | 22 | closed-by-plan-22 |
 | 21 | 2026-06-12 | Parallel-plan worktree diff contamination trips scope_check — a concurrent plan's merged artifacts appear in a later-pausing plan's files_changed (observed: plan 19 QA artifacts flagged in plan 20's gate; CEO override required) (context: processed-verdict-20-step-1) | deferred-work | 28 | closed-by-plan-28 |
+| 22 | 2026-06-13 | Forge reporter `_resolve_plan_file` should PREFER the stored `plans.plan_doc_ref` over filesystem-probe derivation (falls back to derivation only for NULL/legacy rows) | deferred-work | — | open |

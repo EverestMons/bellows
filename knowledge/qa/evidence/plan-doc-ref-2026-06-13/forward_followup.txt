@@ -1,0 +1,17 @@
+FORWARD row appended — Forge reader follow-up
+===============================================
+Date: 2026-06-13
+
+Appended row 22 to knowledge/FORWARD.md:
+
+diff --git a/knowledge/FORWARD.md b/knowledge/FORWARD.md
+index 51ec636..333d9cb 100644
+--- a/knowledge/FORWARD.md
++++ b/knowledge/FORWARD.md
+@@ -31,3 +31,4 @@
+ | 19 | 2026-06-12 | Concurrent-daemon startup recovery race ...
+ | 20 | 2026-06-12 | `plans.lifecycle_state` intermediate states ...
+ | 21 | 2026-06-12 | Parallel-plan worktree diff contamination ...
++| 22 | 2026-06-13 | Forge reporter `_resolve_plan_file` should PREFER the stored `plans.plan_doc_ref` over filesystem-probe derivation (falls back to derivation only for NULL/legacy rows) | deferred-work | — | open |
+
+PASS.
