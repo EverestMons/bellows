@@ -3,6 +3,18 @@
 **Date:** 2026-05-29
 **Plans:** diagnostic-claude-settings-permission-gap-2026-05-22, executable-pre-scan-orphan-guard-2026-05-22, executable-bellows-tier-1-batch-2026-05-21, executable-bellows-expected-keys-narrow-2026-05-21, diagnostic-bellows-expected-keys-warning-2026-05-21, diagnostic-bellows-isinstance-asymmetry-2026-05-21, executable-deposit-exists-path-form-normalization-2026-05-27, executable-disable-autoupdater-2026-05-27, diagnostic-planner-authored-contract-validation-2026-05-20, diagnostic-bash-gate-vs-guardrails-2026-05-20, executable-plan-write-time-lessons-reread-2026-05-13, diagnostic-pre-scan-orphan-warn-flood-2026-05-22, executable-remove-pre-scan-processed-rename-v2-2026-05-24, executable-rename-first-ordering-2026-05-24, executable-settings-local-bash-fallback-doc-2026-05-22, executable-mcp-read-class-tools-extension-2026-05-25, diagnostic-file-change-audit-false-negative-2026-05-25, executable-file-change-audit-fix-2026-05-25, executable-planner-template-rule-21-contract-change-2026-05-26, diagnostic-verdict-ledger-gate-result-preservation-2026-05-26, executable-verdict-ledger-gate-result-preservation-2026-05-26, executable-fix-f-guard-removal-2026-05-26, diagnostic-bellows-hardening-batch-freshness-2026-05-26, executable-bellows-hardening-batch-items-1-3-4-2026-05-26, executable-bellows-test-isolation-conftest-2026-05-26, diagnostic-leftover-after-ship-tooling-scope-2026-05-26, executable-leftover-after-ship-tooling-blueprint-2026-05-26, executable-leftover-after-ship-tooling-implementation-2026-05-26, executable-freshness-check-algorithm-v2-blueprint-2026-05-27, executable-freshness-check-algorithm-v2-blueprint-retry-2026-05-27, executable-freshness-check-algorithm-v2-implementation-2026-05-27, executable-worktree-precheck-hardening-2026-05-29
 
+## 2026-06-13 — daemon-owned-ledgers-design (SA Step 1)
+
+1. **Specialist file present in worktree.** `agents/BELLOWS_SYSTEMS_ANALYST.md` was read successfully — third consecutive occurrence with the specialist file available.
+
+2. **Cross-diagnostic continuity was valuable.** Diagnostic 41's findings (the established root cause) provided the foundation without re-investigation. The "re-verify and complete" instruction for the ledger set was well-calibrated — it directed verification without re-deriving.
+
+3. **PLANNER_TEMPLATE rule text provided by subagent was essential.** The full text of Rules 8, 23, 26, and 42 (located at governance root, outside the worktree) grounded every governance edit-site identification. Without the exact line numbers and text, the Section 5 blast radius table would have been approximate.
+
+4. **The "design only, no implementation" scope was correctly enforced.** Read-only investigation with no code changes. The diagnostic context's explicit "DESIGN investigation ONLY — author no implementation" instruction prevented scope creep into prototype code.
+
+5. **Over-scoped: BACKLOG-ARCHIVE.md and LESSONS.md.** Both turned out to be non-issues (frozen and out-of-scope respectively). The diagnostic prompt could have excluded them from the census with a pre-filter: "verify that BACKLOG-ARCHIVE is still frozen" and "verify that LESSONS.md is in the bellows git tree."
+
 ## 2026-06-13 — worktree-teardown-resume-cluster (SA Step 1)
 
 1. **Specialist file present in worktree.** `agents/BELLOWS_SYSTEMS_ANALYST.md` was read successfully — second consecutive occurrence with the specialist file available.
