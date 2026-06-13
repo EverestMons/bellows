@@ -1,0 +1,22 @@
+Full Test Suite — Final 15 Lines
+=================================
+Date: 2026-06-13 | Plan: 45 | Step: 2 (QA)
+
+tests/test_rule_26_deposit_parser.py .........                           [ 77%]
+tests/test_runner.py ......................                              [ 80%]
+tests/test_runner_parser.py .........                                    [ 82%]
+tests/test_status.py ......................                              [ 85%]
+tests/test_validators.py ...............................                 [ 90%]
+tests/test_verdict.py .......................................            [ 96%]
+tests/test_worktree.py .......................                           [100%]
+
+=============================== warnings summary ===============================
+../../../../../Library/Python/3.9/lib/python/site-packages/urllib3/__init__.py:35
+  /Users/marklehn/Library/Python/3.9/lib/python/site-packages/urllib3/__init__.py:35: NotOpenSSLWarning: urllib3 v2 only supports OpenSSL 1.1.1+, currently the 'ssl' module is compiled with 'LibreSSL 2.8.3'. See: https://github.com/urllib3/urllib3/issues/3020
+    warnings.warn(
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+======================= 650 passed, 1 warning in 16.61s ========================
+
+Result: 650 passed, 0 failures.
+New test count: 17 (10 parser + 7 bellows) — matches dev log.

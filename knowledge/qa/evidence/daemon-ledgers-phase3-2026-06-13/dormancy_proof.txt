@@ -1,0 +1,42 @@
+Dormancy / Coexistence Proof
+=============================
+Date: 2026-06-13 | Plan: 45 | Step: 2 (QA)
+
+1. COEXISTENCE TEST — forward handler SKIPS when FORWARD.md in files_changed:
+
+Command: python3 -m pytest tests/test_bellows.py -k "test_skips_when_forward_in_files_changed" -v
+Result: PASSED
+
+The test passes files_changed=["knowledge/FORWARD.md"] and verifies:
+- _append_forward_row() is NOT called
+- FORWARD.md content is unchanged
+- Coexistence check: `if any("FORWARD.md" in f for f in files_changed)` at bellows.py:1147
+
+2. GREP: No worktree-side FORWARD.md write in runner.py:
+
+Command: grep -n "FORWARD.md" runner.py
+Result: No matches found
+
+runner.py does NOT write to FORWARD.md — the only FORWARD.md write path is in
+bellows.py::_append_forward_row(), which runs daemon-post-merge on main.
+
+3. NO REAL FORWARD.md MODIFIED by this plan:
+
+Command: git diff HEAD~1 -- knowledge/FORWARD.md
+Result: (empty — no changes)
+
+knowledge/FORWARD.md was NOT modified by the Phase 3 commit. The mechanism is
+DORMANT — it only activates when an agent emits a `#### Forward Register`
+subsection in its Output Receipt, AND FORWARD.md is NOT in files_changed.
+
+4. COEXISTENCE PATTERN (bellows.py:1145-1152):
+   # --- Phase 3: forward register → append new row to FORWARD.md on main ---
+   forward_text = ledger.get("forward")
+   if any("FORWARD.md" in f for f in files_changed):
+       _log("INFO", "ledger: agent wrote FORWARD.md old-style, skipping daemon write", ...)
+   elif forward_text:
+       _append_forward_row(project_path, plan_id, forward_text)
+
+Conclusion: Phase 3 is DORMANT. No governance edits have flipped agents to use
+the `#### Forward Register` channel. The handler exists but will not fire until
+the governance activation follow-on.

@@ -1,0 +1,40 @@
+Scope Check — No Scope Bleed
+==============================
+Date: 2026-06-13 | Plan: 45 | Step: 2 (QA)
+
+Command: git diff HEAD~1 --stat
+
+ bellows.py                                         |  62 ++++++
+ ...on-ledgers-phase3-forward-dev-log-2026-06-13.md | 108 ++++++++++
+ knowledge/research/agent-prompt-feedback.md        |  12 ++
+ parser.py                                          |  16 +-
+ tests/test_bellows.py                              | 225 +++++++++++++++++++++
+ tests/test_parser.py                               | 120 +++++++++++
+ 6 files changed, 540 insertions(+), 3 deletions(-)
+
+Scope analysis:
+- bellows.py: IN SCOPE (Phase 3 handler + _append_forward_row function)
+- parser.py: IN SCOPE (Forward Register extraction)
+- tests/test_bellows.py: IN SCOPE (7 new forward handler tests)
+- tests/test_parser.py: IN SCOPE (10 new parser extraction tests)
+- knowledge/development/daemon-ledgers-phase3-forward-dev-log-2026-06-13.md: DEPOSIT (dev log)
+- knowledge/research/agent-prompt-feedback.md: ALLOWLISTED (standard feedback append)
+
+All 6 files are either in-scope code files, expected deposits, or allowlisted.
+No out-of-scope files modified.
+
+Rule 42 check:
+- No changes to Rule 42 references or FORWARD row status changes
+- Command: git diff HEAD~1 -- bellows.py | grep -i "rule.*42\|Rule_42\|Rule_8\|feedback_protocol"
+- Result: No matches
+
+Rule 8 check:
+- No changes to Planner status-update behavior
+- PROJECT_STATUS.md update mechanism (Phase 2) unchanged
+
+Planner status-update behavior:
+- The Planner's STATUS-UPDATE edits (open → closed-by-plan-X) happen at session-wrap
+  directly on main. This plan does NOT modify that behavior. Only NEW-ROW additions
+  to FORWARD.md are moved to the daemon-post-merge path.
+
+Conclusion: Scope is exactly as declared in the plan and dev log. No scope bleed.

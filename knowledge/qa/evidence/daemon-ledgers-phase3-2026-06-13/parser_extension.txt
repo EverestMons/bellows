@@ -1,0 +1,30 @@
+Parser Extension — Forward Register Extraction + Regression Check
+==================================================================
+Date: 2026-06-13 | Plan: 45 | Step: 2 (QA)
+
+Command: python3 -m pytest tests/test_parser.py -k "Forward" -v
+
+tests/test_parser.py::TestForwardRegisterExtraction::test_extracts_forward_register PASSED [ 10%]
+tests/test_parser.py::TestForwardRegisterExtraction::test_extracts_forward_additions_heading PASSED [ 20%]
+tests/test_parser.py::TestForwardRegisterExtraction::test_extracts_forward_bare_heading PASSED [ 30%]
+tests/test_parser.py::TestForwardRegisterExtraction::test_forward_none_when_absent PASSED [ 40%]
+tests/test_parser.py::TestForwardRegisterExtraction::test_forward_none_for_none_value PASSED [ 50%]
+tests/test_parser.py::TestForwardRegisterExtraction::test_forward_none_for_na_value PASSED [ 60%]
+tests/test_parser.py::TestForwardRegisterExtraction::test_forward_key_always_present PASSED [ 70%]
+tests/test_parser.py::TestForwardRegisterExtraction::test_forward_with_feedback_and_project_status PASSED [ 80%]
+tests/test_parser.py::TestForwardRegisterExtraction::test_forward_before_other_subsections PASSED [ 90%]
+tests/test_parser.py::TestForwardRegisterExtraction::test_feedback_and_project_status_still_extract PASSED [100%]
+
+10 passed, 15 deselected, 1 warning in 0.12s
+
+Verification:
+- #### Forward Register heading: extracts correctly (test 1)
+- #### FORWARD Additions heading: extracts correctly (test 2)
+- #### FORWARD bare heading: extracts correctly (test 3)
+- Absent subsection: returns None (test 4)
+- "None" text: returns None (test 5)
+- "N/A" text: returns None (test 6)
+- forward key always present in dict (test 7)
+- All three phases coexist (test 8)
+- Order independence (test 9)
+- REGRESSION CHECK: feedback + project_status still extract when forward is present (test 10) — PASSED

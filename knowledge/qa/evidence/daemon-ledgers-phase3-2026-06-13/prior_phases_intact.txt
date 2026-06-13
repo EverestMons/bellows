@@ -1,0 +1,46 @@
+Phases 1+2 Intact — Additive Extension Only
+=============================================
+Date: 2026-06-13 | Plan: 45 | Step: 2 (QA)
+
+1. FEEDBACK HANDLER (Phase 1) — UNCHANGED:
+
+Command: git diff HEAD~1 -- bellows.py | grep -E "^[+-].*(_append_feedback|feedback)"
+Result: No matching diff lines — Phase 1 feedback handler not touched.
+
+Phase 1 handler at bellows.py:1121-1134:
+- Coexistence check: `if any("agent-prompt-feedback.md" in f for f in files_changed)`
+- Action: `lifecycle.record_prompt_feedback()` to DB
+- Status: UNCHANGED by Phase 3 commit
+
+2. PROJECT STATUS HANDLER (Phase 2) — UNCHANGED:
+
+Command: git diff HEAD~1 -- bellows.py | grep -E "^[+-].*(_append_project_status|project_status)"
+Result: No matching diff lines — Phase 2 project_status handler not touched.
+
+Phase 2 handler at bellows.py:1136-1143:
+- Coexistence check: `if any("PROJECT_STATUS.md" in f for f in files_changed)`
+- Action: `_append_project_status()` daemon-post-merge
+- Status: UNCHANGED by Phase 3 commit
+
+3. _append_project_status FUNCTION (Phase 2) — UNCHANGED:
+
+Function at bellows.py:1158-1201 — not in git diff for HEAD~1.
+
+4. TEST REGRESSION CHECK:
+
+Command: python3 -m pytest tests/test_bellows.py -k "test_feedback_and_project_status_still_work" -v
+Result: PASSED
+
+Command: python3 -m pytest tests/test_parser.py -k "test_feedback_and_project_status_still_extract" -v
+Result: PASSED
+
+Both Phase 1 and Phase 2 paths verified intact via dedicated regression tests.
+
+5. STRUCTURE OF _apply_ledger_updates (bellows.py:1106-1155):
+   - Phase 1 block (lines 1121-1134): feedback → DB — UNCHANGED
+   - Phase 2 block (lines 1136-1143): project_status → PROJECT_STATUS.md — UNCHANGED
+   - Phase 3 block (lines 1145-1152): forward → FORWARD.md — NEW (additive only)
+   - Shared try/except wrapper: UNCHANGED
+
+Conclusion: Phase 3 is a purely additive extension. Phase 1 and Phase 2 handlers,
+their coexistence checks, and their helper functions are completely untouched.
