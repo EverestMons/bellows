@@ -645,3 +645,223 @@ class TestLogAndContinueContract:
         db_path, pid, _ = self._make_readonly_db(tmp_path)
         lifecycle.record_derivations(pid, [1], db_path=db_path)
         self._restore(db_path)
+
+
+# ---------------------------------------------------------------------------
+# plan_doc_ref tests — migration, writer, claim→close, backfill
+# ---------------------------------------------------------------------------
+
+class TestPlanDocRefMigration:
+    """(a) migration adds the column idempotently."""
+
+    def test_column_present_on_fresh_db(self, tmp_path):
+        db_path = str(tmp_path / "fresh.db")
+        lifecycle.init_lifecycle_db(db_path)
+        conn = sqlite3.connect(db_path)
+        cols = {row[1] for row in conn.execute("PRAGMA table_info(plans)")}
+        conn.close()
+        assert "plan_doc_ref" in cols
+
+    def test_column_added_to_existing_db(self, tmp_path):
+        db_path = str(tmp_path / "old.db")
+        # Create an A-era DB without plan_doc_ref
+        conn = sqlite3.connect(db_path)
+        conn.execute("PRAGMA journal_mode=WAL")
+        conn.execute("""CREATE TABLE id_sequence (
+            id INTEGER PRIMARY KEY CHECK (id = 1),
+            next_id INTEGER NOT NULL DEFAULT 1
+        )""")
+        conn.execute("INSERT INTO id_sequence (id, next_id) VALUES (1, 1)")
+        conn.execute("""CREATE TABLE plans (
+            id INTEGER PRIMARY KEY,
+            type TEXT NOT NULL CHECK (type IN ('diagnostic', 'executable', 'qa')),
+            target_project TEXT NOT NULL,
+            title TEXT,
+            dispatch_mode TEXT,
+            tier TEXT,
+            lifecycle_state TEXT NOT NULL DEFAULT 'claimed',
+            total_steps INTEGER,
+            deposit_placeholder_name TEXT,
+            created_at TEXT NOT NULL,
+            closed_at TEXT
+        )""")
+        conn.commit()
+        conn.close()
+        # Run init — should add plan_doc_ref via ALTER TABLE
+        lifecycle.init_lifecycle_db(db_path)
+        conn = sqlite3.connect(db_path)
+        cols = {row[1] for row in conn.execute("PRAGMA table_info(plans)")}
+        conn.close()
+        assert "plan_doc_ref" in cols
+
+    def test_idempotent_double_init(self, tmp_path):
+        db_path = str(tmp_path / "idem.db")
+        lifecycle.init_lifecycle_db(db_path)
+        lifecycle.init_lifecycle_db(db_path)  # should not raise
+        conn = sqlite3.connect(db_path)
+        cols = [row[1] for row in conn.execute("PRAGMA table_info(plans)")]
+        conn.close()
+        assert cols.count("plan_doc_ref") == 1
+
+
+class TestMarkPlanStateWithDocRef:
+    """(b) mark_plan_state with plan_doc_ref writes it."""
+
+    def test_writes_plan_doc_ref(self):
+        pid = lifecycle.mint_and_claim("executable", "/proj", "T", "bellows", "small", 1, "e.md")
+        lifecycle.mark_plan_state(pid, "in_progress",
+                                  plan_doc_ref="knowledge/decisions/in-progress-executable-1.md")
+        conn = sqlite3.connect(lifecycle.LIFECYCLE_DB_PATH)
+        ref = conn.execute("SELECT plan_doc_ref FROM plans WHERE id = ?", (pid,)).fetchone()[0]
+        conn.close()
+        assert ref == "knowledge/decisions/in-progress-executable-1.md"
+
+    def test_updates_plan_doc_ref_on_close(self):
+        pid = lifecycle.mint_and_claim("executable", "/proj", "T", "bellows", "small", 1, "e.md")
+        lifecycle.mark_plan_state(pid, "in_progress",
+                                  plan_doc_ref="knowledge/decisions/in-progress-executable-1.md")
+        lifecycle.mark_plan_state(pid, "closed", closed_at="2026-06-13T12:00:00",
+                                  plan_doc_ref="knowledge/decisions/Done/executable-1.md")
+        conn = sqlite3.connect(lifecycle.LIFECYCLE_DB_PATH)
+        row = conn.execute("SELECT lifecycle_state, plan_doc_ref FROM plans WHERE id = ?", (pid,)).fetchone()
+        conn.close()
+        assert row[0] == "closed"
+        assert row[1] == "knowledge/decisions/Done/executable-1.md"
+
+    def test_omitting_plan_doc_ref_leaves_it_unchanged(self):
+        pid = lifecycle.mint_and_claim("executable", "/proj", "T", "bellows", "small", 1, "e.md")
+        lifecycle.mark_plan_state(pid, "in_progress",
+                                  plan_doc_ref="knowledge/decisions/in-progress-executable-1.md")
+        lifecycle.mark_plan_state(pid, "closed", closed_at="2026-06-13T12:00:00")
+        conn = sqlite3.connect(lifecycle.LIFECYCLE_DB_PATH)
+        ref = conn.execute("SELECT plan_doc_ref FROM plans WHERE id = ?", (pid,)).fetchone()[0]
+        conn.close()
+        # plan_doc_ref unchanged from in_progress write
+        assert ref == "knowledge/decisions/in-progress-executable-1.md"
+
+
+class TestPlanDocRefClaimToClose:
+    """(c) a claim→close sequence leaves Done/<type>-<id>.md in plan_doc_ref."""
+
+    def test_full_claim_to_close_sequence(self, tmp_path):
+        db_path = str(tmp_path / "seq.db")
+        lifecycle.init_lifecycle_db(db_path)
+        project_root = str(tmp_path / "project")
+        decisions_dir = os.path.join(project_root, "knowledge", "decisions")
+        done_dir = os.path.join(decisions_dir, "Done")
+        os.makedirs(done_dir)
+
+        pid = lifecycle.mint_and_claim("executable", project_root, "T", "bellows", "small", 2, "e.md",
+                                        db_path=db_path)
+        # Claim → in_progress
+        inprogress_path = os.path.join(decisions_dir, f"in-progress-executable-{pid}.md")
+        claim_ref = os.path.relpath(inprogress_path, project_root)
+        lifecycle.mark_plan_state(pid, "in_progress", plan_doc_ref=claim_ref, db_path=db_path)
+
+        conn = sqlite3.connect(db_path)
+        ref = conn.execute("SELECT plan_doc_ref FROM plans WHERE id = ?", (pid,)).fetchone()[0]
+        conn.close()
+        assert ref == f"knowledge/decisions/in-progress-executable-{pid}.md"
+
+        # Close → Done
+        done_path = os.path.join(done_dir, f"executable-{pid}.md")
+        close_ref = os.path.relpath(done_path, project_root)
+        lifecycle.mark_plan_state(pid, "closed", closed_at="2026-06-13T12:00:00",
+                                  plan_doc_ref=close_ref, db_path=db_path)
+
+        conn = sqlite3.connect(db_path)
+        row = conn.execute("SELECT lifecycle_state, plan_doc_ref FROM plans WHERE id = ?", (pid,)).fetchone()
+        conn.close()
+        assert row[0] == "closed"
+        assert row[1] == f"knowledge/decisions/Done/executable-{pid}.md"
+
+
+class TestBackfillPlanDocRef:
+    """(d) backfill resolves a closed row to its Done path and leaves non-existent ones NULL."""
+
+    def test_closed_row_resolves_to_done(self, tmp_path):
+        db_path = str(tmp_path / "backfill.db")
+        lifecycle.init_lifecycle_db(db_path)
+        project_root = str(tmp_path / "project")
+        decisions_dir = os.path.join(project_root, "knowledge", "decisions")
+        done_dir = os.path.join(decisions_dir, "Done")
+        os.makedirs(done_dir)
+
+        pid = lifecycle.mint_and_claim("executable", project_root, "T", "bellows", "small", 1, "e.md",
+                                        db_path=db_path)
+        lifecycle.mark_plan_state(pid, "closed", closed_at="2026-06-13T12:00:00", db_path=db_path)
+
+        # Create the Done file on disk
+        done_file = os.path.join(done_dir, f"executable-{pid}.md")
+        with open(done_file, "w") as f:
+            f.write("# Plan")
+
+        backfilled, left_null = lifecycle.backfill_plan_doc_ref(db_path=db_path)
+        assert backfilled == 1
+        assert left_null == 0
+
+        conn = sqlite3.connect(db_path)
+        ref = conn.execute("SELECT plan_doc_ref FROM plans WHERE id = ?", (pid,)).fetchone()[0]
+        conn.close()
+        assert ref == f"knowledge/decisions/Done/executable-{pid}.md"
+
+    def test_nonexistent_file_left_null(self, tmp_path):
+        db_path = str(tmp_path / "backfill2.db")
+        lifecycle.init_lifecycle_db(db_path)
+        project_root = str(tmp_path / "project")
+        os.makedirs(os.path.join(project_root, "knowledge", "decisions", "Done"))
+
+        pid = lifecycle.mint_and_claim("executable", project_root, "T", "bellows", "small", 1, "e.md",
+                                        db_path=db_path)
+        lifecycle.mark_plan_state(pid, "closed", closed_at="2026-06-13T12:00:00", db_path=db_path)
+        # Do NOT create the file on disk
+
+        backfilled, left_null = lifecycle.backfill_plan_doc_ref(db_path=db_path)
+        assert backfilled == 0
+        assert left_null == 1
+
+        conn = sqlite3.connect(db_path)
+        ref = conn.execute("SELECT plan_doc_ref FROM plans WHERE id = ?", (pid,)).fetchone()[0]
+        conn.close()
+        assert ref is None
+
+    def test_idempotent_backfill(self, tmp_path):
+        db_path = str(tmp_path / "backfill3.db")
+        lifecycle.init_lifecycle_db(db_path)
+        project_root = str(tmp_path / "project")
+        done_dir = os.path.join(project_root, "knowledge", "decisions", "Done")
+        os.makedirs(done_dir)
+
+        pid = lifecycle.mint_and_claim("executable", project_root, "T", "bellows", "small", 1, "e.md",
+                                        db_path=db_path)
+        lifecycle.mark_plan_state(pid, "closed", closed_at="2026-06-13T12:00:00", db_path=db_path)
+        with open(os.path.join(done_dir, f"executable-{pid}.md"), "w") as f:
+            f.write("# Plan")
+
+        lifecycle.backfill_plan_doc_ref(db_path=db_path)
+        # Second call should be a no-op (already has plan_doc_ref)
+        backfilled2, left_null2 = lifecycle.backfill_plan_doc_ref(db_path=db_path)
+        assert backfilled2 == 0
+        assert left_null2 == 0
+
+    def test_in_progress_row_resolves(self, tmp_path):
+        db_path = str(tmp_path / "backfill4.db")
+        lifecycle.init_lifecycle_db(db_path)
+        project_root = str(tmp_path / "project")
+        decisions_dir = os.path.join(project_root, "knowledge", "decisions")
+        os.makedirs(decisions_dir)
+
+        pid = lifecycle.mint_and_claim("diagnostic", project_root, "T", "bellows", "small", 1, "d.md",
+                                        db_path=db_path)
+        lifecycle.mark_plan_state(pid, "in_progress", db_path=db_path)
+        # Create in-progress file on disk
+        with open(os.path.join(decisions_dir, f"in-progress-diagnostic-{pid}.md"), "w") as f:
+            f.write("# Plan")
+
+        backfilled, left_null = lifecycle.backfill_plan_doc_ref(db_path=db_path)
+        assert backfilled == 1
+
+        conn = sqlite3.connect(db_path)
+        ref = conn.execute("SELECT plan_doc_ref FROM plans WHERE id = ?", (pid,)).fetchone()[0]
+        conn.close()
+        assert ref == f"knowledge/decisions/in-progress-diagnostic-{pid}.md"
