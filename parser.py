@@ -42,10 +42,11 @@ def parse(raw: dict) -> dict:
     if vr_match:
         verdict_requested = {"requested": True, "reason": vr_match.group(1).strip()}
 
-    # Extract ### Ledger Updates section — daemon-owned ledgers Phase 1+2.
+    # Extract ### Ledger Updates section — daemon-owned ledgers Phase 1+2+3.
     # Mirrors the ### Flags for CEO extraction pattern (parser.py:30–37).
-    # Subsections: #### Prompt Feedback (Phase 1), #### Project Status (Phase 2).
-    ledger_updates = {"feedback": None, "project_status": None}
+    # Subsections: #### Prompt Feedback (Phase 1), #### Project Status (Phase 2),
+    #              #### Forward Register (Phase 3).
+    ledger_updates = {"feedback": None, "project_status": None, "forward": None}
     lu_match = re.search(
         r"### Ledger Updates\s*\n(.*?)(?=\n## |\Z)", result_text, re.DOTALL
     )
@@ -65,6 +66,15 @@ def parse(raw: dict) -> dict:
             ps_text = ps_match.group(1).strip()
             if ps_text and ps_text.lower() not in ("none", "n/a"):
                 ledger_updates["project_status"] = ps_text
+        # Phase 3: #### Forward Register (also matches #### FORWARD Additions)
+        fw_match = re.search(
+            r"#### (?:Forward Register|FORWARD(?: Additions)?)\s*\n(.*?)(?=\n#### |\Z)",
+            lu_body, re.DOTALL,
+        )
+        if fw_match:
+            fw_text = fw_match.group(1).strip()
+            if fw_text and fw_text.lower() not in ("none", "n/a"):
+                ledger_updates["forward"] = fw_text
 
     escalate = receipt_status == "Blocked" or bool(ceo_flags) or is_error
 

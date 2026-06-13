@@ -4627,3 +4627,228 @@ class TestApplyLedgerUpdatesProjectStatus:
         # Project status should be in file
         status_path = os.path.join(project, "PROJECT_STATUS.md")
         assert os.path.exists(status_path)
+
+
+# ---------------------------------------------------------------------------
+# Daemon-owned ledgers Phase 3 — forward in _apply_ledger_updates
+# ---------------------------------------------------------------------------
+
+
+class TestApplyLedgerUpdatesForward:
+    """Phase 3: _apply_ledger_updates handles forward —
+    coexistence skip when FORWARD.md in files_changed, correctly-numbered
+    new row append, graceful no-op when no FORWARD.md, row-number
+    computation across all row statuses (open/closed/withdrawn)."""
+
+    def _make_git_repo(self, tmp_path):
+        """Create a minimal git repo at tmp_path with an initial commit."""
+        subprocess.run(["git", "init", str(tmp_path)], capture_output=True, check=True)
+        subprocess.run(["git", "-C", str(tmp_path), "config", "user.email", "test@test.com"],
+                        capture_output=True, check=True)
+        subprocess.run(["git", "-C", str(tmp_path), "config", "user.name", "Test"],
+                        capture_output=True, check=True)
+        gitkeep = tmp_path / ".gitkeep"
+        gitkeep.write_text("")
+        subprocess.run(["git", "-C", str(tmp_path), "add", ".gitkeep"],
+                        capture_output=True, check=True)
+        subprocess.run(["git", "-C", str(tmp_path), "commit", "-m", "init"],
+                        capture_output=True, check=True)
+        return str(tmp_path)
+
+    FORWARD_FIXTURE = (
+        "# Bellows — Forward Register\n\n"
+        "| # | Added | Item | Type | Plan-id link | Status |\n"
+        "|---|---|---|---|---|---|\n"
+        "| 1 | 2026-05-13 | First item | deferred-work | — | open |\n"
+        "| 2 | 2026-05-21 | Second item | ceo-decision-fork | 32 | closed-by-plan-32 |\n"
+        "| 3 | 2026-05-22 | Third item | deferred-work | — | withdrawn |\n"
+    )
+
+    def test_skips_when_forward_in_files_changed(self, tmp_path):
+        """(b) Coexistence: agent wrote FORWARD.md old-style → daemon skips."""
+        project = self._make_git_repo(tmp_path / "proj")
+        fwd_dir = os.path.join(project, "knowledge")
+        os.makedirs(fwd_dir)
+        fwd_path = os.path.join(fwd_dir, "FORWARD.md")
+        with open(fwd_path, "w") as f:
+            f.write(self.FORWARD_FIXTURE)
+        parsed = {
+            "ledger_updates": {"feedback": None, "project_status": None,
+                               "forward": "New deferred item"},
+        }
+        bellows._apply_ledger_updates(
+            parsed, project, plan_id=99,
+            files_changed=["bellows.py", "knowledge/FORWARD.md"],
+        )
+        with open(fwd_path) as f:
+            content = f.read()
+        # No new row should have been added
+        assert "| 4 |" not in content
+        assert "New deferred item" not in content
+
+    def test_writes_correctly_numbered_row(self, tmp_path):
+        """(c) Writes a new row with next # = max+1, today's date, defaults."""
+        from datetime import datetime
+        project = self._make_git_repo(tmp_path / "proj")
+        fwd_dir = os.path.join(project, "knowledge")
+        os.makedirs(fwd_dir)
+        fwd_path = os.path.join(fwd_dir, "FORWARD.md")
+        with open(fwd_path, "w") as f:
+            f.write(self.FORWARD_FIXTURE)
+        subprocess.run(["git", "-C", project, "add", "knowledge/FORWARD.md"],
+                        capture_output=True, check=True)
+        subprocess.run(["git", "-C", project, "commit", "-m", "add forward"],
+                        capture_output=True, check=True)
+        parsed = {
+            "ledger_updates": {"feedback": None, "project_status": None,
+                               "forward": "Implement auto-stash for dirty main"},
+        }
+        bellows._apply_ledger_updates(
+            parsed, project, plan_id=45,
+            files_changed=["bellows.py"],
+        )
+        with open(fwd_path) as f:
+            content = f.read()
+        today = datetime.now().strftime("%Y-%m-%d")
+        assert "| 4 |" in content
+        assert today in content
+        assert "Implement auto-stash for dirty main" in content
+        assert "deferred-work" in content.split("| 4 |")[1]
+        assert "open" in content.split("| 4 |")[1]
+
+    def test_graceful_noop_when_no_forward_file(self, tmp_path):
+        """(d) Graceful no-op when the project has no FORWARD.md."""
+        project = self._make_git_repo(tmp_path / "proj")
+        # No knowledge/FORWARD.md created
+        parsed = {
+            "ledger_updates": {"feedback": None, "project_status": None,
+                               "forward": "Some deferred work"},
+        }
+        # Should not raise
+        bellows._apply_ledger_updates(
+            parsed, project, plan_id=42,
+            files_changed=[],
+        )
+        # Verify no FORWARD.md was created
+        fwd_path = os.path.join(project, "knowledge", "FORWARD.md")
+        assert not os.path.exists(fwd_path)
+
+    def test_row_number_handles_withdrawn_closed_rows(self, tmp_path):
+        """(e) Row-number computation counts ALL rows (open, closed, withdrawn)."""
+        from datetime import datetime
+        project = self._make_git_repo(tmp_path / "proj")
+        fwd_dir = os.path.join(project, "knowledge")
+        os.makedirs(fwd_dir)
+        fwd_path = os.path.join(fwd_dir, "FORWARD.md")
+        # Fixture with gaps and mixed statuses — max is 5
+        fixture = (
+            "# Forward Register\n\n"
+            "| # | Added | Item | Type | Plan-id link | Status |\n"
+            "|---|---|---|---|---|---|\n"
+            "| 1 | 2026-05-13 | Item A | deferred-work | — | open |\n"
+            "| 2 | 2026-05-14 | Item B | deferred-work | 10 | closed-by-plan-10 |\n"
+            "| 3 | 2026-05-15 | Item C | deferred-work | — | withdrawn |\n"
+            "| 5 | 2026-05-20 | Item E (gap) | deferred-work | — | open |\n"
+        )
+        with open(fwd_path, "w") as f:
+            f.write(fixture)
+        subprocess.run(["git", "-C", project, "add", "knowledge/FORWARD.md"],
+                        capture_output=True, check=True)
+        subprocess.run(["git", "-C", project, "commit", "-m", "add forward"],
+                        capture_output=True, check=True)
+        parsed = {
+            "ledger_updates": {"feedback": None, "project_status": None,
+                               "forward": "New item after gap"},
+        }
+        bellows._apply_ledger_updates(
+            parsed, project, plan_id=50,
+            files_changed=[],
+        )
+        with open(fwd_path) as f:
+            content = f.read()
+        # Next row should be 6 (max 5 + 1), NOT 4
+        assert "| 6 |" in content
+        assert "New item after gap" in content
+
+    def test_commits_change_to_git(self, tmp_path):
+        """Daemon commits the FORWARD.md change on main."""
+        project = self._make_git_repo(tmp_path / "proj")
+        fwd_dir = os.path.join(project, "knowledge")
+        os.makedirs(fwd_dir)
+        fwd_path = os.path.join(fwd_dir, "FORWARD.md")
+        with open(fwd_path, "w") as f:
+            f.write(self.FORWARD_FIXTURE)
+        subprocess.run(["git", "-C", project, "add", "knowledge/FORWARD.md"],
+                        capture_output=True, check=True)
+        subprocess.run(["git", "-C", project, "commit", "-m", "add forward"],
+                        capture_output=True, check=True)
+        parsed = {
+            "ledger_updates": {"feedback": None, "project_status": None,
+                               "forward": "Committed item"},
+        }
+        bellows._apply_ledger_updates(
+            parsed, project, plan_id=55,
+            files_changed=[],
+        )
+        result = subprocess.run(
+            ["git", "-C", project, "log", "--oneline", "-1"],
+            capture_output=True, text=True,
+        )
+        assert "daemon-post-merge" in result.stdout
+        assert "FORWARD" in result.stdout
+
+    def test_noop_when_no_forward_in_receipt(self, tmp_path):
+        """No forward in receipt → no file write, no error."""
+        project = self._make_git_repo(tmp_path / "proj")
+        fwd_dir = os.path.join(project, "knowledge")
+        os.makedirs(fwd_dir)
+        fwd_path = os.path.join(fwd_dir, "FORWARD.md")
+        with open(fwd_path, "w") as f:
+            f.write(self.FORWARD_FIXTURE)
+        parsed = {
+            "ledger_updates": {"feedback": None, "project_status": None,
+                               "forward": None},
+        }
+        bellows._apply_ledger_updates(
+            parsed, project, plan_id=42,
+            files_changed=[],
+        )
+        with open(fwd_path) as f:
+            content = f.read()
+        assert content == self.FORWARD_FIXTURE
+
+    def test_feedback_and_project_status_still_work(self, tmp_path):
+        """Phase 1+2 paths NOT broken by Phase 3 addition."""
+        project = self._make_git_repo(tmp_path / "proj")
+        fwd_dir = os.path.join(project, "knowledge")
+        os.makedirs(fwd_dir)
+        fwd_path = os.path.join(fwd_dir, "FORWARD.md")
+        with open(fwd_path, "w") as f:
+            f.write(self.FORWARD_FIXTURE)
+        subprocess.run(["git", "-C", project, "add", "knowledge/FORWARD.md"],
+                        capture_output=True, check=True)
+        subprocess.run(["git", "-C", project, "commit", "-m", "add forward"],
+                        capture_output=True, check=True)
+        parsed = {
+            "ledger_updates": {
+                "feedback": "**2026-06-13** — phase 3 test",
+                "project_status": "Phase 3 milestone.",
+                "forward": "Phase 3 deferred item",
+            },
+            "_step_number": 1,
+            "_agent": "QA",
+        }
+        bellows._apply_ledger_updates(
+            parsed, project, plan_id=45,
+            files_changed=[],
+        )
+        # Feedback in DB
+        conn = sqlite3.connect(lifecycle.LIFECYCLE_DB_PATH)
+        row = conn.execute("SELECT entry_text FROM prompt_feedback WHERE plan_id = 45").fetchone()
+        conn.close()
+        assert row is not None
+        assert "phase 3 test" in row[0]
+        # Forward in file
+        with open(fwd_path) as f:
+            fwd_content = f.read()
+        assert "Phase 3 deferred item" in fwd_content

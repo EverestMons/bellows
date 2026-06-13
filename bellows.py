@@ -1141,6 +1141,15 @@ def _apply_ledger_updates(parsed, project_path, plan_id, files_changed=None):
         elif project_status_text:
             _append_project_status(project_path, plan_id, project_status_text)
             _log("INFO", "ledger: appended project status milestone to PROJECT_STATUS.md", slug=slug)
+
+        # --- Phase 3: forward register → append new row to FORWARD.md on main ---
+        forward_text = ledger.get("forward")
+        if any("FORWARD.md" in f for f in files_changed):
+            _log("INFO", "ledger: agent wrote FORWARD.md old-style, skipping daemon write",
+                 slug=slug)
+        elif forward_text:
+            _append_forward_row(project_path, plan_id, forward_text)
+            _log("INFO", "ledger: appended new row to FORWARD.md", slug=slug)
     except Exception as e:
         _log("WARN", f"⚠ _apply_ledger_updates failed: {e}",
              slug=slug_for(os.path.basename(project_path)))
@@ -1188,6 +1197,59 @@ def _append_project_status(project_path, plan_id, milestone_text):
     subprocess.run(
         ["git", "-C", project_path, "commit", "-m",
          f"docs(status): PROJECT_STATUS milestone for plan {plan_id} (daemon-post-merge)"],
+        capture_output=True, text=True, timeout=10,
+    )
+
+
+def _append_forward_row(project_path, plan_id, item_text):
+    """Append a new row to knowledge/FORWARD.md's 6-column table.
+
+    The daemon computes the next row number (max existing # + 1) and fills
+    Added with the current date. Defaults: Type=deferred-work,
+    Plan-id link=—, Status=open. Gracefully skips if no FORWARD.md exists
+    (not every project has one). Daemon-post-merge write on main.
+    """
+    forward_path = os.path.join(project_path, "knowledge", "FORWARD.md")
+    if not os.path.exists(forward_path):
+        _log("INFO", "ledger: no FORWARD.md in project, skipping forward append",
+             slug=slug_for(os.path.basename(project_path)))
+        return
+
+    with open(forward_path, "r") as f:
+        content = f.read()
+
+    # Compute next row number: max of all | <n> | rows + 1
+    row_numbers = [int(m) for m in re.findall(r"^\|\s*(\d+)\s*\|", content, re.MULTILINE)]
+    next_num = max(row_numbers) + 1 if row_numbers else 1
+
+    today = datetime.now().strftime("%Y-%m-%d")
+
+    # Defaults for optional fields
+    item_type = "deferred-work"
+    plan_link = "—"
+    status = "open"
+
+    new_row = f"| {next_num} | {today} | {item_text} | {item_type} | {plan_link} | {status} |\n"
+
+    # Append the new row at EOF (after trailing newline if present)
+    if not content.endswith("\n"):
+        content += "\n"
+    content += new_row
+
+    with open(forward_path, "w") as f:
+        f.write(content)
+
+    _log("INFO", f"ledger: FORWARD.md row {next_num} written",
+         slug=slug_for(os.path.basename(project_path)))
+
+    # Commit on main
+    subprocess.run(
+        ["git", "-C", project_path, "add", "knowledge/FORWARD.md"],
+        capture_output=True, text=True, timeout=10,
+    )
+    subprocess.run(
+        ["git", "-C", project_path, "commit", "-m",
+         f"docs(forward): FORWARD row {next_num} for plan {plan_id} (daemon-post-merge)"],
         capture_output=True, text=True, timeout=10,
     )
 

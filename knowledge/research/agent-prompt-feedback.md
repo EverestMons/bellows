@@ -3,6 +3,18 @@
 **Date:** 2026-05-29
 **Plans:** diagnostic-claude-settings-permission-gap-2026-05-22, executable-pre-scan-orphan-guard-2026-05-22, executable-bellows-tier-1-batch-2026-05-21, executable-bellows-expected-keys-narrow-2026-05-21, diagnostic-bellows-expected-keys-warning-2026-05-21, diagnostic-bellows-isinstance-asymmetry-2026-05-21, executable-deposit-exists-path-form-normalization-2026-05-27, executable-disable-autoupdater-2026-05-27, diagnostic-planner-authored-contract-validation-2026-05-20, diagnostic-bash-gate-vs-guardrails-2026-05-20, executable-plan-write-time-lessons-reread-2026-05-13, diagnostic-pre-scan-orphan-warn-flood-2026-05-22, executable-remove-pre-scan-processed-rename-v2-2026-05-24, executable-rename-first-ordering-2026-05-24, executable-settings-local-bash-fallback-doc-2026-05-22, executable-mcp-read-class-tools-extension-2026-05-25, diagnostic-file-change-audit-false-negative-2026-05-25, executable-file-change-audit-fix-2026-05-25, executable-planner-template-rule-21-contract-change-2026-05-26, diagnostic-verdict-ledger-gate-result-preservation-2026-05-26, executable-verdict-ledger-gate-result-preservation-2026-05-26, executable-fix-f-guard-removal-2026-05-26, diagnostic-bellows-hardening-batch-freshness-2026-05-26, executable-bellows-hardening-batch-items-1-3-4-2026-05-26, executable-bellows-test-isolation-conftest-2026-05-26, diagnostic-leftover-after-ship-tooling-scope-2026-05-26, executable-leftover-after-ship-tooling-blueprint-2026-05-26, executable-leftover-after-ship-tooling-implementation-2026-05-26, executable-freshness-check-algorithm-v2-blueprint-2026-05-27, executable-freshness-check-algorithm-v2-blueprint-retry-2026-05-27, executable-freshness-check-algorithm-v2-implementation-2026-05-27, executable-worktree-precheck-hardening-2026-05-29
 
+## 2026-06-13 — daemon-ledgers-phase3-forward (DEV Step 1)
+
+1. **Phase 1/2 code was well-structured for extension.** The `_apply_ledger_updates` per-handler branch pattern and parser subsection extraction pattern made Phase 3 a mechanical addition. The consistent coexistence-check pattern (`if any("FORWARD.md" in f for f in files_changed)`) was trivially reusable.
+
+2. **Design doc Section 3 File 3 was precise.** The disposition (daemon-post-merge for new rows only, status-update edits unchanged) and the scope nuance (only new-row additions move) were clear enough to implement without ambiguity.
+
+3. **The FORWARD.md 6-column table format was self-documenting.** Reading the existing file provided the exact column layout and row format needed for the append function. No additional documentation lookup required.
+
+4. **Test fixture design mirrored Phase 2.** The `_make_git_repo` helper and coexistence/write/noop test structure from `TestApplyLedgerUpdatesProjectStatus` transferred directly to the forward tests.
+
+5. **Row-number computation edge case (gaps) needed explicit attention.** The plan correctly flagged this: "counts all `| <n> |` rows, not just open." Using `max()` over all row numbers (rather than `len()`) handles gaps from withdrawn/renumbered rows.
+
 ## 2026-06-13 — daemon-ledgers-phase1-feedback (DEV Step 1)
 
 1. **Design doc was authoritative and accurate.** All anchors verified at edit time — parser.py:30–37 ceo_flags pattern, bellows.py teardown sites at ~622/731/762, lifecycle.py CREATE TABLE IF NOT EXISTS migration mechanism. No divergence from design doc.

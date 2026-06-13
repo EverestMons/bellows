@@ -197,3 +197,123 @@ class TestProjectStatusExtraction:
         parsed = parser.parse(fixture)
         assert parsed["ledger_updates"]["project_status"] == "Status text."
         assert parsed["ledger_updates"]["feedback"] == "Feedback text."
+
+
+class TestForwardRegisterExtraction:
+    """Phase 3: parser extracts #### Forward Register from ### Ledger Updates."""
+
+    def test_extracts_forward_register(self):
+        text = (
+            "### Ledger Updates\n"
+            "#### Forward Register\n"
+            "Implement auto-stash for dirty main at teardown\n"
+        )
+        fixture = dict(BASE_FIXTURE, result=text)
+        parsed = parser.parse(fixture)
+        assert parsed["ledger_updates"]["forward"] is not None
+        assert "auto-stash" in parsed["ledger_updates"]["forward"]
+
+    def test_extracts_forward_additions_heading(self):
+        """Also matches #### FORWARD Additions (design doc heading)."""
+        text = (
+            "### Ledger Updates\n"
+            "#### FORWARD Additions\n"
+            "New deferred work item\n"
+        )
+        fixture = dict(BASE_FIXTURE, result=text)
+        parsed = parser.parse(fixture)
+        assert parsed["ledger_updates"]["forward"] == "New deferred work item"
+
+    def test_extracts_forward_bare_heading(self):
+        """Also matches #### FORWARD (bare form)."""
+        text = (
+            "### Ledger Updates\n"
+            "#### FORWARD\n"
+            "Bare heading item\n"
+        )
+        fixture = dict(BASE_FIXTURE, result=text)
+        parsed = parser.parse(fixture)
+        assert parsed["ledger_updates"]["forward"] == "Bare heading item"
+
+    def test_forward_none_when_absent(self):
+        text = (
+            "### Ledger Updates\n"
+            "#### Prompt Feedback\n"
+            "Some feedback.\n"
+        )
+        fixture = dict(BASE_FIXTURE, result=text)
+        parsed = parser.parse(fixture)
+        assert parsed["ledger_updates"]["forward"] is None
+
+    def test_forward_none_for_none_value(self):
+        text = (
+            "### Ledger Updates\n"
+            "#### Forward Register\n"
+            "None\n"
+        )
+        fixture = dict(BASE_FIXTURE, result=text)
+        parsed = parser.parse(fixture)
+        assert parsed["ledger_updates"]["forward"] is None
+
+    def test_forward_none_for_na_value(self):
+        text = (
+            "### Ledger Updates\n"
+            "#### Forward Register\n"
+            "N/A\n"
+        )
+        fixture = dict(BASE_FIXTURE, result=text)
+        parsed = parser.parse(fixture)
+        assert parsed["ledger_updates"]["forward"] is None
+
+    def test_forward_key_always_present(self):
+        """forward key is always in ledger_updates, even when absent."""
+        fixture = dict(BASE_FIXTURE)
+        parsed = parser.parse(fixture)
+        assert "forward" in parsed["ledger_updates"]
+        assert parsed["ledger_updates"]["forward"] is None
+
+    def test_forward_with_feedback_and_project_status(self):
+        """All three Phase 1/2/3 subsections coexist."""
+        text = (
+            "### Ledger Updates\n"
+            "#### Prompt Feedback\n"
+            "Feedback entry.\n\n"
+            "#### Project Status\n"
+            "Milestone text.\n\n"
+            "#### Forward Register\n"
+            "New deferred item\n"
+        )
+        fixture = dict(BASE_FIXTURE, result=text)
+        parsed = parser.parse(fixture)
+        assert parsed["ledger_updates"]["feedback"] == "Feedback entry."
+        assert "Milestone text." in parsed["ledger_updates"]["project_status"]
+        assert parsed["ledger_updates"]["forward"] == "New deferred item"
+
+    def test_forward_before_other_subsections(self):
+        """Order of subsections should not matter."""
+        text = (
+            "### Ledger Updates\n"
+            "#### Forward Register\n"
+            "Item first.\n\n"
+            "#### Prompt Feedback\n"
+            "Feedback second.\n"
+        )
+        fixture = dict(BASE_FIXTURE, result=text)
+        parsed = parser.parse(fixture)
+        assert parsed["ledger_updates"]["forward"] == "Item first."
+        assert parsed["ledger_updates"]["feedback"] == "Feedback second."
+
+    def test_feedback_and_project_status_still_extract(self):
+        """Regression: Phase 1+2 extraction not broken by Phase 3 addition."""
+        text = (
+            "### Ledger Updates\n"
+            "#### Prompt Feedback\n"
+            "Phase 1 feedback.\n\n"
+            "#### Project Status\n"
+            "Phase 2 status.\n"
+        )
+        fixture = dict(BASE_FIXTURE, result=text)
+        parsed = parser.parse(fixture)
+        assert parsed["ledger_updates"]["feedback"] == "Phase 1 feedback."
+        assert parsed["ledger_updates"]["project_status"] == "Phase 2 status."
+        assert parsed["ledger_updates"]["forward"] is None
