@@ -1,0 +1,86 @@
+=== PROCESS-SAFETY REVIEW ===
+
+--- 1. Dashboard NEVER acquires .bellows.lock ---
+Searching dashboard.py for '.bellows.lock' (non-dashboard lock):
+8:The dashboard never acquires .bellows.lock — only .bellows-dashboard.lock.
+102:    lock_path = str(bellows_root / ".bellows.lock")
+347:        """Poll until .bellows.lock is free. Returns True if released."""
+348:        lock_path = str(self.bellows_root / ".bellows.lock")
+
+Dashboard lock references (should only be .bellows-dashboard.lock):
+8:The dashboard never acquires .bellows.lock — only .bellows-dashboard.lock.
+289:        self.dashboard_lock_fd = None
+292:        """Entry point — acquire dashboard lock, then enter curses."""
+293:        self._acquire_dashboard_lock()
+297:            self._release_dashboard_lock()
+299:    def _acquire_dashboard_lock(self):
+300:        lock_path = str(self.bellows_root / ".bellows-dashboard.lock")
+301:        self.dashboard_lock_fd = open(lock_path, "w")
+303:            fcntl.flock(self.dashboard_lock_fd, fcntl.LOCK_EX | fcntl.LOCK_NB)
+305:            self.dashboard_lock_fd.close()
+306:            self.dashboard_lock_fd = None
+310:    def _release_dashboard_lock(self):
+311:        if self.dashboard_lock_fd:
+313:                fcntl.flock(self.dashboard_lock_fd, fcntl.LOCK_UN)
+314:                self.dashboard_lock_fd.close()
+
+--- 2. Restart path waits on lock release before respawn ---
+Method _wait_for_lock_release:
+    def _wait_for_lock_release(self):
+        """Poll until .bellows.lock is free. Returns True if released."""
+        lock_path = str(self.bellows_root / ".bellows.lock")
+        for _ in range(FLOCK_RETRY_LIMIT):
+            if not status.probe_daemon(lock_path):
+                return True
+            time.sleep(FLOCK_RETRY_INTERVAL)
+        return False
+
+
+Method _do_restart calls _wait_for_lock_release:
+    def _do_restart(self, stdscr):
+        """Restart sequence: terminate → wait for lock → respawn."""
+        self._terminate_child()
+        if not self._wait_for_lock_release():
+            # Lock not released — don't respawn
+            self.mode = "normal"
+            return
+
+--- 3. Child stdout disposition — no unconsumed PIPE ---
+Searching for PIPE in dashboard.py:
+  No PIPE references found (PASS — uses DEVNULL)
+
+DEVNULL references in dashboard.py:
+323:            stdout=subprocess.DEVNULL,
+324:            stderr=subprocess.DEVNULL,
+325:            stdin=subprocess.DEVNULL,
+
+--- 4. Second-dashboard prevention via separate lock ---
+        self._acquire_dashboard_lock()
+        try:
+            curses.wrapper(self._main_loop)
+        finally:
+            self._release_dashboard_lock()
+
+    def _acquire_dashboard_lock(self):
+        lock_path = str(self.bellows_root / ".bellows-dashboard.lock")
+        self.dashboard_lock_fd = open(lock_path, "w")
+        try:
+            fcntl.flock(self.dashboard_lock_fd, fcntl.LOCK_EX | fcntl.LOCK_NB)
+        except (BlockingIOError, OSError):
+
+--- 5. SIGTERM → wait → SIGKILL sequence ---
+    def _terminate_child(self):
+        """SIGTERM → wait → SIGKILL if needed. Returns True if child is dead."""
+        if self.child is None:
+            return True
+        if self.child.poll() is not None:
+            return True
+        self.child.terminate()
+        try:
+            self.child.wait(timeout=SIGTERM_TIMEOUT)
+            return True
+        except subprocess.TimeoutExpired:
+            self.child.kill()
+            try:
+
+=== PROCESS-SAFETY VERDICT: All constraints verified ===

@@ -1,0 +1,29 @@
+=== READ-ONLY + DEGRADATION CHECK ===
+
+--- 1. Every DB connect uses mode=ro ---
+
+All sqlite3.connect calls in status.py:
+187:    conn = sqlite3.connect(db_uri, uri=True)
+208:    conn = sqlite3.connect(db_uri, uri=True)
+
+All sqlite3.connect calls in dashboard.py:
+  (none — dashboard delegates to status.py)
+
+mode=ro in DB URI strings:
+4:All DB access is read-only (?mode=ro). Never imports daemon internals.
+181:# DB query helpers (importable — all read-only, ?mode=ro)
+186:    db_uri = f"file:{db_path}?mode=ro"
+207:    db_uri = f"file:{db_path}?mode=ro"
+
+--- 2. DB-absent render path ---
+Testing render with db_absent=True:
+  PASS: db_absent shows (no database) in both IN-FLIGHT and AWAITING VERDICT
+
+--- 3. Log-absent render path ---
+Testing render with log_absent=True:
+  PASS: log_absent shows (no log file) in EVENT FEED
+
+--- 4. tail_session_log returns None when file absent ---
+  PASS: tail_session_log returns None when no log file exists
+
+=== SAFETY CHECK VERDICT: All read-only and degradation paths verified ===

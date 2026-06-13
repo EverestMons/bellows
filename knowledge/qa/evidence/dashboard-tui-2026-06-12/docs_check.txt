@@ -1,0 +1,15 @@
+=== CLAUDE.md DOCUMENTATION CHECK ===
+
+--- Start section content ---
+## Start
+python dashboard.py          # primary — full-screen TUI that owns the daemon
+python bellows.py             # headless daemon (no TUI)
+
+
+--- Checks ---
+PASS: dashboard.py documented
+PASS: marked as primary
+PASS: bellows.py still documented
+PASS: headless alternative documented
+
+=== DOCS CHECK VERDICT: PASS ===
