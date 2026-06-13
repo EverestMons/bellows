@@ -1106,25 +1106,24 @@ def _build_deposit_records(plan_text, plan_header, project_path, wt_path):
 def _apply_ledger_updates(parsed, project_path, plan_id, files_changed=None):
     """Apply daemon-owned ledger updates from the parsed Output Receipt.
 
-    Phase 1 (dormant, coexistence-safe): handles ONLY prompt feedback.
-    - If agent-prompt-feedback.md appears in files_changed → SKIP (agent
-      wrote old-style; coexistence — do nothing).
-    - Else if parsed["ledger_updates"]["feedback"] is present → write DB row
-      via record_prompt_feedback().
-    Never writes the feedback FILE. Wrapped in log-and-continue.
+    Phase 1 (dormant, coexistence-safe): prompt feedback → DB row.
+    Phase 2 (dormant, coexistence-safe): project status → append to
+      PROJECT_STATUS.md on main (daemon-post-merge).
+    Each handler has its own coexistence check: if the agent wrote the
+    target file old-style (visible in files_changed), SKIP the daemon write.
+    Wrapped in log-and-continue — a failure here must not crash teardown.
     """
     try:
         ledger = parsed.get("ledger_updates") or {}
-        feedback_text = ledger.get("feedback")
         files_changed = files_changed or []
+        slug = slug_for(os.path.basename(project_path))
 
-        # Coexistence: if the agent wrote agent-prompt-feedback.md old-style, skip
+        # --- Phase 1: prompt feedback → DB ---
+        feedback_text = ledger.get("feedback")
         if any("agent-prompt-feedback.md" in f for f in files_changed):
-            _log("DEBUG", "ledger: agent wrote agent-prompt-feedback.md old-style, skipping daemon write",
-                 slug=slug_for(os.path.basename(project_path)))
-            return
-
-        if feedback_text:
+            _log("INFO", "ledger: agent wrote agent-prompt-feedback.md old-style, skipping daemon write",
+                 slug=slug)
+        elif feedback_text:
             lifecycle.record_prompt_feedback(
                 plan_id=plan_id,
                 step_number=parsed.get("_step_number"),
@@ -1132,11 +1131,65 @@ def _apply_ledger_updates(parsed, project_path, plan_id, files_changed=None):
                 project=project_path,
                 entry_text=feedback_text,
             )
-            _log("DEBUG", "ledger: recorded prompt feedback to DB",
-                 slug=slug_for(os.path.basename(project_path)))
+            _log("INFO", "ledger: recorded prompt feedback to DB", slug=slug)
+
+        # --- Phase 2: project status → append to PROJECT_STATUS.md on main ---
+        project_status_text = ledger.get("project_status")
+        if any("PROJECT_STATUS.md" in f for f in files_changed):
+            _log("INFO", "ledger: agent wrote PROJECT_STATUS.md old-style, skipping daemon write",
+                 slug=slug)
+        elif project_status_text:
+            _append_project_status(project_path, plan_id, project_status_text)
+            _log("INFO", "ledger: appended project status milestone to PROJECT_STATUS.md", slug=slug)
     except Exception as e:
         _log("WARN", f"⚠ _apply_ledger_updates failed: {e}",
              slug=slug_for(os.path.basename(project_path)))
+
+
+def _append_project_status(project_path, plan_id, milestone_text):
+    """Append a milestone entry to PROJECT_STATUS.md at the canonical position.
+
+    Canonical position: after the first '## Completed' heading.
+    Fallback: append at EOF if no '## Completed' heading exists.
+    Then git add + commit on main (project_path). Daemon-post-merge write.
+    """
+    status_path = os.path.join(project_path, "PROJECT_STATUS.md")
+    entry = f"\n### Plan {plan_id}\n{milestone_text}\n"
+
+    if os.path.exists(status_path):
+        with open(status_path, "r") as f:
+            content = f.read()
+    else:
+        content = ""
+
+    # Find the first '## Completed' heading and insert after that line
+    completed_pattern = re.compile(r"^## Completed\b.*$", re.MULTILINE)
+    match = completed_pattern.search(content)
+    if match:
+        insert_pos = match.end()
+        new_content = content[:insert_pos] + entry + content[insert_pos:]
+        position_used = "after-completed"
+    else:
+        # Fallback: append at EOF
+        new_content = content.rstrip("\n") + "\n" + entry if content.strip() else entry.lstrip("\n")
+        position_used = "eof-fallback"
+
+    with open(status_path, "w") as f:
+        f.write(new_content)
+
+    _log("INFO", f"ledger: PROJECT_STATUS.md written ({position_used})",
+         slug=slug_for(os.path.basename(project_path)))
+
+    # Commit on main
+    subprocess.run(
+        ["git", "-C", project_path, "add", "PROJECT_STATUS.md"],
+        capture_output=True, text=True, timeout=10,
+    )
+    subprocess.run(
+        ["git", "-C", project_path, "commit", "-m",
+         f"docs(status): PROJECT_STATUS milestone for plan {plan_id} (daemon-post-merge)"],
+        capture_output=True, text=True, timeout=10,
+    )
 
 
 def _teardown_worktree(project_path: str, wt_path: str, slug: str, plan_id: int = None) -> list:

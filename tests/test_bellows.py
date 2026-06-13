@@ -4464,3 +4464,166 @@ class TestApplyLedgerUpdates:
         )
         feedback_path = os.path.join(project, "knowledge", "research", "agent-prompt-feedback.md")
         assert not os.path.exists(feedback_path)
+
+
+# ---------------------------------------------------------------------------
+# Daemon-owned ledgers Phase 2 — project_status in _apply_ledger_updates
+# ---------------------------------------------------------------------------
+
+
+class TestApplyLedgerUpdatesProjectStatus:
+    """Phase 2: _apply_ledger_updates handles project_status —
+    coexistence skip when PROJECT_STATUS.md in files_changed, canonical
+    append after first ## Completed heading, EOF fallback."""
+
+    def _make_git_repo(self, tmp_path):
+        """Create a minimal git repo at tmp_path with an initial commit."""
+        subprocess.run(["git", "init", str(tmp_path)], capture_output=True, check=True)
+        subprocess.run(["git", "-C", str(tmp_path), "config", "user.email", "test@test.com"],
+                        capture_output=True, check=True)
+        subprocess.run(["git", "-C", str(tmp_path), "config", "user.name", "Test"],
+                        capture_output=True, check=True)
+        # Create an initial commit so HEAD exists
+        gitkeep = tmp_path / ".gitkeep"
+        gitkeep.write_text("")
+        subprocess.run(["git", "-C", str(tmp_path), "add", ".gitkeep"],
+                        capture_output=True, check=True)
+        subprocess.run(["git", "-C", str(tmp_path), "commit", "-m", "init"],
+                        capture_output=True, check=True)
+        return str(tmp_path)
+
+    def test_skips_when_project_status_in_files_changed(self, tmp_path):
+        """Coexistence: agent wrote PROJECT_STATUS.md old-style → daemon skips."""
+        project = self._make_git_repo(tmp_path / "proj")
+        parsed = {
+            "ledger_updates": {"feedback": None, "project_status": "Milestone text."},
+            "_step_number": 2,
+            "_agent": "QA",
+        }
+        bellows._apply_ledger_updates(
+            parsed, project, plan_id=99,
+            files_changed=["bellows.py", "PROJECT_STATUS.md"],
+        )
+        status_path = os.path.join(project, "PROJECT_STATUS.md")
+        assert not os.path.exists(status_path)
+
+    def test_appends_after_completed_heading(self, tmp_path):
+        """Canonical position: entry lands after the first ## Completed heading."""
+        project = self._make_git_repo(tmp_path / "proj")
+        status_path = os.path.join(project, "PROJECT_STATUS.md")
+        with open(status_path, "w") as f:
+            f.write("# Project Status\n\n## In Progress\n- item\n\n## Completed\n\n### Plan 40\nOlder entry.\n")
+        parsed = {
+            "ledger_updates": {"feedback": None, "project_status": "New milestone achieved."},
+        }
+        bellows._apply_ledger_updates(
+            parsed, project, plan_id=42,
+            files_changed=["bellows.py"],
+        )
+        with open(status_path) as f:
+            content = f.read()
+        # Entry should appear after ## Completed and before the older entry
+        completed_idx = content.index("## Completed")
+        plan42_idx = content.index("### Plan 42")
+        plan40_idx = content.index("### Plan 40")
+        assert plan42_idx > completed_idx
+        assert plan42_idx < plan40_idx
+        assert "New milestone achieved." in content
+
+    def test_appends_at_eof_when_no_completed_heading(self, tmp_path):
+        """EOF fallback: when no ## Completed heading exists, append at end."""
+        project = self._make_git_repo(tmp_path / "proj")
+        status_path = os.path.join(project, "PROJECT_STATUS.md")
+        with open(status_path, "w") as f:
+            f.write("# Project Status\n\nSome content here.\n")
+        parsed = {
+            "ledger_updates": {"feedback": None, "project_status": "EOF milestone."},
+        }
+        bellows._apply_ledger_updates(
+            parsed, project, plan_id=50,
+            files_changed=[],
+        )
+        with open(status_path) as f:
+            content = f.read()
+        assert content.endswith("### Plan 50\nEOF milestone.\n")
+
+    def test_creates_file_when_absent(self, tmp_path):
+        """If PROJECT_STATUS.md doesn't exist, create it with the entry."""
+        project = self._make_git_repo(tmp_path / "proj")
+        status_path = os.path.join(project, "PROJECT_STATUS.md")
+        assert not os.path.exists(status_path)
+        parsed = {
+            "ledger_updates": {"feedback": None, "project_status": "Brand new milestone."},
+        }
+        bellows._apply_ledger_updates(
+            parsed, project, plan_id=1,
+            files_changed=[],
+        )
+        assert os.path.exists(status_path)
+        with open(status_path) as f:
+            content = f.read()
+        assert "### Plan 1" in content
+        assert "Brand new milestone." in content
+
+    def test_commits_change_to_git(self, tmp_path):
+        """Daemon commits the PROJECT_STATUS.md change on main."""
+        project = self._make_git_repo(tmp_path / "proj")
+        status_path = os.path.join(project, "PROJECT_STATUS.md")
+        with open(status_path, "w") as f:
+            f.write("# Project Status\n\n## Completed\n")
+        subprocess.run(["git", "-C", project, "add", "PROJECT_STATUS.md"],
+                        capture_output=True, check=True)
+        subprocess.run(["git", "-C", project, "commit", "-m", "add status"],
+                        capture_output=True, check=True)
+        parsed = {
+            "ledger_updates": {"feedback": None, "project_status": "Committed milestone."},
+        }
+        bellows._apply_ledger_updates(
+            parsed, project, plan_id=55,
+            files_changed=[],
+        )
+        # Verify the commit exists in git log
+        result = subprocess.run(
+            ["git", "-C", project, "log", "--oneline", "-1"],
+            capture_output=True, text=True,
+        )
+        assert "daemon-post-merge" in result.stdout
+        assert "plan 55" in result.stdout
+
+    def test_noop_when_no_project_status_in_receipt(self, tmp_path):
+        """No project_status in receipt → no file write, no error."""
+        project = self._make_git_repo(tmp_path / "proj")
+        parsed = {
+            "ledger_updates": {"feedback": None, "project_status": None},
+        }
+        bellows._apply_ledger_updates(
+            parsed, project, plan_id=42,
+            files_changed=[],
+        )
+        status_path = os.path.join(project, "PROJECT_STATUS.md")
+        assert not os.path.exists(status_path)
+
+    def test_feedback_still_works_alongside_project_status(self, tmp_path):
+        """Phase 1 feedback path is NOT broken by Phase 2 addition."""
+        project = self._make_git_repo(tmp_path / "proj")
+        parsed = {
+            "ledger_updates": {
+                "feedback": "**2026-06-13** — test feedback",
+                "project_status": "Milestone text.",
+            },
+            "_step_number": 1,
+            "_agent": "QA",
+        }
+        bellows._apply_ledger_updates(
+            parsed, project, plan_id=42,
+            files_changed=[],
+        )
+        # Feedback should be in DB
+        conn = sqlite3.connect(lifecycle.LIFECYCLE_DB_PATH)
+        row = conn.execute("SELECT entry_text FROM prompt_feedback WHERE plan_id = 42").fetchone()
+        conn.close()
+        assert row is not None
+        assert "test feedback" in row[0]
+        # Project status should be in file
+        status_path = os.path.join(project, "PROJECT_STATUS.md")
+        assert os.path.exists(status_path)
