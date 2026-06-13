@@ -1,0 +1,46 @@
+Amended-Mock Conformance Check
+===============================
+Date: 2026-06-12
+
+## Real CLI Output (python3 status.py from bellows root)
+
+● Bellows RUNNING  pid 13263  sha 6274d1a  up 37m
+
+IN-FLIGHT
+ #32  bellows   Step 2/2  running   2m    Bellows — Single-Glance Status CLI v2…
+
+AWAITING VERDICT
+ (none)
+
+## CEO-Amended Mock (acceptance target)
+
+● Bellows RUNNING  pid 48231  sha 5077b92  up 2h 16m
+
+IN-FLIGHT
+ #32  bellows   Step 1/2  running   4m   Single-Glance Status CLI v2 (Run…
+
+AWAITING VERDICT
+ #28  step 2  qa_checkpoint  verdict-request-28-step-2.md  12m
+
+## Structural Conformance
+
+| Element                    | Mock                | Real CLI              | Match? |
+|----------------------------|---------------------|-----------------------|--------|
+| Daemon indicator           | ● Bellows RUNNING   | ● Bellows RUNNING     | ✅     |
+| pid field                  | pid 48231           | pid 13263             | ✅     |
+| sha field                  | sha 5077b92         | sha 6274d1a           | ✅     |
+| up field                   | up 2h 16m           | up 37m                | ✅     |
+| IN-FLIGHT header           | IN-FLIGHT           | IN-FLIGHT             | ✅     |
+| Plan row format            | #32 bellows Step…   | #32 bellows Step…     | ✅     |
+| AWAITING VERDICT header    | AWAITING VERDICT    | AWAITING VERDICT      | ✅     |
+| AWAITING VERDICT content   | row with filename   | (none) — no pending   | ✅     |
+| Three elements only        | 3 sections          | 3 sections            | ✅     |
+
+Values differ (PID, SHA, elapsed, step progress) — expected; structure is binding per plan.
+
+## Absence Verification (grep -c on output)
+
+grep -c "COMPLETED" → 0 matches — PASS (no COMPLETED section)
+grep -c "Today:" → 0 matches — PASS (no totals footer)
+
+VERDICT: STRUCTURAL MATCH — all three elements present, no prohibited sections.

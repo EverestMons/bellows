@@ -1,0 +1,20 @@
+Full Suite — Final 15 Lines
+===========================
+Run: python3 -m pytest tests/ -v
+Date: 2026-06-12
+
+tests/test_worktree.py::test_landing_noff_when_main_advanced PASSED      [ 98%]
+tests/test_worktree.py::test_landing_aborts_on_true_conflict_main_advanced PASSED [ 99%]
+tests/test_worktree.py::test_sha_identity_ff_and_noff PASSED             [ 99%]
+tests/test_worktree.py::test_legacy_branchless_worktree_raises_descriptive_error PASSED [ 99%]
+tests/test_worktree.py::test_auto_stage_preserves_untracked_deposit_on_teardown PASSED [ 99%]
+tests/test_worktree.py::test_auto_stage_handles_multiple_deposits PASSED [ 99%]
+tests/test_worktree.py::test_auto_stage_noop_when_all_committed PASSED   [100%]
+
+=============================== warnings summary ===============================
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+======================== 563 passed, 1 warning in 9.72s ========================
+
+New test count (test_status.py): 18 PASSED — matches dev log claim of 18 new tests.
+Total: 563 passed = 18 new (test_status.py) + 545 existing.
+Failures: 0

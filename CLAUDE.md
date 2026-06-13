@@ -10,6 +10,9 @@ Per-run JSON output lives in logs/. Run history in bellows.db.
 ## Config
 Edit config.json to add watched project paths and Pushover credentials.
 
+## Status
+python status.py
+
 ## Knowledge Base
 Plans for Bellows itself live in knowledge/decisions/.
 

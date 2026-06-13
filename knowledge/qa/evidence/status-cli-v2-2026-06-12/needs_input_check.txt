@@ -1,0 +1,39 @@
+Needs-Input Correctness Check
+==============================
+Date: 2026-06-12
+
+NOTE: The plan acknowledges this step cannot self-observe its own paused state.
+Verification is performed via fixture tests that confirm AWAITING VERDICT renders
+the verdict-request filename and pause reason code.
+
+## Test 1: TestAwaitingVerdictRendering::test_awaiting_verdict_shows_filename
+
+Command: python3 -m pytest tests/test_status.py::TestAwaitingVerdictRendering -v
+Result: 1 passed
+
+Assertions verified:
+  - "AWAITING VERDICT" in output ✅
+  - "#11" (plan_id) in output ✅
+  - "step 2" (step_number) in output ✅
+  - "qa_checkpoint" (pause_reason_code) in output ✅
+  - "verdict-request-11-step-2.md" (verdict_file_ref) in output ✅
+
+## Test 2: TestBothEmptyNone::test_awaiting_verdict_none
+
+Command: python3 -m pytest tests/test_status.py::TestBothEmptyNone::test_awaiting_verdict_none -v
+Result: 1 passed
+
+Assertions verified:
+  - "(none)" in output when no pending verdicts ✅
+
+## Fixture Data (from test_status.py::status_db)
+
+The fixture seeds:
+  - verdicts row: plan_id=11, step_number=2, outcome=NULL, pause_reason_code='qa_checkpoint',
+    verdict_file_ref='verdict-request-11-step-2.md'
+  - Query: SELECT ... FROM verdicts v WHERE v.outcome IS NULL
+
+Both the populated and empty cases render correctly. The verdict-request filename
+is the actionable element shown to the CEO, confirmed present in rendered output.
+
+VERDICT: PASS — AWAITING VERDICT renders filename and pause reason correctly.

@@ -1,0 +1,41 @@
+Read-Only + Degradation Safety Check
+=====================================
+Date: 2026-06-12
+
+## Read-Only DB Access Verification
+
+### status.py — grep for sqlite3.connect
+
+Line 211: conn = sqlite3.connect(db_uri, uri=True)
+  URI constructed at line 211: db_uri = f"file:{db_path}?mode=ro"
+
+Total connects in status.py: 1
+All use ?mode=ro: YES ✅
+
+### tests/test_status.py — grep for sqlite3.connect
+
+Line 22:  conn = sqlite3.connect(db_path)                        — fixture SEED (write, correct)
+Line 93:  conn = sqlite3.connect(f"file:{status_db}?mode=ro"...) — read-only ✅
+Line 122: conn = sqlite3.connect(f"file:{status_db}?mode=ro"...) — read-only ✅
+Line 146: conn = sqlite3.connect(f"file:{empty_db}?mode=ro"...)  — read-only ✅
+Line 166: conn = sqlite3.connect(f"file:{empty_db}?mode=ro"...)  — read-only ✅
+Line 186: conn = sqlite3.connect(f"file:{status_db}?mode=ro"...) — read-only ✅
+Line 237: conn = sqlite3.connect(f"file:{status_db}?mode=ro"...) — read-only ✅
+
+All read-path connects use ?mode=ro. The one non-ro connect (line 22) is the
+fixture seed function that populates test data — correctly uses write mode.
+
+## Absent-DB Degradation
+
+Command: python3 -m pytest tests/test_status.py::TestAbsentDbDegradation -v
+Result: 1 passed
+
+Test verifies output contains:
+  - "STOPPED" ✅
+  - "no lifecycle.db" ✅
+  - "not found" ✅
+
+The test confirms the CLI prints a graceful 3-line message when lifecycle.db
+is absent and does not crash. Exit code is 0 per the spec.
+
+VERDICT: PASS — all production connects are read-only; absent-DB degrades gracefully.

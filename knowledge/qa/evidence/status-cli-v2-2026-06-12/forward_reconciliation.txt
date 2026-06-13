@@ -1,0 +1,25 @@
+FORWARD Reconciliation (Rule 42)
+=================================
+Date: 2026-06-12
+
+## Row 2 Update
+
+Before:
+| 2 | 2026-05-21 | Bellows status UI — ... | ceo-decision-fork | — | open |
+
+After:
+| 2 | 2026-05-21 | Bellows status UI — ... | ceo-decision-fork | 32 | closed-by-plan-32 |
+
+## Diff
+
+-| 2 | 2026-05-21 | Bellows status UI — design shape decision for real-time plan/step observability surface (context in BACKLOG-ARCHIVE.md) | ceo-decision-fork | — | open |
++| 2 | 2026-05-21 | Bellows status UI — design shape decision for real-time plan/step observability surface (context in BACKLOG-ARCHIVE.md) | ceo-decision-fork | 32 | closed-by-plan-32 |
+
+## CLAUDE.md Update
+
+Added "Status" heading with CLI invocation one-liner:
+
+## Status
+python status.py
+
+VERDICT: PASS — FORWARD row 2 closed with plan-id 32, CLAUDE.md updated.

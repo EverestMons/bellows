@@ -11,7 +11,7 @@
 | # | Added | Item | Type | Plan-id link | Status |
 |---|---|---|---|---|---|
 | 1 | 2026-05-13 | `_extract_step_text` regex case-sensitivity — allow mixed-case `## Step N` headers (context in BACKLOG-ARCHIVE.md) | deferred-work | — | open |
-| 2 | 2026-05-21 | Bellows status UI — design shape decision for real-time plan/step observability surface (context in BACKLOG-ARCHIVE.md) | ceo-decision-fork | — | open |
+| 2 | 2026-05-21 | Bellows status UI — design shape decision for real-time plan/step observability surface (context in BACKLOG-ARCHIVE.md) | ceo-decision-fork | 32 | closed-by-plan-32 |
 | 3 | 2026-05-21 | Deposits parser: strip parenthetical qualifiers from backtick paths in `_extract_plan_required_deposits` (context in BACKLOG-ARCHIVE.md) | deferred-work | — | open |
 | 4 | 2026-05-22 | Worktree teardown cherry-pick conflict when local `main` has uncommitted `PROJECT_STATUS.md` edits (context in BACKLOG-ARCHIVE.md) | deferred-work | — | open |
 | 5 | 2026-05-22 | Parallel-diagnostic cherry-pick conflicts on shared append-only bookkeeping files at teardown (context in BACKLOG-ARCHIVE.md) | deferred-work | — | open |
