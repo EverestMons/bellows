@@ -178,6 +178,48 @@ def render_awaiting_verdict(rows):
 
 
 # ---------------------------------------------------------------------------
+# DB query helpers (importable — all read-only, ?mode=ro)
+# ---------------------------------------------------------------------------
+
+def query_in_flight(db_path):
+    """Return in-flight plan rows from lifecycle.db. Returns list of Row dicts."""
+    db_uri = f"file:{db_path}?mode=ro"
+    conn = sqlite3.connect(db_uri, uri=True)
+    conn.row_factory = sqlite3.Row
+    rows = conn.execute("""
+        SELECT p.id, p.target_project, p.title, p.total_steps,
+               s.step_number, s.status, s.step_started_at
+        FROM plans p
+        LEFT JOIN steps s ON s.plan_id = p.id
+          AND s.step_number = (
+            SELECT MAX(s2.step_number) FROM steps s2
+            WHERE s2.plan_id = p.id AND s2.status IN ('running', 'awaiting_verdict')
+          )
+        WHERE p.lifecycle_state IN ('in_progress', 'claimed')
+        ORDER BY p.id
+    """).fetchall()
+    conn.close()
+    return rows
+
+
+def query_awaiting_verdict(db_path):
+    """Return awaiting-verdict rows from lifecycle.db. Returns list of Row dicts."""
+    db_uri = f"file:{db_path}?mode=ro"
+    conn = sqlite3.connect(db_uri, uri=True)
+    conn.row_factory = sqlite3.Row
+    rows = conn.execute("""
+        SELECT v.plan_id, v.step_number, v.pause_reason_code, v.verdict_file_ref,
+               COALESCE(s.step_ended_at, s.step_started_at) AS pause_time
+        FROM verdicts v
+        LEFT JOIN steps s ON s.plan_id = v.plan_id AND s.step_number = v.step_number
+        WHERE v.outcome IS NULL
+        ORDER BY v.plan_id
+    """).fetchall()
+    conn.close()
+    return rows
+
+
+# ---------------------------------------------------------------------------
 # Main
 # ---------------------------------------------------------------------------
 
@@ -207,39 +249,14 @@ def main():
     print(render_daemon_header(daemon_running, pid, sha, uptime))
     print()
 
-    # DB queries — all read-only
-    db_uri = f"file:{db_path}?mode=ro"
-    conn = sqlite3.connect(db_uri, uri=True)
-    conn.row_factory = sqlite3.Row
-
-    # In-Flight
-    in_flight = conn.execute("""
-        SELECT p.id, p.target_project, p.title, p.total_steps,
-               s.step_number, s.status, s.step_started_at
-        FROM plans p
-        LEFT JOIN steps s ON s.plan_id = p.id
-          AND s.step_number = (
-            SELECT MAX(s2.step_number) FROM steps s2
-            WHERE s2.plan_id = p.id AND s2.status IN ('running', 'awaiting_verdict')
-          )
-        WHERE p.lifecycle_state IN ('in_progress', 'claimed')
-        ORDER BY p.id
-    """).fetchall()
+    in_flight = query_in_flight(str(db_path))
     print(render_in_flight(in_flight, daemon_running))
     print()
 
-    # Awaiting Verdict
-    awaiting = conn.execute("""
-        SELECT v.plan_id, v.step_number, v.pause_reason_code, v.verdict_file_ref,
-               COALESCE(s.step_ended_at, s.step_started_at) AS pause_time
-        FROM verdicts v
-        LEFT JOIN steps s ON s.plan_id = v.plan_id AND s.step_number = v.step_number
-        WHERE v.outcome IS NULL
-        ORDER BY v.plan_id
-    """).fetchall()
+    awaiting = query_awaiting_verdict(str(db_path))
     print(render_awaiting_verdict(awaiting))
 
-    conn.close()
+    conn = None  # no longer held open
 
 
 if __name__ == "__main__":
