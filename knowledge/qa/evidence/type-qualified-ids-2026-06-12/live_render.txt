@@ -1,0 +1,14 @@
+$ python3 status.py
+
+● Bellows RUNNING  pid 28289  sha 6274d1a  up 39m
+
+IN-FLIGHT
+ executable #36  bellows   Step 2/2  running   1m    Bellows — Type-Qualified Plan IDs in …
+ executable #37  bellows   Step 1/2  running   0m    Bellows — Store the Plan Document Pat…
+
+AWAITING VERDICT
+ (none)
+
+Analysis:
+- IN-FLIGHT pane shows "executable #36" and "executable #37" — type-qualified form confirmed.
+- AWAITING VERDICT pane shows "(none)" — no plans currently awaiting verdict, but the render code path is verified by unit tests (TestTypeQualifiedIds::test_awaiting_verdict_executable).

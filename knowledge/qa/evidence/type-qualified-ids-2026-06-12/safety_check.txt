@@ -1,0 +1,22 @@
+$ grep -n 'mode=ro' status.py
+
+4:All DB access is read-only (?mode=ro). Never imports daemon internals.
+185:# DB query helpers (importable — all read-only, ?mode=ro)
+190:    db_uri = f"file:{db_path}?mode=ro"
+211:    db_uri = f"file:{db_path}?mode=ro"
+
+$ grep -n 'JOIN\|connect\|sqlite' status.py
+
+10:import sqlite3
+191:    conn = sqlite3.connect(db_uri, uri=True)
+192:    conn.row_factory = sqlite3.Row
+197:        LEFT JOIN steps s ON s.plan_id = p.id
+212:    conn = sqlite3.connect(db_uri, uri=True)
+213:    conn.row_factory = sqlite3.Row
+218:        LEFT JOIN plans p ON p.id = v.plan_id
+219:        LEFT JOIN steps s ON s.plan_id = v.plan_id AND s.step_number = v.step_number
+
+Analysis:
+- Both DB connections (lines 190, 211) use ?mode=ro — read-only access preserved.
+- The new JOIN at line 218 (LEFT JOIN plans p ON p.id = v.plan_id) is a read-only SELECT join, no write operations.
+- No INSERT, UPDATE, DELETE, or write-mode connections found anywhere in status.py.

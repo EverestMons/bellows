@@ -1,0 +1,17 @@
+$ python3 -m pytest tests/ 2>&1 | tail -15
+
+tests/test_rule_26_deposit_parser.py .........                           [ 75%]
+tests/test_runner.py ......................                              [ 78%]
+tests/test_runner_parser.py .........                                    [ 80%]
+tests/test_status.py ......................                              [ 84%]
+tests/test_validators.py ...............................                 [ 89%]
+tests/test_verdict.py .......................................            [ 96%]
+tests/test_worktree.py .......................                           [100%]
+
+=============================== warnings summary ===============================
+../../../../../Library/Python/3.9/lib/python/site-packages/urllib3/__init__.py:35
+  /Users/marklehn/Library/Python/3.9/lib/python/site-packages/urllib3/__init__.py:35: NotOpenSSLWarning: urllib3 v2 only supports OpenSSL 1.1.1+, currently the 'ssl' module is compiled with 'LibreSSL 2.8.3'. See: https://github.com/urllib3/urllib3/issues/3020
+    warnings.warn(
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+======================= 586 passed, 1 warning in 16.02s ========================

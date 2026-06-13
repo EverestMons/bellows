@@ -1,0 +1,10 @@
+$ grep -nE '(type.*#\{plan_id\}|#\{plan_id\}|f".*#.*plan_id)' status.py
+
+155:        id_label = f"{ptype} #{plan_id}" if ptype else f"#{plan_id}"
+177:        id_label = f"{ptype} #{plan_id}" if ptype else f"#{plan_id}"
+
+Analysis:
+- Line 155: IN-FLIGHT render — type-qualified label with NULL fallback
+- Line 177: AWAITING VERDICT render — type-qualified label with NULL fallback
+- Both panes prefix the type. The only bare #{plan_id} appears in the NULL/empty fallback (the `else` branch), which is the documented defensive behavior.
+- No other render f-strings use bare #{plan_id} without the type prefix.
