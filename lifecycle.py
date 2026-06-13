@@ -137,6 +137,18 @@ def init_lifecycle_db(db_path=None):
             override_ref TEXT
         )
     """)
+    # --- Daemon-owned ledgers Phase 1: prompt_feedback table ---
+    conn.execute("""
+        CREATE TABLE IF NOT EXISTS prompt_feedback (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            plan_id INTEGER,
+            step_number INTEGER,
+            agent TEXT,
+            project TEXT NOT NULL,
+            entry_text TEXT NOT NULL,
+            created_at TEXT NOT NULL
+        )
+    """)
     conn.commit()
     conn.close()
 
@@ -501,6 +513,53 @@ def record_derivations(executable_id, diagnostic_ids, db_path=None):
         conn.close()
     except Exception as e:
         _warn(f"record_derivations failed for executable {executable_id}: {e}")
+
+
+# ---------------------------------------------------------------------------
+# Daemon-owned ledgers Phase 1 — prompt_feedback write + generate
+# ---------------------------------------------------------------------------
+
+def record_prompt_feedback(plan_id, step_number, agent, project, entry_text,
+                           db_path=None):
+    """Insert a prompt_feedback row. Log-and-continue semantics."""
+    try:
+        path = db_path or LIFECYCLE_DB_PATH
+        conn = sqlite3.connect(path)
+        conn.execute(
+            """INSERT INTO prompt_feedback
+               (plan_id, step_number, agent, project, entry_text, created_at)
+               VALUES (?, ?, ?, ?, ?, ?)""",
+            (plan_id, step_number, agent, project, entry_text,
+             datetime.now().isoformat()),
+        )
+        conn.commit()
+        conn.close()
+    except Exception as e:
+        _warn(f"record_prompt_feedback failed for plan {plan_id} step {step_number}: {e}")
+
+
+def generate_feedback_md(project, db_path=None):
+    """Generate agent-prompt-feedback.md content from DB rows (read-only).
+
+    Returns the Markdown string with entries newest-first, matching the
+    current file convention. Phase 1: tested but not yet wired as the
+    live producer (the governance follow-on activates it).
+    """
+    path = db_path or LIFECYCLE_DB_PATH
+    conn = sqlite3.connect(path)
+    rows = conn.execute(
+        "SELECT entry_text, created_at FROM prompt_feedback "
+        "WHERE project = ? ORDER BY created_at DESC",
+        (project,),
+    ).fetchall()
+    conn.close()
+    if not rows:
+        return "# Agent Prompt Feedback\n\n*No feedback entries recorded.*\n"
+    lines = ["# Agent Prompt Feedback\n"]
+    for entry_text, _created_at in rows:
+        lines.append(entry_text.rstrip())
+        lines.append("")
+    return "\n".join(lines) + "\n"
 
 
 def get_step_id(plan_id, step_number, db_path=None):

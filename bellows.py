@@ -621,6 +621,7 @@ def run_plan(plan_path: str, config: dict, response_server: server.ResponseServe
                 try:
                     _lc_commit_shas = _teardown_worktree(project_path, wt_path, plan_slug, plan_id=plan_id)
                     lifecycle.record_commits(_lc_step_id, os.path.basename(project_path), _lc_commit_shas)
+                    _apply_ledger_updates(parsed, project_path, plan_id, files_changed=files_changed)
                 except WorktreeTeardownError as e:
                     _pause_reason = "gate_failure"
                     gate_result["failures"].append({"gate": "worktree_teardown", "evidence": str(e)})
@@ -731,6 +732,7 @@ def run_plan(plan_path: str, config: dict, response_server: server.ResponseServe
             try:
                 _lc_commit_shas = _teardown_worktree(project_path, wt_path, plan_slug, plan_id=plan_id)
                 lifecycle.record_commits(_lc_step_id, os.path.basename(project_path), _lc_commit_shas)
+                _apply_ledger_updates(parsed, project_path, plan_id, files_changed=files_changed)
             except WorktreeTeardownError as e:
                 _pause_reason = "gate_failure"
                 gate_result["failures"].append({"gate": "worktree_teardown", "evidence": str(e)})
@@ -761,6 +763,7 @@ def run_plan(plan_path: str, config: dict, response_server: server.ResponseServe
             try:
                 _lc_commit_shas = _teardown_worktree(project_path, wt_path, plan_slug, plan_id=plan_id)
                 lifecycle.record_commits(_lc_step_id, os.path.basename(project_path), _lc_commit_shas)
+                _apply_ledger_updates(parsed, project_path, plan_id, files_changed=files_changed)
             except WorktreeTeardownError as e:
                 # Cherry-pick conflict on auto-close — convert to gate_failure pause
                 _log("ERROR", f"❌ worktree teardown failed on auto-close: {e}", slug=slug_for(plan_name))
@@ -1098,6 +1101,42 @@ def _build_deposit_records(plan_text, plan_header, project_path, wt_path):
                     "landed": resolved is not None and os.path.exists(resolved),
                 })
     return records
+
+
+def _apply_ledger_updates(parsed, project_path, plan_id, files_changed=None):
+    """Apply daemon-owned ledger updates from the parsed Output Receipt.
+
+    Phase 1 (dormant, coexistence-safe): handles ONLY prompt feedback.
+    - If agent-prompt-feedback.md appears in files_changed → SKIP (agent
+      wrote old-style; coexistence — do nothing).
+    - Else if parsed["ledger_updates"]["feedback"] is present → write DB row
+      via record_prompt_feedback().
+    Never writes the feedback FILE. Wrapped in log-and-continue.
+    """
+    try:
+        ledger = parsed.get("ledger_updates") or {}
+        feedback_text = ledger.get("feedback")
+        files_changed = files_changed or []
+
+        # Coexistence: if the agent wrote agent-prompt-feedback.md old-style, skip
+        if any("agent-prompt-feedback.md" in f for f in files_changed):
+            _log("DEBUG", "ledger: agent wrote agent-prompt-feedback.md old-style, skipping daemon write",
+                 slug=slug_for(os.path.basename(project_path)))
+            return
+
+        if feedback_text:
+            lifecycle.record_prompt_feedback(
+                plan_id=plan_id,
+                step_number=parsed.get("_step_number"),
+                agent=parsed.get("_agent"),
+                project=project_path,
+                entry_text=feedback_text,
+            )
+            _log("DEBUG", "ledger: recorded prompt feedback to DB",
+                 slug=slug_for(os.path.basename(project_path)))
+    except Exception as e:
+        _log("WARN", f"⚠ _apply_ledger_updates failed: {e}",
+             slug=slug_for(os.path.basename(project_path)))
 
 
 def _teardown_worktree(project_path: str, wt_path: str, slug: str, plan_id: int = None) -> list:

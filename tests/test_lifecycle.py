@@ -865,3 +865,128 @@ class TestBackfillPlanDocRef:
         ref = conn.execute("SELECT plan_doc_ref FROM plans WHERE id = ?", (pid,)).fetchone()[0]
         conn.close()
         assert ref == f"knowledge/decisions/in-progress-diagnostic-{pid}.md"
+
+
+# ---------------------------------------------------------------------------
+# Daemon-owned ledgers Phase 1 — prompt_feedback tests
+# ---------------------------------------------------------------------------
+
+class TestPromptFeedbackMigration:
+    """(a) migration adds prompt_feedback table idempotently."""
+
+    def test_table_present_on_fresh_db(self, tmp_path):
+        db_path = str(tmp_path / "fresh_pf.db")
+        lifecycle.init_lifecycle_db(db_path)
+        conn = sqlite3.connect(db_path)
+        tables = {row[0] for row in conn.execute(
+            "SELECT name FROM sqlite_master WHERE type='table'"
+        ).fetchall()}
+        conn.close()
+        assert "prompt_feedback" in tables
+
+    def test_columns_match_spec(self, tmp_path):
+        db_path = str(tmp_path / "cols_pf.db")
+        lifecycle.init_lifecycle_db(db_path)
+        conn = sqlite3.connect(db_path)
+        cols = {row[1] for row in conn.execute("PRAGMA table_info(prompt_feedback)")}
+        conn.close()
+        expected = {"id", "plan_id", "step_number", "agent", "project",
+                    "entry_text", "created_at"}
+        assert expected == cols
+
+    def test_idempotent_double_init(self, tmp_path):
+        db_path = str(tmp_path / "idem_pf.db")
+        lifecycle.init_lifecycle_db(db_path)
+        lifecycle.init_lifecycle_db(db_path)  # should not raise
+        conn = sqlite3.connect(db_path)
+        tables = [row[0] for row in conn.execute(
+            "SELECT name FROM sqlite_master WHERE type='table' AND name='prompt_feedback'"
+        ).fetchall()]
+        conn.close()
+        assert len(tables) == 1
+
+
+class TestRecordPromptFeedback:
+    """(b) record_prompt_feedback + read back."""
+
+    def test_happy_path(self):
+        pid = lifecycle.mint_and_claim("diagnostic", "/proj", "T", "bellows", "small", 1, "d.md")
+        lifecycle.record_prompt_feedback(pid, 1, "Bellows Developer", "/proj",
+                                         "**2026-06-13** — test feedback entry")
+        conn = sqlite3.connect(lifecycle.LIFECYCLE_DB_PATH)
+        row = conn.execute(
+            "SELECT plan_id, step_number, agent, project, entry_text FROM prompt_feedback"
+        ).fetchone()
+        conn.close()
+        assert row[0] == pid
+        assert row[1] == 1
+        assert row[2] == "Bellows Developer"
+        assert row[3] == "/proj"
+        assert "test feedback entry" in row[4]
+
+    def test_multiple_entries(self):
+        pid = lifecycle.mint_and_claim("executable", "/proj", "T", "bellows", "small", 2, "e.md")
+        lifecycle.record_prompt_feedback(pid, 1, "DEV", "/proj", "Entry 1")
+        lifecycle.record_prompt_feedback(pid, 2, "QA", "/proj", "Entry 2")
+        conn = sqlite3.connect(lifecycle.LIFECYCLE_DB_PATH)
+        rows = conn.execute("SELECT entry_text FROM prompt_feedback ORDER BY id").fetchall()
+        conn.close()
+        assert len(rows) == 2
+        assert rows[0][0] == "Entry 1"
+        assert rows[1][0] == "Entry 2"
+
+    def test_log_and_continue_on_failure(self, tmp_path):
+        db_path = str(tmp_path / "ro_pf.db")
+        lifecycle.init_lifecycle_db(db_path)
+        os.chmod(db_path, stat.S_IRUSR)
+        # Should not raise
+        lifecycle.record_prompt_feedback(1, 1, "DEV", "/proj", "text", db_path=db_path)
+        os.chmod(db_path, stat.S_IRUSR | stat.S_IWUSR)
+
+
+class TestGenerateFeedbackMd:
+    """(e) generate_feedback_md renders rows newest-first."""
+
+    def test_empty_db_returns_header(self, tmp_path):
+        db_path = str(tmp_path / "gen_empty.db")
+        lifecycle.init_lifecycle_db(db_path)
+        result = lifecycle.generate_feedback_md("/proj", db_path=db_path)
+        assert "No feedback entries" in result
+
+    def test_renders_newest_first(self, tmp_path):
+        db_path = str(tmp_path / "gen_order.db")
+        lifecycle.init_lifecycle_db(db_path)
+        conn = sqlite3.connect(db_path)
+        conn.execute(
+            "INSERT INTO prompt_feedback (plan_id, step_number, agent, project, entry_text, created_at) "
+            "VALUES (1, 1, 'DEV', '/proj', 'First entry', '2026-06-13T10:00:00')"
+        )
+        conn.execute(
+            "INSERT INTO prompt_feedback (plan_id, step_number, agent, project, entry_text, created_at) "
+            "VALUES (2, 1, 'QA', '/proj', 'Second entry', '2026-06-13T11:00:00')"
+        )
+        conn.commit()
+        conn.close()
+        result = lifecycle.generate_feedback_md("/proj", db_path=db_path)
+        # Second entry (newer) should appear before First entry
+        pos_second = result.index("Second entry")
+        pos_first = result.index("First entry")
+        assert pos_second < pos_first
+
+    def test_filters_by_project(self, tmp_path):
+        db_path = str(tmp_path / "gen_filter.db")
+        lifecycle.init_lifecycle_db(db_path)
+        conn = sqlite3.connect(db_path)
+        conn.execute(
+            "INSERT INTO prompt_feedback (plan_id, step_number, agent, project, entry_text, created_at) "
+            "VALUES (1, 1, 'DEV', '/proj_a', 'Entry A', '2026-06-13T10:00:00')"
+        )
+        conn.execute(
+            "INSERT INTO prompt_feedback (plan_id, step_number, agent, project, entry_text, created_at) "
+            "VALUES (2, 1, 'DEV', '/proj_b', 'Entry B', '2026-06-13T10:00:00')"
+        )
+        conn.commit()
+        conn.close()
+        result = lifecycle.generate_feedback_md("/proj_a", db_path=db_path)
+        assert "Entry A" in result
+        assert "Entry B" not in result

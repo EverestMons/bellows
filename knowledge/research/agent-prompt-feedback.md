@@ -3,6 +3,18 @@
 **Date:** 2026-05-29
 **Plans:** diagnostic-claude-settings-permission-gap-2026-05-22, executable-pre-scan-orphan-guard-2026-05-22, executable-bellows-tier-1-batch-2026-05-21, executable-bellows-expected-keys-narrow-2026-05-21, diagnostic-bellows-expected-keys-warning-2026-05-21, diagnostic-bellows-isinstance-asymmetry-2026-05-21, executable-deposit-exists-path-form-normalization-2026-05-27, executable-disable-autoupdater-2026-05-27, diagnostic-planner-authored-contract-validation-2026-05-20, diagnostic-bash-gate-vs-guardrails-2026-05-20, executable-plan-write-time-lessons-reread-2026-05-13, diagnostic-pre-scan-orphan-warn-flood-2026-05-22, executable-remove-pre-scan-processed-rename-v2-2026-05-24, executable-rename-first-ordering-2026-05-24, executable-settings-local-bash-fallback-doc-2026-05-22, executable-mcp-read-class-tools-extension-2026-05-25, diagnostic-file-change-audit-false-negative-2026-05-25, executable-file-change-audit-fix-2026-05-25, executable-planner-template-rule-21-contract-change-2026-05-26, diagnostic-verdict-ledger-gate-result-preservation-2026-05-26, executable-verdict-ledger-gate-result-preservation-2026-05-26, executable-fix-f-guard-removal-2026-05-26, diagnostic-bellows-hardening-batch-freshness-2026-05-26, executable-bellows-hardening-batch-items-1-3-4-2026-05-26, executable-bellows-test-isolation-conftest-2026-05-26, diagnostic-leftover-after-ship-tooling-scope-2026-05-26, executable-leftover-after-ship-tooling-blueprint-2026-05-26, executable-leftover-after-ship-tooling-implementation-2026-05-26, executable-freshness-check-algorithm-v2-blueprint-2026-05-27, executable-freshness-check-algorithm-v2-blueprint-retry-2026-05-27, executable-freshness-check-algorithm-v2-implementation-2026-05-27, executable-worktree-precheck-hardening-2026-05-29
 
+## 2026-06-13 — daemon-ledgers-phase1-feedback (DEV Step 1)
+
+1. **Design doc was authoritative and accurate.** All anchors verified at edit time — parser.py:30–37 ceo_flags pattern, bellows.py teardown sites at ~622/731/762, lifecycle.py CREATE TABLE IF NOT EXISTS migration mechanism. No divergence from design doc.
+
+2. **Coexistence logic is the load-bearing safety property.** The `any("agent-prompt-feedback.md" in f for f in files_changed)` check ensures Phase 1 never double-writes. This is the property QA must verify most carefully — if it fails, feedback would be written twice (once by agent old-style, once by daemon).
+
+3. **Three teardown sites is a code smell.** The same teardown-then-pause/close pattern is repeated at lines ~622, ~733, and ~764 with near-identical surrounding code. A future refactor could extract a `_finalize_step()` helper. Not done here (out of scope, Phase 1 is mechanism-only).
+
+4. **Parser regex boundary: `\n## ` vs `\Z`.** The `### Ledger Updates` section is terminated by `\n## ` (next H2 section) or end-of-string. This matches the ceo_flags pattern but may need adjustment if Output Receipts gain H2-level sections after Ledger Updates. Current format has Ledger Updates at the end of the receipt, so this is safe.
+
+5. **`_step_number` and `_agent` enrichment fields.** The `_apply_ledger_updates` function reads `parsed.get("_step_number")` and `parsed.get("_agent")` — these are not set by the current parser (they'd come from bellows.py enrichment when the mechanism activates). Phase 1 stores them as None, which is acceptable for the dormant period.
+
 ## 2026-06-13 — daemon-owned-ledgers-design (SA Step 1)
 
 1. **Specialist file present in worktree.** `agents/BELLOWS_SYSTEMS_ANALYST.md` was read successfully — third consecutive occurrence with the specialist file available.

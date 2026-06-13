@@ -42,6 +42,23 @@ def parse(raw: dict) -> dict:
     if vr_match:
         verdict_requested = {"requested": True, "reason": vr_match.group(1).strip()}
 
+    # Extract ### Ledger Updates section — daemon-owned ledgers Phase 1.
+    # Mirrors the ### Flags for CEO extraction pattern (parser.py:30–37).
+    # Subsections: #### Prompt Feedback (Phase 1), others added in later phases.
+    ledger_updates = {"feedback": None}
+    lu_match = re.search(
+        r"### Ledger Updates\s*\n(.*?)(?=\n## |\Z)", result_text, re.DOTALL
+    )
+    if lu_match:
+        lu_body = lu_match.group(1)
+        fb_match = re.search(
+            r"#### (?:Prompt )?Feedback\s*\n(.*?)(?=\n#### |\Z)", lu_body, re.DOTALL
+        )
+        if fb_match:
+            fb_text = fb_match.group(1).strip()
+            if fb_text and fb_text.lower() not in ("none", "n/a"):
+                ledger_updates["feedback"] = fb_text
+
     escalate = receipt_status == "Blocked" or bool(ceo_flags) or is_error
 
     return {
@@ -56,6 +73,7 @@ def parse(raw: dict) -> dict:
         "ceo_flags": ceo_flags,
         "escalate": escalate,
         "verdict_requested": verdict_requested,
+        "ledger_updates": ledger_updates,
     }
 
 

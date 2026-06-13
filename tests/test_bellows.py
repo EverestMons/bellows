@@ -4369,3 +4369,98 @@ def test_lifecycle_meta_and_derivations_at_claim():
         assert deriv_row is not None
         assert deriv_row[1] == 42
         conn.close()
+
+
+# ---------------------------------------------------------------------------
+# Daemon-owned ledgers Phase 1 — _apply_ledger_updates tests
+# ---------------------------------------------------------------------------
+
+import lifecycle
+import sqlite3
+
+
+class TestApplyLedgerUpdates:
+    """(d) _apply_ledger_updates SKIPS when agent-prompt-feedback.md is in
+    files_changed (coexistence), and WRITES the DB row when it is not and
+    the receipt carries feedback."""
+
+    def test_skips_when_feedback_file_in_files_changed(self):
+        """Coexistence: agent wrote old-style → daemon skips."""
+        parsed = {
+            "ledger_updates": {"feedback": "Some feedback text"},
+            "_step_number": 1,
+            "_agent": "DEV",
+        }
+        bellows._apply_ledger_updates(
+            parsed, "/proj", plan_id=99,
+            files_changed=["bellows.py", "knowledge/research/agent-prompt-feedback.md"],
+        )
+        conn = sqlite3.connect(lifecycle.LIFECYCLE_DB_PATH)
+        count = conn.execute("SELECT COUNT(*) FROM prompt_feedback").fetchone()[0]
+        conn.close()
+        assert count == 0
+
+    def test_writes_db_row_when_feedback_present_and_file_not_changed(self):
+        """Agent used Output Receipt channel → daemon writes DB row."""
+        parsed = {
+            "ledger_updates": {"feedback": "**2026-06-13** — test feedback"},
+            "_step_number": 1,
+            "_agent": "Bellows Developer",
+        }
+        bellows._apply_ledger_updates(
+            parsed, "/proj", plan_id=42,
+            files_changed=["bellows.py", "lifecycle.py"],
+        )
+        conn = sqlite3.connect(lifecycle.LIFECYCLE_DB_PATH)
+        row = conn.execute(
+            "SELECT plan_id, step_number, agent, project, entry_text FROM prompt_feedback"
+        ).fetchone()
+        conn.close()
+        assert row is not None
+        assert row[0] == 42
+        assert row[1] == 1
+        assert row[2] == "Bellows Developer"
+        assert row[3] == "/proj"
+        assert "test feedback" in row[4]
+
+    def test_noop_when_no_feedback_in_receipt(self):
+        """No feedback in receipt → no DB write, no error."""
+        parsed = {
+            "ledger_updates": {"feedback": None},
+        }
+        bellows._apply_ledger_updates(
+            parsed, "/proj", plan_id=42,
+            files_changed=["bellows.py"],
+        )
+        conn = sqlite3.connect(lifecycle.LIFECYCLE_DB_PATH)
+        count = conn.execute("SELECT COUNT(*) FROM prompt_feedback").fetchone()[0]
+        conn.close()
+        assert count == 0
+
+    def test_noop_when_no_ledger_updates_key(self):
+        """Missing ledger_updates entirely → no error."""
+        parsed = {"result_text": "done"}
+        bellows._apply_ledger_updates(
+            parsed, "/proj", plan_id=42,
+            files_changed=[],
+        )
+        conn = sqlite3.connect(lifecycle.LIFECYCLE_DB_PATH)
+        count = conn.execute("SELECT COUNT(*) FROM prompt_feedback").fetchone()[0]
+        conn.close()
+        assert count == 0
+
+    def test_never_writes_feedback_file(self, tmp_path):
+        """_apply_ledger_updates must NEVER write the feedback .md file."""
+        project = str(tmp_path / "proj")
+        os.makedirs(os.path.join(project, "knowledge", "research"))
+        parsed = {
+            "ledger_updates": {"feedback": "Some feedback"},
+            "_step_number": 1,
+            "_agent": "DEV",
+        }
+        bellows._apply_ledger_updates(
+            parsed, project, plan_id=42,
+            files_changed=[],
+        )
+        feedback_path = os.path.join(project, "knowledge", "research", "agent-prompt-feedback.md")
+        assert not os.path.exists(feedback_path)
