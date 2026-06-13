@@ -1,0 +1,118 @@
+=== Phase 1 Intact Evidence ===
+
+--- git diff HEAD~1 for bellows.py: feedback path changes ---
+(Showing only feedback-related diff sections)
++++ b/bellows.py
+@@ -1106,25 +1106,24 @@ def _build_deposit_records(plan_text, plan_header, project_path, wt_path):
+ def _apply_ledger_updates(parsed, project_path, plan_id, files_changed=None):
+     """Apply daemon-owned ledger updates from the parsed Output Receipt.
+ 
+-    Phase 1 (dormant, coexistence-safe): handles ONLY prompt feedback.
+-    - If agent-prompt-feedback.md appears in files_changed → SKIP (agent
+-      wrote old-style; coexistence — do nothing).
+-    - Else if parsed["ledger_updates"]["feedback"] is present → write DB row
+-      via record_prompt_feedback().
+-    Never writes the feedback FILE. Wrapped in log-and-continue.
++    Phase 1 (dormant, coexistence-safe): prompt feedback → DB row.
++    Phase 2 (dormant, coexistence-safe): project status → append to
++      PROJECT_STATUS.md on main (daemon-post-merge).
++    Each handler has its own coexistence check: if the agent wrote the
++    target file old-style (visible in files_changed), SKIP the daemon write.
++    Wrapped in log-and-continue — a failure here must not crash teardown.
+     """
+     try:
+         ledger = parsed.get("ledger_updates") or {}
+-        feedback_text = ledger.get("feedback")
+         files_changed = files_changed or []
++        slug = slug_for(os.path.basename(project_path))
+ 
+-        # Coexistence: if the agent wrote agent-prompt-feedback.md old-style, skip
++        # --- Phase 1: prompt feedback → DB ---
++        feedback_text = ledger.get("feedback")
+         if any("agent-prompt-feedback.md" in f for f in files_changed):
+-            _log("DEBUG", "ledger: agent wrote agent-prompt-feedback.md old-style, skipping daemon write",
+-                 slug=slug_for(os.path.basename(project_path)))
+-            return
+-
+-        if feedback_text:
++            _log("INFO", "ledger: agent wrote agent-prompt-feedback.md old-style, skipping daemon write",
++                 slug=slug)
++        elif feedback_text:
+             lifecycle.record_prompt_feedback(
+                 plan_id=plan_id,
+                 step_number=parsed.get("_step_number"),
+@@ -1132,13 +1131,67 @@ def _apply_ledger_updates(parsed, project_path, plan_id, files_changed=None):
+                 project=project_path,
+                 entry_text=feedback_text,
+             )
+-            _log("DEBUG", "ledger: recorded prompt feedback to DB",
+-                 slug=slug_for(os.path.basename(project_path)))
++            _log("INFO", "ledger: recorded prompt feedback to DB", slug=slug)
++
++        # --- Phase 2: project status → append to PROJECT_STATUS.md on main ---
++        project_status_text = ledger.get("project_status")
++        if any("PROJECT_STATUS.md" in f for f in files_changed):
++            _log("INFO", "ledger: agent wrote PROJECT_STATUS.md old-style, skipping daemon write",
+
+--- Verify prompt_feedback table is unchanged ---
+No prompt_feedback table changes — CONFIRMED unchanged
+
+--- Phase 1 feedback test still passes ---
+============================= test session starts ==============================
+platform darwin -- Python 3.9.6, pytest-8.4.2, pluggy-1.6.0 -- /Applications/Xcode.app/Contents/Developer/usr/bin/python3
+cachedir: .pytest_cache
+rootdir: /Users/marklehn/Developer/GitHub/bellows/.bellows-worktrees/44
+plugins: anyio-4.12.1, xdist-3.8.0, timeout-2.4.0, cov-7.0.0
+collecting ... collected 5 items
+
+tests/test_bellows.py::TestApplyLedgerUpdates::test_skips_when_feedback_file_in_files_changed PASSED [ 20%]
+tests/test_bellows.py::TestApplyLedgerUpdates::test_writes_db_row_when_feedback_present_and_file_not_changed PASSED [ 40%]
+tests/test_bellows.py::TestApplyLedgerUpdates::test_noop_when_no_feedback_in_receipt PASSED [ 60%]
+tests/test_bellows.py::TestApplyLedgerUpdates::test_noop_when_no_ledger_updates_key PASSED [ 80%]
+tests/test_bellows.py::TestApplyLedgerUpdates::test_never_writes_feedback_file PASSED [100%]
+
+=============================== warnings summary ===============================
+../../../../../Library/Python/3.9/lib/python/site-packages/urllib3/__init__.py:35
+  /Users/marklehn/Library/Python/3.9/lib/python/site-packages/urllib3/__init__.py:35: NotOpenSSLWarning: urllib3 v2 only supports OpenSSL 1.1.1+, currently the 'ssl' module is compiled with 'LibreSSL 2.8.3'. See: https://github.com/urllib3/urllib3/issues/3020
+    warnings.warn(
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+========================= 5 passed, 1 warning in 0.12s =========================
+
+--- Phase 1 parser tests still pass ---
+============================= test session starts ==============================
+platform darwin -- Python 3.9.6, pytest-8.4.2, pluggy-1.6.0 -- /Applications/Xcode.app/Contents/Developer/usr/bin/python3
+cachedir: .pytest_cache
+rootdir: /Users/marklehn/Developer/GitHub/bellows/.bellows-worktrees/44
+plugins: anyio-4.12.1, xdist-3.8.0, timeout-2.4.0, cov-7.0.0
+collecting ... collected 8 items
+
+tests/test_parser.py::TestLedgerUpdatesExtraction::test_extracts_feedback_from_output_receipt PASSED [ 12%]
+tests/test_parser.py::TestLedgerUpdatesExtraction::test_returns_none_when_section_absent PASSED [ 25%]
+tests/test_parser.py::TestLedgerUpdatesExtraction::test_returns_none_when_feedback_subsection_absent PASSED [ 37%]
+tests/test_parser.py::TestLedgerUpdatesExtraction::test_returns_none_for_none_value PASSED [ 50%]
+tests/test_parser.py::TestLedgerUpdatesExtraction::test_returns_none_for_na_value PASSED [ 62%]
+tests/test_parser.py::TestLedgerUpdatesExtraction::test_handles_feedback_before_another_subsection PASSED [ 75%]
+tests/test_parser.py::TestLedgerUpdatesExtraction::test_ledger_updates_key_always_present PASSED [ 87%]
+tests/test_parser.py::TestLedgerUpdatesExtraction::test_mirrors_ceo_flags_pattern PASSED [100%]
+
+=============================== warnings summary ===============================
+tests/test_parser.py::TestLedgerUpdatesExtraction::test_extracts_feedback_from_output_receipt
+  /Users/marklehn/Library/Python/3.9/lib/python/site-packages/urllib3/__init__.py:35: NotOpenSSLWarning: urllib3 v2 only supports OpenSSL 1.1.1+, currently the 'ssl' module is compiled with 'LibreSSL 2.8.3'. See: https://github.com/urllib3/urllib3/issues/3020
+    warnings.warn(
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+========================= 8 passed, 1 warning in 0.11s =========================
+
+--- Full diff is additive only (no removed lines in feedback code path) ---
+Removed lines touching feedback:
+-    Phase 1 (dormant, coexistence-safe): handles ONLY prompt feedback.
+-    - If agent-prompt-feedback.md appears in files_changed → SKIP (agent
+-    - Else if parsed["ledger_updates"]["feedback"] is present → write DB row
+-      via record_prompt_feedback().
+-    Never writes the feedback FILE. Wrapped in log-and-continue.
+-        feedback_text = ledger.get("feedback")
+-        # Coexistence: if the agent wrote agent-prompt-feedback.md old-style, skip
+-            _log("DEBUG", "ledger: agent wrote agent-prompt-feedback.md old-style, skipping daemon write",
+-        if feedback_text:
+-            _log("DEBUG", "ledger: recorded prompt feedback to DB",

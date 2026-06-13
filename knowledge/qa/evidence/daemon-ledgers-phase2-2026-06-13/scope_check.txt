@@ -1,0 +1,28 @@
+=== Scope Check Evidence ===
+
+--- git diff HEAD~1 --stat ---
+ bellows.py                                         |  83 +++++++++--
+ ...gers-phase2-projectstatus-dev-log-2026-06-13.md |  90 ++++++++++++
+ parser.py                                          |  13 +-
+ tests/test_bellows.py                              | 163 +++++++++++++++++++++
+ tests/test_parser.py                               |  81 ++++++++++
+ 5 files changed, 412 insertions(+), 18 deletions(-)
+
+--- Files changed (names only) ---
+bellows.py
+knowledge/development/daemon-ledgers-phase2-projectstatus-dev-log-2026-06-13.md
+parser.py
+tests/test_bellows.py
+tests/test_parser.py
+
+--- In-scope files per plan: parser.py, bellows.py, tests/test_parser.py, tests/test_bellows.py ---
+--- Dev log is a deposit, also expected ---
+
+--- FORWARD handling untouched ---
+No FORWARD-related changes — CONFIRMED untouched
+
+--- Rule 8 untouched ---
+No Rule 8 changes — CONFIRMED untouched
+
+--- No governance files changed ---
+No governance files changed — CONFIRMED

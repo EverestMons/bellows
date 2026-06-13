@@ -1,0 +1,41 @@
+=== Dormancy/Coexistence Evidence ===
+
+--- Test: skips when PROJECT_STATUS.md in files_changed ---
+============================= test session starts ==============================
+platform darwin -- Python 3.9.6, pytest-8.4.2, pluggy-1.6.0 -- /Applications/Xcode.app/Contents/Developer/usr/bin/python3
+cachedir: .pytest_cache
+rootdir: /Users/marklehn/Developer/GitHub/bellows/.bellows-worktrees/44
+plugins: anyio-4.12.1, xdist-3.8.0, timeout-2.4.0, cov-7.0.0
+collecting ... collected 1 item
+
+tests/test_bellows.py::TestApplyLedgerUpdatesProjectStatus::test_skips_when_project_status_in_files_changed PASSED [100%]
+
+=============================== warnings summary ===============================
+../../../../../Library/Python/3.9/lib/python/site-packages/urllib3/__init__.py:35
+  /Users/marklehn/Library/Python/3.9/lib/python/site-packages/urllib3/__init__.py:35: NotOpenSSLWarning: urllib3 v2 only supports OpenSSL 1.1.1+, currently the 'ssl' module is compiled with 'LibreSSL 2.8.3'. See: https://github.com/urllib3/urllib3/issues/3020
+    warnings.warn(
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+========================= 1 passed, 1 warning in 0.15s =========================
+
+--- Grep: _apply_ledger_updates does NOT write PROJECT_STATUS inside any worktree ---
+Searching for PROJECT_STATUS writes in worktree paths...
+1111:      PROJECT_STATUS.md on main (daemon-post-merge).
+1136:        # --- Phase 2: project status → append to PROJECT_STATUS.md on main ---
+1138:        if any("PROJECT_STATUS.md" in f for f in files_changed):
+1139:            _log("INFO", "ledger: agent wrote PROJECT_STATUS.md old-style, skipping daemon write",
+1143:            _log("INFO", "ledger: appended project status milestone to PROJECT_STATUS.md", slug=slug)
+1150:    """Append a milestone entry to PROJECT_STATUS.md at the canonical position.
+1156:    status_path = os.path.join(project_path, "PROJECT_STATUS.md")
+1180:    _log("INFO", f"ledger: PROJECT_STATUS.md written ({position_used})",
+1185:        ["git", "-C", project_path, "add", "PROJECT_STATUS.md"],
+1190:         f"docs(status): PROJECT_STATUS milestone for plan {plan_id} (daemon-post-merge)"],
+
+--- Confirm no real PROJECT_STATUS.md was modified by this plan ---
+No PROJECT_STATUS.md in the diff — CONFIRMED not modified by this plan
+
+--- Coexistence check in code: files_changed guard ---
+1112-    Each handler has its own coexistence check: if the agent wrote the
+1113-    target file old-style (visible in files_changed), SKIP the daemon write.
+1138:        if any("PROJECT_STATUS.md" in f for f in files_changed):
+1139:            _log("INFO", "ledger: agent wrote PROJECT_STATUS.md old-style, skipping daemon write",
