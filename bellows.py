@@ -458,8 +458,9 @@ def run_plan(plan_path: str, config: dict, response_server: server.ResponseServe
             inprogress_path = os.path.join(plan_dir, f"in-progress-{id_canonical}")
             shutil.move(plan_path, inprogress_path)
             # G4: write in_progress state immediately after claim rename
+            _claim_doc_ref = os.path.relpath(inprogress_path, project_path)
             try:
-                lifecycle.mark_plan_state(plan_id, "in_progress")
+                lifecycle.mark_plan_state(plan_id, "in_progress", plan_doc_ref=_claim_doc_ref)
             except Exception:
                 logger.warning(f"lifecycle: failed to write in_progress for plan {plan_id}")
             plan_path = inprogress_path
@@ -789,7 +790,8 @@ def run_plan(plan_path: str, config: dict, response_server: server.ResponseServe
             if os.path.exists(source):
                 shutil.move(source, done_path)
             _delete_shadow(plan_filename)
-            lifecycle.mark_plan_state(plan_id, "closed", closed_at=datetime.now().isoformat()) if plan_id else None
+            _done_doc_ref = os.path.relpath(done_path, project_path)
+            lifecycle.mark_plan_state(plan_id, "closed", closed_at=datetime.now().isoformat(), plan_doc_ref=_done_doc_ref) if plan_id else None
             notifier.notify_plan_complete(plan_name, total_cost)
             _log("EVENT", f"✅ AUTO-CLOSED", slug=slug_for(plan_name))
             return
@@ -1599,7 +1601,9 @@ class Bellows:
                                 self._seen.discard(cleanup_slug)
                                 shutil.move(full_plan_path, halted_path)
                                 _delete_shadow(original_name)
-                                lifecycle.mark_plan_state(_lc_plan_id, "halted", closed_at=datetime.now().isoformat()) if _lc_plan_id else None
+                                _halt_project_root = str(pathlib.Path(decisions_path).parents[1])
+                                _halt_doc_ref = os.path.relpath(halted_path, _halt_project_root)
+                                lifecycle.mark_plan_state(_lc_plan_id, "halted", closed_at=datetime.now().isoformat(), plan_doc_ref=_halt_doc_ref) if _lc_plan_id else None
                                 notifier.notify_plan_halted(original_name)
                                 break
                             is_diag = original_name.startswith("diagnostic-")
@@ -1630,7 +1634,9 @@ class Bellows:
                                 self._seen.discard(cleanup_slug)
                                 shutil.move(full_plan_path, done_path)
                                 _delete_shadow(original_name)
-                                lifecycle.mark_plan_state(_lc_plan_id, "closed", closed_at=datetime.now().isoformat()) if _lc_plan_id else None
+                                _done_project_root = str(pathlib.Path(decisions_path).parents[1])
+                                _done_doc_ref = os.path.relpath(done_path, _done_project_root)
+                                lifecycle.mark_plan_state(_lc_plan_id, "closed", closed_at=datetime.now().isoformat(), plan_doc_ref=_done_doc_ref) if _lc_plan_id else None
                                 notifier.notify_plan_complete(original_name, 0.0)
                                 _log("EVENT", f"verdict continue-to-done", slug=slug_for(original_name))
                             else:
@@ -1657,7 +1663,9 @@ class Bellows:
                             self._seen.discard(cleanup_slug)
                             shutil.move(full_plan_path, halted_path)
                             _delete_shadow(original_name)
-                            lifecycle.mark_plan_state(_lc_plan_id, "halted", closed_at=datetime.now().isoformat()) if _lc_plan_id else None
+                            _stop_project_root = str(pathlib.Path(decisions_path).parents[1])
+                            _stop_doc_ref = os.path.relpath(halted_path, _stop_project_root)
+                            lifecycle.mark_plan_state(_lc_plan_id, "halted", closed_at=datetime.now().isoformat(), plan_doc_ref=_stop_doc_ref) if _lc_plan_id else None
                             _log("EVENT", f"verdict stop — halting", slug=slug_for(original_name))
                             notifier.notify_plan_halted(original_name)
                         break  # only one match per verdict

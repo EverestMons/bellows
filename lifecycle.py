@@ -47,9 +47,14 @@ def init_lifecycle_db(db_path=None):
             total_steps INTEGER,
             deposit_placeholder_name TEXT,
             created_at TEXT NOT NULL,
-            closed_at TEXT
+            closed_at TEXT,
+            plan_doc_ref TEXT
         )
     """)
+    # Add plan_doc_ref column if missing (idempotent migration for existing DBs)
+    existing_plan_cols = {row[1] for row in conn.execute("PRAGMA table_info(plans)")}
+    if "plan_doc_ref" not in existing_plan_cols:
+        conn.execute("ALTER TABLE plans ADD COLUMN plan_doc_ref TEXT")
     # --- Executable B tables (blueprint Section 3.4 DDL, verbatim) ---
     conn.execute("""
         CREATE TABLE IF NOT EXISTS diagnostic_meta (
@@ -169,20 +174,20 @@ def mint_and_claim(plan_type, target_project, title, dispatch_mode, tier,
         conn.close()
 
 
-def mark_plan_state(plan_id, state, closed_at=None, db_path=None):
-    """Update a plan's lifecycle_state (and optionally closed_at)."""
+def mark_plan_state(plan_id, state, closed_at=None, plan_doc_ref=None, db_path=None):
+    """Update a plan's lifecycle_state (and optionally closed_at and plan_doc_ref)."""
     path = db_path or LIFECYCLE_DB_PATH
     conn = sqlite3.connect(path)
+    sets = ["lifecycle_state = ?"]
+    params = [state]
     if closed_at is not None:
-        conn.execute(
-            "UPDATE plans SET lifecycle_state = ?, closed_at = ? WHERE id = ?",
-            (state, closed_at, plan_id),
-        )
-    else:
-        conn.execute(
-            "UPDATE plans SET lifecycle_state = ? WHERE id = ?",
-            (state, plan_id),
-        )
+        sets.append("closed_at = ?")
+        params.append(closed_at)
+    if plan_doc_ref is not None:
+        sets.append("plan_doc_ref = ?")
+        params.append(plan_doc_ref)
+    params.append(plan_id)
+    conn.execute(f"UPDATE plans SET {', '.join(sets)} WHERE id = ?", params)
     conn.commit()
     conn.close()
 
@@ -205,24 +210,25 @@ def recover_half_claimed(decisions_dir, db_path=None, project_root=None,
     conn = sqlite3.connect(path)
     if project_root:
         rows = conn.execute(
-            "SELECT id, type, deposit_placeholder_name, created_at "
+            "SELECT id, type, deposit_placeholder_name, created_at, target_project "
             "FROM plans WHERE lifecycle_state = 'claimed' AND target_project = ?",
             (project_root,),
         ).fetchall()
     else:
         rows = conn.execute(
-            "SELECT id, type, deposit_placeholder_name, created_at "
+            "SELECT id, type, deposit_placeholder_name, created_at, target_project "
             "FROM plans WHERE lifecycle_state = 'claimed'"
         ).fetchall()
     actions = []
-    for plan_id, plan_type, deposit_name, created_at in rows:
+    for plan_id, plan_type, deposit_name, created_at, target_project in rows:
         expected_name = f"in-progress-{plan_type}-{plan_id}.md"
         expected_path = os.path.join(decisions_dir, expected_name)
         if os.path.exists(expected_path):
-            # Already renamed — just needs state update
+            # Already renamed — just needs state update + plan_doc_ref
+            _doc_ref = os.path.relpath(expected_path, target_project) if target_project else None
             conn.execute(
-                "UPDATE plans SET lifecycle_state = 'in_progress' WHERE id = ?",
-                (plan_id,),
+                "UPDATE plans SET lifecycle_state = 'in_progress', plan_doc_ref = ? WHERE id = ?",
+                (_doc_ref, plan_id),
             )
             actions.append((plan_id, "already_renamed"))
             continue
@@ -231,9 +237,10 @@ def recover_half_claimed(decisions_dir, db_path=None, project_root=None,
             deposit_path = os.path.join(decisions_dir, deposit_name)
             if os.path.exists(deposit_path):
                 os.rename(deposit_path, expected_path)
+                _doc_ref = os.path.relpath(expected_path, target_project) if target_project else None
                 conn.execute(
-                    "UPDATE plans SET lifecycle_state = 'in_progress' WHERE id = ?",
-                    (plan_id,),
+                    "UPDATE plans SET lifecycle_state = 'in_progress', plan_doc_ref = ? WHERE id = ?",
+                    (_doc_ref, plan_id),
                 )
                 actions.append((plan_id, "re_renamed"))
                 continue
@@ -512,3 +519,52 @@ def get_step_id(plan_id, step_number, db_path=None):
     except Exception as e:
         _warn(f"get_step_id failed for plan {plan_id} step {step_number}: {e}")
         return None
+
+
+def backfill_plan_doc_ref(db_path=None):
+    """One-time backfill: derive plan_doc_ref for existing rows where it is NULL.
+
+    Uses the same candidate logic as the Forge reporter:
+      closed_at not null → Done/<type>-<id>.md
+      else probe in-progress-<type>-<id>.md, halted-<type>-<id>.md, bare <type>-<id>.md
+    Checks against the row's target_project. Writes the first path that exists
+    on disk; leaves NULL if none resolves (legacy slug-named plans).
+
+    Returns (backfilled_count, left_null_count).
+    """
+    path = db_path or LIFECYCLE_DB_PATH
+    conn = sqlite3.connect(path)
+    rows = conn.execute(
+        "SELECT id, type, target_project, closed_at "
+        "FROM plans WHERE plan_doc_ref IS NULL"
+    ).fetchall()
+    backfilled = 0
+    left_null = 0
+    for plan_id, plan_type, target_project, closed_at in rows:
+        canonical = f"{plan_type}-{plan_id}.md"
+        decisions_dir = os.path.join(target_project, "knowledge", "decisions")
+        candidates = []
+        if closed_at is not None:
+            candidates.append(os.path.join(decisions_dir, "Done", canonical))
+        candidates.append(os.path.join(decisions_dir, f"in-progress-{canonical}"))
+        candidates.append(os.path.join(decisions_dir, f"halted-{canonical}"))
+        candidates.append(os.path.join(decisions_dir, canonical))
+
+        resolved = None
+        for c in candidates:
+            if os.path.exists(c):
+                resolved = os.path.relpath(c, target_project)
+                break
+
+        if resolved:
+            conn.execute(
+                "UPDATE plans SET plan_doc_ref = ? WHERE id = ?",
+                (resolved, plan_id),
+            )
+            backfilled += 1
+        else:
+            left_null += 1
+
+    conn.commit()
+    conn.close()
+    return backfilled, left_null
