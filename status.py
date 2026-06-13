@@ -143,6 +143,7 @@ def render_in_flight(rows, daemon_running):
         return "\n".join(lines)
     for row in rows:
         plan_id = row["id"]
+        ptype = row["type"] if row["type"] else None
         project = truncate(_project_name(row["target_project"]), 8)
         step_num = row["step_number"] if row["step_number"] is not None else "\u2014"
         total = row["total_steps"] if row["total_steps"] is not None else "?"
@@ -151,8 +152,9 @@ def render_in_flight(rows, daemon_running):
             status = "stale?"
         elapsed = format_elapsed(row["step_started_at"])
         title = truncate(row["title"] or "", 38)
+        id_label = f"{ptype} #{plan_id}" if ptype else f"#{plan_id}"
         lines.append(
-            f" #{plan_id}  {project:<8s}  Step {step_num}/{total}"
+            f" {id_label}  {project:<8s}  Step {step_num}/{total}"
             f"  {status:<8s}  {elapsed:<5s} {title}"
         )
     return "\n".join(lines)
@@ -166,13 +168,15 @@ def render_awaiting_verdict(rows):
         return "\n".join(lines)
     for row in rows:
         plan_id = row["plan_id"]
+        ptype = row["type"] if row["type"] else None
         step = row["step_number"]
         reason = row["pause_reason_code"] or "\u2014"
         filename = row["verdict_file_ref"] or "\u2014"
         pause_time = row["pause_time"]
         elapsed = format_elapsed(pause_time)
+        id_label = f"{ptype} #{plan_id}" if ptype else f"#{plan_id}"
         lines.append(
-            f" #{plan_id}  step {step}  {reason}  {filename}  {elapsed}"
+            f" {id_label}  step {step}  {reason}  {filename}  {elapsed}"
         )
     return "\n".join(lines)
 
@@ -187,7 +191,7 @@ def query_in_flight(db_path):
     conn = sqlite3.connect(db_uri, uri=True)
     conn.row_factory = sqlite3.Row
     rows = conn.execute("""
-        SELECT p.id, p.target_project, p.title, p.total_steps,
+        SELECT p.id, p.type, p.target_project, p.title, p.total_steps,
                s.step_number, s.status, s.step_started_at
         FROM plans p
         LEFT JOIN steps s ON s.plan_id = p.id
@@ -208,9 +212,10 @@ def query_awaiting_verdict(db_path):
     conn = sqlite3.connect(db_uri, uri=True)
     conn.row_factory = sqlite3.Row
     rows = conn.execute("""
-        SELECT v.plan_id, v.step_number, v.pause_reason_code, v.verdict_file_ref,
+        SELECT v.plan_id, p.type, v.step_number, v.pause_reason_code, v.verdict_file_ref,
                COALESCE(s.step_ended_at, s.step_started_at) AS pause_time
         FROM verdicts v
+        LEFT JOIN plans p ON p.id = v.plan_id
         LEFT JOIN steps s ON s.plan_id = v.plan_id AND s.step_number = v.step_number
         WHERE v.outcome IS NULL
         ORDER BY v.plan_id

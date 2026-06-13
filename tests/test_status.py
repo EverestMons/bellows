@@ -25,7 +25,7 @@ def status_db(tmp_path):
     ten_min_ago = (now - datetime.timedelta(minutes=10)).isoformat()
     thirty_min_ago = (now - datetime.timedelta(minutes=30)).isoformat()
 
-    # Plan 10: in-flight with a running step
+    # Plan 10: in-flight with a running step (executable)
     conn.execute(
         "INSERT INTO plans (id, type, target_project, title, dispatch_mode, tier,"
         " lifecycle_state, total_steps, created_at)"
@@ -39,7 +39,7 @@ def status_db(tmp_path):
         (ten_min_ago,),
     )
 
-    # Plan 11: awaiting verdict
+    # Plan 11: awaiting verdict (executable)
     conn.execute(
         "INSERT INTO plans (id, type, target_project, title, dispatch_mode, tier,"
         " lifecycle_state, total_steps, created_at)"
@@ -66,6 +66,20 @@ def status_db(tmp_path):
         (thirty_min_ago, now.isoformat()),
     )
 
+    # Plan 13: in-flight diagnostic (for type-qualified id testing)
+    conn.execute(
+        "INSERT INTO plans (id, type, target_project, title, dispatch_mode, tier,"
+        " lifecycle_state, total_steps, created_at)"
+        " VALUES (13, 'diagnostic', 'forge', 'Diag Check', 'bellows', 'Small',"
+        " 'in_progress', 1, ?)",
+        (thirty_min_ago,),
+    )
+    conn.execute(
+        "INSERT INTO steps (plan_id, step_number, role, status, step_started_at)"
+        " VALUES (13, 1, 'dev', 'running', ?)",
+        (ten_min_ago,),
+    )
+
     # Seed id_sequence so it doesn't conflict
     conn.execute("UPDATE id_sequence SET next_id = 20 WHERE id = 1")
     conn.commit()
@@ -90,25 +104,12 @@ class TestInFlightRendering:
     """IN-FLIGHT section renders running plans correctly."""
 
     def test_in_flight_shows_running_plan(self, status_db):
-        conn = sqlite3.connect(f"file:{status_db}?mode=ro", uri=True)
-        conn.row_factory = sqlite3.Row
-        rows = conn.execute("""
-            SELECT p.id, p.target_project, p.title, p.total_steps,
-                   s.step_number, s.status, s.step_started_at
-            FROM plans p
-            LEFT JOIN steps s ON s.plan_id = p.id
-              AND s.step_number = (
-                SELECT MAX(s2.step_number) FROM steps s2
-                WHERE s2.plan_id = p.id AND s2.status IN ('running', 'awaiting_verdict')
-              )
-            WHERE p.lifecycle_state IN ('in_progress', 'claimed')
-            ORDER BY p.id
-        """).fetchall()
-        conn.close()
+        rows = status.query_in_flight(status_db)
 
         output = status.render_in_flight(rows, daemon_running=True)
         assert "IN-FLIGHT" in output
-        assert "#10" in output
+        assert "executable #10" in output
+        assert "diagnostic #13" in output
         assert "bellows" in output
         assert "Step 1/3" in output
         assert "running" in output
@@ -119,21 +120,11 @@ class TestAwaitingVerdictRendering:
     """AWAITING VERDICT section renders pending verdicts with filename."""
 
     def test_awaiting_verdict_shows_filename(self, status_db):
-        conn = sqlite3.connect(f"file:{status_db}?mode=ro", uri=True)
-        conn.row_factory = sqlite3.Row
-        rows = conn.execute("""
-            SELECT v.plan_id, v.step_number, v.pause_reason_code, v.verdict_file_ref,
-                   COALESCE(s.step_ended_at, s.step_started_at) AS pause_time
-            FROM verdicts v
-            LEFT JOIN steps s ON s.plan_id = v.plan_id AND s.step_number = v.step_number
-            WHERE v.outcome IS NULL
-            ORDER BY v.plan_id
-        """).fetchall()
-        conn.close()
+        rows = status.query_awaiting_verdict(status_db)
 
         output = status.render_awaiting_verdict(rows)
         assert "AWAITING VERDICT" in output
-        assert "#11" in output
+        assert "executable #11" in output
         assert "step 2" in output
         assert "qa_checkpoint" in output
         assert "verdict-request-11-step-2.md" in output
@@ -143,38 +134,12 @@ class TestBothEmptyNone:
     """Both sections show (none) when DB has no active plans or pending verdicts."""
 
     def test_in_flight_none(self, empty_db):
-        conn = sqlite3.connect(f"file:{empty_db}?mode=ro", uri=True)
-        conn.row_factory = sqlite3.Row
-        rows = conn.execute("""
-            SELECT p.id, p.target_project, p.title, p.total_steps,
-                   s.step_number, s.status, s.step_started_at
-            FROM plans p
-            LEFT JOIN steps s ON s.plan_id = p.id
-              AND s.step_number = (
-                SELECT MAX(s2.step_number) FROM steps s2
-                WHERE s2.plan_id = p.id AND s2.status IN ('running', 'awaiting_verdict')
-              )
-            WHERE p.lifecycle_state IN ('in_progress', 'claimed')
-            ORDER BY p.id
-        """).fetchall()
-        conn.close()
-
+        rows = status.query_in_flight(empty_db)
         output = status.render_in_flight(rows, daemon_running=True)
         assert "(none)" in output
 
     def test_awaiting_verdict_none(self, empty_db):
-        conn = sqlite3.connect(f"file:{empty_db}?mode=ro", uri=True)
-        conn.row_factory = sqlite3.Row
-        rows = conn.execute("""
-            SELECT v.plan_id, v.step_number, v.pause_reason_code, v.verdict_file_ref,
-                   COALESCE(s.step_ended_at, s.step_started_at) AS pause_time
-            FROM verdicts v
-            LEFT JOIN steps s ON s.plan_id = v.plan_id AND s.step_number = v.step_number
-            WHERE v.outcome IS NULL
-            ORDER BY v.plan_id
-        """).fetchall()
-        conn.close()
-
+        rows = status.query_awaiting_verdict(empty_db)
         output = status.render_awaiting_verdict(rows)
         assert "(none)" in output
 
@@ -183,21 +148,7 @@ class TestDaemonStoppedStaleMarker:
     """When daemon is stopped, running steps show 'stale?' marker."""
 
     def test_stale_marker_when_daemon_stopped(self, status_db):
-        conn = sqlite3.connect(f"file:{status_db}?mode=ro", uri=True)
-        conn.row_factory = sqlite3.Row
-        rows = conn.execute("""
-            SELECT p.id, p.target_project, p.title, p.total_steps,
-                   s.step_number, s.status, s.step_started_at
-            FROM plans p
-            LEFT JOIN steps s ON s.plan_id = p.id
-              AND s.step_number = (
-                SELECT MAX(s2.step_number) FROM steps s2
-                WHERE s2.plan_id = p.id AND s2.status IN ('running', 'awaiting_verdict')
-              )
-            WHERE p.lifecycle_state IN ('in_progress', 'claimed')
-            ORDER BY p.id
-        """).fetchall()
-        conn.close()
+        rows = status.query_in_flight(status_db)
 
         output = status.render_in_flight(rows, daemon_running=False)
         assert "stale?" in output
@@ -234,31 +185,8 @@ class TestNoCompletedSection:
 
     def test_no_completed_in_output_with_data(self, status_db, capsys):
         """Even with a closed plan in DB, output must not show COMPLETED."""
-        conn = sqlite3.connect(f"file:{status_db}?mode=ro", uri=True)
-        conn.row_factory = sqlite3.Row
-
-        in_flight = conn.execute("""
-            SELECT p.id, p.target_project, p.title, p.total_steps,
-                   s.step_number, s.status, s.step_started_at
-            FROM plans p
-            LEFT JOIN steps s ON s.plan_id = p.id
-              AND s.step_number = (
-                SELECT MAX(s2.step_number) FROM steps s2
-                WHERE s2.plan_id = p.id AND s2.status IN ('running', 'awaiting_verdict')
-              )
-            WHERE p.lifecycle_state IN ('in_progress', 'claimed')
-            ORDER BY p.id
-        """).fetchall()
-
-        awaiting = conn.execute("""
-            SELECT v.plan_id, v.step_number, v.pause_reason_code, v.verdict_file_ref,
-                   COALESCE(s.step_ended_at, s.step_started_at) AS pause_time
-            FROM verdicts v
-            LEFT JOIN steps s ON s.plan_id = v.plan_id AND s.step_number = v.step_number
-            WHERE v.outcome IS NULL
-            ORDER BY v.plan_id
-        """).fetchall()
-        conn.close()
+        in_flight = status.query_in_flight(status_db)
+        awaiting = status.query_awaiting_verdict(status_db)
 
         # Render full output
         print(status.render_daemon_header(True, 12345, "abc1234", "1h 05m"))
@@ -340,3 +268,52 @@ class TestTruncate:
     def test_empty_text(self):
         assert status.truncate("", 10) == ""
         assert status.truncate(None, 10) == ""
+
+
+class TestTypeQualifiedIds:
+    """Type-qualified id labels: 'executable #N' / 'diagnostic #N'."""
+
+    def test_in_flight_executable_and_diagnostic(self, status_db):
+        rows = status.query_in_flight(status_db)
+        output = status.render_in_flight(rows, daemon_running=True)
+        assert "executable #10" in output
+        assert "diagnostic #13" in output
+
+    def test_awaiting_verdict_executable(self, status_db):
+        rows = status.query_awaiting_verdict(status_db)
+        output = status.render_awaiting_verdict(rows)
+        assert "executable #11" in output
+
+    def test_null_type_fallback_in_flight(self):
+        """NULL/empty type falls back to bare #N without crashing."""
+        now = datetime.datetime.now().isoformat()
+        rows = [
+            {"id": 99, "type": None, "target_project": "test", "title": "Null Type",
+             "total_steps": 1, "step_number": 1, "status": "running",
+             "step_started_at": now},
+            {"id": 100, "type": "", "target_project": "test", "title": "Empty Type",
+             "total_steps": 1, "step_number": 1, "status": "running",
+             "step_started_at": now},
+        ]
+        output = status.render_in_flight(rows, daemon_running=True)
+        assert " #99" in output
+        assert " #100" in output
+        assert "None #99" not in output
+        assert "None #100" not in output
+
+    def test_null_type_fallback_awaiting_verdict(self):
+        """NULL/empty type in awaiting verdict falls back to bare #N."""
+        now = datetime.datetime.now().isoformat()
+        rows = [
+            {"plan_id": 99, "type": None, "step_number": 1,
+             "pause_reason_code": "qa_checkpoint", "verdict_file_ref": "v.md",
+             "pause_time": now},
+            {"plan_id": 100, "type": "", "step_number": 1,
+             "pause_reason_code": "qa_checkpoint", "verdict_file_ref": "v.md",
+             "pause_time": now},
+        ]
+        output = status.render_awaiting_verdict(rows)
+        assert " #99" in output
+        assert " #100" in output
+        assert "None #99" not in output
+        assert "None #100" not in output
