@@ -1,0 +1,15 @@
+Commit Landed Check — Governance Root SHA
+==========================================
+
+Command: git log --oneline -1 e715696
+Result: e715696 session wrap 2026-06-14: daemon-owned ledgers shipped [41]-[63] — 4 LESSONS, baton, dashboard+reliability, pointer bumps [64]
+
+Verification:
+- SHA e715696 exists in the governance root repository
+- Commit message contains [64] plan tag
+- Files in commit: LESSONS.md, shop_next_session.md, bellows (pointer bump), governance submodule pointers
+
+Command: git log --oneline -1 (governance root)
+Confirmed as HEAD of governance root.
+
+RESULT: PASS — root commit e715696 exists with [64] tag.

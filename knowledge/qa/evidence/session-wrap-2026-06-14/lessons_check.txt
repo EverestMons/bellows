@@ -1,0 +1,25 @@
+LESSONS Check — 2026-06-14 Entries
+==================================
+
+Verification: grep -n '## 2026-06-14' /Users/marklehn/Developer/GitHub/LESSONS.md
+
+Results (4 entries found):
+
+Line 1551: ## 2026-06-14: Agents may emit the Output Receipt inside a tool call, not as bare text [tag: daemon-discipline]
+Line 1562: ## 2026-06-14: Bound regex subsection captures — greedy-to-EOF grabs trailing prose [tag: daemon-discipline]
+Line 1573: ## 2026-06-14: Live-canary every daemon-write activation; green tests are not enough [tag: process-discipline]
+Line 1584: ## 2026-06-14: Scope test files generously [tag: planner-discipline]
+
+Tag verification:
+  (a) daemon-discipline — PRESENT (line 1551)
+  (b) daemon-discipline — PRESENT (line 1562)
+  (c) process-discipline — PRESENT (line 1573)
+  (d) planner-discipline — PRESENT (line 1584)
+
+Uniqueness check: Each title string appears exactly once in the file.
+  "Agents may emit the Output Receipt inside a tool call" — 1 occurrence
+  "Bound regex subsection captures" — 1 occurrence
+  "Live-canary every daemon-write activation" — 1 occurrence
+  "Scope test files generously" — 1 occurrence
+
+RESULT: PASS — all four 2026-06-14 entries present with correct tags, each unique.

@@ -1,0 +1,29 @@
+Dogfood Landed Check — Daemon-Written Ledger Entries for Plan 64
+=================================================================
+
+1. PROJECT_STATUS milestone (daemon-written)
+   Command: git show main:PROJECT_STATUS.md | grep 'Plan 64'
+   Result: 1 match found
+   
+   Commit: c1f1441 — 'docs(status): PROJECT_STATUS milestone for plan 64 (daemon-post-merge)'
+   Diff verified: Added '### Plan 64' section with daemon-owned-ledgers shipment summary.
+   Content: "Daemon-owned ledgers shipped and proven live (plans 41-63). Agents now emit
+   PROJECT_STATUS, prompt feedback, and FORWARD rows via the Output Receipt ### Ledger Updates
+   channel; the daemon writes them post-merge. The append-only worktree-conflict class is
+   eliminated (FORWARD rows 4/5/13 CLOSED). Prompt feedback lives in the prompt_feedback DB
+   table; agent-prompt-feedback.md is daemon-generated. Also shipped this arc: FORWARD
+   reconciliation sweep (26), gate-FP cluster fix (27-29), DB-out-of-git policy (30), status
+   CLI + dashboard TUI + restyling (31-33, 59), type-qualified plan ids (36), plan_doc_ref
+   (37/38/40), PLANNER_TEMPLATE v4.68."
+   PASS — daemon wrote the PROJECT_STATUS milestone from the Step-1 channel emission.
+
+2. Prompt feedback (daemon-written to DB)
+   Command: sqlite3 lifecycle.db "SELECT plan_id, agent FROM prompt_feedback WHERE plan_id=64"
+   Result: 64|
+   PASS — prompt_feedback row exists for plan_id=64.
+
+   Also verified: commit 4ff4b93 — 'docs: regenerate agent-prompt-feedback.md from DB (plan 64)'
+   confirms the daemon regenerated the markdown file from the DB after writing the feedback row.
+
+RESULT: PASS — both Step-1 channel emissions (Project Status + Prompt Feedback) were applied
+by the daemon post-merge. The dogfood exercised the new system end-to-end.

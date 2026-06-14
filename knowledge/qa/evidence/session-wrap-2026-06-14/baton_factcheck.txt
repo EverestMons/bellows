@@ -1,0 +1,47 @@
+Baton Accuracy Fact-Check (shop_next_session.md)
+=================================================
+
+1. Plans in cited ranges exist in Done/ or lifecycle.db
+   Command: ls knowledge/decisions/Done/ | grep -E 'executable-(4[1-9]|5[0-9]|6[0-3])'
+   Result: executable-43, 44, 45, 49, 51, 54, 56, 59, 60, 62 — all present in Done/
+   
+   Also verified diagnostics: diagnostic-41, 42, 50, 52, 53, 55, 58, 61, 63 — all present in Done/
+   
+   Plans 26-40 verified:
+   - bellows Done/: diagnostic-27, executable-28, 29, 32, 33, 35, 36, 37
+   - governance Done/: executable-26, 30, 38
+   - forge Done/: executable-40
+   - lifecycle.db: plan 31 (halted — work carried by plans 32-33), plan 34 (diagnostic, Done/)
+   - lifecycle.db: plan 48 (abandoned — activation carried by plan 49)
+   
+   All cited plan IDs verified as real entries.
+
+2. PLANNER_TEMPLATE version
+   Command: grep Version PLANNER_TEMPLATE.md
+   Result: **Version:** 4.68
+   PASS — matches baton claim of v4.68.
+
+3. FORWARD rows 4, 5, 13 — closed status
+   Command: grep for rows 4, 5, 13 in bellows/knowledge/FORWARD.md
+   Results:
+   - Row 4: "closed-by-plan-56" — CLOSED
+   - Row 5: "closed-by-plan-56" — CLOSED
+   - Row 13: "closed-by-plan-56" — CLOSED
+   PASS — all three rows read closed.
+
+4. FORWARD rows 23, 24 — withdrawn status
+   Command: grep for rows 23, 24 in bellows/knowledge/FORWARD.md
+   Results:
+   - Row 23: "withdrawn" — verified
+   - Row 24: "withdrawn" — verified
+   PASS — both canary rows withdrawn.
+
+5. Function/file names cited exist on disk
+   - PROJECT_STATUS.md: exists (verified via git show main:PROJECT_STATUS.md)
+   - agent-prompt-feedback.md: daemon-generated from prompt_feedback DB table
+   - prompt_feedback DB table: exists in lifecycle.db (verified via sqlite3 query)
+   - plan_doc_ref: column in plans table (verified via PRAGMA table_info)
+   - FORWARD.md: exists at bellows/knowledge/FORWARD.md
+   All cited artifacts verified.
+
+RESULT: PASS — no fabricated specifics found. All plan IDs, version numbers, row statuses, and file/function names verified against ground truth.
