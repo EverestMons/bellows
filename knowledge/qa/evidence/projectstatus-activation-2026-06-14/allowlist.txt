@@ -1,0 +1,20 @@
+SCOPE_ALLOWLIST from gates.py (line 24-26):
+
+SCOPE_ALLOWLIST = [
+    ".gitkeep",
+]
+
+Verification:
+- PROJECT_STATUS.md: ABSENT from SCOPE_ALLOWLIST (removed in this plan)
+- agent-prompt-feedback.md: ABSENT from SCOPE_ALLOWLIST (removed in plan 49)
+- Only .gitkeep remains in the allowlist
+
+grep confirmation:
+$ grep -n "SCOPE_ALLOWLIST" gates.py
+24:SCOPE_ALLOWLIST = [
+29:SCOPE_ALLOWLIST_PREFIXES = ("in-progress-", "verdict-pending-", "halted-")
+715:        if basename in SCOPE_ALLOWLIST:
+717:        if any(basename.startswith(p) for p in SCOPE_ALLOWLIST_PREFIXES):
+
+Neither PROJECT_STATUS.md nor agent-prompt-feedback.md appear anywhere in the
+SCOPE_ALLOWLIST definition. PASS.

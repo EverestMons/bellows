@@ -1,0 +1,37 @@
+PLANNER_TEMPLATE.md Governance Flip Verification (v4.67)
+=========================================================
+
+Version: 4.67 (line 5) — bumped from 4.66
+Last Updated: 2026-06-14 (v4.67 — PROJECT_STATUS ledger go-live) (line 6)
+
+Rule 8 (L475-476): "Final step moves plan to Done and emits PROJECT_STATUS
+milestone via channel" — updated heading. Body states:
+  - "emit the PROJECT_STATUS milestone summary in the Output Receipt
+    ### Ledger Updates > #### Project Status section — do NOT write
+    PROJECT_STATUS.md directly"
+  - Ordering: "deliverable verification -> QA deposit -> ledger updates in
+    Output Receipt -> final commit"
+
+Rule 8 instruction template (L480): "Emit the PROJECT_STATUS milestone summary
+in the Output Receipt ### Ledger Updates > #### Project Status section"
+
+Prompt mention (L381): "Final step ends with ledger updates in Output Receipt
+(project status milestone + prompt feedback via channel) and final commit.
+Agents do NOT write PROJECT_STATUS.md directly"
+
+#### Project Status in format spec (L335-339):
+  - Subsection present with format example
+  - Rules state: "The #### Prompt Feedback and #### Project Status subsections
+    are active channels. FORWARD remains agent-written for now (Slice 3)."
+
+Session-wrap (L1505): Parenthetical added: "(Per-plan milestones are now
+daemon-written via the ### Ledger Updates > #### Project Status channel —
+this session-wrap entry is the Planner's session-level summary, distinct
+from individual plan milestones.)"
+
+FORWARD/Rule 42 (L942-955): UNTOUCHED. Rule 42 continues to reference
+FORWARD.md reconciliation only. No PROJECT_STATUS changes in Rule 42.
+
+Changelog (L1674): v4.67 entry documents all changes.
+
+PASS — all governance flip sites verified.

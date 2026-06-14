@@ -1,0 +1,12 @@
+============================= test session starts ==============================
+platform darwin -- Python 3.9.6, pytest-8.4.2, pluggy-1.6.0
+rootdir: /Users/marklehn/Developer/GitHub/bellows/.bellows-worktrees/51
+collected 162 items / 161 deselected / 1 selected
+
+tests/test_bellows.py::TestProjectStatusIdempotency::test_duplicate_project_status_is_noop PASSED [100%]
+
+================= 1 passed, 161 deselected, 1 warning in 0.22s =================
+
+QA verification: PROJECT_STATUS duplicate-apply is correctly a no-op.
+The test calls _apply_ledger_updates twice with identical content and asserts
+the milestone appears exactly once in PROJECT_STATUS.md.

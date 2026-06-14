@@ -1,0 +1,19 @@
+============================= test session starts ==============================
+platform darwin -- Python 3.9.6, pytest-8.4.2, pluggy-1.6.0
+rootdir: /Users/marklehn/Developer/GitHub/bellows/.bellows-worktrees/51
+collected 162 items / 157 deselected / 5 selected
+
+tests/test_bellows.py::TestApplyLedgerUpdatesProjectStatus::test_skips_when_project_status_in_files_changed PASSED [ 20%]
+tests/test_bellows.py::TestApplyLedgerUpdatesProjectStatus::test_noop_when_no_project_status_in_receipt PASSED [ 40%]
+tests/test_bellows.py::TestApplyLedgerUpdatesProjectStatus::test_feedback_still_works_alongside_project_status PASSED [ 60%]
+tests/test_bellows.py::TestApplyLedgerUpdatesForward::test_feedback_and_project_status_still_work PASSED [ 80%]
+tests/test_bellows.py::TestProjectStatusIdempotency::test_duplicate_project_status_is_noop PASSED [100%]
+
+================= 5 passed, 157 deselected, 1 warning in 0.85s =================
+
+Key test: test_skips_when_project_status_in_files_changed
+  - Calls _apply_ledger_updates with files_changed=["bellows.py", "PROJECT_STATUS.md"]
+  - Asserts PROJECT_STATUS.md is NOT created (daemon skips when agent already wrote it)
+  - Coexistence mechanism intact: old-style agent writes block daemon append
+
+PASS — coexistence regression confirmed.

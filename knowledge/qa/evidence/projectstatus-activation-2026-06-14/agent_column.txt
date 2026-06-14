@@ -1,0 +1,21 @@
+============================= test session starts ==============================
+platform darwin -- Python 3.9.6, pytest-8.4.2, pluggy-1.6.0
+rootdir: /Users/marklehn/Developer/GitHub/bellows/.bellows-worktrees/51
+collected 162 items / 161 deselected / 1 selected
+
+tests/test_bellows.py::TestAgentColumnPopulated::test_agent_column_non_empty PASSED [100%]
+
+================= 1 passed, 161 deselected, 1 warning in 0.15s =================
+
+Source verification (bellows.py:1149-1155):
+    lifecycle.record_prompt_feedback(
+        plan_id=plan_id,
+        step_number=parsed.get("_step_number"),
+        agent=parsed.get("_agent"),
+        project=project_path,
+        entry_text=feedback_text,
+    )
+
+The agent= parameter is populated from parsed.get("_agent"), which is set by
+extract_agent() after each runner.run_step() call. Test proves column is
+non-empty when _agent is set. PASS.
