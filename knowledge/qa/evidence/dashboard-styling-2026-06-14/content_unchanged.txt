@@ -1,0 +1,33 @@
+Verification: Content unchanged — presentation-only change
+============================================================
+
+Empty sections show (none): True
+  IN-FLIGHT (none): True
+  AWAITING VERDICT (none): True
+  EVENT FEED (none): True
+
+DB absent shows (no database): True
+
+Log absent shows (no log file): True
+
+stale? indicator: verified by TestRenderStoppedState::test_stopped_header_and_stale — PASSED
+  When daemon_running=False, in-flight status changes to stale?
+
+Type-qualified IDs (executable #N): verified by TestRenderRunningState — PASSED
+  Uses running_db fixture; asserts #33 in output
+
+RUNNING header values: '● Bellows RUNNING  pid 17920  sha 6274d1a  up 6m'
+  Contains pid: True
+  Contains sha: True
+  Contains uptime: True
+
+STOPPED header values: '○ Bellows STOPPED (exited, code 1)'
+  Contains STOPPED: True
+  Contains exit code: True
+
+Verdict file ref as basename: verified by TestVerdictFileBasename — PASSED
+  verdict-request-30-step-2.md shown in output
+
+Conclusion: All content values — (none), stale?, (no database), (no log file),
+type-qualified executable #N IDs, verdict basenames, header values — all identical.
+Change is presentation-only (attrs added, text unchanged).

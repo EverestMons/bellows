@@ -1,0 +1,18 @@
+Verification: No-color fallback — monochrome path
+============================================================
+
+has_colors=False passed to render_screen
+Total rows: 50
+All valid (str, int) tuples: True
+
+No color pair bits in any row: True
+
+Monochrome attrs used:
+  '● Bellows RUNNING  pid 17920  sha 6274d1a  up 6m'  attr=BOLD
+  '─────────────────────────────────────────────────  attr=DIM
+  'IN-FLIGHT'  attr=BOLD
+  '─────────────────────────────────────────────────  attr=DIM
+  'AWAITING VERDICT'  attr=BOLD|REVERSE
+  '─────────────────────────────────────────────────  attr=DIM
+  'EVENT FEED'  attr=DIM
+  'r restart  q quit'  attr=BOLD

@@ -1,0 +1,22 @@
+Verification: Single-screen line-budget contract
+============================================================
+
+Height 24: returned 24 rows, match=True
+Height 30: returned 30 rows, match=True
+Height 50: returned 50 rows, match=True
+Height 80: returned 80 rows, match=True
+
+With empty sections (height contract with separators):
+Height 24: returned 24 rows, match=True
+  Footer is last row: True
+Height 30: returned 30 rows, match=True
+  Footer is last row: True
+Height 50: returned 50 rows, match=True
+  Footer is last row: True
+
+Separator count (h=30):
+Separators: 3, included in height budget: True
+
+Test confirms budget with populated DB sections (TestLineBudget::test_budget_with_separators):
+  Uses running_db fixture with real in-flight + awaiting rows
+  Asserts len(rows) == 30 — PASSED
