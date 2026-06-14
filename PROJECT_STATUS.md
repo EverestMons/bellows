@@ -4,6 +4,9 @@
 ## Status: Phase 1 Complete — Live (daemon running, all 10 watched paths active)
 
 ## Completed
+### Plan 64
+Daemon-owned ledgers shipped and proven live (plans 41–63). Agents now emit PROJECT_STATUS, prompt feedback, and FORWARD rows via the Output Receipt `### Ledger Updates` channel; the daemon writes them post-merge. The append-only worktree-conflict class is eliminated (FORWARD rows 4/5/13 CLOSED). Prompt feedback lives in the `prompt_feedback` DB table; `agent-prompt-feedback.md` is daemon-generated. Also shipped this arc: FORWARD reconciliation sweep (26), gate-FP cluster fix (27–29), DB-out-of-git policy (30), status CLI + dashboard TUI + restyling (31–33, 59), type-qualified plan ids (36), plan_doc_ref (37/38/40), PLANNER_TEMPLATE v4.68.
+
 ### Plan 55
 CANARY-PROJSTATUS-153330 — milestone via channel; daemon must append to PROJECT_STATUS.md (multi-turn fix).
 
