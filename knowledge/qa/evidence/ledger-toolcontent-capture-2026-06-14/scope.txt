@@ -1,0 +1,17 @@
+# Scope Evidence
+# git diff 8c5dafa~1..8c5dafa --stat (the code commit)
+# Expected scope: runner.py, parser.py, tests/test_runner.py,
+# tests/test_parser.py, tests/test_bellows.py, + dev log deposit
+
+ ...edger-toolcontent-capture-dev-log-2026-06-14.md | 73 +++++++++++++++++++
+ parser.py                                          |  3 +
+ runner.py                                          | 14 ++++
+ tests/test_bellows.py                              | 26 +++++++
+ tests/test_parser.py                               | 44 +++++++++++
+ tests/test_runner.py                               | 85 ++++++++++++++++++++++
+ 6 files changed, 245 insertions(+)
+
+# All files are within plan-specified scope.
+# In-scope: runner.py, parser.py, tests/test_runner.py, tests/test_parser.py, tests/test_bellows.py
+# Dev log deposit: knowledge/development/ledger-toolcontent-capture-dev-log-2026-06-14.md
+# No out-of-scope files modified.
