@@ -1,5 +1,24 @@
 # Agent Prompt Feedback
 
+Plan 60 Step 2 executed cleanly. The QA step instructions were well-structured with clear evidence file names and verification checkpoints. The Rule 20 self-check block reference path in the specialist file (`/Users/marklehn/Desktop/GitHub/`) differs from the actual location (`/Users/marklehn/Developer/GitHub/`) — the glob fallback found it but the canonical path should be corrected. Dev log was accurate and complete, making verification straightforward.
+Step 2 (QA) complete. Summary:
+
+- **Full suite**: 684 passed, 0 failed, 8 new tests matching dev log
+- **G1**: Write/Edit `tool_use` content captured into `_all_assistant_text`; plan-57 repro extracts forward register
+- **G2**: `_all_assistant_text` propagated in parsed dict; defense WARN fires on tool-content-only unparsed case
+- **No regression**: bare-text, multi-turn, all 3 extraction channels, ceo_flags, verdict_requested all pass
+- **Scope**: only in-scope files (runner.py, parser.py, 3 test files, dev log)
+- **Rule 20**: PASSED — all 5 evidence files present, no hedging keywords
+
+**Flags for CEO:**
+1. DAEMON RESTART REQUIRED — do not restart until plan closes
+2. RE-CANARY — fresh FORWARD canary after restart must land row #23
+3. Fix hardens all three channels against tool-buried receipts
+
+Commit: `c9f8e35`. Stopping and waiting for confirmation.
+
+### Ledger Updates
+
 **2026-06-14 — ledger-toolcontent-capture (DEV Step 1)**
 
 1. The tool_use event shape confirmed: `block["input"]["content"]` for Write and `block["input"]["new_string"]` for Edit — matching the diagnostic's prediction.
