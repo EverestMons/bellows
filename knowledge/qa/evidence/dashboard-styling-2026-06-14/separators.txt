@@ -1,0 +1,20 @@
+Verification: Full-width separator rules between categories
+============================================================
+
+Separator at row 1: len=120, expected_width=120, match=True
+  char=U+2500 (box-drawing horizontal), DIM=True
+  row above: '● Bellows RUNNING  pid 17920  sha 6274d1a  up 6m'
+  row below: 'IN-FLIGHT'
+
+Separator at row 4: len=120, expected_width=120, match=True
+  char=U+2500 (box-drawing horizontal), DIM=True
+  row above: ' (none)'
+  row below: 'AWAITING VERDICT'
+
+Separator at row 7: len=120, expected_width=120, match=True
+  char=U+2500 (box-drawing horizontal), DIM=True
+  row above: ' (none)'
+  row below: 'EVENT FEED'
+
+Total separators: 3 (expected: 3)
+Match: True

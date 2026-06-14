@@ -1,0 +1,24 @@
+Verification: render_screen returns (text, attr) tuples
+============================================================
+
+Total rows returned: 50
+Return type: list
+
+All rows are 2-tuples: True
+All (str, int) types: True
+
+Draw loop in dashboard.py applies attr:
+  for i, (text, attr) in enumerate(lines):
+      stdscr.addnstr(i, 0, text, width, attr)
+
+First 10 rows sample:
+  [0] text='● Bellows RUNNING  pid 17920  sha 6274d1a  up 6m'  attr=2097152
+  [1] text='───────────────────────────────────────────────────────────  attr=1048576
+  [2] text='IN-FLIGHT'  attr=2097152
+  [3] text=' (none)'  attr=0
+  [4] text='───────────────────────────────────────────────────────────  attr=1048576
+  [5] text='AWAITING VERDICT'  attr=2359296
+  [6] text=' (none)'  attr=0
+  [7] text='───────────────────────────────────────────────────────────  attr=1048576
+  [8] text='EVENT FEED'  attr=1048576
+  [9] text=' 20:06:00 [EVENT] started'  attr=0

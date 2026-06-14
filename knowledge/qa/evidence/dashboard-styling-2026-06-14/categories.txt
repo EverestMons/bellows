@@ -1,0 +1,33 @@
+Verification: Distinct categories — headers bold + distinct color
+============================================================
+
+IN-FLIGHT header: text='IN-FLIGHT'
+  attr=2097920, BOLD=True, color_pair=3
+  Expected: BOLD + CYAN (pair 3)
+  Match: True
+
+AWAITING VERDICT header: text='AWAITING VERDICT'
+  attr=2098176, BOLD=True, color_pair=4
+  Expected: BOLD + YELLOW (pair 4)
+  Match: True
+
+EVENT FEED header: text='EVENT FEED'
+  attr=1048576, DIM=True
+  Match: True
+
+Daemon header RUNNING: text='● Bellows RUNNING  pid 17920  sha 6274d1a  up 6m'
+  attr=2097408, BOLD=True, color_pair=1
+  Expected: BOLD + GREEN (pair 1)
+  Match: True
+
+Daemon header STOPPED: text='○ Bellows STOPPED (exited, code 1)'
+  attr=2097664, BOLD=True, color_pair=2
+  Expected: BOLD + RED (pair 2)
+  Match: True
+
+Footer: text='r restart  q quit'
+  attr=262144, REVERSE=True
+  Match: True
+
+Distinct color pairs used by headers: {('AWAITING', 4), ('DAEMON_RUNNING', 1), ('IN-FLIGHT', 3)}
+All distinct: True
