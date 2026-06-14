@@ -1,0 +1,34 @@
+in_progress-strand recovery verification
+Run: python3 -m pytest tests/test_lifecycle.py -k "stranded_in_progress or in_progress_with_worktree or in_progress_within_age_guard or claimed_recovery_still_works_alongside" -v
+Date: 2026-06-14
+
+--- All 4 in_progress recovery tests ---
+
+tests/test_lifecycle.py::TestInProgressStrandRecovery::test_stranded_in_progress_recovered PASSED
+tests/test_lifecycle.py::TestInProgressStrandRecovery::test_in_progress_with_worktree_not_touched PASSED
+tests/test_lifecycle.py::TestInProgressStrandRecovery::test_in_progress_within_age_guard_not_touched PASSED
+tests/test_lifecycle.py::TestInProgressStrandRecovery::test_claimed_recovery_still_works_alongside_in_progress PASSED
+
+Test details:
+
+1. test_stranded_in_progress_recovered:
+   - in_progress + no worktree + backdated past age guard (10 min)
+   - Asserts: action == "abandoned", lifecycle_state == "abandoned", closed_at IS NOT NULL
+   - RESULT: Stranded plan correctly recovered
+
+2. test_in_progress_with_worktree_not_touched:
+   - in_progress + worktree directory EXISTS + backdated past age guard
+   - Asserts: action == "skipped_worktree_exists", lifecycle_state == "in_progress" (unchanged)
+   - RESULT: Live plan NOT touched (correct)
+
+3. test_in_progress_within_age_guard_not_touched:
+   - in_progress + no worktree + created_at is NOW (within age guard)
+   - Asserts: action == "skipped_too_recent", lifecycle_state == "in_progress" (unchanged)
+   - RESULT: Young plan NOT touched (correct)
+
+4. test_claimed_recovery_still_works_alongside_in_progress:
+   - claimed plan (no in_progress file) + backdated past age guard
+   - Asserts: action == "abandoned", lifecycle_state == "abandoned", closed_at IS NOT NULL
+   - RESULT: Existing claimed-recovery path regression intact
+
+4 passed, 0 failed.

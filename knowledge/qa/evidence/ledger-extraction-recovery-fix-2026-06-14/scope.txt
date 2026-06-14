@@ -1,0 +1,30 @@
+Scope verification — git diff HEAD~1 --stat
+Date: 2026-06-14
+
+ bellows.py                                         |   8 +
+ ...r-extraction-recovery-fix-dev-log-2026-06-14.md | 128 +++++++++++++++
+ lifecycle.py                                       |  42 +++++
+ parser.py                                          |   6 +-
+ runner.py                                          |  19 ++-
+ tests/test_bellows.py                              |  48 ++++++
+ tests/test_lifecycle.py                            | 182 ++++++++++++++++++++-
+ tests/test_runner.py                               |  71 ++++++++
+ 8 files changed, 492 insertions(+), 12 deletions(-)
+
+Scope declared in plan: runner.py, parser.py, bellows.py, lifecycle.py,
+tests/test_runner.py, tests/test_parser.py, tests/test_bellows.py, tests/test_lifecycle.py
+
+Files changed:
+- runner.py ✅ (in scope)
+- parser.py ✅ (in scope)
+- bellows.py ✅ (in scope)
+- lifecycle.py ✅ (in scope)
+- tests/test_runner.py ✅ (in scope)
+- tests/test_bellows.py ✅ (in scope)
+- tests/test_lifecycle.py ✅ (in scope)
+- knowledge/development/ledger-extraction-recovery-fix-dev-log-2026-06-14.md ✅ (dev log deposit)
+
+Note: tests/test_parser.py was in scope but not modified (no changes needed there — parser.py
+changes were minimal and existing parser tests already cover the extraction contract).
+
+No out-of-scope files modified.

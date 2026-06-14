@@ -1,0 +1,27 @@
+No regression to existing extraction — ceo_flags / verdict_requested / result
+Run: python3 -m pytest tests/test_runner_parser.py -v
+Date: 2026-06-14
+
+--- Runner-parser integration tests (9 total, all PASS) ---
+
+tests/test_runner_parser.py::test_parse_clean_output PASSED
+tests/test_runner_parser.py::test_parse_blocked_output PASSED
+tests/test_runner_parser.py::test_run_step_timeout PASSED
+tests/test_runner_parser.py::test_parse_paragraph_form_no_longer_extracted PASSED
+tests/test_runner_parser.py::test_parse_h3_flags_for_ceo_bulleted_regression PASSED
+tests/test_runner_parser.py::test_parse_h3_flags_for_ceo_none_regression PASSED
+tests/test_runner_parser.py::test_parse_verdict_requested_present PASSED
+tests/test_runner_parser.py::test_parse_verdict_requested_absent PASSED
+tests/test_runner_parser.py::test_parse_verdict_requested_mid_text PASSED
+
+Key coverage for existing extraction:
+- ceo_flags: test_parse_h3_flags_for_ceo_bulleted_regression, test_parse_h3_flags_for_ceo_none_regression
+- verdict_requested: test_parse_verdict_requested_present, test_parse_verdict_requested_absent, test_parse_verdict_requested_mid_text
+- result: test_parse_clean_output, test_parse_blocked_output
+
+All 9 existing runner-parser integration tests pass unchanged.
+ceo_flags, verdict_requested, and result continue to parse from the final message only.
+The multi-turn fix only affects ledger extraction (uses _all_assistant_text),
+not ceo_flags/verdict_requested/result (which use result_text from the final message).
+
+9 passed, 0 failed.

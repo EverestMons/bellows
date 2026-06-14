@@ -1,0 +1,29 @@
+Multi-turn ledger extraction — regression repro verification
+Run: python3 -m pytest tests/test_runner.py -k "multiturn or single_turn_ledger" -v
+Date: 2026-06-14
+
+--- Test 1: Multi-turn extraction (the regression repro) ---
+
+tests/test_runner.py::test_multiturn_ledger_extraction PASSED
+
+Test structure:
+- Creates an intermediate `type: "assistant"` event containing `### Ledger Updates > #### Prompt Feedback`
+- Creates a final `type: "result"` event with a short summary (no ledger)
+- Verifies: result["ledger_updates"]["feedback"] is not None
+- Verifies: "Multi-turn observation" in result["ledger_updates"]["feedback"]
+
+This is the exact regression scenario from diagnostic 53: multi-turn agent emits
+Output Receipt in intermediate assistant turn, short summary in final result.
+Before the fix, parser only read the final result → ledger was all-None.
+
+--- Test 2: Single-turn case (backward compatibility) ---
+
+tests/test_runner.py::test_single_turn_ledger_extraction_still_works PASSED
+
+Test structure:
+- Creates a single `type: "result"` event with `### Ledger Updates` in the result text
+- Verifies: result["ledger_updates"]["feedback"] == "Single-turn feedback."
+
+Confirms the existing single-turn extraction path is unaffected by the multi-turn fix.
+
+Both tests: 2 passed, 0 failed.

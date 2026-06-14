@@ -1,0 +1,28 @@
+Defense-in-depth WARN verification
+Run: python3 -m pytest tests/test_bellows.py -k "warn" -v
+Date: 2026-06-14
+
+--- All 3 defense WARN tests ---
+
+tests/test_bellows.py::TestLedgerDefenseWarn::test_warn_fires_when_heading_present_but_empty PASSED
+tests/test_bellows.py::TestLedgerDefenseWarn::test_warn_silent_when_ledger_populated PASSED
+tests/test_bellows.py::TestLedgerDefenseWarn::test_warn_silent_when_no_heading PASSED
+
+Test details:
+
+1. test_warn_fires_when_heading_present_but_empty:
+   - parsed ledger_updates all-None, _all_assistant_text contains "### Ledger Updates"
+   - Asserts: "agent emitted ### Ledger Updates but parser extracted nothing" in capsys stdout
+   - RESULT: WARN fires correctly
+
+2. test_warn_silent_when_ledger_populated:
+   - parsed ledger_updates has feedback="Real feedback", heading present in text
+   - Asserts: "parser extracted nothing" NOT in capsys stdout
+   - RESULT: Silent when ledger has content (correct)
+
+3. test_warn_silent_when_no_heading:
+   - parsed ledger_updates all-None, _all_assistant_text has NO heading
+   - Asserts: "parser extracted nothing" NOT in capsys stdout
+   - RESULT: Silent when no heading present (correct)
+
+3 passed, 0 failed.
