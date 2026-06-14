@@ -1291,6 +1291,13 @@ def _append_forward_row(project_path, plan_id, item_text):
     row_numbers = [int(m) for m in re.findall(r"^\|\s*(\d+)\s*\|", content, re.MULTILINE)]
     next_num = max(row_numbers) + 1 if row_numbers else 1
 
+    # Sanitize item_text to a single line: take first non-empty line,
+    # collapse internal whitespace, strip trailing period-only artifact.
+    lines = [ln.strip() for ln in item_text.splitlines() if ln.strip()]
+    item_text = " ".join(lines[0].split()) if lines else item_text.strip()
+    if item_text.endswith(" ."):
+        item_text = item_text[:-2].rstrip()
+
     today = datetime.now().strftime("%Y-%m-%d")
 
     # Defaults for optional fields

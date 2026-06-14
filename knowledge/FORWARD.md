@@ -32,24 +32,4 @@
 | 20 | 2026-06-12 | `plans.lifecycle_state` intermediate states (`in_progress`, `awaiting_verdict`) never written (context in BACKLOG-ARCHIVE.md) | deferred-work | 22 | closed-by-plan-22 |
 | 21 | 2026-06-12 | Parallel-plan worktree diff contamination trips scope_check — a concurrent plan's merged artifacts appear in a later-pausing plan's files_changed (observed: plan 19 QA artifacts flagged in plan 20's gate; CEO override required) (context: processed-verdict-20-step-1) | deferred-work | 28 | closed-by-plan-28 |
 | 22 | 2026-06-13 | Forge reporter `_resolve_plan_file` should PREFER the stored `plans.plan_doc_ref` over filesystem-probe derivation (falls back to derivation only for NULL/legacy rows) | deferred-work | 40 | closed-by-plan-40 |
-| 23 | 2026-06-14 | CANARY-FORWARD2-180522 — test row filed via Output Receipt channel after the tool-content fix; daemon should append as a new FORWARD row (withdraw after verification).
-
-Now commit the deposit.
-Complete. All 5 checks passed:
-
-1. **Lifecycle DB** — plan 61 confirmed as `diagnostic`/`in_progress`
-2. **FORWARD.md state** — ends at row #22, no prior daemon-appended rows in `ledger_writes`
-3. **Plan 60 fix** — `runner.py:235-248` captures Write/Edit tool content into `_all_assistant_text`
-4. **Parser** — uses `_all_assistant_text` for `#### Forward Register` extraction
-5. **Daemon pipeline** — `_append_forward_row` wired with idempotency guard, ready to append row #23
-
-Re-canary entry `CANARY-FORWARD2-180522` filed via the Output Receipt channel. The daemon should now append it as row #23 to `knowledge/FORWARD.md` on main at teardown — proving the plan 60 tool-content fix works end-to-end. Withdraw after verification per Rule 42.
-Complete. All 5 checks passed:
-
-1. **Lifecycle DB** — plan 61 confirmed as `diagnostic`/`in_progress`
-2. **FORWARD.md state** — ends at row #22, no prior daemon-appended rows in `ledger_writes`
-3. **Plan 60 fix** — `runner.py:235-248` captures Write/Edit tool content into `_all_assistant_text`
-4. **Parser** — uses `_all_assistant_text` for `#### Forward Register` extraction
-5. **Daemon pipeline** — `_append_forward_row` wired with idempotency guard, ready to append row #23
-
-Re-canary entry `CANARY-FORWARD2-180522` filed via the Output Receipt channel. The daemon should now append it as row #23 to `knowledge/FORWARD.md` on main at teardown — proving the plan 60 tool-content fix works end-to-end. Withdraw after verification per Rule 42. | deferred-work | — | open |
+| 23 | 2026-06-14 | CANARY-FORWARD2-180522 — test row filed via Output Receipt channel after the tool-content fix; daemon should append as a new FORWARD row (withdraw after verification) — withdrawn 2026-06-14: canary verified, malformed row cleaned up by plan 62 (over-capture fix) | deferred-work | 62 | withdrawn |

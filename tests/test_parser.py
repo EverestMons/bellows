@@ -33,7 +33,7 @@ class TestLedgerUpdatesExtraction:
             "### Flags for CEO\n- None\n\n"
             "### Ledger Updates\n"
             "#### Prompt Feedback\n"
-            "**2026-06-13 — test-plan (DEV Step 1)**\n\n"
+            "**2026-06-13 — test-plan (DEV Step 1)**\n"
             "1. First observation.\n"
             "2. Second observation.\n"
         )
@@ -361,3 +361,81 @@ class TestAllAssistantTextPropagation:
         fixture = dict(BASE_FIXTURE, _all_assistant_text=tool_text, result="Done.")
         parsed = parser.parse(fixture)
         assert parsed["ledger_updates"]["feedback"] == "Feedback from Write block."
+
+
+class TestSubsectionOverCapturefix:
+    """Plan 62: subsection regexes stop at blank lines — no trailing prose captured."""
+
+    def test_feedback_trailing_prose_excluded(self):
+        """Regression repro: blank line + trailing prose after feedback is NOT captured."""
+        text = (
+            "### Ledger Updates\n"
+            "#### Prompt Feedback\n"
+            "Actual feedback content.\n"
+            "\n"
+            "Now commit the deposit.\n"
+            "Complete. All 5 checks passed.\n"
+        )
+        fixture = dict(BASE_FIXTURE, result=text)
+        parsed = parser.parse(fixture)
+        assert parsed["ledger_updates"]["feedback"] == "Actual feedback content."
+
+    def test_project_status_trailing_prose_excluded(self):
+        """Blank line + trailing prose after project_status is NOT captured."""
+        text = (
+            "### Ledger Updates\n"
+            "#### Project Status\n"
+            "- 2026-06-14: Milestone reached.\n"
+            "\n"
+            "Done. Moving on to next step.\n"
+        )
+        fixture = dict(BASE_FIXTURE, result=text)
+        parsed = parser.parse(fixture)
+        assert parsed["ledger_updates"]["project_status"] == "- 2026-06-14: Milestone reached."
+
+    def test_forward_trailing_prose_excluded(self):
+        """Blank line + trailing prose after forward is NOT captured."""
+        text = (
+            "### Ledger Updates\n"
+            "#### Forward Register\n"
+            "Deferred work item text\n"
+            "\n"
+            "Now commit the deposit.\n"
+            "Complete. All 5 checks passed:\n"
+            "1. Check one\n"
+            "2. Check two\n"
+        )
+        fixture = dict(BASE_FIXTURE, result=text)
+        parsed = parser.parse(fixture)
+        assert parsed["ledger_updates"]["forward"] == "Deferred work item text"
+
+    def test_multiline_no_blank_still_captures_fully(self):
+        """Legitimate multi-line subsection (no blank line) captures all lines."""
+        text = (
+            "### Ledger Updates\n"
+            "#### Prompt Feedback\n"
+            "**2026-06-14 — plan 62 (DEV Step 1)**\n"
+            "1. First observation.\n"
+            "2. Second observation.\n"
+            "3. Third observation.\n"
+        )
+        fixture = dict(BASE_FIXTURE, result=text)
+        parsed = parser.parse(fixture)
+        fb = parsed["ledger_updates"]["feedback"]
+        assert "First observation" in fb
+        assert "Second observation" in fb
+        assert "Third observation" in fb
+
+    def test_forward_multiline_no_blank_captures_fully(self):
+        """Legitimate multi-line forward (no blank line) captures all lines."""
+        text = (
+            "### Ledger Updates\n"
+            "#### Forward Register\n"
+            "Line one of the item\n"
+            "Line two of the item\n"
+        )
+        fixture = dict(BASE_FIXTURE, result=text)
+        parsed = parser.parse(fixture)
+        fw = parsed["ledger_updates"]["forward"]
+        assert "Line one" in fw
+        assert "Line two" in fw

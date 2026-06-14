@@ -57,14 +57,14 @@ def parse(raw: dict) -> dict:
     if lu_match:
         lu_body = lu_match.group(1)
         fb_match = re.search(
-            r"#### (?:Prompt )?Feedback\s*\n(.*?)(?=\n#### |\Z)", lu_body, re.DOTALL
+            r"#### (?:Prompt )?Feedback\s*\n(.*?)(?=\n#### |\n### |\n## |\n\s*\n|\Z)", lu_body, re.DOTALL
         )
         if fb_match:
             fb_text = fb_match.group(1).strip()
             if fb_text and fb_text.lower() not in ("none", "n/a"):
                 ledger_updates["feedback"] = fb_text
         ps_match = re.search(
-            r"#### Project Status\s*\n(.*?)(?=\n#### |\Z)", lu_body, re.DOTALL
+            r"#### Project Status\s*\n(.*?)(?=\n#### |\n### |\n## |\n\s*\n|\Z)", lu_body, re.DOTALL
         )
         if ps_match:
             ps_text = ps_match.group(1).strip()
@@ -72,7 +72,7 @@ def parse(raw: dict) -> dict:
                 ledger_updates["project_status"] = ps_text
         # Phase 3: #### Forward Register (also matches #### FORWARD Additions)
         fw_match = re.search(
-            r"#### (?:Forward Register|FORWARD(?: Additions)?)\s*\n(.*?)(?=\n#### |\Z)",
+            r"#### (?:Forward Register|FORWARD(?: Additions)?)\s*\n(.*?)(?=\n#### |\n### |\n## |\n\s*\n|\Z)",
             lu_body, re.DOTALL,
         )
         if fw_match:

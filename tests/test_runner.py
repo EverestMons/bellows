@@ -418,7 +418,7 @@ def test_multiturn_ledger_extraction():
             "**Status:** Complete\n\n"
             "### Ledger Updates\n"
             "#### Prompt Feedback\n"
-            "**2026-06-14 — test (DEV Step 1)**\n\n"
+            "**2026-06-14 — test (DEV Step 1)**\n"
             "1. Multi-turn observation.\n"
         )}]},
         "session_id": "mt-123",

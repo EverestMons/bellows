@@ -4908,6 +4908,108 @@ class TestApplyLedgerUpdatesForward:
 
 
 # ---------------------------------------------------------------------------
+# FORWARD single-line item sanitization — plan 62
+# ---------------------------------------------------------------------------
+
+
+class TestForwardSingleLineItem:
+    """Plan 62: _append_forward_row sanitizes item_text to a single line."""
+
+    def _make_git_repo(self, tmp_path):
+        """Create a minimal git repo at tmp_path with an initial commit."""
+        subprocess.run(["git", "init", str(tmp_path)], capture_output=True, check=True)
+        subprocess.run(["git", "-C", str(tmp_path), "config", "user.email", "test@test.com"],
+                        capture_output=True, check=True)
+        subprocess.run(["git", "-C", str(tmp_path), "config", "user.name", "Test"],
+                        capture_output=True, check=True)
+        gitkeep = tmp_path / ".gitkeep"
+        gitkeep.write_text("")
+        subprocess.run(["git", "-C", str(tmp_path), "add", ".gitkeep"],
+                        capture_output=True, check=True)
+        subprocess.run(["git", "-C", str(tmp_path), "commit", "-m", "init"],
+                        capture_output=True, check=True)
+        return str(tmp_path)
+
+    FORWARD_FIXTURE = (
+        "# Forward Register\n\n"
+        "| # | Added | Item | Type | Plan-id link | Status |\n"
+        "|---|---|---|---|---|---|\n"
+        "| 1 | 2026-05-13 | First item | deferred-work | — | open |\n"
+    )
+
+    def test_multiline_item_yields_single_line_row(self, tmp_path):
+        """Multi-line item_text → valid single-line 7-pipe row."""
+        project = self._make_git_repo(tmp_path / "proj")
+        fwd_dir = os.path.join(project, "knowledge")
+        os.makedirs(fwd_dir)
+        fwd_path = os.path.join(fwd_dir, "FORWARD.md")
+        with open(fwd_path, "w") as f:
+            f.write(self.FORWARD_FIXTURE)
+        subprocess.run(["git", "-C", project, "add", "knowledge/FORWARD.md"],
+                        capture_output=True, check=True)
+        subprocess.run(["git", "-C", project, "commit", "-m", "add forward"],
+                        capture_output=True, check=True)
+        multiline_item = (
+            "CANARY item text here\n"
+            "\n"
+            "Now commit the deposit.\n"
+            "Complete. All 5 checks passed.\n"
+        )
+        bellows._append_forward_row(project, 99, multiline_item)
+        with open(fwd_path) as f:
+            content = f.read()
+        # Find the new row (row 2)
+        row_lines = [ln for ln in content.splitlines() if ln.startswith("| 2 |")]
+        assert len(row_lines) == 1
+        row = row_lines[0]
+        # Valid 7-pipe row
+        assert row.count("|") == 7
+        # Only the first line of the multi-line input
+        assert "CANARY item text here" in row
+        # Trailing prose excluded
+        assert "Now commit" not in row
+        assert "All 5 checks" not in row
+
+    def test_single_line_item_unchanged(self, tmp_path):
+        """Normal single-line item is unchanged by sanitization."""
+        project = self._make_git_repo(tmp_path / "proj")
+        fwd_dir = os.path.join(project, "knowledge")
+        os.makedirs(fwd_dir)
+        fwd_path = os.path.join(fwd_dir, "FORWARD.md")
+        with open(fwd_path, "w") as f:
+            f.write(self.FORWARD_FIXTURE)
+        subprocess.run(["git", "-C", project, "add", "knowledge/FORWARD.md"],
+                        capture_output=True, check=True)
+        subprocess.run(["git", "-C", project, "commit", "-m", "add forward"],
+                        capture_output=True, check=True)
+        bellows._append_forward_row(project, 99, "Normal single-line item")
+        with open(fwd_path) as f:
+            content = f.read()
+        row_lines = [ln for ln in content.splitlines() if ln.startswith("| 2 |")]
+        assert len(row_lines) == 1
+        assert "Normal single-line item" in row_lines[0]
+        assert row_lines[0].count("|") == 7
+
+    def test_whitespace_collapsed(self, tmp_path):
+        """Internal whitespace runs are collapsed to single spaces."""
+        project = self._make_git_repo(tmp_path / "proj")
+        fwd_dir = os.path.join(project, "knowledge")
+        os.makedirs(fwd_dir)
+        fwd_path = os.path.join(fwd_dir, "FORWARD.md")
+        with open(fwd_path, "w") as f:
+            f.write(self.FORWARD_FIXTURE)
+        subprocess.run(["git", "-C", project, "add", "knowledge/FORWARD.md"],
+                        capture_output=True, check=True)
+        subprocess.run(["git", "-C", project, "commit", "-m", "add forward"],
+                        capture_output=True, check=True)
+        bellows._append_forward_row(project, 99, "Item   with   extra   spaces")
+        with open(fwd_path) as f:
+            content = f.read()
+        row_lines = [ln for ln in content.splitlines() if ln.startswith("| 2 |")]
+        assert "Item with extra spaces" in row_lines[0]
+
+
+# ---------------------------------------------------------------------------
 # FORWARD idempotency — duplicate apply is a no-op (plan 56)
 # ---------------------------------------------------------------------------
 
