@@ -1,5 +1,4 @@
 # Agent Prompt Feedback
 
-> *Pre-activation history preserved in `agent-prompt-feedback-ARCHIVE.md`.*
+CANARY-FEEDBACK-124753 — feedback emitted via Output Receipt channel, daemon should record to prompt_feedback DB and regenerate the md.
 
-*No feedback entries recorded.*
