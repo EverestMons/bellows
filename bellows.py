@@ -1209,8 +1209,16 @@ def _apply_ledger_updates(parsed, project_path, plan_id, files_changed=None):
             _log("INFO", "ledger: agent wrote FORWARD.md old-style, skipping daemon write",
                  slug=slug)
         elif forward_text:
-            _append_forward_row(project_path, plan_id, forward_text)
-            _log("INFO", "ledger: appended new row to FORWARD.md", slug=slug)
+            # Idempotency check: skip if this exact write was already applied
+            fw_step_id_key = f"{plan_id}-{parsed.get('_step_number')}"
+            fw_content_hash = hashlib.sha256(forward_text.encode()).hexdigest()
+            if lifecycle.check_ledger_write_exists(fw_step_id_key, "FORWARD.md", fw_content_hash):
+                _log("INFO", "ledger: forward write already applied (idempotency), skipping",
+                     slug=slug)
+            else:
+                _append_forward_row(project_path, plan_id, forward_text)
+                lifecycle.record_ledger_write(fw_step_id_key, "FORWARD.md", fw_content_hash)
+                _log("INFO", "ledger: appended new row to FORWARD.md", slug=slug)
     except Exception as e:
         _log("WARN", f"⚠ _apply_ledger_updates failed: {e}",
              slug=slug_for(os.path.basename(project_path)))

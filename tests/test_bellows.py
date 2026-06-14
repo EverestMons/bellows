@@ -4908,6 +4908,67 @@ class TestApplyLedgerUpdatesForward:
 
 
 # ---------------------------------------------------------------------------
+# FORWARD idempotency — duplicate apply is a no-op (plan 56)
+# ---------------------------------------------------------------------------
+
+
+class TestForwardIdempotency:
+    """A duplicate FORWARD apply on teardown retry must be a no-op."""
+
+    FORWARD_FIXTURE = (
+        "# Bellows — Forward Register\n\n"
+        "| # | Added | Item | Type | Plan-id | Status |\n"
+        "|---|-------|------|------|---------|--------|\n"
+        "| 1 | 2026-06-01 | Existing item | deferred-work | — | open |\n"
+    )
+
+    def _make_git_repo(self, tmp_path):
+        subprocess.run(["git", "init", str(tmp_path)], capture_output=True, check=True)
+        subprocess.run(["git", "-C", str(tmp_path), "config", "user.email", "test@test.com"],
+                        capture_output=True, check=True)
+        subprocess.run(["git", "-C", str(tmp_path), "config", "user.name", "Test"],
+                        capture_output=True, check=True)
+        gitkeep = tmp_path / ".gitkeep"
+        gitkeep.write_text("")
+        subprocess.run(["git", "-C", str(tmp_path), "add", ".gitkeep"],
+                        capture_output=True, check=True)
+        subprocess.run(["git", "-C", str(tmp_path), "commit", "-m", "init"],
+                        capture_output=True, check=True)
+        return str(tmp_path)
+
+    def test_duplicate_forward_is_noop(self, tmp_path):
+        """Calling _apply_ledger_updates twice with same forward content
+        must produce only ONE row append (idempotency via ledger_writes table)."""
+        project = self._make_git_repo(tmp_path / "proj")
+        fwd_dir = os.path.join(project, "knowledge")
+        os.makedirs(fwd_dir)
+        fwd_path = os.path.join(fwd_dir, "FORWARD.md")
+        with open(fwd_path, "w") as f:
+            f.write(self.FORWARD_FIXTURE)
+        subprocess.run(["git", "-C", project, "add", "knowledge/FORWARD.md"],
+                        capture_output=True, check=True)
+        subprocess.run(["git", "-C", project, "commit", "-m", "add forward"],
+                        capture_output=True, check=True)
+        parsed = {
+            "ledger_updates": {"feedback": None, "project_status": None,
+                               "forward": "Idempotent deferred item"},
+            "_step_number": 1,
+        }
+        # First apply — should append row 2
+        bellows._apply_ledger_updates(parsed, project, plan_id=88, files_changed=[])
+        with open(fwd_path) as f:
+            content_after_first = f.read()
+        assert content_after_first.count("Idempotent deferred item") == 1
+
+        # Second apply — idempotency should prevent duplicate
+        bellows._apply_ledger_updates(parsed, project, plan_id=88, files_changed=[])
+        with open(fwd_path) as f:
+            content_after_second = f.read()
+        assert content_after_second.count("Idempotent deferred item") == 1
+        assert content_after_first == content_after_second
+
+
+# ---------------------------------------------------------------------------
 # PROJECT_STATUS idempotency — duplicate apply is a no-op (plan 51)
 # ---------------------------------------------------------------------------
 
