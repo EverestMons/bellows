@@ -1,0 +1,30 @@
+============================= test session starts ==============================
+platform darwin -- Python 3.9.6, pytest-8.4.2, pluggy-1.6.0 -- /Applications/Xcode.app/Contents/Developer/usr/bin/python3
+cachedir: .pytest_cache
+rootdir: /Users/marklehn/Developer/GitHub/bellows/.bellows-worktrees/62
+plugins: anyio-4.12.1, xdist-3.8.0, timeout-2.4.0, cov-7.0.0
+collecting ... collected 34 items / 19 deselected / 15 selected
+
+tests/test_parser.py::TestLedgerUpdatesExtraction::test_extracts_feedback_from_output_receipt PASSED [  6%]
+tests/test_parser.py::TestLedgerUpdatesExtraction::test_returns_none_when_feedback_subsection_absent PASSED [ 13%]
+tests/test_parser.py::TestLedgerUpdatesExtraction::test_handles_feedback_before_another_subsection PASSED [ 20%]
+tests/test_parser.py::TestProjectStatusExtraction::test_extracts_project_status PASSED [ 26%]
+tests/test_parser.py::TestProjectStatusExtraction::test_project_status_none_when_absent PASSED [ 33%]
+tests/test_parser.py::TestProjectStatusExtraction::test_project_status_none_for_none_value PASSED [ 40%]
+tests/test_parser.py::TestProjectStatusExtraction::test_project_status_none_for_na_value PASSED [ 46%]
+tests/test_parser.py::TestProjectStatusExtraction::test_both_feedback_and_project_status_extracted PASSED [ 53%]
+tests/test_parser.py::TestProjectStatusExtraction::test_project_status_key_always_present PASSED [ 60%]
+tests/test_parser.py::TestProjectStatusExtraction::test_project_status_before_feedback PASSED [ 66%]
+tests/test_parser.py::TestForwardRegisterExtraction::test_forward_with_feedback_and_project_status PASSED [ 73%]
+tests/test_parser.py::TestForwardRegisterExtraction::test_feedback_and_project_status_still_extract PASSED [ 80%]
+tests/test_parser.py::TestAllAssistantTextPropagation::test_extraction_feedback_from_tool_content PASSED [ 86%]
+tests/test_parser.py::TestSubsectionOverCapturefix::test_feedback_trailing_prose_excluded PASSED [ 93%]
+tests/test_parser.py::TestSubsectionOverCapturefix::test_project_status_trailing_prose_excluded PASSED [100%]
+
+=============================== warnings summary ===============================
+tests/test_parser.py::TestLedgerUpdatesExtraction::test_extracts_feedback_from_output_receipt
+  /Users/marklehn/Library/Python/3.9/lib/python/site-packages/urllib3/__init__.py:35: NotOpenSSLWarning: urllib3 v2 only supports OpenSSL 1.1.1+, currently the 'ssl' module is compiled with 'LibreSSL 2.8.3'. See: https://github.com/urllib3/urllib3/issues/3020
+    warnings.warn(
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+================= 15 passed, 19 deselected, 1 warning in 0.14s =================

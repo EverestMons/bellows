@@ -1,0 +1,8 @@
+ bellows.py                                         |   7 ++
+ knowledge/FORWARD.md                               |  22 +----
+ .../ledger-overcapture-fix-dev-log-2026-06-14.md   | 106 +++++++++++++++++++++
+ parser.py                                          |   6 +-
+ tests/test_bellows.py                              | 102 ++++++++++++++++++++
+ tests/test_parser.py                               |  80 +++++++++++++++-
+ tests/test_runner.py                               |   2 +-
+ 7 files changed, 299 insertions(+), 26 deletions(-)
