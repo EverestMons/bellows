@@ -4372,7 +4372,7 @@ def test_lifecycle_meta_and_derivations_at_claim():
 
 
 # ---------------------------------------------------------------------------
-# Daemon-owned ledgers Phase 1 — _apply_ledger_updates tests
+# Daemon-owned ledgers — _apply_ledger_updates tests (feedback LIVE)
 # ---------------------------------------------------------------------------
 
 import lifecycle
@@ -4380,12 +4380,11 @@ import sqlite3
 
 
 class TestApplyLedgerUpdates:
-    """(d) _apply_ledger_updates SKIPS when agent-prompt-feedback.md is in
-    files_changed (coexistence), and WRITES the DB row when it is not and
-    the receipt carries feedback."""
+    """Feedback handler tests: coexistence skip, DB write + .md generation,
+    idempotency guard, and generate_feedback_md output verification."""
 
     def test_skips_when_feedback_file_in_files_changed(self):
-        """Coexistence: agent wrote old-style → daemon skips."""
+        """(e) Coexistence: agent wrote old-style → daemon skips."""
         parsed = {
             "ledger_updates": {"feedback": "Some feedback text"},
             "_step_number": 1,
@@ -4449,12 +4448,16 @@ class TestApplyLedgerUpdates:
         conn.close()
         assert count == 0
 
-    def test_never_writes_feedback_file(self, tmp_path):
-        """_apply_ledger_updates must NEVER write the feedback .md file."""
+    def test_writes_generated_feedback_md(self, tmp_path):
+        """(c) Feedback handler writes the generated .md file when coexistence allows."""
         project = str(tmp_path / "proj")
         os.makedirs(os.path.join(project, "knowledge", "research"))
+        # Init a git repo so git add/commit can run (may fail but log-and-continue)
+        subprocess.run(["git", "init", project], capture_output=True)
+        subprocess.run(["git", "-C", project, "commit", "--allow-empty", "-m", "init"],
+                        capture_output=True)
         parsed = {
-            "ledger_updates": {"feedback": "Some feedback"},
+            "ledger_updates": {"feedback": "**2026-06-14** — activation test"},
             "_step_number": 1,
             "_agent": "DEV",
         }
@@ -4463,7 +4466,57 @@ class TestApplyLedgerUpdates:
             files_changed=[],
         )
         feedback_path = os.path.join(project, "knowledge", "research", "agent-prompt-feedback.md")
-        assert not os.path.exists(feedback_path)
+        assert os.path.exists(feedback_path)
+        with open(feedback_path) as f:
+            content = f.read()
+        assert "activation test" in content
+
+    def test_generated_md_matches_generate_feedback_md(self, tmp_path):
+        """(d) The file written is exactly what generate_feedback_md produces."""
+        project = str(tmp_path / "proj")
+        os.makedirs(os.path.join(project, "knowledge", "research"))
+        subprocess.run(["git", "init", project], capture_output=True)
+        subprocess.run(["git", "-C", project, "commit", "--allow-empty", "-m", "init"],
+                        capture_output=True)
+        parsed = {
+            "ledger_updates": {"feedback": "**2026-06-14** — match test"},
+            "_step_number": 1,
+            "_agent": "QA",
+        }
+        bellows._apply_ledger_updates(
+            parsed, project, plan_id=50,
+            files_changed=[],
+        )
+        feedback_path = os.path.join(project, "knowledge", "research", "agent-prompt-feedback.md")
+        with open(feedback_path) as f:
+            written = f.read()
+        expected = lifecycle.generate_feedback_md(project)
+        assert written == expected
+
+    def test_idempotency_blocks_duplicate(self, tmp_path):
+        """(b) Second call with same step_id + content_hash is skipped."""
+        project = str(tmp_path / "proj")
+        os.makedirs(os.path.join(project, "knowledge", "research"))
+        subprocess.run(["git", "init", project], capture_output=True)
+        subprocess.run(["git", "-C", project, "commit", "--allow-empty", "-m", "init"],
+                        capture_output=True)
+        parsed = {
+            "ledger_updates": {"feedback": "Duplicate feedback text"},
+            "_step_number": 1,
+            "_agent": "DEV",
+        }
+        # First call — writes
+        bellows._apply_ledger_updates(parsed, project, plan_id=42, files_changed=[])
+        conn = sqlite3.connect(lifecycle.LIFECYCLE_DB_PATH)
+        count1 = conn.execute("SELECT COUNT(*) FROM prompt_feedback").fetchone()[0]
+        conn.close()
+        assert count1 == 1
+        # Second call — idempotency should prevent duplicate
+        bellows._apply_ledger_updates(parsed, project, plan_id=42, files_changed=[])
+        conn = sqlite3.connect(lifecycle.LIFECYCLE_DB_PATH)
+        count2 = conn.execute("SELECT COUNT(*) FROM prompt_feedback").fetchone()[0]
+        conn.close()
+        assert count2 == 1  # Still only 1 row
 
 
 # ---------------------------------------------------------------------------

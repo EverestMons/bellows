@@ -149,6 +149,17 @@ def init_lifecycle_db(db_path=None):
             created_at TEXT NOT NULL
         )
     """)
+    # --- Daemon-owned ledgers activation: ledger_writes idempotency table ---
+    conn.execute("""
+        CREATE TABLE IF NOT EXISTS ledger_writes (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            step_id TEXT NOT NULL,
+            ledger_file TEXT NOT NULL,
+            content_hash TEXT NOT NULL,
+            applied_at TEXT NOT NULL,
+            UNIQUE(step_id, ledger_file, content_hash)
+        )
+    """)
     conn.commit()
     conn.close()
 
@@ -560,6 +571,42 @@ def generate_feedback_md(project, db_path=None):
         lines.append(entry_text.rstrip())
         lines.append("")
     return "\n".join(lines) + "\n"
+
+
+def check_ledger_write_exists(step_id, ledger_file, content_hash, db_path=None):
+    """Check if a ledger write with this (step_id, ledger_file, content_hash) already exists.
+
+    Returns True if a duplicate exists (skip the write), False otherwise.
+    """
+    try:
+        path = db_path or LIFECYCLE_DB_PATH
+        conn = sqlite3.connect(path)
+        row = conn.execute(
+            "SELECT 1 FROM ledger_writes WHERE step_id = ? AND ledger_file = ? AND content_hash = ?",
+            (step_id, ledger_file, content_hash),
+        ).fetchone()
+        conn.close()
+        return row is not None
+    except Exception as e:
+        _warn(f"check_ledger_write_exists failed: {e}")
+        return False
+
+
+def record_ledger_write(step_id, ledger_file, content_hash, db_path=None):
+    """Record a ledger write for idempotency. Log-and-continue semantics."""
+    try:
+        path = db_path or LIFECYCLE_DB_PATH
+        conn = sqlite3.connect(path)
+        conn.execute(
+            """INSERT OR IGNORE INTO ledger_writes
+               (step_id, ledger_file, content_hash, applied_at)
+               VALUES (?, ?, ?, ?)""",
+            (step_id, ledger_file, content_hash, datetime.now().isoformat()),
+        )
+        conn.commit()
+        conn.close()
+    except Exception as e:
+        _warn(f"record_ledger_write failed: {e}")
 
 
 def get_step_id(plan_id, step_number, db_path=None):

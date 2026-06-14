@@ -990,3 +990,90 @@ class TestGenerateFeedbackMd:
         result = lifecycle.generate_feedback_md("/proj_a", db_path=db_path)
         assert "Entry A" in result
         assert "Entry B" not in result
+
+
+# ---------------------------------------------------------------------------
+# Daemon-owned ledgers activation — ledger_writes idempotency tests
+# ---------------------------------------------------------------------------
+
+class TestLedgerWritesMigration:
+    """(a) ledger_writes migration is idempotent."""
+
+    def test_table_present_on_fresh_db(self, tmp_path):
+        db_path = str(tmp_path / "fresh_lw.db")
+        lifecycle.init_lifecycle_db(db_path)
+        conn = sqlite3.connect(db_path)
+        tables = {row[0] for row in conn.execute(
+            "SELECT name FROM sqlite_master WHERE type='table'"
+        ).fetchall()}
+        conn.close()
+        assert "ledger_writes" in tables
+
+    def test_columns_match_spec(self, tmp_path):
+        db_path = str(tmp_path / "cols_lw.db")
+        lifecycle.init_lifecycle_db(db_path)
+        conn = sqlite3.connect(db_path)
+        cols = {row[1] for row in conn.execute("PRAGMA table_info(ledger_writes)")}
+        conn.close()
+        expected = {"id", "step_id", "ledger_file", "content_hash", "applied_at"}
+        assert expected == cols
+
+    def test_idempotent_double_init(self, tmp_path):
+        db_path = str(tmp_path / "idem_lw.db")
+        lifecycle.init_lifecycle_db(db_path)
+        lifecycle.init_lifecycle_db(db_path)  # should not raise
+        conn = sqlite3.connect(db_path)
+        tables = [row[0] for row in conn.execute(
+            "SELECT name FROM sqlite_master WHERE type='table' AND name='ledger_writes'"
+        ).fetchall()]
+        conn.close()
+        assert len(tables) == 1
+
+
+class TestLedgerWriteIdempotency:
+    """(b) check + record functions for idempotency guard."""
+
+    def test_check_returns_false_for_new_write(self, tmp_path):
+        db_path = str(tmp_path / "idem_check.db")
+        lifecycle.init_lifecycle_db(db_path)
+        result = lifecycle.check_ledger_write_exists(
+            "42-1", "agent-prompt-feedback.md", "abc123", db_path=db_path
+        )
+        assert result is False
+
+    def test_record_then_check_returns_true(self, tmp_path):
+        db_path = str(tmp_path / "idem_record.db")
+        lifecycle.init_lifecycle_db(db_path)
+        lifecycle.record_ledger_write(
+            "42-1", "agent-prompt-feedback.md", "abc123", db_path=db_path
+        )
+        result = lifecycle.check_ledger_write_exists(
+            "42-1", "agent-prompt-feedback.md", "abc123", db_path=db_path
+        )
+        assert result is True
+
+    def test_different_hash_not_blocked(self, tmp_path):
+        db_path = str(tmp_path / "idem_diff.db")
+        lifecycle.init_lifecycle_db(db_path)
+        lifecycle.record_ledger_write(
+            "42-1", "agent-prompt-feedback.md", "abc123", db_path=db_path
+        )
+        result = lifecycle.check_ledger_write_exists(
+            "42-1", "agent-prompt-feedback.md", "def456", db_path=db_path
+        )
+        assert result is False
+
+    def test_duplicate_record_does_not_raise(self, tmp_path):
+        db_path = str(tmp_path / "idem_dup.db")
+        lifecycle.init_lifecycle_db(db_path)
+        lifecycle.record_ledger_write(
+            "42-1", "agent-prompt-feedback.md", "abc123", db_path=db_path
+        )
+        # Should not raise (INSERT OR IGNORE)
+        lifecycle.record_ledger_write(
+            "42-1", "agent-prompt-feedback.md", "abc123", db_path=db_path
+        )
+        conn = sqlite3.connect(db_path)
+        count = conn.execute("SELECT COUNT(*) FROM ledger_writes").fetchone()[0]
+        conn.close()
+        assert count == 1

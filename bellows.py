@@ -1,6 +1,7 @@
 """Entry point. Initializes watcher and starts the orchestration loop."""
 
 import fcntl
+import hashlib
 import json
 import logging
 from logging.handlers import RotatingFileHandler
@@ -1106,9 +1107,11 @@ def _build_deposit_records(plan_text, plan_header, project_path, wt_path):
 def _apply_ledger_updates(parsed, project_path, plan_id, files_changed=None):
     """Apply daemon-owned ledger updates from the parsed Output Receipt.
 
-    Phase 1 (dormant, coexistence-safe): prompt feedback → DB row.
+    Feedback (LIVE): prompt feedback → DB row + regenerate .md + commit.
+      Idempotency via ledger_writes table prevents double-writes on retry.
     Phase 2 (dormant, coexistence-safe): project status → append to
       PROJECT_STATUS.md on main (daemon-post-merge).
+    Phase 3 (dormant, coexistence-safe): forward register → append new row.
     Each handler has its own coexistence check: if the agent wrote the
     target file old-style (visible in files_changed), SKIP the daemon write.
     Wrapped in log-and-continue — a failure here must not crash teardown.
@@ -1118,20 +1121,50 @@ def _apply_ledger_updates(parsed, project_path, plan_id, files_changed=None):
         files_changed = files_changed or []
         slug = slug_for(os.path.basename(project_path))
 
-        # --- Phase 1: prompt feedback → DB ---
+        # --- Feedback → DB + generate .md (LIVE) ---
         feedback_text = ledger.get("feedback")
         if any("agent-prompt-feedback.md" in f for f in files_changed):
             _log("INFO", "ledger: agent wrote agent-prompt-feedback.md old-style, skipping daemon write",
                  slug=slug)
         elif feedback_text:
-            lifecycle.record_prompt_feedback(
-                plan_id=plan_id,
-                step_number=parsed.get("_step_number"),
-                agent=parsed.get("_agent"),
-                project=project_path,
-                entry_text=feedback_text,
-            )
-            _log("INFO", "ledger: recorded prompt feedback to DB", slug=slug)
+            # Idempotency check: skip if this exact write was already applied
+            step_id_key = f"{plan_id}-{parsed.get('_step_number')}"
+            content_hash = hashlib.sha256(feedback_text.encode()).hexdigest()
+            if lifecycle.check_ledger_write_exists(step_id_key, "agent-prompt-feedback.md", content_hash):
+                _log("INFO", "ledger: feedback write already applied (idempotency), skipping",
+                     slug=slug)
+            else:
+                lifecycle.record_prompt_feedback(
+                    plan_id=plan_id,
+                    step_number=parsed.get("_step_number"),
+                    agent=parsed.get("_agent"),
+                    project=project_path,
+                    entry_text=feedback_text,
+                )
+                # Generate and write the .md from full DB state
+                feedback_md = lifecycle.generate_feedback_md(project_path)
+                feedback_path = os.path.join(
+                    project_path, "knowledge", "research", "agent-prompt-feedback.md"
+                )
+                try:
+                    with open(feedback_path, "w") as f:
+                        f.write(feedback_md)
+                    subprocess.run(
+                        ["git", "add", feedback_path],
+                        cwd=project_path, capture_output=True, timeout=10,
+                    )
+                    subprocess.run(
+                        ["git", "commit", "-m",
+                         f"docs: regenerate agent-prompt-feedback.md from DB (plan {plan_id})"],
+                        cwd=project_path, capture_output=True, timeout=10,
+                    )
+                    _log("INFO", "ledger: recorded feedback to DB + regenerated .md + committed",
+                         slug=slug)
+                except Exception as e:
+                    _log("WARN", f"ledger: feedback DB write OK but .md write/commit failed: {e}",
+                         slug=slug)
+                # Record idempotency marker after successful application
+                lifecycle.record_ledger_write(step_id_key, "agent-prompt-feedback.md", content_hash)
 
         # --- Phase 2: project status → append to PROJECT_STATUS.md on main ---
         project_status_text = ledger.get("project_status")
