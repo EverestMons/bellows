@@ -1,0 +1,25 @@
+Idempotency Verification
+========================
+Date: 2026-06-14
+
+1. PRAGMA table_info(ledger_writes):
+   (0, 'id', 'INTEGER', 0, None, 1)
+   (1, 'step_id', 'TEXT', 1, None, 0)
+   (2, 'ledger_file', 'TEXT', 1, None, 0)
+   (3, 'content_hash', 'TEXT', 1, None, 0)
+   (4, 'applied_at', 'TEXT', 1, None, 0)
+
+   Table present with correct schema. UNIQUE constraint on (step_id, ledger_file, content_hash).
+
+2. Double-init idempotent: init_lifecycle_db() called twice — no exception.
+
+3. Duplicate-guard tests (all PASSED):
+   tests/test_lifecycle.py::TestLedgerWritesMigration::test_table_present_on_fresh_db PASSED
+   tests/test_lifecycle.py::TestLedgerWritesMigration::test_columns_match_spec PASSED
+   tests/test_lifecycle.py::TestLedgerWritesMigration::test_idempotent_double_init PASSED
+   tests/test_lifecycle.py::TestLedgerWriteIdempotency::test_check_returns_false_for_new_write PASSED
+   tests/test_lifecycle.py::TestLedgerWriteIdempotency::test_record_then_check_returns_true PASSED
+   tests/test_lifecycle.py::TestLedgerWriteIdempotency::test_different_hash_not_blocked PASSED
+   tests/test_lifecycle.py::TestLedgerWriteIdempotency::test_duplicate_record_does_not_raise PASSED
+
+   7/7 passed, 0 failed.

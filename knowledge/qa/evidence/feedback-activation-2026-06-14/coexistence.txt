@@ -1,0 +1,17 @@
+Coexistence Verification
+=========================
+Date: 2026-06-14
+
+Test: test_skips_when_feedback_file_in_files_changed (test_bellows.py)
+Result: PASSED
+
+This test verifies transition safety: when an agent writes agent-prompt-feedback.md
+the old way (file appears in files_changed), the daemon's feedback handler SKIPS
+processing (coexistence check). The DB row count remains 0.
+
+Run output:
+  tests/test_bellows.py::TestApplyLedgerUpdates::test_skips_when_feedback_file_in_files_changed PASSED
+
+This ensures that during the transition period, any agent still using the old
+protocol (if governance updates haven't propagated) will not cause double-writes.
+The daemon respects the agent's file ownership and defers.

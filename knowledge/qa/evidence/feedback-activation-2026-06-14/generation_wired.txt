@@ -1,0 +1,27 @@
+Generation Wired Verification
+==============================
+Date: 2026-06-14
+
+1. Test: test_writes_generated_feedback_md (test_bellows.py:4451)
+   - Creates a project with git init
+   - Calls _apply_ledger_updates with feedback text and empty files_changed
+   - Asserts that knowledge/research/agent-prompt-feedback.md is CREATED
+   - Result: PASSED
+
+2. Test: test_generated_md_matches_generate_feedback_md (test_bellows.py:4474)
+   - Same setup, calls _apply_ledger_updates
+   - Reads the written .md file
+   - Calls generate_feedback_md(project) independently
+   - Asserts written content == generate_feedback_md output
+   - Result: PASSED
+
+3. Handler test: test_writes_db_row_when_feedback_present_and_file_not_changed (PASSED)
+   - Confirms DB row is written via record_prompt_feedback
+
+4. grep confirmation — bellows.py feedback branch calls:
+   - record_prompt_feedback() — DB write
+   - generate_feedback_md(project_path) — generation
+   - Writes result to agent-prompt-feedback.md
+   - git add + git commit (daemon-post-merge)
+
+All evidence confirms: the feedback handler writes the GENERATED .md (not raw append).

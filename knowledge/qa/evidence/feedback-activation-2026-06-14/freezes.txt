@@ -1,0 +1,19 @@
+6 Project Freeze Verification
+==============================
+Date: 2026-06-14
+
+| Project       | ARCHIVE exists | ARCHIVE lines | Fresh exists | Fresh lines |
+|---------------|----------------|---------------|--------------|-------------|
+| bellows       | True           | 2,240         | True         | 5           |
+| forge         | True           | 1,968         | True         | 6           |
+| anvil         | True           | 134           | True         | 6           |
+| invoice-pulse | True           | 8,460         | True         | 6           |
+| governance    | True           | 114           | True         | 6           |
+| study         | True           | 756           | True         | 6           |
+
+Notes:
+- bellows ARCHIVE has 2,240 lines (dev log states 2,238 — 2 extra from frozen header prepended). Full history preserved.
+- bellows was frozen in this step (Step 1). The other 5 were already frozen in Phase 3.
+- All 6 projects have both ARCHIVE (full history) and fresh generated file.
+- Fresh files contain the generated header + archive pointer (5-6 lines each).
+- Dev log line counts corroborated: forge 1,968, anvil 134, invoice-pulse 8,460, governance 114, study 756.

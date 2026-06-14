@@ -1,0 +1,57 @@
+Governance Flip Verification
+=============================
+Date: 2026-06-14
+
+PLANNER_TEMPLATE.md — Version: 4.66 (bumped from 4.65)
+Last Updated: 2026-06-14 (v4.66 — feedback ledger go-live)
+
+=== 3 Feedback Protocol Sites ===
+
+1. Diagnostic (~L265):
+   "Emit prompt feedback in your Output Receipt `### Ledger Updates` → `#### Prompt Feedback` section"
+   Status: UPDATED (agents do NOT write directly)
+
+2. Fix (~L299):
+   "Emit prompt feedback in your Output Receipt `### Ledger Updates` → `#### Prompt Feedback` section"
+   Status: UPDATED (agents do NOT write directly)
+
+3. Compressed (~L342):
+   "Collapse feedback to one line — Standard prompt feedback protocol → Output Receipt `### Ledger Updates` → `#### Prompt Feedback`"
+   Status: UPDATED (compressed form references Output Receipt channel)
+
+=== Channel Format Spec (~L320-336) ===
+   L320: "### Ledger Updates Channel Format (Output Receipt)"
+   L322: Describes extraction format for daemon parser
+   L325-335: Template with #### Prompt Feedback subsection
+   L336: Rules — "The `#### Prompt Feedback` subsection is the ONLY active channel (PROJECT_STATUS and FORWARD remain agent-written until later activation slices)"
+   Status: PRESENT and correct
+
+=== Rule 23 (~L649) ===
+   L649: "End-of-plan housekeeping must use anchored edits, enumerated sub-steps, and the order: commit (feedback is daemon-owned)"
+   L657: "Prompt feedback is emitted via the Output Receipt channel"
+   Status: UPDATED — feedback removed from agent's final-step ordering
+
+=== Session-wrap (~L1505) ===
+   L1505: "Synthesize prompt feedback patterns — query the `prompt_feedback` table in lifecycle.db (read-only) for entries f..."
+   Status: UPDATED — references DB table, not file read
+
+=== Agent Prompt Feedback Section (~L1609-1634) ===
+   L1609: "## Agent Prompt Feedback"
+   L1613: "Capture process — daemon-owned (activated 2026-06-14)"
+   L1616: "Agents do NOT write to `agent-prompt-feedback.md` directly — the daemon owns the file"
+   L1630-1631: Standard locations reference generated file + ARCHIVE
+   Status: REWRITTEN to daemon-owned model
+
+=== Parallel Dispatch (~L1319) ===
+   Notes `agent-prompt-feedback.md` is now daemon-owned, eliminating feedback-file merge conflicts.
+   Status: UPDATED
+
+=== Changelog (L1671) ===
+   "2026-06-14 | Feedback ledger go-live (v4.66): agents now emit prompt feedback via Output Receipt..."
+   Status: ADDED
+
+=== PROJECT_STATUS / FORWARD Instructions — NOT Touched ===
+   Rule 8 (L472-481): PROJECT_STATUS.md update instruction intact (agent-written)
+   Rule 42 (L939-952): FORWARD register reconciliation intact (agent-written)
+   L336 explicitly notes: "PROJECT_STATUS and FORWARD remain agent-written until later activation slices"
+   Status: VERIFIED UNTOUCHED

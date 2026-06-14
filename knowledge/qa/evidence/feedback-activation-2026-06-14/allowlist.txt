@@ -1,0 +1,19 @@
+Allowlist Verification
+======================
+Date: 2026-06-14
+
+SCOPE_ALLOWLIST contents (gates.py):
+  - PROJECT_STATUS.md
+  - .gitkeep
+
+Checks:
+  agent-prompt-feedback.md in SCOPE_ALLOWLIST: False (REMOVED - correct)
+  PROJECT_STATUS.md in SCOPE_ALLOWLIST: True (RETAINED - correct)
+
+Post-activation test:
+  tests/test_gates.py::test_scope_check_rejects_feedback_file_post_activation — PASSED
+  (scope_check now fires when agent-prompt-feedback.md appears in files_changed)
+
+Allowlist test updated:
+  tests/test_gates.py::test_scope_check_allowlist — PASSED
+  (uses only remaining allowlisted files)
