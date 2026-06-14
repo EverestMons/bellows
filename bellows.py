@@ -210,6 +210,14 @@ def extract_step_number(plan_text: str, result_text: str) -> int:
     return 1
 
 
+def extract_agent(result_text: str) -> Optional[str]:
+    """Extract the agent name from the Output Receipt **Agent:** field."""
+    match = re.search(r"\*\*Agent:\*\*\s*(.+)", result_text)
+    if match:
+        return match.group(1).strip()
+    return None
+
+
 def strip_fenced_code_blocks(text: str) -> str:
     """Remove fenced code blocks (``` ... ```) from text, preserving line structure.
 
@@ -546,6 +554,8 @@ def run_plan(plan_path: str, config: dict, response_server: server.ResponseServe
                                                      config.get("step_timeout_seconds", 300)),
                                   plan_slug=slug_for(plan_name),
                                   step_num=current_step)
+        parsed["_step_number"] = current_step
+        parsed["_agent"] = extract_agent(parsed.get("result_text", ""))
 
         total_cost = parsed["cost_usd"] or 0.0
 
@@ -660,6 +670,8 @@ def run_plan(plan_path: str, config: dict, response_server: server.ResponseServe
                 step_num=current_step + 1,
             )
             current_step += 1
+            parsed["_step_number"] = current_step
+            parsed["_agent"] = extract_agent(parsed.get("result_text", ""))
             total_cost += parsed["cost_usd"] or 0.0
 
             record_run(
@@ -1172,8 +1184,16 @@ def _apply_ledger_updates(parsed, project_path, plan_id, files_changed=None):
             _log("INFO", "ledger: agent wrote PROJECT_STATUS.md old-style, skipping daemon write",
                  slug=slug)
         elif project_status_text:
-            _append_project_status(project_path, plan_id, project_status_text)
-            _log("INFO", "ledger: appended project status milestone to PROJECT_STATUS.md", slug=slug)
+            # Idempotency check: skip if this exact write was already applied
+            ps_step_id_key = f"{plan_id}-{parsed.get('_step_number')}"
+            ps_content_hash = hashlib.sha256(project_status_text.encode()).hexdigest()
+            if lifecycle.check_ledger_write_exists(ps_step_id_key, "PROJECT_STATUS.md", ps_content_hash):
+                _log("INFO", "ledger: project status write already applied (idempotency), skipping",
+                     slug=slug)
+            else:
+                _append_project_status(project_path, plan_id, project_status_text)
+                lifecycle.record_ledger_write(ps_step_id_key, "PROJECT_STATUS.md", ps_content_hash)
+                _log("INFO", "ledger: appended project status milestone to PROJECT_STATUS.md", slug=slug)
 
         # --- Phase 3: forward register → append new row to FORWARD.md on main ---
         forward_text = ledger.get("forward")

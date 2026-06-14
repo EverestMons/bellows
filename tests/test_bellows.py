@@ -4905,3 +4905,112 @@ class TestApplyLedgerUpdatesForward:
         with open(fwd_path) as f:
             fwd_content = f.read()
         assert "Phase 3 deferred item" in fwd_content
+
+
+# ---------------------------------------------------------------------------
+# PROJECT_STATUS idempotency — duplicate apply is a no-op (plan 51)
+# ---------------------------------------------------------------------------
+
+
+class TestProjectStatusIdempotency:
+    """A duplicate PROJECT_STATUS apply on teardown retry must be a no-op."""
+
+    def _make_git_repo(self, tmp_path):
+        subprocess.run(["git", "init", str(tmp_path)], capture_output=True, check=True)
+        subprocess.run(["git", "-C", str(tmp_path), "config", "user.email", "test@test.com"],
+                        capture_output=True, check=True)
+        subprocess.run(["git", "-C", str(tmp_path), "config", "user.name", "Test"],
+                        capture_output=True, check=True)
+        gitkeep = tmp_path / ".gitkeep"
+        gitkeep.write_text("")
+        subprocess.run(["git", "-C", str(tmp_path), "add", ".gitkeep"],
+                        capture_output=True, check=True)
+        subprocess.run(["git", "-C", str(tmp_path), "commit", "-m", "init"],
+                        capture_output=True, check=True)
+        return str(tmp_path)
+
+    def test_duplicate_project_status_is_noop(self, tmp_path):
+        """Calling _apply_ledger_updates twice with same project_status content
+        must produce only ONE append (idempotency via ledger_writes table)."""
+        project = self._make_git_repo(tmp_path / "proj")
+        status_path = os.path.join(project, "PROJECT_STATUS.md")
+        with open(status_path, "w") as f:
+            f.write("# Project Status\n\n## Completed\n")
+        subprocess.run(["git", "-C", project, "add", "PROJECT_STATUS.md"],
+                        capture_output=True, check=True)
+        subprocess.run(["git", "-C", project, "commit", "-m", "add status"],
+                        capture_output=True, check=True)
+        parsed = {
+            "ledger_updates": {"feedback": None, "project_status": "Idempotent milestone."},
+            "_step_number": 2,
+        }
+        # First apply
+        bellows._apply_ledger_updates(parsed, project, plan_id=99, files_changed=[])
+        with open(status_path) as f:
+            after_first = f.read()
+        assert after_first.count("Idempotent milestone.") == 1
+
+        # Second apply (simulates teardown retry) — must be a no-op
+        bellows._apply_ledger_updates(parsed, project, plan_id=99, files_changed=[])
+        with open(status_path) as f:
+            after_second = f.read()
+        assert after_second.count("Idempotent milestone.") == 1
+
+
+# ---------------------------------------------------------------------------
+# Agent column populated by extract_agent + record_prompt_feedback (plan 51)
+# ---------------------------------------------------------------------------
+
+
+class TestExtractAgent:
+    """extract_agent extracts **Agent:** from Output Receipt text."""
+
+    def test_extracts_agent_name(self):
+        text = "## Output Receipt\n**Agent:** Bellows Developer\n**Step:** 1\n"
+        assert bellows.extract_agent(text) == "Bellows Developer"
+
+    def test_returns_none_when_absent(self):
+        text = "## Output Receipt\n**Step:** 1\n"
+        assert bellows.extract_agent(text) is None
+
+    def test_strips_whitespace(self):
+        text = "**Agent:**   Bellows QA   \n"
+        assert bellows.extract_agent(text) == "Bellows QA"
+
+
+class TestAgentColumnPopulated:
+    """The agent column in prompt_feedback must be populated via extract_agent."""
+
+    def _make_git_repo(self, tmp_path):
+        subprocess.run(["git", "init", str(tmp_path)], capture_output=True, check=True)
+        subprocess.run(["git", "-C", str(tmp_path), "config", "user.email", "test@test.com"],
+                        capture_output=True, check=True)
+        subprocess.run(["git", "-C", str(tmp_path), "config", "user.name", "Test"],
+                        capture_output=True, check=True)
+        gitkeep = tmp_path / ".gitkeep"
+        gitkeep.write_text("")
+        subprocess.run(["git", "-C", str(tmp_path), "add", ".gitkeep"],
+                        capture_output=True, check=True)
+        subprocess.run(["git", "-C", str(tmp_path), "commit", "-m", "init"],
+                        capture_output=True, check=True)
+        return str(tmp_path)
+
+    def test_agent_column_non_empty(self, tmp_path):
+        """When _agent is set on parsed, record_prompt_feedback stores it."""
+        project = self._make_git_repo(tmp_path / "proj")
+        parsed = {
+            "ledger_updates": {
+                "feedback": "**2026-06-14** — test feedback entry",
+                "project_status": None,
+            },
+            "_step_number": 1,
+            "_agent": "Bellows Developer",
+        }
+        bellows._apply_ledger_updates(parsed, project, plan_id=77, files_changed=[])
+        conn = sqlite3.connect(lifecycle.LIFECYCLE_DB_PATH)
+        row = conn.execute(
+            "SELECT agent FROM prompt_feedback WHERE plan_id = 77"
+        ).fetchone()
+        conn.close()
+        assert row is not None
+        assert row[0] == "Bellows Developer"

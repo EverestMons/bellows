@@ -183,9 +183,18 @@ def test_scope_check_fails_when_file_not_in_plan():
 
 def test_scope_check_allowlist():
     result = gates.check(_clean_parsed(), PLAN_TEXT, 1, "/tmp",
-                         files_changed=["PROJECT_STATUS.md", ".gitkeep"])
+                         files_changed=[".gitkeep"])
     assert result["passed"] is True
     assert not any(f["gate"] == "scope_check" for f in result["failures"])
+
+
+def test_scope_check_rejects_project_status_post_activation():
+    """PROJECT_STATUS.md removed from SCOPE_ALLOWLIST at activation —
+    agents must NOT write this file, so its presence in files_changed triggers scope_check."""
+    result = gates.check(_clean_parsed(), PLAN_TEXT, 1, "/tmp",
+                         files_changed=["PROJECT_STATUS.md"])
+    assert result["passed"] is False
+    assert any(f["gate"] == "scope_check" for f in result["failures"])
 
 
 def test_scope_check_rejects_feedback_file_post_activation():

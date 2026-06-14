@@ -22,7 +22,6 @@ def strip_fenced_code_blocks(text: str) -> str:
 
 # Files that are always expected and don't need explicit mention in plan steps
 SCOPE_ALLOWLIST = [
-    "PROJECT_STATUS.md",
     ".gitkeep",
 ]
 
