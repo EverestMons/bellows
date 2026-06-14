@@ -47,8 +47,12 @@ def parse(raw: dict) -> dict:
     # Subsections: #### Prompt Feedback (Phase 1), #### Project Status (Phase 2),
     #              #### Forward Register (Phase 3).
     ledger_updates = {"feedback": None, "project_status": None, "forward": None}
+    # Use concatenated assistant text (all turns) for ledger extraction so
+    # ### Ledger Updates is found even when emitted in a non-final turn.
+    # Falls back to result_text for backward compatibility (plan 54 fix).
+    ledger_source = raw.get("_all_assistant_text") or result_text
     lu_match = re.search(
-        r"### Ledger Updates\s*\n(.*?)(?=\n## |\Z)", result_text, re.DOTALL
+        r"### Ledger Updates\s*\n(.*?)(?=\n## |\Z)", ledger_source, re.DOTALL
     )
     if lu_match:
         lu_body = lu_match.group(1)

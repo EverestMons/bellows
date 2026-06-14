@@ -1133,6 +1133,14 @@ def _apply_ledger_updates(parsed, project_path, plan_id, files_changed=None):
         files_changed = files_changed or []
         slug = slug_for(os.path.basename(project_path))
 
+        # Defense-in-depth: WARN if agent emitted ### Ledger Updates but parser
+        # extracted nothing — converts future silent drops into loud signals.
+        _src = parsed.get("_all_assistant_text", "") or parsed.get("result_text", "")
+        _ledger_all_none = all(v is None for v in ledger.values()) if ledger else True
+        if "### Ledger Updates" in _src and _ledger_all_none:
+            _log("WARN", "⚠ ledger: agent emitted ### Ledger Updates but parser extracted nothing",
+                 slug=slug)
+
         # --- Feedback → DB + generate .md (LIVE) ---
         feedback_text = ledger.get("feedback")
         if any("agent-prompt-feedback.md" in f for f in files_changed):

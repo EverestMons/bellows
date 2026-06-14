@@ -5014,3 +5014,51 @@ class TestAgentColumnPopulated:
         conn.close()
         assert row is not None
         assert row[0] == "Bellows Developer"
+
+
+# ---------------------------------------------------------------------------
+# Defense-in-depth WARN — ledger heading present but parser extracted nothing
+# ---------------------------------------------------------------------------
+
+class TestLedgerDefenseWarn:
+    """Plan 54: WARN fires when raw output has ### Ledger Updates but parsed
+    ledger_updates is all-None; silent when ledger is populated."""
+
+    def test_warn_fires_when_heading_present_but_empty(self, capsys):
+        """Agent emitted ### Ledger Updates but parser returned all-None → WARN."""
+        parsed = {
+            "ledger_updates": {"feedback": None, "project_status": None, "forward": None},
+            "_all_assistant_text": (
+                "## Output Receipt\n"
+                "### Ledger Updates\n"
+                "#### Prompt Feedback\n"
+                "Some feedback.\n"
+            ),
+        }
+        bellows._apply_ledger_updates(parsed, "/proj", plan_id=99, files_changed=[])
+        captured = capsys.readouterr()
+        assert "agent emitted ### Ledger Updates but parser extracted nothing" in captured.out
+
+    def test_warn_silent_when_ledger_populated(self, capsys):
+        """Parser extracted content → no WARN even though heading is present."""
+        parsed = {
+            "ledger_updates": {"feedback": "Real feedback", "project_status": None, "forward": None},
+            "_all_assistant_text": (
+                "### Ledger Updates\n"
+                "#### Prompt Feedback\n"
+                "Real feedback.\n"
+            ),
+        }
+        bellows._apply_ledger_updates(parsed, "/proj", plan_id=99, files_changed=[])
+        captured = capsys.readouterr()
+        assert "parser extracted nothing" not in captured.out
+
+    def test_warn_silent_when_no_heading(self, capsys):
+        """No ### Ledger Updates in output at all → no WARN."""
+        parsed = {
+            "ledger_updates": {"feedback": None, "project_status": None, "forward": None},
+            "_all_assistant_text": "Step 1 complete. All done.",
+        }
+        bellows._apply_ledger_updates(parsed, "/proj", plan_id=99, files_changed=[])
+        captured = capsys.readouterr()
+        assert "parser extracted nothing" not in captured.out

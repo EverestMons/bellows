@@ -213,6 +213,7 @@ def run_step(
 
     # --- Parse NDJSON stream, extract terminal result event ---
     result_event = None
+    assistant_text_parts = []
     for line in result_stdout.splitlines():
         line = line.strip()
         if not line:
@@ -222,8 +223,15 @@ def run_step(
         except json.JSONDecodeError:
             _log("WARN", f"runner: skipping malformed NDJSON line: {line[:200]}", slug=plan_slug)
             continue
-        if isinstance(event, dict) and event.get("type") == "result":
-            result_event = event
+        if isinstance(event, dict):
+            if event.get("type") == "result":
+                result_event = event
+            elif event.get("type") == "assistant":
+                # Collect text from intermediate assistant turns so ### Ledger Updates
+                # is found even when emitted in a non-final turn (plan 54 fix).
+                for block in event.get("message", {}).get("content", []):
+                    if isinstance(block, dict) and block.get("type") == "text":
+                        assistant_text_parts.append(block.get("text", ""))
 
     if result_event is None:
         _write_log(log_path, {
@@ -245,6 +253,13 @@ def run_step(
             "permission_denials": [],
             "verdict_requested": {"requested": False, "reason": None},
         }
+
+    # Concatenate all assistant text (intermediate turns + final result) so the
+    # parser can find ### Ledger Updates regardless of which turn carried it.
+    _all_text = "\n".join(assistant_text_parts)
+    if result_event.get("result"):
+        _all_text += "\n" + result_event["result"]
+    result_event["_all_assistant_text"] = _all_text
 
     raw = result_event
 

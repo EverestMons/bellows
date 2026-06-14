@@ -84,8 +84,9 @@ class TestRecoverHalfClaimed:
         # Simulate crash: the in-progress file was never created
         # Run recovery
         actions = lifecycle.recover_half_claimed(str(decisions), db_path=db_path)
-        assert len(actions) == 1
-        assert actions[0] == (pid, "re_renamed")
+        claimed_actions = [(a, act) for a, act in actions if act == "re_renamed"]
+        assert len(claimed_actions) == 1
+        assert claimed_actions[0] == (pid, "re_renamed")
         # The deposit should have been renamed to in-progress-diagnostic-<id>.md
         expected = decisions / f"in-progress-diagnostic-{pid}.md"
         assert expected.exists()
@@ -126,8 +127,9 @@ class TestRecoverHalfClaimed:
         expected = decisions / f"in-progress-diagnostic-{pid}.md"
         expected.write_text("# Plan")
         actions = lifecycle.recover_half_claimed(str(decisions), db_path=db_path)
-        assert len(actions) == 1
-        assert actions[0] == (pid, "already_renamed")
+        claimed_actions = [(a, act) for a, act in actions if act == "already_renamed"]
+        assert len(claimed_actions) == 1
+        assert claimed_actions[0] == (pid, "already_renamed")
         conn = sqlite3.connect(db_path)
         state = conn.execute("SELECT lifecycle_state FROM plans WHERE id = ?", (pid,)).fetchone()[0]
         conn.close()
@@ -183,8 +185,9 @@ class TestRecoverCrossProjectIsolation:
         actions = lifecycle.recover_half_claimed(
             str(decisions_x), db_path=db_path, project_root=str(proj_x),
         )
-        assert len(actions) == 1
-        assert actions[0] == (pid, "already_renamed")
+        claimed_actions = [(a, act) for a, act in actions if act == "already_renamed"]
+        assert len(claimed_actions) == 1
+        assert claimed_actions[0] == (pid, "already_renamed")
 
 
 class TestRecoverAgeGuard:
@@ -281,8 +284,9 @@ class TestInProgressAfterClaim:
         conn.close()
         assert state == "in_progress"
 
-    def test_in_progress_plan_not_selected_by_recovery(self, tmp_path):
-        """Once in_progress, recovery must not re-process the plan."""
+    def test_in_progress_plan_not_selected_by_claimed_recovery(self, tmp_path):
+        """Once in_progress, the claimed-recovery path must not re-process the plan.
+        The in_progress recovery may see it but will not abandon it (young + age guard)."""
         db_path = str(tmp_path / "g4.db")
         lifecycle.init_lifecycle_db(db_path)
         decisions = tmp_path / "decisions"
@@ -293,7 +297,18 @@ class TestInProgressAfterClaim:
         )
         lifecycle.mark_plan_state(pid, "in_progress", db_path=db_path)
         actions = lifecycle.recover_half_claimed(str(decisions), db_path=db_path)
-        assert len(actions) == 0
+        # Claimed-recovery path should not have touched it
+        claimed_actions = [(a, act) for a, act in actions
+                           if act in ("re_renamed", "already_renamed", "abandoned") and a == pid
+                           and act != "skipped_too_recent" and act != "skipped_worktree_exists"]
+        # The plan may appear in in_progress recovery as skipped_too_recent, but must NOT be abandoned
+        assert all(act != "abandoned" for a, act in actions if a == pid)
+        conn = sqlite3.connect(db_path)
+        state = conn.execute(
+            "SELECT lifecycle_state FROM plans WHERE id = ?", (pid,)
+        ).fetchone()[0]
+        conn.close()
+        assert state == "in_progress"
 
 
 class TestDbPath:
@@ -1077,3 +1092,152 @@ class TestLedgerWriteIdempotency:
         count = conn.execute("SELECT COUNT(*) FROM ledger_writes").fetchone()[0]
         conn.close()
         assert count == 1
+
+
+# ---------------------------------------------------------------------------
+# in_progress-strand recovery (plan 54)
+# ---------------------------------------------------------------------------
+
+class TestInProgressStrandRecovery:
+    """Plan 54: recover_half_claimed also recovers stranded in_progress plans
+    whose worktree no longer exists on disk."""
+
+    def test_stranded_in_progress_recovered(self, tmp_path):
+        """in_progress + no worktree + past age guard → abandoned + closed_at."""
+        db_path = str(tmp_path / "ip_recovery.db")
+        lifecycle.init_lifecycle_db(db_path)
+        project = str(tmp_path / "project")
+        decisions = tmp_path / "decisions"
+        decisions.mkdir()
+        os.makedirs(os.path.join(project, ".bellows-worktrees"), exist_ok=True)
+
+        pid = lifecycle.mint_and_claim(
+            "executable", project, "Stranded", "bellows", "small", 1,
+            "executable-draft-ip.md", db_path=db_path,
+        )
+        lifecycle.mark_plan_state(pid, "in_progress", db_path=db_path)
+        # Backdate past age guard
+        from datetime import timedelta
+        old_ts = (datetime.now() - timedelta(minutes=10)).isoformat()
+        conn = sqlite3.connect(db_path)
+        conn.execute("UPDATE plans SET created_at = ? WHERE id = ?", (old_ts, pid))
+        conn.commit()
+        conn.close()
+        # No worktree directory exists
+
+        actions = lifecycle.recover_half_claimed(
+            str(decisions), db_path=db_path, project_root=project,
+        )
+        ip_actions = [(a, act) for a, act in actions if a == pid]
+        assert len(ip_actions) == 1
+        assert ip_actions[0][1] == "abandoned"
+
+        conn = sqlite3.connect(db_path)
+        row = conn.execute(
+            "SELECT lifecycle_state, closed_at FROM plans WHERE id = ?", (pid,)
+        ).fetchone()
+        conn.close()
+        assert row[0] == "abandoned"
+        assert row[1] is not None  # closed_at set
+
+    def test_in_progress_with_worktree_not_touched(self, tmp_path):
+        """in_progress + worktree EXISTS → not abandoned (plan still running)."""
+        db_path = str(tmp_path / "ip_wt.db")
+        lifecycle.init_lifecycle_db(db_path)
+        project = str(tmp_path / "project")
+        decisions = tmp_path / "decisions"
+        decisions.mkdir()
+
+        pid = lifecycle.mint_and_claim(
+            "executable", project, "Running", "bellows", "small", 1,
+            "executable-draft-running.md", db_path=db_path,
+        )
+        lifecycle.mark_plan_state(pid, "in_progress", db_path=db_path)
+        # Backdate past age guard
+        from datetime import timedelta
+        old_ts = (datetime.now() - timedelta(minutes=10)).isoformat()
+        conn = sqlite3.connect(db_path)
+        conn.execute("UPDATE plans SET created_at = ? WHERE id = ?", (old_ts, pid))
+        conn.commit()
+        conn.close()
+        # CREATE the worktree directory — simulates a live plan
+        wt_path = os.path.join(project, ".bellows-worktrees", str(pid))
+        os.makedirs(wt_path)
+
+        actions = lifecycle.recover_half_claimed(
+            str(decisions), db_path=db_path, project_root=project,
+        )
+        ip_actions = [(a, act) for a, act in actions if a == pid]
+        assert len(ip_actions) == 1
+        assert ip_actions[0][1] == "skipped_worktree_exists"
+
+        conn = sqlite3.connect(db_path)
+        state = conn.execute(
+            "SELECT lifecycle_state FROM plans WHERE id = ?", (pid,)
+        ).fetchone()[0]
+        conn.close()
+        assert state == "in_progress"  # unchanged
+
+    def test_in_progress_within_age_guard_not_touched(self, tmp_path):
+        """in_progress + no worktree but within age guard → not abandoned."""
+        db_path = str(tmp_path / "ip_young.db")
+        lifecycle.init_lifecycle_db(db_path)
+        project = str(tmp_path / "project")
+        decisions = tmp_path / "decisions"
+        decisions.mkdir()
+        os.makedirs(os.path.join(project, ".bellows-worktrees"), exist_ok=True)
+
+        pid = lifecycle.mint_and_claim(
+            "executable", project, "Young", "bellows", "small", 1,
+            "executable-draft-young-ip.md", db_path=db_path,
+        )
+        lifecycle.mark_plan_state(pid, "in_progress", db_path=db_path)
+        # created_at is now (within age guard) — no worktree exists
+
+        actions = lifecycle.recover_half_claimed(
+            str(decisions), db_path=db_path, project_root=project,
+        )
+        ip_actions = [(a, act) for a, act in actions if a == pid]
+        assert len(ip_actions) == 1
+        assert ip_actions[0][1] == "skipped_too_recent"
+
+        conn = sqlite3.connect(db_path)
+        state = conn.execute(
+            "SELECT lifecycle_state FROM plans WHERE id = ?", (pid,)
+        ).fetchone()[0]
+        conn.close()
+        assert state == "in_progress"  # unchanged
+
+    def test_claimed_recovery_still_works_alongside_in_progress(self, tmp_path):
+        """Existing claimed-recovery path is not broken by the in_progress extension."""
+        db_path = str(tmp_path / "ip_claimed.db")
+        lifecycle.init_lifecycle_db(db_path)
+        project = str(tmp_path / "project")
+        decisions = tmp_path / "decisions"
+        decisions.mkdir()
+
+        # Create a claimed plan with no deposit
+        pid = lifecycle.mint_and_claim(
+            "executable", project, "Old Claimed", "bellows", "small", 1,
+            "executable-draft-old-claimed.md", db_path=db_path,
+        )
+        from datetime import timedelta
+        old_ts = (datetime.now() - timedelta(minutes=10)).isoformat()
+        conn = sqlite3.connect(db_path)
+        conn.execute("UPDATE plans SET created_at = ? WHERE id = ?", (old_ts, pid))
+        conn.commit()
+        conn.close()
+
+        actions = lifecycle.recover_half_claimed(
+            str(decisions), db_path=db_path, project_root=project,
+        )
+        claimed_actions = [(a, act) for a, act in actions if a == pid]
+        assert len(claimed_actions) == 1
+        assert claimed_actions[0][1] == "abandoned"
+
+        conn = sqlite3.connect(db_path)
+        state = conn.execute(
+            "SELECT lifecycle_state FROM plans WHERE id = ?", (pid,)
+        ).fetchone()[0]
+        conn.close()
+        assert state == "abandoned"

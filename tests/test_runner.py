@@ -402,3 +402,74 @@ def test_run_step_does_not_retry_on_non_transient_error():
     # time.sleep(5) should NOT have been called (only time.sleep(1) from poll loop)
     for call in mock_sleep.call_args_list:
         assert call != ((5,),)
+
+
+# --- Multi-turn ledger extraction (plan 54 regression repro) ---
+
+def test_multiturn_ledger_extraction():
+    """### Ledger Updates in an intermediate assistant turn is extracted (regression repro)."""
+    # Intermediate assistant turn carries the Output Receipt with ledger
+    intermediate_assistant = json.dumps({
+        "type": "assistant",
+        "message": {"role": "assistant", "content": [{"type": "text", "text": (
+            "## Output Receipt\n"
+            "**Agent:** Bellows Developer\n"
+            "**Step:** 1\n"
+            "**Status:** Complete\n\n"
+            "### Ledger Updates\n"
+            "#### Prompt Feedback\n"
+            "**2026-06-14 — test (DEV Step 1)**\n\n"
+            "1. Multi-turn observation.\n"
+        )}]},
+        "session_id": "mt-123",
+    })
+    # Final result is a short summary (no ledger)
+    result_event = json.dumps({
+        "type": "result",
+        "subtype": "success",
+        "is_error": False,
+        "result": "Step 1 complete. All changes committed.",
+        "stop_reason": "end_turn",
+        "session_id": "mt-123",
+        "total_cost_usd": 0.20,
+        "permission_denials": [],
+    })
+    ndjson = _SYSTEM_EVENT + "\n" + intermediate_assistant + "\n" + result_event + "\n"
+    proc = _make_mock_popen(stdout_data=ndjson)
+
+    with patch("runner.subprocess.Popen", return_value=proc), \
+         patch("runner.time.sleep"):
+        result = runner.run_step("test", "/tmp", "claude-sonnet-4-6")
+
+    assert result["is_error"] is False
+    assert result["ledger_updates"]["feedback"] is not None
+    assert "Multi-turn observation" in result["ledger_updates"]["feedback"]
+
+
+def test_single_turn_ledger_extraction_still_works():
+    """Single-turn case (ledger in final result) still extracts correctly."""
+    result_with_ledger = json.dumps({
+        "type": "result",
+        "subtype": "success",
+        "is_error": False,
+        "result": (
+            "## Output Receipt\n"
+            "**Status:** Complete\n\n"
+            "### Ledger Updates\n"
+            "#### Prompt Feedback\n"
+            "Single-turn feedback.\n"
+        ),
+        "stop_reason": "end_turn",
+        "session_id": "st-456",
+        "total_cost_usd": 0.10,
+        "permission_denials": [],
+    })
+    ndjson = _SYSTEM_EVENT + "\n" + result_with_ledger + "\n"
+    proc = _make_mock_popen(stdout_data=ndjson)
+
+    with patch("runner.subprocess.Popen", return_value=proc), \
+         patch("runner.time.sleep"):
+        result = runner.run_step("test", "/tmp", "claude-sonnet-4-6")
+
+    assert result["is_error"] is False
+    assert result["ledger_updates"]["feedback"] == "Single-turn feedback."

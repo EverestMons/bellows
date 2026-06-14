@@ -286,6 +286,48 @@ def recover_half_claimed(decisions_dir, db_path=None, project_root=None,
             (datetime.now().isoformat(), plan_id),
         )
         actions.append((plan_id, "abandoned"))
+
+    # --- in_progress-strand recovery (plan 54) ---
+    # Recover plans that reached in_progress but lost their runner (e.g., daemon
+    # restart killed the subprocess). A plan is stranded if its worktree no longer
+    # exists on disk; a legitimately-running step has its worktree.
+    if project_root:
+        ip_rows = conn.execute(
+            "SELECT id, type, deposit_placeholder_name, created_at, target_project "
+            "FROM plans WHERE lifecycle_state = 'in_progress' AND target_project = ?",
+            (project_root,),
+        ).fetchall()
+    else:
+        ip_rows = conn.execute(
+            "SELECT id, type, deposit_placeholder_name, created_at, target_project "
+            "FROM plans WHERE lifecycle_state = 'in_progress'"
+        ).fetchall()
+    for plan_id, plan_type, deposit_name, created_at, target_project in ip_rows:
+        # Age guard: skip plans younger than age_guard_seconds
+        if created_at:
+            try:
+                age = (datetime.now() - datetime.fromisoformat(created_at)).total_seconds()
+                if age < age_guard_seconds:
+                    logger.info(
+                        f"recovery: in_progress plan {plan_id} younger than "
+                        f"{age_guard_seconds // 60}m — skipping"
+                    )
+                    actions.append((plan_id, "skipped_too_recent"))
+                    continue
+            except (ValueError, TypeError):
+                pass
+        # Worktree-absence discriminator: a live plan has its worktree on disk
+        wt_path = os.path.join(target_project, ".bellows-worktrees", str(plan_id))
+        if os.path.isdir(wt_path):
+            actions.append((plan_id, "skipped_worktree_exists"))
+            continue
+        # No worktree + past age guard → stranded, mark abandoned
+        conn.execute(
+            "UPDATE plans SET lifecycle_state = 'abandoned', closed_at = ? WHERE id = ?",
+            (datetime.now().isoformat(), plan_id),
+        )
+        actions.append((plan_id, "abandoned"))
+
     conn.commit()
     conn.close()
     return actions
