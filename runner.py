@@ -232,6 +232,20 @@ def run_step(
                 for block in event.get("message", {}).get("content", []):
                     if isinstance(block, dict) and block.get("type") == "text":
                         assistant_text_parts.append(block.get("text", ""))
+                    # Plan 60 fix: also capture content from Write/Edit tool_use
+                    # blocks — an Output Receipt emitted inside a file-write was
+                    # invisible to _all_assistant_text (plan 57 root cause).
+                    elif isinstance(block, dict) and block.get("type") == "tool_use":
+                        tool_name = block.get("name", "")
+                        tool_input = block.get("input") or {}
+                        if tool_name == "Write":
+                            tc = tool_input.get("content", "")
+                            if tc:
+                                assistant_text_parts.append(tc)
+                        elif tool_name == "Edit":
+                            tc = tool_input.get("new_string", "")
+                            if tc:
+                                assistant_text_parts.append(tc)
 
     if result_event is None:
         _write_log(log_path, {

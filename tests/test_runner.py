@@ -446,6 +446,91 @@ def test_multiturn_ledger_extraction():
     assert "Multi-turn observation" in result["ledger_updates"]["feedback"]
 
 
+def test_tool_content_write_ledger_extraction():
+    """Plan 57 repro: ### Ledger Updates ONLY inside a Write tool_use block is captured."""
+    # Assistant turn with ledger ONLY inside a Write tool_use (no bare text ledger)
+    write_tool_assistant = json.dumps({
+        "type": "assistant",
+        "message": {"role": "assistant", "content": [
+            {"type": "text", "text": "I'll write the dev log now."},
+            {"type": "tool_use", "name": "Write", "input": {
+                "file_path": "/proj/knowledge/development/dev-log.md",
+                "content": (
+                    "# Dev Log\n\n"
+                    "## Output Receipt\n"
+                    "**Agent:** Bellows Developer\n"
+                    "**Step:** 1\n"
+                    "**Status:** Complete\n\n"
+                    "### Ledger Updates\n"
+                    "#### Forward Register\n"
+                    "Tool-content forward item\n"
+                ),
+            }},
+        ]},
+        "session_id": "tc-001",
+    })
+    result_event = json.dumps({
+        "type": "result",
+        "subtype": "success",
+        "is_error": False,
+        "result": "Step 1 complete. Dev log written.",
+        "stop_reason": "end_turn",
+        "session_id": "tc-001",
+        "total_cost_usd": 0.15,
+        "permission_denials": [],
+    })
+    ndjson = _SYSTEM_EVENT + "\n" + write_tool_assistant + "\n" + result_event + "\n"
+    proc = _make_mock_popen(stdout_data=ndjson)
+
+    with patch("runner.subprocess.Popen", return_value=proc), \
+         patch("runner.time.sleep"):
+        result = runner.run_step("test", "/tmp", "claude-sonnet-4-6")
+
+    assert result["is_error"] is False
+    assert result["ledger_updates"]["forward"] is not None
+    assert "Tool-content forward item" in result["ledger_updates"]["forward"]
+
+
+def test_tool_content_edit_ledger_extraction():
+    """Edit tool_use new_string content with ### Ledger Updates is captured."""
+    edit_tool_assistant = json.dumps({
+        "type": "assistant",
+        "message": {"role": "assistant", "content": [
+            {"type": "text", "text": "Editing the file."},
+            {"type": "tool_use", "name": "Edit", "input": {
+                "file_path": "/proj/some-file.md",
+                "old_string": "placeholder",
+                "new_string": (
+                    "### Ledger Updates\n"
+                    "#### Prompt Feedback\n"
+                    "Edit-captured feedback.\n"
+                ),
+            }},
+        ]},
+        "session_id": "tc-002",
+    })
+    result_event = json.dumps({
+        "type": "result",
+        "subtype": "success",
+        "is_error": False,
+        "result": "Done.",
+        "stop_reason": "end_turn",
+        "session_id": "tc-002",
+        "total_cost_usd": 0.10,
+        "permission_denials": [],
+    })
+    ndjson = _SYSTEM_EVENT + "\n" + edit_tool_assistant + "\n" + result_event + "\n"
+    proc = _make_mock_popen(stdout_data=ndjson)
+
+    with patch("runner.subprocess.Popen", return_value=proc), \
+         patch("runner.time.sleep"):
+        result = runner.run_step("test", "/tmp", "claude-sonnet-4-6")
+
+    assert result["is_error"] is False
+    assert result["ledger_updates"]["feedback"] is not None
+    assert "Edit-captured feedback" in result["ledger_updates"]["feedback"]
+
+
 def test_single_turn_ledger_extraction_still_works():
     """Single-turn case (ledger in final result) still extracts correctly."""
     result_with_ledger = json.dumps({

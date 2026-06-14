@@ -5123,3 +5123,29 @@ class TestLedgerDefenseWarn:
         bellows._apply_ledger_updates(parsed, "/proj", plan_id=99, files_changed=[])
         captured = capsys.readouterr()
         assert "parser extracted nothing" not in captured.out
+
+    def test_warn_fires_for_tool_content_only_unparsed(self, capsys):
+        """Plan 60: heading in tool-content-only _all_assistant_text but empty parse → WARN."""
+        parsed = {
+            "ledger_updates": {"feedback": None, "project_status": None, "forward": None},
+            "_all_assistant_text": (
+                "I'll write the dev log now.\n"
+                "### Ledger Updates\n"
+                "#### Forward Register\n"
+                "| # | Item |\n"
+                "| 1 | Malformed row missing separator |\n"
+            ),
+        }
+        bellows._apply_ledger_updates(parsed, "/proj", plan_id=99, files_changed=[])
+        captured = capsys.readouterr()
+        assert "agent emitted ### Ledger Updates but parser extracted nothing" in captured.out
+
+    def test_warn_silent_when_no_all_assistant_text_key(self, capsys):
+        """Genuinely missing _all_assistant_text key → falls back to result_text; no crash."""
+        parsed = {
+            "ledger_updates": {"feedback": None, "project_status": None, "forward": None},
+            "result_text": "Step 1 complete.",
+        }
+        bellows._apply_ledger_updates(parsed, "/proj", plan_id=99, files_changed=[])
+        captured = capsys.readouterr()
+        assert "parser extracted nothing" not in captured.out

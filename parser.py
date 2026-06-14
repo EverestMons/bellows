@@ -95,6 +95,9 @@ def parse(raw: dict) -> dict:
         "escalate": escalate,
         "verdict_requested": verdict_requested,
         "ledger_updates": ledger_updates,
+        # Plan 60: propagate so bellows.py defense WARN reads the full text
+        # (tool content included) instead of falling back to result_text.
+        "_all_assistant_text": ledger_source,
     }
 
 

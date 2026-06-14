@@ -317,3 +317,47 @@ class TestForwardRegisterExtraction:
         assert parsed["ledger_updates"]["feedback"] == "Phase 1 feedback."
         assert parsed["ledger_updates"]["project_status"] == "Phase 2 status."
         assert parsed["ledger_updates"]["forward"] is None
+
+
+class TestAllAssistantTextPropagation:
+    """Plan 60 G2: parse() returns _all_assistant_text in the parsed dict."""
+
+    def test_all_assistant_text_returned_from_result_text(self):
+        """When no _all_assistant_text in raw, parsed returns result_text as fallback."""
+        fixture = dict(BASE_FIXTURE, result="Step 1 complete.")
+        parsed = parser.parse(fixture)
+        assert "_all_assistant_text" in parsed
+        assert parsed["_all_assistant_text"] == "Step 1 complete."
+
+    def test_all_assistant_text_returned_from_raw(self):
+        """When _all_assistant_text is in raw, parsed returns it."""
+        full_text = (
+            "### Ledger Updates\n"
+            "#### Forward Register\n"
+            "Forward item from tool content.\n"
+        )
+        fixture = dict(BASE_FIXTURE, _all_assistant_text=full_text, result="Done.")
+        parsed = parser.parse(fixture)
+        assert parsed["_all_assistant_text"] == full_text
+
+    def test_extraction_succeeds_from_all_assistant_text(self):
+        """Ledger extraction works when block is in _all_assistant_text but not in result."""
+        tool_text = (
+            "### Ledger Updates\n"
+            "#### Forward Register\n"
+            "Tool-buried forward item\n"
+        )
+        fixture = dict(BASE_FIXTURE, _all_assistant_text=tool_text, result="Done.")
+        parsed = parser.parse(fixture)
+        assert parsed["ledger_updates"]["forward"] == "Tool-buried forward item"
+
+    def test_extraction_feedback_from_tool_content(self):
+        """Feedback extraction works from _all_assistant_text (tool content)."""
+        tool_text = (
+            "### Ledger Updates\n"
+            "#### Prompt Feedback\n"
+            "Feedback from Write block.\n"
+        )
+        fixture = dict(BASE_FIXTURE, _all_assistant_text=tool_text, result="Done.")
+        parsed = parser.parse(fixture)
+        assert parsed["ledger_updates"]["feedback"] == "Feedback from Write block."
