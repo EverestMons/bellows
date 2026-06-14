@@ -1,5 +1,6 @@
 """Tests for dashboard.py — headless render layer + PTY smoke."""
 
+import curses
 import datetime
 import os
 import sqlite3
@@ -11,6 +12,11 @@ import pytest
 import dashboard
 import status
 from lifecycle import init_lifecycle_db
+
+
+def _texts(rows):
+    """Extract text strings from (text, attr) rows."""
+    return [t for t, _ in rows]
 
 
 # ---------------------------------------------------------------------------
@@ -104,9 +110,10 @@ class TestRenderRunningState:
                 "20:06:59 [INFO] [executable-33] runner: 60s elapsed",
             ],
         )
-        lines = dashboard.render_screen(state, 50, 120)
+        rows = dashboard.render_screen(state, 50, 120)
+        lines = _texts(rows)
 
-        assert len(lines) == 50
+        assert len(rows) == 50
         assert "\u25cf Bellows RUNNING" in lines[0]
         assert "pid 17920" in lines[0]
         assert "sha 6274d1a" in lines[0]
@@ -137,7 +144,8 @@ class TestRenderStoppedState:
             awaiting_rows=awaiting,
             feed_lines=["20:06:00 [EVENT] started"],
         )
-        lines = dashboard.render_screen(state, 50, 120)
+        rows = dashboard.render_screen(state, 50, 120)
+        lines = _texts(rows)
 
         assert "\u25cb Bellows STOPPED (exited, code 1)" in lines[0]
         joined = "\n".join(lines)
@@ -152,7 +160,8 @@ class TestRenderStoppedState:
 class TestRenderConfirmRestart:
     def test_confirm_restart_replaces_footer(self):
         state = _make_state(feed_lines=["20:06:00 [EVENT] started"])
-        lines = dashboard.render_screen(state, 50, 120, mode="confirm_restart")
+        rows = dashboard.render_screen(state, 50, 120, mode="confirm_restart")
+        lines = _texts(rows)
 
         assert "Restart daemon? (y/n)" in lines[-1]
         # Normal keybar should not appear
@@ -166,7 +175,8 @@ class TestRenderConfirmRestart:
 class TestRenderConfirmQuit:
     def test_confirm_quit_replaces_footer(self):
         state = _make_state(feed_lines=["20:06:00 [EVENT] started"])
-        lines = dashboard.render_screen(state, 50, 120, mode="confirm_quit")
+        rows = dashboard.render_screen(state, 50, 120, mode="confirm_quit")
+        lines = _texts(rows)
 
         assert "Quit dashboard and stop daemon? (y/n)" in lines[-1]
 
@@ -182,7 +192,8 @@ class TestRenderEmptyPanes:
             awaiting_rows=[],
             feed_lines=[],
         )
-        lines = dashboard.render_screen(state, 50, 120)
+        rows = dashboard.render_screen(state, 50, 120)
+        lines = _texts(rows)
         joined = "\n".join(lines)
 
         assert "(none)" in joined
@@ -197,7 +208,8 @@ class TestRenderEmptyPanes:
 class TestRenderDbAbsent:
     def test_db_absent_shows_no_database(self):
         state = _make_state(db_absent=True)
-        lines = dashboard.render_screen(state, 50, 120)
+        rows = dashboard.render_screen(state, 50, 120)
+        lines = _texts(rows)
         joined = "\n".join(lines)
 
         assert "(no database)" in joined
@@ -212,7 +224,8 @@ class TestRenderDbAbsent:
 class TestRenderLogAbsent:
     def test_log_absent_shows_no_log_file(self):
         state = _make_state(log_absent=True, feed_lines=[])
-        lines = dashboard.render_screen(state, 50, 120)
+        rows = dashboard.render_screen(state, 50, 120)
+        lines = _texts(rows)
         joined = "\n".join(lines)
 
         assert "(no log file)" in joined
@@ -224,15 +237,17 @@ class TestRenderLogAbsent:
 
 class TestRenderMinimumSize:
     def test_too_small_shows_message(self):
-        lines = dashboard.render_screen(_make_state(), 20, 60)
+        rows = dashboard.render_screen(_make_state(), 20, 60)
+        lines = _texts(rows)
 
         joined = "\n".join(lines)
         assert "Terminal too small" in joined
         assert "need 80x24" in joined
-        assert len(lines) == 20
+        assert len(rows) == 20
 
     def test_exactly_minimum_renders_normal(self):
-        lines = dashboard.render_screen(_make_state(), MIN_ROWS, MIN_COLS)
+        rows = dashboard.render_screen(_make_state(), MIN_ROWS, MIN_COLS)
+        lines = _texts(rows)
         joined = "\n".join(lines)
         assert "Terminal too small" not in joined
         assert "RUNNING" in joined
@@ -282,7 +297,8 @@ class TestFeedLineTruncation:
     def test_long_lines_truncated_to_width(self):
         long_line = "20:06:00 [EVENT] " + "x" * 200
         state = _make_state(feed_lines=[long_line])
-        lines = dashboard.render_screen(state, 50, 80)
+        rows = dashboard.render_screen(state, 50, 80)
+        lines = _texts(rows)
 
         # Find the feed line (it'll have the event marker)
         feed_lines = [l for l in lines if "EVENT" in l and "FEED" not in l]
@@ -298,7 +314,8 @@ class TestVerdictFileBasename:
     def test_verdict_ref_as_basename(self, running_db):
         _, awaiting = _query_state(running_db)
         state = _make_state(awaiting_rows=awaiting)
-        lines = dashboard.render_screen(state, 50, 120)
+        rows = dashboard.render_screen(state, 50, 120)
+        lines = _texts(rows)
         joined = "\n".join(lines)
 
         # The verdict_file_ref is stored as full path; render_awaiting_verdict
@@ -319,8 +336,8 @@ class TestEventFeedHeightFillsRemaining:
             awaiting_rows=[],
             feed_lines=["line " + str(i) for i in range(30)],
         )
-        lines_50 = dashboard.render_screen(state, 50, 120)
-        lines_30 = dashboard.render_screen(state, 30, 120)
+        lines_50 = _texts(dashboard.render_screen(state, 50, 120))
+        lines_30 = _texts(dashboard.render_screen(state, 30, 120))
 
         # Count visible feed content lines (non-empty, containing "line ")
         feed_50 = [l for l in lines_50 if "line " in l]
@@ -345,8 +362,8 @@ class TestEventFeedHeightFillsRemaining:
             feed_lines=feed,
         )
         # Use 30 rows so feed actually gets constrained
-        lines_with = dashboard.render_screen(state_with, 30, 120)
-        lines_without = dashboard.render_screen(state_without, 30, 120)
+        lines_with = _texts(dashboard.render_screen(state_with, 30, 120))
+        lines_without = _texts(dashboard.render_screen(state_without, 30, 120))
 
         feed_with = [l for l in lines_with if "line " in l]
         feed_without = [l for l in lines_without if "line " in l]
@@ -469,6 +486,195 @@ class TestPTYSmoke:
 
         assert rc == 0, f"Dashboard exited with code {rc}, output: {output[:500]}"
         assert b"Bellows" in output, f"Dashboard header not found in PTY output: {output[:500]}"
+
+
+# ---------------------------------------------------------------------------
+# Test 14: Attributed rows — render_screen returns (text, attr) tuples
+# ---------------------------------------------------------------------------
+
+class TestAttributedRows:
+    def test_returns_tuples(self):
+        state = _make_state(feed_lines=["20:06:00 [EVENT] started"])
+        rows = dashboard.render_screen(state, 50, 120)
+
+        assert isinstance(rows, list)
+        for row in rows:
+            assert isinstance(row, tuple), f"Expected tuple, got {type(row)}: {row!r}"
+            assert len(row) == 2
+            text, attr = row
+            assert isinstance(text, str)
+            assert isinstance(attr, int)
+
+
+# ---------------------------------------------------------------------------
+# Test 15: Section headers carry bold attr
+# ---------------------------------------------------------------------------
+
+class TestSectionHeadersBold:
+    def test_section_headers_bold(self):
+        state = _make_state(feed_lines=["20:06:00 [EVENT] started"])
+        rows = dashboard.render_screen(state, 50, 120)
+
+        header_rows = {text: attr for text, attr in rows}
+        # Find section header rows by text content
+        for text, attr in rows:
+            if text.startswith("IN-FLIGHT"):
+                assert attr & curses.A_BOLD, "IN-FLIGHT header should be bold"
+            elif text.startswith("AWAITING VERDICT"):
+                assert attr & curses.A_BOLD, "AWAITING VERDICT header should be bold"
+
+    def test_daemon_header_bold(self):
+        state = _make_state()
+        rows = dashboard.render_screen(state, 50, 120)
+        _, attr = rows[0]
+        assert attr & curses.A_BOLD, "Daemon header should be bold"
+
+
+# ---------------------------------------------------------------------------
+# Test 16: AWAITING VERDICT emphasis when rows exist
+# ---------------------------------------------------------------------------
+
+class TestAwaitingEmphasis:
+    def test_awaiting_rows_emphasized(self, running_db):
+        _, awaiting = _query_state(running_db)
+        state = _make_state(awaiting_rows=awaiting)
+        rows = dashboard.render_screen(state, 50, 120)
+
+        # Find content rows after the AWAITING VERDICT header
+        in_awaiting_section = False
+        content_attrs = []
+        for text, attr in rows:
+            if text.startswith("AWAITING VERDICT"):
+                in_awaiting_section = True
+                continue
+            if in_awaiting_section:
+                if dashboard.SEPARATOR_CHAR in text or text.startswith("EVENT FEED"):
+                    break
+                if text.strip():
+                    content_attrs.append(attr)
+
+        assert content_attrs, "Should have awaiting content rows"
+        for attr in content_attrs:
+            assert attr != 0, "Awaiting content rows should have emphasis attr"
+
+    def test_no_emphasis_when_no_awaiting(self):
+        state = _make_state(awaiting_rows=[])
+        rows = dashboard.render_screen(state, 50, 120)
+
+        # Content rows after AWAITING VERDICT header should have attr=0
+        in_awaiting_section = False
+        for text, attr in rows:
+            if text.startswith("AWAITING VERDICT"):
+                in_awaiting_section = True
+                continue
+            if in_awaiting_section:
+                if dashboard.SEPARATOR_CHAR in text or text.startswith("EVENT FEED"):
+                    break
+                if text.strip():
+                    assert attr == 0, "No emphasis when no awaiting rows"
+
+
+# ---------------------------------------------------------------------------
+# Test 17: Separator rules between sections
+# ---------------------------------------------------------------------------
+
+class TestSeparatorRules:
+    def test_separator_present_between_sections(self):
+        state = _make_state(feed_lines=["20:06:00 [EVENT] started"])
+        rows = dashboard.render_screen(state, 50, 120)
+        lines = _texts(rows)
+
+        separator_count = sum(
+            1 for text in lines if text and all(c == dashboard.SEPARATOR_CHAR for c in text)
+        )
+        # 3 separators: after header, after IN-FLIGHT, after AWAITING VERDICT
+        assert separator_count == 3, f"Expected 3 separators, got {separator_count}"
+
+    def test_separator_full_width(self):
+        width = 100
+        state = _make_state(feed_lines=["20:06:00 [EVENT] started"])
+        rows = dashboard.render_screen(state, 50, width)
+
+        for text, attr in rows:
+            if text and all(c == dashboard.SEPARATOR_CHAR for c in text):
+                assert len(text) == width, f"Separator should be {width} chars, got {len(text)}"
+
+    def test_separator_dim(self):
+        state = _make_state(feed_lines=["20:06:00 [EVENT] started"])
+        rows = dashboard.render_screen(state, 50, 120)
+
+        for text, attr in rows:
+            if text and all(c == dashboard.SEPARATOR_CHAR for c in text):
+                assert attr & curses.A_DIM, "Separator should have DIM attr"
+
+
+# ---------------------------------------------------------------------------
+# Test 18: Monochrome fallback (no color)
+# ---------------------------------------------------------------------------
+
+class TestMonochromeFallback:
+    def test_no_color_returns_valid_rows(self):
+        state = _make_state(feed_lines=["20:06:00 [EVENT] started"])
+        rows = dashboard.render_screen(state, 50, 120, has_colors=False)
+
+        assert len(rows) == 50
+        for row in rows:
+            assert isinstance(row, tuple)
+            text, attr = row
+            assert isinstance(text, str)
+            assert isinstance(attr, int)
+
+    def test_no_color_uses_monochrome_attrs(self):
+        state = _make_state(feed_lines=["20:06:00 [EVENT] started"])
+        rows = dashboard.render_screen(state, 50, 120, has_colors=False)
+
+        # No color_pair bits should be set (color pairs occupy bits 8-15)
+        for text, attr in rows:
+            # In monochrome mode, no color pair should be used
+            color_pair_bits = (attr >> 8) & 0xFF
+            assert color_pair_bits == 0, f"Monochrome should not use color pairs: {text!r} attr={attr}"
+
+    def test_color_mode_uses_color_pairs(self):
+        state = _make_state(feed_lines=["20:06:00 [EVENT] started"])
+        rows = dashboard.render_screen(state, 50, 120, has_colors=True)
+
+        # At least some rows should have color pair bits set
+        color_rows = [
+            text for text, attr in rows
+            if (attr >> 8) & 0xFF != 0
+        ]
+        assert color_rows, "Color mode should use color pairs for some rows"
+
+
+# ---------------------------------------------------------------------------
+# Test 19: Single-screen line-budget contract
+# ---------------------------------------------------------------------------
+
+class TestLineBudget:
+    def test_budget_exact_height(self):
+        """render_screen always returns exactly height rows."""
+        for h in [24, 30, 50, 80]:
+            state = _make_state(feed_lines=["line " + str(i) for i in range(20)])
+            rows = dashboard.render_screen(state, h, 120)
+            assert len(rows) == h, f"Expected {h} rows, got {len(rows)}"
+
+    def test_budget_with_separators(self, running_db):
+        """Separators don't break the height contract."""
+        in_flight, awaiting = _query_state(running_db)
+        state = _make_state(
+            in_flight_rows=in_flight,
+            awaiting_rows=awaiting,
+            feed_lines=["line " + str(i) for i in range(20)],
+        )
+        rows = dashboard.render_screen(state, 30, 120)
+        assert len(rows) == 30
+
+    def test_footer_always_last(self):
+        """Footer is always the last row."""
+        state = _make_state(feed_lines=["line " + str(i) for i in range(20)])
+        rows = dashboard.render_screen(state, 50, 120)
+        footer_text, _ = rows[-1]
+        assert "q quit" in footer_text
 
 
 # ---------------------------------------------------------------------------

@@ -34,8 +34,30 @@ FLOCK_RETRY_INTERVAL = 0.5
 SIGTERM_TIMEOUT = 5
 SIGKILL_TIMEOUT = 2
 
+# Color pair IDs (only valid after init_colors())
+COLOR_HEADER_RUN = 1
+COLOR_HEADER_STOP = 2
+COLOR_INFLIGHT = 3
+COLOR_AWAITING = 4
+
+# Separator character
+SEPARATOR_CHAR = "\u2500"  # ─ box-drawing horizontal
+
 # Log line filter: exclude Module fingerprint lines
 _MODULE_FINGERPRINT_RE = re.compile(r"Module:.*@ git:")
+
+
+def init_colors():
+    """Initialize curses color pairs. Returns True if colors available."""
+    if not curses.has_colors():
+        return False
+    curses.start_color()
+    curses.use_default_colors()
+    curses.init_pair(COLOR_HEADER_RUN, curses.COLOR_GREEN, -1)
+    curses.init_pair(COLOR_HEADER_STOP, curses.COLOR_RED, -1)
+    curses.init_pair(COLOR_INFLIGHT, curses.COLOR_CYAN, -1)
+    curses.init_pair(COLOR_AWAITING, curses.COLOR_YELLOW, -1)
+    return True
 
 
 # ---------------------------------------------------------------------------
@@ -160,25 +182,49 @@ def assemble_state(bellows_root, child_proc=None):
 # Pure render layer: state + dimensions + mode → list of strings
 # ---------------------------------------------------------------------------
 
-def render_screen(state, height, width, mode="normal"):
-    """Pure function: state → list of strings (one per terminal row).
+def render_screen(state, height, width, mode="normal", has_colors=False):
+    """Pure function: state → list of (text, attr) tuples (one per terminal row).
 
     Args:
         state: dict from assemble_state().
         height: terminal rows.
         width: terminal columns.
         mode: "normal", "confirm_restart", or "confirm_quit".
+        has_colors: True if curses color pairs are initialized.
 
-    Returns list of strings, len == height. Each string is <= width chars.
+    Returns list of (text, attr) tuples, len == height.
+    Each text is <= width chars; attr is a curses attribute bitmask.
     """
     # Minimum size check
     if height < MIN_ROWS or width < MIN_COLS:
-        lines = [""] * height
+        lines = [("", 0)] * height
         msg = f"Terminal too small (need {MIN_COLS}x{MIN_ROWS})"
         mid = height // 2
         pad = max(0, (width - len(msg)) // 2)
-        lines[mid] = " " * pad + msg
+        lines[mid] = (" " * pad + msg, 0)
         return lines
+
+    # Build attribute palette based on color availability.
+    # color_pair(n) == n << 8; computed directly so render_screen stays pure
+    # (curses.color_pair() requires initscr()).
+    if has_colors:
+        attr_header_run = curses.A_BOLD | (COLOR_HEADER_RUN << 8)
+        attr_header_stop = curses.A_BOLD | (COLOR_HEADER_STOP << 8)
+        attr_inflight = curses.A_BOLD | (COLOR_INFLIGHT << 8)
+        attr_awaiting = curses.A_BOLD | (COLOR_AWAITING << 8)
+        attr_awaiting_row = COLOR_AWAITING << 8
+        attr_feed_header = curses.A_DIM
+        attr_separator = curses.A_DIM
+        attr_footer = curses.A_REVERSE
+    else:
+        attr_header_run = curses.A_BOLD
+        attr_header_stop = curses.A_BOLD
+        attr_inflight = curses.A_BOLD
+        attr_awaiting = curses.A_BOLD | curses.A_REVERSE
+        attr_awaiting_row = curses.A_REVERSE
+        attr_feed_header = curses.A_DIM
+        attr_separator = curses.A_DIM
+        attr_footer = curses.A_BOLD
 
     rows = []
 
@@ -187,15 +233,16 @@ def render_screen(state, height, width, mode="normal"):
         header = status.render_daemon_header(
             True, state["pid"], state["sha"], state["uptime"]
         )
+        rows.append((_fit(header, width), attr_header_run))
     else:
         if state["child_exit_code"] is not None:
             header = f"\u25cb Bellows STOPPED (exited, code {state['child_exit_code']})"
         else:
             header = status.render_daemon_header(False, None, state["sha"], None)
-    rows.append(_fit(header, width))
+        rows.append((_fit(header, width), attr_header_stop))
 
-    # --- Blank separator ---
-    rows.append("")
+    # --- Separator ---
+    rows.append((SEPARATOR_CHAR * width, attr_separator))
 
     # --- IN-FLIGHT ---
     if state["db_absent"]:
@@ -204,47 +251,51 @@ def render_screen(state, height, width, mode="normal"):
         in_flight_text = status.render_in_flight(
             state["in_flight_rows"], state["daemon_running"]
         )
-    for line in in_flight_text.split("\n"):
-        rows.append(_fit(line, width))
+    in_flight_lines = in_flight_text.split("\n")
+    rows.append((_fit(in_flight_lines[0], width), attr_inflight))
+    for line in in_flight_lines[1:]:
+        rows.append((_fit(line, width), 0))
 
-    # --- Blank separator ---
-    rows.append("")
+    # --- Separator ---
+    rows.append((SEPARATOR_CHAR * width, attr_separator))
 
     # --- AWAITING VERDICT ---
     if state["db_absent"]:
         awaiting_text = "AWAITING VERDICT\n (no database)"
     else:
         awaiting_text = status.render_awaiting_verdict(state["awaiting_rows"])
-    for line in awaiting_text.split("\n"):
-        rows.append(_fit(line, width))
+    awaiting_lines = awaiting_text.split("\n")
+    has_awaiting = bool(state["awaiting_rows"]) and not state["db_absent"]
+    rows.append((_fit(awaiting_lines[0], width), attr_awaiting))
+    for line in awaiting_lines[1:]:
+        rows.append((_fit(line, width), attr_awaiting_row if has_awaiting else 0))
 
-    # --- Blank separator ---
-    rows.append("")
+    # --- Separator ---
+    rows.append((SEPARATOR_CHAR * width, attr_separator))
 
     # --- EVENT FEED (fills remaining space above footer) ---
-    # Reserve 1 row for footer (last row)
     feed_start = len(rows)
     feed_available = height - feed_start - 1  # -1 for footer
 
-    rows.append(_fit("EVENT FEED", width))
+    rows.append((_fit("EVENT FEED", width), attr_feed_header))
     feed_available -= 1  # label row consumed
 
     if state["log_absent"]:
-        rows.append(_fit(" (no log file)", width))
+        rows.append((_fit(" (no log file)", width), 0))
         feed_available -= 1
     elif not state["feed_lines"]:
-        rows.append(_fit(" (none)", width))
+        rows.append((_fit(" (none)", width), 0))
         feed_available -= 1
     else:
         # Show as many feed lines as fit, most recent at bottom
         visible = state["feed_lines"][-feed_available:] if feed_available > 0 else []
         for line in visible:
-            rows.append(_fit(" " + line, width))
+            rows.append((_fit(" " + line, width), 0))
             feed_available -= 1
 
     # Fill remaining space with empty rows
     while feed_available > 0:
-        rows.append("")
+        rows.append(("", 0))
         feed_available -= 1
 
     # --- Footer (pinned to last row) ---
@@ -258,11 +309,11 @@ def render_screen(state, height, width, mode="normal"):
             footer = "r restart  q quit"
         else:
             footer = "r relaunch  q quit"
-    rows.append(_fit(footer, width))
+    rows.append((_fit(footer, width), attr_footer))
 
     # Ensure exactly `height` rows
     while len(rows) < height:
-        rows.insert(-1, "")  # insert empties before footer
+        rows.insert(-1, ("", 0))  # insert empties before footer
     rows = rows[:height]
 
     return rows
@@ -375,6 +426,7 @@ class CursesShell:
         """Curses main loop: refresh every ~2s, handle keys."""
         curses.curs_set(0)  # hide cursor
         curses.halfdelay(REFRESH_HALF_DELAY)
+        self._has_colors = init_colors()
         stdscr.clear()
 
         self._spawn_child()
@@ -385,13 +437,13 @@ class CursesShell:
 
             # Assemble state and render
             state = assemble_state(self.bellows_root, self.child)
-            lines = render_screen(state, height, width, self.mode)
+            lines = render_screen(state, height, width, self.mode, self._has_colors)
 
             # Draw
             stdscr.erase()
-            for i, line in enumerate(lines):
+            for i, (text, attr) in enumerate(lines):
                 try:
-                    stdscr.addnstr(i, 0, line, width)
+                    stdscr.addnstr(i, 0, text, width, attr)
                 except curses.error:
                     pass  # last-cell write can raise on some terminals
             stdscr.refresh()
