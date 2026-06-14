@@ -1,0 +1,43 @@
+All-three-ledgers proof — feedback + project_status + forward handlers live
+=============================================================================
+
+Daemon code: bellows.py _apply_ledger_updates() (lines 1130-1224)
+
+Phase 1 — FEEDBACK (LIVE since v4.66):
+  Lines 1144-1187: feedback handler
+  - Coexistence guard: line 1146 — skips if "agent-prompt-feedback.md" in files_changed
+  - Idempotency: lines 1150-1155 — check_ledger_write_exists + content hash
+  - Apply: lines 1157-1163 — lifecycle.record_prompt_feedback (DB write)
+  - Regenerate: lines 1164-1182 — lifecycle.generate_feedback_md → write .md → git commit
+  - Record: line 1187 — lifecycle.record_ledger_write idempotency marker
+
+Phase 2 — PROJECT STATUS (LIVE since v4.67):
+  Lines 1189-1204: project status handler
+  - Coexistence guard: line 1191 — skips if "PROJECT_STATUS.md" in files_changed
+  - Idempotency: lines 1195-1200 — check_ledger_write_exists + content hash
+  - Apply: line 1202 — _append_project_status(project_path, plan_id, project_status_text)
+  - Record: line 1203 — lifecycle.record_ledger_write idempotency marker
+  - Handler function: _append_project_status at line 1227
+
+Phase 3 — FORWARD REGISTER (LIVE since v4.68 — this plan):
+  Lines 1206-1221: forward register handler
+  - Coexistence guard: line 1208 — skips if "FORWARD.md" in files_changed
+  - Idempotency: lines 1213-1217 — check_ledger_write_exists + content hash
+  - Apply: line 1219 — _append_forward_row(project_path, plan_id, forward_text)
+  - Record: line 1220 — lifecycle.record_ledger_write idempotency marker
+  - Handler function: _append_forward_row at line 1273
+
+Handler function grep:
+  bellows.py:1202: _append_project_status(project_path, plan_id, project_status_text)
+  bellows.py:1219: _append_forward_row(project_path, plan_id, forward_text)
+  bellows.py:1227: def _append_project_status(project_path, plan_id, milestone_text):
+  bellows.py:1273: def _append_forward_row(project_path, plan_id, item_text):
+
+All three ledger handlers are LIVE and structurally identical:
+  1. Coexistence guard (skip if agent wrote old-style)
+  2. Idempotency check (ledger_writes table + content hash)
+  3. Apply function (append to file or DB)
+  4. Record idempotency marker
+
+CONCLUSION: The daemon-owned-ledgers effort is COMPLETE.
+All three ledgers — feedback, PROJECT_STATUS, and FORWARD — are daemon-owned channels.

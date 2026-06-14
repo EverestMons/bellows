@@ -1,0 +1,41 @@
+FORWARD rows 4/5/13 reconciliation (Rule 42 — direct status edit)
+===================================================================
+
+Rows reconciled in knowledge/FORWARD.md:
+
+Row 4: Worktree teardown cherry-pick conflict when local main has uncommitted PROJECT_STATUS.md edits
+  - Status: open → closed-by-plan-56
+  - Plan-id link: — → 56
+  - Closure suffix: closed 2026-06-14: append-only worktree-conflict class eliminated by daemon-owned ledgers (diagnostic 42; feedback+PROJECT_STATUS+FORWARD slices)
+
+Row 5: Parallel-diagnostic cherry-pick conflicts on shared append-only bookkeeping files at teardown
+  - Status: open → closed-by-plan-56
+  - Plan-id link: — → 56
+  - Closure suffix: closed 2026-06-14: append-only worktree-conflict class eliminated by daemon-owned ledgers (diagnostic 42; feedback+PROJECT_STATUS+FORWARD slices)
+
+Row 13: Worktree teardown→resume: Gap 2(b)/(c) auto-resume-from-branch + Gap 3 auto-stash — deferred friction-reduction
+  - Status: open → closed-by-plan-56
+  - Plan-id link: — → 56
+  - Closure suffix: closed 2026-06-14: append-only worktree-conflict class eliminated by daemon-owned ledgers (diagnostic 42; feedback+PROJECT_STATUS+FORWARD slices)
+
+Git diff:
+---------
+diff --git a/knowledge/FORWARD.md b/knowledge/FORWARD.md
+index bab3ed7..e954f51 100644
+--- a/knowledge/FORWARD.md
++++ b/knowledge/FORWARD.md
+@@ -13,8 +13,8 @@
+ | 1 | 2026-05-13 | `_extract_step_text` regex case-sensitivity ...
+-| 4 | 2026-05-22 | Worktree teardown cherry-pick conflict when local `main` has uncommitted `PROJECT_STATUS.md` edits (context in BACKLOG-ARCHIVE.md) | deferred-work | — | open |
+-| 5 | 2026-05-22 | Parallel-diagnostic cherry-pick conflicts on shared append-only bookkeeping files at teardown (context in BACKLOG-ARCHIVE.md) | deferred-work | — | open |
++| 4 | 2026-05-22 | Worktree teardown cherry-pick conflict when local `main` has uncommitted `PROJECT_STATUS.md` edits — closed 2026-06-14: append-only worktree-conflict class eliminated by daemon-owned ledgers (diagnostic 42; feedback+PROJECT_STATUS+FORWARD slices) (context in BACKLOG-ARCHIVE.md) | deferred-work | 56 | closed-by-plan-56 |
++| 5 | 2026-05-22 | Parallel-diagnostic cherry-pick conflicts on shared append-only bookkeeping files at teardown — closed 2026-06-14: append-only worktree-conflict class eliminated by daemon-owned ledgers (diagnostic 42; feedback+PROJECT_STATUS+FORWARD slices) (context in BACKLOG-ARCHIVE.md) | deferred-work | 56 | closed-by-plan-56 |
+@@ -22,7 +22,7 @@
+-| 13 | 2026-05-31 | Worktree teardown→resume: Gap 2(b)/(c) auto-resume-from-branch + Gap 3 auto-stash — deferred friction-reduction (context in BACKLOG-ARCHIVE.md) | deferred-work | — | open |
++| 13 | 2026-05-31 | Worktree teardown→resume: Gap 2(b)/(c) auto-resume-from-branch + Gap 3 auto-stash — closed 2026-06-14: append-only worktree-conflict class eliminated by daemon-owned ledgers (diagnostic 42; feedback+PROJECT_STATUS+FORWARD slices) (context in BACKLOG-ARCHIVE.md) | deferred-work | 56 | closed-by-plan-56 |
+
+Rationale: With all three ledgers (feedback, PROJECT_STATUS, FORWARD) now daemon-owned,
+the append-only worktree-conflict class is fully eliminated. Agents no longer write to
+shared ledger files inside worktrees; the daemon applies all ledger content directly on
+main post-merge, serialized by git's index.lock. Rows 4, 5, and 13 all described
+manifestations of the same conflict class.

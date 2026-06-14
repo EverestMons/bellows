@@ -1,0 +1,54 @@
+Governance flip verification — PLANNER_TEMPLATE.md v4.68
+=========================================================
+
+1. VERSION BUMP:
+   - Line 5: **Version:** 4.68
+   - Line 6: **Last Updated:** 2026-06-14 (v4.68 — FORWARD ledger go-live, all three ledgers activated)
+   VERIFIED ✅
+
+2. RULE 44 (~L964-966) — FORWARD entry framing — deduplicate before filing:
+   Contains: "**Filing mechanism:** Agents filing a NEW FORWARD entry during step execution
+   emit it via the Output Receipt `### Ledger Updates > #### Forward Register` section —
+   the daemon appends the row to `knowledge/FORWARD.md` on main post-merge. Agents do NOT
+   write to FORWARD.md directly. (Planner-direct session-wrap status-update edits on main —
+   Rule 42 reconciliation — are unchanged.)"
+   VERIFIED ✅
+
+3. RULE 46 (~L974-976) — Lessons Forge Gate 1:
+   Contains: "emit a new FORWARD entry for the underlying daemon bug via the Output Receipt
+   `### Ledger Updates > #### Forward Register` section (the daemon appends the row to
+   FORWARD.md on main post-merge — agents do NOT write to FORWARD.md directly)"
+   VERIFIED ✅
+
+4. RULE 42 (~L945-958) — Session-wrap reconciliation:
+   Unchanged — Planner direct status-update edits on main remain as-is.
+   No references to Output Receipt channel for Rule 42 reconciliation.
+   VERIFIED ✅
+
+5. CHANNEL FORMAT SPEC (~L320-342) — `#### Forward Register` subsection:
+   - Line 338-339: `#### Forward Register` subsection present in the Ledger Updates
+     channel format template.
+   - Line 342 Rules paragraph: "(1) All three subsections — `#### Prompt Feedback`,
+     `#### Project Status`, and `#### Forward Register` — are active daemon-owned channels.
+     Agents do NOT write to `agent-prompt-feedback.md`, `PROJECT_STATUS.md`, or
+     `knowledge/FORWARD.md` directly."
+   - Rule (5): "The daemon appends new FORWARD rows to `knowledge/FORWARD.md` on main
+     post-merge, computing the next row number and date automatically; agents emit only
+     the Item text."
+   - Rule (6): "Planner-direct session-wrap reconciliation (Rule 42 — status updates:
+     open → closed-by-plan-X) edits FORWARD.md on main directly and is unchanged."
+   VERIFIED ✅
+
+6. FEEDBACK INSTRUCTIONS UNTOUCHED:
+   - Lines 265, 299: Feedback protocol says "Emit prompt feedback in your Output Receipt
+     `### Ledger Updates` → `#### Prompt Feedback` section... Do NOT write to
+     agent-prompt-feedback.md directly — the daemon records your feedback to the DB and
+     regenerates the file."
+   - This is the pre-existing activated feedback instruction from v4.66. No changes made.
+   VERIFIED ✅
+
+7. PROJECT_STATUS INSTRUCTIONS UNTOUCHED:
+   - Channel format spec Rule (4): "The daemon appends project status milestones to
+     `PROJECT_STATUS.md` on main post-merge at the canonical position (after `## Completed`)."
+   - This is the pre-existing activated PROJECT_STATUS instruction from v4.67. No changes made.
+   VERIFIED ✅
