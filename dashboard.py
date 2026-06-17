@@ -11,12 +11,12 @@ The dashboard never acquires .bellows.lock — only .bellows-dashboard.lock.
 import curses
 import fcntl
 import os
+import glob as glob_mod
 import re
 import signal
 import subprocess
 import sys
 import time
-from datetime import datetime, timedelta
 from pathlib import Path
 
 from bellows_root import resolve_bellows_root
@@ -65,28 +65,19 @@ def init_colors():
 # ---------------------------------------------------------------------------
 
 def tail_session_log(log_dir, max_lines=20):
-    """Read the last max_lines from today's session log.
+    """Read the last max_lines from the most recently modified session log.
 
-    Midnight rotation tolerance: if today's file doesn't exist yet,
-    fall back to yesterday's file for up to 60 seconds past midnight.
-    Returns list of strings (no trailing newlines).
+    Selects the bellows-*.log file with the greatest mtime in log_dir.
+    Returns list of strings (no trailing newlines), or None if no log exists.
     """
-    today = datetime.now()
-    today_name = f"bellows-{today.strftime('%Y-%m-%d')}.log"
-    today_path = os.path.join(log_dir, today_name)
-
-    if os.path.isfile(today_path):
-        return _tail_file(today_path, max_lines)
-
-    # Midnight tolerance: fall back to yesterday's log within 60s of midnight
-    if today.hour == 0 and today.minute == 0 and today.second < 60:
-        yesterday = today - timedelta(days=1)
-        yesterday_name = f"bellows-{yesterday.strftime('%Y-%m-%d')}.log"
-        yesterday_path = os.path.join(log_dir, yesterday_name)
-        if os.path.isfile(yesterday_path):
-            return _tail_file(yesterday_path, max_lines)
-
-    return None  # no log file
+    try:
+        candidates = glob_mod.glob(os.path.join(log_dir, "bellows-*.log"))
+    except OSError:
+        return None
+    if not candidates:
+        return None
+    newest = max(candidates, key=os.path.getmtime)
+    return _tail_file(newest, max_lines)
 
 
 def _tail_file(path, max_lines):

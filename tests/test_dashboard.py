@@ -682,15 +682,55 @@ class TestLineBudget:
 # ---------------------------------------------------------------------------
 
 class TestTailSessionLog:
-    def test_reads_today_log(self, tmp_path):
+    def test_reads_newest_log_by_mtime(self, tmp_path):
+        """Given multiple bellows-*.log files, returns the tail of the newest one."""
         log_dir = str(tmp_path)
-        today = datetime.datetime.now().strftime("%Y-%m-%d")
-        log_file = tmp_path / f"bellows-{today}.log"
-        log_file.write_text("line1\nline2\nline3\n")
+
+        older = tmp_path / "bellows-2026-06-15.log"
+        older.write_text("old1\nold2\nold3\n")
+        os.utime(str(older), (1000, 1000))  # ancient mtime
+
+        newer = tmp_path / "bellows-2026-06-16.log"
+        newer.write_text("new1\nnew2\nnew3\n")
+        os.utime(str(newer), (2000, 2000))  # more recent mtime
+
+        result = dashboard.tail_session_log(log_dir, max_lines=2)
+        assert result == ["new2", "new3"]
+
+    def test_regression_cross_midnight_daemon(self, tmp_path):
+        """A daemon started yesterday still has its log found today (the exact bug)."""
+        log_dir = str(tmp_path)
+        # Only a yesterday-dated log exists — no today-dated file
+        yesterday_log = tmp_path / "bellows-2026-06-16.log"
+        yesterday_log.write_text("line1\nline2\nline3\n")
+        # Touch it so it's the newest (and only) file
+        os.utime(str(yesterday_log), None)
 
         result = dashboard.tail_session_log(log_dir, max_lines=2)
         assert result == ["line2", "line3"]
 
     def test_returns_none_when_no_log(self, tmp_path):
         result = dashboard.tail_session_log(str(tmp_path))
+        assert result is None
+
+    def test_returns_none_for_absent_dir(self):
+        result = dashboard.tail_session_log("/nonexistent/dir/12345")
+        assert result is None
+
+    def test_max_lines_honored(self, tmp_path):
+        log_dir = str(tmp_path)
+        log_file = tmp_path / "bellows-2026-06-17.log"
+        log_file.write_text("\n".join(f"line{i}" for i in range(50)) + "\n")
+        result = dashboard.tail_session_log(log_dir, max_lines=5)
+        assert len(result) == 5
+        assert result[-1] == "line49"
+
+    def test_ignores_non_bellows_files(self, tmp_path):
+        """Non-bellows log files (e.g. nohup-restart-*.out) are not selected."""
+        log_dir = str(tmp_path)
+        # Only a non-matching file exists
+        other = tmp_path / "nohup-restart-2026-06-17.out"
+        other.write_text("should not appear\n")
+
+        result = dashboard.tail_session_log(log_dir)
         assert result is None
