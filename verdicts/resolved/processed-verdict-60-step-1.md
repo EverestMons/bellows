@@ -1,0 +1,2 @@
+verdict: continue
+CEO standing-continue: ledger tool-content fix DEV verified — full suite 684 passed/0 failed; runner now captures Write/Edit tool_use content (plan-57 repro test passes), parser propagates _all_assistant_text, defense WARN fires for tool-content-only-unparsed. Proceed to Step 2 (QA — reproduce against plan-57's real step JSON if feasible, verify all-three-channel robustness, no regression).

@@ -1,0 +1,2 @@
+verdict: continue
+CEO standing-continue: over-capture fix QA fully green — 6 checks OK, zero FAIL, Rule 20 PASSED. Verified: full suite, over-capture fixed (trailing prose excluded, legitimate multi-line preserved), FORWARD single-line item, FORWARD.md all rows 7-pipe + clean, no feedback/project_status regression. Final step — close plan to Done. DAEMON RESTART REQUIRED — then a final FORWARD re-canary must land a clean single-line 7-pipe row, completing the daemon-owned-ledgers effort.

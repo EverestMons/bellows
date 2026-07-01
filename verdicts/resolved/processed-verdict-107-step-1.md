@@ -1,0 +1,3 @@
+stop
+
+5th 401 confirmation — now with a GENUINELY restarted daemon (PID 8193, clean mint of #107, no slug race) the children STILL get apiKeySource: none → authentication_failed. This proves the daemon's LAUNCH SHELL itself has no working `claude -p` auth; a restart changes the PID but children inherit that same unauthenticated context. No ANTHROPIC_API_KEY is set. Definitive fix: in the launch shell run `claude -p "reply OK" --output-format text` (it will 401, confirming), then `export ANTHROPIC_API_KEY=…` and relaunch — apiKeySource will become ANTHROPIC_API_KEY and steps will run. Halting #107; do not re-dispatch until a step survives past ~4s.

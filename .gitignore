@@ -13,3 +13,6 @@ verdicts/ledger.jsonl
 .bellows-worktrees/
 config.json
 lifecycle.db*
+
+.bellows.lock
+.bellows-dashboard.lock

@@ -1,0 +1,2 @@
+verdict: continue
+CEO standing-continue: plan_doc_ref QA fully green — 6 checks OK, zero FAIL, Rule 20 PASSED, column populated across all 37 rows, migration idempotent, FORWARD row 22 filed for the Forge-reader follow-up. Final step — close plan to Done. DAEMON RESTART REQUIRED to apply the migration on the live daemon (worktree already migrated; canary is the next claimed plan carrying plan_doc_ref through its transitions).

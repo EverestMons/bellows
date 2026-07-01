@@ -1,0 +1,2 @@
+verdict: continue
+CEO verdict: continue. Findings accepted — compound root cause confirmed (P1 cross-project blind spot in recover_half_claimed + P3 intermediate lifecycle_state never written). All three decision forks resolved per SA recommendation: DF1 = flock lockfile single-instance guard; DF2 = one executable shipping flock + project-scoped recovery + age guard together; DF3 = 5-minute age-guard window. Fix executable follows, citing implements diagnostic 21. Close diagnostic to Done.

@@ -1,0 +1,30 @@
+# Bellows — Gate False-Positive Cluster Root Cause (scope_check ×2 + stop_prose, FORWARD rows 16/17/21)
+**Date:** 2026-06-12 | **Tier:** Medium | **Dispatch Mode:** bellows | **Execution:** Step 1 (SA) | **pause_for_verdict:** after_step_1
+
+## Context (Rule 27)
+Three open FORWARD rows (`knowledge/FORWARD.md`; verbose context in `knowledge/BACKLOG-ARCHIVE.md` for 16/17) describe gate false-positive classes that burn CEO overrides: **Row 16** — `scope_check` FPs on continuous-run multi-step plans (2026-06-08); **Row 17** — `stop_prose` WARNs on legitimate error-handling prose (2026-06-08; related archive entries also note matches on Rule 20 instructional prose and PLANNER_TEMPLATE-prescribed step-boundary language); **Row 21** — parallel-plan worktree diff contamination: a concurrent plan's merged artifacts appear in a later-pausing plan's `files_changed`, tripping `scope_check` (OBSERVED LIVE 2026-06-12: plan 19's QA artifacts flagged in plan 20's gate, CEO override in processed-verdict-20-step-1; the same day plan 10's scope flag was authoring-caused — distinguish the classes). One root-cause diagnostic for the cluster because the fixes likely share surface: `gates.py::_gate_scope_check`, the `_capture_git_diff`/`_parse_diff_stat` pipeline in `bellows.py`, and `validators.py::check_stop_prose`. Investigation ONLY — author no fix code. ALL `lifecycle.db`/log access read-only.
+
+## How to Run
+Bellows dispatches this plan automatically when deposited; no manual bootstrap required.
+
+---
+---
+
+## STEP 1 — Bellows Systems Analyst
+
+---
+
+> **FIRST — before any reads or work: post a short visible chat message (1-2 sentences) confirming you are starting this plan and stating your immediate next action.** Liveness anchor — do NOT rename the plan file (Bellows owns the claim). **AFTER posting:** read your specialist file `agents/BELLOWS_SYSTEMS_ANALYST.md` first, then the three rows' archive context (BACKLOG-ARCHIVE.md entries dated 2026-06-08; row 21's context is processed-verdict-20-step-1 in `verdicts/resolved/`). **Post a 1-line "Read X." after each file read and a 1-line "Drafting Section N." per section.** Ground every claim at file:line or in a named log/verdict line.
+>
+> **Section 1 — Diff-pipeline anatomy (rows 16 + 21 share it).** Read `bellows.py::_capture_git_diff`, `_parse_diff_stat`, and the pre/post-step capture callsites, plus the worktree create/teardown functions. Document at file:line: what exactly is diffed (worktree state vs what base), when pre_diff and post_diff are captured relative to step start/end, and how teardown merges interact with a CONCURRENT plan's merges to the shared main. Then explain BOTH observed mechanisms precisely: (a) row 21 — how plan 19's merged artifacts entered plan 20's files_changed (reconstruct from the 2026-06-12 log timestamps: plan 20 worktree created 15:00, plan 19 QA artifacts merged ~15:04-15:05, plan 20 gates 15:10; name the exact operation that pulled the foreign files into the diff); (b) row 16 — the continuous-run multi-step case from the archive entry (multi-step plans without pauses accumulate earlier steps' files into later steps' diffs — confirm or correct against the code).
+>
+> **Section 2 — scope_check semantics.** Read `gates.py::_gate_scope_check` in full: how step-scope is derived from plan text, what counts as a mention, and the decision logic over files_changed. Census today's two incidents against it: plan 10 (generator outputs undeclared — TRUE positive by current semantics, authoring-caused) vs plan 20 (foreign-plan files — FALSE positive, mechanism-caused). State crisply which layer owns each fix: diff capture (exclude foreign changes) vs gate semantics (scope matching).
+>
+> **Section 3 — stop_prose anatomy (row 17).** Read `validators.py::check_stop_prose` (patterns, body-scan scoping, existing fence/deposits/backtick exclusions). From the archive entries and `grep -n "stop_prose" logs/terminal/*.log`, enumerate the observed FP classes (error-handling prose like "halt and report"? Rule 20 instructional prose "do not proceed with closure"; PLANNER_TEMPLATE step-boundary language). For each class: which pattern fires, why the existing exclusions miss it, and whether the text is ever genuinely dangerous under bellows dispatch (the original failure the validator guards against).
+>
+> **Section 4 — Fix shapes.** Propose per problem, comparing at least two options each: (a) row 21 — e.g., snapshot the worktree's merge-base at creation and diff against it rather than a moving reference, vs serializing same-repo plans, vs filtering files_changed to paths the worktree branch actually touched (`git log <branch> --name-only`); (b) row 16 — per the confirmed mechanism; (c) row 17 — e.g., narrowing patterns to imperative-at-line-start forms, adding instructional-context exclusions, vs demoting to INFO, vs removing patterns that have never caught a true positive (census the logs: has stop_prose EVER fired on a genuinely dangerous plan?). State blast radius and test strategy per shape. Recommend one per problem and whether they ship as one executable or two (diff-pipeline vs validator are different files/risk classes).
+>
+> **Section 5 — Gap Assessment + `### Verification Blocks` (Rule 39).** Gap Assessment table `| Gap | Current State (file:line) | Proposed State | Change Required |`. Verification Blocks `(claim, query, expected_output)` for: the diff-capture base finding, the plan-20 contamination mechanism, each stop_prose FP class's firing pattern, and the true-positive census result. Close with **CEO decision forks** (each with a recommendation): fix shape per row; one executable or two; stop_prose disposition (narrow vs demote vs partial removal).
+>
+> **BEFORE FINISHING — explicitly `git add` your deposit file and `git commit` it.** Use `with open()` for the deposit; no heredocs. Standard prompt feedback → `knowledge/research/agent-prompt-feedback.md`. **Deposits:**
+> - `bellows/knowledge/research/gate-fp-cluster-root-cause-2026-06-12.md`

@@ -1,0 +1,11 @@
+continue
+
+Planner Rule 22(b) substance review — PASS, CEO-approved the design and the build scope. The UX design (knowledge/research/percharge-view-design-2026-06-19.md) fully answers Step 1: current-state map with file:line, the grouped charge-table design (Linehaul/Fuel/Accessorial groups with inline validation result rows — tier badge + provenance line + expected-vs-billed + calculation chain + rate_confirmed), a concrete ASCII mock, the binding column-vs-data_json field map (15/16 first-class v14 columns consumed; data_json only for calc-chain detail + Gate-9 per-line), handler-side document/version name resolution (2-3 batched PK lookups), preserved-behavior confirmation (CardLoader, gate cards as secondary detail, XML-recovery banner, breadcrumb), and graceful NULL-provenance degradation for historical rows. Read-side only — no engine/schema/persist change.
+
+CEO decisions (2026-06-19):
+- APPROVE the grouped per-charge design; proceed to Step 2 (DEV build).
+- extraction_provenance: DEFER (needs a source_rate_id column / engine change, out of EXE-B read-only scope; tier+document+version already carries the rate-source story). A separate future plan if wanted.
+- Gap cross-link: DEFER to the gap-dashboard rewrite (avoid coupling invoice_detail to gap detection) — per the design recommendation.
+- Mixed-tier accessorials: proceed with per-line tier badges + a neutral "Mixed" group badge (designer recommendation).
+
+Step 2 (DEV) builds per the approved design + field map: regroup the charge table (app.py invoice_detail handler ~1656), inline validation rows reading first-class columns with data_json fallback only where the field map marks D, document/version name resolution, _tier_badge.html mixed/override classes. NO touch to engines/validator.py, engines/confidence.py, validate_batch.py, database.py (read-side only — if a field needs a missing column, STOP and flag). In-place: invoice_detail MUST keep rendering; existing tests (test_invoice_detail_xml_billing, test_all_routes_modes) stay green; COMMIT the work. Step-2 DEV diff pauses for Planner+CEO review before QA. continue.

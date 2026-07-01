@@ -1,0 +1,2 @@
+verdict: continue
+CEO standing-continue: reporter-prefer-plan_doc_ref QA fully green — 6 checks OK, zero FAIL, Rule 20 PASSED, live acceptance confirmed the resolved path matches plans.plan_doc_ref, fallback-to-derivation preserved for NULL rows, FORWARD row 22 reconciled closed-by-plan-40. Final step — close plan to Done. Item 1 of the FORWARD-cleanup order done; next is the worktree-teardown cluster diagnostic (rows 4/5/12/13).

@@ -1,0 +1,2 @@
+verdict: continue
+CEO standing-continue (granted 2026-06-12): QA fully green — five checks ✅, Rule 20 PASSED, FORWARD row 2 closed-by-plan-32, CLAUDE.md Status heading added. Live deviation noted and accepted: AWAITING VERDICT renders verdict_file_ref as stored (absolute path) where the mock showed filename — data-faithful, one-line basename() rider available for a future bellows plan if the CEO prefers the short form. Final step — close plan to Done. Status CLI shipped: python status.py.

@@ -1,0 +1,2 @@
+verdict: continue
+CEO standing-continue (granted 2026-06-12): step 1 verified from the dev log — G1 project-scoped recovery (backward-compatible project_root filter + callsite derivation), G2 flock guard before migration/recovery/watcher startup, G3 5-minute age guard per DF3, G4 in_progress write after claim rename. Full suite 532 passed, zero failures. Proceed to Step 2 (QA verification + FORWARD rows 19-20 reconciliation).

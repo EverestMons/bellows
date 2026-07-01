@@ -1,0 +1,3 @@
+stop
+
+Same 401 infra blocker (4th confirmation). Step log 20260623-163833-step.json: claude -p → authentication_failed, apiKeySource: none, no real turns. The daemon (PID 2037) is unchanged since 16:30 and has no ANTHROPIC_API_KEY in its env — the auth fix has NOT been applied. (A slug-truncation race also fired because the v2 filename shares the first ~30 chars with the prior plan; future re-deposits need a slug distinct in the first 30 chars.) Halting #106; do not re-dispatch until the daemon is relaunched from an authenticated shell (PID must change) or given ANTHROPIC_API_KEY, verified by a step surviving past ~4s.

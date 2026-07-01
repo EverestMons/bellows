@@ -1,0 +1,2 @@
+verdict: continue
+CEO verdict: continue — shop_FORWARD.md reviewed and approved (human gate, final stage). Single ceo-decision-fork row (forge.db 50MB: git-lfs vs BFG vs stop-committing) correct; archive frozen with proper header; registers committed at the governance root. Preamble wording ("BACKLOG.md Open section" should read shop_backlog.md for the shop register) noted as a rider for the governance-edits executable. Trim authorized — proceed to Step 2.

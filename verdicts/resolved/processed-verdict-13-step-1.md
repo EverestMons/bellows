@@ -1,0 +1,2 @@
+verdict: continue
+CEO verdict: continue. Findings accepted in full. All four decision forks resolved per SA recommendation: (1) legacy disposition = Option (a) BACKLOG-ARCHIVE.md freeze + BACKLOG.md deletion; (2) staged per-project cutover, order forge → anvil → invoice-pulse → bellows → shop_backlog; (3) governance doc updates ship as a SEPARATE executable after the registers exist; (4) FORWARD.md reconciliation every session wrap. Cutover executables follow, citing implements diagnostic 13. Close diagnostic to Done.

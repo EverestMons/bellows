@@ -1,0 +1,2 @@
+verdict: continue
+CEO standing-continue: fix DEV verified — full suite 675 passed/0 failed; all three pieces present (runner-side multi-turn assistant concatenation, recover_half_claimed extended to stranded in_progress with worktree-absence + age guard, defense-in-depth WARN on heading-present-but-empty-parse). Proceed to Step 2 (QA). QA MUST reproduce the multi-turn extraction against plan-52's actual step JSON (prove ledger_updates now populates) and prove the recovery does NOT touch worktree-present or age-guarded in_progress plans.

@@ -1,0 +1,13 @@
+continue
+
+Planner Rule 22(b) substance review — PASS, and CEO-approved the additive validator touch (FROZEN-adjacent sign-off). The SA blueprint (knowledge/research/percharge-provenance-blueprint-2026-06-18.md) fully answers Step 1 with file:line precision. Planner independently verified the linchpins: (1) rate_source ALREADY exists on validation_gate_results (contract_tables.py:1493, dual-written validate_batch.py:278/300/417/456) — so the resolution TIER is already persisted; this plan shrinks to 3 additive document/version columns, NOT a tier-capture overhaul; (2) source_document_id/source_document_scope are real columns on the contract sub-tables (contract_tables.py:1516-1520), so the per-gate read-off-the-resolved-row capture is sound; (3) the additive-capture proof is genuine — gates 5/7/8/9 read existing locals (best / resolved_global_doc_id+tariff_name / fuel_config / resolved_acc) into gr.data at the data-assembly step AFTER resolution, changing no control flow, expected values, or confidence_state. Backfill correctly assessed as none (provenance never in data_json → historical rows NULL until re-validation; #78 lane_id precedent). Consumer map confirms string-key access only, no integer-index break (cluster-10 recovery[0] lesson cleared).
+
+CEO decision (2026-06-18): APPROVE the 4-gate additive validator touch as specified. Proceed to Step 2 (DEV).
+
+STEP-2 CONDITIONS (Planner, carry into DEV review):
+1. Gate-9 gate-level aggregate (blueprint §3 ~line 244-259) was shown "conceptually" with non-runnable shape (set-comprehensions interleaved into a dict literal). DEV MUST implement the unanimous-else-NULL aggregation as clean statements computed BEFORE the dict literal — verify it runs.
+2. Gate-9 per-line dict (blueprint §3 ~line 236-239) adds source_document_id + source_version_id per line but the gate-level aggregate reads results[0].get("source_document_scope"); DEV MUST also set source_document_scope per line (or derive scope consistently) so the aggregate has it.
+3. Behavioral invariance is the acceptance bar: Step 3 QA must prove expected values + confidence_state + per-gate pass/fail are unchanged vs pre-change, and that the ONLY engines/validator.py diff is the approved additive read-outs. Zero diff to engines/confidence.py.
+4. Step-2 DEV diff pauses for Planner+CEO review of the actual validator changes before QA (pause_for_verdict: always).
+
+Note for the wrap: invoice-pulse main has advanced via Bellows deposit auto-commits (c7dd96a → cf1e4e2 → 60e842a), local-only/unpushed — fine, push at wrap. Disk headroom for the Step-3 QA full suite still pending (host ~90%); not blocking Step 2 (targeted tests). Accept Step 1, continue to Step 2.

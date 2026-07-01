@@ -1,0 +1,2 @@
+verdict: continue
+CEO standing-continue: Phase 3 DEV verified — #### Forward Register channel extraction; independent forward handler with coexistence skip, next-row-number computation (max+1 across all rows incl. withdrawn/closed), date fill, defaults (deferred-work/—/open), and graceful no-FORWARD no-op. Full suite 650 passed, 17 new tests. Proceed to Step 2 (QA — verify Phases 1+2 intact, dormancy, row numbering).
