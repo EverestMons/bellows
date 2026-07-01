@@ -1,9 +1,12 @@
 # Bellows — Project Status
-**Last Updated:** 2026-06-12 (BACKLOG → FORWARD register cutover — Reporting Phase 3)
+**Last Updated:** 2026-07-01 (Reporting Phase 2 — read-side cycle query module shipped)
 
 ## Status: Phase 1 Complete — Live (daemon running, all 10 watched paths active)
 
 ## Completed
+### Plan 110
+Reporting Phase 2 — read-side cycle query module shipped. New `reporting.py` with `query_cycle_report(db_path, start, end)` returning per-project, per-type plan counts, cost, and turn aggregates over a half-open `[start, end)` window on `closed_at`. Plan-grain `COUNT(DISTINCT p.id)`, step-grain `SUM(cost_usd)`/`SUM(turns)`, LEFT JOIN, read-only DB access (`?mode=ro`), no daemon imports. 8 test methods across 6 classes covering grain separation, hand-computed cost/turn verification, empty range, half-open boundary, grouping, and no-daemon-import static check. Full suite: 718 passed, 0 regressions. Blueprint at `knowledge/decisions/reporting-phase2-cycle-query-blueprint-2026-07-01.md`, QA at `knowledge/qa/reporting-phase2-cycle-query-2026-07-01.md`.
+
 ### Plan 64
 Daemon-owned ledgers shipped and proven live (plans 41–63). Agents now emit PROJECT_STATUS, prompt feedback, and FORWARD rows via the Output Receipt `### Ledger Updates` channel; the daemon writes them post-merge. The append-only worktree-conflict class is eliminated (FORWARD rows 4/5/13 CLOSED). Prompt feedback lives in the `prompt_feedback` DB table; `agent-prompt-feedback.md` is daemon-generated. Also shipped this arc: FORWARD reconciliation sweep (26), gate-FP cluster fix (27–29), DB-out-of-git policy (30), status CLI + dashboard TUI + restyling (31–33, 59), type-qualified plan ids (36), plan_doc_ref (37/38/40), PLANNER_TEMPLATE v4.68.
 
