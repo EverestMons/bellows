@@ -91,6 +91,50 @@ def test_lint_qa_missing_banner_pair_fails():
     assert "(c)" in result.stdout
 
 
+def test_lint_empty_scope_block_fails():
+    """(vi) Present-but-empty Scope block → exit 1 naming check (d)."""
+    plan = """\
+# Test Plan
+**Date:** 2026-07-02 | **Dispatch Mode:** bellows | **pause_for_verdict:** always
+
+## STEP 1 — DEV
+
+> Do the work.
+>
+> **Scope:**
+>
+> **Deposits:**
+> - `knowledge/development/dev-log.md`
+
+"""
+    result = _run_lint(plan)
+    assert result.returncode == 1, f"Expected exit 1, got {result.returncode}\nstdout: {result.stdout}"
+    assert "(d)" in result.stdout
+
+
+def test_lint_test_mentioned_no_test_scope_warns():
+    """(vii) Step mentions tests but declares no test scope -> WARN fires, exit code unaffected."""
+    plan = """\
+# Test Plan
+**Date:** 2026-07-02 | **Dispatch Mode:** bellows | **pause_for_verdict:** always
+
+## STEP 1 — DEV
+
+> Do the work and run the test suite.
+>
+> **Scope:**
+> - `gates.py`
+>
+> **Deposits:**
+> - `knowledge/development/dev-log.md`
+
+"""
+    result = _run_lint(plan)
+    assert result.returncode == 0, f"Expected exit 0 (WARN only), got {result.returncode}\nstdout: {result.stdout}"
+    assert "WARN" in result.stdout
+    assert "test scope" in result.stdout.lower() or "test scope" in result.stdout
+
+
 def test_lint_unrecognized_dispatch_mode_fails():
     """(iv) Unrecognized dispatch_mode -> exit 1 naming check (a)."""
     plan = """\

@@ -97,6 +97,37 @@ def lint(plan_path):
             results.append(("FAIL", "(c) QA banner pair", f"missing: {', '.join(missing)}"))
             all_passed = False
 
+    # (d) Scope block: if present, must parse to at least one file or prefix
+    for header_line, step_num_str in step_headers:
+        step_num = int(step_num_str)
+        step_text = gates._extract_step_text(plan_text, step_num)
+        if not step_text:
+            continue
+        scope_block_present = re.search(r'[> ]*\*\*Scope:\*\*', step_text)
+        if not scope_block_present:
+            continue
+        scope_files, scope_prefixes = gates._extract_plan_scope(step_text)
+        if scope_files or scope_prefixes:
+            results.append(("PASS", f"(d) step {step_num} scope", f"{len(scope_files)} file(s), {len(scope_prefixes)} prefix(es)"))
+        else:
+            results.append(("FAIL", f"(d) step {step_num} scope", "**Scope:** block present but parses to zero entries"))
+            all_passed = False
+
+    # WARN: step mentions "test" but declares no test scope
+    for header_line, step_num_str in step_headers:
+        step_num = int(step_num_str)
+        step_text = gates._extract_step_text(plan_text, step_num)
+        if not step_text:
+            continue
+        if not re.search(r'\btest\b', step_text, re.IGNORECASE):
+            continue
+        scope_files, scope_prefixes = gates._extract_plan_scope(step_text)
+        has_test_scope = any("test_" in f and f.endswith(".py") for f in scope_files)
+        has_test_prefix = any(p.rstrip("/").split("/")[-1] == "tests" or p == "tests/" for p in scope_prefixes)
+        has_test_in_text = bool(re.search(r'test_\w+\.py', step_text)) or "tests/" in step_text
+        if not has_test_scope and not has_test_prefix and not has_test_in_text:
+            print(f"WARN: step {step_num} mentions tests but declares no test scope")
+
     for status, check, detail in results:
         print(f"{status}: {check} — {detail}")
 
