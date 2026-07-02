@@ -1,5 +1,7 @@
 # Agent Prompt Feedback
 
+No feedback items — plan instructions were clear and complete.
+
 None — diagnostic instructions were clear and well-scoped.
 
 No feedback items — plan instructions were clear and complete.
