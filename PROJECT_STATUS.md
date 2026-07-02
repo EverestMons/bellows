@@ -4,6 +4,9 @@
 ## Status: Phase 1 Complete — Live (daemon running, all 10 watched paths active)
 
 ## Completed
+### Plan 119
+Declared `**Scope:**` block shipped (CEO 2026-07-02 design: norm-shaped changes are authorable scope, not failures). `scope_check` now supports a three-tier pass path: global allowlist, declared scope (exact file or prefix), and text-mention — in that priority order. Strictness against undeclared files is preserved; evidence text extended with `; not in declared **Scope:** block` when a plan has scope declarations. Backward compatibility verified: plans without a Scope block produce byte-identical behavior to pre-change. Lint check (d) prevents dead convention text (present-but-empty blocks). Daemon restart required to load the updated `gates.py` (covers plan 118's fallback too). PLANNER_TEMPLATE codification of the authoring convention is the deliberate follow-up once the mechanism is proven live.
+
 ### Plan 118
 FORWARD row 9 pre-deposit lint script shipped (`scripts/plan_lint.py`) and `rule_20` receipt fallback in `gates.py` closes the plan-116 false-positive class where plans declaring deposits as inline prose rather than a `**Deposits:**` block caused `rule_20_self_check` gate failures on substantively correct QA deposits. The shared `_extract_agent_declared_deposits` helper eliminates duplicated receipt-parsing logic between `_gate_deposit_exists` and `_gate_rule_20_self_check`. Daemon restart required to load the `gates.py` changes.
 
