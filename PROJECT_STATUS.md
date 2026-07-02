@@ -4,6 +4,9 @@
 ## Status: Phase 1 Complete — Live (daemon running, all 10 watched paths active)
 
 ## Completed
+### Plan 118
+FORWARD row 9 pre-deposit lint script shipped (`scripts/plan_lint.py`) and `rule_20` receipt fallback in `gates.py` closes the plan-116 false-positive class where plans declaring deposits as inline prose rather than a `**Deposits:**` block caused `rule_20_self_check` gate failures on substantively correct QA deposits. The shared `_extract_agent_declared_deposits` helper eliminates duplicated receipt-parsing logic between `_gate_deposit_exists` and `_gate_rule_20_self_check`. Daemon restart required to load the `gates.py` changes.
+
 ### Plan 110
 Reporting Phase 2 — read-side cycle query module shipped. New `reporting.py` with `query_cycle_report(db_path, start, end)` returning per-project, per-type plan counts, cost, and turn aggregates over a half-open `[start, end)` window on `closed_at`. Plan-grain `COUNT(DISTINCT p.id)`, step-grain `SUM(cost_usd)`/`SUM(turns)`, LEFT JOIN, read-only DB access (`?mode=ro`), no daemon imports. 8 test methods across 6 classes covering grain separation, hand-computed cost/turn verification, empty range, half-open boundary, grouping, and no-daemon-import static check. Full suite: 718 passed, 0 regressions. Blueprint at `knowledge/decisions/reporting-phase2-cycle-query-blueprint-2026-07-01.md`, QA at `knowledge/qa/reporting-phase2-cycle-query-2026-07-01.md`.
 
