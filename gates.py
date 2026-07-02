@@ -368,12 +368,16 @@ def _check_deposit_uncommitted(resolved_path, original_path, wt_path, failures):
         pass  # Git error — don't block on the safety-net check
 
 
-def _gate_deposit_exists(parsed, failures, project_path, plan_text=None, step_number=None, wt_path=None, plan_header=None):
+def _extract_agent_declared_deposits(parsed):
+    """Extract raw deposit paths from the agent's Output Receipt.
+
+    Parses the '### Files Deposited' section of the agent's result text.
+    Returns a list of raw path strings (not normalized).
+    Used by _gate_deposit_exists and _gate_rule_20_self_check — keep in sync.
+    """
     result_text = parsed.get("result_text", "")
     match = re.search(r"### Files Deposited\s*\n(.*?)(?:\n###|\Z)", result_text, re.DOTALL)
-
-    # Collect agent-declared paths and check they exist on disk
-    agent_declared = set()
+    paths = []
     if match:
         section = match.group(1)
         for line in section.splitlines():
@@ -383,12 +387,22 @@ def _gate_deposit_exists(parsed, failures, project_path, plan_text=None, step_nu
             m = re.match(r'`([^`]+)`', line[2:].strip())
             path = m.group(1) if m else line[2:].strip().strip("`")
             if path:
-                agent_declared.add(_normalize_deposit_path(path, project_path))
-                resolved = _resolve_deposit_path(path, project_path, wt_path=wt_path)
-                if resolved is None:
-                    failures.append({"gate": "deposit_exists", "evidence": f"missing: {path}"})
-                else:
-                    _check_deposit_uncommitted(resolved, path, wt_path, failures)
+                paths.append(path)
+    return paths
+
+
+def _gate_deposit_exists(parsed, failures, project_path, plan_text=None, step_number=None, wt_path=None, plan_header=None):
+    raw_paths = _extract_agent_declared_deposits(parsed)
+
+    # Collect agent-declared paths and check they exist on disk
+    agent_declared = set()
+    for path in raw_paths:
+        agent_declared.add(_normalize_deposit_path(path, project_path))
+        resolved = _resolve_deposit_path(path, project_path, wt_path=wt_path)
+        if resolved is None:
+            failures.append({"gate": "deposit_exists", "evidence": f"missing: {path}"})
+        else:
+            _check_deposit_uncommitted(resolved, path, wt_path, failures)
 
     # Frontmatter-first: if plan_header provides a deposits list, use it as authoritative
     frontmatter_deposits = plan_header.get("deposits") if plan_header is not None else None
@@ -503,8 +517,11 @@ def _gate_rule_20_self_check(is_qa_step, plan_text, step_number, project_path, p
     deposit_paths = _extract_plan_required_deposits(step_text)
     md_paths = [p for p in deposit_paths if p.endswith(".md")]
     if not md_paths:
-        failures.append({"gate": "rule_20_self_check", "evidence": "deposits block declares no .md paths (check **Deposits:** block format — must be multi-line bullets)"})
-        return
+        receipt_paths = _extract_agent_declared_deposits(parsed)
+        md_paths = [p for p in receipt_paths if p.endswith(".md")]
+        if not md_paths:
+            failures.append({"gate": "rule_20_self_check", "evidence": "no QA deposit paths found in plan **Deposits:** block or agent receipt"})
+            return
 
     banner = "Rule 20 — QA Self-Check Results"
 

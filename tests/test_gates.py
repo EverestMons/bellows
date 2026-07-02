@@ -1666,7 +1666,7 @@ def test_rule_20_self_check_distinguishes_no_md_paths_from_missing_banner(tmp_pa
         gates._gate_rule_20_self_check(True, "## STEP 2 — QA\n> Verify.\n", 2, str(tmp_path), parsed, failures_a)
     r20_a = [f for f in failures_a if f["gate"] == "rule_20_self_check"]
     assert len(r20_a) == 1
-    assert "deposits block declares no .md paths" in r20_a[0]["evidence"]
+    assert "plan **Deposits:** block or agent receipt" in r20_a[0]["evidence"]
 
     # Branch B: deposits block has .md path but banner is missing from QA report content
     report = tmp_path / "knowledge" / "qa" / "qa-report.md"
@@ -2116,3 +2116,53 @@ def test_gate_passes_when_deposit_committed(tmp_path):
     assert not any(f["gate"] == "deposit_uncommitted" for f in failures), \
         f"No deposit_uncommitted failure expected for committed deposit: {failures}"
     assert failures == [], f"No failures expected at all: {failures}"
+
+
+# --- Gate rule_20 receipt fallback tests (plan 118) ---
+
+def test_rule_20_receipt_fallback_passes_with_valid_banner(tmp_path):
+    """(v) Plan step without Deposits block + receipt declaring .md QA report with banner -> rule_20 PASSES."""
+    report = tmp_path / "knowledge" / "qa" / "qa-report.md"
+    report.parent.mkdir(parents=True)
+    report.write_text(
+        "# QA Report\n\n"
+        "============================================================\n"
+        "Rule 20 — QA Self-Check Results\n"
+        "============================================================\n"
+        "PASSED — SELF-CHECK PASSED — all evidence files present.\n"
+    )
+    parsed = _clean_parsed()
+    parsed["result_text"] = "### Files Deposited\n- `knowledge/qa/qa-report.md`\n\n### Next"
+    plan_text = "## STEP 2 — QA\n\n> Verify deliverables.\n"
+    failures = []
+    gates._gate_rule_20_self_check(True, plan_text, 2, str(tmp_path), parsed, failures)
+    assert not any(f["gate"] == "rule_20_self_check" for f in failures), (
+        f"rule_20_self_check should pass via receipt fallback but got: {failures}"
+    )
+
+
+def test_rule_20_no_plan_block_no_receipt_fails_both_sources(tmp_path):
+    """(vi) Neither plan block nor receipt declares any .md -> rule_20 FAILS with both-sources evidence."""
+    parsed = _clean_parsed()
+    plan_text = "## STEP 2 — QA\n\n> Verify deliverables.\n"
+    failures = []
+    gates._gate_rule_20_self_check(True, plan_text, 2, str(tmp_path), parsed, failures)
+    r20 = [f for f in failures if f["gate"] == "rule_20_self_check"]
+    assert len(r20) == 1
+    assert "plan **Deposits:** block or agent receipt" in r20[0]["evidence"]
+
+
+def test_rule_20_proper_deposits_block_unchanged(tmp_path):
+    """(vii) Existing rule_20 behavior with proper Deposits block is unchanged (regression)."""
+    report = tmp_path / "bellows" / "knowledge" / "qa" / "qa-report.md"
+    report.parent.mkdir(parents=True)
+    report.write_text(
+        "# QA Report\n\n"
+        "============================================================\n"
+        "Rule 20 — QA Self-Check Results\n"
+        "============================================================\n"
+        "PASSED — SELF-CHECK PASSED — all evidence files present.\n"
+    )
+    parsed = _clean_parsed()
+    result = gates.check(parsed, QA_PLAN_TEXT, 2, str(tmp_path))
+    assert not any(f["gate"] == "rule_20_self_check" for f in result["failures"])
