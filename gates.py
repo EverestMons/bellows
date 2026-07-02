@@ -505,6 +505,37 @@ def _extract_plan_required_deposits(step_text):
     return _filter_transient_paths(paths)
 
 
+def _extract_plan_scope(step_text):
+    """Extract declared scope from a **Scope:** block in plan step text.
+
+    Returns (files, prefixes) where bullets ending in ``/`` are prefixes
+    and all others are exact relative paths. Returns ([], []) when absent.
+    Modeled on _extract_plan_required_deposits — keep in sync on parsing idiom.
+    """
+    block_match = re.search(r'[> ]*\*\*Scope:\*\*\s*\n(?:[> ]*\n)*((?:[> ]*-\s+.*\n?)+)', step_text)
+    if not block_match:
+        return ([], [])
+    block_text = block_match.group(1)
+    files = []
+    prefixes = []
+    for line in block_text.splitlines():
+        line = line.strip()
+        if not line or not line.startswith(("-", ">")):
+            continue
+        # Strip blockquote prefix and bullet
+        line = re.sub(r'^[> ]*-\s+', '', line).strip()
+        # Extract path from backticks if present, else use plain text
+        m = re.match(r'`([^`]+)`', line)
+        path = m.group(1).strip() if m else line.strip().strip("`")
+        if not path:
+            continue
+        if path.endswith("/"):
+            prefixes.append(path)
+        else:
+            files.append(path)
+    return (files, prefixes)
+
+
 def _gate_rule_20_self_check(is_qa_step, plan_text, step_number, project_path, parsed, failures, wt_path=None):
     """Verify QA-deposited reports contain a Rule 20 self-check banner with PASSED status."""
     if not is_qa_step:
@@ -723,6 +754,14 @@ def _gate_scope_check(plan_text, step_number, files_changed, failures):
         return
     union_text = "\n".join(all_step_texts)
 
+    # Build union of declared scope across all steps
+    declared_files = set()
+    declared_prefixes = set()
+    for st in all_step_texts:
+        files, prefixes = _extract_plan_scope(st)
+        declared_files.update(files)
+        declared_prefixes.update(prefixes)
+
     # Retain current step text for evidence display
     step_text = _extract_step_text(plan_text, step_number) or ""
 
@@ -732,6 +771,11 @@ def _gate_scope_check(plan_text, step_number, files_changed, failures):
         if basename in SCOPE_ALLOWLIST:
             continue
         if any(basename.startswith(p) for p in SCOPE_ALLOWLIST_PREFIXES):
+            continue
+        # Declared **Scope:** block: exact file match or prefix match
+        if fpath in declared_files or basename in declared_files:
+            continue
+        if any(fpath.startswith(p) for p in declared_prefixes):
             continue
         if fpath in union_text or basename in union_text:
             continue
@@ -757,7 +801,8 @@ def _gate_scope_check(plan_text, step_number, files_changed, failures):
 
     if out_of_scope:
         context = step_text[:200]
+        scope_note = "; not in declared **Scope:** block" if (declared_files or declared_prefixes) else ""
         failures.append({
             "gate": "scope_check",
-            "evidence": f"out-of-scope files: {', '.join(out_of_scope)} | plan step context: {context}",
+            "evidence": f"out-of-scope files: {', '.join(out_of_scope)} | plan step context: {context}{scope_note}",
         })

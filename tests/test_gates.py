@@ -2120,6 +2120,85 @@ def test_gate_passes_when_deposit_committed(tmp_path):
 
 # --- Gate rule_20 receipt fallback tests (plan 118) ---
 
+# --- Declared **Scope:** block tests (plan 119) ---
+
+SCOPE_BLOCK_PLAN = """\
+## STEP 1 — DEV
+
+> Implement the feature.
+>
+> **Scope:**
+> - `gates.py`
+> - `scripts/plan_lint.py`
+> - `tests/`
+
+## STEP 2 — QA
+
+> Verify deliverables.
+>
+> **Scope:**
+> - `tests/test_gates.py`
+"""
+
+SCOPE_BLOCK_PLAN_NO_SCOPE = """\
+## STEP 1 — DEV
+
+> Build gates.py and verdict.py in the bellows root directory.
+
+## STEP 2 — QA
+
+> Run all tests and verify deliverables.
+"""
+
+
+def test_scope_check_declared_prefix_passes():
+    """(i) File under a declared prefix (tests/) passes scope_check with no failure."""
+    result = gates.check(_clean_parsed(), SCOPE_BLOCK_PLAN, 1, "/tmp",
+                         files_changed=["tests/test_new_feature.py"])
+    assert not any(f["gate"] == "scope_check" for f in result["failures"])
+
+
+def test_scope_check_declared_exact_file_passes():
+    """(ii) Exact declared file passes scope_check."""
+    result = gates.check(_clean_parsed(), SCOPE_BLOCK_PLAN, 1, "/tmp",
+                         files_changed=["gates.py"])
+    assert not any(f["gate"] == "scope_check" for f in result["failures"])
+
+
+def test_scope_check_undeclared_file_fails_with_scope_mention():
+    """(iii) Undeclared+unmentioned file still fails, evidence contains Scope mention."""
+    result = gates.check(_clean_parsed(), SCOPE_BLOCK_PLAN, 1, "/tmp",
+                         files_changed=["totally_rogue.py"])
+    assert result["passed"] is False
+    sc = [f for f in result["failures"] if f["gate"] == "scope_check"]
+    assert len(sc) == 1
+    assert "totally_rogue.py" in sc[0]["evidence"]
+    assert "Scope" in sc[0]["evidence"]
+
+
+def test_scope_check_no_scope_block_backward_compat():
+    """(iv) Plan with NO Scope block reproduces today's behavior on passing and failing."""
+    # Passing: files mentioned in plan text
+    result_pass = gates.check(_clean_parsed(), SCOPE_BLOCK_PLAN_NO_SCOPE, 1, "/tmp",
+                              files_changed=["gates.py", "verdict.py"])
+    assert not any(f["gate"] == "scope_check" for f in result_pass["failures"])
+    # Failing: file not mentioned
+    result_fail = gates.check(_clean_parsed(), SCOPE_BLOCK_PLAN_NO_SCOPE, 1, "/tmp",
+                              files_changed=["alien_file.py"])
+    assert result_fail["passed"] is False
+    sc = [f for f in result_fail["failures"] if f["gate"] == "scope_check"]
+    assert len(sc) == 1
+    assert "alien_file.py" in sc[0]["evidence"]
+    assert "Scope" not in sc[0]["evidence"]
+
+
+def test_scope_check_declared_scope_unions_across_steps():
+    """(v) Declared scope unions across steps — a file declared in step 2's block passes on step 2's check."""
+    result = gates.check(_clean_parsed(), SCOPE_BLOCK_PLAN, 2, "/tmp",
+                         files_changed=["gates.py", "tests/test_gates.py", "scripts/plan_lint.py"])
+    assert not any(f["gate"] == "scope_check" for f in result["failures"])
+
+
 def test_rule_20_receipt_fallback_passes_with_valid_banner(tmp_path):
     """(v) Plan step without Deposits block + receipt declaring .md QA report with banner -> rule_20 PASSES."""
     report = tmp_path / "knowledge" / "qa" / "qa-report.md"
