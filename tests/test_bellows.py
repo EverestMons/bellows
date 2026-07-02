@@ -9,6 +9,8 @@ import time
 from pathlib import Path
 from unittest.mock import MagicMock, patch
 
+import pytest
+
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 import bellows
@@ -5251,3 +5253,47 @@ class TestLedgerDefenseWarn:
         bellows._apply_ledger_updates(parsed, "/proj", plan_id=99, files_changed=[])
         captured = capsys.readouterr()
         assert "parser extracted nothing" not in captured.out
+
+
+class TestRunAuthPreflight:
+    """Unit tests for the daemon startup auth preflight probe (plan-107 guard)."""
+
+    def test_success_path_does_not_exit(self, monkeypatch):
+        """Probe exit 0 with non-empty stdout → startup proceeds, no SystemExit."""
+        mock_result = MagicMock()
+        mock_result.returncode = 0
+        mock_result.stdout = "OK\n"
+        mock_result.stderr = ""
+        monkeypatch.delenv("BELLOWS_SKIP_AUTH_PREFLIGHT", raising=False)
+        with patch("bellows.subprocess.run", return_value=mock_result) as mock_run:
+            bellows._run_auth_preflight()
+            mock_run.assert_called_once()
+            args = mock_run.call_args[0][0]
+            assert args[:3] == ["claude", "-p", "reply OK"]
+
+    def test_failure_path_exits(self, monkeypatch):
+        """Probe exit non-zero → sys.exit(1) raised, plan scan never reached."""
+        mock_result = MagicMock()
+        mock_result.returncode = 1
+        mock_result.stdout = ""
+        mock_result.stderr = "401 Unauthorized"
+        monkeypatch.delenv("BELLOWS_SKIP_AUTH_PREFLIGHT", raising=False)
+        with patch("bellows.subprocess.run", return_value=mock_result):
+            with pytest.raises(SystemExit) as exc_info:
+                bellows._run_auth_preflight()
+            assert exc_info.value.code == 1
+
+    def test_timeout_path_exits(self, monkeypatch):
+        """Probe TimeoutExpired → treated as auth failure, sys.exit(1) raised."""
+        monkeypatch.delenv("BELLOWS_SKIP_AUTH_PREFLIGHT", raising=False)
+        with patch("bellows.subprocess.run", side_effect=subprocess.TimeoutExpired(cmd=["claude"], timeout=15)):
+            with pytest.raises(SystemExit) as exc_info:
+                bellows._run_auth_preflight()
+            assert exc_info.value.code == 1
+
+    def test_skip_flag_bypasses_probe(self, monkeypatch):
+        """BELLOWS_SKIP_AUTH_PREFLIGHT=1 → subprocess.run never called, startup proceeds."""
+        monkeypatch.setenv("BELLOWS_SKIP_AUTH_PREFLIGHT", "1")
+        with patch("bellows.subprocess.run") as mock_run:
+            bellows._run_auth_preflight()
+            mock_run.assert_not_called()

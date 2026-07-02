@@ -1517,6 +1517,54 @@ def _module_fingerprints() -> dict:
     return fingerprints
 
 
+def _run_auth_preflight(observer=None, response_server=None):
+    """Probe claude -p auth before entering the watch loop.
+
+    Exits the process (sys.exit(1)) if auth is broken so no plan is claimed
+    under a bad auth state. Skippable via BELLOWS_SKIP_AUTH_PREFLIGHT=1.
+    observer and response_server are stopped cleanly before exit if provided.
+    """
+    if os.environ.get("BELLOWS_SKIP_AUTH_PREFLIGHT"):
+        _log("INFO", "auth preflight skipped (BELLOWS_SKIP_AUTH_PREFLIGHT set)")
+        return
+    _log("INFO", "auth preflight: probing claude -p...")
+    try:
+        result = subprocess.run(
+            ["claude", "-p", "reply OK", "--output-format", "text"],
+            capture_output=True,
+            text=True,
+            timeout=15,
+        )
+    except subprocess.TimeoutExpired:
+        _log(
+            "ERROR",
+            "auth preflight TIMEOUT — claude -p did not respond within 15s. "
+            "Run 'claude -p \"reply OK\" --output-format text' in the launch shell to confirm, "
+            "then 'export ANTHROPIC_API_KEY=...' (or re-auth) and relaunch Bellows.",
+        )
+        if observer is not None:
+            observer.stop()
+            observer.join()
+        if response_server is not None:
+            response_server.stop()
+        sys.exit(1)
+    if result.returncode != 0 or not result.stdout.strip():
+        stderr_snippet = result.stderr.strip()[:300] if result.stderr else ""
+        _log(
+            "ERROR",
+            f"auth preflight FAILED (exit {result.returncode}) — {stderr_snippet or 'no output'}. "
+            "Run 'claude -p \"reply OK\" --output-format text' in the launch shell to confirm, "
+            "then 'export ANTHROPIC_API_KEY=...' (or re-auth) and relaunch Bellows.",
+        )
+        if observer is not None:
+            observer.stop()
+            observer.join()
+        if response_server is not None:
+            response_server.stop()
+        sys.exit(1)
+    _log("INFO", "auth preflight OK — apiKeySource confirmed")
+
+
 def is_runnable_plan(filename: str) -> bool:
     if filename.startswith("in-progress-") or filename.startswith("verdict-pending-") or filename.startswith("halted-"):
         return False
@@ -1998,6 +2046,7 @@ class Bellows:
         _log("INFO", f"session log: {session_log_path}")
         # Brief pause to allow keychain and Claude Code auth to settle
         time.sleep(3)
+        _run_auth_preflight(observer=observer, response_server=self.response_server)
         # One-time startup sweep: remove orphaned verdict requests
         orphaned_removed = self._perform_startup_sweep()
         if orphaned_removed:
