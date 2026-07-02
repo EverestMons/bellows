@@ -4,6 +4,9 @@
 ## Status: Phase 1 Complete — Live (daemon running, all 10 watched paths active)
 
 ## Completed
+### Plan 122
+FORWARD rows 1/3/14 shipped as tier-2 batch: (A) step-header regex made case-insensitive across `gates.py` (2 sites) and `verdict.py` (1 site) so mixed-case `## Step N` headers extract correctly, (B) `_strip_trailing_parenthetical` helper added and applied at all 6 deposit-path extraction sites in `gates.py` to strip parenthetical qualifiers like `(volunteered)` from paths, (C) mojibake U+FFFD chars replaced with checkmark in QA report `preserve-unlanded-commits-on-stranded-cleanup-2026-06-01.md`. Daemon restart required to load gates.py/verdict.py changes.
+
 ### Plan 119
 Declared `**Scope:**` block shipped (CEO 2026-07-02 design: norm-shaped changes are authorable scope, not failures). `scope_check` now supports a three-tier pass path: global allowlist, declared scope (exact file or prefix), and text-mention — in that priority order. Strictness against undeclared files is preserved; evidence text extended with `; not in declared **Scope:** block` when a plan has scope declarations. Backward compatibility verified: plans without a Scope block produce byte-identical behavior to pre-change. Lint check (d) prevents dead convention text (present-but-empty blocks). Daemon restart required to load the updated `gates.py` (covers plan 118's fallback too). PLANNER_TEMPLATE codification of the authoring convention is the deliberate follow-up once the mechanism is proven live.
 
