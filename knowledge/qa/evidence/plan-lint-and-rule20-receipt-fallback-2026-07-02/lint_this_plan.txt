@@ -1,0 +1,7 @@
+PASS: (a) header — parsed
+PASS: (a) dispatch_mode — bellows
+PASS: (a) pause_for_verdict — always
+PASS: (b) step 1 deposits — 1 path(s)
+PASS: (b) step 2 deposits — 1 path(s)
+PASS: (c) QA banner pair — both strings present
+EXIT: 0

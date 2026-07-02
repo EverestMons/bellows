@@ -1,0 +1,15 @@
+tests/test_worktree.py::test_landing_noff_when_main_advanced PASSED      [ 99%]
+tests/test_worktree.py::test_landing_aborts_on_true_conflict_main_advanced PASSED [ 99%]
+tests/test_worktree.py::test_sha_identity_ff_and_noff PASSED             [ 99%]
+tests/test_worktree.py::test_legacy_branchless_worktree_raises_descriptive_error PASSED [ 99%]
+tests/test_worktree.py::test_auto_stage_preserves_untracked_deposit_on_teardown PASSED [ 99%]
+tests/test_worktree.py::test_auto_stage_handles_multiple_deposits PASSED [ 99%]
+tests/test_worktree.py::test_auto_stage_noop_when_all_committed PASSED   [100%]
+
+=============================== warnings summary ===============================
+../../../../../Library/Python/3.9/lib/python/site-packages/urllib3/__init__.py:35
+  /Users/marklehn/Library/Python/3.9/lib/python/site-packages/urllib3/__init__.py:35: NotOpenSSLWarning: urllib3 v2 only supports OpenSSL 1.1.1+, currently the 'ssl' module is compiled with 'LibreSSL 2.8.3'. See: https://github.com/urllib3/urllib3/issues/3020
+    warnings.warn(
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+======================= 729 passed, 1 warning in 27.66s ========================

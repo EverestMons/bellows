@@ -1,0 +1,22 @@
+============================= test session starts ==============================
+platform darwin -- Python 3.9.6, pytest-8.4.2, pluggy-1.6.0 -- /Library/Developer/CommandLineTools/usr/bin/python3
+cachedir: .pytest_cache
+rootdir: /Users/marklehn/Developer/GitHub/bellows/.bellows-worktrees/118
+plugins: anyio-4.12.1, xdist-3.8.0, timeout-2.4.0, cov-7.0.0
+collecting ... collected 7 items
+
+tests/test_plan_lint.py::test_lint_well_formed_plan_passes PASSED        [ 14%]
+tests/test_plan_lint.py::test_lint_missing_deposits_block_fails PASSED   [ 28%]
+tests/test_plan_lint.py::test_lint_qa_missing_banner_pair_fails PASSED   [ 42%]
+tests/test_plan_lint.py::test_lint_unrecognized_dispatch_mode_fails PASSED [ 57%]
+tests/test_gates.py::test_rule_20_receipt_fallback_passes_with_valid_banner PASSED [ 71%]
+tests/test_gates.py::test_rule_20_no_plan_block_no_receipt_fails_both_sources PASSED [ 85%]
+tests/test_gates.py::test_rule_20_proper_deposits_block_unchanged PASSED [100%]
+
+=============================== warnings summary ===============================
+tests/test_plan_lint.py::test_lint_well_formed_plan_passes
+  /Users/marklehn/Library/Python/3.9/lib/python/site-packages/urllib3/__init__.py:35: NotOpenSSLWarning: urllib3 v2 only supports OpenSSL 1.1.1+, currently the 'ssl' module is compiled with 'LibreSSL 2.8.3'. See: https://github.com/urllib3/urllib3/issues/3020
+    warnings.warn(
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+========================= 7 passed, 1 warning in 0.54s =========================
