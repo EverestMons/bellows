@@ -1,0 +1,3 @@
+verdict: continue
+
+Planner-issued under delegated authority (CEO policy 2026-07-02, Rule 49 / v4.69). All 11 gate checks PASS, zero intermediate decisions. Rule 22(b) substance verification on main: (A) _extract_step_text pattern now `^## STEP {N}` with re.IGNORECASE — line-start anchor preserved per the collision analysis, scope-analysis findings documented in the dev log; verdict.py extractor confirmed already case-insensitive; (B) _strip_trailing_parenthetical helper at gates.py:371 applied at the Deposits-block and legacy-prose extraction sites; (C) U+FFFD grep returns 0 on the 2026-06-01 QA report. Full suite 741 passed (tail read). Commit 8d062bd [122] + ledger regen 5aad5a1. Proceed to Step 2 (QA).
