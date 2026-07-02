@@ -43,8 +43,9 @@ def _extract_step_text_from_plan(plan_text: str, step_number: int):
     Duplicated from gates.py::_extract_step_text to avoid circular import — keep in sync.
     """
     plan_text = strip_fenced_code_blocks(plan_text)
+    # ^## anchors to line-start — prose "step 1" cannot match a header pattern
     pattern = rf"^## STEP {step_number}\b.*?(?=^## STEP |\Z)"
-    match = re.search(pattern, plan_text, re.DOTALL | re.MULTILINE)
+    match = re.search(pattern, plan_text, re.DOTALL | re.MULTILINE | re.IGNORECASE)
     return match.group(0) if match else None
 
 

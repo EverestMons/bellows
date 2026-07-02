@@ -368,6 +368,15 @@ def _check_deposit_uncommitted(resolved_path, original_path, wt_path, failures):
         pass  # Git error — don't block on the safety-net check
 
 
+def _strip_trailing_parenthetical(path: str) -> str:
+    """Strip a trailing parenthetical qualifier from a deposit path.
+
+    Plans sometimes write paths like `knowledge/foo.md (volunteered)`.
+    Applied at every deposit-path extraction site.
+    """
+    return re.sub(r'\s*\([^)]*\)\s*$', '', path).strip()
+
+
 def _extract_agent_declared_deposits(parsed):
     """Extract raw deposit paths from the agent's Output Receipt.
 
@@ -387,7 +396,7 @@ def _extract_agent_declared_deposits(parsed):
             m = re.match(r'`([^`]+)`', line[2:].strip())
             path = m.group(1) if m else line[2:].strip().strip("`")
             if path:
-                paths.append(path)
+                paths.append(_strip_trailing_parenthetical(path))
     return paths
 
 
@@ -436,8 +445,9 @@ def _extract_step_text(plan_text: str, step_number: int):
     Duplicated in verdict.py::_extract_step_text_from_plan to avoid circular import — keep in sync.
     """
     plan_text = strip_fenced_code_blocks(plan_text)
+    # ^## anchors to line-start — prose "step 1" cannot match a header pattern
     pattern = rf"^## STEP {step_number}\b.*?(?=^## STEP |\Z)"
-    match = re.search(pattern, plan_text, re.DOTALL | re.MULTILINE)
+    match = re.search(pattern, plan_text, re.DOTALL | re.MULTILINE | re.IGNORECASE)
     return match.group(0) if match else None
 
 
@@ -469,7 +479,7 @@ def _extract_plan_required_deposits(step_text):
         block_text = block_match.group(1)
         paths = []
         for m in re.finditer(r'-\s+`([^`]+)`', block_text):
-            paths.append(m.group(1))
+            paths.append(_strip_trailing_parenthetical(m.group(1)))
         # Explicit "- none" means no deposits required
         return _filter_transient_paths(paths)
 
@@ -480,7 +490,7 @@ def _extract_plan_required_deposits(step_text):
         inline_text = inline_match.group(1)
         paths = []
         for m in re.finditer(r'`-\s+([^`]+)`', inline_text):
-            paths.append(m.group(1))
+            paths.append(_strip_trailing_parenthetical(m.group(1)))
         if paths:
             return _filter_transient_paths(paths)
 
@@ -488,17 +498,17 @@ def _extract_plan_required_deposits(step_text):
     paths = []
     # Pattern 1: Deposit ... to `path` (backtick-quoted — most explicit form)
     for m in re.finditer(r'Deposit[^\n`]*?to\s+`([^`]+)`', step_text, re.IGNORECASE):
-        candidate = m.group(1).strip()
+        candidate = _strip_trailing_parenthetical(m.group(1))
         if candidate:
             paths.append(candidate)
     # Pattern 2: Deposit ... to path.md (unquoted, must contain a directory separator)
     for m in re.finditer(r'Deposit[^\n]*?to\s+(\S+\.md)', step_text, re.IGNORECASE):
-        candidate = m.group(1).strip().rstrip('.,;)').strip('`')
+        candidate = _strip_trailing_parenthetical(m.group(1).strip().rstrip('.,;)').strip('`'))
         if '/' in candidate:
             paths.append(candidate)
     # Pattern 3: with open("path.md", "w") canonical Python write
     for m in re.finditer(r'with open\(["\']([^"\']+\.md)["\'],\s*["\']w["\']', step_text):
-        paths.append(m.group(1).strip())
+        paths.append(_strip_trailing_parenthetical(m.group(1).strip()))
     # Deduplicate preserving first-seen order (a path matched by multiple patterns
     # should appear only once; Python 3.7+ dict preserves insertion order).
     paths = list(dict.fromkeys(paths))
@@ -728,7 +738,7 @@ def _gate_is_qa_step(plan_text, step_number, plan_header=None):
     # Fallback: keyword detection on step header (existing behavior)
     plan_text = strip_fenced_code_blocks(plan_text)
     pattern = rf"^## STEP {step_number}\b[^\n]*"
-    match = re.search(pattern, plan_text, re.MULTILINE)
+    match = re.search(pattern, plan_text, re.MULTILINE | re.IGNORECASE)
     if match:
         return "qa" in match.group(0).lower()
     return False

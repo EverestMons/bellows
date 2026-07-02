@@ -13,7 +13,7 @@
 |---|---|---|---|---|
 | 1 | Preserve guard at top of stranded-cleanup block | rev-parse HEAD + merge-base --is-ancestor + git branch bellows-preserved/ | ✅ | `evidence/preserve_guard.txt` |
 | 2 | Fail-safe bias correct | Skip only on HEAD-unreadable or clean returncode 0 | ✅ | `evidence/failsafe_bias.txt` |
-| 3 | Destroy/recreate unchanged | remove --force → rmtree → prune → add HEAD --detach byte-unchanged | ��� | `evidence/recreate_unchanged.txt` |
+| 3 | Destroy/recreate unchanged | remove --force → rmtree → prune → add HEAD --detach byte-unchanged | ✅ | `evidence/recreate_unchanged.txt` |
 | 4 | Out-of-scope code untouched | Diff confined to inside-top of stranded-cleanup block | ✅ | `evidence/diff_scope.txt` |
 | 5 | Three regression tests exist | All three test functions present in test_worktree.py | ✅ | `evidence/new_tests_grep.txt` |
 | 6 | Dev log complete | All sections filled, Output Receipt Complete | ✅ | `evidence/dev_log_check.txt` |

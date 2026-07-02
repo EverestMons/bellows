@@ -2245,3 +2245,78 @@ def test_rule_20_proper_deposits_block_unchanged(tmp_path):
     parsed = _clean_parsed()
     result = gates.check(parsed, QA_PLAN_TEXT, 2, str(tmp_path))
     assert not any(f["gate"] == "rule_20_self_check" for f in result["failures"])
+
+
+# ---------------------------------------------------------------------------
+# Plan 122 — mixed-case step header tests (FORWARD row 1)
+# ---------------------------------------------------------------------------
+
+def test_extract_step_text_mixed_case_header():
+    """(i) ## Step 2 mixed-case header extracts step 2 correctly."""
+    fixture = (
+        "## Step 1 — Developer\n\n"
+        "Step 1 content.\n\n"
+        "## Step 2 — QA Engineer\n\n"
+        "Step 2 content.\n"
+    )
+    result = gates._extract_step_text(fixture, 2)
+    assert result is not None
+    assert "Step 2 content" in result
+    assert "Step 1 content" not in result
+
+
+def test_extract_step_text_prose_step_does_not_create_boundary():
+    """(ii) Lowercase 'step 1' in step PROSE does not create a step boundary."""
+    fixture = (
+        "## Step 1 — Developer\n\n"
+        "This step 1 prose mentions step 1 several times.\n"
+        "Referring back to step 1 is common in plan text.\n\n"
+        "## Step 2 — QA\n\n"
+        "Step 2 content.\n"
+    )
+    result = gates._extract_step_text(fixture, 1)
+    assert result is not None
+    assert "This step 1 prose" in result
+    assert "Step 2 content" not in result
+
+
+# ---------------------------------------------------------------------------
+# Plan 122 — parenthetical qualifier strip tests (FORWARD row 3)
+# ---------------------------------------------------------------------------
+
+def test_deposits_block_strips_trailing_parenthetical():
+    """(iii) `path.md (volunteered)` in a Deposits block extracts as `path.md`."""
+    step_text = (
+        "## STEP 1 — DEV\n\n"
+        "> Do the work.\n>\n"
+        "> **Deposits:**\n"
+        "> - `knowledge/research/report.md (volunteered)`\n"
+    )
+    result = gates._extract_plan_required_deposits(step_text)
+    assert "knowledge/research/report.md" in result
+    assert not any("volunteered" in p for p in result)
+
+
+def test_parenthetical_inside_filename_preserved():
+    """(iv) A parenthetical INSIDE the filename-proper is untouched."""
+    step_text = (
+        "## STEP 1 — DEV\n\n"
+        "> Do the work.\n>\n"
+        "> **Deposits:**\n"
+        "> - `notes(v2).md`\n"
+    )
+    result = gates._extract_plan_required_deposits(step_text)
+    assert "notes(v2).md" in result
+
+
+def test_agent_receipt_strips_trailing_parenthetical():
+    """(v) Agent-receipt path with trailing qualifier is stripped by _extract_agent_declared_deposits."""
+    parsed = _clean_parsed()
+    parsed["result_text"] = (
+        "### Files Deposited\n"
+        "- `knowledge/development/dev-log.md (volunteered)` — findings\n\n"
+        "### Next"
+    )
+    paths = gates._extract_agent_declared_deposits(parsed)
+    assert len(paths) == 1
+    assert paths[0] == "knowledge/development/dev-log.md"
