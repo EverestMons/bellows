@@ -1,5 +1,9 @@
 # Agent Prompt Feedback
 
+- Prompt was well-scoped: the HARD CONSTRAINT on bucket (B) prevented false inflation of the mechanizable count by catching checks that look mechanical but require judgment beneath the surface.
+- The specific instruction to check for existing-code overlap was valuable — it revealed the shift-left dimension (pre-deposit vs post-execution enforcement) that pure classification would have missed.
+- The 22-item scope was correctly bounded. PLANNER_TEMPLATE.md also contains 46 "Orchestration Plan Rules" (a separate section) that are conceptual rules, not deposit-time checks. The diagnostic correctly scoped to the checklist section.
+
 Plan 64, Step 2 (QA): The plan's verification checks were well-scoped and evidence-producing. The `dogfood_check` required checking both git-show on main and the lifecycle.db — the daemon had written the PROJECT_STATUS milestone in a commit (`c1f1441`) that existed on main but the worktree's working copy hadn't updated, so `git show main:PROJECT_STATUS.md` was the correct verification path rather than reading the file directly. No issues encountered; all four checks passed on first attempt.
 Step 2 complete. All four verifications passed:
 
