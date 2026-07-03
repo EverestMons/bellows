@@ -1,0 +1,3 @@
+verdict: continue
+
+Planner-issued under delegated authority (CEO policy 2026-07-02, Rule 49 / v4.69). Canary purpose achieved: the plan's **Deposits:** block declared the probe path with a trailing `(122 reload canary)` qualifier inside the backticks while the file on disk carries no qualifier; deposit_exists PASSED, which is only possible if the daemon's gates.py strips the trailing parenthetical — positive proof the 19:10 relaunch loaded the plan-122 module (parenthetical strip + case-insensitive `## STEP` extractors). All gates PASS, 0 FAIL; probe file present on disk; committed. Final step — move plan to Done/.
