@@ -1,5 +1,7 @@
 # Agent Prompt Feedback
 
+No daemon-owned prompt feedback items surfaced during this implementation.
+
 No feedback items — plan instructions were clear and complete.
 
 None — diagnostic instructions were clear and well-scoped.
