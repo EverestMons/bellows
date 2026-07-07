@@ -1241,3 +1241,209 @@ class TestInProgressStrandRecovery:
         ).fetchone()[0]
         conn.close()
         assert state == "abandoned"
+
+
+# ---------------------------------------------------------------------------
+# Claim-dedup guard (plan 141)
+# ---------------------------------------------------------------------------
+
+class TestPartialUniqueIndex:
+    """(a) Partial unique index blocks a second active row with the same placeholder."""
+
+    def test_second_active_claim_raises_integrity_error(self, tmp_path):
+        db_path = str(tmp_path / "dedup.db")
+        lifecycle.init_lifecycle_db(db_path)
+        lifecycle.mint_and_claim(
+            "executable", "/proj", "Plan A", "bellows", "small", 1,
+            "executable-foo.md", db_path=db_path,
+        )
+        with pytest.raises(sqlite3.IntegrityError):
+            lifecycle.mint_and_claim(
+                "executable", "/proj", "Plan B", "bellows", "small", 1,
+                "executable-foo.md", db_path=db_path,
+            )
+
+    def test_new_claim_allowed_after_terminal_state(self, tmp_path):
+        db_path = str(tmp_path / "dedup_term.db")
+        lifecycle.init_lifecycle_db(db_path)
+        pid1 = lifecycle.mint_and_claim(
+            "executable", "/proj", "Plan A", "bellows", "small", 1,
+            "executable-foo.md", db_path=db_path,
+        )
+        lifecycle.mark_plan_state(pid1, "closed", closed_at="2026-07-07T12:00:00",
+                                  db_path=db_path)
+        pid2 = lifecycle.mint_and_claim(
+            "executable", "/proj", "Plan B", "bellows", "small", 1,
+            "executable-foo.md", db_path=db_path,
+        )
+        assert pid2 == pid1 + 1
+
+    def test_halted_does_not_block_new_claim(self, tmp_path):
+        db_path = str(tmp_path / "dedup_halt.db")
+        lifecycle.init_lifecycle_db(db_path)
+        pid1 = lifecycle.mint_and_claim(
+            "executable", "/proj", "Plan A", "bellows", "small", 1,
+            "executable-foo.md", db_path=db_path,
+        )
+        lifecycle.mark_plan_state(pid1, "halted", db_path=db_path)
+        pid2 = lifecycle.mint_and_claim(
+            "executable", "/proj", "Plan B", "bellows", "small", 1,
+            "executable-foo.md", db_path=db_path,
+        )
+        assert pid2 == pid1 + 1
+
+
+class TestActivePlanForPlaceholder:
+    """(b) active_plan_for_placeholder returns id for active plans, None for terminal/absent."""
+
+    def test_returns_id_for_active_plan(self, tmp_path):
+        db_path = str(tmp_path / "apfp.db")
+        lifecycle.init_lifecycle_db(db_path)
+        pid = lifecycle.mint_and_claim(
+            "executable", "/proj", "Plan A", "bellows", "small", 1,
+            "executable-foo.md", db_path=db_path,
+        )
+        result = lifecycle.active_plan_for_placeholder("executable-foo.md", db_path=db_path)
+        assert result == pid
+
+    def test_returns_none_for_closed_plan(self, tmp_path):
+        db_path = str(tmp_path / "apfp_closed.db")
+        lifecycle.init_lifecycle_db(db_path)
+        pid = lifecycle.mint_and_claim(
+            "executable", "/proj", "Plan A", "bellows", "small", 1,
+            "executable-foo.md", db_path=db_path,
+        )
+        lifecycle.mark_plan_state(pid, "closed", closed_at="2026-07-07T12:00:00",
+                                  db_path=db_path)
+        result = lifecycle.active_plan_for_placeholder("executable-foo.md", db_path=db_path)
+        assert result is None
+
+    def test_returns_none_for_halted_plan(self, tmp_path):
+        db_path = str(tmp_path / "apfp_halted.db")
+        lifecycle.init_lifecycle_db(db_path)
+        pid = lifecycle.mint_and_claim(
+            "executable", "/proj", "Plan A", "bellows", "small", 1,
+            "executable-foo.md", db_path=db_path,
+        )
+        lifecycle.mark_plan_state(pid, "halted", db_path=db_path)
+        result = lifecycle.active_plan_for_placeholder("executable-foo.md", db_path=db_path)
+        assert result is None
+
+    def test_returns_none_for_absent_placeholder(self, tmp_path):
+        db_path = str(tmp_path / "apfp_absent.db")
+        lifecycle.init_lifecycle_db(db_path)
+        result = lifecycle.active_plan_for_placeholder("nonexistent.md", db_path=db_path)
+        assert result is None
+
+    def test_returns_id_for_in_progress(self, tmp_path):
+        db_path = str(tmp_path / "apfp_ip.db")
+        lifecycle.init_lifecycle_db(db_path)
+        pid = lifecycle.mint_and_claim(
+            "executable", "/proj", "Plan A", "bellows", "small", 1,
+            "executable-foo.md", db_path=db_path,
+        )
+        lifecycle.mark_plan_state(pid, "in_progress", db_path=db_path)
+        result = lifecycle.active_plan_for_placeholder("executable-foo.md", db_path=db_path)
+        assert result == pid
+
+    def test_returns_id_for_awaiting_verdict(self, tmp_path):
+        db_path = str(tmp_path / "apfp_av.db")
+        lifecycle.init_lifecycle_db(db_path)
+        pid = lifecycle.mint_and_claim(
+            "executable", "/proj", "Plan A", "bellows", "small", 1,
+            "executable-foo.md", db_path=db_path,
+        )
+        lifecycle.mark_plan_state(pid, "awaiting_verdict", db_path=db_path)
+        result = lifecycle.active_plan_for_placeholder("executable-foo.md", db_path=db_path)
+        assert result == pid
+
+
+class TestRunPlanDedupGuard:
+    """(c) run_plan-level guard refuses a duplicate — no second id minted, routed to halted."""
+
+    def test_duplicate_deposit_routed_to_halted(self, tmp_path):
+        db_path = str(tmp_path / "rp_dedup.db")
+        lifecycle.init_lifecycle_db(db_path)
+        decisions = tmp_path / "knowledge" / "decisions"
+        decisions.mkdir(parents=True)
+        (decisions / "Done").mkdir()
+
+        placeholder = "executable-dedup-test.md"
+        pid1 = lifecycle.mint_and_claim(
+            "executable", str(tmp_path), "Plan A", "bellows", "small", 1,
+            placeholder, db_path=db_path,
+        )
+        lifecycle.mark_plan_state(pid1, "in_progress", db_path=db_path)
+
+        deposit_path = decisions / placeholder
+        deposit_path.write_text("# Duplicate\n**Tier:** small\n\n## STEP 1\nDo stuff\n")
+
+        from unittest.mock import patch, MagicMock
+        config = {"default_model": "sonnet", "pushover": {}}
+        mock_server = MagicMock()
+
+        with patch("bellows.lifecycle.active_plan_for_placeholder", return_value=pid1), \
+             patch("bellows.lifecycle.LIFECYCLE_DB_PATH", db_path):
+            import bellows as bellows_mod
+            bellows_mod.run_plan(str(deposit_path), config, mock_server)
+
+        assert (decisions / f"halted-{placeholder}").exists()
+        assert not deposit_path.exists()
+
+        conn = sqlite3.connect(db_path)
+        count = conn.execute(
+            "SELECT COUNT(*) FROM plans WHERE deposit_placeholder_name = ?",
+            (placeholder,),
+        ).fetchone()[0]
+        conn.close()
+        assert count == 1
+
+
+class TestInvalidateSeenDedupGuard:
+    """(d) _invalidate_seen_on_redeposit does NOT discard _seen when active plan exists,
+    and DOES when none exists."""
+
+    def test_does_not_discard_seen_when_active(self, tmp_path):
+        db_path = str(tmp_path / "iseen.db")
+        lifecycle.init_lifecycle_db(db_path)
+        placeholder = "executable-foo.md"
+        pid = lifecycle.mint_and_claim(
+            "executable", "/proj", "Plan A", "bellows", "small", 1,
+            placeholder, db_path=db_path,
+        )
+        lifecycle.mark_plan_state(pid, "in_progress", db_path=db_path)
+
+        from unittest.mock import MagicMock, patch
+        import verdict
+        slug = verdict.slug_from_path(placeholder)
+
+        orchestrator = MagicMock()
+        orchestrator._seen = {slug}
+
+        from bellows import PlanHandler
+        handler = PlanHandler(orchestrator)
+
+        with patch("bellows.lifecycle.active_plan_for_placeholder", return_value=pid):
+            handler._invalidate_seen_on_redeposit(f"/some/dir/{placeholder}")
+
+        assert slug in orchestrator._seen
+
+    def test_discards_seen_when_no_active_plan(self, tmp_path):
+        db_path = str(tmp_path / "iseen2.db")
+        lifecycle.init_lifecycle_db(db_path)
+
+        from unittest.mock import MagicMock, patch
+        import verdict
+        placeholder = "executable-foo.md"
+        slug = verdict.slug_from_path(placeholder)
+
+        orchestrator = MagicMock()
+        orchestrator._seen = {slug}
+
+        from bellows import PlanHandler
+        handler = PlanHandler(orchestrator)
+
+        with patch("bellows.lifecycle.active_plan_for_placeholder", return_value=None):
+            handler._invalidate_seen_on_redeposit(f"/some/dir/{placeholder}")
+
+        assert slug not in orchestrator._seen

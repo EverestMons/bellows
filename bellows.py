@@ -439,6 +439,16 @@ def run_plan(plan_path: str, config: dict, response_server: server.ResponseServe
         # If already in-progress (e.g. resume path), skip the move.
         plan_id = None
         if not plan_filename.startswith("in-progress-"):
+            # Claim-dedup guard: refuse if an active plan already owns this placeholder
+            existing_id = lifecycle.active_plan_for_placeholder(base_filename)
+            if existing_id is not None:
+                _log("WARN", f"duplicate deposit — active plan {existing_id} already claimed from same placeholder; refusing second claim", slug=slug_for(plan_name))
+                halted_path = os.path.join(plan_dir, f"halted-{base_filename}")
+                shutil.move(plan_path, halted_path)
+                if bellows is not None:
+                    bellows._seen.discard(verdict.slug_from_path(plan_path))
+                return
+
             # Parse plan type from filename prefix
             plan_type = "executable"
             for _tp in ("diagnostic-", "executable-", "qa-"):
@@ -1642,6 +1652,10 @@ class PlanHandler(FileSystemEventHandler):
             return
         slug = verdict.slug_from_path(path)
         if slug in self.orchestrator._seen:
+            existing_id = lifecycle.active_plan_for_placeholder(filename)
+            if existing_id is not None:
+                _log("INFO", f"re-deposit ignored — active plan {existing_id} in progress for slug {slug}", slug=slug_for(filename))
+                return
             self.orchestrator._seen.discard(slug)
             _log("INFO", f"re-deposit at seen slug — invalidated _seen so plan can re-dispatch", slug=slug_for(filename))
 

@@ -4343,8 +4343,8 @@ def test_lifecycle_meta_and_derivations_at_claim():
         # Pre-create diagnostic 42 in the lifecycle DB so the FK constraint is satisfied
         lifecycle.mint_and_claim("diagnostic", "/proj", "Diag42", "bellows", "small", 1, "d.md")
         # Burn ids until we reach 42
-        for _ in range(40):
-            lifecycle.mint_and_claim("diagnostic", "/proj", "Filler", "bellows", "small", 1, "f.md")
+        for i in range(40):
+            lifecycle.mint_and_claim("diagnostic", "/proj", "Filler", "bellows", "small", 1, f"f{i}.md")
         diag_42_id = lifecycle.mint_and_claim("diagnostic", "/proj", "Diag42Real", "bellows", "small", 1, "d42.md")
         assert diag_42_id == 42
 

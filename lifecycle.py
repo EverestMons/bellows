@@ -160,8 +160,27 @@ def init_lifecycle_db(db_path=None):
             UNIQUE(step_id, ledger_file, content_hash)
         )
     """)
+    # --- Claim-dedup guard: partial unique index on active placeholders ---
+    conn.execute("""
+        CREATE UNIQUE INDEX IF NOT EXISTS idx_plans_active_placeholder
+        ON plans (deposit_placeholder_name)
+        WHERE lifecycle_state IN ('claimed','in_progress','awaiting_verdict')
+    """)
     conn.commit()
     conn.close()
+
+
+def active_plan_for_placeholder(placeholder_name, db_path=None):
+    """Return the plan id if an active plan exists for this deposit placeholder, else None."""
+    path = db_path or LIFECYCLE_DB_PATH
+    conn = sqlite3.connect(path)
+    row = conn.execute(
+        "SELECT id FROM plans WHERE deposit_placeholder_name = ? "
+        "AND lifecycle_state IN ('claimed','in_progress','awaiting_verdict')",
+        (placeholder_name,),
+    ).fetchone()
+    conn.close()
+    return row[0] if row else None
 
 
 def mint_and_claim(plan_type, target_project, title, dispatch_mode, tier,
