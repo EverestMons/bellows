@@ -4,6 +4,9 @@
 ## Status: Phase 1 Complete — Live (daemon running, all 10 watched paths active)
 
 ## Completed
+### Plan 129
+Cycle-nudge trigger shipped 2026-07-06 (code-level verified, inert until daemon restart, live canary pending). Implementation covers config block with safe absent-config defaults, evaluator with read-only cross-DB queries (lessons-forge.db MAX(ingested_at) + lifecycle.db closed-plans count), interval gating, post-fire suppression until ingestion advances, and notifier integration via deferred (non-urgent) delivery. 8 new tests, full suite green (749 passed). Closes diagnostic-127 gap assessment row 2.
+
 ### Plan 122
 FORWARD rows 1/3/14 shipped as tier-2 batch: (A) step-header regex made case-insensitive across `gates.py` (2 sites) and `verdict.py` (1 site) so mixed-case `## Step N` headers extract correctly, (B) `_strip_trailing_parenthetical` helper added and applied at all 6 deposit-path extraction sites in `gates.py` to strip parenthetical qualifiers like `(volunteered)` from paths, (C) mojibake U+FFFD chars replaced with checkmark in QA report `preserve-unlanded-commits-on-stranded-cleanup-2026-06-01.md`. Daemon restart required to load gates.py/verdict.py changes.
 
