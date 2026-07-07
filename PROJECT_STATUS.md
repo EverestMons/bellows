@@ -4,6 +4,9 @@
 ## Status: Phase 1 Complete — Live (daemon running, all 10 watched paths active)
 
 ## Completed
+### Plan 140
+plan_lint qa_steps ↔ step-label cross-check shipped 2026-07-07 (plan 140). WARN-only advisory in `scripts/plan_lint.py` that detects mismatches between the `qa_steps` header field and actual step labels — guards against the plan-133 trap class where a DEV step is silently gated as QA. Six tests cover all specified cases. Full suite 755/755 green.
+
 ### Plan 129
 Cycle-nudge trigger shipped 2026-07-06 (code-level verified, inert until daemon restart, live canary pending). Implementation covers config block with safe absent-config defaults, evaluator with read-only cross-DB queries (lessons-forge.db MAX(ingested_at) + lifecycle.db closed-plans count), interval gating, post-fire suppression until ingestion advances, and notifier integration via deferred (non-urgent) delivery. 8 new tests, full suite green (749 passed). Closes diagnostic-127 gap assessment row 2.
 
