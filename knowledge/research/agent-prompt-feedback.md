@@ -1,5 +1,8 @@
 # Agent Prompt Feedback
 
+- The diagnostic scope was clear and the CEO context section provided the right pointers (plan 136 death, stash, single-daemon confirmation). Citing the `_invalidate_seen_on_redeposit` mechanism as the specific gap would have further narrowed the investigation.
+- The "ruled OUT by hand" note (two-daemon race) saved investigation time — confirming a negative externally and directing the agent to the claim mechanism was efficient.
+
 No prompt feedback items surfaced during QA verification.
 
 No daemon-owned prompt feedback items surfaced during this implementation.
