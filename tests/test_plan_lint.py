@@ -149,3 +149,151 @@ def test_lint_unrecognized_dispatch_mode_fails():
     result = _run_lint(plan)
     assert result.returncode == 1, f"Expected exit 1, got {result.returncode}\nstdout: {result.stdout}"
     assert "(a)" in result.stdout
+
+
+def test_lint_qa_steps_cross_check_good():
+    """(a) Good DEV→QA plan (qa_steps: 2, STEP 2 QA-labeled) emits NO qa_steps WARN, exit 0."""
+    plan = """\
+# Test Plan
+**Date:** 2026-07-02 | **Dispatch Mode:** bellows | **qa_steps:** 2 | **pause_for_verdict:** always
+
+## STEP 1 — DEV
+
+> Do the work.
+>
+> **Deposits:**
+> - `knowledge/development/dev-log.md`
+
+## STEP 2 — QA
+
+> Verify deliverables.
+>
+> Your QA report MUST include the byte-exact banner `Rule 20 — QA Self-Check Results` and a `PASSED — SELF-CHECK PASSED` line.
+>
+> **Deposits:**
+> - `knowledge/qa/qa-report.md`
+"""
+    result = _run_lint(plan)
+    assert result.returncode == 0, f"Expected exit 0, got {result.returncode}\nstdout: {result.stdout}"
+    assert "qa_steps lists step" not in result.stdout
+    assert "QA-labeled but absent from qa_steps" not in result.stdout
+
+
+def test_lint_qa_steps_plan133_trap():
+    """(b) Plan-133 shape: qa_steps: 1, STEP 1 DEV / STEP 2 QA → 'gated as QA' WARN, exit 0."""
+    plan = """\
+# Test Plan
+**Date:** 2026-07-02 | **Dispatch Mode:** bellows | **qa_steps:** 1 | **pause_for_verdict:** always
+
+## STEP 1 — DEV
+
+> Do the work.
+>
+> **Deposits:**
+> - `knowledge/development/dev-log.md`
+
+## STEP 2 — QA
+
+> Verify deliverables.
+>
+> Your QA report MUST include the byte-exact banner `Rule 20 — QA Self-Check Results` and a `PASSED — SELF-CHECK PASSED` line.
+>
+> **Deposits:**
+> - `knowledge/qa/qa-report.md`
+"""
+    result = _run_lint(plan)
+    assert result.returncode == 0, f"Expected exit 0 (WARN only), got {result.returncode}\nstdout: {result.stdout}"
+    assert "gated as QA (plan-133 trap)" in result.stdout
+    assert "QA-labeled but absent from qa_steps" in result.stdout
+
+
+def test_lint_qa_steps_qa_labeled_absent():
+    """(c) QA-labeled step absent from qa_steps → 'will not be gated' WARN, exit 0."""
+    plan = """\
+# Test Plan
+**Date:** 2026-07-02 | **Dispatch Mode:** bellows | **qa_steps:** 3 | **pause_for_verdict:** always
+
+## STEP 1 — DEV
+
+> Do the work.
+>
+> **Deposits:**
+> - `knowledge/development/dev-log.md`
+
+## STEP 2 — QA
+
+> Verify deliverables.
+>
+> Your QA report MUST include the byte-exact banner `Rule 20 — QA Self-Check Results` and a `PASSED — SELF-CHECK PASSED` line.
+>
+> **Deposits:**
+> - `knowledge/qa/qa-report.md`
+"""
+    result = _run_lint(plan)
+    assert result.returncode == 0, f"Expected exit 0 (WARN only), got {result.returncode}\nstdout: {result.stdout}"
+    assert "will not be Rule 20/22 gated" in result.stdout
+
+
+def test_lint_qa_steps_list_form():
+    """(d) List-form qa_steps: [2] parses identically — no false WARN."""
+    plan = """\
+# Test Plan
+**Date:** 2026-07-02 | **Dispatch Mode:** bellows | **qa_steps:** [2] | **pause_for_verdict:** always
+
+## STEP 1 — DEV
+
+> Do the work.
+>
+> **Deposits:**
+> - `knowledge/development/dev-log.md`
+
+## STEP 2 — QA
+
+> Verify deliverables.
+>
+> Your QA report MUST include the byte-exact banner `Rule 20 — QA Self-Check Results` and a `PASSED — SELF-CHECK PASSED` line.
+>
+> **Deposits:**
+> - `knowledge/qa/qa-report.md`
+"""
+    result = _run_lint(plan)
+    assert result.returncode == 0, f"Expected exit 0, got {result.returncode}\nstdout: {result.stdout}"
+    assert "qa_steps lists step" not in result.stdout
+    assert "QA-labeled but absent from qa_steps" not in result.stdout
+
+
+def test_lint_qa_steps_malformed():
+    """(e) Malformed qa_steps: abc — no crash, no traceback, exits without error."""
+    plan = """\
+# Test Plan
+**Date:** 2026-07-02 | **Dispatch Mode:** bellows | **qa_steps:** abc | **pause_for_verdict:** always
+
+## STEP 1 — DEV
+
+> Do the work.
+>
+> **Deposits:**
+> - `knowledge/development/dev-log.md`
+"""
+    result = _run_lint(plan)
+    assert "Traceback" not in result.stderr
+    assert "Traceback" not in result.stdout
+    assert "qa_steps lists step" not in result.stdout
+
+
+def test_lint_qa_steps_absent_no_warn():
+    """(f) No qa_steps field → no qa_steps WARN."""
+    plan = """\
+# Test Plan
+**Date:** 2026-07-02 | **Dispatch Mode:** bellows | **pause_for_verdict:** always
+
+## STEP 1 — DEV
+
+> Do the work.
+>
+> **Deposits:**
+> - `knowledge/development/dev-log.md`
+"""
+    result = _run_lint(plan)
+    assert "qa_steps lists step" not in result.stdout
+    assert "QA-labeled but absent from qa_steps" not in result.stdout

@@ -25,6 +25,17 @@ RECOGNIZED_DISPATCH_MODES = {"bellows", "manual_bootstrap"}
 RECOGNIZED_PAUSE_TOKENS = {"always", "after_step_1", "after_qa_step"}
 
 
+def _parse_qa_steps(qa_steps_raw):
+    """Parse qa_steps header value into a set of ints, mirroring gates._gate_is_qa_step."""
+    try:
+        if isinstance(qa_steps_raw, list):
+            return {int(x) for x in qa_steps_raw}
+        s = str(qa_steps_raw).strip().strip("[]")
+        return {int(tok.strip()) for tok in s.split(",") if tok.strip()}
+    except (ValueError, TypeError):
+        return set()
+
+
 def lint(plan_path):
     plan_text = Path(plan_path).read_text(encoding="utf-8")
     results = []
@@ -127,6 +138,16 @@ def lint(plan_path):
         has_test_in_text = bool(re.search(r'test_\w+\.py', step_text)) or "tests/" in step_text
         if not has_test_scope and not has_test_prefix and not has_test_in_text:
             print(f"WARN: step {step_num} mentions tests but declares no test scope")
+
+    # WARN: qa_steps ↔ step-label cross-check
+    qa_steps_raw = header.get("qa_steps", "") if header else ""
+    if qa_steps_raw:
+        qa_steps_set = _parse_qa_steps(qa_steps_raw)
+        qa_labeled_steps = {int(sn) for hl, sn in step_headers if "qa" in hl.lower()}
+        for n in sorted(qa_labeled_steps - qa_steps_set):
+            print(f"WARN: step {n} is QA-labeled but absent from qa_steps={qa_steps_raw!r} — it will not be Rule 20/22 gated")
+        for n in sorted(qa_steps_set - qa_labeled_steps):
+            print(f"WARN: qa_steps lists step {n} but step {n} is not QA-labeled — it will be gated as QA (plan-133 trap)")
 
     for status, check, detail in results:
         print(f"{status}: {check} — {detail}")
