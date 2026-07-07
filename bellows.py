@@ -26,6 +26,7 @@ BELLOWS_ROOT = Path(__file__).parent.resolve()
 DB_PATH = str(BELLOWS_ROOT / "bellows.db")
 SHADOW_CACHE_DIR = BELLOWS_ROOT / ".bellows-cache"
 MODULE_FINGERPRINT_HEARTBEAT_INTERVAL = 10
+LESSONS_FORGE_DB = "/Users/marklehn/Developer/GitHub/lessons-forge/lessons-forge.db"
 
 # --- Misplaced verdict scan ---
 _NOTIFIED_MISPLACED: set[tuple[str, str]] = set()
@@ -1660,6 +1661,40 @@ class PlanHandler(FileSystemEventHandler):
             self._handle(event.dest_path)
 
 
+def _get_last_ingestion_ts(lessons_db_path: Optional[str] = None) -> Optional[str]:
+    db_path = lessons_db_path or LESSONS_FORGE_DB
+    uri = f"file:{db_path}?mode=ro"
+    try:
+        conn = sqlite3.connect(uri, uri=True)
+        row = conn.execute("SELECT MAX(ingested_at) FROM lesson_entries").fetchone()
+        conn.close()
+        return row[0] if row else None
+    except Exception as e:
+        _log("WARN", f"cycle-nudge: cannot read lessons-forge.db: {e}")
+        return None
+
+
+def _count_plans_closed_since(since_ts: Optional[str], lifecycle_db_path: Optional[str] = None) -> int:
+    from lifecycle import LIFECYCLE_DB_PATH
+    db_path = lifecycle_db_path or LIFECYCLE_DB_PATH
+    try:
+        conn = sqlite3.connect(db_path)
+        if since_ts is None:
+            row = conn.execute(
+                "SELECT COUNT(*) FROM plans WHERE lifecycle_state = 'closed'"
+            ).fetchone()
+        else:
+            row = conn.execute(
+                "SELECT COUNT(*) FROM plans WHERE lifecycle_state = 'closed' AND closed_at > ?",
+                (since_ts,),
+            ).fetchone()
+        conn.close()
+        return row[0] if row else 0
+    except Exception as e:
+        _log("WARN", f"cycle-nudge: cannot query lifecycle.db: {e}")
+        return 0
+
+
 class Bellows:
     def __init__(self, config: dict):
         self.config = config
@@ -1667,6 +1702,8 @@ class Bellows:
         self._active_lock = threading.Lock()
         self._active_count = 0
         self._seen = set()
+        self._cycle_nudge_last_eval: float = 0.0
+        self._cycle_nudge_suppressed_ts: Optional[str] = None
 
         # Startup: prune stale worktree registrations from prior crashes
         for wp in config.get("watched_projects", []):
@@ -1723,6 +1760,34 @@ class Bellows:
             t.start()
             time.sleep(2)
         _log("EVENT", f"▶ started {len(threads)} parallel threads")
+
+    def _evaluate_cycle_nudge(self) -> None:
+        nudge_cfg = self.config.get("cycle_nudge", {})
+        if not nudge_cfg.get("enabled", False):
+            return
+        interval_secs = nudge_cfg.get("interval_hours", 24) * 3600
+        now = time.time()
+        if now - self._cycle_nudge_last_eval < interval_secs:
+            return
+        self._cycle_nudge_last_eval = now
+        try:
+            last_ingestion = _get_last_ingestion_ts()
+            if self._cycle_nudge_suppressed_ts is not None:
+                if last_ingestion is None or last_ingestion <= self._cycle_nudge_suppressed_ts:
+                    _log("INFO", "cycle-nudge: suppressed (no new ingestion since last nudge)")
+                    return
+                self._cycle_nudge_suppressed_ts = None
+            threshold = nudge_cfg.get("plans_closed_threshold", 10)
+            count = _count_plans_closed_since(last_ingestion)
+            if count >= threshold:
+                since_display = last_ingestion or "never"
+                _log("EVENT", f"cycle-nudge: {count} plans closed since last ingestion ({since_display}) — notifying")
+                notifier.notify_cycle_nudge(count, since_display)
+                self._cycle_nudge_suppressed_ts = last_ingestion
+            else:
+                _log("INFO", f"cycle-nudge: {count}/{threshold} plans closed since last ingestion — below threshold")
+        except Exception as e:
+            _log("WARN", f"cycle-nudge: evaluation failed: {e}")
 
     def _rescan(self, handler):
         # Check for resolved verdicts
@@ -2071,6 +2136,7 @@ class Bellows:
                 time.sleep(1)
                 if time.time() - last_rescan >= rescan_interval:
                     self._rescan(handler)
+                    self._evaluate_cycle_nudge()
                     last_rescan = time.time()
                 if time.time() - last_heartbeat >= 300:
                     with _plan_event_lock:

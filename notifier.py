@@ -119,6 +119,7 @@ def _flush_buffer() -> None:
     halted = []
     skipped = []
     queue_empty = False
+    nudge_events = []
 
     for e in events:
         et = e["event_type"]
@@ -131,6 +132,8 @@ def _flush_buffer() -> None:
             skipped.append(p["plan_name"])
         elif et == "queue_empty":
             queue_empty = True
+        elif et == "cycle_nudge":
+            nudge_events.append(p)
 
     lines = []
     if completes:
@@ -148,6 +151,9 @@ def _flush_buffer() -> None:
             lines.append(f"1 plan skipped: {skipped[0]}")
         else:
             lines.append(f"{len(skipped)} plans skipped: {', '.join(skipped)}")
+    if nudge_events:
+        p = nudge_events[-1]
+        lines.append(f"Learning loop nudge: {p['count']} plans closed since last ingestion ({p['since_ts']}).")
     if queue_empty:
         lines.append("Queue empty.")
 
@@ -203,6 +209,13 @@ def notify_failure(app_key: str, user_key: str, plan_name: str,
         message=f"Plan: {plan_name}\nStep: {step}\nError: {error}",
         priority=1, sound="falling",
     )
+
+
+def notify_cycle_nudge(count: int, since_ts: str) -> bool:
+    if not _event_enabled("cycle_nudge"):
+        return False
+    _enqueue_deferred("cycle_nudge", count=count, since_ts=since_ts)
+    return True
 
 
 def notify_verdict_request(app_key: str, user_key: str, plan_name: str,
