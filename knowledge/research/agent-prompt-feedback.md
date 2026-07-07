@@ -1,5 +1,7 @@
 # Agent Prompt Feedback
 
+No prompt feedback items surfaced during QA verification.
+
 No daemon-owned prompt feedback items surfaced during this implementation.
 
 No feedback items — plan instructions were clear and complete.
