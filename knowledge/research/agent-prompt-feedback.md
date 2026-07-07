@@ -1,5 +1,7 @@
 # Agent Prompt Feedback
 
+The research document (`plan-double-claim-137-138-2026-07-07.md`) §3 fix list was precise and implementation-ready — each fix had the exact function name, line number, and change shape. The active-state set was explicitly stated with the CHECK constraint reference, eliminating ambiguity. One minor gap: the fix list didn't mention the existing test (`test_lifecycle_meta_and_derivations_at_claim`) that would break due to its use of a shared placeholder name for ID-burning — this was discovered during the test run and trivially fixed.
+
 The plan's premise for Task A ("plan 140 ran in the main checkout with no worktree") was incorrect — plan 140 did get a worktree. The step log files' `cwd` field is the definitive evidence for worktree usage. Future diagnostics investigating worktree anomalies should check `cwd` in step logs as the first probe, not just the presence/absence of the `.bellows-worktrees/<id>` directory (which is removed on successful teardown).
 
 No new prompt feedback. Plan instructions were clear and all verification items matched on first pass. The two-step verification flow (DEV implements, QA verifies at code level) worked well for this single-file change.
