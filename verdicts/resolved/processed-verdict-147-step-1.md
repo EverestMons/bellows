@@ -1,0 +1,5 @@
+verdict: continue
+Step 1 (DEV) gate clean (all mechanical PASS, 4 files in scope). Planner check (b) confirmed by diff inspection of b374a99:
+- contract_fuel_infer_apply now computes mat_rows before the TOCTOU check and compares body preview_start_price against effective_start = mat_rows[0]['price_floor'] for rule_fallback (else result.start_price) — like-for-like, exact match, no tolerance widening (T1 preferred form). result.start_price NOT mutated (T2). Cycle TOCTOU unchanged. Agent verified the rollback test still holds (call stays inside the try block).
+- Tests close the gap (T3): test_apply_fallback_not_falsely_stale_at_5999 (preview start 6.000, apply 'applied', first inferred floor 6.000) and _at_4999 (5.000) directly reproduce+guard the halted-146 blocker; test_apply_stale_when_brackets_changed confirms genuine >1-mill drift still returns 'stale'.
+CEO delegated verdict authority. Proceed to Step 2 QA. At the Step 2 gate I will independently confirm the blocker is resolved (preview->apply at 5.999 returns 'applied') and read the full report substance, not just the gate banner.
