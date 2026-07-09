@@ -1,5 +1,7 @@
 # Agent Prompt Feedback
 
+- `session-limit-park-reverify-qa`: When a QA plan explicitly names the Rule 20 self-check banner format in the step prompt, the agent must include it verbatim — the gate enforces byte-level matching on both the section heading (`## Rule 20 — QA Self-Check Results`) and the PASSED line (`**PASSED — SELF-CHECK PASSED**`).
+
 - Session-limit detection logic is clean — separate from transient-retry guard by construction (stderr vs stdout result event), well-tested, no edge-case confusion.
 
 None — Step 2 executed as designed with no deviations or surprises.
