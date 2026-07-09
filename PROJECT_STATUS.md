@@ -4,6 +4,9 @@
 ## Status: Phase 1 Complete — Live (daemon running, all 10 watched paths active)
 
 ## Completed
+### Plan 148
+Session-limit park + auto-resume shipped 2026-07-09 (plan 148). Runner detects session-limit 429 result events on stdout (distinct from transient stderr 429s) and parses `resets-at` wall-clock time + IANA zone with a 5h fallback. Daemon parks the plan (rename to `parked-*` + `parked_steps` DB table), notifies CEO once (deduped), and auto-resumes at reset time via both `_rescan` (30s interval) and startup scan (survives daemon restart). No-progress safety guard ensures parking only when the step made zero progress (`num_turns <= 1`, `total_cost_usd == 0`, `output_tokens == 0`). 26 new tests, full suite 788 passed. Daemon restart required.
+
 ### Plan 141
 Claim-dedup guard shipped 2026-07-07 (plan 141), closing the 137/138 double-claim class of bugs. Three fixes implemented: (1) partial unique index on active placeholders in lifecycle.db provides defense-in-depth at the DB level, (2) application-level dedup check in `run_plan` refuses duplicate deposits before minting, routing them to `halted-`, (3) `_invalidate_seen_on_redeposit` guard prevents `_seen` clearance while an active plan exists. Worktree-health probed for plan 140 — finding benign (worktree created and torn down normally). Tangle cruft from 137/138 retired: orphan worktrees removed, stale branches deleted, buggy stash dropped.
 
