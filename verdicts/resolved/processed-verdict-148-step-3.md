@@ -1,0 +1,6 @@
+verdict: stop
+Step 3 (QA) gate failed on rule_20_self_check: the QA deposit omitted the mandatory "Rule 20 — QA Self-Check Results" banner + "PASSED — SELF-CHECK PASSED" line entirely (confirmed by grep — not a wording near-miss, and NOT a gate false-positive: the banner requirement is a real convention). All other checks passed — QA substance is complete (6 checklist items PASS with evidence, full suite 788 passed / 0 regressions, correct DAEMON-RESTART-REQUIRED flag) and rule_22_verification PASSED. The shipped code (runner.py Step 1 + bellows.py Step 2) is fully verified and committed on main; only the QA REPORT is non-conformant.
+
+Root cause: this plan's Step 3 did not explicitly instruct the QA agent to emit the Rule 20 self-check banner, and its specialist convention did not prompt it.
+
+CEO decision (2026-07-09): re-run QA with an explicit banner instruction rather than override-and-close (which would normalize a skipped self-check). Stopping #148 here — its DEV commits (f8d701b, da86b6a) remain on main, nothing lost. A focused single-step QA re-verification plan follows, naming the required banner explicitly, to produce the authoritative conformant QA record for the session-limit park+auto-resume feature.
