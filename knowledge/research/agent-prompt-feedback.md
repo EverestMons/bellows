@@ -1,5 +1,7 @@
 # Agent Prompt Feedback
 
+- The plan's QA step prompt correctly required verification of all three terminal branches (continue-to-done, halt, stop) — this is a good pattern for lifecycle-write fixes where the same variable feeds multiple downstream sites.
+
 - The `lookup_slug` normalization list (stripping `diagnostic-`, `executable-` but not `qa-`) is a naming inconsistency that should be documented or unified in a follow-up — not a bug per se, since the verdict-request filename uses the unstripped slug for `qa-` plans, but it creates a trap for any code that assumes `lookup_slug` is always a bare slug.
 
 - `session-limit-park-reverify-qa`: When a QA plan explicitly names the Rule 20 self-check banner format in the step prompt, the agent must include it verbatim — the gate enforces byte-level matching on both the section heading (`## Rule 20 — QA Self-Check Results`) and the PASSED line (`**PASSED — SELF-CHECK PASSED**`).
