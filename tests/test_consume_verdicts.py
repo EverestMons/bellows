@@ -952,6 +952,135 @@ def test_continue_to_done_blocked_on_worktree_teardown_failure_final_step():
         assert processed_path.exists(), f"Verdict file should be moved to processed-: {processed_path}"
 
 
+def test_plan_id_derivation_from_slug():
+    """The regex-based _lc_plan_id derivation extracts correct integer ids from
+    type-prefixed slugs, bare integers, and returns None for legacy slug+date names."""
+    import re
+
+    def _extract(slug):
+        m = re.fullmatch(r"(?:(?:diagnostic|executable|qa)-)?(\d+)", slug)
+        return int(m.group(1)) if m else None
+
+    assert _extract("qa-149") == 149
+    assert _extract("executable-148") == 148
+    assert _extract("diagnostic-5") == 5
+    assert _extract("148") == 148
+    assert _extract("executable-foo-bar-2026-05-28") is None
+    assert _extract("diagnostic-foo-2026-05-01") is None
+    assert _extract("some-legacy-slug") is None
+
+
+def test_consume_verdict_continue_to_done_calls_mark_plan_state_for_qa_plan():
+    """A continue-to-done verdict for a qa-type plan (slug 'qa-149') must call
+    lifecycle.mark_plan_state with the correct integer id (149), not skip it."""
+    with tempfile.TemporaryDirectory() as tmp:
+        tmp_path = Path(tmp)
+
+        decisions_dir = tmp_path / "proj" / "knowledge" / "decisions"
+        decisions_dir.mkdir(parents=True)
+        (decisions_dir / "Done").mkdir()
+
+        plan_filename = "qa-149.md"
+        verdict_pending_name = f"verdict-pending-{plan_filename}"
+        verdict_pending_path = decisions_dir / verdict_pending_name
+        verdict_pending_path.write_text("## STEP 1\nVerify stuff.\n")
+
+        verdicts_resolved = tmp_path / "verdicts" / "resolved"
+        verdicts_resolved.mkdir(parents=True)
+        verdict_fname = "verdict-qa-149-step-1.md"
+        (verdicts_resolved / verdict_fname).write_text("continue\nApproved.")
+
+        pending_dir = tmp_path / "verdicts" / "pending"
+        pending_dir.mkdir(parents=True)
+        pending_file = pending_dir / "verdict-request-qa-149-step-1.md"
+        pending_file.write_text(_make_verdict_request_content(
+            str(verdict_pending_path), step_number=1, total_steps=1))
+
+        config = {
+            "watched_projects": [str(decisions_dir)],
+            "default_model": "claude-sonnet-4-6",
+            "pushover": {"app_key": "", "user_key": ""},
+            "callback_port": 5999,
+        }
+
+        b = bellows.Bellows(config)
+
+        with patch("bellows.BELLOWS_ROOT", tmp_path), \
+             patch("bellows.verdict.check_verdict", return_value={
+                 "found": True, "verdict": "continue", "reason": "approved"
+             }), \
+             patch("bellows.verdict.log_to_ledger"), \
+             patch("bellows.notifier.push"), \
+             patch("bellows.lifecycle.mark_plan_state") as mock_mark, \
+             patch("bellows.lifecycle.record_verdict_outcome"):
+            b._consume_verdicts()
+
+        # mark_plan_state must be called with plan_id=149 and state="closed"
+        mock_mark.assert_called_once()
+        call_args = mock_mark.call_args
+        assert call_args[0][0] == 149, (
+            f"Expected plan_id=149, got: {call_args[0][0]}"
+        )
+        assert call_args[0][1] == "closed", (
+            f"Expected state='closed', got: {call_args[0][1]}"
+        )
+
+
+def test_consume_verdict_stop_calls_mark_plan_state_for_qa_plan():
+    """A stop verdict for a qa-type plan must call lifecycle.mark_plan_state with
+    the correct integer id, not skip it due to type-prefix parse failure."""
+    with tempfile.TemporaryDirectory() as tmp:
+        tmp_path = Path(tmp)
+
+        decisions_dir = tmp_path / "proj" / "knowledge" / "decisions"
+        decisions_dir.mkdir(parents=True)
+        (decisions_dir / "Done").mkdir()
+
+        plan_filename = "qa-200.md"
+        verdict_pending_name = f"verdict-pending-{plan_filename}"
+        verdict_pending_path = decisions_dir / verdict_pending_name
+        verdict_pending_path.write_text("## STEP 1\nVerify stuff.\n## STEP 2\nMore.\n")
+
+        verdicts_resolved = tmp_path / "verdicts" / "resolved"
+        verdicts_resolved.mkdir(parents=True)
+        verdict_fname = "verdict-qa-200-step-1.md"
+        (verdicts_resolved / verdict_fname).write_text("stop\nBlocked.")
+
+        pending_dir = tmp_path / "verdicts" / "pending"
+        pending_dir.mkdir(parents=True)
+        pending_file = pending_dir / "verdict-request-qa-200-step-1.md"
+        pending_file.write_text(_make_verdict_request_content(
+            str(verdict_pending_path), step_number=1, total_steps=2))
+
+        config = {
+            "watched_projects": [str(decisions_dir)],
+            "default_model": "claude-sonnet-4-6",
+            "pushover": {"app_key": "", "user_key": ""},
+            "callback_port": 5999,
+        }
+
+        b = bellows.Bellows(config)
+
+        with patch("bellows.BELLOWS_ROOT", tmp_path), \
+             patch("bellows.verdict.check_verdict", return_value={
+                 "found": True, "verdict": "stop", "reason": "blocked"
+             }), \
+             patch("bellows.verdict.log_to_ledger"), \
+             patch("bellows.notifier.push"), \
+             patch("bellows.lifecycle.mark_plan_state") as mock_mark, \
+             patch("bellows.lifecycle.record_verdict_outcome"):
+            b._consume_verdicts()
+
+        mock_mark.assert_called_once()
+        call_args = mock_mark.call_args
+        assert call_args[0][0] == 200, (
+            f"Expected plan_id=200, got: {call_args[0][0]}"
+        )
+        assert call_args[0][1] == "halted", (
+            f"Expected state='halted', got: {call_args[0][1]}"
+        )
+
+
 def test_continue_advances_normally_without_teardown_failure():
     """Negative: a continue verdict with NO worktree_teardown failure advances normally
     (the guard does not false-trip). Plan moves to in-progress and next step is dispatched."""

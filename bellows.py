@@ -2084,11 +2084,8 @@ class Bellows:
                         cleanup_slug = verdict.slug_from_path(original_name)
                         gate_result = gate_result_from_request or {"failures": [], "files_changed": []}
                         # Derive plan_id from slug for lifecycle DB writes (id-native plans only)
-                        _lc_plan_id = None
-                        try:
-                            _lc_plan_id = int(lookup_slug)
-                        except (ValueError, TypeError):
-                            pass  # legacy plan — no lifecycle DB id
+                        _lc_id_match = re.fullmatch(r"(?:(?:diagnostic|executable|qa)-)?(\d+)", plan_slug)
+                        _lc_plan_id = int(_lc_id_match.group(1)) if _lc_id_match else None
                         lifecycle.record_verdict_outcome(_lc_plan_id, step_number, v, decided_by="ceo", disposition_summary=reason)
 
                         if v == "continue":
