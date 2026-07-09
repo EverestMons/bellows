@@ -2,12 +2,14 @@
 
 import json
 import os
+import re
 import subprocess
 import threading
 import time
-from datetime import datetime
+from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Optional
+from zoneinfo import ZoneInfo
 
 from bellows import _log
 from bellows_root import resolve_bellows_root
@@ -29,6 +31,74 @@ def _write_log(log_path: Path, data: dict):
     LOGS_DIR.mkdir(exist_ok=True)
     with open(log_path, "w") as f:
         json.dump(data, f, indent=2, default=str)
+
+
+def _parse_session_reset(result_text: str, plan_slug: Optional[str] = None) -> float:
+    """Extract reset wall-clock time + IANA zone from a session-limit result string.
+
+    Returns the next-future epoch for that wall-clock time in that zone.
+    Falls back to now + 5h if the time or zone cannot be parsed.
+    """
+    m = re.search(
+        r'resets\s+(\d{1,2})(?::(\d{2}))?\s*(am|pm)\s*\(([^)]+)\)',
+        result_text, re.IGNORECASE,
+    )
+    if not m:
+        _log("WARN", f"runner: could not parse session-limit reset time from: {result_text[:200]}", slug=plan_slug)
+        return time.time() + 5 * 3600
+
+    hour = int(m.group(1))
+    minute = int(m.group(2)) if m.group(2) else 0
+    ampm = m.group(3).lower()
+    tz_name = m.group(4).strip()
+
+    if ampm == "pm" and hour != 12:
+        hour += 12
+    elif ampm == "am" and hour == 12:
+        hour = 0
+
+    try:
+        tz = ZoneInfo(tz_name)
+    except Exception:
+        _log("WARN", f"runner: unknown timezone {tz_name!r} in session-limit reset; using 5h fallback", slug=plan_slug)
+        return time.time() + 5 * 3600
+
+    now = datetime.now(tz)
+    reset_today = now.replace(hour=hour, minute=minute, second=0, microsecond=0)
+    if reset_today <= now:
+        reset_today += timedelta(days=1)
+
+    return reset_today.timestamp()
+
+
+def _check_session_limit(result_event: dict) -> Optional[dict]:
+    """Check whether a result event represents a parkable session limit.
+
+    Returns a dict with session_limit fields if parkable, None otherwise.
+    A 429 session-limit result with progress (turns/cost > 0) is NOT parkable.
+    """
+    if not (result_event.get("is_error") and result_event.get("api_error_status") == 429):
+        return None
+
+    result_lower = (result_event.get("result") or "").lower()
+    if "session limit" not in result_lower and "usage limit" not in result_lower:
+        return None
+
+    num_turns = result_event.get("num_turns") or 0
+    total_cost = float(result_event.get("total_cost_usd") or 0)
+    output_tokens = int((result_event.get("usage") or {}).get("output_tokens") or 0)
+
+    if num_turns > 1 or total_cost > 0 or output_tokens > 0:
+        return None
+
+    resets_at_raw = result_event.get("result", "")
+    resets_at_epoch = _parse_session_reset(resets_at_raw)
+
+    return {
+        "session_limit": True,
+        "resets_at_epoch": resets_at_epoch,
+        "resets_at_raw": resets_at_raw,
+    }
 
 
 def run_step(
@@ -174,8 +244,8 @@ def run_step(
 
     # --- Non-zero exit path ---
     if proc.returncode != 0:
-        # Transient-failure retry guard. Eligibility is implicit inside this branch
-        # (no parsed result event yet means no cost or permission decisions have landed).
+        # Transient-failure retry guard (stderr only). Session-limit 429s arrive on
+        # the stdout result event in the success path — they never reach here.
         transient_patterns = ["401", "unauthorized", "authentication", "429", "rate limit", "too many requests"]
         stderr_lower = (result_stderr or "").lower()
         transient_hit = next((p for p in transient_patterns if p in stderr_lower), None)
@@ -299,6 +369,33 @@ def run_step(
             "permission_denials": [],
             "verdict_requested": {"requested": False, "reason": None},
         }
+
+    # --- Session-limit detection (stdout result event, distinct from stderr transient retry) ---
+    sl = _check_session_limit(raw)
+    if sl is not None:
+        _log("INFO", f"runner: session-limit detected, resets_at_epoch={sl['resets_at_epoch']:.0f} (step {step_num})", slug=plan_slug)
+        _write_log(log_path, {
+            "success": False,
+            "session_limit": True,
+            "resets_at_epoch": sl["resets_at_epoch"],
+            "resets_at_raw": sl["resets_at_raw"],
+            "raw_output": result_stdout[:5000],
+            "stderr": result_stderr[:5000],
+        })
+        parsed["session_limit"] = True
+        parsed["resets_at_epoch"] = sl["resets_at_epoch"]
+        parsed["resets_at_raw"] = sl["resets_at_raw"]
+        parsed["stop_reason"] = "session_limit"
+        parsed["is_error"] = True
+        parsed["receipt_status"] = "Blocked"
+        parsed["escalate"] = True
+        parsed["intermediate_decisions"] = []
+        return parsed
+
+    if raw.get("is_error") and raw.get("api_error_status") == 429:
+        result_lower = (raw.get("result") or "").lower()
+        if "session limit" in result_lower or "usage limit" in result_lower:
+            _log("WARN", f"runner: session-limit 429 but step had progress (turns={raw.get('num_turns')}, cost={raw.get('total_cost_usd')}); not parking (step {step_num})", slug=plan_slug)
 
     # Extract intermediate decisions from assistant text blocks
     intermediate_decisions = decisions.extract_decision_blocks(
