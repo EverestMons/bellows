@@ -1,5 +1,7 @@
 # Agent Prompt Feedback
 
+- Session-limit detection logic is clean — separate from transient-retry guard by construction (stderr vs stdout result event), well-tested, no edge-case confusion.
+
 None — Step 2 executed as designed with no deviations or surprises.
 
 None.
