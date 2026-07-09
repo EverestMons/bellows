@@ -30,6 +30,9 @@ LESSONS_FORGE_DB = "/Users/marklehn/Developer/GitHub/lessons-forge/lessons-forge
 
 # --- Misplaced verdict scan ---
 _NOTIFIED_MISPLACED: set[tuple[str, str]] = set()
+
+# --- Session-limit park notification dedup ---
+_NOTIFIED_PARKED: set[tuple[str, int]] = set()
 MISPLACED_VERDICT_SCAN_VERBOSE = False
 
 # --- No-match verdict WARN dedup ---
@@ -76,7 +79,7 @@ def slug_for(plan_name: str) -> str:
     s = plan_name
     if s.endswith(".md"):
         s = s[:-3]
-    for prefix in ("in-progress-", "verdict-pending-", "halted-"):
+    for prefix in ("in-progress-", "verdict-pending-", "halted-", "parked-"):
         if s.startswith(prefix):
             s = s[len(prefix):]
             break
@@ -176,6 +179,16 @@ def migrate_db():
             plan_slug TEXT
         )"""
     )
+    conn.execute(
+        """CREATE TABLE IF NOT EXISTS parked_steps (
+            plan_slug TEXT PRIMARY KEY,
+            plan_path TEXT,
+            project TEXT,
+            resume_step INTEGER,
+            resets_at_epoch REAL,
+            parked_at TEXT
+        )"""
+    )
     # Add any missing columns idempotently
     existing = {row[1] for row in conn.execute("PRAGMA table_info(runs)")}
     additions = {
@@ -242,7 +255,7 @@ def _shadow_path(plan_filename: str) -> Path:
     """Return the shadow cache path for a given plan filename."""
     # Strip lifecycle prefixes to get the canonical name
     canonical = plan_filename
-    for prefix in ("in-progress-", "verdict-pending-", "halted-"):
+    for prefix in ("in-progress-", "verdict-pending-", "halted-", "parked-"):
         if canonical.startswith(prefix):
             canonical = canonical[len(prefix):]
             break
@@ -316,6 +329,34 @@ def record_run(
     conn.close()
 
 
+def record_park(db_path: str, plan_slug: str, plan_path: str, project: str,
+                resume_step: int, resets_at_epoch: float):
+    conn = sqlite3.connect(db_path)
+    conn.execute(
+        """CREATE TABLE IF NOT EXISTS parked_steps (
+            plan_slug TEXT PRIMARY KEY,
+            plan_path TEXT,
+            project TEXT,
+            resume_step INTEGER,
+            resets_at_epoch REAL,
+            parked_at TEXT
+        )"""
+    )
+    conn.execute(
+        "INSERT OR REPLACE INTO parked_steps (plan_slug, plan_path, project, resume_step, resets_at_epoch, parked_at) VALUES (?, ?, ?, ?, ?, ?)",
+        (plan_slug, plan_path, project, resume_step, resets_at_epoch, datetime.now().isoformat()),
+    )
+    conn.commit()
+    conn.close()
+
+
+def clear_park(db_path: str, plan_slug: str):
+    conn = sqlite3.connect(db_path)
+    conn.execute("DELETE FROM parked_steps WHERE plan_slug = ?", (plan_slug,))
+    conn.commit()
+    conn.close()
+
+
 def is_final_step(step: int, total_steps: int) -> bool:
     return step >= total_steps
 
@@ -368,6 +409,58 @@ def _is_plan_stranded(inprogress_path: str, expected_done_path: str) -> bool:
     return os.path.exists(inprogress_path) or not os.path.exists(expected_done_path)
 
 
+def _maybe_park_session_limit(
+    parsed: dict, inprogress_path: str, current_step: int,
+    plan_slug: str, plan_name: str, base_filename: str, plan_dir: str,
+    bellows_ref, db_path: str, project_path: str,
+    wt_path: str, app_key: str, user_key: str, plan_id: Optional[int],
+) -> bool:
+    """Check for session-limit in parsed result; if found, park the plan and return True.
+
+    Handles: rename to parked-*, DB persist, record_run, worktree teardown,
+    CEO notification (deduped). Returns False when parsed is not a session limit.
+    """
+    if not parsed.get("session_limit"):
+        return False
+
+    slug = slug_for(plan_name)
+    resets_at_epoch = parsed["resets_at_epoch"]
+    resets_at_raw = parsed.get("resets_at_raw", "")
+
+    # Tear down the worktree (step made no progress — safe no-op merge)
+    try:
+        _teardown_worktree(project_path, wt_path, plan_slug, plan_id=plan_id)
+    except (WorktreeTeardownError, Exception) as e:
+        _log("WARN", f"worktree teardown during park: {e}", slug=slug)
+
+    # Rename in-progress → parked (restart-safe ordering: rename first)
+    parked_path = os.path.join(plan_dir, f"parked-{base_filename}")
+    if os.path.exists(inprogress_path):
+        shutil.move(inprogress_path, parked_path)
+
+    # Persist park in bellows.db so it survives daemon restart
+    record_park(db_path, plan_slug, parked_path, project_path, current_step, resets_at_epoch)
+
+    # Record in runs table for dashboard visibility
+    record_run(db_path, parked_path, project_path,
+               parsed.get("session_id", ""), current_step, "Parked",
+               parsed.get("cost_usd", 0.0), plan_slug)
+
+    # Notify CEO once per (plan_slug, step) — dedup across re-parks
+    dedup_key = (plan_slug, current_step)
+    if dedup_key not in _NOTIFIED_PARKED:
+        notifier.push(
+            app_key, user_key,
+            "Bellows — Session Limit",
+            f"Plan: {plan_name}\nStep {current_step} hit session limit.\n"
+            f"Resets: {resets_at_raw}\nWill auto-resume at reset time.",
+        )
+        _NOTIFIED_PARKED.add(dedup_key)
+
+    _log("EVENT", f"parked — session limit, resets_at={resets_at_raw}, resume_step={current_step}", slug=slug)
+    return True
+
+
 def run_plan(plan_path: str, config: dict, response_server: server.ResponseServer, resume_step: Optional[int] = None, bellows=None):
     app_key = config.get("pushover", {}).get("app_key", "")
     user_key = config.get("pushover", {}).get("user_key", "")
@@ -386,7 +479,7 @@ def run_plan(plan_path: str, config: dict, response_server: server.ResponseServe
         plan_filename = os.path.basename(plan_path)
         # Canonicalize: strip lifecycle prefix for path construction
         base_filename = plan_filename
-        for prefix in ("in-progress-", "verdict-pending-", "halted-"):
+        for prefix in ("in-progress-", "verdict-pending-", "halted-", "parked-"):
             if base_filename.startswith(prefix):
                 base_filename = base_filename[len(prefix):]
                 break
@@ -568,6 +661,14 @@ def run_plan(plan_path: str, config: dict, response_server: server.ResponseServe
         parsed["_step_number"] = current_step
         parsed["_agent"] = extract_agent(parsed.get("result_text", ""))
 
+        # Session-limit park check — intercept before gates/escalate (bootstrap step)
+        if _maybe_park_session_limit(
+            parsed, inprogress_path, current_step, plan_slug, plan_name,
+            base_filename, plan_dir, bellows, db_path, project_path,
+            wt_path, app_key, user_key, plan_id,
+        ):
+            return
+
         total_cost = parsed["cost_usd"] or 0.0
 
         record_run(
@@ -683,6 +784,15 @@ def run_plan(plan_path: str, config: dict, response_server: server.ResponseServe
             current_step += 1
             parsed["_step_number"] = current_step
             parsed["_agent"] = extract_agent(parsed.get("result_text", ""))
+
+            # Session-limit park check — intercept before gates/escalate (while-loop step)
+            if _maybe_park_session_limit(
+                parsed, inprogress_path, current_step, plan_slug, plan_name,
+                base_filename, plan_dir, bellows, db_path, project_path,
+                wt_path, app_key, user_key, plan_id,
+            ):
+                return
+
             total_cost += parsed["cost_usd"] or 0.0
 
             record_run(
@@ -1577,7 +1687,7 @@ def _run_auth_preflight(observer=None, response_server=None):
 
 
 def is_runnable_plan(filename: str) -> bool:
-    if filename.startswith("in-progress-") or filename.startswith("verdict-pending-") or filename.startswith("halted-"):
+    if filename.startswith("in-progress-") or filename.startswith("verdict-pending-") or filename.startswith("halted-") or filename.startswith("parked-"):
         return False
     return bool(re.match(r"^(parallel-\d+-)?(executable|diagnostic|qa)-.*\.md$", filename))
 
@@ -1611,7 +1721,7 @@ class PlanHandler(FileSystemEventHandler):
         filename = os.path.basename(path)
         if not is_runnable_plan(filename):
             if (filename.endswith(".md")
-                    and not filename.startswith(("in-progress-", "verdict-pending-", "halted-", "roadmap-"))
+                    and not filename.startswith(("in-progress-", "verdict-pending-", "halted-", "parked-", "roadmap-"))
                     and verdict.slug_from_path(path) not in self.orchestrator._seen):
                 _log("WARN", f"⚠️ skipped — prefix not in dispatch whitelist", slug=slug_for(filename))
                 self.orchestrator._seen.add(verdict.slug_from_path(path))
@@ -1647,7 +1757,7 @@ class PlanHandler(FileSystemEventHandler):
         # never observes) can be re-dispatched. Guard: never invalidate on Bellows-managed
         # lifecycle renames (in-progress-/verdict-pending-/halted-) — that would loop.
         filename = os.path.basename(path)
-        LIFECYCLE_PREFIXES = ("in-progress-", "verdict-pending-", "halted-")
+        LIFECYCLE_PREFIXES = ("in-progress-", "verdict-pending-", "halted-", "parked-")
         if any(filename.startswith(p) for p in LIFECYCLE_PREFIXES):
             return
         slug = verdict.slug_from_path(path)
@@ -1775,6 +1885,44 @@ class Bellows:
             time.sleep(2)
         _log("EVENT", f"▶ started {len(threads)} parallel threads")
 
+    def _resume_parked(self, handler):
+        """Resume parked plans whose resets_at_epoch has passed."""
+        now = time.time()
+        try:
+            conn = sqlite3.connect(DB_PATH)
+            rows = conn.execute(
+                "SELECT plan_slug, plan_path, project, resume_step, resets_at_epoch FROM parked_steps WHERE resets_at_epoch <= ?",
+                (now,),
+            ).fetchall()
+            conn.close()
+        except Exception as e:
+            _log("WARN", f"resume-parked: DB query failed: {e}")
+            return
+        for plan_slug, parked_path, project, resume_step, resets_at_epoch in rows:
+            if not os.path.exists(parked_path):
+                _log("WARN", f"resume-parked: parked file missing (CEO manual intervention?) — clearing DB row", slug=plan_slug)
+                clear_park(DB_PATH, plan_slug)
+                continue
+            # Derive in-progress path from parked path
+            parked_dir = os.path.dirname(parked_path)
+            parked_name = os.path.basename(parked_path)
+            if parked_name.startswith("parked-"):
+                base_name = parked_name[len("parked-"):]
+            else:
+                base_name = parked_name
+            inprogress_name = f"in-progress-{base_name}"
+            inprogress_path = os.path.join(parked_dir, inprogress_name)
+            # Guard: don't double-dispatch if already in-progress
+            if os.path.exists(inprogress_path):
+                _log("WARN", f"resume-parked: in-progress file already exists — skipping (concurrent dispatch?)", slug=plan_slug)
+                clear_park(DB_PATH, plan_slug)
+                continue
+            # Rename parked → in-progress
+            shutil.move(parked_path, inprogress_path)
+            clear_park(DB_PATH, plan_slug)
+            _log("EVENT", f"resume-parked: un-parked, dispatching resume_step={resume_step}", slug=plan_slug)
+            self.handle_new_plan(inprogress_path, resume_step=resume_step)
+
     def _evaluate_cycle_nudge(self) -> None:
         nudge_cfg = self.config.get("cycle_nudge", {})
         if not nudge_cfg.get("enabled", False):
@@ -1806,6 +1954,8 @@ class Bellows:
     def _rescan(self, handler):
         # Check for resolved verdicts
         self._consume_verdicts()
+        # Resume parked plans whose session-limit reset time has passed
+        self._resume_parked(handler)
         # Dispatch pending parallel groups that have passed the 5-second settle window.
         now = time.time()
         for group in list(handler._pending_groups.keys()):
@@ -2083,9 +2233,9 @@ class Bellows:
             if not os.path.isdir(decisions_path):
                 continue
             for fname in os.listdir(decisions_path):
-                if fname.startswith("in-progress-") or fname.startswith("verdict-pending-"):
+                if fname.startswith("in-progress-") or fname.startswith("verdict-pending-") or fname.startswith("parked-"):
                     stripped = fname
-                    for pfx in ("in-progress-", "verdict-pending-"):
+                    for pfx in ("in-progress-", "verdict-pending-", "parked-"):
                         if stripped.startswith(pfx):
                             stripped = stripped[len(pfx):]
                             break
@@ -2132,6 +2282,9 @@ class Bellows:
             _log("INFO", f"startup cleanup — {len(orphaned_removed)} orphaned verdict requests removed")
             for rm_name in orphaned_removed:
                 _log("INFO", f"  - {rm_name}")
+
+        # Resume any parked plans whose reset time has passed (survives daemon restart)
+        self._resume_parked(handler)
 
         # Scan for plans already on disk at startup
         for decisions_path in self.config.get("watched_projects", []):
