@@ -1,5 +1,7 @@
 # Agent Prompt Feedback
 
+- None. The plan was clear and correctly scoped; the idempotent UPDATE pattern with `AND outcome IS NULL` guard worked as designed.
+
 - The plan's QA step prompt correctly required verification of all three terminal branches (continue-to-done, halt, stop) — this is a good pattern for lifecycle-write fixes where the same variable feeds multiple downstream sites.
 
 - The `lookup_slug` normalization list (stripping `diagnostic-`, `executable-` but not `qa-`) is a naming inconsistency that should be documented or unified in a follow-up — not a bug per se, since the verdict-request filename uses the unstripped slug for `qa-` plans, but it creates a trap for any code that assumes `lookup_slug` is always a bare slug.
