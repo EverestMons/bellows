@@ -1,9 +1,12 @@
 # Bellows — Project Status
-**Last Updated:** 2026-07-01 (Reporting Phase 2 — read-side cycle query module shipped)
+**Last Updated:** 2026-07-09 (Session-limit park + auto-resume QA-verified — plan 149)
 
 ## Status: Phase 1 Complete — Live (daemon running, all 10 watched paths active)
 
 ## Completed
+### Plan 149
+Session-limit park + auto-resume QA-verified 2026-07-09 (plan 149, re-verification of plan 148). 6/6 checklist items PASS: detection precision, resets-at parse + tz, restart safety, no-progress safety, scan exclusion, notification. Full suite 788 passed / 0 regressions. Rule 20 self-check PASSED. DAEMON RESTART REQUIRED for the feature to go live.
+
 ### Plan 148
 Session-limit park + auto-resume shipped 2026-07-09 (plan 148). Runner detects session-limit 429 result events on stdout (distinct from transient stderr 429s) and parses `resets-at` wall-clock time + IANA zone with a 5h fallback. Daemon parks the plan (rename to `parked-*` + `parked_steps` DB table), notifies CEO once (deduped), and auto-resumes at reset time via both `_rescan` (30s interval) and startup scan (survives daemon restart). No-progress safety guard ensures parking only when the step made zero progress (`num_turns <= 1`, `total_cost_usd == 0`, `output_tokens == 0`). 26 new tests, full suite 788 passed. Daemon restart required.
 
