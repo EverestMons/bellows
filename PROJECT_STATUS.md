@@ -1,9 +1,12 @@
 # Bellows — Project Status
-**Last Updated:** 2026-07-09 (Session-limit park + auto-resume QA-verified — plan 149)
+**Last Updated:** 2026-07-09 (Fix _lc_plan_id derivation for type-prefixed verdict slugs — plan 150)
 
 ## Status: Phase 1 Complete — Live (daemon running, all 10 watched paths active)
 
 ## Completed
+### Plan 150
+Fix `_lc_plan_id` derivation in `_consume_verdicts` for type-prefixed verdict slugs (e.g. `qa-149`). Replaced bare `int(lookup_slug)` with regex-based parse using `plan_slug` that handles `qa-N`, `executable-N`, `diagnostic-N`, and bare `N` while degrading to `None` for legacy slug+date names. All three terminal branches (continue-to-done, halt, stop) now fire `mark_plan_state` for typed-slug plans. One-off repair of qa-149 lifecycle row from `abandoned` to `closed`. 3 new tests. Full suite 791 passed, 0 regressions. Rule 20 self-check PASSED. DAEMON RESTART REQUIRED.
+
 ### Plan 149
 Session-limit park + auto-resume QA-verified 2026-07-09 (plan 149, re-verification of plan 148). 6/6 checklist items PASS: detection precision, resets-at parse + tz, restart safety, no-progress safety, scan exclusion, notification. Full suite 788 passed / 0 regressions. Rule 20 self-check PASSED. DAEMON RESTART REQUIRED for the feature to go live.
 
