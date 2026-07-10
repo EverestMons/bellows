@@ -1,0 +1,5 @@
+verdict: continue
+Step 1 (DEV) gate clean: mechanical PASS (no failures), 4 files in scope (web/templates/base.html, tests/test_landing_redesign.py, dev log, prompt feedback), no ceo_flags, no fork. Re-dispatch of the halted-157 plan with the corrected DEV test scope — this time the agent ran ONLY the targeted tests foreground (6 passed / 0 failed), committed, and deposited the dev log. Planner Rule 22(b) confirmed by reading the commit + code:
+- base.html diff wraps ONLY the top-bar search form in `{% if request.path != '/' %}` / `{% endif %}`; the top-bar-brand link, the Logout top-bar-link, and the `.top-bar` container are untouched. H1 met exactly.
+- Tests: test_landing_hides_topbar_search (GET / -> no `top-bar-search`, but centered `landing-search` + `action="/invoices/search"` still present) and test_topbar_search_present_off_landing (GET /invoices -> `top-bar-search` present). Both assert the intended landing-only removal.
+CEO delegated verdict authority (2026-07-02); clean gate, no fork. Proceed to Step 2 (QA — full-suite regression).
