@@ -1,0 +1,6 @@
+verdict: continue
+Step 2 (QA) final gate clean: mechanical PASS on all rows (rule_20 banner byte-exact + PASSED line, rule_22 clean, scope_check pass, 0 intermediate decisions), no ceo_flags, no fork. Planner Rule 22(b) confirmed by reading the QA report + evidence:
+- All 7 verification areas PASS with concrete evidence, not assumed. Deliverable-checks evidence shows HTTP-level verification of the rendered landing: 200, PRO search form/input/`landing-search` class present; all 10 sidebar links present; `/api/dashboard/{cards,alerts,yesterday}` absent; no nav-cards / stats-pills / alert-banner.
+- Full suite: 1736 passed, 2 failed = exactly the two known pre-existing failures (test_get_activity_import_page, test_no_tariff_rate_has_fix_url); 0 regressions (evidence full-suite.txt, 753.93s).
+- CEO decisions preserved and independently checked: C1 base.html/top-bar untouched, C2 top-bar search still present off-landing, C3 action buttons + syncKnowledge retained, C4 the 3 routes 404 + helper/template removed. Other card-loader.js consumer pages spot-checked 200 (no collateral breakage).
+Deliverables satisfy the CEO's original request (centered PRO search + data-free sidebar links; dashboard data loading dropped). CEO delegated verdict authority (2026-07-02). Final step — move plan 156 to Done/.
