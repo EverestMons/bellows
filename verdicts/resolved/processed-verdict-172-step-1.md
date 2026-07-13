@@ -1,0 +1,7 @@
+verdict: continue
+Step 1 (DEV) of executable-172 (plan_lint check (e) step-heading case guard) gate clean: mechanical PASS on all checks. The `files_changed: []` / '0 files modified' is the expected POST-TEARDOWN artifact, NOT a vacuous green — commit 2e35d76 [172] is on main with the real change (verified directly, worktree already torn down per bellows-worktree-usage-signal). Planner Rule 22(b) verified by reading + EXERCISING the code, not trusting the gate:
+(1) the (e) block (plan_lint.py:70-79) sits between the step_headers computation and the (b) deposits loop; ci regex is anchored `^##\s+step\s+\d` (level-2 headings, not prose); FAIL arm appends to results + sets all_passed=False, WARN arm is print-only — exactly to spec.
+(2) FUNCTIONAL — title-case qa_steps plan (the 161 trap): FAIL (e) + real exit 1, message names the case fix. THE BUG IS NOW CAUGHT.
+(3) NO FALSE POSITIVE — this uppercase plan: exit 0, zero (e) rows; diagnostic-109 (no qa_steps, no STEP headings): exit 0, zero (e) rows (the critical diagnostic-safe path).
+(4) Tests: +4 new test functions, ZERO existing tests removed/modified (git diff HEAD~1), full lint suite 16 passed (was 12). Dev log deposited.
+CEO delegated verdict authority (2026-07-02); clean gate, design decision (FAIL for the inconsistency) implemented as authored — CEO may still redirect to WARN-only at will. Proceed to Step 2 (QA — code-level verification + full suite).
