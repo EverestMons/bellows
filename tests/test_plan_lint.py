@@ -297,3 +297,71 @@ def test_lint_qa_steps_absent_no_warn():
     result = _run_lint(plan)
     assert "qa_steps lists step" not in result.stdout
     assert "QA-labeled but absent from qa_steps" not in result.stdout
+
+
+def test_lint_titlecase_step_headings_with_qa_steps_fails():
+    """(e-a) qa_steps: 2 with title-case '## Step N' headings → (e) FAIL, exit 1."""
+    plan = """\
+# Test Plan
+**Date:** 2026-07-13 | **Dispatch Mode:** bellows | **qa_steps:** 2 | **pause_for_verdict:** always
+
+## Step 1 — DEV
+
+> Do the work.
+>
+> **Deposits:**
+> - `knowledge/development/dev-log.md`
+
+## Step 2 — QA
+
+> Verify deliverables.
+>
+> Your QA report MUST include the byte-exact banner `Rule 20 — QA Self-Check Results` and a `PASSED — SELF-CHECK PASSED` line.
+>
+> **Deposits:**
+> - `knowledge/qa/qa-report.md`
+"""
+    result = _run_lint(plan)
+    assert result.returncode == 1, f"Expected exit 1, got {result.returncode}\nstdout: {result.stdout}"
+    assert "(e)" in result.stdout
+    assert "vacuous pass" in result.stdout
+    assert "uppercase" in result.stdout.lower()
+
+
+def test_lint_uppercase_step_headings_no_e_fail():
+    """(e-b) Correct uppercase '## STEP N' → NO (e) row."""
+    result = _run_lint(GOOD_PLAN)
+    assert "(e)" not in result.stdout
+
+
+def test_lint_single_step_diagnostic_no_e_fail():
+    """(e-c) Single-step diagnostic (no qa_steps, no step headings) → NO (e) FAIL, NO case WARN, exit 0."""
+    plan = """\
+# Diagnostic
+**Date:** 2026-07-13 | **Dispatch Mode:** bellows | **pause_for_verdict:** always
+
+## Context
+
+Some analysis goes here.
+"""
+    result = _run_lint(plan)
+    assert result.returncode == 0, f"Expected exit 0, got {result.returncode}\nstdout: {result.stdout}"
+    assert "(e)" not in result.stdout
+    assert "WARN" not in result.stdout
+
+
+def test_lint_titlecase_step_no_qa_steps_warns_only():
+    """(e-d) No qa_steps, '## Step 1' prose → WARN printed but exit 0."""
+    plan = """\
+# Diagnostic
+**Date:** 2026-07-13 | **Dispatch Mode:** bellows | **pause_for_verdict:** always
+
+## Step 1 — Analysis
+
+> Investigate the issue.
+"""
+    result = _run_lint(plan)
+    assert result.returncode == 0, f"Expected exit 0 (WARN only), got {result.returncode}\nstdout: {result.stdout}"
+    assert "WARN" in result.stdout
+    assert "uppercase" in result.stdout.lower()
+    assert "(e)" not in result.stdout

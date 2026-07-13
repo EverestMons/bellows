@@ -67,6 +67,17 @@ def lint(plan_path):
     clean_text = gates.strip_fenced_code_blocks(plan_text)
     step_headers = re.findall(r'^(## STEP (\d+)\b[^\n]*)', clean_text, re.MULTILINE)
 
+    # (e) Step heading case guard: catch vacuous-pass from title-case headings
+    ci_step_headers = re.findall(r'^(##\s+step\s+(\d+)\b[^\n]*)', clean_text, re.IGNORECASE | re.MULTILINE)
+    if not step_headers and header.get("qa_steps"):
+        msg = "header declares qa_steps but no uppercase '## STEP N' heading found — step checks (b)/(d) were skipped (vacuous pass)"
+        if ci_step_headers:
+            msg += "; found lowercase '## Step N' headings, use uppercase '## STEP N'"
+        results.append(("FAIL", "(e) step heading format", msg))
+        all_passed = False
+    elif not step_headers and ci_step_headers:
+        print("WARN: found '## Step N' headings but no uppercase '## STEP N' — consider using uppercase for lint coverage")
+
     # (b) Deposits blocks: steps mentioning "deposit" must yield parseable paths
     for header_line, step_num_str in step_headers:
         step_num = int(step_num_str)
