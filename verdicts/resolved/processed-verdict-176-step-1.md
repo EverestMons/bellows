@@ -1,0 +1,7 @@
+verdict: continue
+Step 1 (DEV) of executable-176 (tariff_rates full-consistency relabel) gate clean: mechanical PASS all checks, scope_check PASSED. Planner Rule 22(b) verified directly:
+(1) EXACTLY the 2 source-literal swaps — gap_dashboard.py:3264 'copilot_section'→'llm_assisted', rates.py:216 'copilot_import'→'llm_assisted'; confirmation_status='unconfirmed' PRESERVED on both (per the diff hunks); no other line changed; ?-placeholder counts unchanged (swapped value is still a literal);
+(2) FROZEN core + contract_import.py + czar_entry.py zero-diff (0 in --stat); no _PROVENANCE_MAP edit (fall-through handles the badge, per diag-173);
+(3) tests updated — both assert source=='llm_assisted' (lines 69, 107) with confirmation_status assertions retained (function names still reference the route/site, cosmetic);
+(4) Planner ran targeted filter independently: 102 passed / 1 failed, the 1 being the KNOWN pre-existing test_fix_links no_tariff_rate_has_fix_url (matches -k tariff) — NOT a regression.
+This consciously supersedes 175's source-preservation per the CEO's 2026-07-13 full-consistency choice; the one surfaced UI side-effect (_rates_table_rows.html shows 'llm_assisted' in the Source column) is the intended outcome and is QA-verified in step 2. Commit c445179 tagged [176]. CEO delegated verdict authority (2026-07-02); clean gate. Proceed to Step 2 (QA — relabel-diff + consistency proof + full suite, raw evidence).
