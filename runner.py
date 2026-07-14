@@ -101,6 +101,83 @@ def _check_session_limit(result_event: dict) -> Optional[dict]:
     }
 
 
+def _reset_epoch_from_rate_limit_event(rate_limit_info: dict, plan_slug: Optional[str] = None) -> float:
+    """Extract reset epoch from a rate_limit_event's rate_limit_info dict."""
+    resets_at = rate_limit_info.get("resetsAt")
+    if isinstance(resets_at, (int, float)) and resets_at > 0:
+        return float(resets_at)
+    _log("WARN", "runner: rate_limit_event missing/invalid resetsAt, using 5h fallback", slug=plan_slug)
+    return time.time() + 5 * 3600
+
+
+def _check_exit1_rate_limit(result_stdout: str, plan_slug: Optional[str] = None) -> Optional[dict]:
+    """Scan an exit-1 NDJSON stream for a parkable five_hour rate-limit cap hit.
+
+    Returns {session_limit, resets_at_epoch, resets_at_raw} when a five_hour
+    rate_limit_event is found AND the stream shows zero committable progress.
+    Returns None otherwise (falls through to gate_failure).
+    """
+    five_hour_event = None
+    num_turns = 0
+    total_output_tokens = 0
+    has_mutating_tool_use = False
+    mutating_tools = {"Write", "Edit", "Bash", "NotebookEdit"}
+
+    for line in result_stdout.splitlines():
+        line = line.strip()
+        if not line:
+            continue
+        try:
+            event = json.loads(line)
+        except (json.JSONDecodeError, ValueError):
+            continue
+        if not isinstance(event, dict):
+            continue
+
+        event_type = event.get("type")
+
+        if event_type == "rate_limit_event":
+            info = event.get("rate_limit_info", {})
+            if info.get("rateLimitType") == "five_hour":
+                five_hour_event = event
+
+        elif event_type == "user":
+            content = event.get("message", {}).get("content", [])
+            if isinstance(content, list):
+                for block in content:
+                    if isinstance(block, dict) and block.get("type") == "tool_result":
+                        num_turns += 1
+                        break
+
+        elif event_type == "assistant":
+            usage = event.get("message", {}).get("usage", {})
+            total_output_tokens += int(usage.get("output_tokens", 0) or 0)
+            content = event.get("message", {}).get("content", [])
+            if isinstance(content, list):
+                for block in content:
+                    if isinstance(block, dict) and block.get("type") == "tool_use":
+                        if block.get("name") in mutating_tools:
+                            has_mutating_tool_use = True
+
+    if five_hour_event is None:
+        return None
+
+    if num_turns > 1 or total_output_tokens >= 500 or has_mutating_tool_use:
+        _log("INFO", f"runner: five_hour rate_limit_event found but step had progress "
+             f"(turns={num_turns}, tokens={total_output_tokens}, mutating={has_mutating_tool_use}); "
+             f"not parking", slug=plan_slug)
+        return None
+
+    rate_limit_info = five_hour_event.get("rate_limit_info", {})
+    resets_at_epoch = _reset_epoch_from_rate_limit_event(rate_limit_info, plan_slug)
+
+    return {
+        "session_limit": True,
+        "resets_at_epoch": resets_at_epoch,
+        "resets_at_raw": rate_limit_info,
+    }
+
+
 def run_step(
     prompt: str,
     project_path: str,
@@ -254,6 +331,39 @@ def run_step(
             time.sleep(5)
             _log("INFO", f"runner: retry dispatch starting (step {step_num})", slug=plan_slug)
             return run_step(prompt, project_path, model, session_id, allowed_tools, timeout, plan_slug, step_num, _retry_attempted=True)
+
+        # Exit-1 rate-limit park detection: scan stdout stream for five_hour cap event
+        exit1_sl = _check_exit1_rate_limit(result_stdout, plan_slug)
+        if exit1_sl is not None:
+            _log("INFO", f"runner: exit-1 rate-limit detected (five_hour cap), "
+                 f"resets_at_epoch={exit1_sl['resets_at_epoch']:.0f} (step {step_num})", slug=plan_slug)
+            if result_stderr:
+                _log("WARN", f"runner: stderr from claude -p: {result_stderr[:500]}", slug=plan_slug)
+            _write_log(log_path, {
+                "success": False,
+                "error": f"non_zero_exit_{proc.returncode}",
+                "session_limit": True,
+                "resets_at_epoch": exit1_sl["resets_at_epoch"],
+                "resets_at_raw": exit1_sl["resets_at_raw"],
+                "raw_output": result_stdout[:5000],
+                "stderr": result_stderr[:5000],
+            })
+            return {
+                "is_error": True,
+                "error": f"claude -p exited with code {proc.returncode}",
+                "session_id": None,
+                "escalate": True,
+                "receipt_status": "Blocked",
+                "ceo_flags": [f"claude -p exit code {proc.returncode}"],
+                "cost_usd": None,
+                "stop_reason": "session_limit",
+                "result_text": "",
+                "permission_denials": [],
+                "verdict_requested": {"requested": False, "reason": None},
+                "session_limit": True,
+                "resets_at_epoch": exit1_sl["resets_at_epoch"],
+                "resets_at_raw": exit1_sl["resets_at_raw"],
+            }
 
         if result_stderr:
             _log("WARN", f"runner: stderr from claude -p: {result_stderr[:500]}", slug=plan_slug)

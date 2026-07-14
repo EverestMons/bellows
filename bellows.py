@@ -414,6 +414,7 @@ def _maybe_park_session_limit(
     plan_slug: str, plan_name: str, base_filename: str, plan_dir: str,
     bellows_ref, db_path: str, project_path: str,
     wt_path: str, app_key: str, user_key: str, plan_id: Optional[int],
+    plan_baseline_sha: Optional[str] = None,
 ) -> bool:
     """Check for session-limit in parsed result; if found, park the plan and return True.
 
@@ -422,6 +423,18 @@ def _maybe_park_session_limit(
     """
     if not parsed.get("session_limit"):
         return False
+
+    # Backup guard: if the worktree HEAD differs from the baseline,
+    # the agent committed work — do not park even if session_limit is set
+    if plan_baseline_sha is not None:
+        try:
+            current_sha = _capture_git_diff(wt_path)
+            if current_sha and current_sha != plan_baseline_sha:
+                _log("INFO", "worktree HEAD differs from baseline (agent committed) — not parking",
+                     slug=slug_for(plan_name))
+                return False
+        except Exception:
+            pass
 
     slug = slug_for(plan_name)
     resets_at_epoch = parsed["resets_at_epoch"]
@@ -666,6 +679,7 @@ def run_plan(plan_path: str, config: dict, response_server: server.ResponseServe
             parsed, inprogress_path, current_step, plan_slug, plan_name,
             base_filename, plan_dir, bellows, db_path, project_path,
             wt_path, app_key, user_key, plan_id,
+            plan_baseline_sha=pre_diff,
         ):
             return
 
@@ -790,6 +804,7 @@ def run_plan(plan_path: str, config: dict, response_server: server.ResponseServe
                 parsed, inprogress_path, current_step, plan_slug, plan_name,
                 base_filename, plan_dir, bellows, db_path, project_path,
                 wt_path, app_key, user_key, plan_id,
+                plan_baseline_sha=pre_diff,
             ):
                 return
 

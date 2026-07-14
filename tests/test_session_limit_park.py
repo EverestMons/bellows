@@ -1,13 +1,19 @@
-"""Tests for session-limit detection, resets-at parsing, and park+auto-resume (plan 148)."""
+"""Tests for session-limit detection, resets-at parsing, and park+auto-resume (plan 148).
 
+Exit-1 rate-limit park detection tests (plan 185, diag-184 §6 matrix) added below
+the original plan-148 tests.
+"""
+
+import io
 import sys
 import os
+import json
 import sqlite3
 import tempfile
 import shutil
 import time
 from datetime import datetime, timedelta
-from unittest.mock import patch
+from unittest.mock import patch, MagicMock
 from zoneinfo import ZoneInfo
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -391,3 +397,218 @@ def test_resume_unpark_rename(tmp_path):
     rows = conn.execute("SELECT plan_slug FROM parked_steps").fetchall()
     conn.close()
     assert len(rows) == 0
+
+
+# ==========================================
+# Exit-1 rate-limit park detection (plan 185, diag-184 §6 matrix)
+# ==========================================
+
+
+# --- _reset_epoch_from_rate_limit_event tests ---
+
+
+def test_reset_epoch_valid_resets_at():
+    """Valid resetsAt integer is returned as float."""
+    info = {"resetsAt": 1784053800, "rateLimitType": "five_hour"}
+    assert runner._reset_epoch_from_rate_limit_event(info) == 1784053800.0
+
+
+def test_reset_epoch_missing_resets_at_falls_back(capsys):
+    """Missing resetsAt falls back to ~now+5h."""
+    before = time.time()
+    result = runner._reset_epoch_from_rate_limit_event({})
+    after = time.time()
+    assert result >= before + 5 * 3600 - 1
+    assert result <= after + 5 * 3600 + 1
+    captured = capsys.readouterr()
+    assert "missing/invalid resetsAt" in captured.out
+
+
+# --- _check_exit1_rate_limit helper tests ---
+
+
+def test_exit1_five_hour_zero_progress_parkable():
+    """(i) exit-1 + five_hour rate_limit_event + zero progress → parkable, correct resets_at_epoch."""
+    stream = "\n".join([
+        json.dumps({"type": "system", "subtype": "init", "session_id": "test-sess"}),
+        json.dumps({"type": "rate_limit_event", "rate_limit_info": {
+            "rateLimitType": "five_hour", "resetsAt": 1784053800,
+            "overageStatus": "rejected", "status": "allowed"
+        }}),
+        json.dumps({"type": "assistant", "message": {
+            "content": [{"type": "tool_use", "name": "Read", "input": {"file_path": "/tmp/plan.md"}}],
+            "usage": {"output_tokens": 4}
+        }}),
+    ])
+    result = runner._check_exit1_rate_limit(stream)
+    assert result is not None
+    assert result["session_limit"] is True
+    assert result["resets_at_epoch"] == 1784053800.0
+
+
+def test_exit1_no_rate_limit_event_not_parkable():
+    """(ii) exit-1, NO rate_limit_event → NOT parkable (gate_failure)."""
+    stream = "\n".join([
+        json.dumps({"type": "system", "subtype": "init", "session_id": "test-sess"}),
+        json.dumps({"type": "assistant", "message": {
+            "content": [{"type": "text", "text": "Reading..."}],
+            "usage": {"output_tokens": 10}
+        }}),
+    ])
+    result = runner._check_exit1_rate_limit(stream)
+    assert result is None
+
+
+def test_exit1_five_hour_with_progress_not_parkable():
+    """(iii) exit-1 + five_hour + Write tool_use + output_tokens >= 500 → NOT parkable."""
+    stream = "\n".join([
+        json.dumps({"type": "system", "subtype": "init", "session_id": "test-sess"}),
+        json.dumps({"type": "rate_limit_event", "rate_limit_info": {
+            "rateLimitType": "five_hour", "resetsAt": 1784053800,
+            "overageStatus": "rejected"
+        }}),
+        json.dumps({"type": "assistant", "message": {
+            "content": [{"type": "tool_use", "name": "Write", "input": {"file_path": "/tmp/out.md", "content": "findings..."}}],
+            "usage": {"output_tokens": 2000}
+        }}),
+    ])
+    result = runner._check_exit1_rate_limit(stream)
+    assert result is None
+
+
+def test_graceful_429_session_limit_still_parkable():
+    """(iv) Graceful 429 'session limit' result (exit 0) → still parkable via existing _check_session_limit path (no regression)."""
+    event = {
+        "type": "result",
+        "subtype": "success",
+        "is_error": True,
+        "api_error_status": 429,
+        "num_turns": 1,
+        "result": "You've hit your session limit · resets 11:50pm (America/Chicago)",
+        "stop_reason": "stop_sequence",
+        "total_cost_usd": 0,
+        "usage": {"input_tokens": 0, "output_tokens": 0},
+    }
+    result = runner._check_session_limit(event)
+    assert result is not None
+    assert result["session_limit"] is True
+    assert isinstance(result["resets_at_epoch"], float)
+    assert result["resets_at_epoch"] > time.time()
+
+
+# --- Integration tests: run_step end-to-end with mocked Popen ---
+
+
+def _make_exit1_popen(stdout_data, stderr_data=""):
+    """Create a mock Popen for exit-1 scenarios."""
+    proc = MagicMock()
+    proc.stdout = io.StringIO(stdout_data)
+    proc.stderr = io.StringIO(stderr_data)
+    proc.returncode = 1
+    proc.poll = MagicMock(side_effect=[None, 1])
+    proc.kill = MagicMock()
+    return proc
+
+
+def test_exit1_rate_limit_integration_parkable(tmp_path):
+    """Integration: run_step with exit-1 + five_hour event + zero progress returns session_limit dict."""
+    stream = "\n".join([
+        json.dumps({"type": "system", "subtype": "init", "session_id": "test-sess"}),
+        json.dumps({"type": "rate_limit_event", "rate_limit_info": {
+            "rateLimitType": "five_hour", "resetsAt": 1784053800,
+            "overageStatus": "rejected", "status": "allowed"
+        }}),
+        json.dumps({"type": "assistant", "message": {
+            "content": [{"type": "tool_use", "name": "Read", "input": {"file_path": "/tmp/plan.md"}}],
+            "usage": {"output_tokens": 4}
+        }}),
+    ])
+    proc = _make_exit1_popen(stream)
+
+    with patch("runner.LOGS_DIR", tmp_path), \
+         patch("runner.subprocess.Popen", return_value=proc), \
+         patch("runner.time.sleep"):
+        result = runner.run_step("test", "/tmp", "claude-sonnet-4-6")
+
+    assert result["session_limit"] is True
+    assert result["resets_at_epoch"] == 1784053800.0
+    assert result["stop_reason"] == "session_limit"
+    assert result["is_error"] is True
+
+
+def test_exit1_no_rate_limit_integration_gate_failure(tmp_path):
+    """Integration: run_step with exit-1 but NO rate_limit_event → gate_failure (stop_reason='error')."""
+    stream = "\n".join([
+        json.dumps({"type": "system", "subtype": "init", "session_id": "test-sess"}),
+        json.dumps({"type": "assistant", "message": {
+            "content": [{"type": "text", "text": "Starting..."}],
+            "usage": {"output_tokens": 10}
+        }}),
+    ])
+    proc = _make_exit1_popen(stream)
+
+    with patch("runner.LOGS_DIR", tmp_path), \
+         patch("runner.subprocess.Popen", return_value=proc), \
+         patch("runner.time.sleep"):
+        result = runner.run_step("test", "/tmp", "claude-sonnet-4-6")
+
+    assert result.get("session_limit") is not True
+    assert result["stop_reason"] == "error"
+    assert result["is_error"] is True
+
+
+def test_exit1_five_hour_with_progress_integration_gate_failure(tmp_path):
+    """Integration: run_step with exit-1 + five_hour + Write progress → gate_failure."""
+    stream = "\n".join([
+        json.dumps({"type": "system", "subtype": "init", "session_id": "test-sess"}),
+        json.dumps({"type": "rate_limit_event", "rate_limit_info": {
+            "rateLimitType": "five_hour", "resetsAt": 1784053800,
+            "overageStatus": "rejected"
+        }}),
+        json.dumps({"type": "assistant", "message": {
+            "content": [{"type": "tool_use", "name": "Write", "input": {"file_path": "/tmp/out.md", "content": "done"}}],
+            "usage": {"output_tokens": 2000}
+        }}),
+    ])
+    proc = _make_exit1_popen(stream)
+
+    with patch("runner.LOGS_DIR", tmp_path), \
+         patch("runner.subprocess.Popen", return_value=proc), \
+         patch("runner.time.sleep"):
+        result = runner.run_step("test", "/tmp", "claude-sonnet-4-6")
+
+    assert result.get("session_limit") is not True
+    assert result["stop_reason"] == "error"
+
+
+# --- bellows.py backup guard test ---
+
+
+def test_maybe_park_backup_guard_blocks_when_head_differs(tmp_path):
+    """Backup guard: _maybe_park_session_limit returns False when worktree HEAD differs from baseline."""
+    decisions_dir = tmp_path / "decisions"
+    decisions_dir.mkdir()
+    base_filename = "executable-888.md"
+    inprogress_path = str(decisions_dir / f"in-progress-{base_filename}")
+    with open(inprogress_path, "w") as f:
+        f.write("# Test plan")
+
+    parsed = {
+        "session_limit": True,
+        "resets_at_epoch": time.time() + 3600,
+        "resets_at_raw": "",
+        "session_id": "test-session",
+        "cost_usd": 0.0,
+    }
+
+    with patch("bellows._capture_git_diff", return_value="abc123def"), \
+         patch("bellows._teardown_worktree"), \
+         patch("bellows.notifier"):
+        result = bellows._maybe_park_session_limit(
+            parsed, inprogress_path, 1, "888", "executable-888.md",
+            base_filename, str(decisions_dir), None, str(tmp_path / "test.db"),
+            "/tmp/project", "/tmp/wt", "", "", None,
+            plan_baseline_sha="000000baseline",
+        )
+    assert result is False
+    assert os.path.exists(inprogress_path)
