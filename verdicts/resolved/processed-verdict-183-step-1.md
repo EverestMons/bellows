@@ -1,0 +1,6 @@
+verdict: continue
+Plan 183 Step 1 (DEV — schema v16 + parse-track tables) — proceed to Step 2. The sole gate failure is scope_check on two EXISTING test files (tests/test_contract_schema_migration.py, tests/test_provenance_columns.py) not literally named in the scope list — the KNOWN-BENIGN scope_check-on-unnamed-tests class (precedent: plan 169, where test_provenance_columns.py fired identically; 2026-06-18 class). The plan's scope line explicitly authorized "plus any tests/test_*.py whose assertions this change touches (new or existing)."
+
+Verified the diff (commit eadbf70): both changes are MANDATORY consequences of the version bump — updating hardcoded schema-version assertions 15→16 (CURRENT_SCHEMA_VERSION == 16; DB version stamp 16; test_schema_version_is_15 → _16). Without them those two tests would FAIL. This is correct, minimal, and in-scope-in-spirit; NOT scope creep.
+
+All other gates PASS (receipt Complete, no ceo_flags/errors, deposits present, rule_22 clean, file_change_audit 7 files). The substantive deliverable is right: parsed_rate_candidates + parse_reconciliation_results added additively (CREATE TABLE/INDEX IF NOT EXISTS) to both fresh-DB and v15→v16 migration paths, per diag-182 §3; no existing-table DDL altered. CEO delegated verdict authority (2026-07-02); benign gate failure, continue-with-reasoning. Resume at Step 2.
