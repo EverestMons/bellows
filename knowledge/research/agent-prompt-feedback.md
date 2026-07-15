@@ -1,5 +1,8 @@
 # Agent Prompt Feedback
 
+- Plan instructions were precise and actionable — the exec-194 log citation made root cause verification trivial
+- The "verify backstop is intact" sub-task was efficient: grep + read confirmed the wiring without ambiguity
+
 - None. The plan was clear and correctly scoped; the idempotent UPDATE pattern with `AND outcome IS NULL` guard worked as designed.
 
 - The plan's QA step prompt correctly required verification of all three terminal branches (continue-to-done, halt, stop) — this is a good pattern for lifecycle-write fixes where the same variable feeds multiple downstream sites.
@@ -40,8 +43,6 @@ No feedback items — plan instructions were clear and complete.
 No prompt feedback to report. Step 2 instructions were precise — verification table structure and individual test execution requirements were clear.
 
 No prompt feedback to report. The plan instructions were clear and the existing `_extract_plan_required_deposits` idiom provided a clean template to follow.
-
-Plan 185, Step 2 (QA): No prompt feedback items. The 7-row verification table structure mapped 1:1 to testable claims, each with line-number precision. The 4-case test matrix (diag-184 §6) was well-specified — tests i–iv mapped cleanly to unit tests, and the integration tests provided end-to-end coverage via mocked Popen.
 
 No prompt-feedback observations. Plan instructions were clear, verification rows were specific and testable.
 
