@@ -1,0 +1,5 @@
+verdict: continue
+Step 4 (QA) verified — gates clean (0 failures) + Planner check (b) confirmed by direct read of raw evidence.
+- Full suite raw: "2 failed, 2082 passed, 1 warning in 838.85s" — the 2 are the documented pre-existing; zero regressions (+26 new tests).
+- (a) contract-page upload -> contract_documents, NO carrier_documents, NO bridge row (11 tests); (b) Tier-1: scope==contract -> source_document_id NULL, contract_id resolved from contract_documents (test_tier1_confirm_writes_null_source_document); (c) GET /documents/<id>/file?scope=contract serves PDF + blocks ../../etc/passwd traversal (3 tests); (d) re-parse-contract-doc replaces candidates + verifies contract_id (2 tests); (e) carrier path defaults doc_scope=carrier, Tier 2 unchanged, carrier-page upload untouched; (f) FROZEN core unchanged. Rule 20 banner verbatim.
+Final step (4 of 4) -> move plan 196 to Done/. Contract-owned document scope COMPLETE: 3-scope model (ADR Amendment B) shipped — contract-owned store + Tier-1 wiring + file-serve/re-parse + owned-docs UI + glossary; exec-191 upload re-pointed from carrier to contract-owned. Commits 6377517 (s1) + s2 + 4ffcb3a (s3).
