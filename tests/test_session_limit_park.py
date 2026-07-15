@@ -476,6 +476,79 @@ def test_exit1_five_hour_with_progress_not_parkable():
     assert result is None
 
 
+def test_exit1_exec194_regression_read_only_turns_parkable():
+    """Regression for exec-194: five_hour + 4 read-only tool_results (turns=4, tokens=48, mutating=False) → parkable.
+
+    exec-194 was false-blocked by num_turns > 1 despite zero committable progress.
+    """
+    stream = "\n".join([
+        json.dumps({"type": "system", "subtype": "init", "session_id": "test-sess"}),
+        json.dumps({"type": "rate_limit_event", "rate_limit_info": {
+            "rateLimitType": "five_hour", "resetsAt": 1784053800,
+            "overageStatus": "rejected", "status": "allowed"
+        }}),
+        # 4 assistant Read tool_use + user tool_result pairs (simulating plan + 3 file reads)
+        json.dumps({"type": "assistant", "message": {
+            "content": [{"type": "tool_use", "name": "Read", "input": {"file_path": "/tmp/plan.md"}}],
+            "usage": {"output_tokens": 12}
+        }}),
+        json.dumps({"type": "user", "message": {"content": [{"type": "tool_result", "tool_use_id": "t1"}]}}),
+        json.dumps({"type": "assistant", "message": {
+            "content": [{"type": "tool_use", "name": "Read", "input": {"file_path": "/tmp/src.py"}}],
+            "usage": {"output_tokens": 12}
+        }}),
+        json.dumps({"type": "user", "message": {"content": [{"type": "tool_result", "tool_use_id": "t2"}]}}),
+        json.dumps({"type": "assistant", "message": {
+            "content": [{"type": "tool_use", "name": "Read", "input": {"file_path": "/tmp/test.py"}}],
+            "usage": {"output_tokens": 12}
+        }}),
+        json.dumps({"type": "user", "message": {"content": [{"type": "tool_result", "tool_use_id": "t3"}]}}),
+        json.dumps({"type": "assistant", "message": {
+            "content": [{"type": "tool_use", "name": "Read", "input": {"file_path": "/tmp/other.py"}}],
+            "usage": {"output_tokens": 12}
+        }}),
+        json.dumps({"type": "user", "message": {"content": [{"type": "tool_result", "tool_use_id": "t4"}]}}),
+    ])
+    result = runner._check_exit1_rate_limit(stream)
+    assert result is not None, "exec-194 regression: read-only turns must not block park"
+    assert result["session_limit"] is True
+    assert result["resets_at_epoch"] == 1784053800.0
+
+
+def test_exit1_high_turns_high_tokens_no_mutating_parkable():
+    """High turns + high tokens but NO mutating tool use → parkable (turns/tokens are log-only)."""
+    events = [
+        json.dumps({"type": "rate_limit_event", "rate_limit_info": {
+            "rateLimitType": "five_hour", "resetsAt": 1784053800,
+        }}),
+    ]
+    for i in range(10):
+        events.append(json.dumps({"type": "assistant", "message": {
+            "content": [{"type": "tool_use", "name": "Read", "input": {"file_path": f"/tmp/f{i}.py"}}],
+            "usage": {"output_tokens": 200}
+        }}))
+        events.append(json.dumps({"type": "user", "message": {"content": [{"type": "tool_result", "tool_use_id": f"t{i}"}]}}))
+    stream = "\n".join(events)
+    result = runner._check_exit1_rate_limit(stream)
+    assert result is not None, "high turns/tokens without mutating tool should park"
+    assert result["session_limit"] is True
+
+
+def test_exit1_five_hour_bash_tool_not_parkable():
+    """five_hour + Bash tool_use → NOT parkable (Bash is mutating/committable progress)."""
+    stream = "\n".join([
+        json.dumps({"type": "rate_limit_event", "rate_limit_info": {
+            "rateLimitType": "five_hour", "resetsAt": 1784053800,
+        }}),
+        json.dumps({"type": "assistant", "message": {
+            "content": [{"type": "tool_use", "name": "Bash", "input": {"command": "git add ."}}],
+            "usage": {"output_tokens": 10}
+        }}),
+    ])
+    result = runner._check_exit1_rate_limit(stream)
+    assert result is None, "Bash tool use is mutating — must block park"
+
+
 def test_graceful_429_session_limit_still_parkable():
     """(iv) Graceful 429 'session limit' result (exit 0) → still parkable via existing _check_session_limit path (no regression)."""
     event = {

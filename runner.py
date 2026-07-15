@@ -162,14 +162,23 @@ def _check_exit1_rate_limit(result_stdout: str, plan_slug: Optional[str] = None)
     if five_hour_event is None:
         return None
 
-    if num_turns > 1 or total_output_tokens >= 500 or has_mutating_tool_use:
-        _log("INFO", f"runner: five_hour rate_limit_event found but step had progress "
-             f"(turns={num_turns}, tokens={total_output_tokens}, mutating={has_mutating_tool_use}); "
+    # Only committable progress (mutating tool use) blocks a park.
+    # turns/tokens are log-only — exec-194 proved read-only tool_results
+    # (turns=4, mutating=False) false-blocked every real step.
+    # bellows._maybe_park_session_limit has a commit-check backstop
+    # (worktree HEAD vs baseline) that catches any stranded commits.
+    if has_mutating_tool_use:
+        _log("INFO", f"runner: five_hour rate_limit_event found but step made committable progress "
+             f"(mutating tool use; turns={num_turns}, tokens={total_output_tokens}); "
              f"not parking", slug=plan_slug)
         return None
 
     rate_limit_info = five_hour_event.get("rate_limit_info", {})
     resets_at_epoch = _reset_epoch_from_rate_limit_event(rate_limit_info, plan_slug)
+
+    _log("INFO", f"runner: five_hour event + no committable progress "
+         f"(turns={num_turns}, tokens={total_output_tokens}, mutating=False); parking",
+         slug=plan_slug)
 
     return {
         "session_limit": True,
