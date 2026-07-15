@@ -1,5 +1,8 @@
 # Agent Prompt Feedback
 
+- Plan QA step was well-structured: the five behavior checks mapped cleanly to verifiable assertions in code and tests
+- The "cite the new regression test" instruction in check (b) was helpful — it forced traceability between the QA claim and the actual test
+
 - Plan instructions were precise and actionable — the exec-194 log citation made root cause verification trivial
 - The "verify backstop is intact" sub-task was efficient: grep + read confirmed the wiring without ambiguity
 
