@@ -1,0 +1,5 @@
+verdict: continue
+Step 2 (QA) verified — gates clean (0 failures) + Planner check (b) by direct read of raw evidence.
+- Full suite raw: "2 failed, 2086 passed, 1 warning in 945.18s"; the 2 are the documented pre-existing failures; zero regressions (+4 dashboard tests).
+- (a) contract_dashboard.html:208 includes _contract_owned_docs.html -> dashboard shows the Contract Documents (owned) card + Upload Contract Document form (tests test_dashboard_shows_upload_form + test_dashboard_lists_existing_contract_docs); (b) upload from dashboard creates a contract_documents row + redirects back (302 to /contracts/700 when Referer is the dashboard); (c) linked-docs sub-page renders the identical card via the shared partial (test_linked_docs_page_still_renders_owned_card); (e) FROZEN core untouched. Rule 20 banner verbatim. Step 1 commit d232a54.
+Final step (2 of 2) -> move plan 200 to Done/. Contract-owned upload is now surfaced on the contract dashboard (the main contract page) via a shared partial; discoverability gap closed.
