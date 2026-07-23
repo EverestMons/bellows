@@ -1,0 +1,8 @@
+verdict: continue
+Plan 263 Step 1 (DEV) verified clean by the Planner. All gates PASS per the verdict-request (scope_check, deposit_exists, rule_22_verification; 5 files_changed = the 3 edited files + dev-log + the daemon's feedback regen).
+
+Rule 22(b) — the fix is complete and thorough (verified from the dev-log): (1) the em-dash U+2014 in the docstring → ASCII `--` (the sibling my Planner grep missed — see note); (2) `≠` U+2260 in the receipt body → `!=`; (3) `encoding="utf-8"` added to the receipt file write. The ASCII regression test `content.encode("ascii")` was added after the leak checks — the reliable guard (it tests the property directly; the Mac cannot simulate cp1252). Targeted tests 2 passed. Mac-side check: the receipt now reads `!= monday`, `content.encode("ascii")` succeeds, and nothing was written to the real single-writer `knowledge/handoff/`. `scripts/README.md` documents the Windows-safe convention (ASCII output + `encoding="utf-8"` + the ASCII test) for the follow-on scripts.
+
+⚠️ Note (Planner authoring defect, compensated): my sibling-sweep grep in the plan used `/usr/bin/grep -P`, which macOS BSD grep does NOT support — it silently returned "no other non-ASCII," a false negative that would have shipped the docstring em-dash. The DEV caught it anyway (the plan's "em-dashes, etc." hint + the ASCII-encode test) and adapted to `perl -ne '/[^\x00-\x7F]/'`. The reliable guard is the Python `.encode("ascii")` test (QA rows 3/4), not the grep — if the QA row-1 grep reads vacuous on the Mac, rows 3/4 still catch any non-ASCII. Lesson captured for future plans.
+
+Proceed to Step 2 (QA — full suite + ASCII re-verification).
