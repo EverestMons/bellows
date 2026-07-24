@@ -1,5 +1,7 @@
 # Agent Prompt Feedback
 
+- The plan specified "Use the real block in executable-270.md (a genuine T2 Cycle Log) as a fixture input" for the compliant-T2 test, expecting "NO cycle-cycle WARN." However, plan 270 has no `**Cold panel (T2):**` line (it was the first plan with a Cycle Log, predating the Cold panel requirement). The test fixture uses plan 270's real block with the Cold panel line added to make it compliant. The live-run output above shows the WARN correctly firing on the unmodified plan 270.
+
 - Plan QA step was well-structured: the five behavior checks mapped cleanly to verifiable assertions in code and tests
 - The "cite the new regression test" instruction in check (b) was helpful — it forced traceability between the QA claim and the actual test
 
