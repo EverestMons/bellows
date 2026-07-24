@@ -1,0 +1,61 @@
+--- Tier-less plan (executable-265.md) ---
+
+$ python3 scripts/plan_lint.py /Users/marklehn/Developer/GitHub/invoice-pulse/knowledge/decisions/Done/executable-265.md
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+PASS: (a) header — parsed
+PASS: (a) dispatch_mode — bellows
+PASS: (a) pause_for_verdict — always
+PASS: (b) step 1 deposits — 1 path(s)
+PASS: (b) step 2 deposits — 1 path(s)
+PASS: (c) QA banner pair — both strings present
+PASS: (d) step 1 scope — 8 file(s), 0 prefix(es)
+PASS: (d) step 2 scope — 1 file(s), 1 prefix(es)
+$ echo $?
+0
+
+--- T1 plan missing ACID lens (synthetic) ---
+
+WARN: Drafting Cycle block missing lens(es): ACID (DRAFTING_CYCLE.md §3)
+PASS: (a) header — parsed
+PASS: (a) dispatch_mode — bellows
+PASS: (a) pause_for_verdict — always
+EXIT: 0
+
+Both print the WARN AND exit 0. The check can never block a deposit.
+
+--- T2 plan missing cold-panel (synthetic) ---
+
+WARN: T2 plan missing cold-panel line in Drafting Cycle block (DRAFTING_CYCLE.md §3)
+PASS: (a) header — parsed
+PASS: (a) dispatch_mode — bellows
+PASS: (a) pause_for_verdict — always
+EXIT: 0
+
+--- T0 tier-only (synthetic) ---
+
+PASS: (a) header — parsed
+PASS: (a) dispatch_mode — bellows
+PASS: (a) pause_for_verdict — always
+EXIT: 0
+
+No drafting-cycle WARNs for T0. Only tier declaration is checked.
+
+--- Fold closing (synthetic) ---
+
+WARN: Drafting Cycle closing indicates fold as last event, not a dry lens pass (DRAFTING_CYCLE.md §2)
+PASS: (a) header — parsed
+PASS: (a) dispatch_mode — bellows
+PASS: (a) pause_for_verdict — always
+EXIT: 0
+
+--- Degenerate/empty Drafting Cycle block (synthetic) ---
+
+WARN: Drafting Cycle block missing lens(es): Weak spots, Destruction, Vulnerabilities, Integration, ACID (DRAFTING_CYCLE.md §3)
+WARN: T2 plan missing cold-panel line in Drafting Cycle block (DRAFTING_CYCLE.md §3)
+WARN: Drafting Cycle block has no **Closing:** line (DRAFTING_CYCLE.md §3)
+PASS: (a) header — parsed
+PASS: (a) dispatch_mode — bellows
+PASS: (a) pause_for_verdict — always
+EXIT: 0
+
+No crash. All degenerate conditions degrade to WARNs.

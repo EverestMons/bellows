@@ -1,0 +1,12 @@
+$ git --no-pager diff --stat HEAD~2..HEAD~1
+ .../plan-lint-drafting-gate-dev-2026-07-24.md      | 129 +++++++++++++++++++++
+ scripts/plan_lint.py                               |  41 +++++++
+ tests/test_plan_lint.py                            | 111 +++++++++++++++++-
+ 3 files changed, 280 insertions(+), 1 deletion(-)
+
+Scope limited to:
+- scripts/plan_lint.py (code)
+- tests/test_plan_lint.py (tests)
+- knowledge/development/plan-lint-drafting-gate-dev-2026-07-24.md (dev log)
+
+No other bellows module touched.

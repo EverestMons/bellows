@@ -1,0 +1,17 @@
+$ python3 scripts/plan_lint.py /Users/marklehn/Developer/GitHub/governance/knowledge/decisions/Done/executable-270.md
+WARN: T2 plan missing cold-panel line in Drafting Cycle block (DRAFTING_CYCLE.md §3)
+PASS: (a) header — parsed
+PASS: (a) dispatch_mode — bellows
+PASS: (a) pause_for_verdict — always
+PASS: (b) step 1 deposits — 1 path(s)
+PASS: (b) step 2 deposits — 1 path(s)
+PASS: (b) step 3 deposits — 1 path(s)
+PASS: (c) QA banner pair — both strings present
+$ echo $?
+0
+
+NOTE: Plan 270 emits the cold-panel WARN because it predates the Cold panel
+requirement (it was the plan that created DRAFTING_CYCLE.md). This is correct
+behavior — the check is working as designed. The test fixture
+(COMPLIANT_T2_PLAN) uses 270's real block with the Cold panel line added
+to test the "no WARN on compliant plan" path. Exit 0 confirmed.
