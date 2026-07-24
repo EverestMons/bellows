@@ -4,6 +4,9 @@
 ## Status: Phase 1 Complete — Live (daemon running, all 10 watched paths active)
 
 ## Completed
+### Plan 271
+- **DRAFTING_CYCLE.md §4 self-check live in plan_lint, warn-first** — plans are now reminded to declare `cycle_tier` and carry the Cycle Log structure; all checks emit WARNs (non-blocking), never FAILs; blocking deferred to a future one-line WARN→FAIL flip.
+
 ### Plan 150
 Fix `_lc_plan_id` derivation in `_consume_verdicts` for type-prefixed verdict slugs (e.g. `qa-149`). Replaced bare `int(lookup_slug)` with regex-based parse using `plan_slug` that handles `qa-N`, `executable-N`, `diagnostic-N`, and bare `N` while degrading to `None` for legacy slug+date names. All three terminal branches (continue-to-done, halt, stop) now fire `mark_plan_state` for typed-slug plans. One-off repair of qa-149 lifecycle row from `abandoned` to `closed`. 3 new tests. Full suite 791 passed, 0 regressions. Rule 20 self-check PASSED. DAEMON RESTART REQUIRED.
 
