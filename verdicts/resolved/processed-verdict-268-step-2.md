@@ -1,0 +1,10 @@
+verdict: continue
+Plan 268 Step 2 (QA) verified clean by the Planner — terminal close authorized. All gates PASS (scope_check clean this time, rule_20_self_check banner byte-exact, rule_22_verification table-clean-no-hedging).
+
+Rule 22(b) — 7/7 rows, and critically **every row was EXECUTED, not argued**. The QA report states it explicitly ("Every row executed via direct observation... No row marked PASS on inherited reasoning"), which is precisely the substitution this plan existed to correct. Evidence: (1) four `client.post(...)` tests named with line numbers — plan 267 had zero; (2) four timestamped receipts actually produced, each test asserting the file exists in the isolated dir — the assertion that would have caught a bad tuple unpack; (3) leak-free with a full receipt pasted, none of the planted values present (`12.5`, `first.last@example.com`, `C:\Users\TESTUSER\file.pdf`); (4) ASCII verified per receipt; (5) isolation held — `git status --porcelain knowledge/handoff/` empty BOTH before and after a 2389-item suite run, so the real syncing handoff directory was never written; (6) no handler defect — `git diff main..HEAD -- web/system.py` empty, all four unpack shapes correct as shipped; (7) full suite 2387 passed / 2 known pre-existing / 0 regressions (+4 = exactly the new tests).
+
+The plan-267 row-4 gap is now genuinely closed: the Write-Receipt button is proven working end-to-end across all four handlers. The CEO may use it.
+
+Worth preserving from this arc: insisting on execution rather than accepting inherited reasoning found something better than the bug it was hunting — `web/system.py` binds `from config import BASE_DIR` at module level, so the project's autouse `_isolate_knowledge_writes` fixture does NOT reach it. Any future test writing a receipt would have polluted the real git-tracked, syncing `knowledge/handoff/`. That trap is now closed by an explicit `receipt_client` fixture and proven empty. The tuple-unpack risk turned out to be unfounded; the isolation gap was real and more dangerous.
+
+Terminal step — proceed to close (move plan 268 to Done/, merge to invoice-pulse main).
