@@ -1,5 +1,7 @@
 # Agent Prompt Feedback
 
+- Verification item 2 says "plan_lint on Done/executable-270.md emits NO drafting-cycle WARN" — but plan 270 legitimately emits the cold-panel WARN because it predates the Cold panel requirement. The DEV step correctly flagged this. The test fixture (COMPLIANT_T2_PLAN) uses 270's real block with the Cold panel line added, which does pass clean. Consider adjusting the plan's verification wording to reference the test fixture rather than the raw 270 file, since 270 is not fully compliant by current standards.
+
 - The plan specified "Use the real block in executable-270.md (a genuine T2 Cycle Log) as a fixture input" for the compliant-T2 test, expecting "NO cycle-cycle WARN." However, plan 270 has no `**Cold panel (T2):**` line (it was the first plan with a Cycle Log, predating the Cold panel requirement). The test fixture uses plan 270's real block with the Cold panel line added to make it compliant. The live-run output above shows the WARN correctly firing on the unmodified plan 270.
 
 - Plan QA step was well-structured: the five behavior checks mapped cleanly to verifiable assertions in code and tests
