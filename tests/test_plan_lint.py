@@ -347,7 +347,7 @@ Some analysis goes here.
     result = _run_lint(plan)
     assert result.returncode == 0, f"Expected exit 0, got {result.returncode}\nstdout: {result.stdout}"
     assert "(e)" not in result.stdout
-    assert "WARN" not in result.stdout
+    assert "consider using uppercase" not in result.stdout
 
 
 def test_lint_titlecase_step_no_qa_steps_warns_only():
@@ -365,3 +365,112 @@ def test_lint_titlecase_step_no_qa_steps_warns_only():
     assert "WARN" in result.stdout
     assert "uppercase" in result.stdout.lower()
     assert "(e)" not in result.stdout
+
+
+# --- Drafting Cycle self-check (DRAFTING_CYCLE.md §4) ---
+
+# Compliant T2 fixture — real Drafting Cycle block from executable-270.md
+# (governance — Codify the Drafting Cycle), with Cold panel line added.
+COMPLIANT_T2_PLAN = """\
+# governance — Codify the Drafting Cycle
+**Date:** 2026-07-23 | **Dispatch Mode:** bellows | **pause_for_verdict:** always | **cycle_tier:** T2
+
+## Drafting Cycle
+**Tier:** T2 — triggers fired: T-6 (governance surface: edits the template + adds a doctrine file), T-8 (novel: first codification of the cycle as a system). Run by the Planner pre-deposit.
+**Walks:** 2.
+- Weak spots:         w1 1 folded (extraction must be proven complete BEFORE the section is removed); w2 dry.
+- Destruction:        w1 1 folded (the shrink deletes ~50 lines of live doctrine incl. `five **named lenses**`); w2 dry.
+- Vulnerabilities:    w1 1 folded (3.2 observe-the-effect: QA must confirm the file exists + the pointer resolves + nothing lost); w2 dry.
+- Integration-record: w1 dry (RULE_20 / READONLY_AUDIT_CONTRACT precedent — referenced not inlined; CEO-confirmed dedicated file).
+- ACID:               w1 1 folded (5.1/5.2: the file write + template edit + staging-file cleanup land atomically); w2 dry.
+**Cold panel (T2):** run; 0 material findings.
+**Conflicts:** none — the lenses agree (extract carefully, prove nothing lost).
+**Closing:** walk 2 dry; last event = lens pass; deposited once.
+
+## CEO Context
+
+The CEO directed tightening the Drafting Cycle.
+"""
+
+# Tier-less fixture — real header from executable-265.md (invoice-pulse follow-on scripts).
+TIERLESS_PLAN = """\
+# invoice-pulse — Scripts channel: 3 follow-on pure-aggregate query scripts (paste_source, email-lookup, source-retention)
+**Date:** 2026-07-23 | **Dispatch Mode:** bellows | **pause_for_verdict:** always
+
+## CEO Context
+
+The scripts channel is proven end-to-end.
+"""
+
+
+def test_lint_cycle_compliant_t2_no_warn():
+    """(f-a) Compliant T2 plan (real 270 block) → NO drafting-cycle WARN, exit 0."""
+    result = _run_lint(COMPLIANT_T2_PLAN)
+    assert result.returncode == 0, f"Expected exit 0, got {result.returncode}\nstdout: {result.stdout}"
+    assert "cycle_tier" not in result.stdout
+    assert "Drafting Cycle" not in result.stdout
+    assert "cold-panel" not in result.stdout.lower()
+    assert "Closing" not in result.stdout
+
+
+def test_lint_cycle_tierless_warns():
+    """(f-b) Tier-less plan (real 265 header) → cycle_tier WARN, exit 0."""
+    result = _run_lint(TIERLESS_PLAN)
+    assert result.returncode == 0, f"Expected exit 0 (WARN only), got {result.returncode}\nstdout: {result.stdout}"
+    assert "no cycle_tier declared" in result.stdout
+
+
+def test_lint_cycle_t1_missing_acid_warns():
+    """(f-c) T1 plan missing ACID lens → WARN naming ACID, exit 0."""
+    plan = """\
+# Test Plan
+**Date:** 2026-07-24 | **Dispatch Mode:** bellows | **pause_for_verdict:** always | **cycle_tier:** T1
+
+## Drafting Cycle
+**Tier:** T1 — triggers fired: T-8 (novel).
+**Walks:** 1.
+- Weak spots:         w1 dry.
+- Destruction:        w1 dry.
+- Vulnerabilities:    w1 dry.
+- Integration-record: w1 dry.
+**Closing:** walk 1 dry; last event = lens pass; deposited once.
+"""
+    result = _run_lint(plan)
+    assert result.returncode == 0, f"Expected exit 0 (WARN only), got {result.returncode}\nstdout: {result.stdout}"
+    assert "ACID" in result.stdout
+    assert "missing lens" in result.stdout.lower()
+
+
+def test_lint_cycle_t0_no_block_warn():
+    """(f-d) T0 plan with just tier declaration → NO block/lens/closing WARN, exit 0."""
+    plan = """\
+# Test Plan
+**Date:** 2026-07-24 | **Dispatch Mode:** bellows | **pause_for_verdict:** always | **cycle_tier:** T0
+"""
+    result = _run_lint(plan)
+    assert result.returncode == 0, f"Expected exit 0, got {result.returncode}\nstdout: {result.stdout}"
+    assert "Drafting Cycle" not in result.stdout
+    assert "cycle_tier" not in result.stdout
+    assert "Closing" not in result.stdout
+
+
+def test_lint_cycle_fold_closing_warns():
+    """(f-e) Plan whose closing line is a fold → WARN about fold, exit 0."""
+    plan = """\
+# Test Plan
+**Date:** 2026-07-24 | **Dispatch Mode:** bellows | **pause_for_verdict:** always | **cycle_tier:** T1
+
+## Drafting Cycle
+**Tier:** T1 — triggers fired: T-8 (novel).
+**Walks:** 1.
+- Weak spots:         w1 1 folded.
+- Destruction:        w1 dry.
+- Vulnerabilities:    w1 dry.
+- Integration-record: w1 dry.
+- ACID:               w1 dry.
+**Closing:** walk 1 1 folded; deposited once.
+"""
+    result = _run_lint(plan)
+    assert result.returncode == 0, f"Expected exit 0 (WARN only), got {result.returncode}\nstdout: {result.stdout}"
+    assert "fold" in result.stdout.lower()
+    assert "dry lens pass" in result.stdout.lower()

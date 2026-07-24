@@ -160,6 +160,47 @@ def lint(plan_path):
         for n in sorted(qa_steps_set - qa_labeled_steps):
             print(f"WARN: qa_steps lists step {n} but step {n} is not QA-labeled — it will be gated as QA (plan-133 trap)")
 
+    # (f) Drafting Cycle self-check (DRAFTING_CYCLE.md §4, warn-first)
+    cycle_tier_raw = header.get("cycle_tier", "") if header else ""
+    ct_match = re.match(r'^T([012])$', cycle_tier_raw)
+    if not cycle_tier_raw:
+        print("WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)")
+    elif not ct_match:
+        print(f"WARN: cycle_tier {cycle_tier_raw!r} not recognized (expected T0, T1, or T2)")
+    else:
+        tier_num = int(ct_match.group(1))
+        if tier_num >= 1:
+            dc_match = re.search(r'^## Drafting Cycle\s*$', plan_text, re.MULTILINE)
+            if not dc_match:
+                print(f"WARN: {cycle_tier_raw} plan has no '## Drafting Cycle' block (DRAFTING_CYCLE.md §3)")
+            else:
+                dc_start = dc_match.end()
+                next_h2 = re.search(r'^## ', plan_text[dc_start:], re.MULTILINE)
+                dc_block = plan_text[dc_start:dc_start + next_h2.start()] if next_h2 else plan_text[dc_start:]
+
+                required_lenses = [
+                    ("Weak spots", r'weak\s*spots'),
+                    ("Destruction", r'destruction'),
+                    ("Vulnerabilities", r'vulnerabilit'),
+                    ("Integration", r'integration'),
+                    ("ACID", r'acid'),
+                ]
+                missing = [name for name, pat in required_lenses if not re.search(pat, dc_block, re.IGNORECASE)]
+                if missing:
+                    print(f"WARN: Drafting Cycle block missing lens(es): {', '.join(missing)} (DRAFTING_CYCLE.md §3)")
+
+                if tier_num == 2:
+                    if not re.search(r'cold[\s-]panel', dc_block, re.IGNORECASE):
+                        print("WARN: T2 plan missing cold-panel line in Drafting Cycle block (DRAFTING_CYCLE.md §3)")
+
+                closing_match = re.search(r'^\*\*Closing:\*\*\s*(.*)', dc_block, re.MULTILINE)
+                if not closing_match:
+                    print("WARN: Drafting Cycle block has no **Closing:** line (DRAFTING_CYCLE.md §3)")
+                else:
+                    closing_text = closing_match.group(1).lower()
+                    if 'fold' in closing_text and 'dry' not in closing_text:
+                        print("WARN: Drafting Cycle closing indicates fold as last event, not a dry lens pass (DRAFTING_CYCLE.md §2)")
+
     for status, check, detail in results:
         print(f"{status}: {check} — {detail}")
 
