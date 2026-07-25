@@ -1,5 +1,10 @@
 # Agent Prompt Feedback
 
+- The CB1 safe rule (fold-token AND no-dry) is the decisive design contribution of the cold panel — the warm walks' naive `;`-split "last segment" approach would have false-WARNed on every real Walk-3 ACID line containing `dry. N folds cohere`. The plan correctly embedded CB1 into Task B's specification.
+- The diagnostic's §Q2 sketch (`;`-split last segment) was correctly flagged as WB1 (sketched, not final) — the DEV-authored parser uses a whole-line regex + SAFE rule instead. Rule 27 honored (diagnostic designs referenced, not blindly copied).
+- Task C's fixture-only edit worked cleanly because the WARN message was preserved (CB2) — no assertion changes needed.
+- The real-log embedded fixtures (V1) are high-value — they catch parser regressions against the actual mixed formats (`.`/`→`/`; wN dry`/cold-panel lines) that idealized fixtures would miss.
+
 - Verification item 2 says "plan_lint on Done/executable-270.md emits NO drafting-cycle WARN" — but plan 270 legitimately emits the cold-panel WARN because it predates the Cold panel requirement. The DEV step correctly flagged this. The test fixture (COMPLIANT_T2_PLAN) uses 270's real block with the Cold panel line added, which does pass clean. Consider adjusting the plan's verification wording to reference the test fixture rather than the raw 270 file, since 270 is not fully compliant by current standards.
 
 - The plan specified "Use the real block in executable-270.md (a genuine T2 Cycle Log) as a fixture input" for the compliant-T2 test, expecting "NO cycle-cycle WARN." However, plan 270 has no `**Cold panel (T2):**` line (it was the first plan with a Cycle Log, predating the Cold panel requirement). The test fixture uses plan 270's real block with the Cold panel line added to make it compliant. The live-run output above shows the WARN correctly firing on the unmodified plan 270.
