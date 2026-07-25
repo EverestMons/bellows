@@ -4,6 +4,9 @@
 ## Status: Phase 1 Complete — Live (daemon running, all 10 watched paths active)
 
 ## Completed
+### Plan 280
+The (f) suite in `bellows/tests/test_plan_lint.py` now covers the T2 cold-panel branch — f-h added. The plan_lint §4 Drafting-Cycle checks are fully test-covered: f-a (compliant T2, no WARN), f-b (tierless → WARN), f-c (T1 missing ACID → WARN), f-d (T0 no block → no WARN), f-e (fold-closing → WARN), f-f (real-271), f-g (real-274), f-h (T2 missing cold-panel → WARN).
+
 ### Plan 277
 - **plan_lint §4 refined** — 189/N5 reads the last lens line's status (closing-line fallback for legacy logs), 190/N6 T0 regex loosened to `^T([012])\b`; warn-first preserved; Gate 2 Plan B complete, Plan A (doc codification + status advancement) unblocked.
 
