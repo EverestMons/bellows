@@ -1,5 +1,7 @@
 # Agent Prompt Feedback
 
+No prompt feedback to report. Plan was clear and unambiguous; test text was verbatim-applicable; insertion point and scope were well-specified.
+
 - The dev-log stated "13 new tests added" but the actual count is 12 new test functions (the `_fold_closing_warns` edit was a fixture change to an existing test, not a new test). Minor dev-log inaccuracy — the tests themselves are correct and comprehensive.
 - The CB1 safe rule (fold-token AND no-dry) correctly prevents false fold-WARNs on all 4 real-log embedded fixtures (271/274/275/diag-276), which contain the `→ dry. N folds cohere` pattern that would have false-WARNed under the diagnostic's naive `;`-split approach.
 - The `\b` regex fix for 190 is clean — confirmed a single occurrence at line 165, accepts bare T0/T1/T2 + collapsed T0 form, rejects T3/T0X.
