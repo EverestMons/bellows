@@ -4,6 +4,9 @@
 ## Status: Phase 1 Complete — Live (daemon running, all 10 watched paths active)
 
 ## Completed
+### Plan 277
+- **plan_lint §4 refined** — 189/N5 reads the last lens line's status (closing-line fallback for legacy logs), 190/N6 T0 regex loosened to `^T([012])\b`; warn-first preserved; Gate 2 Plan B complete, Plan A (doc codification + status advancement) unblocked.
+
 ### Plan 271
 - **DRAFTING_CYCLE.md §4 self-check live in plan_lint, warn-first** — plans are now reminded to declare `cycle_tier` and carry the Cycle Log structure; all checks emit WARNs (non-blocking), never FAILs; blocking deferred to a future one-line WARN→FAIL flip.
 
