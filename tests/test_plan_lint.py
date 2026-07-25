@@ -413,6 +413,33 @@ def test_lint_cycle_compliant_t2_no_warn():
     assert "Closing" not in result.stdout
 
 
+def test_lint_cycle_t2_missing_cold_panel_warns():
+    """(f-h) T2 plan with a full 5-lens block + dry closing but NO cold-panel line → WARN naming cold-panel, exit 0."""
+    plan = """\
+# Test Plan
+**Date:** 2026-07-24 | **Dispatch Mode:** bellows | **pause_for_verdict:** always | **cycle_tier:** T2
+
+## Drafting Cycle
+**Tier:** T2 — triggers fired: T-6 (governance surface), T-8 (novel).
+**Walks:** 2.
+- Weak spots:         w1 dry.
+- Destruction:        w1 dry.
+- Vulnerabilities:    w1 dry.
+- Integration-record: w1 dry.
+- ACID:               w1 dry.
+**Closing:** walk 1 dry; last event = lens pass; deposited once.
+"""
+    result = _run_lint(plan)
+    assert result.returncode == 0, f"Expected exit 0 (WARN only), got {result.returncode}\nstdout: {result.stdout}"
+    # observe-the-effect: the cold-panel WARN actually FIRES (this is the branch under test)
+    assert "cold-panel" in result.stdout.lower()
+    assert "missing cold-panel" in result.stdout.lower()
+    # isolation: the fixture is otherwise-compliant, so NO other (f) WARN fires
+    assert "missing lens" not in result.stdout.lower()
+    assert "no cycle_tier" not in result.stdout.lower()
+    assert "dry lens pass" not in result.stdout.lower()  # no fold-closing WARN
+
+
 def test_lint_cycle_tierless_warns():
     """(f-b) Tier-less plan (real 265 header) → cycle_tier WARN, exit 0."""
     result = _run_lint(TIERLESS_PLAN)
