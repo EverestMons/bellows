@@ -162,7 +162,7 @@ def lint(plan_path):
 
     # (f) Drafting Cycle self-check (DRAFTING_CYCLE.md §4, warn-first)
     cycle_tier_raw = header.get("cycle_tier", "") if header else ""
-    ct_match = re.match(r'^T([012])$', cycle_tier_raw)
+    ct_match = re.match(r'^T([012])\b', cycle_tier_raw)
     if not cycle_tier_raw:
         print("WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)")
     elif not ct_match:
@@ -193,13 +193,31 @@ def lint(plan_path):
                     if not re.search(r'cold[\s-]panel', dc_block, re.IGNORECASE):
                         print("WARN: T2 plan missing cold-panel line in Drafting Cycle block (DRAFTING_CYCLE.md §3)")
 
-                closing_match = re.search(r'^\*\*Closing:\*\*\s*(.*)', dc_block, re.MULTILINE)
-                if not closing_match:
-                    print("WARN: Drafting Cycle block has no **Closing:** line (DRAFTING_CYCLE.md §3)")
-                else:
-                    closing_text = closing_match.group(1).lower()
-                    if 'fold' in closing_text and 'dry' not in closing_text:
+                lens_line_re = re.compile(
+                    r'^-\s*(?:cold[\s-]+)?(?:weak[\s-]*spots|destruction|vulnerabilit|integration|acid)\b',
+                    re.IGNORECASE,
+                )
+                closing_pos = re.search(r'^\*\*Closing:\*\*', dc_block, re.MULTILINE)
+                search_region = dc_block[:closing_pos.start()] if closing_pos else dc_block
+                last_lens_line = None
+                for line in search_region.splitlines():
+                    if lens_line_re.match(line):
+                        last_lens_line = line
+
+                if last_lens_line is not None:
+                    ll_lower = last_lens_line.lower()
+                    has_fold = 'fold' in ll_lower
+                    has_dry = 'dry' in ll_lower
+                    if has_fold and not has_dry:
                         print("WARN: Drafting Cycle closing indicates fold as last event, not a dry lens pass (DRAFTING_CYCLE.md §2)")
+                else:
+                    closing_match = re.search(r'^\*\*Closing:\*\*\s*(.*)', dc_block, re.MULTILINE)
+                    if not closing_match:
+                        print("WARN: Drafting Cycle block has no **Closing:** line (DRAFTING_CYCLE.md §3)")
+                    else:
+                        closing_text = closing_match.group(1).lower()
+                        if 'fold' in closing_text and 'dry' not in closing_text:
+                            print("WARN: Drafting Cycle closing indicates fold as last event, not a dry lens pass (DRAFTING_CYCLE.md §2)")
 
     for status, check, detail in results:
         print(f"{status}: {check} — {detail}")
