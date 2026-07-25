@@ -1,5 +1,9 @@
 # Agent Prompt Feedback
 
+- The dev-log stated "13 new tests added" but the actual count is 12 new test functions (the `_fold_closing_warns` edit was a fixture change to an existing test, not a new test). Minor dev-log inaccuracy — the tests themselves are correct and comprehensive.
+- The CB1 safe rule (fold-token AND no-dry) correctly prevents false fold-WARNs on all 4 real-log embedded fixtures (271/274/275/diag-276), which contain the `→ dry. N folds cohere` pattern that would have false-WARNed under the diagnostic's naive `;`-split approach.
+- The `\b` regex fix for 190 is clean — confirmed a single occurrence at line 165, accepts bare T0/T1/T2 + collapsed T0 form, rejects T3/T0X.
+
 - The CB1 safe rule (fold-token AND no-dry) is the decisive design contribution of the cold panel — the warm walks' naive `;`-split "last segment" approach would have false-WARNed on every real Walk-3 ACID line containing `dry. N folds cohere`. The plan correctly embedded CB1 into Task B's specification.
 - The diagnostic's §Q2 sketch (`;`-split last segment) was correctly flagged as WB1 (sketched, not final) — the DEV-authored parser uses a whole-line regex + SAFE rule instead. Rule 27 honored (diagnostic designs referenced, not blindly copied).
 - Task C's fixture-only edit worked cleanly because the WARN message was preserved (CB2) — no assertion changes needed.
