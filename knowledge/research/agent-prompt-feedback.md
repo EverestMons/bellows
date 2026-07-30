@@ -1,5 +1,10 @@
 # Agent Prompt Feedback
 
+- The plan's three-numbering-system warning (CEO Context) was valuable — gap-map rows, dev-log items, and QA rows are indeed distinct.
+- The fixture-isolation requirement (plan 280's f-h discipline) was correctly extended to include the fifth marker (`no **Closing:** line`) now that fix (c) makes the missing-Closing WARN reachable. This was stated in the plan and was not an oversight.
+- The DESIGN FORK on (b) was correctly resolved by the negation-aware whole-line rule. The plan's correction about plan 275 being the real counterexample to the `;`-split design was verified by execution.
+- The wrapper-vs-content distinction for real-log fixtures was important: the DC block content is verbatim, but the header wrapper must be constructed to avoid triggering blocking checks (e) and (c) that are irrelevant to the `(f)` checks being tested. The existing fixtures (271, 274, 275, diag-276) already followed this pattern.
+
 No prompt feedback. Plan was clear; the verification rows were well-specified and unambiguous. The dev-log provided all necessary raw output for cross-checking.
 
 No prompt feedback to report. Plan was clear and unambiguous; test text was verbatim-applicable; insertion point and scope were well-specified.
