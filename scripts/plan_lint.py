@@ -190,11 +190,11 @@ def lint(plan_path):
                     print(f"WARN: Drafting Cycle block missing lens(es): {', '.join(missing)} (DRAFTING_CYCLE.md §3)")
 
                 if tier_num == 2:
-                    if not re.search(r'cold[\s-]panel', dc_block, re.IGNORECASE):
+                    if not re.search(r'(?:^\*\*cold[\s-]+panel|^-\s*cold[\s-])', dc_block, re.IGNORECASE | re.MULTILINE):
                         print("WARN: T2 plan missing cold-panel line in Drafting Cycle block (DRAFTING_CYCLE.md §3)")
 
                 lens_line_re = re.compile(
-                    r'^-\s*(?:cold[\s-]+)?(?:weak[\s-]*spots|destruction|vulnerabilit|integration|acid)\b',
+                    r'^-\s*(?:cold[\s-]+)?(?:weak[\s-]*spots|destruction|vulnerabilit\w*|integration|acid)\b',
                     re.IGNORECASE,
                 )
                 closing_pos = re.search(r'^\*\*Closing:\*\*', dc_block, re.MULTILINE)
@@ -207,17 +207,19 @@ def lint(plan_path):
                 if last_lens_line is not None:
                     ll_lower = last_lens_line.lower()
                     has_fold = 'fold' in ll_lower
-                    has_dry = 'dry' in ll_lower
+                    cleaned = re.sub(r'\b(?:not|no|never)\s+dry\b', '', ll_lower)
+                    has_dry = bool(re.search(r'\bdry\b', cleaned))
                     if has_fold and not has_dry:
                         print("WARN: Drafting Cycle closing indicates fold as last event, not a dry lens pass (DRAFTING_CYCLE.md §2)")
                 else:
                     closing_match = re.search(r'^\*\*Closing:\*\*\s*(.*)', dc_block, re.MULTILINE)
-                    if not closing_match:
-                        print("WARN: Drafting Cycle block has no **Closing:** line (DRAFTING_CYCLE.md §3)")
-                    else:
+                    if closing_match:
                         closing_text = closing_match.group(1).lower()
                         if 'fold' in closing_text and 'dry' not in closing_text:
                             print("WARN: Drafting Cycle closing indicates fold as last event, not a dry lens pass (DRAFTING_CYCLE.md §2)")
+
+                if not closing_pos:
+                    print("WARN: Drafting Cycle block has no **Closing:** line (DRAFTING_CYCLE.md §3)")
 
     for status, check, detail in results:
         print(f"{status}: {check} — {detail}")

@@ -438,6 +438,7 @@ def test_lint_cycle_t2_missing_cold_panel_warns():
     assert "missing lens" not in result.stdout.lower()
     assert "no cycle_tier" not in result.stdout.lower()
     assert "dry lens pass" not in result.stdout.lower()  # no fold-closing WARN
+    assert "no **closing:**" not in result.stdout.lower()
 
 
 def test_lint_cycle_tierless_warns():
@@ -776,3 +777,243 @@ def test_lint_cycle_compliant_t2_real_270_no_warn():
     assert "fold as last event" not in result.stdout.lower()
     assert "cycle_tier" not in result.stdout
     assert "Drafting Cycle" not in result.stdout
+
+
+
+# --- 198 Plan B: Real-log fixtures for plans 277, 278, 284 ---
+
+REAL_LOG_277 = """\
+# bellows — plan_lint §4 refinements (189/N5 + 190/N6)
+**Date:** 2026-07-30 | **Dispatch Mode:** bellows | **pause_for_verdict:** always | **cycle_tier:** T2
+
+## Drafting Cycle
+**Tier:** T2 — triggers fired: T-6 (governance surface — edits the `plan_lint` gate). Structure-clone of 271 (the §4 gate implementation) + authored from diagnostic 276's designs (T-8 does not fire). T-2 does NOT fire (edits code+tests, not data); no daemon coordination (plan_lint is authoring-time, 276-verified).
+**Walks:** Walk 1 complete (v0 → v5): 5 folds (W1; D1; V1; R1; A1). Walk 2 (confirming) COMPLETE (v5 → v6): only-minor (WB1); sequential phase done → T2 cold panel.
+- Weak spots:          w1 → v1: 1 folded (W1 1.2/1.3 — the 189 parser design [diagnostic's `;`-split "last segment"] assumes a format the REAL logs don't follow [mixed `.`/`→`/`; wN dry`, + cold-panel/Walk-3 multi-lens-line ambiguity]; per WB1 the diagnostic only sketched → Task B now specifies a LENIENT parser [last lens line before Closing via anchored regex incl. `cold`, final-status leniently] + Task D tests on REAL Done-plan blocks [271/274/275/diag-276], not idealized fixtures). Verified clean: Task A 190 regex `\\b` logic sound (matches bare T0/T1/T2 + collapsed T0, rejects T3/T0X); A0 warn-first precondition checkable; Task C fixture edit coherent with the new parser. w2 → v6: 1 minor (WB1 — the 189 regex `weak\\s*spots` missed the hyphenated "Cold weak-spots" cold-panel line → `weak[\\s-]*spots`). Verified: 5 folds hold + cohere (V1's embedded blocks test W1's parser; A1↔DEV edit); Scope↔Deposits match both steps (code files in Scope, dev-log/QA the deposits — 271 pattern).
+- Destruction:         w1 → v2: 1 minor folded (D1 2.2 — the 190 `\\b` loosening has a benign side effect: accepts trailing content on ALL tiers [`T2 (governance)` now parses], watering down the old bare-T1/T2 enforcement; documented as intentional [tier still extracted; warn-first; don't over-restrict]). Verified: nothing breaks (2.1 — 190 strictly more permissive, existing T1/T2 parse, malformed T0X/T00/T3 still WARN; 189 strengthening + fallback + real-log tests); existing behaviour guarded (Task C protect-tests, QA rows 6/7/9); 189 doesn't affect T0 (no block check); edits bounded + reversible (Task A0 clean-gate). **w2 dry** — no fold relaxed a guard: WB1 broadens the match (more accurate), V1's embedded blocks preserve real-format coverage, A1 strengthens recovery, D1/R1 documentation; warn-first/protect-existing/no-crash/scope guards intact; harm surface unchanged.
+- Vulnerabilities:     w1 → v3: 1 folded (V1 3.1/3.4 — the real-log fixtures span repos [271 bellows / 274,275 LF / diag-276 gov]; a bellows-worktree cross-tree read needs absolute paths + is brittle if plans move → EMBED the real Cycle Log blocks as string literals [self-contained, still proves the parser on real formats]; + a degenerate test [status-less/`[pending]` lens line, empty block → no crash, no false fold-WARN]). Verified clean: (3.2) tests RUN the check on real embedded text (observe-the-effect); (3.1) DRAFTING_CYCLE.md + diagnostic-findings reads use absolute paths (Task A0/reads); (3.3) no cross-repo import binding. **w2 dry** — V1 embedded blocks hold (no cross-tree vacuous risk); WB1's `[\\s-]*` opens no degenerate edge (still anchored by `^-\\s*` + specific keywords); remaining cross-tree reads (doc, findings) absolute; degenerate coverage intact.
+- Integration-record:  w1 → v4: 1 folded (R1 4.1 — named the intended doc↔code window: Plan B ships the 189/190 code before Plan A updates §4's text; brief, warn-first-soft, same-intent, closed by Plan A [Depends-on]; diagnostic Q1c/Q6d chose Plan-B-first deliberately). Verified: clones 271 pattern; authors-from diagnostic 276 (Rule 27); §6 doc↔gate satisfied by S2 Depends-on sequencing; no doc/status edit (Plan A owns); Rule 20 M1 form carried from Gate-1 §5; not trivial; T2 right-sized. **w2 dry** — all folds align with the record (W1↔271 observe-the-effect + diagnostic design; D1↔`\\b` choice; V1↔self-contained-test; R1↔§6+Q1c/Q6d; A1↔259/Rule-56; WB1↔real format); §6 satisfied by S2 sequencing; Rule 27 honored; no re-trip.
+- ACID:                w1 → v5: 1 folded (A1 5.1 — Task A0's resume disambiguation too terse for a code edit → spelled out the 259/Rule-56 dirty-tree handling [own-edit-check → restore+reapply; foreign → HALT, never hand-patch]). Sound: 5.3 isolation near-empty (code edit, daemon serializes + doesn't invoke plan_lint per 276); 5.2 consistency (invariants stated; doc↔code closed at Plan A's QA); 5.4 durability (git-committed; Plan A gets linted by Plan B's improved gate — benign recursion). **w2 dry** — 6 folds cohere (W1+V1 reinforce, WB1 refines W1's regex, A1↔DEV edit); no soft premise (warn-first verified at HEAD, plan_lint authoring-time 276-verified, real-log format V1-tested).
+**Cold panel (T2):** RUN — FOCUSED (1 comprehensive fresh reader: guard-diff vs 271 + code-correctness of 189/190 vs live plan_lint.py + parser-on-real-logs), given the bounded warn-only change (271's precedent) + the highest-value angles; logged as focused, not a full 5-lens panel. → v7: 3 folded. ⭐ **CB1 (HIGH — the warm walks MISSED it, exactly the clone-drift value):** the 189 parser wording misparsed real Walk-3 ACID lines (`→ dry. N folds cohere` — "folds" after "dry" → false fold-WARN on a DRY close, incl. Plan B's OWN block) → pinned the SAFE rule (fold token AND `dry` absent anywhere in the line). CB2 (MED) `_fold_closing_warns` message coupling could force a 2nd test edit → keep the message's `fold`+`dry lens pass` substrings. CB3 (LOW) the "one benign WARN" self-check note is empirically false (Step 2's `pytest tests/` suppresses it) → corrected to NO WARN. **Guard-diff vs 271: 0 dropped guards** (28 preserved/strengthened); 190 code claims EXACT vs live (line 165, one occurrence). ⚠️ N2 (pre-existing gap, NOT folded — outside 189/190 scope): the "T2 missing cold-panel → WARN" sub-rule has no regression test — a Forward Register note for a future plan.
+**Cold panel materially changed the draft (CB1 HIGH) → warm confirming Walk 3 owed before §5.**
+**Walk 3 (warm confirming, on v7):**
+- Weak spots:          → dry. CB1 safe rule holds + robust (dry-present-anywhere → no WARN covers all real Walk-3 formats incl. Plan B's own block; fold-token-no-dry → WARN for genuine fold-closes; degenerate `[pending]`/no-token → lenient). CB2/CB3 cohere; V1's embedded real-log tests are the safety net for CB1. No new weak spot.
+- Destruction:         → dry. No fold relaxed a guard: CB1 CORRECTS a false-WARN (still WARNs genuine fold-closes; the "dry anywhere → no WARN" is the SAME residual-trust §4 always had, by design; reading the structured lens line is net-more-reliable than the old closing prose), CB2 protects the retained test, CB3 corrects a note. Harm surface unchanged.
+- Vulnerabilities:     → dry. CB1 whole-line rule degenerate-safe (empty line → lenient no-WARN; no lens line → closing fallback; UTF-8 read handles `→` arrows, `dry`/`fold` checks are ASCII). V1's embedded tests prove it on all real formats; remaining cross-tree reads (doc, findings) absolute. No new edge.
+- Integration-record:  → dry. CB1 codifies the `dry`-co-occurs-`fold` convention 275's §5 note + the diagnostic documented; CB2↔271 protect-existing; CB3↔predicted-number lesson. CB1's deviation from the diagnostic's `;`-split sketch is Rule-27-consistent (WB1: diagnostic sketched, DEV authors the correct parser; the sketch was buggy). No re-trip.
+- ACID:                → dry. All 9 folds cohere (W1+WB1+CB1 build the correct parser; V1+CB1 reinforce — embedded tests are CB1's safety net; CB2↔Task C↔row 7; A1↔DEV edit); no soft premise (warn-first HEAD-verified, plan_lint authoring-time 276-verified, real-log format V1-tested + CB1-corrected).
+**Conflicts:** none (no cross-lens conflict across all walks).
+**Closing:** Walk 3 (warm confirming) closed on a dry ACID (Lens 5) pass — last event a lens pass, not a fold. **Adversarial phase COMPLETE:** Walk 1 (5 folds) → Walk 2 (only-minor WB1) → focused cold panel (3 folds incl. the HIGH CB1 the warm walks MISSED) → Walk 3 (dry). **9 folds, 8 revisions (v0→v7).** **§5 mechanical conformance DONE:** plan_lint exit 0, all (a)-(d) PASS, **NO WARN — CB3 CONFIRMED** (Step 2's `pytest tests/` suppresses the test-scope WARN; the "one benign WARN" prediction was wrong); §4 check passes (cycle_tier T2 + block + cold-panel line + dry closing — Plan B linted clean by the CURRENT §4, a recursion). Rules/Checklist clean (Rule 20 M1 full form carried from Gate-1 §5; #29 predicted-number fixed by CB3; #32 observe-the-effect in Task D; Checklist #3 STOP-prose tolerated per 271). §5 clean → Walk 3 stands as the closing pass. Ready to deposit once (pending CEO go).
+"""
+
+REAL_LOG_278 = """\
+# Lessons Forge — Gate 2 Codification (N1–N6 refinements)
+**Date:** 2026-07-30 | **Dispatch Mode:** bellows | **pause_for_verdict:** always | **cycle_tier:** T2
+
+## Drafting Cycle
+**Tier:** T2 — triggers fired: T-6 (governance surface — edits DRAFTING_CYCLE.md doctrine), T-2 (production-data mutation — flips 187–190 in the LF DB), T-7 (authored-from diagnostic — builds on diag-276's edit map), T-8 (novel — not a byte clone; new edit set).
+**Walks:** 3 (2 warm + cold panel + confirming). w1 12 (4+3+2+1+2); w2 5 (2+1+1+1+0); cold 12 (3+2+2+2+3); w3 dry on plan logic (Cycle-Log housekeeping only). Sequential+cold+confirming cycle CLOSED — last event = ACID w3 dry lens pass. ~34 folds total.
+- Weak spots:          w1 4 folded (E4 mechanism mismatch [whole-line vs segment, grounded in committed plan_lint.py]; E4/QA-5 committed-code pin; Depends-on-as-prose note; QA-10 proposed>0 diagnosis); w2 2 folded (precision on w1 fold-text: wrap-mismatch "hash reconstructs"→"blueprint reconstructs, hash verifies"; self-conformance "closes with dry"→"contains dry"); w3 dry (plan logic sound — SA→DEV→QA flow, Rule-20 evidence-row mapping, task order, self-conformance all trace clean; cleaned 3 Cycle-Log housekeeping items).
+- Destruction:         w1 3 folded (E3 anti-watering-down diff-gate vs :79/:73; :152 in-flight-inherit note; self-conformance recursion — Plan A's own ACID line must close dry). w2 1 folded (pinned E3 gate's (a)/(b) criteria per Rule 57 — E3 confirmed distinct from :79/:73, gate is passable). w3 dry — no fold across the ~29 relaxed a guard (all added or strengthened); E5 optionality is edit-map-ratified; extended the Conflicts ledger to span the full cycle.
+- Vulnerabilities:     w1 2 folded (3.1/3.2 UTF-8 + Task-B4 diff-only-intended-hunks [shasum can't catch mojibake in untouched regions]; 3.3 canonical absolute DB path for the flip [gitignored DB + worktree = silent no-op]). w2 1 folded (3.1/3.3 restore-point pinned to a durable main-tree path — a worktree `.backup` is lost on teardown). Verified-holds: `git -C <root>` resolves from any worktree cwd; DEV editing the root doc outside the worktree is the 259 pattern; C0→C has no gate + `AND status='proposed'` atomic guard. w3 dry — no new env/isolation/degenerate vuln from the folds; Rule 20 `evidence_dir` pwd-derived == deposit location (cold-ACID-confirmed); evidence files are governance metadata (no leak, local commit); wrap last-commit re-verify is a clean absolute read.
+- Integration-record:  w1 1 folded (CB3/predicted-number: authoring self-check is a verify-clause, not a WARN prediction). Verified-holds: cycle_tier on its own line parses (275 precedent + `_parse_plan_header` docstring — collects consecutive bold lines); 277 in bellows Done/; both deposit dirs exist; SA-query JOIN columns all live in schema; 259 protections all carried; M1/CB1/CI1 session-9 lessons folded (Lenses 1/1/plan). w2 1 folded (⭐ record CORRECTED the Vuln-w2 restore-point guess: 275's proven pattern = `sqlite3 ".backup"` not `cp` [WAL-safe] + `lessons-forge/data/backups/` not `bellows/.bellows-cache/`; gitignored via `*.db`). w3 dry — re-verified load-bearing premises STILL HOLD post-cycle: 187–190 still proposed+codify (count 4); DRAFTING_CYCLE.md still v1.0 (commit 2502159, trailing clause intact, tree clean); nothing in flight. Rule 20 clone faithful to 275; edit-map decisions (S2/fix-i/status/count-pin/load-order) + §6 all honored.
+- ACID:                w1 2 folded (clone-drift: restored 259's wrap-mismatch branch [QA→wrap doc-loss window; DB already durable]; Isolation stated — bellows serialization + C0 for DB, A0 commit-pin for doc, nothing-in-flight precondition). Atomicity/Durability verified-holds (load-bearing order + A0 disambiguation + `AND status='proposed'` idempotency + DB backup + committed pre-doc-state + blueprint). w2 dry — folds cohere as a system; restore-point Vuln→Integration was a correction (converged on 275's `.backup` pattern), not oscillation; atomicity/isolation/durability intact + strengthened. w3 dry — ACID-cold F1/F2/F3 cohere; isolation now COMPLETE (F1 closed the concurrent-committed-root-change wrap window); closing state correct (warm ACID line contains "dry" + is the last `^-` lens line before Closing → plan_lint (f) no-WARN, confirmed empirically at §5).
+**Conflicts:** none across the full cycle (walks 1–3 + cold panel) — no two lenses' constraints required joint resolution. Both candidate tensions were benign: the restore-point evolution (Vuln→Integration) was a correction from the record, not a ping-pong; and load-order↔wrap-recovery / absolute-path↔own-tree were confirmed COMPLEMENTARY by the cold ACID reader, not conflicting.
+**Cold panel (T2):** COMPLETE — 5 cold readers, sequential fresh-context subagents, author-verified; 12 folded (3+2+2+2+3). ⭐ Standout: cold Integration caught the Rule 20 QA step was UNSATISFIABLE (full form mandated, no evidence files → canonical block sys.exit(1) → plan would halt at QA); CEO chose full-form-+-real-evidence. Two clone-drift reversions vs 275 caught (own-tree src-check; and the warm-Walk-2 `.backup`-not-cp). Cold ACID confirmed the whole fold set coheres (no cross-fold conflict; atomicity/consistency/durability guarded not lucky; late Rule 20 fold adds no new hazard).
+  - Weak spots (cold): 3 folded — F1 SA query omitted status/route so its "confirm proposed+codify" was unperformable (my 259-adaptation error; added p.status/p.route); F2 QA row 6 had no branch for a permitted E5 omission (added it); F3 E1/E2 "insert item" → clarified inline-append (sub-questions are inline, not bullets). Cold reader independently CONFIRMED: DB-safety chain, E4↔shipped-code (plan_lint HEAD cc0777c), unique anchors, count phrases untouched, cycle_tier parse, gitignored backup.
+  - Destruction (cold): 2 folded — ⭐ D-F1 [MEDIUM] M1 whole-line version replacement would DESTROY the ":5 Amended only through the Iteration Protocol (§6)." clause (exists nowhere else; QA-1 + B4 both blind to the within-hunk loss) → surgical date-swap + QA-1 asserts full line; D-F2 2.4 must state the §2.2 skip-condition doesn't apply to diagnostics (edit-map-framed, in 2.4's wording). Cold reader CLEARED the prime suspects: E4 doesn't weaken §2:38's invariant (lives in §2, untouched; plan_lint WARNs cite §2 not §4); E3 distinct from :79/:73; no doc consumer parses the wording at runtime.
+  - Vulnerabilities (cold): 2 folded — ⭐ V-F1 [clone-drift] QA row 11 `git -C <main>` src/-check is worktree-VACUOUS (I cloned 259's old form, reverting 275's proven own-tree fix, proposal-184's class) → own-tree `git status --porcelain -- src/`; V-F2 mojibake guard was single-point at DEV-B4 → added QA row 0b independent diff cross-check. Cold reader VERIFIED live: bellows DOES worktree lessons-forge plans (bellows.py:1045), so hardening is load-bearing; DB has no triggers/no status↔route coupling; all cross-repo/DB/backup paths absolute; no false-implemented path exists.
+  - Integration (cold): 1 MATERIAL folded (CEO-decided) — ⭐⭐ Rule 20 clone-drift: QA mandated M1's FULL form but supplied no evidence files → the canonical block would sys.exit(1) (unsatisfiable). Verified: enforcement gate needs only banner+PASSED (gates.py); the full block hard-requires evidence_dir + non-empty files (RULE_20_SELF_CHECK_BLOCK.md:66–74,95); 259 [same doc-only class] used the simple banner; 275 used the full form justified by pytest evidence Plan A can't produce. **CEO chose the full form + real evidence** → cloned 275's machinery, evidence set adapted to db-invariants.txt (rows 9–10) + doc-integrity.txt (rows 0/0b/1–8, replacing uncloneable full-suite.txt); own-tree evidence_dir (plan-225), Scope+Deposits+commit-all-three updated. Plus 1 trivial (§2.6 :72→:73). Cleared: Depends-on-prose (correct), DB-isolation-guard (covered), all domain premises HOLD (Plan B shipped, E4↔code, 187–190 proposed, count phrases, self-conformance).
+  - ACID (cold): 3 folded (all minor) — F1 wrap adds a prevention-side last-touching-commit re-verify (concurrent committed root change the own-bytes shasum can't see); F2 load-order rationale precision (intra-Step-2 crash vs the transient implemented+uncommitted-doc window — two windows, two guards); F3 extended D-F1's within-hunk preservation to E1/E2 (QA rows 2/3 confirm 2.1–2.3 / 5.1–5.4 survive the inline append). ⭐ CONFIRMED the fold set coheres: load-order↔wrap-recovery complementary, absolute-path↔own-tree = the two halves of E11, DB-flip atomicity + doc↔DB wrap-consistency guarded not lucky, late Rule 20 fold no new hazard.
+**Self-conformance (recursion, Destruction w1):** Plan A is T2 and carries this very block, so plan_lint's (f) check runs on Plan A at deposit. It passes iff — all five lens lines present ✓, the `**Cold panel (T2):**` line present ✓, and the **last lens line (ACID) CONTAINS "dry"** (from its closing dry walk) so the whole-line rule (`fold`-token present AND `dry` absent → WARN) does not fire — a line like `w1 2 folded; wN dry` passes because `dry` is present even though `folded` also appears. The closing walk MUST leave ACID dry; verify plan_lint exit 0 on the finalized draft before deposit (§4 authoring self-check).
+**Closing:** Walk 3 closed dry (last event = ACID w3 dry lens pass; plan logic dry, only Cycle-Log housekeeping remained). **§5 COMPLETE** — plan_lint on the finalized draft: **exit 0**; the (f) drafting-cycle self-check PASSES (recursion confirmed empirically — cycle_tier T2 parsed, all 5 lens lines found, cold-panel line present, ACID closes "dry", zero (f) WARN); the only WARNs are 3 benign "mentions tests but declares no test scope" (CB3 / `benign-gate-failure-classes` — non-blocking, do NOT add a test file to silence). Checklist-by-scope conformant. **READY TO DEPOSIT** (exactly once, to lessons-forge/knowledge/decisions/).
+"""
+
+REAL_LOG_284 = """\
+# Lessons Forge — Gate 1 Route Disposition 2026-07-29
+**Date:** 2026-07-30 | **Dispatch Mode:** bellows | **pause_for_verdict:** always | **cycle_tier:** T2
+
+## Drafting Cycle
+
+**This section is a RECORD of the drafting cycle, NOT instructions for any step.** Nothing here modifies the steps above. ⚠️ It sits inside the final step's extracted span (`gates.py:449` runs the final step's match to end-of-file with no later step to stop at) — a parsing artifact, not scope. Per §3 "compact" and proposal 197 (which this plan routes), the per-fold narrative is NOT here.
+
+**Tier:** T2 — trigger fired: **T-2** (production-data mutation — writes `route` on 8 canonical proposals). T-6 does NOT fire (routing metadata, no doctrine edit — that is Gate 2). Proven clone of 282, so T-8 does not fire; T-2 sets the floor. The corpus holds a parked non-terminal pair (191/192) this plan must not touch, so the cold panel is not skippable.
+**Walks:** v0 → v15. **Walk 1 COMPLETE** (all five lenses folded, 11); cold panel in progress. Destruction run first (entry 186 — aim the walk at the step that MUTATES).
+- Weak spots:          w1 3 folded (the derived-id command from Destruction's own fold produces MULTI-LINE GARBAGE on two in-progress matches — found by EXECUTING it, not reading it; and A00 runs BEFORE the isolation check that would catch that, so A00 carries its own single-match HALT. Row 5 asserted a flat "both still proposed", which false-`❌`s a legitimate Gate-2 ship for 191/192 inside the Step-1→Step-2 approval window → directional rule. `set_proposal_route:256` re-verified live, citation accurate).
+- Destruction:         w1 3 folded (B3/row-3 asserted a `+8` DELTA that false-FAILs the partial resume A0-pre explicitly tolerates — 282 used "rose by ≤N"; replaced with the resume-invariant IDENTITY total == outside-range + 8; swept BOTH sites. Backup filename hardcoded a guessed plan id the Planner cannot know — now derived from the in-progress filename with a HALT on an empty derivation).
+- Vulnerabilities:     w1 2 folded. cold 6 (1 rejected). **confirming 2 folded — NOT dry, both from the PREVIOUS pass's own fold.** (a) Destruction added before-item **(4b)** and anchored three consumers to it, but **never added a Receipt deposit slot for it** — so QA row 5's fail-closed clause ("if the Receipt does not report item (4b), mark `❌`") would have fired on EVERY clean run, false-failing the guard the fold existed to install. Receipt item 4b added; sweep re-verified across all consumers (C4, row 5, row 7 condition (a), the halt-durability before-item list). (b) The 4b block was inserted BEFORE its anchor, so A0-snap enumerated `1, 2, 3, 4b, 4` — out of order, with 4b forward-referencing numbering that came after it. Reordered to `1, 2, 3, 4, 4b`. **Both are the add-the-capture-but-not-the-deposit shape; the guard is only as real as its slot.** **cold 6 folded, 1 REJECTED.** ⚠️ **The worst was found by EXECUTION, not reading:** the `?mode=ro` fallback path leaves a **0-BYTE file** at `$BK`, and because shell state does not persist between agent commands the re-run recomputes `$(date)` into a NEW filename — so an empty corpse and a real backup both match the glob, the corpse has the earlier stamp, and Receipt item 6's "lexicographically-first = PRISTINE, roll back to THIS" rule hands the CEO **an empty file as the sole recovery artefact for a production mutation**. Compounded by a second tension: if recovery is a fresh deposit rather than a re-dispatch, bellows mints a NEW id (`bellows.py:378`), so the `<PLAN_ID>`-scoped glob cannot see the first run's pristine backup at all — the id-scoping hardening and the earliest-stamp rule are each right alone and wrong together. **Both were resolved by selecting PRISTINE on CONTENT** (pre-mutation iff `route IS NULL` on 193-200 reads 8 inside the candidate) — ⚠️ **and that machinery was later TRIMMED by the cold integration lens** on four enumerated premises, because it selected between whole-DB restore candidates the plan forbids using. **The surviving hazard controls are A00's `rm` of the 0-byte corpse and the one-line earlier-stamp rule in item 6.** Noted here so a clone does not hunt for content-probe machinery and re-add it (entry 189: sweep the body for citations the log no longer explains). Also: the plan-file regex accepted only 2 of bellows' FOUR live lifecycle prefixes, so every resume of a **halted** or rate-limit-**parked** step would HALT at the first command reporting the wrong cause; `db-invariants.txt`'s single `PORCELAIN-EXIT=` marker was vacuous for 8 of 9 rows (it comes from an unconditional `echo`) → per-row `ROW-<n>:` markers with a counted assertion; row 5b's helper needed an explicit read-only handle in a declared no-writes step; the shasum pins were truncated with no comparison rule, which would manufacture a `❌` on a clean tree. **REJECTED with evidence:** the reader placed `set_proposal_route` at `:257`; it is at **`:256`** as cited. **The weak-spots fold broke on its own edge, twice, both found by EXECUTION:** it accepted only `in-progress-` (false-HALTs a re-dispatch sitting at `verdict-pending-`), and the two-glob `ls` form fails under zsh, where an unmatched glob errors the WHOLE command — so the ORDINARY single-file case returned empty and HALTed. Replaced with a glob-free `grep -E` match; all four states (in-progress / verdict-pending / two / none) executed at authoring. Also: `set_proposal_route` never checks `rowcount`, so a bad id is a SILENT no-op — B1's read-back is the only effect-observation and is now stated as non-redundant with A0-pre.
+- Integration-record:  w1 1 folded (the PLAN_ID/backup-filename apparatus had no stated WHY — nothing in this plan reads the backup back and the Receipt already records its absolute path, so it is a cheap hedge on ONE narrow window [death after backup, before deposit], not a mechanism; bounded and marked do-not-grow, so a clone inherits the reason rather than the machinery — the Rule 56 pattern from 283). Citations re-opened and confirmed: `set_proposal_route:256`, Rule 46 `:1012` ("reject daemon-bug workaround proposals"), Rule 35 `:892`, Checklist #29, and the claim that 282 carries the manual bootstrap block Rule 35 says to omit. Premise re-measured at this pass: 62 / 62 / proposed 10 — unchanged.
+- ACID:                w1 2 folded. cold 6. **confirming 2 folded — NOT dry.** (a) IC1's scope fix created an UNDECLARED tension with the rest of Rule 21: its `targeted` clause also says the QA step *"must NOT run the full suite"*, and row 6's `pytest src/` IS the whole module — so targeted and full are the same command and the same 55 tests, and the prohibition is not satisfiable as a distinction here. Declared explicitly, since the alternatives are worse (no regression evidence, or two byte-identical files). **A fix in one clause of a rule left the plan crosswise with another clause of the SAME rule.** (b) Before-item (4b) had no resume anchor — a resume re-reads it live, so a pair already moved by a concurrent actor would be recorded as "before" and C4/row 5 would compare it to itself and PASS, invisible exactly when a resume is happening. Now prefers the prior dispatch's recorded value; severity bounded because this plan cannot itself stale a proposal (`set_proposal_route` writes only `route`) and a concurrent cycle is forbidden. **cold 6 folded, and the HIGH is the one that matters: row 5 BLESSES an event row 7 then FAILS.** Gate 2 *is* codification into the target artifact, and 191 targets `DRAFTING_CYCLE.md` while 192 targets `PLANNER_TEMPLATE.md` — **both pinned by row 7** — so the blessed in-window Gate-2 ship necessarily mismatches two pins while leaving porcelain empty, and row 7 declared that `❌` unadjudicatable and Critical. Identical to the walk-1 row-2 defect, unswept to row 7; a direct CL3 violation. Fixed with one narrow, closed reconciliation (row-5 transition recorded AND the commit identified by `git log`), everything else absolutist. Also: Task C4 kept the flat `proposed`-only assertion the ledger's CL1 amendment retired — and it runs AFTER the commit with no pre-write catch, so a correct run would write, then false-HALT, then fail all nine QA rows; the gitignored backup `.db` was in scope for row 0's "is committed" check, manufacturing a Critical `❌` on a clean run; a resume's A0-snap labelled post-write values "(pre-write)" and invited a drift-halt; the ledger's C1/C2/C3 names collided with Task C's post-trim C2/C3/C4, so a clone applying a ledger line to the like-named check would "fix" a sound guard; and the Cycle Log still advertised the trimmed PRISTINE machinery as live. **Original w1 finding retained:** two fold-interactions no single lens could see. **(1) Row 2 CONTRADICTED row 5:** the weak-spots fold blessed a CEO Gate-2 ship for 191/192 in the Step-1→Step-2 window as `✅`, but that moves two rows `proposed → implemented` and row 2 still asserted the distribution byte-identical — so the plan marked `❌` and `✅` on the same event. Split into (a) a hard assertion over THIS plan's 8 targets and (b) a reconciliation for the rest, quoting row 5 so the two agree. **(2)** B3 and row 3 anchored the total-count identity to a BEFORE value, mixing now with then; made same-instant so one fault produces one failing row and the blast-radius question stays localized — swept BOTH sites.
+**Cold panel (T2):** COMPLETE — all 5 lenses run as sequential fresh-context readers, each on the prior's folded draft; every finding author-verified before folding., sequential fresh-context readers; every finding author-verified before folding.
+- Cold weak-spots: → v6: 9 folded, **all clone-drift — guards the parent carried that this clone silently dropped.** ⚠️ **The two worst:** (1) Step 1, the MUTATING step, had NO halt-durability clause — 282's "IF YOU HALT AFTER `conn.commit()`, YOU MUST STILL DEPOSIT AND COMMIT" was gone, so a halt at B or C left a mutated corpus with the four before-snapshots existing only in the agent's context and the `Partial — HALTED` receipt value unreachable. (2) Row 7 kept 282's absolutist "this row IS the guard" language while **dropping the `shasum` content pins that make it true for a COMMITTED edit** — the same guard, third consecutive plan, third distinct failure mode (282 had it; 283 weakened it and the cold walk restored it; here the language survived and the mechanism did not). Also: the Step-2 opener contradicted its own halt rule and ignored that `pause_for_verdict: always` means the CEO already authorised the continue; Receipt item (3) had no downstream consumer (new row 5b); "this ONE declared deviation" was false, there were three (now enumerated); no `?mode=ro` fallback in either step (latent false-HALT at task one); the `src/` untouched check and its scope prohibition both dropped; the Step-1 deposit unnamed by path; the restore-point VERIFICATION result never deposited. ⭐ Reader independently re-verified the full backbone — all 8 disposition rows, 62/62, 200 proposals, `set_proposal_route:256` with no rowcount check, 55 tests, and every doctrine citation — plus the three dedup claims and the un-codified-parent flag.
+**Conflicts (CL-prefixed throughout, to avoid colliding with Task C's C2/C3/C4 sub-checks — a collision the C1 trim created):**
+CL1 — the parked pair 191/192 must survive unchanged on `route` and `target_artifact`, and on `status` EXCEPT a CEO-driven terminal transition, which must be recorded (destruction w1; amended by weak spots w1 for the approval-window case; enforced at BOTH Task C4 and QA row 5 after cold ACID found only row 5 carried it).
+CL2 — no assertion may be a delta where a resume can legitimately move the starting point; prefer resume-invariant identities (destruction w1).
+CL3 — every cross-row assertion must agree with every other on the SAME event: a check that blesses an outcome obliges its siblings to bless it too (ACID w1; violated twice — row 2 vs row 5, then row 7 vs row 5 — and repaired both times).
+**Ledger status at confirming-walk close — re-checked against the instructions as they now stand:** **CL1 SATISFIED** — enforced at BOTH Task C4 and QA row 5, each anchored to before-item (4b), which now has a Receipt slot and a resume preference. **CL2 SATISFIED** — B3 and row 3 are same-instant identities, row 4 anchors to the resume-invariant item (4), and (4b)'s live-re-read residue is closed. **CL3 SATISFIED** — rows 2(b), 4, 5, 5b and 7 now all agree on the blessed in-window Gate-2 ship. ⚠️ **CL1 and CL3 were each found VIOLATED by the plan's own instructions during the cold panel and repaired** — the third consecutive plan in this lineage where the ledger recorded a constraint the instructions did not honour, which is itself the argument for keeping the ledger.
+**Closing:** NOT REACHED — walk 1 complete (11 folds); **cold panel COMPLETE, all 5 lenses, +36 folds incl. 2 subtractive trims, with 2 cold findings rejected on evidence.** **Confirming walk COMPLETE — all five lenses run, all five folded (1/1/2/1/2 = 7).** Per §3's Cycle-Log template the last event before deposit must be a lens pass, and the last event is a fold, so §2's closing condition is NOT met. **Cycle totals: 54 folds** — walk 1: 11 · cold panel: 36 (incl. 2 subtractive trims, 2 findings rejected on evidence) · confirming walk: 7. **Not deposit-ready on §2's test; the disposition is the CEO's, on the same fail-closed standard 283 shipped under.**  Per §3's Cycle-Log template (and §2.7's sequential-fold rule) the last event must be a lens pass; the last event is a fold. Not deposit-ready.
+"""
+
+
+# --- 198 Plan B: Real-log regression tests for 277, 278 (dry) and 284 (fold-closing) ---
+
+def test_lint_cycle_real_log_277_no_fold_warn():
+    """(f-r) Real 277 block (bellows, T2, Walk 3 dry ACID) → NO fold WARN, exit 0."""
+    result = _run_lint(REAL_LOG_277)
+    assert result.returncode == 0, f"Expected exit 0, got {result.returncode}\nstdout: {result.stdout}"
+    assert "PASS:" in result.stdout
+    assert "fold as last event" not in result.stdout.lower()
+    assert "missing lens" not in result.stdout.lower()
+    assert "no **closing:**" not in result.stdout.lower()
+    assert "cold-panel" not in result.stdout.lower()
+
+
+def test_lint_cycle_real_log_278_no_fold_warn():
+    """(f-s) Real 278 block (lessons-forge, T2, Walk 3 dry ACID) → NO fold WARN, exit 0."""
+    result = _run_lint(REAL_LOG_278)
+    assert result.returncode == 0, f"Expected exit 0, got {result.returncode}\nstdout: {result.stdout}"
+    assert "PASS:" in result.stdout
+    assert "fold as last event" not in result.stdout.lower()
+    assert "missing lens" not in result.stdout.lower()
+    assert "no **closing:**" not in result.stdout.lower()
+    assert "cold-panel" not in result.stdout.lower()
+
+
+def test_lint_cycle_real_log_284_fold_warn():
+    """(f-t) Real 284 block (lessons-forge, T2, NOT REACHED closing) → fold WARN fires, exit 0."""
+    result = _run_lint(REAL_LOG_284)
+    assert result.returncode == 0, f"Expected exit 0 (WARN only), got {result.returncode}\nstdout: {result.stdout}"
+    assert "PASS:" in result.stdout
+    assert "fold" in result.stdout.lower()
+    assert "dry lens pass" in result.stdout.lower()
+    assert "missing lens" not in result.stdout.lower()
+    assert "no **closing:**" not in result.stdout.lower()
+
+
+# --- 198 Plan B: Negative controls for defects (a), (b), (c), (d) ---
+
+def test_lint_control_a_vuln_last_folded():
+    """(f-u) Control (a)+(a×b): Vulnerabilities LAST and folded → fold-WARN fires (pre-fix: NO MATCH on Vulnerabilities)."""
+    plan = """\
+# Test Plan — control (a)
+**Date:** 2026-07-30 | **Dispatch Mode:** bellows | **pause_for_verdict:** always | **cycle_tier:** T1
+
+## Drafting Cycle
+**Tier:** T1 — triggers fired: T-8 (novel).
+**Walks:** 1.
+- Weak spots:         w1 dry.
+- Destruction:        w1 dry.
+- Integration-record: w1 dry.
+- ACID:               w1 dry.
+- Vulnerabilities:    w1 1 folded.
+**Closing:** walk 1 complete; deposited once.
+"""
+    result = _run_lint(plan)
+    assert result.returncode == 0, f"Expected exit 0 (WARN only), got {result.returncode}\nstdout: {result.stdout}"
+    assert "fold" in result.stdout.lower()
+    assert "dry lens pass" in result.stdout.lower()
+    # Isolation: no other (f) WARN fires
+    assert "missing lens" not in result.stdout.lower()
+    assert "no cycle_tier" not in result.stdout.lower()
+    assert "no **closing:**" not in result.stdout.lower()
+
+
+def test_lint_control_b_not_dry():
+    """(f-v) Control (b): ACID 'NOT dry; folded elsewhere' → fold-WARN fires (pre-fix: substring 'dry' suppresses)."""
+    plan = """\
+# Test Plan — control (b)
+**Date:** 2026-07-30 | **Dispatch Mode:** bellows | **pause_for_verdict:** always | **cycle_tier:** T1
+
+## Drafting Cycle
+**Tier:** T1 — triggers fired: T-8 (novel).
+**Walks:** 1.
+- Weak spots:         w1 dry.
+- Destruction:        w1 dry.
+- Vulnerabilities:    w1 dry.
+- Integration-record: w1 dry.
+- ACID:               w1 NOT dry; folded elsewhere.
+**Closing:** walk 1 NOT dry; deposited once.
+"""
+    result = _run_lint(plan)
+    assert result.returncode == 0, f"Expected exit 0 (WARN only), got {result.returncode}\nstdout: {result.stdout}"
+    assert "fold" in result.stdout.lower()
+    assert "dry lens pass" in result.stdout.lower()
+    # Isolation: no other (f) WARN fires
+    assert "missing lens" not in result.stdout.lower()
+    assert "no cycle_tier" not in result.stdout.lower()
+    assert "no **closing:**" not in result.stdout.lower()
+
+
+def test_lint_control_c_no_closing():
+    """(f-w) Control (c): all lenses dry, NO Closing line → missing-Closing WARN fires (pre-fix: unreachable)."""
+    plan = """\
+# Test Plan — control (c)
+**Date:** 2026-07-30 | **Dispatch Mode:** bellows | **pause_for_verdict:** always | **cycle_tier:** T1
+
+## Drafting Cycle
+**Tier:** T1 — triggers fired: T-8 (novel).
+**Walks:** 1.
+- Weak spots:         w1 dry.
+- Destruction:        w1 dry.
+- Vulnerabilities:    w1 dry.
+- Integration-record: w1 dry.
+- ACID:               w1 dry.
+"""
+    result = _run_lint(plan)
+    assert result.returncode == 0, f"Expected exit 0 (WARN only), got {result.returncode}\nstdout: {result.stdout}"
+    assert "no **Closing:**" in result.stdout
+    # Isolation: no other (f) WARN fires
+    assert "missing lens" not in result.stdout.lower()
+    assert "no cycle_tier" not in result.stdout.lower()
+    assert "dry lens pass" not in result.stdout.lower()
+
+
+def test_lint_control_d_cold_panel_prose():
+    """(f-x) Control (d): T2 with cold-panel only in Tier-line prose → missing-cold-panel WARN fires (pre-fix: prose satisfies)."""
+    plan = """\
+# Test Plan — control (d)
+**Date:** 2026-07-30 | **Dispatch Mode:** bellows | **pause_for_verdict:** always | **cycle_tier:** T2
+
+## Drafting Cycle
+**Tier:** T2 — triggers fired: T-6 (cold panel required).
+**Walks:** 1.
+- Weak spots:         w1 dry.
+- Destruction:        w1 dry.
+- Vulnerabilities:    w1 dry.
+- Integration-record: w1 dry.
+- ACID:               w1 dry.
+**Closing:** walk 1 dry; last event = lens pass; deposited once.
+"""
+    result = _run_lint(plan)
+    assert result.returncode == 0, f"Expected exit 0 (WARN only), got {result.returncode}\nstdout: {result.stdout}"
+    assert "cold-panel" in result.stdout.lower()
+    assert "missing cold-panel" in result.stdout.lower()
+    # Isolation: no other (f) WARN fires
+    assert "missing lens" not in result.stdout.lower()
+    assert "no cycle_tier" not in result.stdout.lower()
+    assert "dry lens pass" not in result.stdout.lower()
+    assert "no **closing:**" not in result.stdout.lower()
+
+
+def test_lint_cycle_status_mutual_exclusivity():
+    """(f-y) Dry last lens line + fold-prose in Closing → NO fold-WARN (status checks mutually exclusive)."""
+    plan = """\
+# Test Plan — mutual exclusivity
+**Date:** 2026-07-30 | **Dispatch Mode:** bellows | **pause_for_verdict:** always | **cycle_tier:** T1
+
+## Drafting Cycle
+**Tier:** T1 — triggers fired: T-8 (novel).
+**Walks:** 1.
+- Weak spots:         w1 dry.
+- Destruction:        w1 dry.
+- Vulnerabilities:    w1 dry.
+- Integration-record: w1 dry.
+- ACID:               w1 dry.
+**Closing:** walk 1 ended on a fold; not really dry.
+"""
+    result = _run_lint(plan)
+    assert result.returncode == 0, f"Expected exit 0, got {result.returncode}\nstdout: {result.stdout}"
+    # The primary check runs (dry ACID lens line), the legacy fallback does NOT run
+    # despite fold-prose in the Closing line
+    assert "fold as last event" not in result.stdout.lower()
+    assert "dry lens pass" not in result.stdout.lower()
