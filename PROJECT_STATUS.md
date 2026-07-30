@@ -4,6 +4,9 @@
 ## Status: Phase 1 Complete — Live (daemon running, all 10 watched paths active)
 
 ## Completed
+### Plan 286
+- plan_lint §4's four defects fixed — Vulnerabilities lens-line selection, negation-aware closing status, reachable missing-Closing check, structurally-anchored cold-panel check; warn-first preserved; Gate 2 Plan B complete, Plan A unblocked.
+
 ### Plan 280
 The (f) suite in `bellows/tests/test_plan_lint.py` now covers the T2 cold-panel branch — f-h added. The plan_lint §4 Drafting-Cycle checks are fully test-covered: f-a (compliant T2, no WARN), f-b (tierless → WARN), f-c (T1 missing ACID → WARN), f-d (T0 no block → no WARN), f-e (fold-closing → WARN), f-f (real-271), f-g (real-274), f-h (T2 missing cold-panel → WARN).
 
