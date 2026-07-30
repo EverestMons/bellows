@@ -1,5 +1,10 @@
 # Agent Prompt Feedback
 
+- The plan's three-numbering-system warning (CEO Context) was respected throughout QA — gap-map rows, dev-log items, and QA verification rows are distinct.
+- Row 9's three-sub-claim structure (9a/9b/9c) was valuable — each tests a different failure mode (lost commit vs foreign interference vs scope violation) and requires different escalation.
+- The drift-check row (10) requiring both literal hashes prevents a vacuous "match" assertion — the check is reproducible from the report alone.
+- The mutual exclusivity test for row 4 required a custom fixture with dry lens lines AND fold-mentioning Closing prose — the plan's instruction to test this specifically was essential, since an unchecked unconditional status path would have silently re-created CB1's false-WARN class.
+
 - The plan's three-numbering-system warning (CEO Context) was valuable — gap-map rows, dev-log items, and QA rows are indeed distinct.
 - The fixture-isolation requirement (plan 280's f-h discipline) was correctly extended to include the fifth marker (`no **Closing:** line`) now that fix (c) makes the missing-Closing WARN reachable. This was stated in the plan and was not an oversight.
 - The DESIGN FORK on (b) was correctly resolved by the negation-aware whole-line rule. The plan's correction about plan 275 being the real counterexample to the `;`-split design was verified by execution.
