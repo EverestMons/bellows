@@ -1,5 +1,7 @@
 # Agent Prompt Feedback
 
+The diagnostic's corpus-sweep method (grep for `#### Forward Register` across all watched projects, then extract and classify each block) was well-designed. The plan's mandatory positive and negative controls (plan 62 fixture + plan 288/289 multi-item blocks) caught a wrapped-prose weakness in the first candidate tested. The explicit instruction to report per-block results rather than aggregates forced transparent evidence. The requirement to test in `/tmp` prevented accidental edits to the live system. The only factual error in the diagnostic was the plan 288 vs. 289 attribution of the six-item block, which the corpus sweep corrected.
+
 - The plan's three-numbering-system warning (CEO Context) was respected throughout QA — gap-map rows, dev-log items, and QA verification rows are distinct.
 - Row 9's three-sub-claim structure (9a/9b/9c) was valuable — each tests a different failure mode (lost commit vs foreign interference vs scope violation) and requires different escalation.
 - The drift-check row (10) requiring both literal hashes prevents a vacuous "match" assertion — the check is reproducible from the report alone.
