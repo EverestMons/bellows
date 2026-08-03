@@ -1,0 +1,11 @@
+=== NEGATIVE CONTROL (plan 62 narration guard) ===
+Input lines: 'CANARY item text here\n\nNow commit the deposit.\nComplete. All 5 checks passed.\n'
+Result: ['CANARY item text here']
+Count: 1
+"Now commit" absent: True
+"All 5 checks" absent: True
+
+=== POSITIVE CONTROL (six-bullet block) ===
+Input lines: '- Item alpha\n- Item beta\n- Item gamma\n- Item delta\n- Item epsilon\n- Item zeta\n'
+Result: ['- Item alpha', '- Item beta', '- Item gamma', '- Item delta', '- Item epsilon', '- Item zeta']
+Count: 6
