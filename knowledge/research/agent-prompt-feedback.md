@@ -1,5 +1,7 @@
 # Agent Prompt Feedback
 
+(none)
+
 The plan's verification structure was thorough and well-calibrated. The row 3 `sed` extraction with `$d` on both sides worked correctly even with the new class adjacent — the plan's specific warning about this being required proved accurate. The single-item byte-identity test (row 5) required loading the pre-change module via `importlib` with `PYTHONPATH` set, matching plan 286's countermeasure. The threshold discriminator (test 1 in task D) is the strongest guard — it is the only test that distinguishes `>=2` from `>=1`, and its absence would let a guard-inverting implementation pass the entire suite.
 
 The diagnostic's §Q4 implementation was directly usable as written — the 8-line sanitizer dropped into the module with only the routing change in `_append_forward_row` needed to integrate it. The plan's explicit mandate to NOT strip bullet markers and to ship §Q4 verbatim prevented a byte-for-byte-unchanged violation that an earlier draft would have introduced. The threshold discriminator test (Task D item 1) is the strongest guard in the set — without it, a `>=1` implementation passes every other test while inverting plan 62's guard.
