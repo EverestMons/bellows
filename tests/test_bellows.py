@@ -4940,7 +4940,7 @@ class TestForwardSingleLineItem:
     )
 
     def test_multiline_item_yields_single_line_row(self, tmp_path):
-        """Multi-line item_text → valid single-line 7-pipe row."""
+        """Narration-guard negative control: unbulleted multi-line → single row, trailing prose excluded."""
         project = self._make_git_repo(tmp_path / "proj")
         fwd_dir = os.path.join(project, "knowledge")
         os.makedirs(fwd_dir)
@@ -5009,6 +5009,170 @@ class TestForwardSingleLineItem:
             content = f.read()
         row_lines = [ln for ln in content.splitlines() if ln.startswith("| 2 |")]
         assert "Item with extra spaces" in row_lines[0]
+
+
+class TestForwardMultiItemSplit:
+    """Plan 294: bullet-aware splitter emits one row per bullet when ≥2 match."""
+
+    def _make_git_repo(self, tmp_path):
+        """Create a minimal git repo at tmp_path with an initial commit."""
+        subprocess.run(["git", "init", str(tmp_path)], capture_output=True, check=True)
+        subprocess.run(["git", "-C", str(tmp_path), "config", "user.email", "test@test.com"],
+                        capture_output=True, check=True)
+        subprocess.run(["git", "-C", str(tmp_path), "config", "user.name", "Test"],
+                        capture_output=True, check=True)
+        gitkeep = tmp_path / ".gitkeep"
+        gitkeep.write_text("")
+        subprocess.run(["git", "-C", str(tmp_path), "add", ".gitkeep"],
+                        capture_output=True, check=True)
+        subprocess.run(["git", "-C", str(tmp_path), "commit", "-m", "init"],
+                        capture_output=True, check=True)
+        return str(tmp_path)
+
+    FORWARD_FIXTURE = (
+        "# Forward Register\n\n"
+        "| # | Added | Item | Type | Plan-id link | Status |\n"
+        "|---|---|---|---|---|---|\n"
+        "| 1 | 2026-05-13 | First item | deferred-work | — | open |\n"
+    )
+
+    def test_threshold_discriminator_one_bullet_one_unbulleted(self, tmp_path):
+        """Threshold: 1 bullet + 1 unbulleted → fallback to first line (the unbulleted one)."""
+        project = self._make_git_repo(tmp_path / "proj")
+        fwd_dir = os.path.join(project, "knowledge")
+        os.makedirs(fwd_dir)
+        fwd_path = os.path.join(fwd_dir, "FORWARD.md")
+        with open(fwd_path, "w") as f:
+            f.write(self.FORWARD_FIXTURE)
+        subprocess.run(["git", "-C", project, "add", "knowledge/FORWARD.md"],
+                        capture_output=True, check=True)
+        subprocess.run(["git", "-C", project, "commit", "-m", "add forward"],
+                        capture_output=True, check=True)
+        item_text = "CANARY item text here\n- Now commit the deposit.\n"
+        bellows._append_forward_row(project, 99, item_text)
+        with open(fwd_path) as f:
+            content = f.read()
+        row_lines = [ln for ln in content.splitlines() if ln.startswith("| 2 |")]
+        assert len(row_lines) == 1
+        assert "CANARY item text here" in row_lines[0]
+        assert "Now commit" not in row_lines[0]
+
+    def test_multi_bullet_positive(self, tmp_path):
+        """≥2 bullet lines → one row per bullet."""
+        project = self._make_git_repo(tmp_path / "proj")
+        fwd_dir = os.path.join(project, "knowledge")
+        os.makedirs(fwd_dir)
+        fwd_path = os.path.join(fwd_dir, "FORWARD.md")
+        with open(fwd_path, "w") as f:
+            f.write(self.FORWARD_FIXTURE)
+        subprocess.run(["git", "-C", project, "add", "knowledge/FORWARD.md"],
+                        capture_output=True, check=True)
+        subprocess.run(["git", "-C", project, "commit", "-m", "add forward"],
+                        capture_output=True, check=True)
+        item_text = (
+            "- First bullet item\n"
+            "- Second bullet item\n"
+            "- Third bullet item\n"
+        )
+        bellows._append_forward_row(project, 99, item_text)
+        with open(fwd_path) as f:
+            content = f.read()
+        new_rows = [ln for ln in content.splitlines()
+                    if ln.startswith("| ") and not ln.startswith("| #") and not ln.startswith("| 1 |")
+                    and not ln.startswith("|---")]
+        assert len(new_rows) == 3
+        assert "- First bullet item" in new_rows[0]
+        assert "- Second bullet item" in new_rows[1]
+        assert "- Third bullet item" in new_rows[2]
+        for row in new_rows:
+            assert row.count("|") == 7
+
+    def test_narration_with_bullets_negative_contiguous(self, tmp_path):
+        """Contiguous bullets followed by unbulleted prose → prose excluded."""
+        project = self._make_git_repo(tmp_path / "proj")
+        fwd_dir = os.path.join(project, "knowledge")
+        os.makedirs(fwd_dir)
+        fwd_path = os.path.join(fwd_dir, "FORWARD.md")
+        with open(fwd_path, "w") as f:
+            f.write(self.FORWARD_FIXTURE)
+        subprocess.run(["git", "-C", project, "add", "knowledge/FORWARD.md"],
+                        capture_output=True, check=True)
+        subprocess.run(["git", "-C", project, "commit", "-m", "add forward"],
+                        capture_output=True, check=True)
+        item_text = (
+            "- Fix the ledger write path\n"
+            "- Add the missing guard\n"
+            "Now commit the deposit.\n"
+            "Complete. All 5 checks passed.\n"
+        )
+        bellows._append_forward_row(project, 99, item_text)
+        with open(fwd_path) as f:
+            content = f.read()
+        new_rows = [ln for ln in content.splitlines()
+                    if ln.startswith("| ") and not ln.startswith("| #") and not ln.startswith("| 1 |")
+                    and not ln.startswith("|---")]
+        assert len(new_rows) == 2
+        assert "- Fix the ledger write path" in new_rows[0]
+        assert "- Add the missing guard" in new_rows[1]
+        for row in new_rows:
+            assert "Now commit" not in row
+            assert "All 5 checks" not in row
+
+    def test_trailing_artifact_strip_multi_bullet(self, tmp_path):
+        """The ' .' trailing-artifact strip works on the multi-bullet path."""
+        project = self._make_git_repo(tmp_path / "proj")
+        fwd_dir = os.path.join(project, "knowledge")
+        os.makedirs(fwd_dir)
+        fwd_path = os.path.join(fwd_dir, "FORWARD.md")
+        with open(fwd_path, "w") as f:
+            f.write(self.FORWARD_FIXTURE)
+        subprocess.run(["git", "-C", project, "add", "knowledge/FORWARD.md"],
+                        capture_output=True, check=True)
+        subprocess.run(["git", "-C", project, "commit", "-m", "add forward"],
+                        capture_output=True, check=True)
+        item_text = (
+            "- First item .\n"
+            "- Second item .\n"
+        )
+        bellows._append_forward_row(project, 99, item_text)
+        with open(fwd_path) as f:
+            content = f.read()
+        new_rows = [ln for ln in content.splitlines()
+                    if ln.startswith("| ") and not ln.startswith("| #") and not ln.startswith("| 1 |")
+                    and not ln.startswith("|---")]
+        assert len(new_rows) == 2
+        assert "- First item |" in new_rows[0] or new_rows[0].endswith("- First item | deferred-work | — | open |")
+        assert " ." not in new_rows[0].split("| ")[2]
+        assert " ." not in new_rows[1].split("| ")[2]
+
+    def test_preamble_then_bullets(self, tmp_path):
+        """Heading line followed by ≥2 bullets → only bullets become rows."""
+        project = self._make_git_repo(tmp_path / "proj")
+        fwd_dir = os.path.join(project, "knowledge")
+        os.makedirs(fwd_dir)
+        fwd_path = os.path.join(fwd_dir, "FORWARD.md")
+        with open(fwd_path, "w") as f:
+            f.write(self.FORWARD_FIXTURE)
+        subprocess.run(["git", "-C", project, "add", "knowledge/FORWARD.md"],
+                        capture_output=True, check=True)
+        subprocess.run(["git", "-C", project, "commit", "-m", "add forward"],
+                        capture_output=True, check=True)
+        item_text = (
+            "Gate 2 owes:\n"
+            "- First deferred item\n"
+            "- Second deferred item\n"
+        )
+        bellows._append_forward_row(project, 99, item_text)
+        with open(fwd_path) as f:
+            content = f.read()
+        new_rows = [ln for ln in content.splitlines()
+                    if ln.startswith("| ") and not ln.startswith("| #") and not ln.startswith("| 1 |")
+                    and not ln.startswith("|---")]
+        assert len(new_rows) == 2
+        assert "- First deferred item" in new_rows[0]
+        assert "- Second deferred item" in new_rows[1]
+        assert "Gate 2 owes" not in new_rows[0]
+        assert "Gate 2 owes" not in new_rows[1]
 
 
 # ---------------------------------------------------------------------------

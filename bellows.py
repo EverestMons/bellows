@@ -1406,13 +1406,26 @@ def _append_project_status(project_path, plan_id, milestone_text):
     )
 
 
-def _append_forward_row(project_path, plan_id, item_text):
-    """Append a new row to knowledge/FORWARD.md's 6-column table.
+BULLET_RE = re.compile(r"^(?:-\s|\d+\.\s)")
 
-    The daemon computes the next row number (max existing # + 1) and fills
-    Added with the current date. Defaults: Type=deferred-work,
-    Plan-id link=—, Status=open. Gracefully skips if no FORWARD.md exists
-    (not every project has one). Daemon-post-merge write on main.
+
+def sanitize_items(item_text):
+    lines = [ln.strip() for ln in item_text.splitlines() if ln.strip()]
+    if not lines:
+        return [item_text.strip()]
+    bullet_lines = [ln for ln in lines if BULLET_RE.match(ln)]
+    if len(bullet_lines) >= 2:
+        return [" ".join(bl.split()) for bl in bullet_lines]
+    else:
+        return [" ".join(lines[0].split())]
+
+
+def _append_forward_row(project_path, plan_id, item_text):
+    """Append one or more rows to knowledge/FORWARD.md's 6-column table.
+
+    Uses sanitize_items to split multi-bullet blocks into separate rows.
+    Falls back to a single row (first non-empty line) when fewer than 2
+    bullet lines match, preserving plan 62's narration guard.
     """
     forward_path = os.path.join(project_path, "knowledge", "FORWARD.md")
     if not os.path.exists(forward_path):
@@ -1427,41 +1440,42 @@ def _append_forward_row(project_path, plan_id, item_text):
     row_numbers = [int(m) for m in re.findall(r"^\|\s*(\d+)\s*\|", content, re.MULTILINE)]
     next_num = max(row_numbers) + 1 if row_numbers else 1
 
-    # Sanitize item_text to a single line: take first non-empty line,
-    # collapse internal whitespace, strip trailing period-only artifact.
-    lines = [ln.strip() for ln in item_text.splitlines() if ln.strip()]
-    item_text = " ".join(lines[0].split()) if lines else item_text.strip()
-    if item_text.endswith(" ."):
-        item_text = item_text[:-2].rstrip()
+    items = sanitize_items(item_text)
 
     today = datetime.now().strftime("%Y-%m-%d")
-
-    # Defaults for optional fields
     item_type = "deferred-work"
     plan_link = "—"
     status = "open"
 
-    new_row = f"| {next_num} | {today} | {item_text} | {item_type} | {plan_link} | {status} |\n"
-
-    # Append the new row at EOF (after trailing newline if present)
     if not content.endswith("\n"):
         content += "\n"
-    content += new_row
+
+    for item in items:
+        if item.endswith(" ."):
+            item = item[:-2].rstrip()
+        new_row = f"| {next_num} | {today} | {item} | {item_type} | {plan_link} | {status} |\n"
+        content += new_row
+        next_num += 1
 
     with open(forward_path, "w") as f:
         f.write(content)
 
-    _log("INFO", f"ledger: FORWARD.md row {next_num} written",
-         slug=slug_for(os.path.basename(project_path)))
+    row_count = len(items)
+    if row_count == 1:
+        _log("INFO", f"ledger: FORWARD.md row {next_num - 1} written",
+             slug=slug_for(os.path.basename(project_path)))
+    else:
+        _log("INFO", f"ledger: FORWARD.md rows {next_num - row_count}-{next_num - 1} written ({row_count} items)",
+             slug=slug_for(os.path.basename(project_path)))
 
-    # Commit on main
+    # Commit on main — all N rows in one commit
     subprocess.run(
         ["git", "-C", project_path, "add", "knowledge/FORWARD.md"],
         capture_output=True, text=True, timeout=10,
     )
     subprocess.run(
         ["git", "-C", project_path, "commit", "-m",
-         f"docs(forward): FORWARD row {next_num} for plan {plan_id} (daemon-post-merge)"],
+         f"docs(forward): FORWARD row {next_num - row_count}-{next_num - 1} for plan {plan_id} (daemon-post-merge)"],
         capture_output=True, text=True, timeout=10,
     )
 
