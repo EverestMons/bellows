@@ -1150,9 +1150,11 @@ def test_lint_halt_routing_missing_id_warns():
 # Diagnostic
 **Date:** 2026-08-06 | **Dispatch Mode:** bellows | **pause_for_verdict:** always | **cycle_tier:** T1
 
-Check whether `245` and `302` are affected.
-
 **Halt routing:** if `245` is implicated, halt and report.
+
+## Questions
+
+Q1. Check whether `245` and `302` are affected.
 
 ## Drafting Cycle
 **Tier:** T1 — triggers fired: T-7.
@@ -1177,9 +1179,11 @@ def test_lint_halt_routing_full_coverage_no_warn():
 # Diagnostic
 **Date:** 2026-08-06 | **Dispatch Mode:** bellows | **pause_for_verdict:** always | **cycle_tier:** T1
 
-Check whether `245` and `302` are affected.
-
 **Halt routing:** if `245` or `302` is implicated, halt and report.
+
+## Questions
+
+Q1. Check whether `245` and `302` are affected.
 
 ## Drafting Cycle
 **Tier:** T1 — triggers fired: T-7.
@@ -1203,7 +1207,9 @@ def test_lint_no_halt_routing_line_warns():
 # Diagnostic
 **Date:** 2026-08-06 | **Dispatch Mode:** bellows | **pause_for_verdict:** always | **cycle_tier:** T1
 
-Check whether `245` and `302` are affected.
+## Questions
+
+Q1. Check whether `245` and `302` are affected.
 
 ## Drafting Cycle
 **Tier:** T1 — triggers fired: T-7.
@@ -1262,3 +1268,57 @@ The CEO directed this.
     assert "ledger out of order" not in result.stdout.lower()
     assert "lens results are recorded" not in result.stdout.lower()
     assert "halt-routing" not in result.stdout
+
+
+def test_lint_executable_with_plan_ids_no_i_warn():
+    """(i-e) Executable with backtick-quoted plan ids but no questions region → NO (i) WARN, exit 0.
+
+    Regression: plan 303 is an executable referencing plan `277` in its machinery
+    description. Check (i) must not fire — halt-routing is a diagnostic concept.
+    """
+    plan = """\
+# Executable: three mechanical drafting-cycle checks in plan_lint
+**Date:** 2026-08-06 | **Dispatch Mode:** bellows | **pause_for_verdict:** always | **cycle_tier:** T2
+
+Machinery cloned from `277` (the newest same-class plan) and `140` (the WARN-only precedent).
+
+## STEP 1 — DEV
+
+> Read `scripts/plan_lint.py` and add three WARN-only checks.
+>
+> **Scope:**
+> - `scripts/plan_lint.py`
+> - `tests/test_plan_lint.py`
+> - `knowledge/development/dev-log.md`
+>
+> **Deposits:**
+> - `knowledge/development/dev-log.md`
+
+## STEP 2 — QA
+
+> Run the full suite and measure false positives.
+>
+> Your QA report MUST include the byte-exact banner `Rule 20 — QA Self-Check Results` and a `PASSED — SELF-CHECK PASSED` line.
+>
+> **Scope:**
+> - `knowledge/qa/qa-report.md`
+>
+> **Deposits:**
+> - `knowledge/qa/qa-report.md`
+
+## Drafting Cycle
+**Tier:** T2 — computed, trigger fired: T-6.
+**Walks:** 1.
+- Weak spots:          w1 2 raised.
+- Destruction:         w1 dry.
+- Vulnerabilities:     w1 1 raised.
+- Integration-record:  w1 2 raised.
+- ACID:                a1 5 raised.
+**Cold panel (T2):** NOT run.
+**Closing:** judged stop by CEO direction.
+"""
+    result = _run_lint(plan)
+    assert result.returncode == 0, f"Expected exit 0, got {result.returncode}\nstdout: {result.stdout}"
+    assert "halt-routing" not in result.stdout
+    assert "absent from halt-routing" not in result.stdout
+    assert "`277`" not in result.stdout or "halt-routing" not in result.stdout
