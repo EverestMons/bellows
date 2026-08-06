@@ -1,0 +1,20 @@
+133c133
+< === bellows (434 plans, HEAD=716f6ab) ===
+---
+> === bellows (434 plans, HEAD=8e085fa) ===
+1153,1154d1152
+< diagnostic-276.md:
+< WARN: no halt-routing line found
+1162d1159
+< WARN: no halt-routing line found
+1165d1161
+< WARN: no halt-routing line found
+1169,1176d1164
+< WARN: plan id `273` in questions region but absent from halt-routing
+< WARN: plan id `274` in questions region but absent from halt-routing
+< WARN: plan id `279` in questions region but absent from halt-routing
+< WARN: plan id `280` in questions region but absent from halt-routing
+< WARN: plan id `281` in questions region but absent from halt-routing
+< WARN: plan id `283` in questions region but absent from halt-routing
+< WARN: plan id `284` in questions region but absent from halt-routing
+< WARN: plan id `289` in questions region but absent from halt-routing
