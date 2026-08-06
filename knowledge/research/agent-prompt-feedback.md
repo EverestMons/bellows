@@ -1,5 +1,8 @@
 # Agent Prompt Feedback
 
+Now let me commit all the QA artifacts.
+Step 2 (QA) complete. Committed as `e22f0a8`.
+
 - Task Q0's re-pin requirement (confirm Step 1 commit + pin corpus HEADs) added value — the bellows HEAD had moved past the Step 1 commit (docs regeneration at `399c01b`), and without the pin this would have been invisible.
 - The plan's instruction to confirm WARN-only by mechanism (grep for `results`/`all_passed` references) rather than by symptom (exit code alone) caught the string-literal false positive in the mechanism grep itself — the word "results" appears in check (h)'s print message. The programmatic verification excluding the string literal was necessary for a clean assertion.
 
