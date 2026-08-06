@@ -1017,3 +1017,248 @@ def test_lint_cycle_status_mutual_exclusivity():
     # despite fold-prose in the Closing line
     assert "fold as last event" not in result.stdout.lower()
     assert "dry lens pass" not in result.stdout.lower()
+
+
+# --- (g) Ledger ordering tests ---
+
+# Negative control: ascending ledger from diagnostic-301 (C16-C25 in order)
+ASCENDING_LEDGER_PLAN = """\
+# governance — diagnostic
+**Date:** 2026-08-06 | **Dispatch Mode:** bellows | **pause_for_verdict:** always | **cycle_tier:** T2
+
+## Drafting Cycle
+**Tier:** T2 — self-escalated from T1 by CEO decision.
+**Walks:** 3.
+- Weak spots:          w1 4 raised; w2 2 raised; w3 1 raised.
+- Destruction:         w1 2 raised; w2 dry; w3 1 raised.
+- Vulnerabilities:     w1 4 raised; w2 dry; w3 dry.
+- Integration-record:  w1 3 raised; w2 3 raised; w3 6 raised.
+- ACID:                a1 6 raised; a2 5 raised; a3 5 raised.
+**Conflicts:** inherited C1–C15.
+- **C16** — every population figure keyed on self-declared provenance is a FLOOR.
+- **C17** — a firing question is unanswerable until a candidate wording is named.
+- **C18** — a corpus root is enumerated, never reached by indirection.
+- **C19** — a gate line is phrased so it cannot match until the condition is true.
+- **C20** — every firing figure carries its instrument.
+- **C21** — a mandated deposit section is written on the halt path too.
+- **C22** — a population taken from an upstream table is re-read row by row.
+- **C23** — adding a QUESTION is a fold with its own consumer set.
+- **C24** — the Cycle Log is a REGION and is walked like one.
+- **C25** — ONE quantity, TWO legitimate opposed values, NO verdicts in the questions.
+**Cold panel (T2):** NOT run.
+**Closing:** judged stop by CEO direction.
+"""
+
+
+def test_lint_ledger_ascending_no_warn():
+    """(g-a) Ascending ledger (diagnostic-301 C16-C25) → NO ledger WARN, exit 0."""
+    result = _run_lint(ASCENDING_LEDGER_PLAN)
+    assert result.returncode == 0, f"Expected exit 0, got {result.returncode}\nstdout: {result.stdout}"
+    assert "ledger out of order" not in result.stdout.lower()
+
+
+def test_lint_ledger_out_of_order_warns():
+    """(g-b) Out-of-order ledger (C3 before C2) → WARN naming C3/C2, exit 0."""
+    plan = """\
+# Test Plan
+**Date:** 2026-08-06 | **Dispatch Mode:** bellows | **pause_for_verdict:** always | **cycle_tier:** T1
+
+## Drafting Cycle
+**Tier:** T1 — triggers fired: T-8 (novel).
+**Walks:** 1.
+- Weak spots:         w1 dry.
+- Destruction:        w1 dry.
+- Vulnerabilities:    w1 dry.
+- Integration-record: w1 dry.
+- ACID:               w1 dry.
+**Conflicts:**
+- **C3** — some constraint.
+- **C2** — another constraint.
+- **C4** — yet another.
+**Closing:** walk 1 dry; last event = lens pass; deposited once.
+"""
+    result = _run_lint(plan)
+    assert result.returncode == 0, f"Expected exit 0 (WARN only), got {result.returncode}\nstdout: {result.stdout}"
+    assert "C3" in result.stdout and "C2" in result.stdout
+    assert "ledger out of order" in result.stdout.lower()
+
+
+def test_lint_ledger_no_entries_no_warn():
+    """(g-c) No ledger entries → no crash, no false WARN, exit 0."""
+    result = _run_lint(COMPLIANT_T2_PLAN)
+    assert result.returncode == 0, f"Expected exit 0, got {result.returncode}\nstdout: {result.stdout}"
+    assert "ledger out of order" not in result.stdout.lower()
+
+
+# --- (h) Stale closing disclaimer tests ---
+
+def test_lint_stale_closing_warns():
+    """(h-a) Lens lines with walk results + Closing claims no lens has read → WARN, exit 0."""
+    plan = """\
+# Diagnostic
+**Date:** 2026-08-06 | **Dispatch Mode:** bellows | **pause_for_verdict:** always | **cycle_tier:** T1
+
+## Drafting Cycle
+**Tier:** T1 — triggers fired: T-7.
+**Walks:** 1.
+- Weak spots:         w1 2 raised.
+- Destruction:        w1 dry.
+- Vulnerabilities:    w1 dry.
+- Integration-record: w1 dry.
+- ACID:               w1 dry.
+**Closing:** no lens has read this artifact.
+"""
+    result = _run_lint(plan)
+    assert result.returncode == 0, f"Expected exit 0 (WARN only), got {result.returncode}\nstdout: {result.stdout}"
+    assert "no lens has read" in result.stdout.lower()
+    assert "lens results are recorded" in result.stdout.lower()
+
+
+def test_lint_closing_unread_no_results_no_warn():
+    """(h-b) Closing claims no lens has read, but lenses are [pending] → no WARN (neither alone)."""
+    plan = """\
+# Diagnostic
+**Date:** 2026-08-06 | **Dispatch Mode:** bellows | **pause_for_verdict:** always | **cycle_tier:** T1
+
+## Drafting Cycle
+**Tier:** T1 — triggers fired: T-7.
+**Walks:** 0.
+- Weak spots:         [pending]
+- Destruction:        [pending]
+- Vulnerabilities:    [pending]
+- Integration-record: [pending]
+- ACID:               [pending]
+**Closing:** no lens has read this artifact.
+"""
+    result = _run_lint(plan)
+    assert result.returncode == 0, f"Expected exit 0, got {result.returncode}\nstdout: {result.stdout}"
+    assert "lens results are recorded" not in result.stdout.lower()
+
+
+def test_lint_lens_results_normal_closing_no_warn():
+    """(h-c) Lens results recorded + normal closing → no WARN (neither alone)."""
+    result = _run_lint(ASCENDING_LEDGER_PLAN)
+    assert result.returncode == 0, f"Expected exit 0, got {result.returncode}\nstdout: {result.stdout}"
+    assert "lens results are recorded" not in result.stdout.lower()
+
+
+# --- (i) Halt-routing plan-id coverage tests ---
+
+def test_lint_halt_routing_missing_id_warns():
+    """(i-a) Plan id `302` in body but absent from halt-routing → WARN naming `302`, exit 0."""
+    plan = """\
+# Diagnostic
+**Date:** 2026-08-06 | **Dispatch Mode:** bellows | **pause_for_verdict:** always | **cycle_tier:** T1
+
+Check whether `245` and `302` are affected.
+
+**Halt routing:** if `245` is implicated, halt and report.
+
+## Drafting Cycle
+**Tier:** T1 — triggers fired: T-7.
+**Walks:** 1.
+- Weak spots:         w1 dry.
+- Destruction:        w1 dry.
+- Vulnerabilities:    w1 dry.
+- Integration-record: w1 dry.
+- ACID:               w1 dry.
+**Closing:** walk 1 dry; last event = lens pass; deposited once.
+"""
+    result = _run_lint(plan)
+    assert result.returncode == 0, f"Expected exit 0 (WARN only), got {result.returncode}\nstdout: {result.stdout}"
+    assert "`302`" in result.stdout
+    assert "absent from halt-routing" in result.stdout
+    assert "`245`" not in result.stdout.split("halt-routing")[0].split("WARN")[-1]
+
+
+def test_lint_halt_routing_full_coverage_no_warn():
+    """(i-b) All plan ids in body also in halt-routing → no WARN, exit 0."""
+    plan = """\
+# Diagnostic
+**Date:** 2026-08-06 | **Dispatch Mode:** bellows | **pause_for_verdict:** always | **cycle_tier:** T1
+
+Check whether `245` and `302` are affected.
+
+**Halt routing:** if `245` or `302` is implicated, halt and report.
+
+## Drafting Cycle
+**Tier:** T1 — triggers fired: T-7.
+**Walks:** 1.
+- Weak spots:         w1 dry.
+- Destruction:        w1 dry.
+- Vulnerabilities:    w1 dry.
+- Integration-record: w1 dry.
+- ACID:               w1 dry.
+**Closing:** walk 1 dry; last event = lens pass; deposited once.
+"""
+    result = _run_lint(plan)
+    assert result.returncode == 0, f"Expected exit 0, got {result.returncode}\nstdout: {result.stdout}"
+    assert "absent from halt-routing" not in result.stdout
+    assert "no halt-routing line found" not in result.stdout
+
+
+def test_lint_no_halt_routing_line_warns():
+    """(i-c) Plan ids in body, no halt-routing line at all → WARN, exit 0."""
+    plan = """\
+# Diagnostic
+**Date:** 2026-08-06 | **Dispatch Mode:** bellows | **pause_for_verdict:** always | **cycle_tier:** T1
+
+Check whether `245` and `302` are affected.
+
+## Drafting Cycle
+**Tier:** T1 — triggers fired: T-7.
+**Walks:** 1.
+- Weak spots:         w1 dry.
+- Destruction:        w1 dry.
+- Vulnerabilities:    w1 dry.
+- Integration-record: w1 dry.
+- ACID:               w1 dry.
+**Closing:** walk 1 dry; last event = lens pass; deposited once.
+"""
+    result = _run_lint(plan)
+    assert result.returncode == 0, f"Expected exit 0 (WARN only), got {result.returncode}\nstdout: {result.stdout}"
+    assert "no halt-routing line found" in result.stdout
+
+
+def test_lint_no_plan_ids_no_halt_routing_no_warn():
+    """(i-d) No plan ids in body → no WARN even without halt-routing, exit 0."""
+    plan = """\
+# Executable
+**Date:** 2026-08-06 | **Dispatch Mode:** bellows | **pause_for_verdict:** always | **cycle_tier:** T1
+
+Do some work.
+
+## Drafting Cycle
+**Tier:** T1 — triggers fired: T-8 (novel).
+**Walks:** 1.
+- Weak spots:         w1 dry.
+- Destruction:        w1 dry.
+- Vulnerabilities:    w1 dry.
+- Integration-record: w1 dry.
+- ACID:               w1 dry.
+**Closing:** walk 1 dry; last event = lens pass; deposited once.
+"""
+    result = _run_lint(plan)
+    assert result.returncode == 0, f"Expected exit 0, got {result.returncode}\nstdout: {result.stdout}"
+    assert "halt-routing" not in result.stdout
+    assert "absent from halt-routing" not in result.stdout
+
+
+def test_lint_degenerate_empty_block_new_checks_no_crash():
+    """(ghi-degen) Empty DC block → no crash, no false WARN from (g)/(h)/(i), exit 0."""
+    plan = """\
+# Test Plan
+**Date:** 2026-08-06 | **Dispatch Mode:** bellows | **pause_for_verdict:** always | **cycle_tier:** T1
+
+## Drafting Cycle
+
+## CEO Context
+
+The CEO directed this.
+"""
+    result = _run_lint(plan)
+    assert result.returncode == 0, f"Expected exit 0, got {result.returncode}\nstdout: {result.stdout}"
+    assert "Traceback" not in result.stderr
+    assert "ledger out of order" not in result.stdout.lower()
+    assert "lens results are recorded" not in result.stdout.lower()
+    assert "halt-routing" not in result.stdout

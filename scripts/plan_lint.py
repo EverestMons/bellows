@@ -221,6 +221,51 @@ def lint(plan_path):
                 if not closing_pos:
                     print("WARN: Drafting Cycle block has no **Closing:** line (DRAFTING_CYCLE.md §3)")
 
+                # (g) Ledger ordering (WARN-only): constraint entries **C<n>** — must be
+                # strictly ascending. Zero entries is not a failure; skip silently.
+                ledger_entry_re = re.compile(r'\*\*C(\d+)\*\*\s*—')
+                c_nums = [int(m.group(1)) for m in ledger_entry_re.finditer(dc_block)]
+                if len(c_nums) >= 2:
+                    for j in range(1, len(c_nums)):
+                        if c_nums[j] <= c_nums[j - 1]:
+                            print(f"WARN: Drafting Cycle ledger out of order: C{c_nums[j - 1]} before C{c_nums[j]}")
+                            break
+
+                # (h) Stale closing disclaimer (WARN-only): contradiction check — if any
+                # lens line records a walk result AND the Closing asserts no lens has read
+                # the artifact, that pair is a defect. Neither condition alone fires.
+                any_lens_ran = False
+                for ln in dc_block.splitlines():
+                    if lens_line_re.match(ln) and re.search(r'[wa]\d+', ln):
+                        any_lens_ran = True
+                        break
+                closing_claims_unread = False
+                if closing_pos:
+                    cl_match = re.search(r'^\*\*Closing:\*\*\s*(.*)', dc_block, re.MULTILINE)
+                    if cl_match and 'no lens has read' in cl_match.group(1).lower():
+                        closing_claims_unread = True
+                if any_lens_ran and closing_claims_unread:
+                    print("WARN: Drafting Cycle Closing claims no lens has read the artifact, but lens results are recorded")
+
+                # (i) Halt-routing plan-id coverage (WARN-only): backtick-quoted three-digit
+                # plan ids in the plan body must appear in the halt-routing line. Scoped to
+                # the mechanical backtick-quoted class; prose references are outside scope.
+                plan_id_pat = re.compile(r'`(\d{3})`')
+                pre_dc_text = plan_text[:dc_match.start()]
+                pre_dc_ids = set(plan_id_pat.findall(pre_dc_text))
+                halt_rout_line = None
+                for ln in pre_dc_text.splitlines():
+                    if re.search(r'halt[\s-]*rout', ln, re.IGNORECASE):
+                        halt_rout_line = ln
+                        break
+                if pre_dc_ids:
+                    if halt_rout_line is not None:
+                        halt_ids = set(plan_id_pat.findall(halt_rout_line))
+                        for pid in sorted(pre_dc_ids - halt_ids):
+                            print(f"WARN: plan id `{pid}` in questions region but absent from halt-routing")
+                    else:
+                        print("WARN: no halt-routing line found")
+
     for status, check, detail in results:
         print(f"{status}: {check} — {detail}")
 
