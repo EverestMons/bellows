@@ -1,0 +1,3372 @@
+=== anvil (57 plans, HEAD=da17272) ===
+diagnostic-73.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-anvil-bellows-daemon-archetype-2026-06-09.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-anvil-extraction-contract-archetype-classifier-2026-06-08.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-bellows-write-race-test-2026-04-14.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-coupling-hotspots-noise-2026-04-14.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-intent-gap-phantom-mechanism-2026-06-03.md:
+WARN: step 1 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-phase2-preflight-2026-04-14.md:
+WARN: step 1 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-pytest-bindings-2026-04-04.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-research-pipeline-2026-04-01.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-scoring-population-discontinuity-2026-06-03.md:
+WARN: step 1 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-scoring-weights-volatility-decay-2026-05-18.md:
+WARN: step 1 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-volatility-attribution-replay-2026-05-18.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-15.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-74.md:
+WARN: step 2 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-anvil-archetype-flask-service-migration-2026-06-09.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-anvil-bellows-cycle-1-2026-06-08.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-anvil-bellows-cycle-2-2026-06-08.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-anvil-bellows-daemon-archetype-impl-2026-06-09.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-anvil-config-path-fix-qa-recovery-2026-05-17.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-anvil-cycle-11-2026-04-14.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-anvil-cycle-13-2026-05-20.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-anvil-cycle-18-2026-05-18.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-anvil-cycle-19-2026-06-02.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-anvil-cycle-2026-04-02.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-anvil-cycle-8-2026-04-03.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-anvil-cycle-9-2026-04-14.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-anvil-cycle-report-worktree-write-2026-06-05.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-anvil-extraction-contract-language-decoupling-2026-06-08.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-anvil-intent-gap-phantom-fix-2026-06-03.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-anvil-lab-project-scope-fix-2026-06-08.md:
+WARN: step 1 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-anvil-lab-project-scope-fix-v2-2026-06-08.md:
+WARN: step 1 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-anvil-orphan-chunk-reconciliation-2026-06-05.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-anvil-root-hardcode-2026-05-18.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-anvil-test-failures-fixture-2026-04-14.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-cycle-research-2026-04-01.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-extractor-2026-03-30.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-f9-follow-scoring-methodology-fix-qa-recovery-2026-05-18.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-findings-noise-reduction-2026-04-14.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-first-cycle-2026-03-30.md:
+WARN: step 3 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-lab-2026-03-30.md:
+WARN: step 1 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-percentile-inversion-backlog-entry-2026-05-18.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-phase21-intent-layer-2026-04-14.md:
+WARN: step 1 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-phase21-refinement-2026-04-14.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-phase7-classification-2026-04-01.md:
+WARN: step 2 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-phase8-best-practices-2026-04-01.md:
+WARN: step 2 mentions tests but declares no test scope
+WARN: step 3 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-phase9-research-recs-2026-04-01.md:
+WARN: step 2 mentions tests but declares no test scope
+WARN: step 3 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-project-status-date-fix-2026-04-14.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-pytest-bindings-2026-04-04.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-qa-recovery-noise-and-cycle11-2026-04-14.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-scaffold-2026-03-29.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-scanner-2026-03-30.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-schema-2026-03-29.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-scorer-2026-03-30.md:
+WARN: step 1 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-specialist-sync-2026-04-14.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+halted-executable-anvil-config-path-fix-2026-05-17.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+halted-executable-f9-follow-scoring-methodology-fix-2026-05-18.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+parallel-1-diagnostic-anvil-test-failures-2026-04-14.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+
+=== bellows (434 plans, HEAD=716f6ab) ===
+archived-halted-diagnostic-priority-3-carryover-audit-v1-2026-05-21.md:
+WARN: found '## Step N' headings but no uppercase '## STEP N' — consider using uppercase for lint coverage
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-109.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-111.md:
+WARN: step 1 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-123.md:
+WARN: step 1 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-139.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-184.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-21.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-23.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-27.md:
+WARN: step 1 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-34.md:
+WARN: step 1 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-39.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-41.md:
+WARN: step 1 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-42.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-46.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-47.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-50.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-52.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-53.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-55.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-57.md:
+WARN: step 1 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-58.md:
+WARN: step 1 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-6.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-61.md:
+WARN: step 1 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-63.md:
+WARN: step 1 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-activity-based-timeout-2026-05-01.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-agent-self-request-verdict-2026-04-16.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-backlog-1-reproduction-audit-2026-05-05.md:
+WARN: step 1 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-bash-gate-vs-guardrails-2026-05-20.md:
+WARN: step 1 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-bash-permission-rules-audit-2026-05-04.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-bellows-architecture-audit-2026-04-18.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-bellows-backlog-sweep-2026-05-12.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-bellows-cross-project-verdict-queue-2026-04-16.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-bellows-deposit-path-formats-2026-04-18.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-bellows-dispatch-path-2026-04-15.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-bellows-expected-keys-shape-choice-2026-05-21.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-bellows-expected-keys-warning-2026-05-21.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-bellows-hardening-batch-freshness-2026-05-26.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-bellows-integration-section-audit-2026-05-01.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-bellows-isinstance-asymmetry-2026-05-21.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-bellows-lifecycle-db-id-threading-surface-2026-06-11.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-bellows-parse-diff-stat-audit-2026-04-16.md:
+WARN: step 1 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-bellows-phase8-1-validation-smoke-2026-04-16.md:
+WARN: step 1 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-bellows-plan-2b-dispatch-failure-2026-04-16.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-bellows-post-plan-hang-2026-04-16.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-bellows-reproduce-bugs-2026-04-15.md:
+WARN: step 1 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-bellows-reproduce-single-step-strand-2026-04-15.md:
+WARN: step 1 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-bellows-rerun-cascade-2026-04-19.md:
+WARN: step 1 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-bellows-root-worktree-reachability-audit-2026-06-08.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-bellows-runner-retry-state-2026-05-13.md:
+WARN: found '## Step N' headings but no uppercase '## STEP N' — consider using uppercase for lint coverage
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-bellows-scope-check-fp-fix-2026-06-09.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-bellows-scope-check-infra-files-2026-04-16.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-bellows-self-exposure-disposition-2026-05-12.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-bellows-silent-deposit-loss-teardown-2026-06-10.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-bellows-strand-timeline-2026-04-15.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-bellows-test-isolation-conftest-2026-05-26.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-bellows-verdict-file-schema-2026-04-18.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-canary-detector-validation-2026-05-12.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-canary-v2-detector-validation-2026-05-12.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-claude-p-prompt-suppression-2026-05-04.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-claude-settings-permission-gap-2026-05-22.md:
+WARN: step 1 mentions tests but declares no test scope
+WARN: step 2 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-cleanup-verdicts-call-site-gap-rerun-2026-05-01.md:
+WARN: step 1 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-consume-verdicts-drain-2026-05-21.md:
+WARN: step 1 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-consume-verdicts-not-processing-2026-05-12.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-daemon-restart-state-divergence-2026-05-24.md:
+WARN: step 1 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-deposit-exists-false-positive-audit-2026-05-11.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-deposit-exists-false-positive-root-cause-2026-05-06.md:
+WARN: found '## Step N' headings but no uppercase '## STEP N' — consider using uppercase for lint coverage
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-deposit-exists-path-form-normalization-2026-05-27.md:
+WARN: step 1 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-deposit-parser-prose-failure-2026-05-05.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-dirty-tree-precheck-false-trip-surface-2026-05-28.md:
+WARN: step 1 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-extract-primary-deposit-shape-2026-04-19.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-extract-total-steps-fence-class-audit-2026-05-11.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-extract-total-steps-undercount-2026-05-03.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-failure-3-mode-a-closure-design-2026-05-06.md:
+WARN: found '## Step N' headings but no uppercase '## STEP N' — consider using uppercase for lint coverage
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-failure-3-mode-a-occurrence-investigation-2026-05-06.md:
+WARN: found '## Step N' headings but no uppercase '## STEP N' — consider using uppercase for lint coverage
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-failure-3-mode-b-static-analysis-2026-05-05.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-failure-3-ordering-2026-04-24.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-failure-3-population-audit-2026-05-05.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-file-change-audit-false-negative-2026-05-25.md:
+WARN: step 1 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-gate-file-scoping-2026-05-24.md:
+WARN: step 1 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-gate-fp-coordinated-shape-2026-05-27.md:
+WARN: step 1 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-gate-path-resolution-post-teardown-2026-05-10.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-gates-deposit-parser-current-state-2026-04-19.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-header-parser-multiline-bold-2026-05-10.md:
+WARN: step 1 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-in-progress-rename-verification-2026-05-10.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-inactivity-timeout-investigation-2026-05-10.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-intermediate-decision-detection-design-2026-05-12.md:
+WARN: step 1 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-is-runnable-plan-parallel-2026-04-14.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-leftover-after-ship-tooling-scope-2026-05-26.md:
+WARN: step 1 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-mcp-read-class-tools-exemption-2026-05-25.md:
+WARN: step 1 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-monorepo-worktree-fix-canary-2026-05-04.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-no-permission-denials-fix-canary-2026-04-28.md:
+WARN: step 1 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-no-permission-denials-taxonomy-2026-04-28.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-on-moved-fix-shape-2026-04-19.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-orchestrator-support-current-state-2026-04-23.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-output-receipt-capture-audit-2026-05-12.md:
+WARN: step 1 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-parallel-plan-scope-check-collision-2026-05-01.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-parallel-scope-check-collision-2026-05-03.md:
+WARN: step 1 mentions tests but declares no test scope
+WARN: step 2 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-parallel-sha-population-audit-2026-05-26.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-path-001-hygiene-close-edit-surface-2026-05-11.md:
+WARN: found '## Step N' headings but no uppercase '## STEP N' — consider using uppercase for lint coverage
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-path-001-rule-20-staleness-audit-2026-05-11.md:
+WARN: found '## Step N' headings but no uppercase '## STEP N' — consider using uppercase for lint coverage
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-permission-prompt-substrate-2026-04-23.md:
+WARN: step 1 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-phase-3b-mechanism-and-cost-benefit-2026-05-01.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-phase-3b-read-side-step-state-resume-2026-05-26.md:
+WARN: step 1 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-plan-handler-seen-retry-cache-2026-05-11.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-plan-mutation-source-2026-04-19.md:
+WARN: step 1 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-plan-pickup-failure-2026-05-08.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-planner-authored-contract-validation-2026-05-12.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-planner-authored-contract-validation-2026-05-20.md:
+WARN: step 1 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-pre-scan-orphan-warn-flood-2026-05-22.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-priority-3-carryover-audit-v2-2026-05-21.md:
+WARN: step 1 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-processed-prefix-reconsumption-and-rename-skip-2026-05-24.md:
+WARN: step 1 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-qa-step-detection-audit-2026-05-22.md:
+WARN: step 1 mentions tests but declares no test scope
+WARN: step 2 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-r3-inline-step-text-surface-2026-04-19.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-rescan-miss-disposition-2026-05-28.md:
+WARN: step 1 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-resume-path-pending-cleanup-2026-04-16.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-rule-20-block-sourcing-2026-05-10.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-rule-20-gate-addition-surface-2026-05-05.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-rule-20-gate-false-positive-2026-05-12.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-rule-20-gate-false-positive-root-cause-2026-05-11.md:
+WARN: step 1 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-rule-26-directory-bullet-canary-2026-05-11.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-rule-26-gate-smoke-test-2026-04-19.md:
+WARN: step 1 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-runner-subprocess-2026-04-17.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-s3-done-stale-check-verification-2026-05-10.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-s3-verdict-resolved-retry-loop-2026-05-09.md:
+WARN: found '## Step N' headings but no uppercase '## STEP N' — consider using uppercase for lint coverage
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-scope-check-git-range-2026-04-22.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-scope-check-monorepo-fix-smoke-2026-04-28.md:
+WARN: step 1 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-scope-check-monorepo-topology-2026-04-28.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-scope-check-post-fix-behavior-2026-05-26.md:
+WARN: step 1 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-scope-check-text-mention-audit-2026-05-26.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-step-state-persistence-map-2026-04-28.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-step-state-resume-design-2026-04-28.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-step-state-resume-phase-3b-verification-2026-04-28.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-step1-phase-skip-investigation-2026-05-03.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-step2-auto-advance-2026-05-08.md:
+WARN: step 1 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-stream-json-feasibility-2026-04-23.md:
+WARN: step 1 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-teardown-cherry-pick-audit-2026-05-10.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-teardown-git-operations-mapping-2026-05-21.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-teardown-push-silent-failure-2026-05-26.md:
+WARN: step 1 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-teardown-worktree-reliability-2026-05-10.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-terminal-and-notification-surface-audit-2026-05-11.md:
+WARN: found '## Step N' headings but no uppercase '## STEP N' — consider using uppercase for lint coverage
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-terminal-notification-backlog-close-edit-surface-2026-05-12.md:
+WARN: found '## Step N' headings but no uppercase '## STEP N' — consider using uppercase for lint coverage
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-terminal-notification-capture-design-2026-05-11.md:
+WARN: found '## Step N' headings but no uppercase '## STEP N' — consider using uppercase for lint coverage
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-verdict-enrichment-surface-2026-05-27.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-verdict-ledger-gate-result-preservation-2026-05-26.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-verdict-lifecycle-coupling-2026-04-19.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-verdict-mechanization-distribution-audit-2026-04-30.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-verdict-request-pause-reasons-2026-04-16.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-verdict-request-pause-reasons-completion-2026-04-16.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-verdict-schema-refresh-2026-04-19.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-watcher-reliability-2026-04-19.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-worktree-candidate-designs-2026-05-03.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-worktree-cost-coverage-recommendation-2026-05-03.md:
+WARN: step 1 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-worktree-delta-2026-05-05.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-worktree-implementation-surface-2026-05-03.md:
+WARN: step 3 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-worktree-teardown-current-state-2026-05-05.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-worktree-teardown-dirty-tree-precheck-v2-2026-05-27.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-1.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-11.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-110.md:
+WARN: step 1 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-118.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-119.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-12.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-120.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-122.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-124.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-129.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-136.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-137.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-138.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-140.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-141.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-150.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-151.md:
+WARN: step 1 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-17.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-172.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-185.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-197.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-2.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-22.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-24.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-25.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-28.md:
+WARN: step 2 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-29.md:
+WARN: step 2 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-3.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-303.md:
+WARN: T2 plan missing cold-panel line in Drafting Cycle block (DRAFTING_CYCLE.md §3)
+executable-31.md:
+WARN: step 3 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-32.md:
+WARN: step 2 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-33.md:
+WARN: step 1 mentions tests but declares no test scope
+WARN: step 3 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-35.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-36.md:
+WARN: step 2 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-37.md:
+WARN: step 2 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-4.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-43.md:
+WARN: step 2 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-44.md:
+WARN: step 2 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-45.md:
+WARN: step 2 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-48.md:
+WARN: step 2 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-49.md:
+WARN: step 2 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-5.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-51.md:
+WARN: step 2 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-54.md:
+WARN: step 2 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-56.md:
+WARN: step 2 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-59.md:
+WARN: step 2 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-60.md:
+WARN: step 2 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-62.md:
+WARN: step 2 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-64.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-7.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-87.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-activity-timeout-2026-04-17.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-adr-structured-plan-metadata-2026-05-20.md:
+WARN: step 1 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-agent-self-request-verdict-2026-04-16.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-auto-close-canary-2026-04-24.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-auto-close-type-safety-qa-recovery-2026-05-17.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-backlog-1-close-and-lessons-2026-05-05.md:
+WARN: step 1 mentions tests but declares no test scope
+WARN: step 2 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-backlog-2026-04-19-plan-fixing-bug-x-hygiene-close-2026-05-12.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-backlog-addendum-scope-check-external-vector-2026-05-04.md:
+WARN: step 2 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-backlog-append-2026-04-19.md:
+WARN: step 2 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-backlog-append-fix-plan-trips-own-bug-2026-05-11.md:
+WARN: step 1 mentions tests but declares no test scope
+WARN: step 2 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-backlog-capture-monorepo-worktree-2026-05-04.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-backlog-close-2026-04-18-integration-protocol-2026-05-01.md:
+WARN: step 2 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-backlog-hygiene-cause-5-and-daemon-logging-2026-05-11.md:
+WARN: step 2 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-backlog-hygiene-sweep-2026-04-30.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-bash-gate-guardrails-exemption-2026-05-20.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-bellows-backlog-three-reliability-entries-2026-05-06.md:
+WARN: found '## Step N' headings but no uppercase '## STEP N' — consider using uppercase for lint coverage
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-bellows-config-split-2026-05-23.md:
+WARN: step 3 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-bellows-deposit-loss-fix-2026-06-10.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-bellows-expected-keys-narrow-2026-05-21.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-bellows-hardening-batch-items-1-3-4-2026-05-26.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-bellows-id-threading-lifecycle-mint-2026-06-11.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-bellows-id-threading-lifecycle-mint-v2-2026-06-11.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-bellows-isinstance-asymmetry-fix-2026-05-21.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-bellows-notifier-timeout-2026-04-16.md:
+WARN: step 1 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-bellows-phase4-reliability-fixes-2026-04-15.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-bellows-phase6-runner-observability-2026-04-16.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-bellows-phase7-polish-2026-04-16.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-bellows-phase7-validation-gates-2026-04-16.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-bellows-phase8-1-final-step-pause-fix-2026-04-16.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-bellows-phase8-verdict-layer-redesign-2026-04-16.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-bellows-qa-prefix-and-skip-logging-2026-05-08.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-bellows-reliability-bugs-1-2-3-2026-04-24.md:
+WARN: step 1 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-bellows-root-helper-runner-conversion-2026-06-08.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-bellows-scope-check-fix-2026-04-16.md:
+WARN: step 1 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-bellows-scope-check-fp-fix-impl-2026-06-10.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-bellows-self-exposure-wontfix-close-2026-05-12.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-bellows-session-wrap-2026-05-01.md:
+WARN: step 1 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-bellows-session-wrap-2026-05-03.md:
+WARN: step 2 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-bellows-session-wrap-final-2026-05-01.md:
+WARN: step 1 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-bellows-session-wrap-v2-2026-05-01.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-bellows-suite-green-fixes-2026-06-06.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-bellows-teardown-merge-model-2026-06-05.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-bellows-test-isolation-conftest-2026-05-26.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-bellows-tier-1-batch-2026-05-21.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-bellows-verdict-enrichment-2026-05-21.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-bellows-verdict-request-integration-test-2026-04-16.md:
+WARN: step 1 mentions tests but declares no test scope
+WARN: step 2 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-bellows-verdict-schema-plan-a-2026-04-18.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-bellows-verdict-schema-plan-b-2026-04-18.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-bellows-worktree-impl-2026-05-03.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-bellows-worktree-tests-2026-05-03.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-block-continue-over-worktree-teardown-failure-2026-06-01.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-canary-bugs-1-3-2026-04-24.md:
+WARN: found '## Step N' headings but no uppercase '## STEP N' — consider using uppercase for lint coverage
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-canary-phase-3b-restart-2026-04-30.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-canary-step-header-parser-fixes-2026-05-11.md:
+WARN: step 1 mentions tests but declares no test scope
+WARN: step 2 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-capture-s3-bug-c-to-backlog-2026-05-09.md:
+WARN: step 1 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-cleanup-slug-normalization-2026-05-01.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-close-2026-05-03-step-count-regression-2026-05-03.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-close-activity-timeout-backlog-2026-05-01.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-close-monorepo-worktree-backlog-2026-05-04.md:
+WARN: step 2 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-close-stranded-lessons-step-numbering-2026-05-01.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-consume-verdicts-prefix-fix-2026-05-21.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-corrective-narrow-is-diagnostic-override-2026-05-03.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-create-bellows-specialist-roster-2026-04-19.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-daemon-version-observability-2026-05-11.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-deposit-exists-path-form-normalization-2026-05-27.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-deposit-exists-prose-canary-2026-04-28.md:
+WARN: step 1 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-deposit-exists-worktree-aware-2026-05-06.md:
+WARN: found '## Step N' headings but no uppercase '## STEP N' — consider using uppercase for lint coverage
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-deposit-parser-agent-receipt-fix-2026-05-05.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-deposits-block-inline-format-2026-05-12.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-deposits-block-regex-blank-line-2026-04-28.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-detector-shape-fix-2026-05-12.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-disable-auto-close-2026-04-24.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-disable-autoupdater-2026-05-27.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-dispatch-mode-validator-qa-recovery-2026-05-19.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-extract-plan-required-deposits-set-to-list-2026-05-25.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-extract-primary-deposit-block-aware-2026-04-19.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-failure-3-mode-a-closure-2026-05-06.md:
+WARN: found '## Step N' headings but no uppercase '## STEP N' — consider using uppercase for lint coverage
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-fence-strip-plan-text-parsers-2026-05-11.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-file-change-audit-fix-2026-05-25.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-fix-f-guard-removal-2026-05-26.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-freshness-check-algorithm-v2-blueprint-retry-2026-05-27.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-frontmatter-canary-2026-05-20.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-frontmatter-prototype-deposit-exists-2026-05-20.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-gate-2c-bellows-gate-fixes-2026-05-19.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-gate-2c-canary-rerun-2026-05-19.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-gate-file-scoping-2026-05-24.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-gate-fp-coordinated-shape-2026-05-27.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-gate5-fix-verdict-emoji-2026-04-16.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-gate5-path-double-project-2026-04-17.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-governance-dispatch-infrastructure-2026-05-20.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-governance-lessons-verdict-format-2026-05-12.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-handle-subdirectory-guard-2026-04-19.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-header-parser-canary-2026-05-10.md:
+WARN: step 1 mentions tests but declares no test scope
+WARN: step 2 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-header-parser-multiline-fix-2026-05-10.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-inactivity-timeout-bump-1800s-2026-05-01.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-intermediate-decision-detector-2026-05-12.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-is-runnable-plan-parallel-fix-2026-04-14.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-leftover-after-ship-tooling-blueprint-2026-05-26.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-lessons-forge-extraction-phase-b2-governance-wiring-2026-05-18.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-lessons-verdict-format-and-stranded-plans-2026-05-01.md:
+WARN: step 1 mentions tests but declares no test scope
+WARN: step 2 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-mcp-read-class-tools-extension-2026-05-25.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-model-override-backtick-fix-2026-04-17.md:
+WARN: step 1 mentions tests but declares no test scope
+WARN: step 2 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-monorepo-worktree-fix-2026-05-04.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-no-match-verdict-warning-dedup-2026-05-31.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-no-permission-denials-read-class-fix-2026-04-28.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-notification-coalescing-2026-05-12.md:
+WARN: found '## Step N' headings but no uppercase '## STEP N' — consider using uppercase for lint coverage
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-notifier-server-2026-04-13.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-orchestrator-2026-04-13.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-parse-diff-stat-truncation-fix-2026-05-26.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-path-001-hygiene-close-2026-05-11.md:
+WARN: found '## Step N' headings but no uppercase '## STEP N' — consider using uppercase for lint coverage
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-phase-1-5-lessons-source-d-2026-05-10.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-phase-3c-plan-hash-drift-warning-2026-04-30.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-phase2a-2026-04-14.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-phase2b-2026-04-14.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-pipe-header-parser-and-comprehensive-qa-2026-05-08.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-plan-handler-seen-slug-refactor-2026-05-11.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-plan-mutation-canary-2026-04-19.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-plan-truncation-fix-2026-04-17.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-plan-truncation-fix-v2-2026-04-17.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-plan-write-time-lessons-reread-2026-05-13.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-planner-2026-04-13.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-planner-claude-code-2026-04-14.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-planner-contract-validators-three-validator-drop-2026-05-20.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-planner-template-bellows-execution-model-section-2026-04-30.md:
+WARN: step 1 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-planner-template-lessons-2026-05-01.md:
+WARN: step 1 mentions tests but declares no test scope
+WARN: step 2 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-planner-template-lessons-step-numbering-2026-04-23.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-planner-template-no-push-and-routing-count-2026-05-21.md:
+WARN: step 2 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-planner-template-parser-self-trip-and-session-wrap-2026-05-11.md:
+WARN: step 2 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-planner-template-rule-25-2026-04-18.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-planner-template-rule-25-codification-2026-05-21.md:
+WARN: step 2 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-planner-template-rule-26-2026-04-18.md:
+WARN: step 1 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-post-relocation-restart-canary-2026-05-15.md:
+WARN: step 1 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-pre-scan-orphan-guard-2026-05-22.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-precondition-failure-field-2026-05-24.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-preserve-unlanded-commits-on-stranded-cleanup-2026-06-01.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-priority-3-audit-closeout-2026-05-21.md:
+WARN: step 2 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-project-status-reliability-bugs-1-2-3-2026-04-24.md:
+WARN: step 1 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-qa-steps-governance-2026-05-25.md:
+WARN: step 1 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-qa-steps-header-field-code-2026-05-25.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-r3-shadow-cache-prompt-2026-04-19.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-r3-smoke-test-2026-04-19.md:
+WARN: step 1 mentions tests but declares no test scope
+WARN: step 2 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-reattempt-teardown-on-continue-resume-2026-06-04.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-reliability-fixes-a-b-2026-04-14.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-remove-phase-3b-3c-2026-05-01.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-remove-pre-scan-processed-rename-v2-2026-05-24.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-rename-first-ordering-2026-05-24.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-resume-path-pending-cleanup-2026-04-16.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-revert-snapshot-fix-and-reopen-backlog-2026-05-01.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-rule-20-bold-tolerance-qa-recovery-2026-05-17.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-rule-20-self-check-gate-2026-05-05.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-rule-20-self-check-wt-path-2026-05-10.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-rule-20-single-source-2026-05-10.md:
+WARN: step 1 mentions tests but declares no test scope
+WARN: step 2 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-rule-22e-rule-20-tightening-2026-05-05.md:
+WARN: step 2 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-rule-25-verdict-content-spec-fix-2026-05-01.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-rule-26-deposit-parser-scope-2026-04-19.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-rule-26-evidence-path-fix-2026-05-11.md:
+WARN: step 2 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-runner-parser-2026-04-13.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-runner-retry-transient-failure-2026-05-13.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-s3-bug-c-halted-stale-check-2026-05-10.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-s3-fix-qa-rule-20-banner-redeposit-2026-05-09.md:
+WARN: step 1 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-s3-verdict-resolved-retry-loop-fix-2026-05-09.md:
+WARN: step 2 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-scaffold-2026-04-13.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-scope-check-dir-mention-2026-06-04.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-scope-check-monorepo-fix-2026-04-28.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-scope-check-project-path-filter-2026-04-22.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-seen-discard-rejection-path-2026-05-28.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-seen-invalidate-on-created-moved-2026-06-04.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-session-close-out-2026-04-19.md:
+WARN: step 1 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-session-end-full-suite-2026-05-11.md:
+WARN: step 1 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-session-wrap-2026-05-05.md:
+WARN: step 1 mentions tests but declares no test scope
+WARN: step 2 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-session-wrap-2026-05-08.md:
+WARN: step 1 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-session-wrap-2026-05-10.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-session-wrap-2026-05-12.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-session-wrap-evening-2026-05-10.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-session-wrap-s3-2026-05-09.md:
+WARN: step 1 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-settings-local-bash-fallback-doc-2026-05-22.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-shadow-copy-cache-2026-04-17.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-smoke-test-infra-2026-04-17.md:
+WARN: step 1 mentions tests but declares no test scope
+WARN: step 2 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-source-sha-startup-2026-04-14.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-startup-sweep-extract-2026-05-10.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-step-header-line-anchor-2026-05-11.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-step-state-resume-phase-3b-2026-04-28.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-step2-auto-advance-fix-2026-05-08.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-stranded-verdict-cleanup-2026-05-12.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-stream-json-minimal-switch-2026-04-23.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-stream-json-smoke-test-2026-04-23.md:
+WARN: step 1 mentions tests but declares no test scope
+WARN: step 2 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-teardown-b-raise-on-log-failure-2026-06-05.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-teardown-worktree-lock-cleanup-2026-05-10.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-terminal-capture-2026-05-12.md:
+WARN: found '## Step N' headings but no uppercase '## STEP N' — consider using uppercase for lint coverage
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-terminal-notification-backlog-close-2026-05-12.md:
+WARN: found '## Step N' headings but no uppercase '## STEP N' — consider using uppercase for lint coverage
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-test-rule-26-set-to-list-followup-2026-05-25.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-verdict-ledger-gate-result-preservation-2026-05-26.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-verdict-lifecycle-coupling-2026-04-19.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-verdict-only-resume-docs-2026-04-28.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-verdict-request-pause-reason-2026-04-16.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-watcher-on-moved-handler-2026-04-19.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-worktree-precheck-hardening-2026-05-29.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-worktree-teardown-dirty-tree-precheck-2026-05-27.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+halted-diagnostic-consume-verdicts-drain-failure-2026-05-21.md:
+WARN: found '## Step N' headings but no uppercase '## STEP N' — consider using uppercase for lint coverage
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+halted-diagnostic-worktree-teardown-dirty-tree-precheck-2026-05-27.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+halted-executable-148.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+halted-executable-planner-template-rule-21-contract-change-2026-05-26.md:
+WARN: step 2 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+halted-executable-remove-pre-scan-processed-rename-2026-05-24.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+halted-executable-remove-pre-scan-processed-rename-continuation-2026-05-24.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+halted-executable-remove-pre-scan-processed-rename-continuation-v2-2026-05-24.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+parallel-1-diagnostic-bellows-parallel-group-collection-2026-04-16.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+parallel-1-diagnostic-bellows-reliability-2026-04-14.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+parallel-1-diagnostic-bellows-rescan-duplicate-runs-2026-04-16.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+parallel-1-diagnostic-startup-sweep-test-refactor-2026-05-05.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+parallel-1-executable-bellows-claim-at-entry-2026-04-16.md:
+WARN: step 1 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+parallel-1-executable-bellows-parallel-defer-2026-04-16.md:
+WARN: step 1 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+parallel-1-executable-bellows-verdict-scoping-2026-04-16.md:
+WARN: step 1 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+parallel-1-executable-deposit-exists-directory-paths-2026-04-30.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+parallel-1-executable-ledger-pause-reason-code-2026-04-30.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+parallel-1-executable-parse-diff-stat-fix-2026-04-16.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+parallel-1-executable-planner-template-parallel-group-dispatch-subsection-2026-05-05.md:
+WARN: step 2 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+parallel-1-executable-verdict-content-validator-2026-05-12.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+parallel-1-executable-verdict-directory-validator-2026-05-12.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+parallel-1-executable-verdict-readme-2026-04-16.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+qa-149.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+
+=== governance (33 plans, HEAD=c95a3d9) ===
+diagnostic-13.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-250.md:
+WARN: step 1 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-251.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-276.md:
+WARN: no halt-routing line found
+diagnostic-285.md:
+WARN: Drafting Cycle closing indicates fold as last event, not a dry lens pass (DRAFTING_CYCLE.md §2)
+diagnostic-290.md:
+WARN: Drafting Cycle closing indicates fold as last event, not a dry lens pass (DRAFTING_CYCLE.md §2)
+diagnostic-299.md:
+WARN: Drafting Cycle closing indicates fold as last event, not a dry lens pass (DRAFTING_CYCLE.md §2)
+WARN: Drafting Cycle ledger out of order: C15 before C13
+WARN: no halt-routing line found
+diagnostic-300.md:
+WARN: Drafting Cycle closing indicates fold as last event, not a dry lens pass (DRAFTING_CYCLE.md §2)
+WARN: no halt-routing line found
+diagnostic-301.md:
+WARN: T2 plan missing cold-panel line in Drafting Cycle block (DRAFTING_CYCLE.md §3)
+WARN: Drafting Cycle closing indicates fold as last event, not a dry lens pass (DRAFTING_CYCLE.md §2)
+WARN: plan id `273` in questions region but absent from halt-routing
+WARN: plan id `274` in questions region but absent from halt-routing
+WARN: plan id `279` in questions region but absent from halt-routing
+WARN: plan id `280` in questions region but absent from halt-routing
+WARN: plan id `281` in questions region but absent from halt-routing
+WARN: plan id `283` in questions region but absent from halt-routing
+WARN: plan id `284` in questions region but absent from halt-routing
+WARN: plan id `289` in questions region but absent from halt-routing
+executable-117.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-121.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-152.md:
+WARN: step 1 mentions tests but declares no test scope
+WARN: step 2 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-153.md:
+WARN: step 2 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-19.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-20.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-252.md:
+WARN: step 1 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-253.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-254.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-255.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-256.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-26.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-260.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-269.md:
+WARN: T2 plan missing cold-panel line in Drafting Cycle block (DRAFTING_CYCLE.md §3)
+executable-270.md:
+WARN: T2 plan missing cold-panel line in Drafting Cycle block (DRAFTING_CYCLE.md §3)
+executable-30.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-38.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-governance-project-bootstrap-2026-05-21.md:
+WARN: step 2 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-options-1-and-3-pre-edit-verification-2026-05-22.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-rule-25-routing-cleanup-2026-05-21.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-rule-25-rule-22-check-failed-and-date-discipline-2026-05-21.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-timeline-trigger-format-2026-05-23.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+
+=== invoice-pulse (773 plans, HEAD=f83c244) ===
+action-queue-auto-resolution-orchestration-2026-03-18.md:
+WARN: found '## Step N' headings but no uppercase '## STEP N' — consider using uppercase for lint coverage
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+action-queue-intelligence-links-prompts-2026-03-16.md:
+WARN: found '## Step N' headings but no uppercase '## STEP N' — consider using uppercase for lint coverage
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+action-router-plan-2026-03-14.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+archived-stub-in-progress-diagnostic-continuation-rule-rounding-2026-05-06.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+archived-superseded-by-fuel-csv-precision-2026-05-22-diagnostic-fuel-copilot-prompt-robustness-2026-05-20.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+base-rates-copilot-orchestration-2026-03-18.md:
+WARN: found '## Step N' headings but no uppercase '## STEP N' — consider using uppercase for lint coverage
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+carrier-tcode-merge-prompts-2026-03-16.md:
+WARN: found '## Step N' headings but no uppercase '## STEP N' — consider using uppercase for lint coverage
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+contract-card-dashboard-orchestration-2026-03-17.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+contract-card-hierarchy-orchestration-2026-03-19.md:
+WARN: found '## Step N' headings but no uppercase '## STEP N' — consider using uppercase for lint coverage
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+contract-dashboard-cards-prompts-2026-03-16.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+contract-dates-optional-prompts-2026-03-16.md:
+WARN: found '## Step N' headings but no uppercase '## STEP N' — consider using uppercase for lint coverage
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+contract-hierarchy-claude-code-prompts-2026-03-16.md:
+WARN: found '## Step N' headings but no uppercase '## STEP N' — consider using uppercase for lint coverage
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+contract-integrity-orchestration-2026-03-18.md:
+WARN: found '## Step N' headings but no uppercase '## STEP N' — consider using uppercase for lint coverage
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+contract-view-simplification-2026-03-17.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+copilot-contract-import-plan-2026-03-14.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+copilot-data-collection-plan-2026-03-14.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+copilot-first-orchestration-2026-03-18.md:
+WARN: found '## Step N' headings but no uppercase '## STEP N' — consider using uppercase for lint coverage
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+copilot-pipeline-fix-2026-03-31.md:
+WARN: step 1 mentions tests but declares no test scope
+WARN: step 2 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+copilot-pipeline-orchestration-2026-03-14.md:
+WARN: found '## Step N' headings but no uppercase '## STEP N' — consider using uppercase for lint coverage
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+copilot-success-dashboard-2026-04-03.md:
+WARN: step 1 mentions tests but declares no test scope
+WARN: step 2 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+date-based-resolution-claude-code-prompts-2026-03-16.md:
+WARN: found '## Step N' headings but no uppercase '## STEP N' — consider using uppercase for lint coverage
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+deficit-weight-display-orchestration-2026-03-18.md:
+WARN: found '## Step N' headings but no uppercase '## STEP N' — consider using uppercase for lint coverage
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+dev-log-action-queue-integration-tests-scenarios-4-6-2026-05-20.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-145.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-155.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-159.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-160.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-168.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-170.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-173.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-177.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-179.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-180.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-182.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-186.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-188.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-190.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-192.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-193.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-198.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-199.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-211.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-213.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-214.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-229.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-235.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-236.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-261.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-266.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-65.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-66.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-67.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-68.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-69.md:
+WARN: step 1 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-75.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-76.md:
+WARN: step 1 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-77.md:
+WARN: step 1 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-79.md:
+WARN: step 1 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-83.md:
+WARN: step 1 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-9-repo-fsck-triage-2026-05-14.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-90.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-92.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-94.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-96.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-accessorial-alias-dupes-2026-04-03.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-accessorial-alias-resolution-2026-03-27.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-accessorial-alias-ui-and-scoping-2026-03-27.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-accessorial-code-aliases-2026-03-26.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-action-queue-workflow-2026-05-18.md:
+WARN: step 1 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-actions-500-2026-04-01.md:
+WARN: step 1 mentions tests but declares no test scope
+WARN: step 2 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-activity-notes-patterns-2026-03-26.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-app-performance-2026-03-30.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-auto-contract-functional-2026-03-30.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-auto-contract-volume-priority-2026-03-27.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-autofill-features-2026-03-20.md:
+WARN: found '## Step N' headings but no uppercase '## STEP N' — consider using uppercase for lint coverage
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-background-job-infrastructure-inventory-2026-05-22.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-backlog-hygiene-audit-2026-05-06.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-backtest-metric-accuracy-2026-04-09.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-backtest-scoping-architecture-2026-04-09.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-base-dir-read-dependencies-2026-04-21.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-base-rate-sprawl-2026-04-07.md:
+WARN: step 1 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-base-rate-tariff-batch-2026-03-31.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-base-rates-backtest-mismatch-2026-04-09.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-base-rates-csv-wiring-2026-04-09.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-base-rates-importer-behavior-2026-04-09.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-base-rates-method-not-allowed-2026-04-21.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-base-rates-prompt-audit-2026-04-09.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-base-rates-section-integration-2026-04-08.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-base-rates-url-fix-postmortem-2026-04-21.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-billto-config-extraction-2026-04-16.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-billto-config-extraction-v2-2026-04-16.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-billto-customer-area-pub-validation-coupling-2026-04-11.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-billto-extraction-architecture-2026-05-07.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-billto-row-suppression-2026-05-14.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-cached-validator-state-2026-03-22.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-card-loader-failures-2026-04-01.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-carrier-doc-extraction-flow-2026-03-26.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-carrier-fuel-schema-2026-04-04.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-carrier-profile-auto-create-2026-03-26.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-carrier-profile-autocreate-2026-03-30.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-carrier-profile-data-quality-2026-03-31.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-carrier-rules-tariff-2026-03-20.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-combined-header-extraction-2026-03-26.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-config-copilot-paste-2026-03-20.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-config-paste-nonetype-2026-04-02.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-config-upload-json-redirect-2026-04-17.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-contract-212-db-state-2026-04-03.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-contract-card-cleanup-2026-04-01.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-contract-config-copilot-2026-04-01.md:
+WARN: step 1 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-contract-data-visibility-2026-04-03.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-contract-header-cleanup-2026-04-02.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-contract-header-no-updates-2026-04-03.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-contract-lanes-old-2026-03-26.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-contract-pubs-removal-scope-2026-04-22.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-contract-resolution-gate-2026-04-03.md:
+WARN: step 1 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-contract-setup-data-shape-2026-04-02.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-contract-setup-import-2026-04-02.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-contract-setup-misalign-2026-04-03.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-contract-setup-quality-display-2026-04-03.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-contract-versioning-merge-2026-03-31.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-copilot-csv-section-matrix-2026-04-09.md:
+WARN: step 1 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-copilot-exchange-capture-2026-03-27.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-copilot-extraction-format-2026-03-22.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-copilot-fuel-extraction-2026-03-26.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-copilot-paste-markdown-noise-2026-04-02.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-copilot-paste-pipeline-2026-03-23.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-copilot-pipeline-audit-2026-03-31.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-copilot-prompt-gap-comparison-2026-03-31.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-copilot-pubs-data-flow-2026-04-22.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-copilot-unification-audit-2026-03-31.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-copilot-widget-layout-2026-04-02.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-csrf-rules-tariff-paste-2026-03-27.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-dataless-flag-sweep-2026-05-14.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-dead-code-pages-2026-03-27.md:
+WARN: step 1 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-dead-code-sweep-2026-04-01.md:
+WARN: step 1 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-derived-rate-display-2026-04-07.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-document-linkage-per-section-2026-03-31.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-eia-padd-regions-2026-03-26.md:
+WARN: step 1 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-eluvian-signals-diagnostic-2026-03-22.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-email-archiver-batch-search-2026-04-02.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-email-user-lookup-2026-06-02.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-empty-carrier-profiles-2026-04-02.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-enrich-button-error-2026-04-01.md:
+WARN: step 1 mentions tests but declares no test scope
+WARN: step 2 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-enrichment-missing-charge-lines-2026-04-06.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-export-forge-pipeline-2026-04-01.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-extraction-fallback-2026-04-01.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-file-first-batch-readiness-2026-04-16.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-file-first-rollout-audit-2026-04-10.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-fuel-bracket-ceiling-2026-04-17.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-fuel-bracket-continuation-2026-03-26.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-fuel-bracket-floor-only-blueprint-2026-05-22.md:
+WARN: step 1 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-fuel-bracket-floor-only-blueprint-amendment-2026-05-22.md:
+WARN: step 1 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-fuel-bracket-precision-2026-03-27.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-fuel-bracket-sample-extrapolation-2026-05-29.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-fuel-continuation-inference-design-v2-2026-05-20.md:
+WARN: step 1 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-fuel-continuation-inference-v2-2026-05-21.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-fuel-continuation-rule-2026-04-17.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-fuel-copilot-prompt-audit-2026-05-20.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-fuel-csv-precision-gap-detection-2026-05-22.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-fuel-import-eia-region-notnull-2026-05-20.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-fuel-importer-boundary-audit-2026-04-10.md:
+WARN: step 1 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-fuel-inference-preamble-row-skip-2026-05-28.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-fuel-timing-rule-extraction-hallucination-2026-05-28.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-g7-tariff-autofill-2026-03-27.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-gaps-vs-stubs-2026-03-30.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-gate-ship-date-compliance-2026-04-03.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-gate7-tariff-rate-link-2026-03-26.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-gate8-eia-refresh-2026-03-26.md:
+WARN: step 1 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-ghost-deliverable-audit-2026-04-02.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-git-sync-workflow-2026-04-02.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-governance-root-connectivity-probe-2026-05-14.md:
+WARN: step 1 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-governance-root-refsck-2026-05-14.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-group-b-2026-03-23.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-implementation-audit-2026-04-01.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-import-attempts-collapse-2026-04-03.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-import-section-2026-04-04.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-informal-sharing-friction-audit-2026-04-09.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-ingest-post-validation-hang-2026-03-27.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-ingest-skip-xml-id-list-2026-03-27.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-invoice-detail-display-2026-04-03.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-invoice-detail-fidelity-2026-04-01.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-invoice-detail-locations-ux-2026-03-26.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-invoice-detail-timeline-2026-04-05.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-invoice-detail-ux-2026-04-02.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-invoice-pulse-specialist-file-drift-audit-2026-05-22.md:
+WARN: step 1 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-invoices-list-fixes-2026-03-26.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-lanes-card-metrics-2026-04-03.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-lanes-combined-codepath-2026-04-03.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-lanes-combined-parser-bug-2026-04-10.md:
+WARN: step 1 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-lanes-csrf-fix-verification-2026-05-06.md:
+WARN: found '## Step N' headings but no uppercase '## STEP N' — consider using uppercase for lint coverage
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-lanes-csv-extraction-current-state-2026-04-09.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-lanes-file-first-readiness-2026-04-11.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-lanes-import-none-key-2026-04-03.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-lanes-missing-fields-2026-04-03.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-lanes-prompt-loading-error-2026-04-11.md:
+WARN: step 1 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-lanes-reparse-mapping-2026-04-03.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-lanes-simplify-billto-config-2026-03-27.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-lanes-upload-csrf-2026-04-13.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-mark-validations-stale-callers-audit-2026-04-11.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-match-lane-query-pattern-anatomy-2026-05-22.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-merge-carrier-button-2026-04-01.md:
+WARN: step 1 mentions tests but declares no test scope
+WARN: step 2 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-missing-templates-2026-04-01.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-myap-csv-ingest-performance-and-ui-surface-2026-05-22.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-myap-csv-ingest-performance-v2-2026-05-20.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-myap-ingestion-data-map-2026-03-20.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-output-receipt-closure-audit-2026-04-09.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-page-layout-audit-2026-03-31.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-parse-csv-decomposition-2026-04-03.md:
+WARN: step 1 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-performance-2026-04-05.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-phase-b-scoping-2026-04-01.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-planner-governance-sweep-2026-04-20.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-production-stabilization-2026-03-22.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-pytest-xdist-fixture-characterization-2026-05-18.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-rate-entry-tariff-derivation-2026-04-08.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-rate-grid-leading-tab-2026-04-08.md:
+WARN: step 1 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-rate-hierarchy-2026-03-20.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-rate-paste-column-shift-2026-04-08.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-rate-source-column-2026-03-20.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-rates-copilot-import-2026-04-03-superseded-by-roadmap.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-rates-global-docs-2026-04-05.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-remove-followup-capture-2026-04-03.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-reporting-capability-2026-03-26.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-rigorous-audit-2026-04-01.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-route-audit-2026-04-01.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-rule-20-fabrication-2026-05-05.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-section-importer-updated-at-audit-2026-04-10.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-setup-tab-speed-2026-03-31.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-smart-lane-entry-2026-04-05.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-smart-worklist-2026-03-28 2.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-smart-worklist-2026-03-28.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-smart-worklist-deprecation-2026-04-01.md:
+WARN: step 1 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-stale-code-2026-04-03.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-staleness-banner-visibility-2026-04-10.md:
+WARN: step 1 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-stub-upgrade-2026-03-26.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-stubs-not-clearing-gaps-2026-03-30.md:
+WARN: step 1 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-supporting-doc-carrier-profile-2026-03-26.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-supporting-documents-2026-03-20.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-sync-button-2026-04-01.md:
+WARN: step 1 mentions tests but declares no test scope
+WARN: step 2 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-tariff-rates-old-error-2026-04-02.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-tcode-scac-carrier-profiles-2026-04-02.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-team-activity-analytics-2026-03-28 2.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-team-activity-analytics-2026-03-28.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-team-faction-error-2026-04-01.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-test-isolation-bleed-2026-04-21.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-test-suite-failure-triage-2026-04-08.md:
+WARN: step 2 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-test-suite-hang-bounded-2026-06-02.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-tier-display-test-failure-2026-05-06.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-timezone-alignment-2026-04-03.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-triple-bug-2026-04-03.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-universal-copilot-paste-2026-04-02.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-uxd-route-display-optimization-2026-03-31.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-validation-engine-batch-2026-03-31.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-validation-freshness-2026-04-03.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-validation-scope-2026-04-01.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-waived-acc-lifecycle-2026-03-31.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-whitelist-sql-fstring-2026-04-02.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-whitelist-visibility-filter-2026-04-02.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-windows-compatibility-2026-04-01.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-work-later-batch-2026-03-23.md:
+WARN: step 2 mentions tests but declares no test scope
+WARN: step 6 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-xml-parser-error-2026-04-01.md:
+WARN: step 1 mentions tests but declares no test scope
+WARN: step 2 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-zip-code-truncation-2026-03-27.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+dispute-brief-orchestration-2026-03-18.md:
+WARN: found '## Step N' headings but no uppercase '## STEP N' — consider using uppercase for lint coverage
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+dispute-clarity-orchestration-2026-03-18.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+duplicate-executable-auto-contract-phase1-2026-03-28.md:
+WARN: step 3 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+email-rename-bulk-import-2026-03-19.md:
+WARN: found '## Step N' headings but no uppercase '## STEP N' — consider using uppercase for lint coverage
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+email-response-ingestion-orchestration-2026-03-17.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+email-tab-scope-orchestration-2026-03-19.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-101.md:
+WARN: step 2 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-108.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-143.md:
+WARN: qa_steps lists step 2 but step 2 is not QA-labeled — it will be gated as QA (plan-133 trap)
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-144.md:
+WARN: qa_steps lists step 2 but step 2 is not QA-labeled — it will be gated as QA (plan-133 trap)
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-147.md:
+WARN: step 2 mentions tests but declares no test scope
+WARN: qa_steps lists step 2 but step 2 is not QA-labeled — it will be gated as QA (plan-133 trap)
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-156.md:
+WARN: step 2 mentions tests but declares no test scope
+WARN: qa_steps lists step 2 but step 2 is not QA-labeled — it will be gated as QA (plan-133 trap)
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-158.md:
+WARN: step 2 mentions tests but declares no test scope
+WARN: qa_steps lists step 2 but step 2 is not QA-labeled — it will be gated as QA (plan-133 trap)
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-16.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-161.md:
+WARN: found '## Step N' headings but no uppercase '## STEP N' — consider using uppercase for lint coverage
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-162.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-163.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-164.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-165.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-167.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-169.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-171.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-174.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-175.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-176.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-178.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-18.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-181.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-183.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-187.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-189.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-191.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-194.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-195.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-196.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-200.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-201.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-202.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-209.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-210.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-212.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-215.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-216.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-217.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-218.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-219.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-221.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-222.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-223.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-224.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-230.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-231.md:
+WARN: step 1 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-232.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-233.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-234.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-237.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-238.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-239.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-240.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-241.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-242.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-262.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-263.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-264.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-265.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-267.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-268.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-5digit-zip-rates-cleanup-2026-03-31.md:
+WARN: step 1 mentions tests but declares no test scope
+WARN: step 2 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-72.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-78.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-80.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-81.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-82.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-84.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-85.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-86.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-88.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-89.md:
+WARN: step 3 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-91.md:
+WARN: step 3 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-93.md:
+WARN: step 3 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-95.md:
+WARN: step 3 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-98.md:
+WARN: step 2 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-accessorial-alias-carrier-scoping-2026-03-27.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-accessorial-code-aliases-2026-03-26.md:
+WARN: step 1 mentions tests but declares no test scope
+WARN: step 2 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-accessorial-dedup-2026-04-03.md:
+WARN: step 1 mentions tests but declares no test scope
+WARN: step 2 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-action-card-import-fix-2026-04-02.md:
+WARN: step 1 mentions tests but declares no test scope
+WARN: step 2 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-action-queue-integration-tests-scenarios-1-3-2026-05-18.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-action-queue-integration-tests-scenarios-4-6-2026-05-20.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-activity-analytics-2026-04-04.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-activity-history-ingestion-2026-03-25.md:
+WARN: step 2 mentions tests but declares no test scope
+WARN: step 3 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-activity-notes-classification-2026-03-26.md:
+WARN: step 2 mentions tests but declares no test scope
+WARN: step 3 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-alias-unique-constraint-fix-2026-03-27.md:
+WARN: step 1 mentions tests but declares no test scope
+WARN: step 2 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-all-reports-2026-04-05.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-always-revalidate-2026-04-03-superseded.md:
+WARN: step 1 mentions tests but declares no test scope
+WARN: step 2 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-anvil-quality-batch-2026-04-01.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-archiver-weekly-grouping-2026-04-03.md:
+WARN: step 1 mentions tests but declares no test scope
+WARN: step 2 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-areas-copilot-paste-fix-2026-03-31.md:
+WARN: step 1 mentions tests but declares no test scope
+WARN: step 2 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-auto-contract-phase1-2026-03-28 2.md:
+WARN: step 3 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-auto-contract-phase1-2026-03-28.md:
+WARN: step 3 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-auto-contract-phase2-2026-03-28 2.md:
+WARN: step 3 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-auto-contract-phase2-2026-03-28.md:
+WARN: step 3 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-auto-contract-phase3-2026-03-28 2.md:
+WARN: step 3 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-auto-contract-phase3-2026-03-28.md:
+WARN: step 3 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-auto-revalidation-2026-04-03.md:
+WARN: step 1 mentions tests but declares no test scope
+WARN: step 2 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-autofill-features-2026-03-20.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-backfill-stubs-button-2026-03-30.md:
+WARN: step 2 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-backlog-hygiene-edits-2026-05-06.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-backlog-hygiene-edits-2026-05-06b.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-backlog-hygiene-edits-2026-05-06c.md:
+WARN: step 1 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-backlog-hygiene-lanes-csrf-close-2026-05-06.md:
+WARN: found '## Step N' headings but no uppercase '## STEP N' — consider using uppercase for lint coverage
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-backslash-before-split-2026-04-03.md:
+WARN: step 1 mentions tests but declares no test scope
+WARN: step 2 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-backslash-escape-strip-2026-04-03.md:
+WARN: step 1 mentions tests but declares no test scope
+WARN: step 2 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-backtest-removal-manual-validation-2026-04-10.md:
+WARN: step 1 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-base-rate-parsing-fix-2026-03-31.md:
+WARN: step 1 mentions tests but declares no test scope
+WARN: step 2 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-base-rates-contract-subpage-2026-03-31.md:
+WARN: step 1 mentions tests but declares no test scope
+WARN: step 2 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-base-rates-file-first-upload-2026-04-09.md:
+WARN: step 1 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-base-rates-fill-gap-fix-2026-03-25.md:
+WARN: step 1 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-base-rates-page-fix-2026-03-31.md:
+WARN: step 1 mentions tests but declares no test scope
+WARN: step 2 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-base-rates-prompt-file-first-2026-04-09.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-base-rates-section-type-2026-04-08.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-base-rates-url-fix-2026-04-21.md:
+WARN: step 1 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-base-rates-zip-validation-2026-04-09.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-billto-csv-header-resilience-2026-05-14.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-billto-type-field-mapping-fix-2026-05-07.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-canonical-naming-alias-plumbing-2026-04-08.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-carrier-doc-extraction-flow-2026-03-26.md:
+WARN: step 1 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-carrier-documents-2026-04-05.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-carrier-fuel-schema-2026-04-04.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-carrier-intelligence-2026-04-04.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-carrier-parent-nav-2026-04-01.md:
+WARN: step 2 mentions tests but declares no test scope
+WARN: step 3 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-carrier-profile-auto-create-2026-03-26.md:
+WARN: step 1 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-carrier-profile-autocreate-fix-2026-03-30.md:
+WARN: step 2 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-carrier-profile-merge-name-2026-03-31.md:
+WARN: step 1 mentions tests but declares no test scope
+WARN: step 2 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-carrier-profile-redesign-2026-03-25.md:
+WARN: step 2 mentions tests but declares no test scope
+WARN: step 3 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-carrier-profile-show-docs-2026-03-26.md:
+WARN: step 1 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-carrier-rules-tariff-phase1-2026-03-20.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-carrier-rules-tariff-ui-2026-03-24.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-carrier-service-points-2026-03-31.md:
+WARN: step 1 mentions tests but declares no test scope
+WARN: step 2 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-centralized-paste-sanitize-2026-04-03.md:
+WARN: step 1 mentions tests but declares no test scope
+WARN: step 2 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-chr-canonical-tariff-format-2026-04-08.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-cleanup-1-delete-retired-nav-tests-2026-04-08.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-cleanup-2-scac-fixture-fix-2026-04-08.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-cleanup-3-validator-cascade-fix-2026-04-08.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-cleanup-4-template-drift-fix-2026-04-08.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-close-stranded-csv-upload-fetch-fix-2026-05-01.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-combined-header-extraction-2026-03-26.md:
+WARN: step 1 mentions tests but declares no test scope
+WARN: step 2 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-contract-data-visibility-2026-04-03.md:
+WARN: step 1 mentions tests but declares no test scope
+WARN: step 2 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-contract-doc-linking-2026-04-05.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-contract-merge-2026-03-31.md:
+WARN: step 2 mentions tests but declares no test scope
+WARN: step 3 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-contract-naming-2026-03-23.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-contract-pubs-route-removal-2026-04-22.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-contract-rates-paste-ui-2026-04-08.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-contract-rates-redesign-2026-04-05.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-contract-setup-expected-fields-2026-04-03.md:
+WARN: step 1 mentions tests but declares no test scope
+WARN: step 2 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-contract-setup-split-2026-04-03.md:
+WARN: step 1 mentions tests but declares no test scope
+WARN: step 2 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-contract-velocity-2026-04-05.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-contract-version-delete-2026-03-31.md:
+WARN: step 2 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-contracts-carrier-cards-2026-04-01.md:
+WARN: step 2 mentions tests but declares no test scope
+WARN: step 3 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-conversation-loop-phase1-2026-04-02.md:
+WARN: step 4 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-conversation-loop-phase2-2026-04-02.md:
+WARN: step 4 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-conversation-loop-phase3-2026-04-02.md:
+WARN: step 3 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-copilot-exchange-capture-2026-03-27 2.md:
+WARN: step 3 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-copilot-exchange-capture-2026-03-27.md:
+WARN: step 3 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-copilot-extraction-feedback-2026-03-22.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-copilot-extraction-feedback-2026-03-23.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-copilot-extraction-feedback-phase1-2026-03-20.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-copilot-extraction-feedback-phase2-2026-03-20.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-copilot-extraction-feedback-phase3-2026-03-20.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-copilot-fuel-extraction-2026-03-26.md:
+WARN: step 1 mentions tests but declares no test scope
+WARN: step 2 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-copilot-lanes-prompt-v2-2026-03-23.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-copilot-simplify-cardfix-2026-04-01.md:
+WARN: step 1 mentions tests but declares no test scope
+WARN: step 2 mentions tests but declares no test scope
+WARN: step 3 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-csrf-carrier-paste-fix-2026-03-27.md:
+WARN: step 1 mentions tests but declares no test scope
+WARN: step 2 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-csrf-document-import-fix-2026-03-27.md:
+WARN: step 1 mentions tests but declares no test scope
+WARN: step 2 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-csrf-document-import-qa-2026-03-28 2.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-csrf-document-import-qa-2026-03-28.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-csrf-email-triage-confirm-2026-03-28 2.md:
+WARN: step 1 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-csrf-email-triage-confirm-2026-03-28.md:
+WARN: step 1 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-csv-upload-fetch-fix-2026-04-17.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-customer-profile-2026-04-05.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-dashboard-performance-2026-03-31.md:
+WARN: step 1 mentions tests but declares no test scope
+WARN: step 2 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-data-examples-phase1-2026-04-01.md:
+WARN: step 2 mentions tests but declares no test scope
+WARN: step 3 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-data-examples-phase2-2026-04-01.md:
+WARN: step 2 mentions tests but declares no test scope
+WARN: step 3 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-data-examples-phase4-2026-04-01.md:
+WARN: step 2 mentions tests but declares no test scope
+WARN: step 3 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-date-range-filter-2026-04-04.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-db-reset-button-2026-03-30.md:
+WARN: step 3 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-dead-code-cleanup-2026-03-27.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-dead-code-cleanup-2026-04-01.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-dead-code-sweep-restore-2026-04-02.md:
+WARN: step 1 mentions tests but declares no test scope
+WARN: step 2 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-decompose-import-section-2026-04-04.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-dedup-cleanup-2026-04-03.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-defer-validation-recovery-2026-05-20.md:
+WARN: step 2 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-delete-all-per-section-2026-03-31.md:
+WARN: step 1 mentions tests but declares no test scope
+WARN: step 2 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-dispute-brief-fuel-label-2026-04-07.md:
+WARN: step 1 mentions tests but declares no test scope
+WARN: step 2 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-doc-migration-2026-04-05.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-doc-schema-aliases-2026-04-05.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-duplicate-dispute-fix-2026-03-24.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-eia-date-dispute-link-2026-03-31.md:
+WARN: step 1 mentions tests but declares no test scope
+WARN: step 2 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-eia-lookup-fuel-page-2026-03-31.md:
+WARN: step 1 mentions tests but declares no test scope
+WARN: step 2 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-eia-padd-regions-2026-03-26.md:
+WARN: step 2 mentions tests but declares no test scope
+WARN: step 3 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-eia-tab-contracts-2026-03-31.md:
+WARN: step 1 mentions tests but declares no test scope
+WARN: step 2 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-email-archiver-batch-2026-04-02.md:
+WARN: step 2 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-email-archiver-filter-2026-03-31.md:
+WARN: step 1 mentions tests but declares no test scope
+WARN: step 2 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-email-archiver-kql-2026-03-24.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-email-archiver-sql-fix-2026-03-31.md:
+WARN: step 1 mentions tests but declares no test scope
+WARN: step 2 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-email-triage-link-2026-04-01.md:
+WARN: step 1 mentions tests but declares no test scope
+WARN: step 2 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-eml-assigned-user-qa-recovery-2026-06-02.md:
+WARN: step 2 mentions tests but declares no test scope
+WARN: qa_steps lists step 2 but step 2 is not QA-labeled — it will be gated as QA (plan-133 trap)
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-entity-reports-2026-04-05.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-export-forge-pipeline-2026-04-01.md:
+WARN: step 2 mentions tests but declares no test scope
+WARN: step 3 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-file-first-accessorials-fak-2026-04-16.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-file-first-billto-header-2026-04-16.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-file-first-fuel-brackets-2026-04-16.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-fix-config-paste-nonetype-2026-04-02.md:
+WARN: step 2 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-fix-contract-setup-shape-2026-04-02.md:
+WARN: step 2 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-fix-double-breadcrumbs-2026-04-02.md:
+WARN: step 2 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-fix-invoice-charges-fk-2026-04-02.md:
+WARN: step 1 mentions tests but declares no test scope
+WARN: step 2 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-fix-lanes-import-fields-2026-04-03.md:
+WARN: step 2 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-fix-markdown-noise-2026-04-03.md:
+WARN: step 1 mentions tests but declares no test scope
+WARN: step 2 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-fix-prompt-format-placeholder-bug-2026-04-11.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-fix-stale-fk-refs-2026-03-26.md:
+WARN: step 1 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-fix-whitelist-bulk-paste-2026-04-02.md:
+WARN: step 1 mentions tests but declares no test scope
+WARN: step 2 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-fix-whitelist-fstring-2026-04-02.md:
+WARN: step 2 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-fuel-bracket-continuation-2026-03-26.md:
+WARN: step 1 mentions tests but declares no test scope
+WARN: step 2 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-fuel-bracket-floor-only-phase-a-2026-05-22.md:
+WARN: step 2 mentions tests but declares no test scope
+WARN: step 3 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-fuel-bracket-precision-2026-03-27.md:
+WARN: step 1 mentions tests but declares no test scope
+WARN: step 2 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-fuel-continuation-inference-backend-2026-05-20.md:
+WARN: step 1 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-fuel-continuation-inference-ui-qa-uxv-2026-05-21.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-fuel-copilot-prompt-hardening-2026-05-20.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-fuel-failure-typing-qa-2026-05-22.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-fuel-import-eia-region-unblock-2026-05-20.md:
+WARN: step 2 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-fuel-inference-preamble-skip-impl-2026-05-28.md:
+WARN: qa_steps lists step 2 but step 2 is not QA-labeled — it will be gated as QA (plan-133 trap)
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-fuel-preamble-skip-non-zero-floor-qa-2026-05-29.md:
+WARN: qa_steps lists step 1 but step 1 is not QA-labeled — it will be gated as QA (plan-133 trap)
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-fuel-prompt-cents-as-integer-2026-05-21.md:
+WARN: step 1 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-fuel-timing-capitalization-2026-03-31.md:
+WARN: step 1 mentions tests but declares no test scope
+WARN: step 2 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-fuel-timing-rule-extraction-hardening-2026-05-28.md:
+WARN: step 2 mentions tests but declares no test scope
+WARN: step 3 mentions tests but declares no test scope
+WARN: qa_steps lists step 3 but step 3 is not QA-labeled — it will be gated as QA (plan-133 trap)
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-full-copilot-response-capture-2026-03-31.md:
+WARN: step 1 mentions tests but declares no test scope
+WARN: step 2 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-gaps-stub-date-filter-fix-2026-03-30.md:
+WARN: step 1 mentions tests but declares no test scope
+WARN: step 2 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-gate-independence-2026-03-31.md:
+WARN: step 1 mentions tests but declares no test scope
+WARN: step 2 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-gate7-fk-strengthening-2026-04-08.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-gate7-tariff-link-fix-2026-03-26.md:
+WARN: step 1 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-git-sync-script-2026-04-02.md:
+WARN: step 2 mentions tests but declares no test scope
+WARN: step 3 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-gitattributes-crlf-2026-04-17.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-glossary-cwt-derived-rate-2026-04-07.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-glossary-email-triage-2026-06-02.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-governance-root-git-swap-2026-05-14.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-gp-billto-rule-2026-03-31.md:
+WARN: step 1 mentions tests but declares no test scope
+WARN: step 2 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-group-b-batch-2026-03-24.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-half-up-currency-rounding-2026-05-06.md:
+WARN: found '## Step N' headings but no uppercase '## STEP N' — consider using uppercase for lint coverage
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-header-cleanup-2026-04-02.md:
+WARN: step 3 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-hybrid-prompt-rewrite-2026-04-12.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-import-attempts-collapse-2026-04-03.md:
+WARN: step 1 mentions tests but declares no test scope
+WARN: step 2 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-ingest-performance-skip-xml-2026-03-27.md:
+WARN: step 3 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-init-db-wiring-2026-03-20.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-invoice-detail-activity-2026-03-25.md:
+WARN: step 1 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-invoice-detail-display-2026-04-03.md:
+WARN: step 1 mentions tests but declares no test scope
+WARN: step 2 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-invoice-detail-fidelity-2026-04-01.md:
+WARN: step 1 mentions tests but declares no test scope
+WARN: step 2 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-invoice-detail-locations-ux-2026-03-26.md:
+WARN: step 1 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-invoice-detail-ux-fixes-2026-04-02.md:
+WARN: step 1 mentions tests but declares no test scope
+WARN: step 2 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-invoice-pulse-session-wrap-2026-05-01.md:
+WARN: step 1 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-invoice-pulse-specialist-file-drift-refresh-2026-05-22.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-invoice-timeline-2026-04-06.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-invoice-total-tolerance-2026-03-31.md:
+WARN: step 1 mentions tests but declares no test scope
+WARN: step 2 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-invoices-list-fixes-2026-03-26.md:
+WARN: step 1 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-isolated-fuel-sample-prompt-key-2026-05-29.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-kill-dead-rate-routes-2026-04-08.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-knowledge-sync-button-2026-03-28.md:
+WARN: step 2 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-knowledge-sync-git-wire-2026-04-02.md:
+WARN: step 1 mentions tests but declares no test scope
+WARN: step 2 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-lanes-areas-file-first-2026-04-11.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-lanes-card-rename-2026-04-03.md:
+WARN: step 1 mentions tests but declares no test scope
+WARN: step 2 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-lanes-combined-import-2026-04-03.md:
+WARN: step 1 mentions tests but declares no test scope
+WARN: step 2 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-lanes-combined-parser-fix-2026-04-10.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-lanes-csrf-fix-2026-04-16.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-lanes-import-none-key-2026-04-03.md:
+WARN: step 1 mentions tests but declares no test scope
+WARN: step 2 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-lanes-reparse-header-order-2026-04-03.md:
+WARN: step 1 mentions tests but declares no test scope
+WARN: step 2 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-lanes-simplify-billto-config-2026-03-27.md:
+WARN: step 3 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-live-validation-pageload-2026-04-03.md:
+WARN: step 1 mentions tests but declares no test scope
+WARN: step 2 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-mark-validations-stale-helper-and-callers-2026-04-11.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-move-exchange-history-2026-04-03.md:
+WARN: step 2 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-parse-csv-decomposition-2026-04-03.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-per-section-doc-linkage-2026-03-31.md:
+WARN: step 1 mentions tests but declares no test scope
+WARN: step 2 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-perf-indexes-2026-04-05.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-perf-quick-wins-2026-04-05.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-phase-b1-copilot-inline-2026-04-01.md:
+WARN: step 2 mentions tests but declares no test scope
+WARN: step 3 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-phase-b2-contract-dashboard-2026-04-01.md:
+WARN: step 2 mentions tests but declares no test scope
+WARN: step 3 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-phase-b3-contract-subpages-2026-04-01.md:
+WARN: step 3 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-phase-c1-invoice-list-2026-04-01.md:
+WARN: step 2 mentions tests but declares no test scope
+WARN: step 3 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-phase-c2-action-dispute-2026-04-01.md:
+WARN: step 3 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-phase-c3-reporting-rates-2026-04-01.md:
+WARN: step 3 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-phase-d1-dashboard-nav-2026-04-01.md:
+WARN: step 3 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-phase-d2-work-pages-2026-04-01.md:
+WARN: step 2 mentions tests but declares no test scope
+WARN: step 3 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-phase-d3-analytics-pages-2026-04-01.md:
+WARN: step 2 mentions tests but declares no test scope
+WARN: step 3 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-phase-d4-batch-class-swap-2026-04-01.md:
+WARN: step 3 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-planner-filesystem-rules-2026-04-07.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-planner-governance-sweep-v4.26-2026-04-20.md:
+WARN: step 1 mentions tests but declares no test scope
+WARN: step 2 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-planner-template-v4-18-heredoc-ban-and-verification-2026-04-10.md:
+WARN: step 1 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-planner-template-v4-19-rule-8-cleanup-2026-04-10.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-planner-template-v4-20-rule20-glyph-agnostic-2026-04-11.md:
+WARN: step 2 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-planner-template-v4-23-rule-24-atomic-deposit-2026-04-18.md:
+WARN: step 2 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-portrait-card-classes-2026-04-01.md:
+WARN: step 1 mentions tests but declares no test scope
+WARN: step 2 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-post-phase2-doc-cleanup-2026-03-20.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-production-stabilization-2026-03-22.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-profile-invoices-by-contract-2026-03-28 2.md:
+WARN: step 2 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-profile-invoices-by-contract-2026-03-28.md:
+WARN: step 2 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-prompt-version-tracking-2026-04-03.md:
+WARN: step 1 mentions tests but declares no test scope
+WARN: step 2 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-push-missing-partials-2026-04-01.md:
+WARN: step 2 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-pytest-xdist-refactor-2026-05-19.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-rate-hierarchy-phase1-2026-03-20.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-rate-hierarchy-phase2-2026-03-20.md:
+WARN: step 1 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-rate-hierarchy-phase3-2026-03-20.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-rate-hierarchy-phase4-2026-03-20.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-rate-hierarchy-phase5-2026-03-20.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-rate-paste-parser-foundation-2026-04-08.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-rates-redesign-2026-04-05.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-redesign-phase-a-2026-03-31.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-redesign-phase-a-2026-04-01.md:
+WARN: step 3 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-remove-sandbox-2026-03-31.md:
+WARN: step 1 mentions tests but declares no test scope
+WARN: step 2 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-reporting-carrier-fixes-2026-04-01.md:
+WARN: step 1 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-reporting-expansion-2026-03-26.md:
+WARN: step 2 mentions tests but declares no test scope
+WARN: step 3 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-restrict-contract-types-2026-04-03.md:
+WARN: step 1 mentions tests but declares no test scope
+WARN: step 2 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-rule-20-banner-format-redeposit-2026-05-22.md:
+WARN: step 1 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-rules-tariff-ux-cleanup-2026-03-25.md:
+WARN: step 2 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-scac-primary-identifier-2026-04-02.md:
+WARN: step 2 mentions tests but declares no test scope
+WARN: step 3 mentions tests but declares no test scope
+WARN: step 4 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-scac-whitelist-2026-03-31.md:
+WARN: step 1 mentions tests but declares no test scope
+WARN: step 2 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-scac-whitelist-v2-2026-04-02.md:
+WARN: step 1 mentions tests but declares no test scope
+WARN: step 2 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-section-importer-updated-at-bump-2026-04-10.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-self-service-diagnostic-2026-03-30.md:
+WARN: step 1 mentions tests but declares no test scope
+WARN: step 2 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-sequence-intelligence-2026-04-04.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-session-wrap-2026-04-11.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-session-wrap-2026-04-21.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-session-wrap-2026-05-06.md:
+WARN: step 2 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-session-wrap-half-up-rounding-2026-05-06.md:
+WARN: found '## Step N' headings but no uppercase '## STEP N' — consider using uppercase for lint coverage
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-session-wrap-status-update-2026-04-10.md:
+WARN: step 1 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-ship-date-sourcing-2026-03-31.md:
+WARN: step 1 mentions tests but declares no test scope
+WARN: step 2 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-ship-date-xml-parsing-2026-03-31.md:
+WARN: step 1 mentions tests but declares no test scope
+WARN: step 2 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-skip-activity-no-carrier-2026-03-31.md:
+WARN: step 1 mentions tests but declares no test scope
+WARN: step 2 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-smart-copilot-parser-2026-03-31.md:
+WARN: step 1 mentions tests but declares no test scope
+WARN: step 2 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-smart-lane-entry-2026-04-05.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-smart-validation-scope-2026-04-01.md:
+WARN: step 1 mentions tests but declares no test scope
+WARN: step 2 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-smart-work-list-2026-04-05.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-smart-worklist-phase1-2026-03-28 2.md:
+WARN: step 3 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-smart-worklist-phase1-2026-03-28.md:
+WARN: step 3 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-smart-worklist-phase2-2026-03-28 2.md:
+WARN: step 3 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-smart-worklist-phase2-2026-03-28.md:
+WARN: step 3 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-smart-worklist-phase3-2026-03-28 2.md:
+WARN: step 3 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-smart-worklist-phase3-2026-03-28.md:
+WARN: step 3 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-sqlite-localtime-defaults-2026-04-03.md:
+WARN: step 1 mentions tests but declares no test scope
+WARN: step 2 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-stale-code-cleanup-2026-04-03.md:
+WARN: step 1 mentions tests but declares no test scope
+WARN: step 2 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-staleness-null-validated-fix-2026-04-10.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-stub-upgrade-fix-2026-03-26.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-stuck-state-color-override-2026-05-22.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-supporting-doc-actions-2026-03-26.md:
+WARN: step 1 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-supporting-docs-phase2-2026-03-24.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-supporting-docs-phase3-2026-03-24.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-supporting-docs-phase4-2026-03-24.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-supporting-docs-phase5-2026-03-24.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-supporting-docs-phase6-2026-03-24.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-supporting-documents-phase1-2026-03-20.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-sync-export-forge-data-2026-03-31.md:
+WARN: step 1 mentions tests but declares no test scope
+WARN: step 2 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-tabbed-import-card-sweep-v3-2026-04-17.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-tariff-effective-date-fix-2026-03-20.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-tariff-identity-2026-03-31.md:
+WARN: step 2 mentions tests but declares no test scope
+WARN: step 3 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-tariff-rates-migration-fix-2026-04-02.md:
+WARN: step 1 mentions tests but declares no test scope
+WARN: step 2 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-tariff-versioning-2026-03-24.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-team-analytics-detail-2026-04-05.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-team-analytics-phase1-2026-03-28 2.md:
+WARN: step 2 mentions tests but declares no test scope
+WARN: step 3 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-team-analytics-phase1-2026-03-28.md:
+WARN: step 2 mentions tests but declares no test scope
+WARN: step 3 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-team-analytics-phase2-2026-03-28 2.md:
+WARN: step 2 mentions tests but declares no test scope
+WARN: step 3 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-team-analytics-phase2-2026-03-28.md:
+WARN: step 2 mentions tests but declares no test scope
+WARN: step 3 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-team-analytics-phase3-2026-03-28 2.md:
+WARN: step 3 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-team-analytics-phase3-2026-03-28.md:
+WARN: step 3 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-team-hub-phase1-2026-04-01.md:
+WARN: step 2 mentions tests but declares no test scope
+WARN: step 3 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-team-hub-phase1-testfix-2026-04-01.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-team-hub-phase2-2026-04-01.md:
+WARN: step 2 mentions tests but declares no test scope
+WARN: step 3 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-team-hub-phase3-2026-04-01.md:
+WARN: step 2 mentions tests but declares no test scope
+WARN: step 3 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-team-manage-fixes-2026-04-06.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-team-management-2026-04-05.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-team-report-perf-2026-04-06.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-template-apply-updated-at-bump-2026-04-10.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-template-none-guard-sweep-2026-03-31.md:
+WARN: step 1 mentions tests but declares no test scope
+WARN: step 2 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-template-none-guard-v2-2026-03-31.md:
+WARN: step 1 mentions tests but declares no test scope
+WARN: step 2 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-test-coverage-batch1-2026-04-03.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-test-coverage-batch3-2026-04-03.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-test-isolation-conftest-fix-2026-04-21.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-tier-label-restore-2026-04-01.md:
+WARN: step 1 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-tier-pricing-tags-2026-03-31.md:
+WARN: step 1 mentions tests but declares no test scope
+WARN: step 2 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-timeliness-2026-04-05.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-timezone-alignment-2026-04-03.md:
+WARN: step 1 mentions tests but declares no test scope
+WARN: step 2 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-training-data-view-2026-04-04.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-triple-fix-2026-04-03.md:
+WARN: step 2 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-triple-fix-v2-2026-04-03.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-unified-lanes-import-card-2026-04-12.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-unify-extraction-paths-2026-03-31.md:
+WARN: step 1 mentions tests but declares no test scope
+WARN: step 2 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-unify-views-2026-03-31.md:
+WARN: step 1 mentions tests but declares no test scope
+WARN: step 2 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-universal-copilot-paste-2026-04-02.md:
+WARN: step 3 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-validation-quality-pipeline-2026-03-24.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-validator-gateresult-2026-04-03.md:
+WARN: step 2 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-velocity-dashboard-2026-04-05.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-waived-accessorials-2026-03-31.md:
+WARN: step 1 mentions tests but declares no test scope
+WARN: step 2 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-whitelist-visibility-filter-2026-04-02.md:
+WARN: step 3 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-windows-crlf-fix-2026-04-01.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-work-later-batch1-2026-03-23.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-work-later-batch2-2026-03-23.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-work-later-batch3-2026-03-23.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-work-list-ui-2026-04-05.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-yesterday-anomalies-2026-04-04.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-yesterday-card-2026-04-04.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-yesterday-enhancement-2026-04-04.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-zip-5digit-correction-2026-03-27.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+final-orchestration-2026-03-15.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+fix-links-orchestration-2026-03-18.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+fuel-dispute-display-orchestration-2026-03-18.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+fuel-formula-extraction-2026-04-17.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+fuel-hero-to-tabbed-2026-04-17.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+fuel-hero-widget-2026-04-17.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+fuel-importer-full-coverage-2026-04-17.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+halted-but-shipped-banner-format-only-executable-backlog-hygiene-sweep-2026-05-22.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+halted-but-shipped-executable-fuel-paste-prompt-cents-as-integer-2026-05-21.md:
+WARN: step 1 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+halted-but-shipped-gate-22d-false-positive-executable-deferred-validation-status-card-2026-05-22.md:
+WARN: step 1 mentions tests but declares no test scope
+WARN: step 3 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+halted-but-shipped-step-1-and-2-executable-fuel-continuation-inference-ui-2026-05-21.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+halted-but-shipped-superseded-by-standalone-qa-executable-fuel-continuation-inference-failure-typing-2026-05-22.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+halted-diagnostic-email-pro-user-lookup-data-2026-06-02.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+halted-diagnostic-email-to-user-lookup-2026-06-02.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+halted-diagnostic-fuel-continuation-inference-2026-05-21.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+halted-diagnostic-myap-csv-ingest-performance-2026-05-20.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+halted-diagnostic-pytest-xdist-feasibility-2026-05-18.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+halted-diagnostic-test-suite-hang-2026-06-02.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+halted-executable-100.md:
+WARN: step 3 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+halted-executable-146.md:
+WARN: step 2 mentions tests but declares no test scope
+WARN: qa_steps lists step 2 but step 2 is not QA-labeled — it will be gated as QA (plan-133 trap)
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+halted-executable-157.md:
+WARN: step 2 mentions tests but declares no test scope
+WARN: qa_steps lists step 2 but step 2 is not QA-labeled — it will be gated as QA (plan-133 trap)
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+halted-executable-166.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+halted-executable-220.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+halted-executable-71.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+halted-executable-97.md:
+WARN: step 1 mentions tests but declares no test scope
+WARN: step 3 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+halted-executable-99.md:
+WARN: step 3 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+halted-executable-dead-schema-removal-2026-06-15.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+halted-executable-defer-validation-bulk-ingest-2026-05-20.md:
+WARN: step 2 mentions tests but declares no test scope
+WARN: step 3 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+halted-executable-fuel-preamble-skip-non-zero-floor-2026-05-29.md:
+WARN: qa_steps lists step 2 but step 2 is not QA-labeled — it will be gated as QA (plan-133 trap)
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+halted-executable-planner-governance-sweep-v4.26-2026-04-20.md:
+WARN: step 1 mentions tests but declares no test scope
+WARN: step 2 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+hybrid-geography-claude-code-prompts-2026-03-16.md:
+WARN: found '## Step N' headings but no uppercase '## STEP N' — consider using uppercase for lint coverage
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+idempotent-migrations-2026-04-03.md:
+WARN: step 2 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+ingestion-performance-orchestration-2026-03-18.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+invoice-detail-workflow-orchestration-2026-03-19.md:
+WARN: found '## Step N' headings but no uppercase '## STEP N' — consider using uppercase for lint coverage
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+invoice-pulse-action-router-prompts.md:
+WARN: found '## Step N' headings but no uppercase '## STEP N' — consider using uppercase for lint coverage
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+invoice-pulse-combined-orchestration-prompts.md:
+WARN: found '## Step N' headings but no uppercase '## STEP N' — consider using uppercase for lint coverage
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+invoice-pulse-copilot-collection-prompts.md:
+WARN: found '## Step N' headings but no uppercase '## STEP N' — consider using uppercase for lint coverage
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+invoice-pulse-copilot-import-prompts.md:
+WARN: found '## Step N' headings but no uppercase '## STEP N' — consider using uppercase for lint coverage
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+invoice-pulse-final-orchestration-prompts.md:
+WARN: found '## Step N' headings but no uppercase '## STEP N' — consider using uppercase for lint coverage
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+invoice-pulse-intelligence-dashboard-prompts.md:
+WARN: found '## Step N' headings but no uppercase '## STEP N' — consider using uppercase for lint coverage
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+invoice-pulse-remaining-pipeline-prompts.md:
+WARN: found '## Step N' headings but no uppercase '## STEP N' — consider using uppercase for lint coverage
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+invoice-pulse-sqlite-row-fix-prompt.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+invoice-pulse-test-fixes-prompt.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+invoice-pulse-ux-refinement-prompts.md:
+WARN: found '## Step N' headings but no uppercase '## STEP N' — consider using uppercase for lint coverage
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+invoice-pulse-xml-fix-prompts.md:
+WARN: found '## Step N' headings but no uppercase '## STEP N' — consider using uppercase for lint coverage
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+l2-card-conversion-orchestration-2026-03-20.md:
+WARN: found '## Step N' headings but no uppercase '## STEP N' — consider using uppercase for lint coverage
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+l2-card-styling-diagnostic-2026-03-20.md:
+WARN: found '## Step N' headings but no uppercase '## STEP N' — consider using uppercase for lint coverage
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+lane-location-intelligence-plan-2026-03-15.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+nav-attestation-fix-orchestration-2026-03-18.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+nav-consolidation-orchestration-2026-03-18.md:
+WARN: found '## Step N' headings but no uppercase '## STEP N' — consider using uppercase for lint coverage
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+navisphere-attestation-orchestration-2026-03-17.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+navisphere-attestation-prompts-2026-03-17.md:
+WARN: found '## Step N' headings but no uppercase '## STEP N' — consider using uppercase for lint coverage
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+parallel-1-diagnostic-continuation-rule-rounding-2026-05-06.md:
+WARN: found '## Step N' headings but no uppercase '## STEP N' — consider using uppercase for lint coverage
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+parallel-1-diagnostic-fsc-fuel-bracket-lookup-2026-05-06.md:
+WARN: found '## Step N' headings but no uppercase '## STEP N' — consider using uppercase for lint coverage
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+parallel-1-diagnostic-invoices-list-pro-column-2026-04-06.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+parallel-1-diagnostic-linehaul-shipped-charge-type-2026-04-06.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+parallel-1-diagnostic-zero-variance-undercharge-2026-04-06.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+parallel-1-executable-decompose-compute-fields-2026-04-04.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+parallel-1-executable-test-coverage-batch1-2026-04-04.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+parallel-2-executable-gate7-charge-type-reason-2026-04-06.md:
+WARN: step 1 mentions tests but declares no test scope
+WARN: step 2 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+parallel-2-executable-invoices-list-pro-column-2026-04-06.md:
+WARN: step 1 mentions tests but declares no test scope
+WARN: step 2 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+parallel-2-executable-test-coverage-batch2-2026-04-04.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+parallel-2-executable-zero-variance-classify-helper-2026-04-06.md:
+WARN: step 1 mentions tests but declares no test scope
+WARN: step 2 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+parallel-A-executable-archiver-sort-min-window-2026-03-23.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+parallel-A-executable-captured-verified-lanes-2026-03-23.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+parallel-A-executable-invoice-detail-uxd-2026-03-23.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+parallel-A-executable-work-later-batch1-2026-03-23.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+parallel-A-executable-work-later-batch3-2026-03-23.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+pricing-versions-orchestration-2026-03-19.md:
+WARN: found '## Step N' headings but no uppercase '## STEP N' — consider using uppercase for lint coverage
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+pst-email-import-orchestration-2026-03-19.md:
+WARN: found '## Step N' headings but no uppercase '## STEP N' — consider using uppercase for lint coverage
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+qa-action-queue-limit-and-contract-name-2026-05-08.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+recovered-executable-eml-ingest-assigned-user-2026-06-02.md:
+WARN: step 3 mentions tests but declares no test scope
+WARN: qa_steps lists step 3 but step 3 is not QA-labeled — it will be gated as QA (plan-133 trap)
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+remaining-pipeline-plan-2026-03-15.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+reporting-excel-export-orchestration-2026-03-19.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+roadmap-auto-contract-volume-priority-2026-03-27.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+roadmap-carrier-rules-tariff-2026-03-20.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+roadmap-copilot-extraction-feedback-2026-03-20.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+roadmap-data-examples-ingestion-2026-03-31.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+roadmap-document-contract-separation-2026-04-03.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+roadmap-fullscreen-layout-2026-03-31.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+roadmap-phase-d-remaining-pages-2026-04-01.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+roadmap-rate-entry-tariff-derivation-2026-04-08.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+roadmap-rate-hierarchy-2026-03-20.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+roadmap-reporting-analytics-2026-04-03.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+roadmap-smart-worklist-2026-03-28 2.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+roadmap-smart-worklist-2026-03-28.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+roadmap-supporting-documents-2026-03-20.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+roadmap-team-activity-analytics-2026-03-28 2.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+roadmap-team-activity-analytics-2026-03-28.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+roadmap-team-hub-consolidation-2026-03-31.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+roadmap-workload-intelligence-2026-04-05.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+shared-conftest-2026-04-03.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+stale-in-progress-diagnostic-invoice-detail-timeline-2026-04-05.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+status-validation-plan-2026-03-12.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+system-intelligence-dashboard-plan-2026-03-14.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+test-coverage-batch2-2026-04-03.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+training-historical-data-first-2026-03-15.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+unified-prompt-claude-code-prompts-2026-03-16.md:
+WARN: found '## Step N' headings but no uppercase '## STEP N' — consider using uppercase for lint coverage
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+ux-overhaul-orchestration-2026-03-13.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+ux-refinement-2026-03-15.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+validation-perf-tier3-orchestration-2026-03-19.md:
+WARN: found '## Step N' headings but no uppercase '## STEP N' — consider using uppercase for lint coverage
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+validation-performance-orchestration-2026-03-18.md:
+WARN: found '## Step N' headings but no uppercase '## STEP N' — consider using uppercase for lint coverage
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+xml-validation-fix-plan-2026-03-14.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+
+=== lessons-forge (66 plans, HEAD=b9fd5f1) ===
+diagnostic-127.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-bellows-watch-canary-lessons-forge-2026-05-18.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-gate-2a-recovery-state-2026-05-19.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-gate-2d-mapping-v2-2026-05-27.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+diagnostic-lessons-forge-cycle-readiness-2026-05-18.md:
+WARN: found '## Step N' headings but no uppercase '## STEP N' — consider using uppercase for lint coverage
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-112.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-116.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-128.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-130.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-131.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-132.md:
+WARN: step 2 mentions tests but declares no test scope
+WARN: step 2 is QA-labeled but absent from qa_steps='1' — it will not be Rule 20/22 gated
+WARN: qa_steps lists step 1 but step 1 is not QA-labeled — it will be gated as QA (plan-133 trap)
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-133.md:
+WARN: step 2 mentions tests but declares no test scope
+WARN: step 2 is QA-labeled but absent from qa_steps='1' — it will not be Rule 20/22 gated
+WARN: qa_steps lists step 1 but step 1 is not QA-labeled — it will be gated as QA (plan-133 trap)
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-134.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-135.md:
+WARN: step 2 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-154.md:
+WARN: step 2 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-203.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-204.md:
+WARN: step 3 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-205.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-206.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-207.md:
+WARN: step 2 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-208.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-226.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-227.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-228.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-243.md:
+WARN: step 1 mentions tests but declares no test scope
+WARN: step 3 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-244.md:
+WARN: step 2 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-245.md:
+WARN: step 1 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-246.md:
+WARN: step 1 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-247.md:
+WARN: step 1 mentions tests but declares no test scope
+WARN: step 3 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-248.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-249.md:
+WARN: step 2 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-257.md:
+WARN: step 4 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-258.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-259.md:
+WARN: step 1 mentions tests but declares no test scope
+WARN: step 2 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-274.md:
+WARN: step 3 mentions tests but declares no test scope
+executable-275.md:
+WARN: step 2 mentions tests but declares no test scope
+executable-278.md:
+WARN: step 1 mentions tests but declares no test scope
+WARN: step 2 mentions tests but declares no test scope
+WARN: step 3 mentions tests but declares no test scope
+executable-282.md:
+WARN: step 2 mentions tests but declares no test scope
+WARN: Drafting Cycle closing indicates fold as last event, not a dry lens pass (DRAFTING_CYCLE.md §2)
+executable-283.md:
+WARN: step 3 mentions tests but declares no test scope
+executable-284.md:
+WARN: step 2 mentions tests but declares no test scope
+WARN: Drafting Cycle closing indicates fold as last event, not a dry lens pass (DRAFTING_CYCLE.md §2)
+executable-287.md:
+WARN: step 2 mentions tests but declares no test scope
+WARN: step 3 mentions tests but declares no test scope
+executable-288.md:
+WARN: step 3 mentions tests but declares no test scope
+executable-289.md:
+WARN: Drafting Cycle closing indicates fold as last event, not a dry lens pass (DRAFTING_CYCLE.md §2)
+executable-291.md:
+WARN: step 1 mentions tests but declares no test scope
+WARN: step 2 mentions tests but declares no test scope
+WARN: step 3 mentions tests but declares no test scope
+executable-296.md:
+WARN: step 3 mentions tests but declares no test scope
+WARN: T2 plan missing cold-panel line in Drafting Cycle block (DRAFTING_CYCLE.md §3)
+WARN: Drafting Cycle closing indicates fold as last event, not a dry lens pass (DRAFTING_CYCLE.md §2)
+executable-297.md:
+WARN: Drafting Cycle closing indicates fold as last event, not a dry lens pass (DRAFTING_CYCLE.md §2)
+executable-298.md:
+WARN: T2 plan missing cold-panel line in Drafting Cycle block (DRAFTING_CYCLE.md §3)
+executable-gate-2a-lessons-forge-ratification-2026-05-19.md:
+WARN: found '## Step N' headings but no uppercase '## STEP N' — consider using uppercase for lint coverage
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-gate-2a-recovery-2026-05-19.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-gate-2b-planner-template-edits-2026-05-19.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-gate-2d-status-advancement-2026-05-19.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-gate-2d-status-advancement-2026-05-27.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-lessons-forge-cycle-2026-05-27.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-lessons-forge-cycle-2026-06-06.md:
+WARN: step 4 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-lessons-forge-cycle-batch2-recovery-2026-05-27.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-lessons-forge-cycle-closeout-2026-05-27.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-lessons-forge-cycle-run-2026-05-18.md:
+WARN: step 4 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-lessons-forge-cycle-v2-2026-06-06.md:
+WARN: step 4 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-lessons-forge-gate-2-codification-2026-06-03.md:
+WARN: step 1 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-lessons-forge-gate-2-codification-2026-06-07.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+executable-planner-template-bellows-operational-workarounds-2026-05-27.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+halted-but-shipped-executable-planner-template-plan-authoring-checklist-2026-05-27.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+halted-executable-225.md:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+halted-executable-lessons-forge-cycle-2026-06-03.md:
+WARN: step 4 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+halted-executable-lessons-forge-cycle-v2-2026-06-03.md:
+WARN: step 4 mentions tests but declares no test scope
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+

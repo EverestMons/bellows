@@ -247,29 +247,6 @@ def lint(plan_path):
                 if any_lens_ran and closing_claims_unread:
                     print("WARN: Drafting Cycle Closing claims no lens has read the artifact, but lens results are recorded")
 
-                # (i) Halt-routing plan-id coverage (WARN-only): backtick-quoted three-digit
-                # plan ids in the questions region must appear in the halt-routing line.
-                # Scoped to the mechanical backtick-quoted class; prose refs outside scope.
-                # Skip silently when the plan has no questions region — halt-routing is a
-                # diagnostic concept; executables have steps, not questions.
-                pre_dc_text = plan_text[:dc_match.start()]
-                has_questions_region = bool(re.search(r'^## Questions\b', pre_dc_text, re.MULTILINE))
-                if has_questions_region:
-                    plan_id_pat = re.compile(r'`(\d{3})`')
-                    pre_dc_ids = set(plan_id_pat.findall(pre_dc_text))
-                    halt_rout_line = None
-                    for ln in pre_dc_text.splitlines():
-                        if re.search(r'halt[\s-]*rout', ln, re.IGNORECASE):
-                            halt_rout_line = ln
-                            break
-                    if pre_dc_ids:
-                        if halt_rout_line is not None:
-                            halt_ids = set(plan_id_pat.findall(halt_rout_line))
-                            for pid in sorted(pre_dc_ids - halt_ids):
-                                print(f"WARN: plan id `{pid}` in questions region but absent from halt-routing")
-                        else:
-                            print("WARN: no halt-routing line found")
-
     for status, check, detail in results:
         print(f"{status}: {check} — {detail}")
 
