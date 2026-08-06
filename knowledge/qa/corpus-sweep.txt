@@ -1,0 +1,26 @@
+=== anvil (57 plans, HEAD=da17272) ===
+
+=== bellows (433 plans, HEAD=399c01b) ===
+
+=== governance (33 plans, HEAD=2cc6c9f) ===
+diagnostic-276.md:
+WARN: no halt-routing line found
+diagnostic-299.md:
+WARN: Drafting Cycle ledger out of order: C15 before C13
+WARN: no halt-routing line found
+diagnostic-300.md:
+WARN: no halt-routing line found
+diagnostic-301.md:
+WARN: plan id `273` in questions region but absent from halt-routing
+WARN: plan id `274` in questions region but absent from halt-routing
+WARN: plan id `279` in questions region but absent from halt-routing
+WARN: plan id `280` in questions region but absent from halt-routing
+WARN: plan id `281` in questions region but absent from halt-routing
+WARN: plan id `283` in questions region but absent from halt-routing
+WARN: plan id `284` in questions region but absent from halt-routing
+WARN: plan id `289` in questions region but absent from halt-routing
+
+=== invoice-pulse (773 plans, HEAD=f83c244) ===
+
+=== lessons-forge (66 plans, HEAD=b9fd5f1) ===
+
