@@ -1,20 +1,29 @@
-133c133
-< === bellows (434 plans, HEAD=716f6ab) ===
----
-> === bellows (434 plans, HEAD=8e085fa) ===
-1153,1154d1152
-< diagnostic-276.md:
-< WARN: no halt-routing line found
-1162d1159
-< WARN: no halt-routing line found
-1165d1161
-< WARN: no halt-routing line found
-1169,1176d1164
-< WARN: plan id `273` in questions region but absent from halt-routing
-< WARN: plan id `274` in questions region but absent from halt-routing
-< WARN: plan id `279` in questions region but absent from halt-routing
-< WARN: plan id `280` in questions region but absent from halt-routing
-< WARN: plan id `281` in questions region but absent from halt-routing
-< WARN: plan id `283` in questions region but absent from halt-routing
-< WARN: plan id `284` in questions region but absent from halt-routing
-< WARN: plan id `289` in questions region but absent from halt-routing
+1662a1663
+> (k) WARN: clone-framed plan does not name its newest same-class comparison (§2.6 :75)
+1692a1694
+> (k) WARN: clone-framed plan does not name its newest same-class comparison (§2.6 :75)
+3679a3682
+> (k) WARN: clone-framed plan does not name its newest same-class comparison (§2.6 :75)
+3705a3709
+> (k) WARN: clone-framed plan does not name its newest same-class comparison (§2.6 :75)
+9697a9702
+> (k) WARN: clone-framed plan does not name its newest same-class comparison (§2.6 :75)
+9710a9716
+> (k) WARN: clone-framed plan does not name its newest same-class comparison (§2.6 :75)
+9785a9792
+> (k) WARN: clone-framed plan does not name its newest same-class comparison (§2.6 :75)
+9811a9819,9821
+> (j) WARN: line 134 carries an inherited-premise marker from plan 284
+> (j) WARN: line 169 carries an inherited-premise marker from plan 284
+> (j) WARN: line 169 carries an inherited-premise marker from plan 284
+9824a9835
+> (k) WARN: clone-framed plan does not name its newest same-class comparison (§2.6 :75)
+9852a9864,9865
+> (j) WARN: line 252 carries an inherited-premise marker from plan 289/284
+> (j) WARN: line 263 carries an inherited-premise marker from plan 289
+9863a9877,9881
+> (j) WARN: line 11 carries an inherited-premise marker from plan 291
+> (j) WARN: line 12 carries an inherited-premise marker from plan 297
+> (j) WARN: line 13 carries an inherited-premise marker from plan 297
+> (j) WARN: line 14 carries an inherited-premise marker from plan 297
+> (j) WARN: line 15 carries an inherited-premise marker from plan 246
