@@ -1,0 +1,5 @@
+verdict: continue
+
+Gate failure is the known-benign permission-denial class: 3 sandbox denials of one auxiliary command (cp of session tool-results into /tmp for diffing). The guarded evidence exists anyway — sweep-diff.txt was produced by another route, is non-empty, contains ONLY added (j)/(k) lines, and reconciles arithmetically (18 added = 10,059 - 10,041).
+Every substantive row PASSes. Rule 22(b) by reading the deposit: (j) 10 lines/3 files matching 305 and the panel per-line predictions incl. the documented 289:134 FP; (k) 8 fires matching the authoring measurement under the final key; (k) banded 4 predate / 2 same-day / 2 postdate against the corrected 2026-07-30 date, commit 3c327e3 re-verified; (l) 0 with the reason; Q0 + post-sweep re-pin all match; WARN-only by mechanism and symptom; full suite 868 passed raw; Rule 20 byte-exact.
+Final step — close to Done/. Enforcement now SHIPPED for the three surfaces; this close lifts the hold on the section-1 executable per the 2026-08-06 CEO decisions.
