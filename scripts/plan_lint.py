@@ -247,6 +247,76 @@ def lint(plan_path):
                 if any_lens_ran and closing_claims_unread:
                     print("WARN: Drafting Cycle Closing claims no lens has read the artifact, but lens results are recorded")
 
+    # --- Checks (j), (k), (l) — whole-plan-text scope, NOT inside dc_block ---
+    # Unlike (g)/(h) which operate inside the Drafting Cycle dc_block scope,
+    # these checks read the whole plan text: (j) and (k) key on literals that
+    # can appear anywhere, and (l) additionally reads the header's cycle_tier.
+
+    # (j) Inherited-premise marker (WARN-only): flags
+    # [INHERITED FROM <numeric-id> — NOT RE-EXECUTED] markers outside fenced
+    # code blocks. Numeric id required; inline code spans NOT excluded; fenced
+    # blocks excluded via gates.strip_fenced_code_blocks (reuse, not a second
+    # parser). Cannot see: whether the re-run was actually priced — the check
+    # flags the SITE; the panel judges the quality.
+    # Known per-LINE false positive: a retraction narrating a marker verbatim
+    # with a real id fires at line level; per FILE the result stays true positive.
+    inherited_re = re.compile(r'\[INHERITED FROM (\d+(?:/\d+)*)\s*—\s*NOT RE-EXECUTED\]')
+    j_stripped = list(inherited_re.finditer(clean_text))
+    if j_stripped:
+        orig_lines = plan_text.splitlines()
+        all_orig_j = []
+        for i, line in enumerate(orig_lines):
+            for m in inherited_re.finditer(line):
+                all_orig_j.append((i + 1, m.group(1)))
+        oi = 0
+        for sm in j_stripped:
+            sid = sm.group(1)
+            for idx in range(oi, len(all_orig_j)):
+                if all_orig_j[idx][1] == sid:
+                    print(f"(j) WARN: line {all_orig_j[idx][0]} carries an inherited-premise marker from plan {sid}")
+                    oi = idx + 1
+                    break
+
+    # (k) Clone-claim check (WARN-only): a plan declaring clone framing on its
+    # Cycle Log tier line but not naming its newest same-class comparison.
+    # Declaration-keyed on the FIRST line-start **Tier:** in stripped text (a
+    # fenced tier-line quote must not match). Cannot see: whether the diff was
+    # actually performed, nor which plan IS the newest same-class.
+    # False-NEGATIVE directions: (1) 'newest same-class' in discussion text
+    # suppresses; (2) undeclared clones skip; (3) provenance declared only off
+    # the tier line (e.g. a dedicated "Clone lineage" section) is invisible.
+    tier_line_m = re.search(r'^\*\*Tier:\*\*.*$', clean_text, re.MULTILINE)
+    clone_re = re.compile(r'proven[\s-]+clone|clone\s+of|structure-clone', re.IGNORECASE)
+    has_clone_framing = False
+    tier_line_text = ""
+    if tier_line_m:
+        tier_line_text = tier_line_m.group(0)
+        if clone_re.search(tier_line_text):
+            has_clone_framing = True
+            if not re.search(r'newest\s+same-class', clean_text, re.IGNORECASE):
+                print("(k) WARN: clone-framed plan does not name its newest same-class comparison (§2.6 :75)")
+
+    # (l) Clone-mutation down-tier warn (WARN-only): a clone-framed plan firing
+    # T-2 at a declared tier below T2. Segment-bounded: T-2 counts as firing
+    # iff it appears after 'trigger(s) fired:' and before the first '.' or '('.
+    # Cannot see: actual mutation behaviour (only the declared trigger); inert
+    # on plans that under-declare T-2. Shipped inert — no down-tiered T-2
+    # population exists until the §1 executable lands.
+    # Under-match floor: a tier line with neither 'trigger fired:' nor 'triggers
+    # fired:' skips silently — some diagnostics use parenthetical forms the
+    # segment bound cannot parse.
+    if has_clone_framing and tier_line_m:
+        fired_seg = re.search(r'triggers?\s+fired:\s*', tier_line_text)
+        if fired_seg:
+            after = tier_line_text[fired_seg.end():]
+            seg_end = re.search(r'[.(]', after)
+            segment = after[:seg_end.start()] if seg_end else after
+            if re.search(r'\bT-2\b', segment):
+                if ct_match:
+                    declared_tier = int(ct_match.group(1))
+                    if declared_tier < 2:
+                        print("(l) WARN: clone-framed plan firing T-2 declares tier < T2 — §2.6: clone framing is not licence to down-tier; consider self-escalation to the cold panel")
+
     for status, check, detail in results:
         print(f"{status}: {check} — {detail}")
 

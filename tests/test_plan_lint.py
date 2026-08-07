@@ -1160,3 +1160,641 @@ The CEO directed this.
     assert "ledger out of order" not in result.stdout.lower()
     assert "lens results are recorded" not in result.stdout.lower()
     assert "halt-routing" not in result.stdout
+
+
+# --- (j) Inherited-premise marker tests ---
+
+def test_lint_j_active_numeric_marker_warns():
+    """(j-a) Active inherited marker with numeric id in body prose → WARN naming the line, exit 0."""
+    plan = """\
+# Test Plan
+**Date:** 2026-08-07 | **Dispatch Mode:** bellows | **pause_for_verdict:** always
+
+Some body text.
+**[INHERITED FROM 291 — NOT RE-EXECUTED]** This was inherited.
+More text.
+"""
+    result = _run_lint(plan)
+    assert result.returncode == 0, f"Expected exit 0, got {result.returncode}\nstdout: {result.stdout}"
+    assert "(j) WARN" in result.stdout
+    assert "line 5" in result.stdout
+    assert "291" in result.stdout
+
+
+def test_lint_j_code_span_marker_warns():
+    """(j-b) Active marker inside an inline code span (298:11 shape) → WARN (code spans NOT excluded), exit 0."""
+    plan = """\
+# Test Plan
+**Date:** 2026-08-07 | **Dispatch Mode:** bellows | **pause_for_verdict:** always
+
+- **`[INHERITED FROM 291 — NOT RE-EXECUTED]`** `291:428` — Gate 2 commits every doctrine edit BEFORE touching the DB. *Reason: it describes a shipped plan’s task ordering, observable only by reading that plan, which is what C4 encodes.*
+"""
+    result = _run_lint(plan)
+    assert result.returncode == 0, f"Expected exit 0, got {result.returncode}\nstdout: {result.stdout}"
+    assert "(j) WARN" in result.stdout
+    assert "291" in result.stdout
+
+
+def test_lint_j_compound_id_warns():
+    """(j-c) Compound id 289/284 (297:252 shape) → WARN, exit 0."""
+    plan = """\
+# Test Plan
+**Date:** 2026-08-07 | **Dispatch Mode:** bellows | **pause_for_verdict:** always
+
+> ⚠️ **Do NOT inline `$(date …)` between single-quoted parts of the `.backup` argument** — sqlite3 misparses it and writes NO backup. **[INHERITED FROM 289/284 — NOT RE-EXECUTED]** (reproducing it means deliberately issuing a malformed command).
+"""
+    result = _run_lint(plan)
+    assert result.returncode == 0, f"Expected exit 0, got {result.returncode}\nstdout: {result.stdout}"
+    assert "(j) WARN" in result.stdout
+    assert "289/284" in result.stdout
+
+
+def test_lint_j_placeholder_no_warn():
+    """(j-d) Placeholder forms (<plan>) → no WARN, exit 0."""
+    plan = """\
+# Test Plan
+**Date:** 2026-08-07 | **Dispatch Mode:** bellows | **pause_for_verdict:** always
+
+Template: [INHERITED FROM <plan> — NOT RE-EXECUTED]
+"""
+    result = _run_lint(plan)
+    assert result.returncode == 0, f"Expected exit 0, got {result.returncode}\nstdout: {result.stdout}"
+    assert "(j) WARN" not in result.stdout
+
+
+def test_lint_j_fenced_block_no_warn():
+    """(j-e) Numeric-id marker inside a fenced block → no WARN, exit 0."""
+    plan = """\
+# Test Plan
+**Date:** 2026-08-07 | **Dispatch Mode:** bellows | **pause_for_verdict:** always
+
+```
+**[INHERITED FROM 291 — NOT RE-EXECUTED]** This is inside a fence.
+```
+"""
+    result = _run_lint(plan)
+    assert result.returncode == 0, f"Expected exit 0, got {result.returncode}\nstdout: {result.stdout}"
+    assert "(j) WARN" not in result.stdout
+
+
+def test_lint_j_no_marker_no_warn():
+    """(j-f) No inherited marker → no WARN, exit 0."""
+    plan = """\
+# Test Plan
+**Date:** 2026-08-07 | **Dispatch Mode:** bellows | **pause_for_verdict:** always
+
+Just a normal plan with no inherited markers.
+"""
+    result = _run_lint(plan)
+    assert result.returncode == 0, f"Expected exit 0, got {result.returncode}\nstdout: {result.stdout}"
+    assert "(j) WARN" not in result.stdout
+
+
+def test_lint_j_fenced_above_exact_line_number():
+    """(j-g) Multi-line fenced block ABOVE a marker → WARN reports exact ORIGINAL line number, exit 0.
+    A stripped-text numbering bug would report line 5 instead of line 11."""
+    plan = """\
+# Test Plan
+**Date:** 2026-08-07 | **Dispatch Mode:** bellows | **pause_for_verdict:** always
+
+```
+fenced line 1
+fenced line 2
+fenced line 3
+fenced line 4
+fenced line 5
+```
+**[INHERITED FROM 291 — NOT RE-EXECUTED]** After the fence.
+"""
+    result = _run_lint(plan)
+    assert result.returncode == 0, f"Expected exit 0, got {result.returncode}\nstdout: {result.stdout}"
+    assert "(j) WARN" in result.stdout
+    assert "line 11" in result.stdout
+    assert "291" in result.stdout
+
+
+def test_lint_j_double_marker_two_fires():
+    """(j-h) Line with two markers → two distinct WARN fires consumed in order, exit 0."""
+    plan = """\
+# Test Plan
+**Date:** 2026-08-07 | **Dispatch Mode:** bellows | **pause_for_verdict:** always
+
+**[INHERITED FROM 289 — NOT RE-EXECUTED]** first marker **[INHERITED FROM 284 — NOT RE-EXECUTED]** second marker
+"""
+    result = _run_lint(plan)
+    assert result.returncode == 0, f"Expected exit 0, got {result.returncode}\nstdout: {result.stdout}"
+    lines = [l for l in result.stdout.splitlines() if "(j) WARN" in l]
+    assert len(lines) == 2, f"Expected 2 (j) WARN lines, got {len(lines)}: {lines}"
+    assert "289" in lines[0]
+    assert "284" in lines[1]
+    assert "line 4" in lines[0]
+    assert "line 4" in lines[1]
+
+
+def test_lint_j_unclosed_fence_marker_survives():
+    """(j-i) Unclosed fence before marker → marker survives (reuse stripper requires closing
+    fence), WARN fires, no crash, exit 0. Errs toward false positive (visible warn on
+    malformed plan), the acceptable direction for a WARN."""
+    plan = """\
+# Test Plan
+**Date:** 2026-08-07 | **Dispatch Mode:** bellows | **pause_for_verdict:** always
+
+```
+this fence is never closed
+**[INHERITED FROM 291 — NOT RE-EXECUTED]** inside unclosed fence
+"""
+    result = _run_lint(plan)
+    assert result.returncode == 0, f"Expected exit 0, got {result.returncode}\nstdout: {result.stdout}"
+    assert "Traceback" not in result.stderr
+    assert "(j) WARN" in result.stdout
+    assert "291" in result.stdout
+
+
+# --- (k) Clone-claim check tests ---
+
+def test_lint_k_clone_no_newest_warns():
+    """(k-a) Clone-framed tier line with no 'newest same-class' anywhere → WARN, exit 0."""
+    plan = """\
+# Test Plan
+**Date:** 2026-08-07 | **Dispatch Mode:** bellows | **pause_for_verdict:** always | **cycle_tier:** T2
+
+## Drafting Cycle
+**Tier:** T2 — trigger fired: T-6. Proven clone of 277.
+**Cold panel (T2):** run; 0 findings.
+**Closing:** walk 1 dry; deposited once.
+"""
+    result = _run_lint(plan)
+    assert result.returncode == 0, f"Expected exit 0, got {result.returncode}\nstdout: {result.stdout}"
+    assert "(k) WARN" in result.stdout
+    assert "newest same-class" in result.stdout
+
+
+def test_lint_k_clone_with_newest_no_warn():
+    """(k-b) Clone-framed AND naming 'newest same-class' → no WARN, exit 0."""
+    plan = """\
+# Test Plan
+**Date:** 2026-08-07 | **Dispatch Mode:** bellows | **pause_for_verdict:** always | **cycle_tier:** T2
+
+## Drafting Cycle
+**Tier:** T2 — trigger fired: T-6. Clone of 277; diffed against 304 (newest same-class).
+**Cold panel (T2):** run; 0 findings.
+**Closing:** walk 1 dry; deposited once.
+"""
+    result = _run_lint(plan)
+    assert result.returncode == 0, f"Expected exit 0, got {result.returncode}\nstdout: {result.stdout}"
+    assert "(k) WARN" not in result.stdout
+
+
+def test_lint_k_no_clone_no_warn():
+    """(k-c) No clone framing on tier line → no WARN, exit 0."""
+    plan = """\
+# Test Plan
+**Date:** 2026-08-07 | **Dispatch Mode:** bellows | **pause_for_verdict:** always | **cycle_tier:** T2
+
+## Drafting Cycle
+**Tier:** T2 — trigger fired: T-6 (governance surface), T-8 (novel).
+**Cold panel (T2):** run; 0 findings.
+**Closing:** walk 1 dry; deposited once.
+"""
+    result = _run_lint(plan)
+    assert result.returncode == 0, f"Expected exit 0, got {result.returncode}\nstdout: {result.stdout}"
+    assert "(k) WARN" not in result.stdout
+
+
+def test_lint_k_clone_in_body_not_tier_line_no_warn():
+    """(k-d) Clone literal in body prose but NOT on the tier line → no WARN, exit 0.
+    The tier-line-only scope is deliberate — a whole-body scan fires on every plan
+    that DISCUSSES clones."""
+    plan = """\
+# Test Plan
+**Date:** 2026-08-07 | **Dispatch Mode:** bellows | **pause_for_verdict:** always | **cycle_tier:** T2
+
+## Drafting Cycle
+**Tier:** T2 — trigger fired: T-6 (governance surface), T-8 (novel).
+This plan discusses proven clone methodology but is not itself a clone.
+**Cold panel (T2):** run; 0 findings.
+**Closing:** walk 1 dry; deposited once.
+"""
+    result = _run_lint(plan)
+    assert result.returncode == 0, f"Expected exit 0, got {result.returncode}\nstdout: {result.stdout}"
+    assert "(k) WARN" not in result.stdout
+
+
+# --- (l) Clone-mutation down-tier warn tests ---
+
+def test_lint_l_clone_t2_firing_tier_t1_warns():
+    """(l-a) Clone-framed + trigger fired: T-2 + cycle_tier T1 → WARN, exit 0.
+    Uses the 289:441 shape with cycle_tier lowered to T1."""
+    plan = """\
+# Test Plan
+**Date:** 2026-08-07 | **Dispatch Mode:** bellows | **pause_for_verdict:** always | **cycle_tier:** T1
+
+## Drafting Cycle
+**Tier:** T1 — trigger fired: **T-2** (production-data mutation — writes route on 6 proposals). A proven clone of 282.
+- Weak spots: w1 dry.
+- Destruction: w1 dry.
+- Vulnerabilities: w1 dry.
+- Integration-record: w1 dry.
+- ACID: w1 dry.
+**Closing:** walk 1 dry; deposited once.
+"""
+    result = _run_lint(plan)
+    assert result.returncode == 0, f"Expected exit 0, got {result.returncode}\nstdout: {result.stdout}"
+    assert "(l) WARN" in result.stdout
+    assert "cold panel" in result.stdout
+    assert "cold-panel" not in result.stdout
+
+
+def test_lint_l_plural_hyphenated_form_warns():
+    """(l-b) PLURAL 'triggers fired:' + hyphenated 'proven-clone' + cycle_tier T1 → WARN, exit 0.
+    The mandatory cold-reader-3 control: a singular-only or unhyphenated-only
+    implementation FAILS this fixture. Uses the 281:190 shape."""
+    plan = """\
+# Test Plan
+**Date:** 2026-08-07 | **Dispatch Mode:** bellows | **pause_for_verdict:** always | **cycle_tier:** T1
+
+## Drafting Cycle
+**Tier:** T1 — triggers fired: T-2 (production-data mutation — writes lesson_entries + lesson_proposals to the canonical lessons corpus, which has a documented silent-corruption history [the hash-trap bug], CEO-confirmed class). Also a proven-clone of cycles 274/257/247 (T-8 does not fire) but T-2 sets the floor.
+- Weak spots: w1 dry.
+- Destruction: w1 dry.
+- Vulnerabilities: w1 dry.
+- Integration-record: w1 dry.
+- ACID: w1 dry.
+**Closing:** walk 1 dry; deposited once.
+"""
+    result = _run_lint(plan)
+    assert result.returncode == 0, f"Expected exit 0, got {result.returncode}\nstdout: {result.stdout}"
+    assert "(l) WARN" in result.stdout
+    assert "cold panel" in result.stdout
+
+
+def test_lint_l_clone_t2_firing_tier_t2_no_warn():
+    """(l-c) Clone-framed + T-2 firing but cycle_tier T2 → no WARN, exit 0."""
+    plan = """\
+# Test Plan
+**Date:** 2026-08-07 | **Dispatch Mode:** bellows | **pause_for_verdict:** always | **cycle_tier:** T2
+
+## Drafting Cycle
+**Tier:** T2 — trigger fired: **T-2** (production-data mutation). A proven clone of 282.
+**Cold panel (T2):** run; 0 findings.
+**Closing:** walk 1 dry; deposited once.
+"""
+    result = _run_lint(plan)
+    assert result.returncode == 0, f"Expected exit 0, got {result.returncode}\nstdout: {result.stdout}"
+    assert "(l) WARN" not in result.stdout
+
+
+def test_lint_l_t2_in_negation_list_no_warn():
+    """(l-d) Clone-framed + T-2 in negation list after fired segment (303:154 shape) → no WARN, exit 0."""
+    plan = """\
+# Test Plan
+**Date:** 2026-08-07 | **Dispatch Mode:** bellows | **pause_for_verdict:** always | **cycle_tier:** T1
+
+## Drafting Cycle
+**Tier:** T1 — trigger fired: T-6. Clone of 277. T-2, T-3, T-4, T-5 do not fire.
+- Weak spots: w1 dry.
+- Destruction: w1 dry.
+- Vulnerabilities: w1 dry.
+- Integration-record: w1 dry.
+- ACID: w1 dry.
+**Closing:** walk 1 dry; deposited once.
+"""
+    result = _run_lint(plan)
+    assert result.returncode == 0, f"Expected exit 0, got {result.returncode}\nstdout: {result.stdout}"
+    assert "(l) WARN" not in result.stdout
+
+
+def test_lint_l_no_trigger_fired_literal_no_warn():
+    """(l-e) Clone-framed tier line with neither 'trigger fired:' nor 'triggers fired:' →
+    no WARN, silent skip, exit 0."""
+    plan = """\
+# Test Plan
+**Date:** 2026-08-07 | **Dispatch Mode:** bellows | **pause_for_verdict:** always | **cycle_tier:** T1
+
+## Drafting Cycle
+**Tier:** T1 — (T-7 only). Clone of 277.
+- Weak spots: w1 dry.
+- Destruction: w1 dry.
+- Vulnerabilities: w1 dry.
+- Integration-record: w1 dry.
+- ACID: w1 dry.
+**Closing:** walk 1 dry; deposited once.
+"""
+    result = _run_lint(plan)
+    assert result.returncode == 0, f"Expected exit 0, got {result.returncode}\nstdout: {result.stdout}"
+    assert "(l) WARN" not in result.stdout
+
+
+def test_lint_l_t2_firing_not_clone_no_warn():
+    """(l-f) T-2 firing but NOT clone-framed → no WARN, exit 0."""
+    plan = """\
+# Test Plan
+**Date:** 2026-08-07 | **Dispatch Mode:** bellows | **pause_for_verdict:** always | **cycle_tier:** T1
+
+## Drafting Cycle
+**Tier:** T1 — trigger fired: T-2 (production-data mutation). Novel pattern.
+- Weak spots: w1 dry.
+- Destruction: w1 dry.
+- Vulnerabilities: w1 dry.
+- Integration-record: w1 dry.
+- ACID: w1 dry.
+**Closing:** walk 1 dry; deposited once.
+"""
+    result = _run_lint(plan)
+    assert result.returncode == 0, f"Expected exit 0, got {result.returncode}\nstdout: {result.stdout}"
+    assert "(l) WARN" not in result.stdout
+
+
+def test_lint_l_fenced_tier_line_ignored():
+    """(l-g) A **Tier:** line inside a fenced block + a real one outside → real one wins
+    (stripped-text scan, first line-start match), exit 0."""
+    plan = """\
+# Test Plan
+**Date:** 2026-08-07 | **Dispatch Mode:** bellows | **pause_for_verdict:** always | **cycle_tier:** T1
+
+```
+**Tier:** T1 — trigger fired: T-2 (production-data mutation). Clone of 277.
+```
+
+## Drafting Cycle
+**Tier:** T1 — trigger fired: T-6. Not a clone.
+- Weak spots: w1 dry.
+- Destruction: w1 dry.
+- Vulnerabilities: w1 dry.
+- Integration-record: w1 dry.
+- ACID: w1 dry.
+**Closing:** walk 1 dry; deposited once.
+"""
+    result = _run_lint(plan)
+    assert result.returncode == 0, f"Expected exit 0, got {result.returncode}\nstdout: {result.stdout}"
+    assert "(l) WARN" not in result.stdout
+    assert "(k) WARN" not in result.stdout
+
+
+# --- (j)/(k)/(l) degenerate tests ---
+
+def test_lint_jkl_degenerate_empty_no_crash():
+    """(jkl-degen) Minimal plan → no crash, no false WARN from (j)/(k)/(l), exit 0."""
+    plan = """\
+# Test Plan
+**Date:** 2026-08-07 | **Dispatch Mode:** bellows | **pause_for_verdict:** always
+"""
+    result = _run_lint(plan)
+    assert result.returncode == 0, f"Expected exit 0, got {result.returncode}\nstdout: {result.stdout}"
+    assert "Traceback" not in result.stderr
+    assert "(j) WARN" not in result.stdout
+    assert "(k) WARN" not in result.stdout
+    assert "(l) WARN" not in result.stdout
+
+
+# --- Self-fire regression test (j)/(k)/(l) ---
+
+def test_lint_jkl_self_fire_zero_warnings():
+    """(jkl-self) Plan 306 own text produces zero (j)/(k)/(l) warnings, exit 0.
+    Embedded as a raw string literal at DEV time. The plan file path mutates
+    across lifecycle (in-progress to Done); a path read would break after archival."""
+    plan = r'''# Executable: three warn-first enforcement checks in plan_lint — (j) inherited-premise, (k) clone-claim, (l) clone-mutation down-tier
+
+**Type:** Executable
+**Project:** bellows
+**Depends on:** **diagnostic-305** (Done — the enforceability assessment; every mechanism this plan ships was constructed and fire-tested there) and **diagnostic-301** (Done — the C5(b) classification that named the three defect classes). Precedent machinery: **executable-303** (clone origin — shipped `(g)`/`(h)`/`(i)`) and **executable-304** (newest same-class — removed `(i)`; its hardenings are carried, see the provenance section).
+**Created:** 2026-08-06
+**Author:** Planner
+**dispatch_mode:** bellows
+**pause_for_verdict:** always
+**Priority:** 10
+**cycle_tier:** T2
+
+⚠️ **ID NOTE — the deposit filename is decided AT DEPOSIT.** Bellows mints the id from `id_sequence` at claim (`lifecycle.py:199`) and does not parse the filename. **Read `id_sequence` at deposit.**
+
+---
+
+## Why this exists — four CEO decisions, taken together on 2026-08-06, and this plan is their first durable record
+
+The executable re-scoping §1 is **held until enforcement exists** for the three defect classes diag-301 named (clone-drift, subtractive-trim, inherited-premise). Diag-305 measured what is mechanizable; the CEO then lowered the bar to the **detectable surface** and, in one sitting, settled the residual cost together with 305's three open decisions:
+
+| decision | CEO call (2026-08-06) |
+|---|---|
+| **Residual cost** — the T-2 move removes the panel from the proven-clone/data-mutation class | **(c) warn-prompted panel path.** No new §1 trigger (option C stands). A warn-first lint check surfaces the down-tier at drafting time; the panel arrives via prompted self-escalation. **That check is `(l)` in this plan.** |
+| **Decision 1** — inherited-premise | **Ship warn-first.** The marker check — 305 measured it firing on its own case (`289`), 3/1365 corpus fires, all true positives. **That is `(j)`.** |
+| **Decision 2** — clone-drift | **Both.** Ship the claim check warn-first (**`(k)`**) AND retain the cold panel as the content verifier — 305 proved the content check is not constructible (282's drift was panel-fixed pre-commit). |
+| **Decision 3** — subtractive-trim | **Mechanizable-forward + codify per-phase commits.** No check ships here (no surface — the absence of a check is invisible by definition). The class stays panel-and-instruction; the panel path for its motivating population is `(l)`'s warn. The per-phase-commit codification is a DOCTRINE edit and belongs to the §1 executable, **not** this plan. |
+
+⚠️⚠️ **THE SEQUENCING THIS PLAN SERVES: the hold lifts on mechanisms that are SHIPPED and running — warn-first counts; 305's `/tmp` prototypes do not.** When this plan closes, inherited-premise and clone-drift have shipped surface checks, and subtractive-trim's population keeps a warn-prompted panel path. **The §1 executable is unblocked by THIS plan's close, not by 305's verdict.**
+
+⚠️ **The half-complete state, stated rather than accidental (ACID 5.1):** a halt after Step 1 leaves three WARN-only checks live with their corpus load UNMEASURED — this plan's keys differ from 305's prototypes (numeric-id discrimination, tier-line scope, segment bound), so 305's counts do not transfer. **That state is acceptable ONLY because a warn cannot block anything — and the hold does NOT lift in it. The hold lifts when Step 2's measurement closes, not when the code lands.**
+
+⚠️ **Letter note: `(i)` is retired, not free.** 304 removed `(i)` (halt-routing) after it measured 11 fires / 8 false. Reusing the letter would shadow the record of its failure. **The three new checks are `(j)`, `(k)`, `(l)`.**
+
+---
+
+## Clone provenance — origin AND newest same-class (§2.6 `:75`)
+
+- **Origin: `executable-303`** — the shipped add-checks-to-plan_lint plan. Machinery cloned: the WARN-only mechanical invariant (from 140 via 277), A0 pre-edit cleanliness + warn-first precondition, quoted-anchor insertion, embedded-fixture tests (no cross-tree reads — 277's V1), targeted-tests-only in DEV, Task Q0 re-pin at the DEV→QA gate, per-check corpus sweep with pinned roots and per-root zeros.
+- **Newest same-class: `executable-304`** — the remove-`(i)` plan. Hardenings carried, not dropped:
+  1. **The sweep-diff proof, not a warning count** — any corpus-sweep comparison must diff sweep OUTPUT lines, because a count cannot see one check's line silently lost while another's changed (§2.7: assert the PRESENCE of retained material).
+  2. **`(i)`'s lesson as a design bound:** a check requiring entity extraction from prose fails; narrowing to a mechanical token moves the boundary rather than solving it. **Every check in this plan is keyed to a fixed literal or a declared field — none extracts entities from free prose.** Where a check's key is a declared framing (see `(k)`, `(l)`), the check is declaration-keyed and its under-declaration floor is stated in the code comment, exactly as 301's census instrument was.
+
+---
+
+## What each check is — and, per the polarity rule, what it cannot see
+
+**All three are WARN-only advisory (the 140/277/303 invariant): bare `print(...)`, never touch `results`, never set `all_passed`, never raise; malformed or absent input skips silently with a comment saying why.** ⚠️ **Every WARN line BEGINS with its check letter — the canonical composed form is `(j) WARN: <message>` (cold reader 5: stated once so the quoted WARN texts below, which are the `<message>` part, are not copied letterless) — UNLIKE the existing checks' bare `WARN:` prints, DELIBERATELY (cold reader 4 corrected the earlier "matching" claim: no existing WARN carries a letter): the sweep-diff and the per-check attribution key on that letter, not on message-substring guessing (cold reader 3). Do not "conform" the letter away to match the older style.** ⚠️ **The self-fire regression test embeds this plan's text as a RAW string literal delimited by THREE SINGLE QUOTES (apostrophes) — the delimiter is deliberately spelled in words, not glyphs (cold reader 5): an EARLIER version of this body carried the double-quote triple as a glyph — inside this very mandate — and the embed would have terminated early (a SyntaxError); spelling either triple here re-plants the bomb. ⚠️ **The occurrence count is a MOVING property of the text (the confirming pass measured both triples at ZERO after this rewording — the claim "exactly once" died with the glyph it counted): COUNT both triples in the plan text AT DEV TIME and use a delimiter with zero occurrences;** embed byte-exact — never escape or drop content to fit a delimiter (that silently alters the text C4's fidelity depends on). The raw form is required because the body carries regex fragments that are invalid escapes in a non-raw literal on Python 3.12+ (cold reader 3).**
+
+### (j) Inherited-premise marker (Decision 1)
+
+**Key — corrected at walk 1 against the three true-positive files, which broke the v0 spec twice:**
+
+```
+[INHERITED FROM <id> — NOT RE-EXECUTED]   where <id> is NUMERIC (digits, optionally
+                                          slash-compound like 289/284), outside
+                                          FENCED code blocks only.
+```
+
+- **A NUMERIC id is REQUIRED to fire.** The convention-declaration and template forms use `<plan>` or `…` placeholders (`289:15`, `297:116`, `298:8`, diag-305's fire-test table) — no digits, never fire. **This, not table-row detection, is the mechanical discrimination.**
+- ⚠️ **Inline code spans are NOT excluded — measured: `298`'s five ACTIVE markers (`298:11`–`:15`) are backtick-wrapped.** A code-span exclusion silently kills a true-positive file (one of 305's three).
+- ⚠️ **Compound ids fire — measured: `297:252` carries `289/284`.** The id pattern must accept `\d+(/\d+)*`.
+- ⚠️ **Accepted, documented per-LINE false positive:** a retraction narrating a marker verbatim with a real id (`289:134`) fires at line level. Per FILE the result stays a true positive (289's active markers at `:169` are real). **State this FP class in the code comment; do not add semantic retraction detection — that is `(i)`'s entity-extraction trap.**
+
+**WARN:** name each firing line number and the plan id(s) it inherits from. ⚠️ **Line numbers are computed against the ORIGINAL text, not the stripped text — cold reader 1 measured a 6-line offset on this very draft after fence removal.** Detect on the stripped text, then re-locate each fired marker in the original, **consuming original lines IN ORDER (cold reader 2: `289:169` carries the marker TWICE — an unordered fragment-search attributes every fire to every matching line).**
+**Cannot see:** whether the re-run was actually priced. **The check flags the SITE; the panel judges the quality** — 305's Construction B proved cost-keyword proximity produces false negatives and is NOT attempted here.
+**Measured basis (305, cited not re-derived):** fires on `289` (its own case); 3/1365 corpus-wide at 305's pin, all true positives. ⚠️ **The QA sweep MEASURES the count fresh at its own pin — 305's figure is context, never the expected value** (a predicted number invites the run to be read as confirming it).
+
+### (k) Clone-claim check (Decision 2)
+
+**Key:** declaration-keyed, two literals — the plan declares clone framing **on its Cycle Log tier line ONLY (the line beginning `**Tier:**`)** — the line contains `proven clone` / **`proven-clone`** (⚠️ **hyphenated form added at cold reader 3: `281:190` writes "proven-clone of cycles 274/257/247" and `288`/`296` write "A proven-clone framing" — the unhyphenated-only set missed all three**) or `Clone of` / `structure-clone` / `clone of`, all case-insensitive — **and** the plan text nowhere names a newest-same-class comparison (**literal `newest same-class`, matched CASE-INSENSITIVELY — cold reader 3: `284:11` writes "the NEWEST same-class plan", and the casing decides whether 284 fires falsely; it does name its comparison**). ⚠️ **Both `(k)` and `(l)` scan the STRIPPED text (same stripper as `(j)`) and take the FIRST line-start `**Tier:**` match — a fenced tier-line quote must not match, and multiplicity is settled by rule, not accident (cold reader 3; zero multi-tier-line files exist today, which is exactly why the ambiguity would ship invisibly).** ⚠️ **The tier-line-only scope was settled at ACID: "tier line or header" was under-specified (which header?), and a whole-body scan fires on every plan that DISCUSSES clones (301, 305, this one). Verified against every measured declaration site: `282:213` ("Clone of"), `289:441` ("proven clone"), `303:154` ("structure-for-structure clone") — all on the tier line.** `(l)`'s clone-framing test inherits this same scope. **Measured against the live formats at walk 1:** `282`'s tier line reads *"Clone of **275** … diffed against **281** (newest same-class)"* → correctly no WARN; `303`'s reads *"structure-for-structure clone of 277"* and names its *"newest same-class"* → correctly no WARN.
+⚠️ **Documented false-NEGATIVE directions (three, all accepted for the same reason — no entity extraction):** **(1)** the literal `newest same-class` appearing in DISCUSSION text suppresses the fire (305 measured this on its own text); **(2)** a tier line without a clone literal skips even when the plan IS a clone that never declared; **(3)** **a plan declaring provenance only in a dedicated section off the tier line (the `289:11` "Clone lineage" paragraph shape, found at cold reader 1) is invisible to `(k)` and `(l)`.** A claim check keyed on declared literals cannot see undeclared or elsewhere-declared framing; each miss errs toward silence, the acceptable direction for a WARN. **The canonical declaration site is the tier line — this plan's own tier line declares there, per its own rule.**
+**WARN:** "clone-framed plan does not name its newest same-class comparison (§2.6 `:75`)".
+**Cannot see:** whether the diff was actually performed (a claim, not the work — 305 E4), nor which plan IS the newest same-class (semantic classification no gate performs). **The panel remains the content verifier by CEO decision.**
+**Measured basis — CORRECTED at cold reader 2, RE-MEASURED at the reader-3 culmination under the FINAL key (stripped text, tier-line-only, case-insensitive suppressor, full literal set):** **8 fires — `274`, `275`, `277`, `285` (4, clearly predating the instruction), `286`/`287` (same-day boundary — `287` IS the codification plan), and `291` + `diagnostic-301` (2, POSTDATING it).** `284`, `288`, `296` are correctly suppressed (each names its comparison, variously cased). ⚠️⚠️ **THE INSTRUCTION DATE, CORRECTED AT COLD READER 4 BY RE-EXECUTION: the newest-same-class discipline entered doctrine at v1.2, 2026-07-30 (commit `3c327e3` — the COMMIT message names plan 287, "[287] Step 2: codify…"; the changelog row itself names proposal 191, not 287 — attribution corrected at cold reader 5) — NOT "2026-08-03 / v1.4", which was 305's claim, inherited here unexecuted. An inherited-premise error in the plan shipping the inherited-premise check, caught cold and priced exactly as §2.7 `:90` demands: the re-run was one `git log -S`.** ⚠️ **Each key revision moved this number (19 → 10 → 8): the count is a property of the KEY, not the corpus — QA measures fresh at its own pin with the shipped key and reports any difference from this figure.** ⚠️ **The v1 claim "all fires predate the instruction" was 305's whole-body prototype figure and is FALSE for this key — do not carry it into the code comment.** **QA reports the fresh count with the date split measured, presuming neither.** ⚠️ **A fourth documented direction (cold reader 2): the canonical tier-line format ITSELF places clone literals on tier lines inside T-8-does-not-fire rationales** (301:138's shape) — such fires are REPORTABLE, their §2.6 applicability is ambiguous (305 flagged the diagnostic-cloning-methodology question), and **weighing them is the CEO's, not the check's or the QA agent's.**
+
+### (l) Clone-mutation down-tier warn (Residual cost, option (c))
+
+**Key:** declaration-keyed, three fields all in the file under test — the plan declares clone framing (as in `(k)`), its Cycle Log tier line records `T-2` as FIRING, and its declared `cycle_tier` is below T2.
+
+⚠️⚠️ **THE FIRING TEST IS SEGMENT-BOUNDED, NOT LINE-CONTAINS — corrected at walk 1, RE-CORRECTED at cold reader 3.** Tier lines carry NEGATIONS on the same line: `289:441` says *"T-6 does NOT fire"* mid-line, and `303:154` ends *"T-2, T-3, T-4, T-5 do not fire"* — a negation LIST that defeats token-level negation matching. **The mechanical bound:** on the tier line, `T-2` counts as firing **iff it appears in the segment immediately after the literal `trigger fired:` OR `triggers fired:` and before the first `.` or `(`.**
+⚠️⚠️ **BOTH FORMS ARE MANDATORY — the PLURAL is the MAJORITY format (cold reader 3: 19 vs 10 files containing each literal anywhere; cold reader 4 re-instrumented on first-tier-line-only — the scope `(l)` actually scans — 17 vs 10; the majority claim holds under both instruments), and 7 of the 11 T-2-firing clone-framed Done plans use it — including `281:190` (*"triggers fired: T-2 (production-data mutation …"*), THE MOTIVATING PLAN OF THIS ARC.** ⚠️ **Walk 1's "verified against every measured format" rested on a three-site sample (282/289/303) that was all-singular by accident — the singular-only key would have missed `281` itself.** Verified firing: `289:441`, `282:213` (singular), `281:190` (plural); not firing: `303:154`.
+⚠️ **Documented under-match floor:** a tier line with NEITHER form (some diagnostics use *"(T-7 only)"* parentheticals) skips silently, with a code comment saying so.
+**WARN:** "clone-framed plan firing T-2 declares tier < T2 — §2.6: clone framing is not licence to down-tier; consider self-escalation to the cold panel". ⚠️ **The WARN text spells `cold panel` UNHYPHENATED, as written here — three existing tests assert `"cold-panel" not in stdout` and a hyphenated spelling breaks them (cold reader 2). Forewarning for Task D: the four embedded real-log fixtures (274/275/277/284) will newly print `(k)` WARNs during EXISTING tests — stdout noise on untouched tests, not failures (49/49 measured passing); do not edit real Done-plan fixture text to silence it.**
+**Cannot see:** actual mutation behaviour (only the declared trigger), and it is inert on plans that under-declare T-2. **This is the warn-prompted panel path the CEO chose over scoping the §1 executable — it surfaces the down-tier; it does not force the panel.**
+⚠️ **Sequencing note:** `(l)` only has a population to fire on AFTER the §1 executable moves T-2 into T1 (today a T-2-firing plan computes T2 and the tier comparison never triggers). **Shipping it now, inert, is deliberate: the guard must exist before the population does.** The QA sweep on today's corpus is expected to show its mechanical soundness, not fires — **and a zero must be reported as a zero with the reason, never silently.**
+⚠️ **Dependency on the §1 executable, stated so it cannot be silently broken:** `(l)`'s key reads the trigger-recording convention (§1: *"Record the tier and the firing trigger(s) in the Cycle Log"*). The re-scope moves T-2 between lists but does not touch that convention — **the §1 executable must not drop it, and SHOULD consider standardizing a machine-readable fired-list format (305's E4 recommendation), which would let `(l)` shed the segment-bound heuristic. That option is ROUTED to the §1 executable's drafting; this plan does not decide it.**
+
+---
+
+## How to Run This Plan
+
+**Bootstrap prompt:**
+```
+Read the plan at knowledge/decisions/in-progress-executable-<id>.md (the daemon renames the deposited placeholder on claim). Execute Step 1 ONLY. After completing Step 1, STOP and wait for my confirmation.
+```
+
+---
+---
+
+## STEP 1 — DEV
+
+> **FIRST — post a short visible chat message (1–2 sentences) confirming you are starting this plan and your immediate next action.** Do NOT rename this plan file. Read your Bellows Developer specialist file, then `scripts/plan_lint.py` (the `(f)`/`(g)`/`(h)` blocks and the WARN mechanism), and — for the authoritative behaviour — `/Users/marklehn/Developer/GitHub/DRAFTING_CYCLE.md` §2.6/§2.7 (ABSOLUTE path; repo root, outside this worktree). **All commands run from `/Users/marklehn/Developer/GitHub/bellows`.** ⚠️ **Worktree note (cold reader 5):** the daemon executes each step inside a worktree overlay of this repo; "the bellows tree" in this plan means the tree the step runs in — relative paths resolve against it, edits land on main at step-end teardown (bellows.py:757–760), and 303/304 ran clean under the identical sentence.
+>
+> **Task A0 — pre-edit cleanliness + warn-first precondition (303/277).** `git -C /Users/marklehn/Developer/GitHub/bellows status --porcelain -- scripts/plan_lint.py tests/test_plan_lint.py` must be empty. **If DIRTY — resume disambiguation (Rule 56):** ⚠️⚠️ **enumerate the hunks first — `git diff -- scripts/plan_lint.py tests/test_plan_lint.py` — and attribute EVERY hunk to this plan's own edits (the `(j)`/`(k)`/`(l)` check comments, the new test names). A presence-grep is NOT sufficient — it proves this plan's edits are IN the dirty files, not that nothing else is (cold reader 2), and `git restore` destroys every uncommitted hunk including a coexisting foreign one.** All hunks attributable → `git restore` both files and reapply from scratch (**NEVER hand-patch a partial apply**). Any unattributable hunk → **HALT, do NOT restore.**
+> ⚠️⚠️ **Then confirm HEAD is 304's state:** `(i)` must be ABSENT from `plan_lint.py` — `grep -F "halt-routing" scripts/plan_lint.py` prints nothing and exits 1 (⚠️ **run the grep BARE, never through a pipe — `$?` after a pipe reports the LAST command's exit, which this session measured reading `head`'s 0 as grep's answer**; pair it with a positive control such as `grep -F "(g)" scripts/plan_lint.py` printing the `(g)` comment) — and every `(f)`/`(g)`/`(h)` WARN must be a bare `print(...)` never touching `results`/`all_passed`, return `0 if all_passed else 1`. **Record the hash of this verified state — expected `8e085fa`, but READ it, do not trust this figure — as `PRE_EDIT_HASH` in the dev log; Step 2's sweep-diff keys on it.** **If `(i)` is present or any check has flipped to blocking, HALT and report — the premise of this plan's anchors has moved.**
+>
+> **Anchor — the insertion point is quoted, not described (Rule 23(a) — ⚠️ cold reader 4: the origin 303:66 cites "Rule 22(a)" for this discipline, a mis-citation this clone initially reproduced; 22 is the Planner's deposited-file check).** The three checks go **immediately after the `(h)` block, before the results-printing loop.** ⚠️ **Read the file and locate the verbatim line that currently ends `(h)`; insert after it. Grep-confirm the edit landed and that no duplicate check label was introduced.** ⚠️ **Placement note:** `(g)`/`(h)` operate inside the `(f)` `dc_block` scope; **`(j)` and `(k)` read the WHOLE plan text and `(l)` reads plan text + the Cycle Log tier/trigger lines — put them at the correct scope level, not inside the `dc_block` conditional**, and say in the code comment why the scope differs from `(g)`/`(h)`.
+>
+> **Implement `(j)`, `(k)`, `(l)` exactly as specified in `## What each check is` above — including each check's fenced-block exclusion, declaration keys, skip conditions, and code comments stating what the check cannot see.** For fenced-block stripping, reuse or factor the existing stripping the file already performs if present; do not build a second parser beside an existing one.
+>
+> **Task D — PROTECT THE EXISTING TESTS (303 Task D).** Grep `tests/test_plan_lint.py` for the existing `(f)`/`(g)`/`(h)` tests and **run them before and after the edit.** ⚠️ **If any changes behaviour, preserve the test's INTENT rather than weakening the new check** — make the fixture internally consistent and report every fixture edit explicitly. **Do NOT weaken a check to avoid a test edit.**
+>
+> **Task E — new observe-the-effect tests, one positive and one negative control per check, each also asserting exit 0.**
+> ⚠️⚠️ **EMBED FIXTURES AS STRING LITERALS. DO NOT READ PLANS CROSS-TREE** (277's V1; 303 carried it; carried again here). **The (j)/(l) fixtures encode walk 1's measured formats — the REAL lines are embedded VERBATIM in the COLUMN-0 fenced block below; copy them from here into the test strings rather than inventing shapes or reading cross-tree.** ⚠️ **The fence sits at COLUMN 0, outside this blockquote, DELIBERATELY: cold reader 1 measured that the reuse stripper (`gates.strip_fenced_code_blocks`) only strips column-0 fences — a blockquoted fence is INVISIBLE to it, and the self-fire guard fails.** **A fold moving this block back into the quote re-breaks the guard.**
+
+```
+298:11  - **`[INHERITED FROM 291 — NOT RE-EXECUTED]`** `291:428` — Gate 2 commits every doctrine edit BEFORE touching the DB. *Reason: it describes a shipped plan's task ordering, observable only by reading that plan, which is what C4 encodes.*
+297:252 > ⚠️ **Do NOT inline `$(date …)` between single-quoted parts of the `.backup` argument** — sqlite3 misparses it and writes NO backup. **[INHERITED FROM 289/284 — NOT RE-EXECUTED]** (reproducing it means deliberately issuing a malformed command).
+289:441 **Tier:** T2 — trigger fired: **T-2** (production-data mutation — writes `route` on 6 canonical proposals). T-6 does NOT fire (routing metadata, no doctrine edit — that is Gate 2). **T-8 does not fire on novelty**, but the tier is NOT reduced on clone provenance: a proven clone is where cold-panel value is highest, and this clone deletes an entire subsystem of its parent, which is the highest-risk edit a clone can make.
+282:213 **Tier:** T2 — trigger fired: **T-2** (production-data mutation — writes `route` on the canonical lessons-forge corpus). T-6 does NOT fire (DB routing metadata, no doctrine edit — that is Gate 2). Clone of **275** (prior Gate 1); machinery additionally diffed against **281** (newest same-class), per the discipline proposal 191 routes.
+303:154 (tail) T-2, T-3, T-4, T-5 do not fire.
+281:190 **Tier:** T2 — triggers fired: T-2 (production-data mutation — writes lesson_entries + lesson_proposals to the canonical lessons corpus, which has a documented silent-corruption history [the hash-trap bug], CEO-confirmed class). Also a proven-clone of cycles 274/257/247 (T-8 does not fire) but T-2 sets the floor at T2. Down-tiering a 2-entry batch to skip the cold panel is precisely the trap entry (a) of THIS batch names — so T2 stands.
+```
+
+⚠️⚠️ **`281:190` is the MANDATORY plural + hyphenated positive control (cold reader 3): PLURAL `triggers fired:` and hyphenated `proven-clone` — the majority formats a singular/unhyphenated-only key silently misses, on the arc's own motivating plan.**
+
+> ⚠️ **`303:154`'s head reads, verbatim: *"**Tier:** T2 — **computed, trigger fired: T-6.**"* (cold reader 5 repaired this pointer — an earlier version cited a quote "in the `(l)` spec above" that folding had removed, and dropped the word "computed"). The embedded tail is the negation-list shape. If a fixture needs the full line, read it ONCE from `knowledge/decisions/Done/executable-303.md` (**worktree-relative — the same tree the step runs in; cold reader 3 caught the earlier `bellows/…`-prefixed form resolving nowhere from the stated cwd**).**
+> ⚠️⚠️ **STRIP THE `NNN:LLL ` CITATION PREFIX when copying a line into a fixture (cold reader 2).** The prefixes above are labels, not content: a verbatim copy does not begin `**Tier:**`, the line-start anchor never matches, and the positive controls fail. **The WRONG response to that failure is loosening the anchor to a contains-match — which then fires on any plan QUOTING a tier line and breaks C4. The anchor stays line-start; fix the fixture, not the scope.**
+> - **(j)** an active marker with a numeric id in body prose → **WARN naming the line**; an active marker **inside an inline code span** (the `298:11` shape) → **WARN** (code spans are not excluded); a **compound id** `289/284` (the `297:252` shape) → **WARN**; the placeholder forms (`<plan>`, `…`) → **no WARN**; the same numeric-id literal inside a **fenced block** → **no WARN**; no marker → **no WARN**.
+> - **(k)** a plan whose TIER LINE declares `proven clone` with no `newest same-class` anywhere → **WARN**; clone-framed AND naming `newest same-class` → **no WARN**; no clone framing → **no WARN**; ⚠️ **clone literal in BODY PROSE but not on the tier line → no WARN (the tier-line-only scope is deliberate — a fixture placing the literal off the tier line tests the SKIP, and a failing "positive" there means the fixture is wrong, not the scope).**
+> - **(l)** clone-framed ON THE TIER LINE + `trigger fired: **T-2** (…` in the same line + `cycle_tier: T1` → **WARN**; ⚠️ **the PLURAL + HYPHENATED form — the `281:190` fixture line with `cycle_tier` lowered to T1 — → WARN (the mandatory cold-reader-3 control; a singular-only or unhyphenated-only implementation FAILS this fixture)**; same but `cycle_tier: T2` → **no WARN**; clone-framed + tier line where T-2 appears ONLY in a negation list after the fired segment (the `303:154` shape) → **no WARN**; tier line with NEITHER `trigger fired:` nor `triggers fired:` → **no WARN, silent skip**; T-2 firing + not clone-framed → **no WARN**; ⚠️ **a `**Tier:**` line inside a fenced block + a real one → the real one wins (stripped-text scan, first line-start match)**.
+> - ⚠️⚠️ **Two fixtures that must be able to FAIL on a wrong `(j)` implementation (cold reader 3 — the mandated hardenings had no failing-capable test):** a fixture with a multi-line fenced block ABOVE a marker → the test asserts the **exact original line number** (a stripped-text numbering bug reports it 6 lines off); and the `289:169` double-marker line → the test asserts **two distinct fires consumed in order** (an unordered fragment-search attributes both to every matching line).
+> - **Degenerate:** empty file, no Cycle Log, malformed tier line → **no crash, no false WARN.** **An UNCLOSED fence before a marker (the 302 runs-to-EOF class): under the reuse stripper the content SURVIVES — the regex requires a closing fence — so the marker REMAINS VISIBLE and fires.** ⚠️ **Corrected at cold reader 1: the v1 spec said "treated as fenced," which contradicts the mandated reuse implementation.** The surviving-content behaviour errs toward a false POSITIVE (a visible warn on a malformed plan), which is the acceptable direction for a WARN; **the test asserts no-crash and documents this direction — do NOT modify `gates.py` or build a second stripper to change it.**
+> - ⚠️⚠️ **Regression test — the self-fire guard (`(i)`-on-303's lesson):** run all three checks against THIS plan's own text; it must produce **zero `(j)`/`(k)`/`(l)` warnings**. ⚠️⚠️ **INPUT SOURCE (cold reader 2): EMBED THIS PLAN'S FULL TEXT AS A STRING LITERAL at DEV time — the test may read NO plan-file path.** The plan file's path mutates across its lifecycle (`in-progress-executable-<id>.md` → `Done/executable-<id>.md`): a test reading the in-progress path passes QA and then **breaks the NEXT plan's full suite after archival** — a delayed time bomb; a `Done/` path fails during this plan's own run. The sanctioned one-time read of `executable-303.md` is a DEV-time fixture copy, not a licence for runtime path reads. ⚠️ **This plan's body keeps every marker literal bearing a numeric id inside COLUMN-0 fenced blocks** (the reuse stripper strips only those — cold reader 1's finding). **Verify with the check itself, not by reading — cold reader 1 proved by execution that the blockquoted-fence version DID fire (j) on its own lines.**
+>
+> **Run targeted tests only:** `python3 -m pytest tests/ -k "plan_lint or lint" --tb=short -q 2>&1 | cat`. ⚠️ **Do NOT run the full suite in this step — that is Step 2's job.** Then run `plan_lint` live against a real compliant plan and a deliberately-tripping fixture; **paste the RAW output UNTRUNCATED — never through `head` — and `echo $?` = 0 on each.**
+>
+> **Scope:**
+> - `scripts/plan_lint.py`
+> - `tests/test_plan_lint.py`
+> - `knowledge/development/enforcement-checks-dev-log-2026-08-06.md`
+>
+> **Deposit the dev log** with the exact before/after lines per check, the warn-first confirmation (exit 0 on all cases), every fixture edit with intent preserved, and the RAW targeted-test and live-run output. **Canonical Python/MCP file-write — NO heredoc. Commit all (NO push).** `#### Prompt Feedback` in `### Ledger Updates`.
+>
+> **STOP. Do NOT proceed to Step 2. Wait for CEO verdict.**
+
+**Deposits:**
+- `bellows/scripts/plan_lint.py`
+- `bellows/tests/test_plan_lint.py`
+- `bellows/knowledge/development/enforcement-checks-dev-log-2026-08-06.md`
+
+---
+---
+
+## STEP 2 — QA
+
+⚠️⚠️ **THE FALSE-POSITIVE MEASUREMENT IS THE POINT OF THIS STEP.** `(i)` shipped with 11 fires / 8 false and was dropped; these three must show their loads before the hold is treated as lifted.
+
+> **Task Q0 — RE-PIN THE STATE (303's Q0, earned on first use when the bellows HEAD moved between steps).**
+> 1. `git -C /Users/marklehn/Developer/GitHub/bellows log -1 --oneline -- scripts/plan_lint.py tests/test_plan_lint.py gates.py` — **the most recent commit touching plan_lint.py or the tests must be Step 1's; `gates.py` is in the pathspec because all three checks key on its stripper (cold reader 5 — a foreign `gates.py` commit in the verdict window would otherwise pass Q0 undetected and Step 2 would sweep under a stripper Step 1 never tested). A foreign commit touching ANY of the three → HALT and report.**
+> 2. **Pin the corpus:** `git -C <root> rev-parse HEAD` for each of the five roots — `/Users/marklehn/Developer/GitHub/{anvil,bellows,governance,invoice-pulse,lessons-forge}` — recorded verbatim in the QA report, each beside its counts.
+> 3. ⚠️ **Close the pin-vs-sweep window (ACID 5.3): AFTER the final sweep of item 5, re-run `rev-parse HEAD` on all five roots and confirm each equals its pin.** The `Done/` trees move continuously (a plan closed into one mid-session twice this arc); a sweep over a tree that moved after pinning reports counts the pin does not describe. **If any HEAD moved: re-pin, re-run the affected sweeps, and say so in the report.**
+>
+> 1. **Run the full `bellows` test suite** (→ `full-suite.txt`) **and re-run the targeted subset** `python3 -m pytest tests/ -k "plan_lint or lint" --tb=short -q 2>&1 | cat` (→ `targeted-tests.txt`). Record each raw summary line verbatim — **not a summary of it.** ⚠️ **The targeted re-run exists because `targeted-tests.txt` is a required evidence file with no other producer in this step — an orphan this plan's origin (303) carried and cold reader 1 caught.**
+> 2. **Run `plan_lint` against every `*.md` plan in all five `knowledge/decisions/Done/` trees — the sweep glob is `Done/*.md`, PINNED (cold reader 5: `invoice-pulse/…/Done/files.zip` has sat in-tree since April and CRASHES the lint with UnicodeDecodeError, and `.gitkeep` FAILs — an unpinned `Done/*` glob reports a "new" crasher that is four months old and a file count disagreeing with every cited corpus figure)** — addressed ABSOLUTELY (a bellows worktree resolves relative paths against the worktree). Report **per check `(j)`/`(k)`/`(l)`, per root, including zeros**: fire count and ids. ⚠️ **Capture each file's exit status in the sweep — a file that crashes the lint contributes zero WARN lines indistinguishably from a clean file (cold reader 3). Any nonzero exit is reported per file; the `*.md` corpus measured zero crashers, so any crasher is NEW and worth naming.**
+> 3. ⚠️⚠️ **Every count is a MEASURED number with the command that produced it. This plan predicts no figure.** Context figures from 305 (3 for the marker, 19 for the claim, at 305's pin) are cited beside the fresh measurement as context ONLY — **if a fresh count differs from a context figure, report the difference; do not reconcile it silently.**
+> 4. ⚠️ **`(k)`'s fires: annotate each id against the instruction's TRUE entry date — 2026-07-30, v1.2, commit `3c327e3` (cold reader 4 corrected this from "2026-08-03", an unexecuted inheritance from 305; re-verify the commit, do not trust either date from prose).** Report three bands: clearly-predate / same-day / postdate. **Predating fires are baseline; POSTDATING fires (at authoring: `291`, `diagnostic-301`) are reportable as post-instruction — weighing them is the CEO's.** **`(l)`'s expected-inert result: report the zero AND the reason (no down-tiered T-2 population exists until the §1 executable lands).**
+> 5. ⚠️⚠️ **The sweep-diff proof (304's hardening, carried):** run the corpus sweep with the three checks present, and with the PRE-EDIT `plan_lint` — **materialized from the `PRE_EDIT_HASH` the dev log records (`git show <PRE_EDIT_HASH>:scripts/plan_lint.py > /tmp/plan_lint_pre.py`), NEVER `HEAD~1`, which silently points at the wrong state if Step 1 landed more than one commit** — and **diff the two sweep outputs**. ⚠️⚠️ **The materialized script CANNOT run bare — `plan_lint.py` derives `BELLOWS_ROOT` from its own path and `import gates` fails from `/tmp` (cold reader 1, verified). Invoke it as `PYTHONPATH=/Users/marklehn/Developer/GitHub/bellows python3 /tmp/plan_lint_pre.py <plan>`, and confirm it runs on one plan BEFORE sweeping (its failure mode is an ImportError on every file, which a careless sweep reads as zero warnings).** The diff must show ONLY added `(j)`/`(k)`/`(l)` lines — **zero `(a)`–`(h)` lines changed or lost** — and it must be **NON-EMPTY, reconciling with item 2's counts (cold reader 5: an empty diff — both sweeps accidentally running the same script — vacuously satisfies "only added lines"; `(j)` and `(k)` measurably fire today, so a clean-and-empty diff is a broken comparison, not a pass).** A count cannot see a line silently lost; the diff is the presence assertion at value level.
+> 6. ⚠️⚠️ **Confirm WARN-only by the MECHANISM, not the symptom:** grep the three new checks and show **none appends to `results` and none assigns `all_passed`**; then show `echo $?` = 0 on a plan tripping all three. **Both.**
+> 7. **Emit the QA Receipt with the canonical Rule 20 self-check block**, a verification row per numbered item above with its raw evidence.
+>    - `required_evidence_files`: `[targeted-tests.txt, full-suite.txt, corpus-sweep.txt, sweep-diff.txt]`
+>    - ⚠️ **These basenames intentionally SUPERSEDE 303/304's working-tree QA deposits (cold reader 4) — the shipped convention (304 overwrote 303's `full-suite.txt`; git history preserves every prior version). Finding the files already present is NOT foreign work and NOT a reason to halt or rename.**
+>    - ⚠️ **Deposit all four evidence files BEFORE running the block** — it `sys.exit(1)`s if any is missing or empty.
+>    - ⚠️⚠️ **Include the block's literal stdout. The banner `Rule 20 — QA Self-Check Results` and the `PASSED — SELF-CHECK PASSED` line must appear BYTE-EXACT (em-dash U+2014). If it prints FAILED, HALT.**
+>    - **Evidence rule:** deposit **RAW command output** (≥ last 200 lines including the pytest summary line), **never a summary.**
+>
+> **Scope:**
+> - `knowledge/qa/enforcement-checks-qa-report-2026-08-06.md`
+> - `knowledge/qa/targeted-tests.txt`
+> - `knowledge/qa/full-suite.txt`
+> - `knowledge/qa/corpus-sweep.txt`
+> - `knowledge/qa/sweep-diff.txt`
+>
+> **STOP. Wait for CEO verdict.**
+
+**Deposits:**
+- `bellows/knowledge/qa/enforcement-checks-qa-report-2026-08-06.md`
+- `bellows/knowledge/qa/targeted-tests.txt`
+- `bellows/knowledge/qa/full-suite.txt`
+- `bellows/knowledge/qa/corpus-sweep.txt`
+- `bellows/knowledge/qa/sweep-diff.txt`
+
+---
+
+## Method + boundaries
+
+- **Scope is `plan_lint` only.** No doctrine file is edited (the §1 re-scope and the per-phase-commit codification are the FOLLOW-ON executable's, unblocked by this plan's close). No check is blocking. `(i)` is not restored.
+- ⚠️ **HALT ROUTING:** if `scripts/plan_lint.py`, `tests/test_plan_lint.py`, any of the five corpus roots, `/Users/marklehn/Developer/GitHub/DRAFTING_CYCLE.md`, **`gates.py` (imported by `plan_lint.py:21` — every lint invocation in both steps dies without it), the Bellows Developer specialist file, `knowledge/decisions/Done/executable-303.md` (the sanctioned fixture read), `/Users/marklehn/Developer/GitHub/RULE_20_SELF_CHECK_BLOCK.md` (Step 2 item 7's block source), or — for Step 2 — the Step-1 dev log carrying `PRE_EDIT_HASH`** is unreadable, HALT the step that needs it and name it in the dev/QA log. ⚠️⚠️ **This list went stale FOUR times inside this one plan (ACID · reader 1 · reader 2 · reader 4), making this the FOURTH consecutive plan carrying the halt-routing staleness class (301 · 302 · 305 · here) — counts reconciled at cold reader 5, which found THREE live statements of this figure disagreeing. Re-derive this list from the steps as written before running; do not trust it as written.**
+- ⚠️ **`grep -F` mandatory for literals** (ugrep shim; a non-`-F` pattern can exit 1 silently on a present line). **State what each verification command prints on success and on failure and confirm the two differ.**
+- **Gate the FINAL text, UNTRUNCATED, BEFORE the `cp` to `decisions/`** — the 302 lesson; the daemon claims within seconds of deposit.
+- ⚠️ **Every `**Deposits:**` filename in this plan is the DECLARED deposit, matched by basename. Do NOT re-date any of them at run time** — a run on a later date keeps the authored date (the resume-glob UTC lesson: derive nothing from the wall clock).
+
+---
+
+## Drafting Cycle
+
+**Tier:** T2 — trigger fired: **T-6** (`plan_lint` is gate machinery; matches 303's declaration). T-7 also fires (authored from diagnostics 301/305); T-6 governs. Structure-for-structure clone of **303**; machinery additionally diffed against **304** (newest same-class).
+
+⚠️ **The tier line above is CANONICAL FORMAT (`**Tier:**` at line start, `trigger fired:` segment, clone declared ON the line) — corrected at cold reader 1, which measured the v1 line as the only format deviant among 73 canonical `Done/` tier lines, in the very plan shipping tier-line-keyed checks.** Self-application: `(k)` sees the clone framing and finds `newest same-class` present → no WARN; `(l)`'s fired segment is `T-6` → no WARN.
+
+⚠️ **Same known consequence as 303/304 (note restored at cold reader 1 — the clone had dropped it):** T2 wants a cold panel gated on a dry walk, a condition no plan has reached in five attempts. **An earned `plan_lint` WARN on this plan's own cycle record is expected and is not a reason to declare a lower tier.**
+
+**Conflict Ledger (§2.8):**
+- **C1** — every check stays WARN-only: bare `print(...)`, never touches `results`/`all_passed`, never raises (140/277/303; verified by mechanism AND symptom in Step 2 item 6)
+- **C2** — no check extracts entities from free prose; keys are fixed literals, declared fields, or segment-bounded matches on declared lines ((i)'s lesson, walk 1)
+- **C3** — every count is measured at its own pin; 305's figures are context, never expected values (walk 1)
+- **C4** — this plan's own deposited text produces zero (j)/(k)/(l) warnings; numeric-id marker literals live only in COLUMN-0 fenced blocks — a blockquoted fence is invisible to the reuse stripper (walk 1; corrected at cold reader 1, which proved the blockquoted version fired by executing the check)
+- **C5** — the halt-routing list must name every input a step reads; it is known to go stale on folds — re-derive at run time (stale FOUR times in this plan: ACID · reader 1 · reader 2 · reader 4; fourth consecutive plan carrying the class; counts reconciled at cold reader 5 after this very entry decayed)
+- **C6** — this plan's own cycle record parses by the checks it ships: canonical tier line, clone declared on it, earned-WARN note present (cold reader 1)
+
+- Lens 1 (weak spots), walk 1: **5 findings, 2 overturning check specs against measured data** — (j)'s exclusion rule was semantic and would have killed a true positive (298's code-spanned active markers) and missed compound ids (297); (l)'s key was negation-vulnerable (303's negation list) → segment-bounded `trigger fired:` key, verified against all three measured formats; sweep-diff pre-edit reference re-pinned by hash, not `HEAD~1`; A0's absence-grep given its literal + a no-pipe rule (a broken probe was caught live this walk reading `head`'s exit as grep's); self-fire regression test added ((i)-on-303's class), draft verified un-firing by running the key against it.
+- Lens 2 (destruction), walk 1: **no guard relaxed** — additive checks; existing-test protection (Task D) and the sweep-diff presence assertion carried from 303/304; the A0 restore path stays bounded by the attributability HALT. One fold: fixture lines embedded fenced in-plan so DEV needs no cross-tree read.
+- Lens 3 (vulnerabilities), walk 1: **2 findings** — unclosed-fence degenerate case added (302's runs-to-EOF class); (k)'s discussion-text suppression documented as the acceptable false-negative direction. ⚠️ **SUPERSEDED IN PART at cold reader 1 (annotation, not silent rewrite — cold reader 2 caught the stale record):** this line originally recorded the unclosed-fence behaviour as "treated as fenced, false-negative direction"; **execution showed the reuse stripper leaves the content VISIBLE — false-POSITIVE direction. Task E's corrected bullet is authoritative; this record preserves what walk 1 believed.**
+- Lens 4 (integration-vs-record), walk 1: **2 findings folded** — deposits no-re-date note added (305's convention, resume-glob UTC lesson); (l)'s dependency on §1's trigger-recording convention stated, with the machine-readable fired-list option ROUTED to the §1 executable rather than decided here. Letters (j)/(k)/(l) measured unused in `plan_lint.py` (grep with positive control); Deposits blocks, DEV-no-full-suite, raw-evidence, and measured-not-predicted conventions all checked against the register.
+- Lens 5 (ACID), walk 1: **5 findings** — (5.1) the halt-after-Step-1 state made a stated invariant (warn-only + hold does not lift until Step 2's measurement closes; this plan's keys differ from 305's prototypes so 305's loads do not transfer); (5.2) (k)/(l)'s clone-framing scope was under-specified ("tier line or header") → tier-line-only, verified against all three measured declaration sites; (5.3) the pin-vs-sweep window closed with a post-sweep HEAD re-verification per root; (5.4) the Step-1 dev log (PRE_EDIT_HASH carrier) was MISSING from halt routing — a walk-1 fold created the dependency and the list never learned: **fourth consecutive plan on which this class fired, caught only at ACID, matching the recurrence C5 records**; Conflict Ledger C1–C5 added.
+- Cold panel (§2.6), reader 1 (Lens 1 cold): **9 findings, all author-verified, 1 CRITICAL** — the self-fire guard failed as authored (blockquoted fence invisible to the reuse stripper; the reader proved it by EXECUTING the check against this draft) → fixtures moved to a column-0 fence; the materialized pre-edit lint could not import `gates` from `/tmp` → `PYTHONPATH` invocation specified with a one-plan liveness check; the unclosed-fence degenerate spec contradicted the reuse mandate → inverted to the measured surviving-content behaviour; `(j)` line numbers re-located against the original text; this plan's own tier line was the corpus's only format deviant → canonical, clone declared on it, earned-WARN note restored; the off-tier-line declaration floor documented as `(k)`/`(l)`'s third accepted miss; `targeted-tests.txt` given a producer (an orphan inherited from 303); fixture bullets pinned to tier-line placement; halt routing gained two entries (fifth consecutive staleness occurrence, twice in this plan).
+- Cold panel (§2.6), reader 2 (Lens 2 cold): **8 findings, all author-verified** — the self-fire regression test had no durable input source (lifecycle path mutation = a delayed time bomb in the NEXT plan's QA) → plan text embedded as a string literal at DEV time; the fixture citation prefixes would break the tier-line anchor on verbatim copy, tempting the contains-match loosening that breaks C4 → strip-prefix instruction, anchor pinned; **(k)'s "all fires predate §2.6" was FALSE for this key — reader executed it: 10 fires, 9 predate, 301 does not** → measured-basis corrected, fourth direction documented (T-8-rationale clone literals on canonical tier lines); A0's restore guard given hunk enumeration (presence-grep cannot see a coexisting foreign hunk); the stale Lens-3 record annotated (record-decay class); (l)'s WARN spelling pinned + Task D stdout forewarning; halt routing gained the Rule 20 block source (stale thrice in this plan); (j) relocation consumes lines in order. **Held under execution: C4 self-fire zero, (l) inert 0/1,366, sweep-diff clean, 49/49 existing tests, no plan_lint output consumers.**
+- Cold panel (§2.6), reader 3 (Lens 3 cold): **8 findings, all author-verified, 1 HIGH that gutted (l)'s coverage as spec'd** — the singular-only `trigger fired:` literal missed the PLURAL majority format (19 vs 10 corpus-wide) and the unhyphenated-only clone set missed `proven-clone`: **combined, (l) missed `281:190` — the arc's motivating plan — on both axes; walk 1's three verified sites were all-singular by accident** → both forms mandatory, `281:190` embedded as the mandatory positive control; the (k) suppressor casing pinned case-insensitive (`284` decides); (k)/(l) scan stripped text, first line-start tier match (fenced quotes and multiplicity settled by rule); two failing-capable (j) fixtures added (exact line number, in-order double-marker); QA sweep captures per-file exit status; the 303 fixture path made worktree-relative; WARN lines begin with their check letter; the embedded plan literal made raw. **Measured under the FINAL key: (k) fires 8; 284/288/296 correctly suppressed — the count moved 19 → 10 → 8 with each key revision; it is a property of the key. ⚠️ SUPERSEDED at reader 4 (annotation per this plan's own convention, cold reader 5): the "7 predate, 301 does not" banding recorded here was computed against the wrong instruction date; the corrected banding is 4 predate / 2 same-day / 2 postdate (291 AND 301) — the (k) spec's measured-basis paragraph is authoritative.** **Held under execution: (j) exactly 3/1,366 with zero format variants corpus-wide; C4 self-fire zero via real plan_lint at exit 0; DEV→QA pin premise proven at bellows.py:757–760; test-harness style matches Task E.**
+- Cold panel (§2.6), reader 4 (Lens 4 cold): **6 findings, all author-verified, 1 HIGH** — **(k)'s baseline date was an INHERITED-PREMISE ERROR from 305, un-re-executed, in the plan shipping the inherited-premise check: the newest-same-class instruction entered doctrine at v1.2 / 2026-07-30 (`3c327e3`, plan 287's codification), not 2026-08-03/v1.4** → both sites corrected, QA now annotates three bands against the re-verified commit (291 and 301 POSTDATE; QA as previously written would have labelled a post-instruction violation "baseline"); Rule 22(a) → 23(a) (mis-citation cloned from 303:66 — the read-the-cited-rule class, reproduced by cloning exactly as recorded); `gates.py` added to halt routing (stale a FOURTH time in this plan); the "matching existing style" claim for WARN letter-prefixes inverted to "deliberate departure" (no existing WARN carries a letter — measured); plural-majority count paired with both instruments (19v10 file-level, 17v10 tier-line-scoped); QA evidence basename supersession acknowledged. **Held: the full measured basis reproduced independently by execution; every corpus citation verbatim-verified; all doctrine citations correct incl. T-2-still-in-T2; 305/301 characterizations match their deposits except the corrected date; LESSONS.md re-trip scan clean.**
+- Cold panel (§2.6), reader 5 (ACID cold): **10 findings, all author-verified, 1 HIGH** — the raw-literal delimiter mandate was spec-impossible against its own content (the body carries the double-quote triple once — INSIDE the mandate itself; a fold-created defect: reader 2 mandated the embed, reader 3 the raw form, neither checked delimiter against content) → **the fix names the delimiter in WORDS, not glyphs — the reader's own proposed glyph fix would have re-planted the bomb, caught at author-verify**; C5 had itself decayed (three live staleness counts disagreeing) → reconciled to four-times-in-this-plan / fourth-consecutive-plan; the sweep glob pinned to `Done/*.md` (files.zip crashes the lint, in-tree since April — "zero crashers" was an `*.md`-only truth); the reader-3 log banding annotated superseded; `gates.py` added to Q0's pathspec (the one open isolation window); five minors (dead pointer repaired verbatim, commit-vs-changelog attribution, worktree note, canonical `(j) WARN:` composed form, sweep-diff non-empty + reconciled). **Held: every measured figure reproduced under all four instruments; C4/C6 self-application zero fires, live lint exit 0; Atomicity clean incl. crash-after-commit into `bellows-preserved/`; Cycle Log ↔ body fully reconciled.**
+
+**Panel complete: five seats, counts 9 · 8 · 6 · 10 (readers 2–5) after walk-1's 9 and ACID-1's 5. No decay — as §2.6 predicts.**
+
+- Confirming pass (closing lens pass, §2): **ran after the reader-5 culmination; found ONE fold-created descriptive error and closed dry after correcting it.** The delimiter-in-words fold's sentence claimed the double-quote triple appears "exactly once" — but the fold itself had removed the glyph it counted (measured: both triples now ZERO; the third instance this cycle of a fix breaking its own description). The correction changes no agent behaviour (the operative mandate — count at DEV time — was already in place); by the composition standard it is not material and does not re-open the walk. **The pass then re-ran in full: all 15 post-condition assertions PASS (both triples zero · (j)/(k)/(l) self-fire zero · ledger C1–C6 ascending · every reader-5 fold present by literal), and the live `plan_lint` gates the final text untruncated at exit 0, all 8 PASS lines.** The last events of the cycle are these measurements — a lens pass, not a fold.
+
+**Closing:** the cycle ran walk 1 (lenses 1–4, 9 findings), ACID 1 (5), the full five-seat sequential cold panel (9 · 8 · 8 · 6 · 10 — all author-verified, no decay), and a confirming pass that closed dry after one descriptive correction. §2's dry condition is NOT claimed — this is a judged stop at panel completion, the stop every plan in this arc has closed on. The record above is the evidence.
+'''
+    result = _run_lint(plan)
+    assert result.returncode == 0, f"Expected exit 0, got {result.returncode}\nstdout: {result.stdout}"
+    j_warns = [l for l in result.stdout.splitlines() if "(j) WARN" in l]
+    k_warns = [l for l in result.stdout.splitlines() if "(k) WARN" in l]
+    l_warns = [l for l in result.stdout.splitlines() if "(l) WARN" in l]
+    assert len(j_warns) == 0, f"Expected 0 (j) WARNs, got {len(j_warns)}: {j_warns}"
+    assert len(k_warns) == 0, f"Expected 0 (k) WARNs, got {len(k_warns)}: {k_warns}"
+    assert len(l_warns) == 0, f"Expected 0 (l) WARNs, got {len(l_warns)}: {l_warns}"
