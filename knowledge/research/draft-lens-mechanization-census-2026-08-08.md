@@ -103,7 +103,7 @@ Report the polarity pair per 305:
 1. **The Q1 census table** — every phase commit, every finding, with the reconciliation mismatches called out.
 2. **The Q2 classification** — per-finding bucket + evidence, per-bucket totals per cycle, AMBIGUOUS counted separately, J reasons per finding.
 3. **The Q3 prototype results** — each prototype's source (inline or /tmp path + pasted content), the per-finding fires/doesn't table, and the three-part false-positive run with raw output.
-4. **The Q4 decomposition** — measured re-finding rate beside doctrine's figure, method stated, low-confidence rows marked.
+4. **The Q4 decomposition** — BOTH rate slices (whole-cycle, and panel-round-only with only that slice compared against doctrine's figure), the ceiling-vs-measured split with the executed live-shipped-check slice's raw output, method stated, low-confidence rows marked.
 5. **Q5 or its explicit NOT REACHED.**
 6. **The Q6 ranking table with the recommendation-for-choice.**
 7. **`## Unresolved`** — every question not settled from evidence, or the word NONE.
@@ -128,7 +128,7 @@ Close with `### Status` (**Complete**), `### Deposits` (the findings file), and 
 
 **Clone comparison (§2.6 discipline, applied though the tier is T1):** method origin = diag-305's enforceability census; newest same-class shipped diagnostic = `diagnostic-315` (bellows `Done/`), whose skeleton conventions this draft follows — no bootstrap section, no Forward Register block, bookend pins, quoted-anchor-not-line-number citations.
 
-**Expected lint:** NOT FINAL — set at cycle close; at minimum the standing benign WARNs a T1 diagnostic carries, finalized after the §5 conformance pass.
+**Expected lint:** EARNED at the §5 conformance pass (post-aC, 2026-08-08): **3 PASS · 0 WARN · exit 0** — no step headings and no qa_steps, so the per-step and banner checks skip by design; the (f) family evaluated the Cycle Log and found the required structure. Re-checked after every subsequent edit to this file (§3's rule); a divergence from 0 WARN at deposit is a defect to resolve, not to ship.
 
 **Walks:** 1 (complete: four lenses + a1 apart), plus confirming c1 (four-lens) and aC (ACID confirming, apart) — each phase its own turn under CEO direction, per-phase committed. ⚠️ This header has now gone stale TWICE inside one cycle (caught at a1 reading "no lens has run" after 26 folds; caught again at aC still reading "1 in progress" after c1) — live specimens 2 and 3 of the record-decay class this census exists to price, alongside the 292 T-4 mis-cite (specimen 1).
 
@@ -140,6 +140,6 @@ Close with `### Status` (**Complete**), `### Deposits` (the findings file), and 
 
 **Conflicts:** C1 — the fire-attribution rule (lens 3) and the segmentation low-confidence rule (lens 1) met at ambiguous hunks and were joint-resolved in one move: commit-granularity counting, flagged, never double-attributed (a1). Constraints append at the END as earned, never inserted above an existing entry.
 
-**Confirming:** c1 (four lenses, rotated to the under-examined regions: header, Why block, taxonomy, extension scope) — 4 folded, NOT dry (320's elided draft path recovered in full; R-bucket shipped/held boundary made run-time-derived vs the in-window held batch; Q5 gains 315 for tier diversity + explicit partial order; 306's missing close(306) measured live → recipe fallback, never forced).
+**Confirming:** c1 (four lenses, rotated to the under-examined regions: header, Why block, taxonomy, extension scope) — 4 folded, NOT dry (320's elided draft path recovered in full; R-bucket shipped/held boundary made run-time-derived vs the in-window held batch; Q5 gains 315 for tier diversity + explicit partial order; 306's missing close(306) measured live → recipe fallback, never forced). c2 (four lenses, rotated to deposit contract / Receipt / header / Expected-lint) — 1 folded (contract item 4 synced to the a1 dual-slice form — the instruction-vs-record class, specimen 4), plus the §5 conformance pass run as mandated pre-close: lint 3 PASS · 0 WARN · exit 0, Expected-lint line finalized EARNED.
 
-**Closing:** NOT REACHED — c1 folded 4 and aC folded 2 (re-read of its own fixes dry), so the cycle is not dry and is NOT CLAIMED dry. A further four-lens confirming pass (c2) is owed; the cycle closes only when a confirming pass returns dry with the last event a lens pass.
+**Closing:** NOT REACHED — c2 folded 1 (with the §5 pass run and the lint set earned at 0 WARN), so the cycle is still not dry and is NOT CLAIMED dry. A further four-lens confirming pass (c3, expected dry) is owed; the cycle closes only when a confirming pass returns dry with the last event a lens pass.
