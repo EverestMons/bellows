@@ -48,7 +48,7 @@ Read the plan at knowledge/decisions/in-progress-executable-<id>.md (the daemon 
 >
 > **Task A0 — pre-edit cleanliness.** `git -C /Users/marklehn/Developer/GitHub/bellows status --porcelain -- bellows.py tests/test_gate_transaction_mechanization.py tests/test_bellows.py` must be empty. If DIRTY, enumerate the hunks, attribute each to this plan; any unattributable hunk → HALT, do not restore.
 >
-> **Task B — edit `bellows.py`, two sites, quoted anchors (read and locate the exact lines before editing):**
+> **Task B — three sites: two in `bellows.py`, one in `verdicts/README.md` (quoted anchors — read and locate the exact lines before editing):**
 > - **Site 1 (`header_says_pause`):** after the existing `if pv == "after_qa_step":` branch and before the unrecognized-value WARN, add the new mode:
 >   `if pv == "qa_and_terminal":`
 >   `    return is_qa_step or is_final_step(current_step, total_steps)`
@@ -65,7 +65,7 @@ Read the plan at knowledge/decisions/in-progress-executable-<id>.md (the daemon 
 >
 > **Task D — provenance test.** Add a test class named `TestCleanGateAutoProvenance` to `tests/test_gate_transaction_mechanization.py` at the lifecycle layer (per-test DB, the existing conftest isolation): the `clean_gate_auto` request+outcome pair produces a queryable row with `outcome='continue'`, `decided_by='gate_auto'`, `pause_reason_code='clean_gate_auto'` — AND that row does NOT match the dashboard's awaiting filter (`SELECT ... WHERE outcome IS NULL` returns nothing for it). A `run_plan`-level assertion follows 313's Task D standard: include it, or state in a comment exactly why it is deferred (the existing `test_bellows.py` harness coverage) — do not silently omit the decision.
 >
-> **Task E — run targeted tests ONLY** (never the full suite in DEV): `python3 -m pytest tests/test_gate_transaction_mechanization.py tests/test_bellows.py -k "verdict or decided or auto_close or transaction or header_says_pause or clean_gate" --tb=short -q 2>&1 | cat`. Paste RAW output UNTRUNCATED; all selected tests pass and `echo $?` = 0.
+> **Task E — run targeted tests ONLY** (never the full suite in DEV): `python3 -m pytest tests/test_gate_transaction_mechanization.py tests/test_bellows.py -k "verdict or decided or auto_close or transaction or header_says_pause or clean_gate" --tb=short -q 2>&1 | cat`. The new classes are selected via the MODULE-name term — `test_gate_transaction_mechanization` contains `transaction`, so every test in that file matches (Planner-verified by collect-only probe; the class names themselves are organization, not the selection mechanism). Paste RAW output UNTRUNCATED; all selected tests pass and `echo $?` = 0.
 >
 > **Scope:**
 > - `bellows.py`
@@ -90,7 +90,7 @@ Read the plan at knowledge/decisions/in-progress-executable-<id>.md (the daemon 
 
 ## STEP 2 — QA
 
-> **Task Q0 — re-pin state.** `git -C /Users/marklehn/Developer/GitHub/bellows log -1 --oneline -- bellows.py tests/test_gate_transaction_mechanization.py tests/test_bellows.py` — the most recent commit touching any must be Step 1's. A foreign commit → HALT and report.
+> **Task Q0 — re-pin state.** `git -C /Users/marklehn/Developer/GitHub/bellows log -1 --oneline -- bellows.py verdicts/README.md tests/test_gate_transaction_mechanization.py tests/test_bellows.py` — the most recent commit touching any must be Step 1's. A foreign commit → HALT and report.
 >
 > 1. **Run the full `bellows` test suite** → `full-suite.txt`: `python3 -m pytest tests/ --tb=short -q 2>&1 | cat`. Record the raw summary line verbatim. ⚠️ The suite baseline before this plan was 874 passed (313's QA); this plan ADDS tests — report the fresh number, do not reconcile to 874.
 > 2. **Re-run the targeted subset** → `targeted-tests.txt`: the Step 1 Task E command. Record raw output (≥ last 200 lines incl. the pytest summary line) — never a summary of it.
@@ -139,11 +139,11 @@ Read the plan at knowledge/decisions/in-progress-executable-<id>.md (the daemon 
 **Tier:** T2 — **T-6 fires**: this plan RELAXES a human checkpoint class (non-terminal clean-gate pauses become mechanical for opted-in plans) — the verdict-gate layer is governance surface, and unlike 313's additive relabel this changes what a human sees. T-8 also fires (a new pause mode is not a structure-for-structure clone; 313 is the pattern source for Site 2 only). Highest demand: T2 — full five-lens walk plus cold panel.
 **Clone comparison (§2.6):** newest same-class shipped executable = `executable-313` (Done), the skeleton and Site-2 pattern source; the cold panel should also be handed 315's Q5/Q6 (the seam map and notification analysis this plan's design decisions cite).
 **Walks:** 1 (four lenses, findings listed then culminated on CEO direction — the proposal-register rhythm).
-- Weak spots:          w1 5 listed (2 real), culminated (Site 1 calls `is_final_step` so the predicates cannot drift; auto_close precedence pinned — mode wins at terminal, asserted structurally in Task C; the never-NULL claim made honest with the fail-soft/310-shape acknowledgment; Task C import hedge dropped — test_bellows precedent cited; Task E's -k binding pinned via mandated class names).
+- Weak spots:          w1 5 listed (2 real), culminated (Site 1 calls `is_final_step` so the predicates cannot drift; auto_close precedence pinned — mode wins at terminal, asserted structurally in Task C; the never-NULL claim made honest with the fail-soft/310-shape acknowledgment; Task C import hedge dropped — test_bellows precedent cited; Task E selection binding stated — CORRECTED at a1: the binding is the module-name term, not the class names).
 - Destruction:         w1 1 listed + 1 disposition, culminated (semantic-shift note mandated in BOTH dev log and QA report — verdicts now carries non-pause rows, analyses key on pause_reason_code; disposition: Site 2 blast radius verified nil — both lifecycle writes internally fail-soft, gate failures pause regardless of mode, sole verdicts consumer is the awaiting query).
 - Vulnerabilities:     w1 1 listed + 1 disposition, culminated (degenerate mode cases as Task C tests: total_steps=0 → always pause, single-step → pause at step 1; disposition: conftest isolation + import safety proven by 312/313/test_bellows precedent).
 - Integration-record:  w1 2 listed, culminated (verdicts/README.md pause-table backfill added as Site 3 — clean_gate_auto row + the pre-existing 313 auto_close row, disclosed, count wording updated, scope/Deposits extended; the PLANNER_TEMPLATE documentation deferral made explicit via a second contiguous Forward bullet).
-- ACID:                pending — its own pass, next.
+- ACID:                a1 3 listed (2 real, both introduced by w1's culmination), culminated (5.2 the -k binding rationale was false string-logic — underscored terms cannot match CamelCase class names; the true mechanism is the module-name term `transaction`, probe-verified 6/6 collected, and Task E now states it; 5.2 Task B retitled to three sites; 5.3 Q0's re-pin pathspec gained `verdicts/README.md` — the between-step window the scope extension opened and the culmination missed).
 **Cold panel (T2):** not yet run — owed after the warm cycle closes.
-**Conflicts:** none recorded — no fold violated a prior lens's constraint at culmination.
-**Closing:** pending — the last event is the walk-1 culmination (a fold), ACID and the cold panel are owed. Not deposited.
+**Conflicts:** none recorded — no fold violated a prior lens's constraint at either culmination.
+**Closing:** pending — the last event is a1's culmination (a fold); the four-lens confirming pass, ACID's confirming read apart, and the cold panel are owed. Not deposited.
