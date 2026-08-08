@@ -2,7 +2,7 @@
 
 **Type:** Diagnostic
 **Project:** bellows
-**Depends on:** none new. Cites diag-305 (Done, governance — the enforceability-census method this plan generalizes) and the shipped per-phase-commit rule (DRAFTING_CYCLE.md §2.7, v1.5) whose artifacts are this plan's corpus.
+**Depends on:** none new. Cites diag-305 (Done, governance — the enforceability-census method this plan generalizes; its deposit `/Users/marklehn/Developer/GitHub/governance/knowledge/research/enforceability-assessment-2026-08-06.md` is REQUIRED READING for the executing agent — the polarity-pair and retraction-control method source) and the shipped per-phase-commit rule (DRAFTING_CYCLE.md §2.7 — codified in v1.5, current version 1.6 verified at authoring) whose artifacts are this plan's corpus.
 **Created:** 2026-08-08
 **Author:** Planner
 **dispatch_mode:** bellows
@@ -90,7 +90,8 @@ Report the polarity pair per 305:
 - **Execute against the real corpus.** Every "would fire" claim is backed by pasted output from a run against the recovered historical state — a reasoned prediction is not a finding (305's bar).
 - ⚠️ **`grep` here is a ugrep shim: `-F` mandatory for literals, `--` before leading-dash patterns; a non-`-F` search can exit 1 SILENTLY on a present line.** ⚠️ **A negative result (empty search, exit-code-read-as-absent, file-not-found) never supports a finding on its own — pair it with a positive control, a second independently-constructed probe, or a read of the implementation site (the (D) standard).**
 - **Per-finding results, not aggregates.** "M1 covers 14 findings" is not reportable without the 14 ids and their per-id fire results.
-- **Report per-cycle results including zeros.** Pin each repo's HEAD (`git -C <root> rev-parse HEAD`) in the deposit beside every count — the corpus moves.
+- **Report per-cycle results including zeros.** Pin each repo's HEAD (`git -C <root> rev-parse HEAD`) in the deposit beside every count — the corpus moves. **Bookend the run: re-run the same three pins as the LAST act before the Receipt and report both sets; a delta is concurrent activity — name it in the deposit and never force internal numbers to reconcile across it** (315's bookend rule, adapted from the live DB to live repos). The shell is zsh: an unmatched glob aborts the command — use `find … -name '…'`, never a bare glob.
+- **Output-volume discipline — the deposit must stay readable and the step inside its context.** The census table is compact (one row per finding); diffs are REFERENCED by SHA + hunk header with only the decisive lines pasted; prototype output is trimmed to the firing/non-firing evidence lines plus counts — full raw output is mandatory only for the Q3 false-positive/control runs and the Q4 executed slice. **Write the deposit file incrementally as each question completes, in order — never hold six answers in flight for one final write.**
 - The three cycles span three repos, addressed ABSOLUTELY (a bellows worktree's relative paths resolve against the worktree): **311 → `/Users/marklehn/Developer/GitHub/lessons-forge` · 317 → `/Users/marklehn/Developer/GitHub/bellows` · 320 → `/Users/marklehn/Developer/GitHub` (the shop root; its log also carries OTHER cycles' `[draft]` commits — 309, codify-d — which is why the population filter is the draft PATH, never the message prefix).** Extension roots (Q5): 306 → bellows, 309 → the shop root. **Re-derive each draft path per the Q1 recipe; never assume the authoring-time examples still hold.**
 - If a question cannot be answered from here, say so in `## Unresolved` rather than guessing.
 
@@ -114,20 +115,7 @@ Report the polarity pair per 305:
 
 ### Output Receipt
 
-Close the deposit with `### Status` (**Complete**), `### Deposits`, and `### Ledger Updates` containing:
-
-**`#### Forward Register`** — at most ONE item, on one line, and ONLY if a defect **outside this plan's questions** was found in passing (a plan_lint defect, a corpus corruption); otherwise the word **NONE**. **Do NOT emit the build recommendation as a Forward row — that presumes the CEO's choice.** ⚠️ Do NOT write to `FORWARD.md` yourself; do NOT claim to have observed a row landing.
-
-Also include **`#### Prompt Feedback`**.
-
----
-
-## How to Run This Plan
-
-**Bootstrap prompt:**
-```
-Read the diagnostic at knowledge/decisions/in-progress-diagnostic-<id>.md (the daemon renames the deposited placeholder on claim). Execute the single step: answer Q1–Q6 under the Method + boundaries rules and deposit the contract file. STOP when the deposit is committed.
-```
+Close with `### Status` (**Complete**), `### Deposits` (the findings file), and `### Ledger Updates` containing `#### Prompt Feedback`. **No Forward Register block — this diagnostic enqueues nothing; the follow-on routing (the build decision, and any defect found in passing, which belongs in the findings/`## Unresolved`) is the Planner's, from the findings** (315's convention; the channel's measured failure modes are not risked for zero items).
 
 ---
 
@@ -135,7 +123,9 @@ Read the diagnostic at knowledge/decisions/in-progress-diagnostic-<id>.md (the d
 
 **This section is a RECORD, not instructions.** Gate-matching strings are described here, never quoted.
 
-**Tier:** T1 — computed. Read-only diagnostic: T-2/T-6 do not fire (nothing mutated, no governance surface edited); T-4 recorded per the 292 precedent (the findings authorize a later gate-mechanism change). Diagnostic-mode sub-questions 1.4 / 2.4 / 5.5 apply.
+**Tier:** T1 — computed. **T-7 fires** (a build executable will act on these findings without re-verification — that is the arc's whole point). **T-8 also recorded as firing under the if-unsure rule (315 precedent):** the census shape follows 305 and the skeleton follows 315, but the multi-repo commit-archaeology + prototype-firing mechanics are not a structure-for-structure clone of either. T-2/T-6 do not fire (nothing mutated, no governance surface edited). ⚠️ **An earlier draft recorded T-4 "per the 292 precedent" — read against §1, T-4 is the MONEY-AFFECTING-PATH trigger; 292's own tier line mis-names it ("a change to a mechanism other plans depend on"), a record defect corrected here rather than propagated.** Highest demand: T1. Diagnostic-mode sub-questions 1.4 / 2.4 / 5.5 apply.
+
+**Clone comparison (§2.6 discipline, applied though the tier is T1):** method origin = diag-305's enforceability census; newest same-class shipped diagnostic = `diagnostic-315` (bellows `Done/`), whose skeleton conventions this draft follows — no bootstrap section, no Forward Register block, bookend pins, quoted-anchor-not-line-number citations.
 
 **Expected lint:** NOT FINAL — set at cycle close; at minimum the standing benign WARNs a T1 diagnostic carries, finalized after the §5 conformance pass.
 
@@ -144,9 +134,9 @@ Read the diagnostic at knowledge/decisions/in-progress-diagnostic-<id>.md (the d
 - Weak spots:          w1 8 folded (population-by-path not prefix + close-count unreliability measured live 16-vs-30; commits-vs-folds reconciliation columns separated; 0-fold census rows; N-fold segmentation rule; Q3 fire-attribution-to-hunk; absolute roots; Q6 ESTIMATE marks; authoring claims re-based on measured paths/counts).
 - Destruction:         w1 5 folded (2.4-aimed: no-HEAD-moving-commands guard — checkout/stash forbidden, git-show-to-/tmp only; Q2 classification freeze vs post-hoc re-sort; pathspec-only deposit commit; Q6 coverage≠catch column labeling; Q4 ceiling-vs-measured split with the shipped-check slice EXECUTED via current plan_lint).
 - Vulnerabilities:     w1 5 folded (3.1 per-commit path from --name-only vs rename-broken git show; 3.2 per-prototype synthetic positive control — a broken instrument must not read as a weak check; 3.3 prototypes import real gates helpers via PYTHONPATH, no divergent re-parsers; 3.4 merge-commit ^1 + NON-PHASE sweep flags + path-restricted diffs; rank-3 tie rule).
-- Integration-record:  not run.
+- Integration-record:  w1 8 folded (4.1/4.4 CRITICAL: tier line's T-4 cite was 292's own mis-record cloned — corrected to T-7 + if-unsure T-8 against §1 read live, clone-comparison line added; skeleton re-based to 315 conventions: bootstrap section DROPPED, Forward block DROPPED for the enqueues-nothing form; bookend HEAD pins; zsh glob note; §2.7 version cite precision v1.5-codified/v1.6-current; 305 deposit named required reading; 4.3 output-volume discipline + incremental deposit writing).
 - ACID:                not run.
 
 **Conflicts:** none yet. Constraints append at the END as earned, never inserted above an existing entry.
 
-**Closing:** NOT REACHED — walk 1 in progress: Weak spots, Destruction, and Vulnerabilities complete and folded; Integration-record and ACID not yet run.
+**Closing:** NOT REACHED — walk 1 four-lens portion complete and folded (Weak spots, Destruction, Vulnerabilities, Integration-record); ACID not yet run — it runs apart, on CEO direction.
