@@ -1,5 +1,7 @@
 # Agent Prompt Feedback
 
+- The plan specifies `qa_report_path` and `evidence_dir` as main-repo paths (`/Users/marklehn/Developer/GitHub/bellows/knowledge/...`), but worktree execution places deposits under `.bellows-worktrees/318/`. The Rule 20 self-check was run with worktree-resolved paths so it could locate the actual files. Future plans should note that worktree agents need path adjustment for the self-check.
+
 No prompt issues encountered during QA execution. All instructions were unambiguous and executable as written.
 
 None — read-only diagnostic, no execution issues.
