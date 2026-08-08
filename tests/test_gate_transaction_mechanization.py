@@ -139,24 +139,23 @@ class TestGatesCheckIsDeterministic:
         assert "receipt_status" in failure_gates
 
 
-class TestDecidedByGap:
-    """Invariant 3: pin that bellows.py:2118 hardcodes decided_by=\"ceo\", so a
-    mechanical auto-continue and a prose-parsed continue are indistinguishable
-    in the record. This test is EXPECTED to fail the day real discrimination is
-    wired — that failure is the signal to update it."""
+class TestDecidedByDiscrimination:
+    """Invariant 3: decided_by distinguishes mechanical auto-continues
+    (gate_auto) from verdict-file-parsed continues (verdict_file).
+    Gap CLOSED by plan 313."""
 
-    def test_both_verdicts_record_ceo(self, tmp_path):
+    def test_gate_auto_and_verdict_file_are_distinct(self, tmp_path):
         db_path = _make_db(tmp_path)
         plan_id = _mint_plan(db_path)
 
-        lifecycle.record_verdict_request(plan_id, 1, db_path=db_path)
+        lifecycle.record_verdict_request(plan_id, 1, pause_reason_code="auto_close", db_path=db_path)
         lifecycle.record_verdict_outcome(
-            plan_id, 1, "continue", decided_by="ceo", db_path=db_path
+            plan_id, 1, "continue", decided_by="gate_auto", db_path=db_path
         )
 
         lifecycle.record_verdict_request(plan_id, 2, db_path=db_path)
         lifecycle.record_verdict_outcome(
-            plan_id, 2, "continue", decided_by="ceo", db_path=db_path
+            plan_id, 2, "continue", decided_by="verdict_file", db_path=db_path
         )
 
         conn = sqlite3.connect(db_path)
@@ -168,5 +167,41 @@ class TestDecidedByGap:
         conn.close()
 
         assert len(rows) == 2
-        assert rows[0] == (1, "ceo")
-        assert rows[1] == (2, "ceo")
+        assert rows[0] == (1, "gate_auto")
+        assert rows[1] == (2, "verdict_file")
+        assert rows[0][1] != rows[1][1]
+
+
+class TestAutoCloseProvenance:
+    """Invariant 4: the auto-close branch writes a verdicts row with
+    decided_by='gate_auto' and outcome='continue', so the mechanical
+    transition is queryable in the record.
+
+    Tested at the lifecycle layer (record_verdict_request +
+    record_verdict_outcome) rather than via run_plan — the auto-close
+    branch in run_plan has extensive mock requirements (worktree, gates,
+    notifier, etc.) that are already covered by test_bellows.py's
+    test_diagnostic_auto_close_moves_to_done; this test isolates the
+    provenance guarantee without duplicating that harness."""
+
+    def test_auto_close_produces_gate_auto_row(self, tmp_path):
+        db_path = _make_db(tmp_path)
+        plan_id = _mint_plan(db_path)
+
+        lifecycle.record_verdict_request(plan_id, 1, pause_reason_code="auto_close", db_path=db_path)
+        lifecycle.record_verdict_outcome(
+            plan_id, 1, "continue", decided_by="gate_auto", db_path=db_path
+        )
+
+        conn = sqlite3.connect(db_path)
+        row = conn.execute(
+            "SELECT outcome, decided_by, pause_reason_code FROM verdicts "
+            "WHERE plan_id = ? AND step_number = 1",
+            (plan_id,),
+        ).fetchone()
+        conn.close()
+
+        assert row is not None, "auto-close should produce a verdicts row"
+        assert row[0] == "continue"
+        assert row[1] == "gate_auto"
+        assert row[2] == "auto_close"

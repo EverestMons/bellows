@@ -932,6 +932,9 @@ def run_plan(plan_path: str, config: dict, response_server: server.ResponseServe
             verdict.log_to_ledger(plan_path, current_step, gate_result, "auto-close",
                                   "all gates passed, auto_close enabled — auto-closing",
                                   pause_reason_code="auto_close")
+            # Record mechanical auto-continue so the transition is auditable (312 gap)
+            lifecycle.record_verdict_request(plan_id, current_step, pause_reason_code="auto_close")
+            lifecycle.record_verdict_outcome(plan_id, current_step, "continue", decided_by="gate_auto")
             done_dir = os.path.join(plan_dir, "Done")
             os.makedirs(done_dir, exist_ok=True)
             done_path = os.path.join(done_dir, base_filename)
@@ -2115,7 +2118,7 @@ class Bellows:
                         # Derive plan_id from slug for lifecycle DB writes (id-native plans only)
                         _lc_id_match = re.fullmatch(r"(?:(?:diagnostic|executable|qa)-)?(\d+)", plan_slug)
                         _lc_plan_id = int(_lc_id_match.group(1)) if _lc_id_match else None
-                        lifecycle.record_verdict_outcome(_lc_plan_id, step_number, v, decided_by="ceo", disposition_summary=reason)
+                        lifecycle.record_verdict_outcome(_lc_plan_id, step_number, v, decided_by="verdict_file", disposition_summary=reason)
 
                         if v == "continue":
                             # Guard: block continue when prior step's worktree teardown failed (Gap 1b).
