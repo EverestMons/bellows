@@ -1,5 +1,7 @@
 # Agent Prompt Feedback
 
+None.
+
 None — the plan's specifications were unambiguous and the implementation followed them directly.
 
 Now let me commit all the QA artifacts.
