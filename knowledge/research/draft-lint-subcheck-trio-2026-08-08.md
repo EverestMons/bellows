@@ -23,7 +23,7 @@ The census classified 174 findings from three preserved T2 cycles and fired prot
 
 | check | class | census evidence (hypotheses to re-verify at QA) |
 |---|---|---|
-| **(n)** non-`-F` grep lint | M3 sub-type | positive control fired; **0 FP on 3 final plans and 6 Done/ plans**; 1 documented FP class (retraction text narrating a defective grep verbatim) |
+| **(n)** non-`-F` grep lint | M3 sub-type | positive control fired; **0 FP on 3 final plans and 6 Done/ plans — measured on the prototype's NARROWER no-dot form; this plan's dot-widening has an UNMEASURED load until QA item 3 produces it**; 1 documented FP class (retraction text narrating a defective grep verbatim) |
 | **(o)** path-existence lint | M1 sub-type | naive form was FP-dominated (matched `python3`, `tokens,`); **the genuine fires were 3+2 across two 320 pre-fold states, 0 FP at those sites** (relative deposit paths) — shippable ONLY with the filtering this plan specifies |
 | **(p)** C-ledger-entry-without-executable-check lint | M4 sub-type | 1 FP on finals (311's persistent constraints); seeds the §2.8 "mechanize the constraint" convention warn-first |
 
@@ -52,7 +52,7 @@ Read the plan at knowledge/decisions/in-progress-executable-<id>.md (the daemon 
 > **Mechanical-only invariant (140/303/306).** All three checks are **WARN-only advisory**: bare `print(...)` lines that must NEVER append to `results`, set `all_passed`, change the return code, or raise. **A malformed or absent block skips with no exception.**
 >
 > **Task A0 — pre-edit cleanliness + warn-first precondition (303 form).** `git -C /Users/marklehn/Developer/GitHub/bellows status --porcelain -- scripts/plan_lint.py tests/test_plan_lint.py` must be empty. If DIRTY — resume disambiguation (Rule 56): grep for THIS plan's own edits (the `(n)`/`(o)`/`(p)` check comments, the new test names); all attributable → `git restore` both and reapply from scratch; any unattributable hunk → **HALT.**
-> ⚠️⚠️ **Confirm warn-first AT HEAD:** every §4-family check (f)–(l) is a bare print never touching `results`/`all_passed`; return is `0 if all_passed else 1`. **If any has flipped to blocking, HALT — the back-compat reasoning changes.** ⚠️ **Verify the letter set at HEAD:** if a check labeled (m), (n), (o), or (p) already exists (the held sibling or another plan landed in-window), HALT and report — the allocation above needs re-basing, not improvisation.
+> ⚠️⚠️ **Confirm warn-first AT HEAD:** every §4-family check (f)–(l) is a bare print never touching `results`/`all_passed`; return is `0 if all_passed else 1`. **If any has flipped to blocking, HALT — the back-compat reasoning changes.** ⚠️ **Verify the letter set at HEAD, with the two cases SPLIT:** a check labeled **(n), (o), or (p)** already existing → **HALT and report** (a genuine collision — the allocation needs re-basing, not improvisation). A check labeled **(m)** existing alone → **the held sibling landed as planned; note it in the dev log and PROCEED** — (m) was reserved for it and the trio's letters remain free (an undifferentiated halt here would be spurious).
 >
 > **Insertion anchor (Rule 22(a) — quoted, not described).** All three checks insert as a block immediately BEFORE this verbatim line (the results-printing loop):
 >
@@ -103,7 +103,7 @@ Read the plan at knowledge/decisions/in-progress-executable-<id>.md (the daemon 
 
 1. **Full bellows suite** → `knowledge/qa/full-suite.txt` (RAW, ≥ last 200 lines incl. the summary line — never a summary).
 2. **Targeted lint tests re-run** → `knowledge/qa/targeted-tests.txt` (RAW; this command is this file's producer).
-3. **Corpus sweep:** run `plan_lint` against every plan in all five `Done/` trees, addressed ABSOLUTELY — `/Users/marklehn/Developer/GitHub/{anvil,bellows,governance,invoice-pulse,lessons-forge}/knowledge/decisions/Done/` → `knowledge/qa/corpus-sweep.txt`. Report **per check (n)/(o)/(p), per root, including zeros**, each beside its pin: fire count + plan ids. **Measured numbers with the producing command — this plan predicts no figure.** For (o) additionally: every fire classified true/false positive by a one-line reason — **the FP RATE is the deliverable, not the count.**
+3. **Corpus sweep:** run `plan_lint` against every plan in all five `Done/` trees, addressed ABSOLUTELY — `/Users/marklehn/Developer/GitHub/{anvil,bellows,governance,invoice-pulse,lessons-forge}/knowledge/decisions/Done/` → `knowledge/qa/corpus-sweep.txt`. **BOOKEND the sweep: re-run all five `rev-parse HEAD` pins immediately after it and report both sets — a delta is concurrent activity (a parallel terminal is live this week), named in the report and never reconciled by force.** Report **per check (n)/(o)/(p), per root, including zeros**, each beside its pin: fire count + plan ids. **Measured numbers with the producing command — this plan predicts no figure.** For (o) additionally: every fire classified true/false positive by a one-line reason — **the FP RATE is the deliverable, not the count.**
 4. **WARN-only by MECHANISM:** grep the three new checks — none appends to `results`, none assigns `all_passed`; then `echo $?` = 0 on a fixture tripping all three. **Both, not just the second.**
 5. **QA Receipt with the canonical Rule 20 self-check block**, one verification row per item above.
    - `required_evidence_files`: `[targeted-tests.txt, full-suite.txt, corpus-sweep.txt]`
@@ -151,16 +151,16 @@ Close with `### Status` (**Complete**), `### Deposits`, `### Ledger Updates` wit
 
 **Expected lint:** NOT FINAL — set at the §5 conformance pass; the closing-fold WARN is expected to be EARNED only if the panel ends judged-stop rather than dry.
 
-**Walks:** none yet — v0 draft; no lens has run. Phases one per turn under CEO direction; ACID apart; cold panel (T2) after a dry walk or judged stop.
+**Walks:** 1 (four lenses complete + a1 apart), each phase its own turn under CEO direction, per-phase committed; cold panel (T2) owed after a dry walk or judged stop. ⚠️ This header lagged the lenses once (still read "no lens has run" at a1's record read) — the same record-decay class measured 3× in the census cycle; caught here by the pass that exists to catch it.
 
 - Weak spots:          w1 4 folded (1.1 the `.`-exemption defect in (n) — dot-only patterns are the dominant literal class, now candidates with their own fixture; 1.1 (o) project-root by /knowledge/-split primary — the .git walk-up alone mis-roots every governance plan; 1.3 (p) scanned span defined to end-of-line, partial scan stated; census (o)-row figure precision 3+2-across-two-states).
 - Destruction:         w1 4 folded (2.2/watering: (o)'s QA HALT made MECHANICAL — fired-path ∈ same plan's Deposits/Scope strings, un-narratable; (n)'s unquoted-pattern miss stated not silent; (p) marked forward-looking — corpus fires are baseline, not a retrofit queue; 2.1 no-output-consumer premise re-verified at HEAD w/ positive control, recorded in Method).
 - Vulnerabilities:     w1 4 folded (3.3 the vacuous-(o)-test trap — fixtures require a synthetic `<tmpdir>/proj/knowledge/` tree, bare-tmp asserts the skip path as its own test; 3.1 dual-root resolution — project root then shop root, WARN only when missing at both, under-fire as the stated error direction; live tripping fixture must show all three WARN classes in one pasted run; 3.4 precision trio — both quote styles in (n), empty-segment rejection + dedupe-before-cap in (o)).
 - Integration-record:  w1 3 folded, all confirmed by EXECUTING the lint on this draft (4.1 MATERIAL: the Rule 20 banner pair was described-not-quoted in STEP 2 — check (c) FAILed live; the 317-v0 precedent exactly, and a self-clone-drift datum since the held sibling carries the pair; 4.1 the Closing's stale "no lens has read" caught by SHIPPED check (h) — a live true positive from 303's mechanization; panel line moved to canonical `Cold panel` form after the line-anchored check WARNed on the `Panel status:` label — the row-27 class in this plan's own draft).
-- ACID:                not run.
+- ACID:                a1 4 folded, apart (5.3 LOADED for the two-step schedule: corpus sweep gains a post-sweep re-pin bookend — the parallel terminal is live this week; 5.2 the (n) Why-row overstated the census 0-FP as covering the dot-widened form — annotated UNMEASURED-until-QA; 5.2 the A0 letter check over-triggered — (m)-exists now proceeds with a note, only (n)/(o)/(p)-exists HALTs; record read caught the Walks-header lag, the recurring class).
 
 **Cold panel (T2):** not convened — owed after a dry walk or judged stop; the line sits in canonical form so the line-anchored check reads it (this draft's own v0 used a non-canonical `Panel status:` label and the shipped check caught it — the row-27 class, live in the plan shipping that row's siblings).
 
 **Conflicts:** none yet. Constraints append at the END as earned, never inserted above an existing entry.
 
-**Closing:** NOT REACHED — walk 1 four-lens portion complete and folded (Weak spots, Destruction, Vulnerabilities, Integration-record); ACID owed apart. Not dry, not claimed dry.
+**Closing:** NOT REACHED — walk 1 complete (four lenses + a1 apart), 19 folds landed. a1 folded, so a confirming pass is owed; the cycle closes only when a confirming pass returns dry with the last event a lens pass, and the cold panel is owed either way (T2).
