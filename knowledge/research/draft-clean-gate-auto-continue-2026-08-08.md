@@ -26,7 +26,7 @@ Diagnostic-315 measured the trade the CEO has now taken: on clean-gate pauses th
 
 **The provenance half:** today the non-terminal mechanical advance (taken when no pause condition fires) leaves **no `verdicts` row at all** — the last unrecorded transition class from 312's audit. Site 2 records it with the 313-shipped pattern (`pause_reason_code="clean_gate_auto"`, `decided_by="gate_auto"`), so every mechanical continue becomes a queryable row. This applies to ALL mechanical advances, not only the new mode — closing the audit gap is independent of widening the path.
 
-**Notification decision (explicit, CEO-overridable at this plan's gate):** the mechanical advance fires **no notification** — matching the already-existing silent mechanical path it widens (315 Q6 enumerated the three options; a per-advance push would fire on every multi-step plan). The `gate_auto` row is the audit trail; the dashboard's awaiting-verdict surface is unaffected because these rows never have a NULL outcome beyond the paired-call window.
+**Notification decision (explicit, CEO-overridable at this plan's gate):** the mechanical advance fires **no notification** — matching the already-existing silent mechanical path it widens (315 Q6 enumerated the three options; a per-advance push would fire on every multi-step plan). The `gate_auto` row is the audit trail; the dashboard's awaiting-verdict surface is unaffected in normal operation because the paired calls set the outcome immediately. (Both lifecycle writes are fail-soft — a swallowed outcome write would strand a NULL row visible in the awaiting surface, the 310 shape; the remedy is the same manual close exercised on 310.)
 
 **Activation boundary:** the running daemon executes pre-change code until restart. This plan's QA proves code + tests only; the **post-activation live canary is a mandatory follow-on** (the 295 precedent — Checklist #32's observed-delta standard), queued via the Forward Register bullet in Step 2's receipt.
 
@@ -51,33 +51,36 @@ Read the plan at knowledge/decisions/in-progress-executable-<id>.md (the daemon 
 > **Task B — edit `bellows.py`, two sites, quoted anchors (read and locate the exact lines before editing):**
 > - **Site 1 (`header_says_pause`):** after the existing `if pv == "after_qa_step":` branch and before the unrecognized-value WARN, add the new mode:
 >   `if pv == "qa_and_terminal":`
->   `    return is_qa_step or current_step >= total_steps`
->   AND update the WARN's recognized-list literal (anchor `recognized: 'always', 'after_step_1', 'after_qa_step'`) to include `'qa_and_terminal'`. Both edits or neither — a recognized mode that still WARNs is a defect.
+>   `    return is_qa_step or is_final_step(current_step, total_steps)`
+>   Call `is_final_step` (same module, anchor `def is_final_step(step: int, total_steps: int) -> bool:`) rather than mirroring its comparison — the loop's terminal predicate and the mode's must be the same function so they cannot drift. AND update the WARN's recognized-list literal (anchor `recognized: 'always', 'after_step_1', 'after_qa_step'`) to include `'qa_and_terminal'`. Both edits or neither — a recognized mode that still WARNs is a defect. **Precedence (state in the branch's one-line comment):** at the terminal step this mode returns True, which makes the auto-close branch (guarded by NOT header_says_pause) unreachable — a plan setting BOTH `auto_close: true` AND this mode gets the terminal pause; the mode wins.
 > - **Site 2 (mechanical-advance provenance):** inside the non-terminal while-loop, immediately after the pause conditional's closing `return`-block and BEFORE the line anchored `default_next_prompt = f"Read the plan at {shadow_prompt_path}. Execute Step {current_step + 1}.`, add (guarded — mirror the loop's existing `if plan_id ... else None` style):
 >   `if plan_id:`
 >   `    lifecycle.record_verdict_request(plan_id, current_step, pause_reason_code="clean_gate_auto")`
 >   `    lifecycle.record_verdict_outcome(plan_id, current_step, "continue", decided_by="gate_auto")`
 >   with a one-line comment stating this records the mechanical clean-gate continue so the transition is auditable (315's evidence; clones 313's auto-close pattern). The request+outcome pairing is REQUIRED — `record_verdict_outcome` updates only a `WHERE outcome IS NULL` row (`lifecycle.py`, anchor `"""Update the most recent pending verdict row`), so the outcome call without the request call is a silent no-op.
+> - **Site 3 (`verdicts/README.md`):** in the pause-reason table (anchor: the row `| `auto_close_disabled` | Auto-close is disabled for the plan |`), add TWO rows: `auto_close` (mechanical terminal auto-close, recorded since plan 313 — a pre-existing documentation gap backfilled here, disclosed in the dev log) and `clean_gate_auto` (recorded for a mechanical clean-gate non-terminal advance — NOT a pause; the row exists so the transition is auditable). Update the README's "pauses plan execution under five conditions" count wording to match the table. Add one line documenting the `qa_and_terminal` header mode where the README discusses pause behavior.
 > - **Touch nothing else.** `_apply_defensive_header_defaults` (sparse headers still default to `after_step_1`), the terminal-step cascade, and the auto-close branch are all out of scope.
 >
-> **Task C — mode tests.** Add a test class to `tests/test_gate_transaction_mechanization.py` exercising the REAL `header_says_pause` (import from `bellows`): `qa_and_terminal` returns False for a non-terminal non-QA step, True for a QA step, True for the terminal step (`current_step == total_steps`); the three existing modes return unchanged values on the same inputs; an unrecognized value still returns False. If importing `bellows` at module level is impractical (daemon side effects), state the import strategy used in a comment rather than silently testing a copy.
+> **Task C — mode tests.** Add a test class named `TestHeaderSaysPauseModes` to `tests/test_gate_transaction_mechanization.py` exercising the REAL `header_says_pause` — import from `bellows` exactly as `tests/test_bellows.py` already does (proven side-effect-free). Cases: `qa_and_terminal` returns False for a non-terminal non-QA step; True for a QA step; True for the terminal step — asserted unconditionally, which IS the auto-close precedence pin (the function does not read `auto_close`, so terminal-True holds regardless of that header); True for every step when `total_steps` is 0 (unparsed-header degenerate — the safe direction); True at step 1 of a single-step plan (mode misuse on a diagnostic is harmless); the three existing modes return unchanged values on the same inputs; an unrecognized value still returns False.
 >
-> **Task D — provenance test.** Extend `tests/test_gate_transaction_mechanization.py` at the lifecycle layer (per-test DB, the existing conftest isolation): the `clean_gate_auto` request+outcome pair produces a queryable row with `outcome='continue'`, `decided_by='gate_auto'`, `pause_reason_code='clean_gate_auto'` — AND that row does NOT match the dashboard's awaiting filter (`SELECT ... WHERE outcome IS NULL` returns nothing for it). A `run_plan`-level assertion follows 313's Task D standard: include it, or state in a comment exactly why it is deferred (the existing `test_bellows.py` harness coverage) — do not silently omit the decision.
+> **Task D — provenance test.** Add a test class named `TestCleanGateAutoProvenance` to `tests/test_gate_transaction_mechanization.py` at the lifecycle layer (per-test DB, the existing conftest isolation): the `clean_gate_auto` request+outcome pair produces a queryable row with `outcome='continue'`, `decided_by='gate_auto'`, `pause_reason_code='clean_gate_auto'` — AND that row does NOT match the dashboard's awaiting filter (`SELECT ... WHERE outcome IS NULL` returns nothing for it). A `run_plan`-level assertion follows 313's Task D standard: include it, or state in a comment exactly why it is deferred (the existing `test_bellows.py` harness coverage) — do not silently omit the decision.
 >
 > **Task E — run targeted tests ONLY** (never the full suite in DEV): `python3 -m pytest tests/test_gate_transaction_mechanization.py tests/test_bellows.py -k "verdict or decided or auto_close or transaction or header_says_pause or clean_gate" --tb=short -q 2>&1 | cat`. Paste RAW output UNTRUNCATED; all selected tests pass and `echo $?` = 0.
 >
 > **Scope:**
 > - `bellows.py`
+> - `verdicts/README.md`
 > - `tests/test_gate_transaction_mechanization.py`
 > - `tests/test_bellows.py`
 > - `knowledge/development/clean-gate-auto-continue-dev-log-2026-08-08.md`
 >
-> **Deposit the dev log** with the exact before/after lines for both `bellows.py` sites, the Task C import strategy, the Task D include-or-defer decision, and the RAW targeted-test output. Canonical Python/MCP file-write — NO heredoc. Commit all (NO push). `#### Prompt Feedback` in `### Ledger Updates`.
+> **Deposit the dev log** with the exact before/after lines for both `bellows.py` sites and the README rows, the auto_close README-backfill disclosure, the auto-close precedence note, the **semantic-shift note** (the `verdicts` table now carries non-pause rows — distribution analyses must key on `pause_reason_code`), the Task D include-or-defer decision, and the RAW targeted-test output. Canonical Python/MCP file-write — NO heredoc. Commit all (NO push). `#### Prompt Feedback` in `### Ledger Updates`.
 >
 > **STOP. Do NOT proceed to Step 2. Wait for CEO verdict.**
 
 **Deposits:**
 - `bellows/bellows.py`
+- `bellows/verdicts/README.md`
 - `bellows/tests/test_gate_transaction_mechanization.py`
 - `bellows/tests/test_bellows.py`
 - `bellows/knowledge/development/clean-gate-auto-continue-dev-log-2026-08-08.md`
@@ -91,7 +94,7 @@ Read the plan at knowledge/decisions/in-progress-executable-<id>.md (the daemon 
 >
 > 1. **Run the full `bellows` test suite** → `full-suite.txt`: `python3 -m pytest tests/ --tb=short -q 2>&1 | cat`. Record the raw summary line verbatim. ⚠️ The suite baseline before this plan was 874 passed (313's QA); this plan ADDS tests — report the fresh number, do not reconcile to 874.
 > 2. **Re-run the targeted subset** → `targeted-tests.txt`: the Step 1 Task E command. Record raw output (≥ last 200 lines incl. the pytest summary line) — never a summary of it.
-> 3. **Grep-proof both sites** (bare `grep -F`, never through a pipe; state what each prints on success and on failure): `grep -F "qa_and_terminal" bellows.py` prints ≥2 lines (mode branch + WARN literal) and exits 0; `grep -F "clean_gate_auto" bellows.py` prints ≥1 line and exits 0.
+> 3. **Grep-proof all three sites** (bare `grep -F`, never through a pipe; state what each prints on success and on failure): `grep -F "qa_and_terminal" bellows.py` prints ≥2 lines (mode branch + WARN literal) and exits 0; `grep -F "clean_gate_auto" bellows.py` prints ≥1 line and exits 0; `grep -F "clean_gate_auto" verdicts/README.md` prints ≥1 line and exits 0.
 > 4. **Observe the discrimination effect, not just execution:** cite the Task D test's assertion that a `clean_gate_auto` row is excluded by the awaiting-verdict filter, and quote that assertion's line from the test file in the report — the effect claim must trace to a line that ran, per the (D) standard.
 > 5. **Emit the QA Receipt with the canonical Rule 20 self-check block.** Run the canonical Rule 20 self-check from `RULE_20_SELF_CHECK_BLOCK.md` at the governance root. Use these values when filling in the template:
 >    - `plan_slug`: `clean-gate-auto-continue-2026-08-08`
@@ -99,9 +102,11 @@ Read the plan at knowledge/decisions/in-progress-executable-<id>.md (the daemon 
 >    - `evidence_dir`: `/Users/marklehn/Developer/GitHub/bellows/knowledge/qa`
 >    - `required_evidence_files`: `[full-suite.txt, targeted-tests.txt]`
 >    Deposit both evidence files BEFORE running the block — it `sys.exit(1)`s if any is missing or empty. Include the block's literal stdout. The banner `Rule 20 — QA Self-Check Results` and the `PASSED — SELF-CHECK PASSED` line must appear BYTE-EXACT (em-dash U+2014). If it prints FAILED, HALT.
-> 6. **`### Ledger Updates` carries `#### Prompt Feedback` AND this single `#### Forward Register` bullet (one bullet, no blank lines inside the block):**
+> 6. **The QA report also states the semantic-shift note** (the `verdicts` table now carries non-pause `clean_gate_auto` rows; distribution analyses key on `pause_reason_code`) — the QA report is where a future analyst looks first.
+> 7. **`### Ledger Updates` carries `#### Prompt Feedback` AND this `#### Forward Register` block — exactly TWO bullets, CONTIGUOUS, no blank line between them (the parser truncates at the first blank line; the two-bullet contiguous form is the 295-proven pattern):**
 >
 > - Post-activation live canary for clean_gate_auto: after the next daemon restart, a plan opted into pause_for_verdict qa_and_terminal must show gate_auto/clean_gate_auto rows for its non-terminal clean steps and pause at QA + terminal — the observed-delta proof this plan's QA cannot provide (Checklist #32; 295 precedent).
+> - Document the qa_and_terminal pause mode in PLANNER_TEMPLATE.md (governance root, outside this plan's scope) at the next template touch — until then the mode is documented in bellows verdicts/README.md and the header_says_pause branch comment only.
 >
 > **Scope:**
 > - `knowledge/qa/clean-gate-auto-continue-qa-report-2026-08-08.md`
@@ -119,7 +124,7 @@ Read the plan at knowledge/decisions/in-progress-executable-<id>.md (the daemon 
 
 ## Method + boundaries
 
-- **Scope:** one new header-mode branch + one recording pair in `bellows.py`, plus tests. No schema change (`verdicts` columns all exist). No migration of historical rows. No daemon restart in-plan — activation is the canary follow-on's concern.
+- **Scope:** one new header-mode branch + one recording pair in `bellows.py`, the `verdicts/README.md` pause-reason table (incl. the disclosed 313 `auto_close` backfill), plus tests. No schema change (`verdicts` columns all exist). No migration of historical rows. No daemon restart in-plan — activation is the canary follow-on's concern. **Documentation deferral (explicit):** `PLANNER_TEMPLATE.md` at the governance root is OUT of scope; the mode's template documentation is deferred via the second Forward bullet — not omitted silently.
 - ⚠️ **HALT ROUTING:** if `bellows.py`, `lifecycle.py`, `tests/test_gate_transaction_mechanization.py`, `tests/test_bellows.py`, the Bellows Developer specialist file, or `/Users/marklehn/Developer/GitHub/RULE_20_SELF_CHECK_BLOCK.md` (Step 2 item 5's block source) is unreadable, HALT the step that needs it and name it.
 - ⚠️ **`grep -F` mandatory for literals** (ugrep shim; a non-`-F` pattern can exit 1 silently on a present line); run the grep BARE, never through a pipe (`$?` after a pipe reports the last command's exit).
 - ⚠️ Every `**Deposits:**` filename is the DECLARED deposit, matched by basename. Do NOT re-date any at run time.
@@ -133,6 +138,12 @@ Read the plan at knowledge/decisions/in-progress-executable-<id>.md (the daemon 
 
 **Tier:** T2 — **T-6 fires**: this plan RELAXES a human checkpoint class (non-terminal clean-gate pauses become mechanical for opted-in plans) — the verdict-gate layer is governance surface, and unlike 313's additive relabel this changes what a human sees. T-8 also fires (a new pause mode is not a structure-for-structure clone; 313 is the pattern source for Site 2 only). Highest demand: T2 — full five-lens walk plus cold panel.
 **Clone comparison (§2.6):** newest same-class shipped executable = `executable-313` (Done), the skeleton and Site-2 pattern source; the cold panel should also be handed 315's Q5/Q6 (the seam map and notification analysis this plan's design decisions cite).
-**Walks:** v0 authored 2026-08-08. The T2 cycle (five-lens walk, then cold panel) has not run; this draft does not deposit until it has.
-**Conflicts:** ledger opens at w1.
-**Closing:** pending — the last event is v0 authorship, not a lens pass.
+**Walks:** 1 (four lenses, findings listed then culminated on CEO direction — the proposal-register rhythm).
+- Weak spots:          w1 5 listed (2 real), culminated (Site 1 calls `is_final_step` so the predicates cannot drift; auto_close precedence pinned — mode wins at terminal, asserted structurally in Task C; the never-NULL claim made honest with the fail-soft/310-shape acknowledgment; Task C import hedge dropped — test_bellows precedent cited; Task E's -k binding pinned via mandated class names).
+- Destruction:         w1 1 listed + 1 disposition, culminated (semantic-shift note mandated in BOTH dev log and QA report — verdicts now carries non-pause rows, analyses key on pause_reason_code; disposition: Site 2 blast radius verified nil — both lifecycle writes internally fail-soft, gate failures pause regardless of mode, sole verdicts consumer is the awaiting query).
+- Vulnerabilities:     w1 1 listed + 1 disposition, culminated (degenerate mode cases as Task C tests: total_steps=0 → always pause, single-step → pause at step 1; disposition: conftest isolation + import safety proven by 312/313/test_bellows precedent).
+- Integration-record:  w1 2 listed, culminated (verdicts/README.md pause-table backfill added as Site 3 — clean_gate_auto row + the pre-existing 313 auto_close row, disclosed, count wording updated, scope/Deposits extended; the PLANNER_TEMPLATE documentation deferral made explicit via a second contiguous Forward bullet).
+- ACID:                pending — its own pass, next.
+**Cold panel (T2):** not yet run — owed after the warm cycle closes.
+**Conflicts:** none recorded — no fold violated a prior lens's constraint at culmination.
+**Closing:** pending — the last event is the walk-1 culmination (a fold), ACID and the cold panel are owed. Not deposited.
