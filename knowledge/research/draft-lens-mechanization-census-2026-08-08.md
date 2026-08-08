@@ -23,8 +23,8 @@
 **The corpus exists and is machine-addressable — verified at authoring (Rule 52; every item is a prediction to re-verify at run, never inherit):**
 
 - §2.7's per-phase-commit rule means each recent T2 cycle preserved its full drafting history as `[draft] … culmination — N folds: <labels>` commits, with the close commit stating the count ("21 drafting commits preserved" — 317's close `253c085`).
-- Verified per-cycle at authoring: **311** → lessons-forge root, **15** `[draft]` commits (e.g. `93761db`, seat-5, "10 folds"); **317** → bellows, **21** (close `253c085`; e.g. `f41c229` seat-2, draft file `draft-clean-gate-auto-continue-2026-08-08.md`); **320** → the shop root repo (governance in-place dispatch), ~15 (e.g. `8e75e2f` seat-4, "8 folds", draft file `…-template-qa-and-terminal-correction-2026-08-08.md`).
-- The pre-fold state of any finding is therefore recoverable: `git show <phase-commit>~1:<draft-path>` — **a constructed checker can be RUN against the exact artifact the finding was found in.** The 305 bar ("executed, not argued") is satisfiable here, and this plan requires it.
+- Verified per-cycle at authoring (each a prediction to re-verify): **311** → lessons-forge root, draft `knowledge/research/draft-cycle-run-2026-08-07.md`, **16 commits touch the path (15 `[draft]` + the close)** — ⚠️ **while the close commit `e52275f` claims "30 drafting commits preserved": MEASURED DISCREPANCY, unresolved at authoring. Close-commit counts are unreliable reconciliation anchors; the PATH enumeration is authoritative.** **317** → bellows, draft `knowledge/research/draft-clean-gate-auto-continue-2026-08-08.md` (close `253c085` claims 21). **320** → the shop root repo (governance in-place dispatch), draft `…draft-template-qa-and-terminal-correction-2026-08-08.md` — ⚠️ **its close `74fd2b9` states NO commit count at all.** Absence and mismatch are both reportable states, never smoothed.
+- The pre-fold state of any finding is therefore recoverable: `git show <phase-commit>~1:<draft-path>` — **a constructed checker can be RUN against the exact artifact the finding was found in.** The 305 bar ("executed, not argued") is satisfiable here, and this plan requires it. (311's draft path is rename-stable across its whole history — verified with `--follow` at authoring; still run every enumeration with `--follow`, and recover paths with `--name-only`, **never `--stat`, which truncates paths silently** — observed at authoring on 317's.)
 
 ⚠️⚠️ **TWO STANDING FIGURES ARE HYPOTHESES HERE, NOT TARGETS.** Doctrine (§2/§2.6) carries "yield stays flat: 11/12/12/12/12" and "roughly a third of each round are the previous round's folds' defects." **This plan re-measures both on this corpus and reports the measured value with the method beside it. Do not force either number; a divergence is a finding, not an error** (4/4 predicted numbers were wrong in one recorded session — the hedge is the protection).
 
@@ -56,19 +56,27 @@ Every finding is classified into exactly one primary bucket (secondary allowed w
 
 ## Questions
 
-**Q1 — Corpus assembly (the census floor).** For each REQUIRED cycle — **311 (lessons-forge), 317 (bellows), 320 (shop root)** — enumerate every `[draft]` commit: SHA, phase label (w1/a1/c1/seat-N/cc/aC…), declared fold count, draft-file path. **Reconcile the per-phase declared fold counts against the close-commit's stated total and against the plan's Cycle Log lines; report every mismatch rather than smoothing it.** The finding unit is one fold; its ground truth is the commit DIFF, its label the commit-message clause. Report the full table (cycle × phase × finding-id × one-line label).
+**Q1 — Corpus assembly (the census floor).** For each REQUIRED cycle — **311 (lessons-forge), 317 (bellows), 320 (shop root)** — derive the population MECHANICALLY:
+
+1. Locate the cycle's close commit (`git log --oneline` filtered `-F "close(<N>)"`) and recover the deleted draft path from it with `--name-only` (**not `--stat` — it truncates**).
+2. Enumerate `git log --follow --oneline -- <draft-path>`: **every commit touching the draft path is a census row.** The `[draft]` message prefix is a LABEL to record, **never the filter** — a prefix-grep and the path population have already diverged once at authoring.
+3. Per row record: SHA, phase label (v0/w1/a1/seat-N/cc/aC/re-token…), declared fold count **or NONE**, files touched. ⚠️ **Rows with no declared fold count (v0, re-token, record-sync commits) are 0-finding census rows, kept in the table — they are themselves Q4-relevant data (record maintenance has a wall-clock cost the do-nothing column needs).**
+
+**Reconcile three independently-produced numbers and report every mismatch rather than smoothing it:** (a) the path-enumeration commit count vs the close commit's claimed count — **which may be absent (320) or wrong (311: claims 30, path says 16, measured at authoring — do not resolve this by argument; report what the enumeration shows)**; (b) the per-phase declared fold counts vs the plan's Cycle Log per-lens lines. Close commits count COMMITS; Cycle Logs count FOLDS — never reconcile one against the other's column.
+
+The finding unit is one fold; its ground truth is the commit DIFF, its label the commit-message clause. ⚠️ **Segmentation rule: when a commit declares N folds and its message clauses or diff hunks segment into a different number, the DECLARED count governs the census row, the discrepancy is recorded in the table, and per-finding rows from that commit carry a LOW-CONFIDENCE mark on their hunk attribution.** Report the full table (cycle × phase × finding-id × one-line label).
 
 **Q2 — Classification.** Classify every Q1 finding into the taxonomy. Per finding: primary bucket, the diff hunk(s) it rests on, and — for J — the stated reason no mechanical form exists. Report per-bucket totals **per cycle and overall**, and per-bucket the finding-ids (no aggregate-only claims). **AMBIGUOUS is an honest cell; use it rather than forcing a bucket, and count it separately.**
 
 **Q3 — Construct and fire the top candidates.** Take the **three** M/O buckets with the highest Q2 coverage (**chosen by the measurement, not pre-announced — this plan names no expected winner**). For each: build a minimal prototype in `/tmp`, then run it against the **pre-fold state** (`git show <phase-commit>~1:<draft-path>`) of **every finding classified to that bucket**. Report the polarity pair per 305:
-- **fires on its own case:** per-finding fires/doesn't table — a bucket whose prototype fires on under half its own findings was misclassified or the check is weaker than the census claims; report it as such;
+- **fires on its own case:** per-finding fires/doesn't table. ⚠️ **A fire counts ONLY if the prototype's output LOCATES the defect within the hunk(s) that finding's fold edited** — a checker that fires somewhere else in the same file is a miss on this finding plus a false positive, not a hit; without this rule a noisy checker "catches" everything trivially. A bucket whose prototype fires on under half its own findings was misclassified or the check is weaker than the census claims; report it as such;
 - **false-positive load:** run the prototype against (a) the three cycles' FINAL deposited plan texts, (b) at least two unrelated `Done/` plans per repo, and (c) **the retraction control — text that DESCRIBES or RETRACTS the defect without committing it** (305 walk-3: a checker that matches the record of a defect overstates nothing so much as its own precision). Report counts with the command beside each.
 
 **Q4 — The re-finding decomposition (prices the post-fold battery).** For every Q1 finding, classify: **novel** vs **introduced-by-a-prior-fold** (evidence: the commit narrative — messages like "the a1's Q0 class", "fold-residue" — plus diff-overlap with prior phase hunks; **state the method and mark low-confidence rows**). Then: of the prior-fold-introduced set, what fraction classified R or M1–M8/O — i.e. **what fraction of the flat-yield tax is check-shaped and would be caught at fold time by an M4-style battery?** Report the measured re-finding rate beside doctrine's "roughly a third" with the divergence, if any, stated plainly.
 
 **Q5 — Extension census (explicitly optional, never silent).** Repeat Q1+Q2 (classification only, no prototypes) for **306 (bellows, 9 commits)** and **309 (shop root, 31 commits)**. ⚠️ **If not reached, the deposit says "NOT REACHED" for Q5 with the reason — an explicit cut, never a silent one.**
 
-**Q6 — The ranking, framed for CEO choice.** A table: candidate check × measured coverage (Q2/Q3) × fires-on-own-case rate × false-positive load × constructibility note (prototype LOC, inputs needed, where it would live — plan_lint §4 check vs standalone drafting-harness script vs fold-time battery). **A recommendation with its cost, framed so the CEO can choose — including the do-nothing column: what the same findings cost in walk-phases when caught by prose.** No build is authorized by this plan.
+**Q6 — The ranking, framed for CEO choice.** A table: candidate check × measured coverage (Q2/Q3) × fires-on-own-case rate × false-positive load × constructibility note (prototype LOC, inputs needed, where it would live — plan_lint §4 check vs standalone drafting-harness script vs fold-time battery). ⚠️ **Fire-rate and false-positive cells exist only for the buckets Q3 prototyped; constructibility cells for unprototyped buckets are marked ESTIMATE — never let an estimated cell sit unmarked beside a measured one.** **A recommendation with its cost, framed so the CEO can choose — including the do-nothing column: what the same findings cost in walk-phases when caught by prose.** No build is authorized by this plan.
 
 ---
 
@@ -79,7 +87,7 @@ Every finding is classified into exactly one primary bucket (secondary allowed w
 - ⚠️ **`grep` here is a ugrep shim: `-F` mandatory for literals, `--` before leading-dash patterns; a non-`-F` search can exit 1 SILENTLY on a present line.** ⚠️ **A negative result (empty search, exit-code-read-as-absent, file-not-found) never supports a finding on its own — pair it with a positive control, a second independently-constructed probe, or a read of the implementation site (the (D) standard).**
 - **Per-finding results, not aggregates.** "M1 covers 14 findings" is not reportable without the 14 ids and their per-id fire results.
 - **Report per-cycle results including zeros.** Pin each repo's HEAD (`git -C <root> rev-parse HEAD`) in the deposit beside every count — the corpus moves.
-- The three cycles span three repos with different draft-file paths — **re-derive each draft path from `git log --stat`, never assume the authoring-time examples still hold.**
+- The three cycles span three repos, addressed ABSOLUTELY (a bellows worktree's relative paths resolve against the worktree): **311 → `/Users/marklehn/Developer/GitHub/lessons-forge` · 317 → `/Users/marklehn/Developer/GitHub/bellows` · 320 → `/Users/marklehn/Developer/GitHub` (the shop root; its log also carries OTHER cycles' `[draft]` commits — 309, codify-d — which is why the population filter is the draft PATH, never the message prefix).** Extension roots (Q5): 306 → bellows, 309 → the shop root. **Re-derive each draft path per the Q1 recipe; never assume the authoring-time examples still hold.**
 - If a question cannot be answered from here, say so in `## Unresolved` rather than guessing.
 
 ## Required deposit structure — the answers are not the deliverable, the CONTRACT is
@@ -129,7 +137,7 @@ Read the diagnostic at knowledge/decisions/in-progress-diagnostic-<id>.md (the d
 
 **Walks:** none yet — v0 draft, no lens has run. Lens phases run one per turn under CEO direction; ACID separate.
 
-- Weak spots:          not run.
+- Weak spots:          w1 8 folded (population-by-path not prefix + close-count unreliability measured live 16-vs-30; commits-vs-folds reconciliation columns separated; 0-fold census rows; N-fold segmentation rule; Q3 fire-attribution-to-hunk; absolute roots; Q6 ESTIMATE marks; authoring claims re-based on measured paths/counts).
 - Destruction:         not run.
 - Vulnerabilities:     not run.
 - Integration-record:  not run.
@@ -137,4 +145,4 @@ Read the diagnostic at knowledge/decisions/in-progress-diagnostic-<id>.md (the d
 
 **Conflicts:** none yet. Constraints append at the END as earned, never inserted above an existing entry.
 
-**Closing:** NOT REACHED — v0 draft; no lens has read this artifact.
+**Closing:** NOT REACHED — walk 1 in progress: Weak spots complete and folded; Destruction, Vulnerabilities, Integration-record, ACID not yet run.
