@@ -163,4 +163,6 @@ Close with `### Status` (**Complete**), `### Deposits`, `### Ledger Updates` wit
 
 **Conflicts:** none yet. Constraints append at the END as earned, never inserted above an existing entry.
 
-**Closing:** NOT REACHED — walk 1 complete (four lenses + a1 apart), 19 folds landed. a1 folded, so a confirming pass is owed; the cycle closes only when a confirming pass returns dry with the last event a lens pass, and the cold panel is owed either way (T2).
+**Confirming:** c1 (four lenses, read from the bytes, rotated to header / Why table / coordination / Receipt) — **DRY AT ZERO, per-lens: Weak spots dry · Destruction dry · Vulnerabilities dry · Integration-record dry** (two candidates weighed and rejected with reasons: Task-E fixture-materialization phrasing already unambiguous in the (o) bullet; (n) flag-order detection is implementation granularity below plan level).
+
+**Closing:** warm cycle CLOSED — walk 1 (19 folds, four lenses + a1 apart) then c1 dry at zero, last event a lens pass. **The cold panel (T2) is now owed and the plan does not deposit before it runs**; the Expected-lint line finalizes at the §5 pass after the panel.
