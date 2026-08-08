@@ -117,7 +117,7 @@ def check_stop_prose(header: dict, plan_text: str) -> list[dict]:
     return warnings
 
 
-VALID_PAUSE_FOR_VERDICT_VALUES = {"always", "after_step_1", "after_qa_step", "after_each_step", ""}
+VALID_PAUSE_FOR_VERDICT_VALUES = {"always", "after_step_1", "after_qa_step", "after_each_step", "qa_and_terminal", ""}
 
 STRING_TYPED_HEADER_FIELDS = ("auto_close", "pause_for_verdict", "dispatch_mode")
 

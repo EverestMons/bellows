@@ -1798,3 +1798,51 @@ Read the plan at knowledge/decisions/in-progress-executable-<id>.md (the daemon 
     assert len(j_warns) == 0, f"Expected 0 (j) WARNs, got {len(j_warns)}: {j_warns}"
     assert len(k_warns) == 0, f"Expected 0 (k) WARNs, got {len(k_warns)}: {k_warns}"
     assert len(l_warns) == 0, f"Expected 0 (l) WARNs, got {len(l_warns)}: {l_warns}"
+
+
+# --- qa_and_terminal mode tests (plan 317, Site 4) ---
+
+def test_lint_qa_and_terminal_mode_passes():
+    """qa_and_terminal is a recognized pause_for_verdict value — no (a) FAIL."""
+    plan = """\
+# Test Plan
+**Date:** 2026-08-08 | **Dispatch Mode:** bellows | **qa_steps:** 2 | **pause_for_verdict:** qa_and_terminal
+
+## STEP 1 — DEV
+
+> Do the work.
+>
+> **Deposits:**
+> - `knowledge/development/dev-log.md`
+
+## STEP 2 — QA
+
+> Verify deliverables.
+>
+> Your QA report MUST include the byte-exact banner `Rule 20 — QA Self-Check Results` and a `PASSED — SELF-CHECK PASSED` line.
+>
+> **Deposits:**
+> - `knowledge/qa/qa-report.md`
+"""
+    result = _run_lint(plan)
+    assert result.returncode == 0, f"Expected exit 0, got {result.returncode}\nstdout: {result.stdout}"
+    assert "unrecognized" not in result.stdout.lower()
+
+
+def test_lint_qa_and_terminal_coupling_warns_missing_qa_steps():
+    """qa_and_terminal without qa_steps draws a WARN about the coupling."""
+    plan = """\
+# Test Plan
+**Date:** 2026-08-08 | **Dispatch Mode:** bellows | **pause_for_verdict:** qa_and_terminal
+
+## STEP 1 — DEV
+
+> Do the work.
+>
+> **Deposits:**
+> - `knowledge/development/dev-log.md`
+"""
+    result = _run_lint(plan)
+    assert result.returncode == 0, f"Expected exit 0 (WARN only), got {result.returncode}\nstdout: {result.stdout}"
+    assert "qa_and_terminal" in result.stdout
+    assert "qa_steps" in result.stdout

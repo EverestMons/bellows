@@ -433,3 +433,11 @@ def test_stop_prose_removed_wait_for_confirmation_no_trigger():
     result = validators.validate_at_claim(header, plan_path, config, text)
     stop_warns = [w for w in result["warnings"] if w["check"] == "stop_prose"]
     assert len(stop_warns) == 0
+
+
+# --- qa_and_terminal enum acceptance (plan 317, Site 4b) ---
+
+def test_qa_and_terminal_accepted_by_pause_for_verdict_check():
+    """qa_and_terminal is a recognized pause_for_verdict value — no warning."""
+    result = validators.check_pause_for_verdict_value({"pause_for_verdict": "qa_and_terminal"})
+    assert result is None, f"Expected None (accepted), got warning: {result}"

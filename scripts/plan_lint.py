@@ -22,7 +22,7 @@ import gates
 
 RECOGNIZED_DISPATCH_MODES = {"bellows", "manual_bootstrap"}
 # Mirrored from bellows.py header_says_pause — do not invent
-RECOGNIZED_PAUSE_TOKENS = {"always", "after_step_1", "after_qa_step"}
+RECOGNIZED_PAUSE_TOKENS = {"always", "after_step_1", "after_qa_step", "qa_and_terminal"}
 
 
 def _parse_qa_steps(qa_steps_raw):
@@ -246,6 +246,14 @@ def lint(plan_path):
                         closing_claims_unread = True
                 if any_lens_ran and closing_claims_unread:
                     print("WARN: Drafting Cycle Closing claims no lens has read the artifact, but lens results are recorded")
+
+    # (i) qa_and_terminal ↔ qa_steps coupling: under this mode a mis-declared QA step
+    # advances mechanically — the lint is the authoring-time guard.
+    if header and header.get("pause_for_verdict") == "qa_and_terminal":
+        qs_raw = header.get("qa_steps", "")
+        qs_set = _parse_qa_steps(qs_raw) if qs_raw else set()
+        if not qs_set:
+            print("WARN: pause_for_verdict=qa_and_terminal but qa_steps is missing or unparseable — QA steps may advance mechanically")
 
     # --- Checks (j), (k), (l) — whole-plan-text scope, NOT inside dc_block ---
     # Unlike (g)/(h) which operate inside the Drafting Cycle dc_block scope,

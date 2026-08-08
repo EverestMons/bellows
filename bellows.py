@@ -388,8 +388,11 @@ def header_says_pause(header: dict, current_step: int, total_steps: int, is_qa_s
         return current_step == 1
     if pv == "after_qa_step":
         return is_qa_step
+    if pv == "qa_and_terminal":
+        # Pause at QA steps and at the terminal step; at terminal this wins over auto_close
+        return is_qa_step or is_final_step(current_step, total_steps)
     if pv:
-        _log("WARN", f"⚠️ unrecognized pause_for_verdict value: {pv!r} (recognized: 'always', 'after_step_1', 'after_qa_step') — treating as no-pause")
+        _log("WARN", f"⚠️ unrecognized pause_for_verdict value: {pv!r} (recognized: 'always', 'after_step_1', 'after_qa_step', 'qa_and_terminal') — treating as no-pause")
     return False
 
 
@@ -778,6 +781,10 @@ def run_plan(plan_path: str, config: dict, response_server: server.ResponseServe
                 return
 
             # All gates passed and not QA — continue to next step
+            # Record the mechanical clean-gate continue so the transition is auditable (315 evidence; clones 313 auto-close pattern)
+            if plan_id:
+                lifecycle.record_verdict_request(plan_id, current_step, pause_reason_code="clean_gate_auto")
+                lifecycle.record_verdict_outcome(plan_id, current_step, "continue", decided_by="gate_auto")
             default_next_prompt = f"Read the plan at {shadow_prompt_path}. Execute Step {current_step + 1}.{_id_tag_instruction}"
 
             # Capture pre-step file state
