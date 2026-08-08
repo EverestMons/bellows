@@ -98,7 +98,7 @@ Read the plan at knowledge/decisions/in-progress-executable-<id>.md (the daemon 
 >    - `qa_report_path`: `/Users/marklehn/Developer/GitHub/bellows/knowledge/qa/clean-gate-auto-continue-qa-report-2026-08-08.md`
 >    - `evidence_dir`: `/Users/marklehn/Developer/GitHub/bellows/knowledge/qa`
 >    - `required_evidence_files`: `[full-suite.txt, targeted-tests.txt]`
->    Deposit both evidence files BEFORE running the block — it `sys.exit(1)`s if any is missing or empty. Include the block's literal stdout; if it prints FAILED, HALT.
+>    Deposit both evidence files BEFORE running the block — it `sys.exit(1)`s if any is missing or empty. Include the block's literal stdout. The banner `Rule 20 — QA Self-Check Results` and the `PASSED — SELF-CHECK PASSED` line must appear BYTE-EXACT (em-dash U+2014). If it prints FAILED, HALT.
 > 6. **`### Ledger Updates` carries `#### Prompt Feedback` AND this single `#### Forward Register` bullet (one bullet, no blank lines inside the block):**
 >
 > - Post-activation live canary for clean_gate_auto: after the next daemon restart, a plan opted into pause_for_verdict qa_and_terminal must show gate_auto/clean_gate_auto rows for its non-terminal clean steps and pause at QA + terminal — the observed-delta proof this plan's QA cannot provide (Checklist #32; 295 precedent).
