@@ -1,4 +1,4 @@
-# Executable: the diag-322 sub-check trio — non-`-F` grep lint (n), path-existence lint (o), C-ledger-without-check lint (p)
+# Executable: the diag-322 sub-check trio — non-`-F` grep lint (n), path lint (o1 existence / o2 deposit-form), C-ledger-without-check lint (p)
 
 **Type:** Executable
 **Project:** bellows
@@ -23,7 +23,7 @@ The census classified 174 findings from three preserved T2 cycles and fired prot
 
 | check | class | census evidence (hypotheses to re-verify at QA) |
 |---|---|---|
-| **(n)** non-`-F` grep lint | M3 sub-type | positive control fired; **0 FP on 3 final plans and 6 Done/ plans — measured on the prototype's NARROWER no-dot form; this plan's dot-widening has an UNMEASURED load until QA item 3 produces it**; 1 documented FP class (retraction text narrating a defective grep verbatim) |
+| **(n)** non-`-F` grep lint | M3 sub-type | positive control fired; **0 FP on 3 final plans and 6 Done/ plans — the prototype's exact metacharacter policy is UNRECORDED in the census deposit, so treat the 0-FP figure as covering at most a narrower form; this plan's dot-inclusive form has an UNMEASURED load until QA item 3 produces it (cold seat 4)**; 1 documented FP class (retraction text narrating a defective grep verbatim) |
 | **(o)** path lint, two sub-rules | M1 sub-type | naive existence form was FP-dominated (matched `python3`, `tokens,`); **the genuine fires — 3+2 across two 320 pre-fold states, 0 FP — were DEPOSIT-FORM defects, now carried by sub-rule o2 (pure form check, no filesystem); the o1 existence half aims at input paths whose TP support is UNMEASURED until QA** (cold seat 1's HIGH-1: the v0 exclusion had silenced the measured class) |
 | **(p)** C-ledger-entry-without-executable-check lint | M4 sub-type | census prototype measured 1 FP on finals (311's persistent constraints) — **but on a KEYWORD criterion; (p)'s backtick/`check:` criterion is a different detector and its load is UNMEASURED until QA** (cold seat 1); seeds the §2.8 "mechanize the constraint" convention warn-first |
 
@@ -49,12 +49,12 @@ Read the plan at knowledge/decisions/in-progress-executable-<id>.md (the daemon 
 
 > **FIRST — post a short visible chat message (1–2 sentences) confirming you are starting this plan and your immediate next action.** Do NOT rename this plan file. Read your Bellows Developer specialist file, then `scripts/plan_lint.py` in full, then the census deposit `knowledge/research/lens-mechanization-census-2026-08-08.md` §Q3 and §Q6-recommendation-4 (the empirical spec base). **All commands run from `/Users/marklehn/Developer/GitHub/bellows`.**
 >
-> **Mechanical-only invariant (140/303/306).** All three checks are **WARN-only advisory**: bare `print(...)` lines that must NEVER append to `results`, set `all_passed`, change the return code, or raise. **A malformed or absent block skips with no exception.**
+> **Mechanical-only invariant (140/303/306).** The trio ships THREE checks, one of which carries two sub-rules — **FOUR printed label families: (n), (o1), (o2), (p)** — all **WARN-only advisory**: bare `print(...)` lines that must NEVER append to `results`, set `all_passed`, change the return code, or raise. **A malformed or absent block skips with no exception.**
 >
 > **Task A0 — pre-edit cleanliness + warn-first precondition (303 form).** `git -C /Users/marklehn/Developer/GitHub/bellows status --porcelain -- scripts/plan_lint.py tests/test_plan_lint.py` must be empty. If DIRTY — resume disambiguation (Rule 56, in 306's hardened form, which this clone had dropped — cold seat 2): **enumerate the hunks first — `git diff -- scripts/plan_lint.py tests/test_plan_lint.py` — and attribute EVERY hunk to this plan's own edits (the `(n)`/`(o1)`/`(o2)`/`(p)` check comments, the new test names). A presence-grep is NOT sufficient: it proves this plan's edits are IN the files, not that nothing else is, and `git restore` destroys every uncommitted hunk including a coexisting foreign one — the parallel terminal is live this week.** All hunks attributable → `git restore` both and reapply from scratch; ANY unattributable hunk → **HALT, do NOT restore.**
 > ⚠️⚠️ **Confirm warn-first AT HEAD:** every §4-family check (f)–(l) is a bare print never touching `results`/`all_passed`; return is `0 if all_passed else 1`. **If any has flipped to blocking, HALT — the back-compat reasoning changes.** ⚠️ **Verify the letter set at HEAD, with the two cases SPLIT:** a check labeled **(n), (o), or (p)** already existing → **HALT and report** (a genuine collision — the allocation needs re-basing, not improvisation). A check labeled **(m)** existing alone → **the held sibling landed as planned; note it in the dev log and PROCEED** — (m) was reserved for it and the trio's letters remain free (an undifferentiated halt here would be spurious).
 >
-> **Insertion anchor (Rule 22(a) — quoted, not described).** All three checks insert as a block immediately BEFORE this verbatim line (the results-printing loop):
+> **Insertion anchor (Rule 23(a) — quoted, not described; 306's correction of 303's "22(a)" mis-cite, which this clone had reproduced — cold seat 4).** All three checks insert as a block immediately BEFORE this verbatim line (the results-printing loop):
 >
 > ```python
 >     for status, check, detail in results:
@@ -111,9 +111,9 @@ Read the plan at knowledge/decisions/in-progress-executable-<id>.md (the daemon 
 1. **Full bellows suite** → `knowledge/qa/full-suite.txt` (RAW, ≥ last 200 lines incl. the summary line — never a summary).
 2. **Targeted lint tests re-run** → `knowledge/qa/targeted-tests.txt` (RAW; this command is this file's producer).
 3. **Corpus sweep:** run `plan_lint` against every `*.md` plan in all five `Done/` trees — **the glob is pinned to `Done/*.md` (invoice-pulse's `Done/files.zip` crashes the lint; 306's finding), and the PER-FILE EXIT STATUS is captured, any nonzero named per file — o1 is the lint's first filesystem-I/O surface and a crashing file contributes zero WARN lines indistinguishably from a clean one (cold seat 2)** — addressed ABSOLUTELY: `/Users/marklehn/Developer/GitHub/{anvil,bellows,governance,invoice-pulse,lessons-forge}/knowledge/decisions/Done/` → `knowledge/qa/corpus-sweep.txt`, run with `PLAN_LINT_UNCAP=1`. **SWEEP-DIFF PROOF (306's value-level additive proof, restored): materialize the pre-edit lint via `git show <PRE_EDIT_HASH>:scripts/plan_lint.py` into a FRESH `mktemp -d` scratch directory — NEVER bare `/tmp`, where a stale `gates.py` from a sibling plan's identical machinery would silently shadow the PYTHONPATH import, script-dir preceding PYTHONPATH in resolution (cold seat 3)** — invoke with `PYTHONPATH=/Users/marklehn/Developer/GitHub/bellows` so `import gates` resolves; run BOTH versions over the corpus, and diff per-file outputs: the diff must show ONLY added `(n)`/`(o1)`/`(o2)`/`(p)`-labeled lines — any changed or lost (a)–(l) line → HALT. ⚠️ **Pin the POST-edit binary too: `git hash-object scripts/plan_lint.py` must equal the blob in Step 1's commit — an accidental stale-tree invocation yields an EMPTY sweep-diff that vacuously satisfies "only added lines" (cold seat 3).** **Uncap took effect: `corpus-sweep.txt` must contain zero `(+`-tail lines, cross-checked against the INFO `fired=` totals.** **Live o1 positive control: re-materialize Step 1's tripping fixture from the dev log's pasted text and run it in the same session — o1 must fire there, or the sweep's zeros are the output of a dead check, not a clean corpus.** **BOOKEND the sweep: re-run all five `rev-parse HEAD` pins immediately after it and report both sets — a delta is concurrent activity (a parallel terminal is live this week), named in the report and never reconciled by force.** Report **per check — (n), o1, o2, (p) SEPARATELY by their printed labels — per root, including zeros**, each beside its pin: fire count + plan ids, **and for o1 the per-root candidate/excluded/fired totals from the INFO lines (zero fires with zero candidates ≠ zero fires with heavy exclusion — the over-exclusion direction must be visible in the report).** **Measured numbers with the producing command — this plan predicts no figure.** For o1 and o2 additionally: every fire classified true/false positive by a one-line reason — **the FP RATE is the deliverable, not the count.** ⚠️ **Governance-pin nuance (cold seat 1): governance has no `.git`, so its `rev-parse` pin IS the shop-root repo HEAD by design — a bookend delta there may be non-corpus shop activity (a baton commit, a submodule bump); name it, do not HALT on it.**
-4. **WARN-only by MECHANISM:** grep the new checks — none appends to `results`, none assigns `all_passed` — **with `-F`, bare (unpiped) invocation, and a POSITIVE-CONTROL grep beside the negatives (e.g. the `(n)` check comment, which must hit) — on this shim an empty result is indistinguishable from a mistyped pattern, the exact hazard (n) itself mechanizes (cold seat 2)**; then `echo $?` = 0 on a fixture tripping all three. **Both, not just the second.**
+4. **WARN-only by MECHANISM:** grep the new checks — none appends to `results`, none assigns `all_passed` — **with `-F`, bare (unpiped) invocation, and a POSITIVE-CONTROL grep beside the negatives (e.g. the `(n)` check comment, which must hit) — on this shim an empty result is indistinguishable from a mistyped pattern, the exact hazard (n) itself mechanizes (cold seat 2)**; then `echo $?` = 0 on a fixture tripping **all FOUR labels — (n), (o1), (o2), (p) — e.g. the re-materialized Step-1 fixture (cold seat 4: "all three" here re-opened at Step 2 the o1-dead hole seat 3 closed at Step 1 — the fold-sweep-every-site class, again)**. **Both, not just the second.**
 5. **QA Receipt with the canonical Rule 20 self-check block**, one verification row per item above.
-   - `required_evidence_files`: `[targeted-tests.txt, full-suite.txt, corpus-sweep.txt]`
+   - `required_evidence_files`: `[targeted-tests.txt, full-suite.txt, corpus-sweep.txt, sweep-diff.txt]` — **sweep-diff.txt is the sweep-diff proof's raw artifact (306's form; without it the proof lands as an unverifiable in-report summary or an unscoped file — cold seat 4's HIGH)**
    - ⚠️ Deposit all three BEFORE running the block — it `sys.exit(1)`s if any is missing or empty.
    - ⚠️⚠️ **Include the block's literal stdout. The banner `Rule 20 — QA Self-Check Results` and the `PASSED — SELF-CHECK PASSED` line must appear BYTE-EXACT (em-dash U+2014). If it prints FAILED, HALT.**
 
@@ -122,12 +122,14 @@ Read the plan at knowledge/decisions/in-progress-executable-<id>.md (the daemon 
 > - `knowledge/qa/targeted-tests.txt`
 > - `knowledge/qa/full-suite.txt`
 > - `knowledge/qa/corpus-sweep.txt`
+> - `knowledge/qa/sweep-diff.txt`
 
 **Deposits:**
 - `bellows/knowledge/qa/lint-subcheck-trio-qa-report-2026-08-08.md`
 - `bellows/knowledge/qa/targeted-tests.txt`
 - `bellows/knowledge/qa/full-suite.txt`
 - `bellows/knowledge/qa/corpus-sweep.txt`
+- `bellows/knowledge/qa/sweep-diff.txt`
 
 ### Output Receipt (Step 2, terminal)
 
@@ -141,11 +143,14 @@ Close with `### Status` (**Complete**), `### Deposits`, `### Ledger Updates` wit
 
 - ⚠️ **`plan_lint` is a GATE. Purely additive: no existing check — (a)–(l), the unnumbered WARNs — changes behaviour, wording, or status. If a new check cannot land without touching one, HALT and report.**
 - **No-output-consumer premise re-verified at authoring (2026-08-08, with a positive control):** no daemon module (`gates.py`, `runner.py`, `validators.py`, `bellows.py`) references `plan_lint`; the only out-of-tree mentions are fixture strings in `tests/test_gates.py`. New WARN lines therefore cannot break a consumer — re-verify at DEV if the claim is load-bearing to any decision there.
-- ⚠️⚠️ **HALF-COMPLETE STATE, STATED:** Step 1 without Step 2 leaves three unmeasured WARN-only checks live in the gate — acceptable solely because they cannot block a deposit or change an exit code; if any is ever made blocking, the measurement precedes the flip.
+- ⚠️⚠️ **HALF-COMPLETE STATE, STATED:** Step 1 without Step 2 leaves the three checks (four label families) unmeasured and live in the gate — acceptable solely because they cannot block a deposit or change an exit code; if any is ever made blocking, the measurement precedes the flip.
 - **Doc-sync deferral, stated:** (p) seeds a §2.8 convention and (n)/(o) mechanize §2.7 sub-rules none of which DRAFTING_CYCLE.md yet names as gate-backed — the governance edit rides the corpus path (198→v1.2 precedent), NOT this plan.
 - **Absolute paths:** `/Users/marklehn/Developer/GitHub/bellows/scripts/plan_lint.py`, `/Users/marklehn/Developer/GitHub/bellows/tests/test_plan_lint.py`.
 - ⚠️ **`grep -F` mandatory for literals** (ugrep shim — the very hazard check (n) mechanizes).
 - ⚠️ **Agents run `git add` and `git commit` only. No push.**
+- **No re-dating: every deposit basename embeds 2026-08-08 — a run on a later date KEEPS the authored date (the resume-glob UTC lesson; the deposit gate matches basenames). (306's rule, restored at cold seat 4.)**
+- **Lint the FINAL text, untruncated, BEFORE the cp to `knowledge/decisions/` — the daemon claims within seconds of deposit; there is no post-deposit fix window. (306's rule, restored at cold seat 4.)**
+- **HALT ROUTING — the inputs each step reads; if any is missing or unreadable, HALT rather than improvise (306's list form, restored at cold seat 4):** Step 1: `scripts/plan_lint.py`, `tests/test_plan_lint.py`, `gates.py`, the census deposit `knowledge/research/lens-mechanization-census-2026-08-08.md`, the Bellows Developer specialist file. Step 2: **the Step-1 dev log (carrier of PRE_EDIT_HASH and the pasted tripping-fixture text — two Step-2 items die without it)**, `/Users/marklehn/Developer/GitHub/RULE_20_SELF_CHECK_BLOCK.md` (the self-check block source), `gates.py`, the five corpus roots.
 - Where a step cannot be completed as written, **HALT and report** — never substitute a narrower change.
 
 ---
@@ -154,7 +159,7 @@ Close with `### Status` (**Complete**), `### Deposits`, `### Ledger Updates` wit
 
 **This section is a RECORD, not instructions.** Gate-matching strings are described here, never quoted.
 
-**Tier:** T2 — computed: **T-6 fires** (`plan_lint` IS a gate; editing it is a governance-surface edit by §1's definition, the 303/306 precedent) and **T-1 fires** (source plus tests). **T-7 consumed:** authored from diagnostic-322, whose findings carry re-verification clauses here rather than inheritance. Clone framing: structure-for-structure from `executable-303`; newest same-class shipped `executable-306`; **clone framing is not licence to down-tier (§2.6) — the cold panel obligation stands.**
+**Tier:** T2 — triggers fired: T-6 (`plan_lint` IS a gate — a governance-surface edit by §1's definition, the 303/306 precedent), T-1 (source plus tests). Proven clone of `executable-303` (origin); diffed against newest same-class `executable-306`; T-7 consumed (authored from diagnostic-322, findings carried with re-verification clauses, never inherited). **Clone framing is not licence to down-tier (§2.6) — the cold panel obligation stands.** ⚠️ Tier line rewritten to the CANONICAL machine-parsable form at cold seat 4 — the prior wording ("computed: T-6 fires…"; "structure-for-structure from") was invisible to shipped checks (k) and (l) in the very plan extending the lint, 306's C6 class exactly.
 
 **Expected lint:** NOT FINAL — set at the §5 conformance pass; the closing-fold WARN is expected to be EARNED only if the panel ends judged-stop rather than dry.
 
