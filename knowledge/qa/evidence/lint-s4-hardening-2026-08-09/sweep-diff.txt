@@ -1,0 +1,35 @@
+Sweep-Diff Receipt — lint-s4-hardening-2026-08-09
+
+PRE_EDIT_BLOB: 8288606eefe5a93720aa40017073aa4a52ca2f51
+CURRENT_BLOB:  1cc8f69dd3fb993b2f2b5ad32a76099bd5808754
+STEP_1_COMMIT_BLOB: 1cc8f69dd3fb993b2f2b5ad32a76099bd5808754
+
+Blob assertions:
+  CURRENT == STEP_1_COMMIT: YES (1cc8f69dd3fb993b2f2b5ad32a76099bd5808754)
+  CURRENT != PRE_EDIT:      YES (1cc8f69… ≠ 8288606…)
+
+files_compared=1391
+old_crashes=0
+new_crashes=0
+
+Corpus roots (round 2, pre-sweep):
+  anvil:          81f3357907fa0acfcb54e22c975e4a5154a435ae
+  bellows:        7cb1cad26be5b237716f274416b6f7fd9983677e
+  governance:     cc65f2e63a84cf11631c3807d3e50173b3a2f2d9
+  invoice-pulse:  fd9b77f8b552ff66e5a467f281f9a9a753feffef
+  lessons-forge:  8ab40ddc4e041d9c35826f6406e2be8213a24c80
+
+Corpus roots (round 2, post-sweep):
+  anvil:          81f3357907fa0acfcb54e22c975e4a5154a435ae
+  bellows:        7cb1cad26be5b237716f274416b6f7fd9983677e
+  governance:     cc65f2e63a84cf11631c3807d3e50173b3a2f2d9
+  invoice-pulse:  fd9b77f8b552ff66e5a467f281f9a9a753feffef
+  lessons-forge:  8ab40ddc4e041d9c35826f6406e2be8213a24c80
+
+Root pin delta: NONE (round 2 stable)
+
+Note: round 1 had a pin delta on invoice-pulse (5df7e85… → fd9b77f…) due to concurrent activity; sweep was re-run with stable round 2 pins.
+
+gates.__file__ (both streams): /Users/marklehn/Developer/GitHub/bellows/gates.py
+
+DIFF: none
