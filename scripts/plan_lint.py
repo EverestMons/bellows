@@ -193,7 +193,26 @@ def lint(plan_path):
                     print(f"WARN: Drafting Cycle block missing lens(es): {', '.join(missing)} (DRAFTING_CYCLE.md §3)")
 
                 if tier_num == 2:
-                    if not re.search(r'(?:^\*\*cold[\s-]+panel|^-\s*cold[\s-])', dc_block, re.IGNORECASE | re.MULTILINE):
+                    cold_bold_re = re.compile(r'^\*\*cold[\s-]+panel', re.IGNORECASE)
+                    cold_dash_re = re.compile(r'^-\s*cold[\s-]', re.IGNORECASE)
+                    has_cold_content = False
+                    for line in dc_block.splitlines():
+                        stripped = line.strip()
+                        if cold_bold_re.match(stripped):
+                            remainder = cold_bold_re.sub('', stripped)
+                            remainder = re.sub(r'\([^)]*\)', '', remainder)
+                            remainder = remainder.replace(':', '').replace('*', '').strip()
+                            if remainder:
+                                has_cold_content = True
+                                break
+                        elif cold_dash_re.match(stripped):
+                            remainder = re.sub(r'^-\s*cold[\s-]+\S+', '', stripped, flags=re.IGNORECASE)
+                            remainder = re.sub(r'\([^)]*\)', '', remainder)
+                            remainder = remainder.replace(':', '').strip()
+                            if remainder:
+                                has_cold_content = True
+                                break
+                    if not has_cold_content:
                         print("WARN: T2 plan missing cold-panel line in Drafting Cycle block (DRAFTING_CYCLE.md §3)")
 
                 lens_line_re = re.compile(
@@ -210,7 +229,7 @@ def lint(plan_path):
                 if last_lens_line is not None:
                     ll_lower = last_lens_line.lower()
                     has_fold = 'fold' in ll_lower
-                    cleaned = re.sub(r'\b(?:not|no|never)\s+dry\b', '', ll_lower)
+                    cleaned = re.sub(r'\b(?:not|no|never)\s+(?:\w+\s+)?dry\b', '', ll_lower)
                     has_dry = bool(re.search(r'\bdry\b', cleaned))
                     if has_fold and not has_dry:
                         print("WARN: Drafting Cycle closing indicates fold as last event, not a dry lens pass (DRAFTING_CYCLE.md §2)")

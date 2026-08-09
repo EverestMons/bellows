@@ -1020,6 +1020,305 @@ def test_lint_cycle_status_mutual_exclusivity():
     assert "dry lens pass" not in result.stdout.lower()
 
 
+# --- M2 (row 27): cold-panel content check tests ---
+
+def test_lint_m2_hollow_bold_warns():
+    """(f-m2a) Hollow bold cold-panel line **Cold panel (T2):** → WARN, exit 0."""
+    plan = """\
+# Test Plan
+**Date:** 2026-08-09 | **Dispatch Mode:** bellows | **pause_for_verdict:** always | **cycle_tier:** T2
+
+## Drafting Cycle
+**Tier:** T2 — triggers fired: T-6 (governance surface).
+**Walks:** 1.
+- Weak spots:         w1 dry.
+- Destruction:        w1 dry.
+- Vulnerabilities:    w1 dry.
+- Integration-record: w1 dry.
+- ACID:               w1 dry.
+**Cold panel (T2):**
+**Closing:** walk 1 dry; last event = lens pass; deposited once.
+"""
+    result = _run_lint(plan)
+    assert result.returncode == 0, f"Expected exit 0, got {result.returncode}\nstdout: {result.stdout}"
+    assert "cold-panel" in result.stdout.lower()
+    assert "missing cold-panel" in result.stdout.lower()
+
+
+def test_lint_m2_substantive_bold_no_warn():
+    """(f-m2b) Substantive bold cold-panel line → no WARN, exit 0."""
+    plan = """\
+# Test Plan
+**Date:** 2026-08-09 | **Dispatch Mode:** bellows | **pause_for_verdict:** always | **cycle_tier:** T2
+
+## Drafting Cycle
+**Tier:** T2 — triggers fired: T-6 (governance surface).
+**Walks:** 1.
+- Weak spots:         w1 dry.
+- Destruction:        w1 dry.
+- Vulnerabilities:    w1 dry.
+- Integration-record: w1 dry.
+- ACID:               w1 dry.
+**Cold panel (T2):** run; 3 seats, 8 findings.
+**Closing:** walk 1 dry; last event = lens pass; deposited once.
+"""
+    result = _run_lint(plan)
+    assert result.returncode == 0, f"Expected exit 0, got {result.returncode}\nstdout: {result.stdout}"
+    assert "cold-panel" not in result.stdout.lower()
+    assert "missing cold-panel" not in result.stdout.lower()
+
+
+def test_lint_m2_hollow_dash_warns():
+    """(f-m2c) Hollow dash cold line - Cold weak-spots: → WARN, exit 0."""
+    plan = """\
+# Test Plan
+**Date:** 2026-08-09 | **Dispatch Mode:** bellows | **pause_for_verdict:** always | **cycle_tier:** T2
+
+## Drafting Cycle
+**Tier:** T2 — triggers fired: T-6 (governance surface).
+**Walks:** 1.
+- Weak spots:         w1 dry.
+- Destruction:        w1 dry.
+- Vulnerabilities:    w1 dry.
+- Integration-record: w1 dry.
+- ACID:               w1 dry.
+- Cold weak-spots:
+**Closing:** walk 1 dry; last event = lens pass; deposited once.
+"""
+    result = _run_lint(plan)
+    assert result.returncode == 0, f"Expected exit 0, got {result.returncode}\nstdout: {result.stdout}"
+    assert "cold-panel" in result.stdout.lower()
+    assert "missing cold-panel" in result.stdout.lower()
+
+
+def test_lint_m2_substantive_dash_no_warn():
+    """(f-m2d) Substantive dash cold line → no WARN, exit 0."""
+    plan = """\
+# Test Plan
+**Date:** 2026-08-09 | **Dispatch Mode:** bellows | **pause_for_verdict:** always | **cycle_tier:** T2
+
+## Drafting Cycle
+**Tier:** T2 — triggers fired: T-6 (governance surface).
+**Walks:** 1.
+- Weak spots:         w1 dry.
+- Destruction:        w1 dry.
+- Vulnerabilities:    w1 dry.
+- Integration-record: w1 dry.
+- ACID:               w1 dry.
+- Cold weak-spots: 9 findings, 2 HIGH.
+**Closing:** walk 1 dry; last event = lens pass; deposited once.
+"""
+    result = _run_lint(plan)
+    assert result.returncode == 0, f"Expected exit 0, got {result.returncode}\nstdout: {result.stdout}"
+    assert "cold-panel" not in result.stdout.lower()
+    assert "missing cold-panel" not in result.stdout.lower()
+
+
+def test_lint_m2_dominant_real_corpus_form_no_warn():
+    """(f-m2e) Dominant real corpus form - Cold panel (section), seat N: findings → no WARN, exit 0."""
+    plan = """\
+# Test Plan
+**Date:** 2026-08-09 | **Dispatch Mode:** bellows | **pause_for_verdict:** always | **cycle_tier:** T2
+
+## Drafting Cycle
+**Tier:** T2 — triggers fired: T-6 (governance surface).
+**Walks:** 1.
+- Weak spots:         w1 dry.
+- Destruction:        w1 dry.
+- Vulnerabilities:    w1 dry.
+- Integration-record: w1 dry.
+- ACID:               w1 dry.
+- Cold panel (§2.6), seat 1 (Lens 1 cold): 11 findings
+**Closing:** walk 1 dry; last event = lens pass; deposited once.
+"""
+    result = _run_lint(plan)
+    assert result.returncode == 0, f"Expected exit 0, got {result.returncode}\nstdout: {result.stdout}"
+    assert "cold-panel" not in result.stdout.lower()
+    assert "missing cold-panel" not in result.stdout.lower()
+
+
+def test_lint_m2_hollow_dash_panel_warns():
+    """(f-m2f) Hollow dash cold panel line - Cold panel (section): → WARN, exit 0."""
+    plan = """\
+# Test Plan
+**Date:** 2026-08-09 | **Dispatch Mode:** bellows | **pause_for_verdict:** always | **cycle_tier:** T2
+
+## Drafting Cycle
+**Tier:** T2 — triggers fired: T-6 (governance surface).
+**Walks:** 1.
+- Weak spots:         w1 dry.
+- Destruction:        w1 dry.
+- Vulnerabilities:    w1 dry.
+- Integration-record: w1 dry.
+- ACID:               w1 dry.
+- Cold panel (§2.6):
+**Closing:** walk 1 dry; last event = lens pass; deposited once.
+"""
+    result = _run_lint(plan)
+    assert result.returncode == 0, f"Expected exit 0, got {result.returncode}\nstdout: {result.stdout}"
+    assert "cold-panel" in result.stdout.lower()
+    assert "missing cold-panel" in result.stdout.lower()
+
+
+def test_lint_m2_colonless_no_warn():
+    """(f-m2g) Colonless cold-panel line with content → no WARN, exit 0."""
+    plan = """\
+# Test Plan
+**Date:** 2026-08-09 | **Dispatch Mode:** bellows | **pause_for_verdict:** always | **cycle_tier:** T2
+
+## Drafting Cycle
+**Tier:** T2 — triggers fired: T-6 (governance surface).
+**Walks:** 1.
+- Weak spots:         w1 dry.
+- Destruction:        w1 dry.
+- Vulnerabilities:    w1 dry.
+- Integration-record: w1 dry.
+- ACID:               w1 dry.
+**Cold panel materially changed the draft (CB1 HIGH) → seat 1 findings**
+**Closing:** walk 1 dry; last event = lens pass; deposited once.
+"""
+    result = _run_lint(plan)
+    assert result.returncode == 0, f"Expected exit 0, got {result.returncode}\nstdout: {result.stdout}"
+    assert "cold-panel" not in result.stdout.lower()
+    assert "missing cold-panel" not in result.stdout.lower()
+
+
+def test_lint_m2_accepted_residue_no_warn():
+    """(f-m2h) Hollow bold + substantive dash cold lines (accepted residue) → no WARN, exit 0."""
+    plan = """\
+# Test Plan
+**Date:** 2026-08-09 | **Dispatch Mode:** bellows | **pause_for_verdict:** always | **cycle_tier:** T2
+
+## Drafting Cycle
+**Tier:** T2 — triggers fired: T-6 (governance surface).
+**Walks:** 1.
+- Weak spots:         w1 dry.
+- Destruction:        w1 dry.
+- Vulnerabilities:    w1 dry.
+- Integration-record: w1 dry.
+- ACID:               w1 dry.
+**Cold panel (T2):**
+- Cold weak-spots:      3 findings, 1 HIGH.
+- Cold destruction:     dry.
+**Closing:** walk 1 dry; last event = lens pass; deposited once.
+"""
+    result = _run_lint(plan)
+    assert result.returncode == 0, f"Expected exit 0, got {result.returncode}\nstdout: {result.stdout}"
+    assert "missing cold-panel" not in result.stdout.lower()
+
+
+# --- M3 (row 28): bounded-gap negation tests ---
+
+def test_lint_m3_not_yet_dry_warns():
+    """(f-m3a) Last lens line 'not yet dry' on fold → WARN, exit 0."""
+    plan = """\
+# Test Plan
+**Date:** 2026-08-09 | **Dispatch Mode:** bellows | **pause_for_verdict:** always | **cycle_tier:** T1
+
+## Drafting Cycle
+**Tier:** T1 — triggers fired: T-8 (novel).
+**Walks:** 1.
+- Weak spots:         w1 dry.
+- Destruction:        w1 dry.
+- Vulnerabilities:    w1 dry.
+- Integration-record: w1 dry.
+- ACID:               a1 4 folded; not yet dry.
+**Closing:** walk 1 complete; deposited once.
+"""
+    result = _run_lint(plan)
+    assert result.returncode == 0, f"Expected exit 0 (WARN only), got {result.returncode}\nstdout: {result.stdout}"
+    assert "fold" in result.stdout.lower()
+    assert "dry lens pass" in result.stdout.lower()
+
+
+def test_lint_m3_no_longer_dry_warns():
+    """(f-m3b) Last lens line 'no longer dry' on fold → WARN, exit 0."""
+    plan = """\
+# Test Plan
+**Date:** 2026-08-09 | **Dispatch Mode:** bellows | **pause_for_verdict:** always | **cycle_tier:** T1
+
+## Drafting Cycle
+**Tier:** T1 — triggers fired: T-8 (novel).
+**Walks:** 1.
+- Weak spots:         w1 dry.
+- Destruction:        w1 dry.
+- Vulnerabilities:    w1 dry.
+- Integration-record: w1 dry.
+- ACID:               a1 2 folded; no longer dry.
+**Closing:** walk 1 complete; deposited once.
+"""
+    result = _run_lint(plan)
+    assert result.returncode == 0, f"Expected exit 0 (WARN only), got {result.returncode}\nstdout: {result.stdout}"
+    assert "fold" in result.stdout.lower()
+    assert "dry lens pass" in result.stdout.lower()
+
+
+def test_lint_m3_never_quite_dry_warns():
+    """(f-m3c) Last lens line 'never quite dry' on fold → WARN, exit 0."""
+    plan = """\
+# Test Plan
+**Date:** 2026-08-09 | **Dispatch Mode:** bellows | **pause_for_verdict:** always | **cycle_tier:** T1
+
+## Drafting Cycle
+**Tier:** T1 — triggers fired: T-8 (novel).
+**Walks:** 1.
+- Weak spots:         w1 dry.
+- Destruction:        w1 dry.
+- Vulnerabilities:    w1 dry.
+- Integration-record: w1 dry.
+- ACID:               a1 2 folded; never quite dry.
+**Closing:** walk 1 complete; deposited once.
+"""
+    result = _run_lint(plan)
+    assert result.returncode == 0, f"Expected exit 0 (WARN only), got {result.returncode}\nstdout: {result.stdout}"
+    assert "fold" in result.stdout.lower()
+    assert "dry lens pass" in result.stdout.lower()
+
+
+def test_lint_m3_legitimate_dry_at_distance_no_warn():
+    """(f-m3d) Legitimate dry close with unrelated negator at N>2 distance → NO WARN, exit 0."""
+    plan = """\
+# Test Plan
+**Date:** 2026-08-09 | **Dispatch Mode:** bellows | **pause_for_verdict:** always | **cycle_tier:** T1
+
+## Drafting Cycle
+**Tier:** T1 — triggers fired: T-8 (novel).
+**Walks:** 2.
+- Weak spots:         w1 1 folded; w2 dry.
+- Destruction:        w1 dry; w2 dry.
+- Vulnerabilities:    w1 dry; w2 dry.
+- Integration-record: w1 dry; w2 dry.
+- ACID:               w1 2 folded, w2 no further findings so dry.
+**Closing:** walk 2 dry; last event = lens pass; deposited once.
+"""
+    result = _run_lint(plan)
+    assert result.returncode == 0, f"Expected exit 0, got {result.returncode}\nstdout: {result.stdout}"
+    assert "fold as last event" not in result.stdout.lower()
+    assert "dry lens pass" not in result.stdout.lower()
+
+
+def test_lint_m3_adjacent_not_dry_warns():
+    """(f-m3e) Adjacent 'not dry' on fold-bearing last lens line → WARN (286 unchanged), exit 0."""
+    plan = """\
+# Test Plan
+**Date:** 2026-08-09 | **Dispatch Mode:** bellows | **pause_for_verdict:** always | **cycle_tier:** T1
+
+## Drafting Cycle
+**Tier:** T1 — triggers fired: T-8 (novel).
+**Walks:** 1.
+- Weak spots:         w1 dry.
+- Destruction:        w1 dry.
+- Vulnerabilities:    w1 dry.
+- Integration-record: w1 dry.
+- ACID:               w1 1 folded; not dry.
+**Closing:** walk 1 complete; deposited once.
+"""
+    result = _run_lint(plan)
+    assert result.returncode == 0, f"Expected exit 0 (WARN only), got {result.returncode}\nstdout: {result.stdout}"
+    assert "fold" in result.stdout.lower()
+    assert "dry lens pass" in result.stdout.lower()
+
+
 # --- (g) Ledger ordering tests ---
 
 # Negative control: ascending ledger from diagnostic-301 (C16-C25 in order)
