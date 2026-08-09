@@ -1,4 +1,5 @@
 import os
+import shutil
 import subprocess
 import sys
 import tempfile
@@ -1846,3 +1847,600 @@ def test_lint_qa_and_terminal_coupling_warns_missing_qa_steps():
     assert result.returncode == 0, f"Expected exit 0 (WARN only), got {result.returncode}\nstdout: {result.stdout}"
     assert "qa_and_terminal" in result.stdout
     assert "qa_steps" in result.stdout
+
+
+# --- Check (n): non-F grep lint ---
+
+def test_lint_check_n_grep_literal_warns():
+    """(n) Inline grep on literal pattern without -F → WARN, exit 0."""
+    plan = """\
+# Test Plan
+**Dispatch Mode:** bellows | **pause_for_verdict:** always
+
+## STEP 1 — DEV
+
+> Run `grep "plain literal" file.txt` to find matches.
+>
+> **Deposits:**
+> - `bellows/knowledge/development/dev-log.md`
+"""
+    result = _run_lint(plan)
+    assert result.returncode == 0, f"stdout: {result.stdout}"
+    assert "(n) WARN" in result.stdout
+    assert "ugrep-shim" in result.stdout
+
+
+def test_lint_check_n_grep_dot_only_warns():
+    """(n) grep "foo.py" — dot-only metachar is literal-intent, still warns."""
+    plan = """\
+# Test Plan
+**Dispatch Mode:** bellows | **pause_for_verdict:** always
+
+## STEP 1 — DEV
+
+> Run `grep "foo.py" scripts/` to check.
+>
+> **Deposits:**
+> - `bellows/knowledge/development/dev-log.md`
+"""
+    result = _run_lint(plan)
+    assert result.returncode == 0, f"stdout: {result.stdout}"
+    assert "(n) WARN" in result.stdout
+
+
+def test_lint_check_n_grep_piped_warns():
+    """(n) Piped form: cat x | grep "literal" → WARN."""
+    plan = """\
+# Test Plan
+**Dispatch Mode:** bellows | **pause_for_verdict:** always
+
+## STEP 1 — DEV
+
+> Run `cat output.log | grep "search term"` for matches.
+>
+> **Deposits:**
+> - `bellows/knowledge/development/dev-log.md`
+"""
+    result = _run_lint(plan)
+    assert result.returncode == 0, f"stdout: {result.stdout}"
+    assert "(n) WARN" in result.stdout
+
+
+def test_lint_check_n_grep_single_quoted_warns():
+    """(n) Single-quoted pattern: grep 'plain literal' file → WARN."""
+    plan = """\
+# Test Plan
+**Dispatch Mode:** bellows | **pause_for_verdict:** always
+
+## STEP 1 — DEV
+
+> Run `grep 'plain literal' file.txt` to find matches.
+>
+> **Deposits:**
+> - `bellows/knowledge/development/dev-log.md`
+"""
+    result = _run_lint(plan)
+    assert result.returncode == 0, f"stdout: {result.stdout}"
+    assert "(n) WARN" in result.stdout
+
+
+def test_lint_check_n_grep_with_F_no_warn():
+    """(n) grep -F "literal" → no WARN (fixed-strings present)."""
+    plan = """\
+# Test Plan
+**Dispatch Mode:** bellows | **pause_for_verdict:** always
+
+## STEP 1 — DEV
+
+> Run `grep -F "plain literal" file.txt` to find matches.
+>
+> **Deposits:**
+> - `bellows/knowledge/development/dev-log.md`
+"""
+    result = _run_lint(plan)
+    assert result.returncode == 0, f"stdout: {result.stdout}"
+    assert "(n) WARN" not in result.stdout
+
+
+def test_lint_check_n_grep_regex_no_warn():
+    """(n) grep -E "a|b" → no WARN (regex intent)."""
+    plan = """\
+# Test Plan
+**Dispatch Mode:** bellows | **pause_for_verdict:** always
+
+## STEP 1 — DEV
+
+> Run `grep -E "a|b" file.txt` to find matches.
+>
+> **Deposits:**
+> - `bellows/knowledge/development/dev-log.md`
+"""
+    result = _run_lint(plan)
+    assert result.returncode == 0, f"stdout: {result.stdout}"
+    assert "(n) WARN" not in result.stdout
+
+
+def test_lint_check_n_grep_fenced_no_warn():
+    """(n) Defective grep inside a fenced code block → no WARN (documented miss)."""
+    plan = """\
+# Test Plan
+**Dispatch Mode:** bellows | **pause_for_verdict:** always
+
+## STEP 1 — DEV
+
+> Example:
+>
+> ```bash
+> grep "plain literal" file.txt
+> ```
+>
+> **Deposits:**
+> - `bellows/knowledge/development/dev-log.md`
+"""
+    result = _run_lint(plan)
+    assert result.returncode == 0, f"stdout: {result.stdout}"
+    assert "(n) WARN" not in result.stdout
+
+
+def test_lint_check_n_grep_metachar_no_warn():
+    """(n) Pattern with non-dot metacharacters → no WARN."""
+    plan = """\
+# Test Plan
+**Dispatch Mode:** bellows | **pause_for_verdict:** always
+
+## STEP 1 — DEV
+
+> Run `grep "foo[0-9]" file.txt` to find matches.
+>
+> **Deposits:**
+> - `bellows/knowledge/development/dev-log.md`
+"""
+    result = _run_lint(plan)
+    assert result.returncode == 0, f"stdout: {result.stdout}"
+    assert "(n) WARN" not in result.stdout
+
+
+def test_lint_check_n_megaspan_degenerate():
+    """(n) Megaspan degenerate pair: stray backtick + bait → no fire; paired span after → fires."""
+    plan = """\
+# Test Plan
+**Dispatch Mode:** bellows | **pause_for_verdict:** always
+
+## STEP 1 — DEV
+
+> A stray backtick ` followed by grep "should not fire" bait text.
+>
+> Then a properly `grep "should fire" file.txt` paired span.
+>
+> **Deposits:**
+> - `bellows/knowledge/development/dev-log.md`
+"""
+    result = _run_lint(plan)
+    assert result.returncode == 0, f"stdout: {result.stdout}"
+    n_warns = [l for l in result.stdout.splitlines() if '(n) WARN' in l]
+    assert len(n_warns) == 1, f"Expected 1 (n) WARN (paired span only), got {len(n_warns)}: {n_warns}"
+    assert 'grep "should fire"' in n_warns[0]
+
+
+# --- Check (o1): input-path existence ---
+
+def test_lint_check_o1_missing_path_warns():
+    """(o1) Inline missing absolute path → WARN, exit 0."""
+    tmpdir = tempfile.mkdtemp()
+    try:
+        unique = os.path.basename(tmpdir)
+        proj_dir = os.path.join(tmpdir, 'proj')
+        plan_dir = os.path.join(proj_dir, 'knowledge', 'decisions')
+        os.makedirs(plan_dir)
+        missing_abs = f"/Users/marklehn/Developer/GitHub/bellows/knowledge/qa/nonexistent-{unique}.txt"
+        plan = f"""\
+# Test Plan
+**Dispatch Mode:** bellows | **pause_for_verdict:** always
+
+## STEP 1 — DEV
+
+> Check `{missing_abs}` for updates.
+>
+> **Deposits:**
+> - `bellows/knowledge/development/dev-log.md`
+"""
+        plan_path = os.path.join(plan_dir, 'fixture.md')
+        with open(plan_path, 'w', encoding='utf-8') as f:
+            f.write(plan)
+        result = subprocess.run(
+            [sys.executable, LINT_SCRIPT, plan_path],
+            capture_output=True, text=True, timeout=30,
+        )
+        assert result.returncode == 0, f"stdout: {result.stdout}"
+        o1_warns = [l for l in result.stdout.splitlines() if '(o1) WARN' in l]
+        assert len(o1_warns) >= 1, f"Expected >=1 (o1) WARN, got {len(o1_warns)}: {result.stdout}"
+    finally:
+        shutil.rmtree(tmpdir, ignore_errors=True)
+
+
+def test_lint_check_o1_excluded_by_deposits_no_warn():
+    """(o1) Path in Deposits (project-prefixed form) → NO WARN (normalized exclusion)."""
+    tmpdir = tempfile.mkdtemp()
+    try:
+        unique = os.path.basename(tmpdir)
+        proj_dir = os.path.join(tmpdir, 'proj')
+        plan_dir = os.path.join(proj_dir, 'knowledge', 'decisions')
+        os.makedirs(plan_dir)
+        plan = f"""\
+# Test Plan
+**Dispatch Mode:** bellows | **pause_for_verdict:** always
+
+## STEP 1 — DEV
+
+> Check `knowledge/qa/some-{unique}.txt` for updates.
+>
+> **Deposits:**
+> - `bellows/knowledge/qa/some-{unique}.txt`
+"""
+        plan_path = os.path.join(plan_dir, 'fixture.md')
+        with open(plan_path, 'w', encoding='utf-8') as f:
+            f.write(plan)
+        result = subprocess.run(
+            [sys.executable, LINT_SCRIPT, plan_path],
+            capture_output=True, text=True, timeout=30,
+        )
+        assert result.returncode == 0, f"stdout: {result.stdout}"
+        o1_warns = [l for l in result.stdout.splitlines() if '(o1) WARN' in l]
+        assert len(o1_warns) == 0, f"Expected 0 (o1) WARNs, got {len(o1_warns)}: {o1_warns}"
+        info_lines = [l for l in result.stdout.splitlines() if '(o1) INFO' in l]
+        assert len(info_lines) == 1
+        assert 'excluded=1' in info_lines[0]
+    finally:
+        shutil.rmtree(tmpdir, ignore_errors=True)
+
+
+def test_lint_check_o1_non_path_spans_no_warn():
+    """(o1) python3 and placeholder spans → no WARN (filter rejects)."""
+    plan = """\
+# Test Plan
+**Dispatch Mode:** bellows | **pause_for_verdict:** always
+
+## STEP 1 — DEV
+
+> Run `python3` and check `a/b<placeholder>` for updates.
+>
+> **Deposits:**
+> - `bellows/knowledge/development/dev-log.md`
+"""
+    result = _run_lint(plan)
+    assert result.returncode == 0, f"stdout: {result.stdout}"
+    o1_warns = [l for l in result.stdout.splitlines() if '(o1) WARN' in l]
+    assert len(o1_warns) == 0, f"Expected 0 (o1) WARNs, got {len(o1_warns)}: {o1_warns}"
+
+
+def test_lint_check_o1_existing_path_no_warn():
+    """(o1) Existing path → no WARN."""
+    tmpdir = tempfile.mkdtemp()
+    try:
+        unique = os.path.basename(tmpdir)
+        proj_dir = os.path.join(tmpdir, 'proj')
+        plan_dir = os.path.join(proj_dir, 'knowledge', 'decisions')
+        os.makedirs(plan_dir)
+        existing_rel = f"knowledge/qa/existing-{unique}.txt"
+        existing_full = os.path.join(proj_dir, existing_rel)
+        os.makedirs(os.path.dirname(existing_full), exist_ok=True)
+        with open(existing_full, 'w') as f:
+            f.write('test')
+        plan = f"""\
+# Test Plan
+**Dispatch Mode:** bellows | **pause_for_verdict:** always
+
+## STEP 1 — DEV
+
+> Check `{existing_rel}` for updates.
+>
+> **Deposits:**
+> - `bellows/knowledge/development/dev-log.md`
+"""
+        plan_path = os.path.join(plan_dir, 'fixture.md')
+        with open(plan_path, 'w', encoding='utf-8') as f:
+            f.write(plan)
+        result = subprocess.run(
+            [sys.executable, LINT_SCRIPT, plan_path],
+            capture_output=True, text=True, timeout=30,
+        )
+        assert result.returncode == 0, f"stdout: {result.stdout}"
+        o1_warns = [l for l in result.stdout.splitlines()
+                    if '(o1) WARN' in l and f'existing-{unique}' in l]
+        assert len(o1_warns) == 0, f"Expected 0 (o1) WARNs for existing path: {o1_warns}"
+    finally:
+        shutil.rmtree(tmpdir, ignore_errors=True)
+
+
+def test_lint_check_o1_bare_tmp_relative_only_info():
+    """(o1) Bare-tmp fixture (no /knowledge/ root) with relative candidates only →
+    INFO line with fired=0, NO WARN (skip semantics: resolution suppressed)."""
+    plan = """\
+# Test Plan
+**Dispatch Mode:** bellows | **pause_for_verdict:** always
+
+## STEP 1 — DEV
+
+> Check `knowledge/qa/some-bare-tmp-unique-xyz.txt` for updates.
+>
+> **Deposits:**
+> - `bellows/knowledge/development/dev-log.md`
+"""
+    result = _run_lint(plan)
+    assert result.returncode == 0, f"stdout: {result.stdout}"
+    info_lines = [l for l in result.stdout.splitlines() if '(o1) INFO' in l]
+    assert len(info_lines) == 1, f"Expected 1 INFO line, got {len(info_lines)}: {info_lines}"
+    assert 'fired=0' in info_lines[0]
+    o1_warns = [l for l in result.stdout.splitlines() if '(o1) WARN' in l]
+    assert len(o1_warns) == 0, f"Expected 0 (o1) WARNs, got {len(o1_warns)}: {o1_warns}"
+
+
+def test_lint_check_o1_cap_and_uncap():
+    """(o1) >10 missing paths → capped with (+K more); under PLAN_LINT_UNCAP=1 → all listed."""
+    tmpdir = tempfile.mkdtemp()
+    try:
+        unique = os.path.basename(tmpdir)
+        proj_dir = os.path.join(tmpdir, 'proj')
+        plan_dir = os.path.join(proj_dir, 'knowledge', 'decisions')
+        os.makedirs(plan_dir)
+        path_lines = "\n".join(
+            f"> Check `knowledge/qa/missing-{unique}-{i:03d}.txt` for updates."
+            for i in range(12)
+        )
+        plan = f"""\
+# Test Plan
+**Dispatch Mode:** bellows | **pause_for_verdict:** always
+
+## STEP 1 — DEV
+
+{path_lines}
+>
+> **Deposits:**
+> - `bellows/knowledge/development/dev-log.md`
+"""
+        plan_path = os.path.join(plan_dir, 'fixture.md')
+        with open(plan_path, 'w', encoding='utf-8') as f:
+            f.write(plan)
+
+        # Capped run
+        result = subprocess.run(
+            [sys.executable, LINT_SCRIPT, plan_path],
+            capture_output=True, text=True, timeout=30,
+        )
+        assert result.returncode == 0
+        listed = [l for l in result.stdout.splitlines() if '(o1) WARN' in l and 'missing path' in l]
+        tail = [l for l in result.stdout.splitlines() if '(o1) WARN' in l and '(+' in l]
+        assert len(listed) == 10, f"Expected 10 listed, got {len(listed)}"
+        assert len(tail) == 1, f"Expected 1 tail line, got {len(tail)}"
+
+        # Uncapped run
+        env = os.environ.copy()
+        env['PLAN_LINT_UNCAP'] = '1'
+        result2 = subprocess.run(
+            [sys.executable, LINT_SCRIPT, plan_path],
+            capture_output=True, text=True, timeout=30,
+            env=env,
+        )
+        assert result2.returncode == 0
+        listed2 = [l for l in result2.stdout.splitlines() if '(o1) WARN' in l and 'missing path' in l]
+        tail2 = [l for l in result2.stdout.splitlines() if '(+' in l]
+        assert len(listed2) == 12, f"Expected 12 listed under UNCAP, got {len(listed2)}"
+        assert len(tail2) == 0, f"Expected 0 tail under UNCAP, got {len(tail2)}"
+    finally:
+        shutil.rmtree(tmpdir, ignore_errors=True)
+
+
+def test_lint_check_o1_dedup():
+    """(o1) Duplicate missing path → reported once."""
+    tmpdir = tempfile.mkdtemp()
+    try:
+        unique = os.path.basename(tmpdir)
+        proj_dir = os.path.join(tmpdir, 'proj')
+        plan_dir = os.path.join(proj_dir, 'knowledge', 'decisions')
+        os.makedirs(plan_dir)
+        dup_path = f"knowledge/qa/dup-{unique}.txt"
+        plan = f"""\
+# Test Plan
+**Dispatch Mode:** bellows | **pause_for_verdict:** always
+
+## STEP 1 — DEV
+
+> Check `{dup_path}` and also `{dup_path}` again.
+>
+> **Deposits:**
+> - `bellows/knowledge/development/dev-log.md`
+"""
+        plan_path = os.path.join(plan_dir, 'fixture.md')
+        with open(plan_path, 'w', encoding='utf-8') as f:
+            f.write(plan)
+        result = subprocess.run(
+            [sys.executable, LINT_SCRIPT, plan_path],
+            capture_output=True, text=True, timeout=30,
+        )
+        assert result.returncode == 0
+        o1_warns = [l for l in result.stdout.splitlines()
+                    if '(o1) WARN' in l and f'dup-{unique}' in l]
+        assert len(o1_warns) == 1, f"Expected 1 (dedup), got {len(o1_warns)}: {o1_warns}"
+    finally:
+        shutil.rmtree(tmpdir, ignore_errors=True)
+
+
+# --- Check (o2): Deposits-entry form ---
+
+def test_lint_check_o2_unprefixed_warns():
+    """(o2) Deposits entry without project prefix → WARN."""
+    plan = """\
+# Test Plan
+**Dispatch Mode:** bellows | **pause_for_verdict:** always
+
+## STEP 1 — DEV
+
+> Do the work.
+>
+> **Deposits:**
+> - `knowledge/qa/foo.txt`
+"""
+    result = _run_lint(plan)
+    assert result.returncode == 0, f"stdout: {result.stdout}"
+    assert "(o2) WARN" in result.stdout
+
+
+def test_lint_check_o2_project_prefixed_no_warn():
+    """(o2) Deposits entry with project prefix → no WARN."""
+    plan = """\
+# Test Plan
+**Dispatch Mode:** bellows | **pause_for_verdict:** always
+
+## STEP 1 — DEV
+
+> Do the work.
+>
+> **Deposits:**
+> - `bellows/knowledge/qa/foo.txt`
+"""
+    result = _run_lint(plan)
+    assert result.returncode == 0, f"stdout: {result.stdout}"
+    o2_warns = [l for l in result.stdout.splitlines() if '(o2) WARN' in l]
+    assert len(o2_warns) == 0, f"Expected 0 (o2) WARNs, got {len(o2_warns)}: {o2_warns}"
+
+
+def test_lint_check_o2_absolute_no_warn():
+    """(o2) Deposits entry with absolute /Users/ path → no WARN."""
+    plan = """\
+# Test Plan
+**Dispatch Mode:** bellows | **pause_for_verdict:** always
+
+## STEP 1 — DEV
+
+> Do the work.
+>
+> **Deposits:**
+> - `/Users/marklehn/Developer/GitHub/bellows/knowledge/qa/foo.txt`
+"""
+    result = _run_lint(plan)
+    assert result.returncode == 0, f"stdout: {result.stdout}"
+    o2_warns = [l for l in result.stdout.splitlines() if '(o2) WARN' in l]
+    assert len(o2_warns) == 0, f"Expected 0 (o2) WARNs, got {len(o2_warns)}: {o2_warns}"
+
+
+def test_lint_check_o2_scope_exempt_no_warn():
+    """(o2) Scope entry scripts/plan_lint.py (repo-relative) → NO WARN (C1 exemption)."""
+    plan = """\
+# Test Plan
+**Dispatch Mode:** bellows | **pause_for_verdict:** always
+
+## STEP 1 — DEV
+
+> Do the work.
+>
+> **Scope:**
+> - `scripts/plan_lint.py`
+>
+> **Deposits:**
+> - `bellows/knowledge/development/dev-log.md`
+"""
+    result = _run_lint(plan)
+    assert result.returncode == 0, f"stdout: {result.stdout}"
+    o2_warns = [l for l in result.stdout.splitlines() if '(o2) WARN' in l]
+    assert len(o2_warns) == 0, f"Expected 0 (o2) WARNs, got {len(o2_warns)}: {o2_warns}"
+
+
+# --- Check (p): C-ledger entry without executable check ---
+
+def test_lint_check_p_no_backtick_warns():
+    """(p) C-entry with no backtick command or check: token → WARN."""
+    plan = """\
+# Test Plan
+**Dispatch Mode:** bellows | **pause_for_verdict:** always | **cycle_tier:** T1
+
+## Drafting Cycle
+**Tier:** T1 — triggers fired: T-8 (novel).
+- Weak spots:         w1 dry.
+- Destruction:        w1 dry.
+- Vulnerabilities:    w1 dry.
+- Integration-record: w1 dry.
+- ACID:               w1 dry.
+**Conflicts:** one constraint.
+- **C1** — this constraint has no executable form
+**Closing:** walk 1 dry; last event = lens pass.
+"""
+    result = _run_lint(plan)
+    assert result.returncode == 0, f"stdout: {result.stdout}"
+    assert "(p) WARN" in result.stdout
+    assert "C1" in result.stdout
+
+
+def test_lint_check_p_with_backtick_no_warn():
+    """(p) C-entry with inline backtick command → no WARN."""
+    plan = """\
+# Test Plan
+**Dispatch Mode:** bellows | **pause_for_verdict:** always | **cycle_tier:** T1
+
+## Drafting Cycle
+**Tier:** T1 — triggers fired: T-8 (novel).
+- Weak spots:         w1 dry.
+- Destruction:        w1 dry.
+- Vulnerabilities:    w1 dry.
+- Integration-record: w1 dry.
+- ACID:               w1 dry.
+**Conflicts:** one constraint.
+- **C1** — verify with `grep -F "token" file.txt`
+**Closing:** walk 1 dry; last event = lens pass.
+"""
+    result = _run_lint(plan)
+    assert result.returncode == 0, f"stdout: {result.stdout}"
+    p_warns = [l for l in result.stdout.splitlines() if '(p) WARN' in l]
+    assert len(p_warns) == 0, f"Expected 0 (p) WARNs, got {len(p_warns)}: {p_warns}"
+
+
+def test_lint_check_p_zero_entries_silent():
+    """(p) No C-entries in dc_block → silent (no WARN)."""
+    plan = """\
+# Test Plan
+**Dispatch Mode:** bellows | **pause_for_verdict:** always | **cycle_tier:** T1
+
+## Drafting Cycle
+**Tier:** T1 — triggers fired: T-8 (novel).
+- Weak spots:         w1 dry.
+- Destruction:        w1 dry.
+- Vulnerabilities:    w1 dry.
+- Integration-record: w1 dry.
+- ACID:               w1 dry.
+**Conflicts:** none.
+**Closing:** walk 1 dry; last event = lens pass.
+"""
+    result = _run_lint(plan)
+    assert result.returncode == 0, f"stdout: {result.stdout}"
+    p_warns = [l for l in result.stdout.splitlines() if '(p) WARN' in l]
+    assert len(p_warns) == 0, f"Expected 0 (p) WARNs, got {len(p_warns)}: {p_warns}"
+
+
+# --- Degenerate tests for checks (n), (o1), (o2), (p) ---
+
+def test_lint_degenerate_no_new_check_warns():
+    """Degenerate: empty plan, no dc_block, unparseable header → no crash, no
+    NEW-check WARN from (n)/(o1)/(o2)/(p). Exit code reflects pre-existing
+    check (a) behavior: unparseable = 1."""
+    new_labels = ['(n) WARN', '(o1) WARN', '(o1) INFO', '(o2) WARN', '(p) WARN']
+
+    result_empty = _run_lint("")
+    assert result_empty.returncode == 1
+    assert "Traceback" not in result_empty.stderr
+    for label in new_labels:
+        assert label not in result_empty.stdout, f"Unexpected {label} in empty plan"
+
+    plan_no_dc = """\
+# Test Plan
+**Dispatch Mode:** bellows | **pause_for_verdict:** always
+"""
+    result_no_dc = _run_lint(plan_no_dc)
+    assert result_no_dc.returncode == 0
+    assert "Traceback" not in result_no_dc.stderr
+    for label in new_labels:
+        assert label not in result_no_dc.stdout, f"Unexpected {label} in no-dc plan"
+
+    result_bad = _run_lint("not a valid plan at all")
+    assert result_bad.returncode == 1
+    assert "Traceback" not in result_bad.stderr
+    for label in new_labels:
+        assert label not in result_bad.stdout, f"Unexpected {label} in unparseable plan"

@@ -11,6 +11,7 @@ Checks:
 Exit 0 if all checks pass, exit 1 otherwise.
 """
 
+import os
 import re
 import sys
 from pathlib import Path
@@ -159,6 +160,8 @@ def lint(plan_path):
             print(f"WARN: step {n} is QA-labeled but absent from qa_steps={qa_steps_raw!r} — it will not be Rule 20/22 gated")
         for n in sorted(qa_steps_set - qa_labeled_steps):
             print(f"WARN: qa_steps lists step {n} but step {n} is not QA-labeled — it will be gated as QA (plan-133 trap)")
+
+    dc_block = None
 
     # (f) Drafting Cycle self-check (DRAFTING_CYCLE.md §4, warn-first)
     cycle_tier_raw = header.get("cycle_tier", "") if header else ""
@@ -324,6 +327,149 @@ def lint(plan_path):
                     declared_tier = int(ct_match.group(1))
                     if declared_tier < 2:
                         print("(l) WARN: clone-framed plan firing T-2 declares tier < T2 — §2.6: clone framing is not licence to down-tier; consider self-escalation to the cold panel")
+
+    # Shared single-line inline backtick span extractor for (n) and (o1)
+    backtick_spans = []
+    for line in clean_text.splitlines():
+        for m in re.finditer(r'`([^`\n]+)`', line):
+            backtick_spans.append(m.group(1))
+
+    # (n) Non-F grep lint (WARN-only): flags inline backtick grep commands using
+    # literal patterns without -F/--fixed-strings. Fenced blocks excluded via
+    # clean_text. Documented misses: unquoted patterns, fenced-block greps.
+    for span in backtick_spans:
+        if not (span.startswith('grep ') or '| grep ' in span):
+            continue
+        grep_part = span[span.rindex('| grep ') + 2:] if '| grep ' in span else span
+        if re.search(r'(?:^|\s)-\w*F', grep_part) or '--fixed-strings' in grep_part:
+            continue
+        if re.search(r'(?:^|\s)-\w*[EPG]', grep_part):
+            continue
+        pattern_match = re.search(r'"([^"]*)"', grep_part)
+        if not pattern_match:
+            pattern_match = re.search(r"'([^']*)'", grep_part)
+        if not pattern_match:
+            continue
+        pattern_text = pattern_match.group(1)
+        if re.search(r'[\[\](){}|^$*+?\\]', pattern_text):
+            continue
+        print(f"(n) WARN: `{span}` — grep on literal pattern without -F (ugrep-shim hazard)")
+
+    # (o) Path checks — two sub-rules
+    REPO_ROOTS = {'knowledge', 'scripts', 'tests', 'src', 'web', 'engines', 'agents', 'verdicts', 'logs', 'governance'}
+    KNOWN_PROJECTS = {'anvil', 'bellows', 'governance', 'invoice-pulse', 'lessons-forge', 'forge'}
+    SHOP_ROOT = '/Users/marklehn/Developer/GitHub'
+
+    plan_path_resolved = str(Path(plan_path).resolve())
+    project_root = None
+    if '/knowledge/' in plan_path_resolved:
+        project_root = plan_path_resolved[:plan_path_resolved.index('/knowledge/')]
+    else:
+        candidate_dir = Path(plan_path).resolve().parent
+        while candidate_dir != candidate_dir.parent:
+            if (candidate_dir / '.git').exists():
+                project_root = str(candidate_dir)
+                break
+            candidate_dir = candidate_dir.parent
+
+    exclusion_set = set()
+    all_excl_entries = list(gates._extract_plan_required_deposits(plan_text))
+    excl_scope_files, _ = gates._extract_plan_scope(plan_text)
+    all_excl_entries.extend(excl_scope_files)
+    for _, step_num_str in step_headers:
+        st = gates._extract_step_text(plan_text, int(step_num_str))
+        if st:
+            all_excl_entries.extend(gates._extract_plan_required_deposits(st))
+            sf, _ = gates._extract_plan_scope(st)
+            all_excl_entries.extend(sf)
+    for entry in all_excl_entries:
+        exclusion_set.add(entry)
+        parts = entry.split('/')
+        if parts and parts[0] in KNOWN_PROJECTS:
+            stripped = '/'.join(parts[1:])
+            if stripped:
+                exclusion_set.add(stripped)
+
+    # (o1) Input-path existence (WARN-only)
+    path_char_re = re.compile(r'^[A-Za-z0-9_./-]+$')
+    candidates_o1 = []
+    seen_o1 = set()
+    for span in backtick_spans:
+        if '/' not in span:
+            continue
+        if not path_char_re.match(span):
+            continue
+        segments = span.split('/')
+        if span.startswith('/') and segments and segments[0] == '':
+            segments = segments[1:]
+        if len(segments) < 2 or any(s == '' for s in segments):
+            continue
+        if not span.startswith('/Users/') and segments[0] not in REPO_ROOTS:
+            continue
+        if span not in seen_o1:
+            seen_o1.add(span)
+            candidates_o1.append(span)
+
+    excluded_o1 = 0
+    fired_o1 = []
+    fired_o1_seen = set()
+    for cand in candidates_o1:
+        if cand in exclusion_set:
+            excluded_o1 += 1
+            continue
+        exists = False
+        if cand.startswith('/Users/'):
+            exists = os.path.exists(cand)
+        elif project_root is not None:
+            if os.path.exists(os.path.join(project_root, cand)):
+                exists = True
+            elif os.path.exists(os.path.join(SHOP_ROOT, cand)):
+                exists = True
+        if not exists and cand not in fired_o1_seen:
+            if cand.startswith('/Users/') or project_root is not None:
+                fired_o1.append(cand)
+                fired_o1_seen.add(cand)
+
+    if candidates_o1:
+        print(f"(o1) INFO: candidates={len(candidates_o1)} excluded={excluded_o1} fired={len(fired_o1)}")
+
+    uncap = os.environ.get('PLAN_LINT_UNCAP') == '1'
+    listing_limit = len(fired_o1) if uncap else 10
+    for fp in fired_o1[:listing_limit]:
+        print(f"(o1) WARN: missing path `{fp}`")
+    if not uncap and len(fired_o1) > 10:
+        print(f"(o1) WARN: (+{len(fired_o1) - 10} more)")
+
+    # (o2) Deposits-entry form (WARN-only): entries should be project-prefixed
+    # or absolute. Scope entries are EXEMPT (C1).
+    o2_deposits = list(gates._extract_plan_required_deposits(plan_text))
+    for _, step_num_str in step_headers:
+        st = gates._extract_step_text(plan_text, int(step_num_str))
+        if st:
+            o2_deposits.extend(gates._extract_plan_required_deposits(st))
+    o2_deposits = list(dict.fromkeys(o2_deposits))
+    for dep in o2_deposits:
+        if dep.startswith('/Users/'):
+            continue
+        parts = dep.split('/')
+        if parts and parts[0] in KNOWN_PROJECTS:
+            continue
+        print(f"(o2) WARN: Deposits entry `{dep}` is not project-prefixed or absolute")
+
+    # (p) C-ledger entry without executable check (WARN-only): seeds §2.8
+    # convention that constraint entries should carry their runnable re-check.
+    if dc_block is not None:
+        p_ledger_re = re.compile(r'\*\*C(\d+)\*\*\s*—')
+        for m_p in p_ledger_re.finditer(dc_block):
+            match_start = m_p.start()
+            line_end = dc_block.find('\n', match_start)
+            if line_end == -1:
+                line_end = len(dc_block)
+            scanned = dc_block[match_start:line_end]
+            has_backtick = bool(re.search(r'`[^`]+`', scanned))
+            has_check = 'check:' in scanned.lower()
+            if not has_backtick and not has_check:
+                print(f"(p) WARN: C{m_p.group(1)} has no backtick-quoted command or check: token")
 
     for status, check, detail in results:
         print(f"{status}: {check} — {detail}")
