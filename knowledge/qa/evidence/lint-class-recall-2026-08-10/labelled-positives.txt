@@ -1,0 +1,66 @@
+# Labelled positive set for lint-class recall measurement
+# Source: walk register at pinned commit a7077ca
+# Register: governance/knowledge/research/walk-register-group4-rescope-2026-08-10.md
+# Encoding: UTF-8
+# No matcher has been run yet. This file is committed before any matcher execution (C2).
+#
+# Recoverability key:
+#   RECOVERABLE-VERBATIM    = the original offending text survives as a quoted fragment in the register or draft
+#   RECOVERABLE-RECONSTRUCTED = the register describes it precisely enough to rebuild the line; reconstruction is marked
+#   UNRECOVERABLE           = cannot recover the original offending line
+#
+# Columns (tab-separated):
+#   instance_id  class  register_line  instance  recoverability  source  from_table_cell  reconstruction_basis  text_or_reconstruction
+
+# === CLASS m — non-ASCII inside a -F literal ===
+
+i1	m	87	P10 grepped the two checkbox glyphs — non-ASCII literals in a grep -F command	RECOVERABLE-RECONSTRUCTED	register description + draft corrected P10	yes	register says "grepped the two checkbox glyphs" with -F; draft P10 corrected to grep -c -F "**Decision:**"; original used the glyph characters directly	grep -c -F "☑" /Users/marklehn/Developer/GitHub/gate1-packet-2026-08-08.md
+
+i2	m	414	Version pin literal carried section sign in a grep -x -F command	RECOVERABLE-RECONSTRUCTED	register description + draft corrected version pin	yes	register says "The version literal carried §"; draft shows corrected pin as grep -c -F "**Version:** 2.0 (2026-08-09)"; original used -x -F with the full version line containing §	grep -x -F "**Version:** 2.0 (2026-08-09) — §2 shape amendment" /Users/marklehn/Developer/GitHub/DRAFTING_CYCLE.md
+
+i3	m	414	Packet anchor literal carried em-dash in a grep -c -F command	RECOVERABLE-RECONSTRUCTED	register description + draft C2 ledger entry	yes	register says "the packet anchor carried an em-dash"; draft C2 corrected anchor to ASCII-only "DRAFTING_CYCLE surgical batch: 19 items"; original included the em-dash from the heading	grep -c -F "Group 4 — DRAFTING_CYCLE surgical batch: 19 items" /Users/marklehn/Developer/GitHub/gate1-packet-2026-08-08.md
+
+# === CLASS q — shell metacharacter inside a -F literal ===
+
+i4	q	22	P7 literal carried backticks that must survive a shell and -F	RECOVERABLE-RECONSTRUCTED	register description + draft corrected P7	yes	register says "P7's literal carries backticks"; draft says original pinned "never grep ### N. unscoped" whose literal contains backticks; corrected to "the two sections number independently"	grep -c -F "never grep `### N.` unscoped" /Users/marklehn/Developer/GitHub/DRAFTING_CYCLE.md
+
+# === CLASS r — grep -c piped into another command ===
+
+i5	r	25	Step 3 Item 1 used grep -c in a pipeline, masking exit code	RECOVERABLE-RECONSTRUCTED	register description + draft corrected Step 3 Item 1	yes	register says original mixed -F and regex with "^| 2" and resolution is "never through a pipeline"; draft shows corrected form uses grep -c -E against files with no pipe	grep -c -F "^| 2" gate1-packet-2026-08-08.md | grep "20"
+
+# === CLASS s — numeral asserting the size of an enumeration ===
+
+i6	s	13	"Three plan_lint warn-first checks" then enumerates seven	RECOVERABLE-RECONSTRUCTED	register quoted fragment + draft corrected text	yes	register quotes "Three plan_lint warn-first checks"; draft corrected to "Seven warn-first sub-checks under six ids"; original had "Three" where seven was correct	**Three** `plan_lint` warn-first checks shipped in the same window
+
+i7	s	16	"two files" when six deposits were declared	RECOVERABLE-RECONSTRUCTED	register quoted fragment + draft corrected text	yes	register quotes "keeps this plan's own footprint to **two files**"; draft corrected to "one new record and one one-line insertion, beside the standard dev-log and evidence deposits"	keeps this plan's own footprint to **two files**
+
+i8	s	23	"the eight probes" then lists ten	RECOVERABLE-RECONSTRUCTED	register quoted fragment + draft corrected text	yes	register quotes "the **eight** probes then lists ten"; draft corrected to "the ten probes (P1-P10)"; the bold formatting of eight may be register emphasis	the **eight** probes (P1-P10)
+
+i9	s	270	"Record all four" over an enumeration carrying five values	RECOVERABLE-RECONSTRUCTED	register description + draft corrected text	yes	register says "Record all four over an enumeration carrying five values — (ii) is two shasums"; draft corrected to "Record all FIVE values"	Record all four values
+
+i10	s	19	"burned by exactly that twice" — a count never counted	RECOVERABLE-RECONSTRUCTED	register quoted fragment	yes	register quotes "burned by exactly that **twice**" and notes it was "a count never counted"; fold dropped the numeral	burned by exactly that **twice**
+
+i11	s	327	"exactly TWO new repo files" — wrong since draft v1 (six deposits declared, later seven)	RECOVERABLE-RECONSTRUCTED	register description + draft corrected text	yes	register says scope boundary read "exactly TWO new repo files" from draft v1; wrong even then; draft corrected to "exactly SEVEN new repo files"	exactly **TWO** new repo files
+
+i12	s	328	"four deposits of Steps 1 and 2" became five after the split	RECOVERABLE-RECONSTRUCTED	register description	yes	register quotes "exactly the packet plus the **four** deposits of Steps 1 and 2"	exactly the packet plus the **four** deposits of Steps 1 and 2
+
+i13	s	374	"exactly six paths" — stale count after ACID corrected four to five	RECOVERABLE-RECONSTRUCTED	register description	yes	register says "Item 3's DO hardcoded exactly six paths"; fold changed to derive by reading Deposits blocks	Item 3's DO hardcoded "exactly six paths"
+
+i14	s	355	"Step 3's own TWO deposits" — became three after walk 3 added the raw re-verify file	RECOVERABLE-RECONSTRUCTED	register description	yes	register says Item 3 "Step 3's own TWO deposits — three since walk 3 added the raw re-verify file"	Step 3's own **TWO** deposits
+
+# === AUTHORING-TIME LIST CORRECTIONS ===
+# Line 136: NOT an instance. It is about C3's count-word check scope being too broad
+#   (would fire on Cycle Log summary counts backed by the register, not on wrong enumerations).
+#   This is a finding about the RULE's scope, not a defect instance.
+#
+# Line 361: NOT a class-r instance per the matcher definition. It describes a walk methodology
+#   observation where grep -c recount returned MORE than before because fold notes quote the
+#   stale wording as corrections. The grep -c was not piped — the issue is self-referential
+#   text inflating counts, a different class of problem from r's piped-exit-code defect.
+#   See "Instances covered by no class" in the findings document.
+
+# === RECOVERABILITY SUMMARY ===
+# RECOVERABLE-VERBATIM:        0
+# RECOVERABLE-RECONSTRUCTED:  14
+# UNRECOVERABLE:                0
+# Total named by register:     14 (of 16 authoring-time candidates; 2 are not instances)
