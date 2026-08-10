@@ -1,0 +1,32 @@
+# Positive controls for redesigned matchers m and q
+# Run BEFORE the recall measurement; a failing control halts the recall run.
+# r and s are NOT redesigned in this diagnostic.
+
+=== CONTROL m-redesigned: defect-present ===
+input: grep -c -F "Group 4 — DRAFTING" /some/file.md
+match_m_redesigned: True
+extract_f_operand: 'Group 4 \xe2\x80\x94 DRAFTING'
+SEPARATION: fires on non-ASCII (em-dash) INSIDE the -F operand
+
+=== CONTROL m-redesigned: defect-absent ===
+input: grep -c -F "DRAFTING" /some/file.md  # check the — section
+match_m_redesigned: False
+extract_f_operand: 'DRAFTING'
+SEPARATION: does NOT fire on non-ASCII OUTSIDE the -F operand (in a comment)
+
+=== CONTROL q-redesigned: defect-present ===
+input: grep -c -F "never grep `### N.` unscoped" /some/file.md
+match_q_redesigned: True
+extract_f_operand: 'never grep `### N.` unscoped'
+SEPARATION: fires on backtick INSIDE the -F operand
+
+=== CONTROL q-redesigned: defect-absent ===
+input: grep -c -F "normal text" /some/file.md  # note: uses `grep` internally
+match_q_redesigned: False
+extract_f_operand: 'normal text'
+SEPARATION: does NOT fire on backtick OUTSIDE the -F operand (in a comment)
+
+=== RESULT ===
+m-redesigned separates: True
+q-redesigned separates: True
+Both controls PASS. Proceeding to recall measurement.
