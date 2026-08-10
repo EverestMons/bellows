@@ -1,0 +1,517 @@
+draft_slug	commit_sha	commit_idx	phase	class	matches_count	done_file
+clean-gate-auto-continue	56914dfd	0	[draft] clean-gate auto-contin	m	2	executable-317.md
+clean-gate-auto-continue	56914dfd	0	[draft] clean-gate auto-contin	q	0	executable-317.md
+clean-gate-auto-continue	56914dfd	0	[draft] clean-gate auto-contin	r	0	executable-317.md
+clean-gate-auto-continue	56914dfd	0	[draft] clean-gate auto-contin	s	1	executable-317.md
+clean-gate-auto-continue	7ec2c034	1	[draft] clean-gate auto-contin	m	2	executable-317.md
+clean-gate-auto-continue	7ec2c034	1	[draft] clean-gate auto-contin	q	0	executable-317.md
+clean-gate-auto-continue	7ec2c034	1	[draft] clean-gate auto-contin	r	0	executable-317.md
+clean-gate-auto-continue	7ec2c034	1	[draft] clean-gate auto-contin	s	1	executable-317.md
+clean-gate-auto-continue	d96e3a69	2	[draft] clean-gate auto-contin	m	2	executable-317.md
+clean-gate-auto-continue	d96e3a69	2	[draft] clean-gate auto-contin	q	0	executable-317.md
+clean-gate-auto-continue	d96e3a69	2	[draft] clean-gate auto-contin	r	0	executable-317.md
+clean-gate-auto-continue	d96e3a69	2	[draft] clean-gate auto-contin	s	5	executable-317.md
+clean-gate-auto-continue	80b53fcb	3	[draft] clean-gate auto-continue a1 culmination — 3 folds	m	2	executable-317.md
+clean-gate-auto-continue	80b53fcb	3	[draft] clean-gate auto-continue a1 culmination — 3 folds	q	0	executable-317.md
+clean-gate-auto-continue	80b53fcb	3	[draft] clean-gate auto-continue a1 culmination — 3 folds	r	0	executable-317.md
+clean-gate-auto-continue	80b53fcb	3	[draft] clean-gate auto-continue a1 culmination — 3 folds	s	6	executable-317.md
+clean-gate-auto-continue	a3b7b250	4	[draft] clean-gate auto-continue c1 (four lenses) — 3 folds re-run dry	m	2	executable-317.md
+clean-gate-auto-continue	a3b7b250	4	[draft] clean-gate auto-continue c1 (four lenses) — 3 folds re-run dry	q	0	executable-317.md
+clean-gate-auto-continue	a3b7b250	4	[draft] clean-gate auto-continue c1 (four lenses) — 3 folds re-run dry	r	0	executable-317.md
+clean-gate-auto-continue	a3b7b250	4	[draft] clean-gate auto-continue c1 (four lenses) — 3 folds re-run dry	s	8	executable-317.md
+clean-gate-auto-continue	8c7745c9	5	[draft] clean-gate auto-continue aC (ACID confirming, apart) — dry at zero	m	2	executable-317.md
+clean-gate-auto-continue	8c7745c9	5	[draft] clean-gate auto-continue aC (ACID confirming, apart) — dry at zero	q	0	executable-317.md
+clean-gate-auto-continue	8c7745c9	5	[draft] clean-gate auto-continue aC (ACID confirming, apart) — dry at zero	r	0	executable-317.md
+clean-gate-auto-continue	8c7745c9	5	[draft] clean-gate auto-continue aC (ACID confirming, apart) — dry at zero	s	8	executable-317.md
+clean-gate-auto-continue	0265b998	6	[draft] clean-gate auto-continue seat-1 culmination — 8 folds	m	2	executable-317.md
+clean-gate-auto-continue	0265b998	6	[draft] clean-gate auto-continue seat-1 culmination — 8 folds	q	0	executable-317.md
+clean-gate-auto-continue	0265b998	6	[draft] clean-gate auto-continue seat-1 culmination — 8 folds	r	0	executable-317.md
+clean-gate-auto-continue	0265b998	6	[draft] clean-gate auto-continue seat-1 culmination — 8 folds	s	8	executable-317.md
+clean-gate-auto-continue	f41c2295	7	[draft] clean-gate auto-continue seat-2 culmination — Site 4	m	2	executable-317.md
+clean-gate-auto-continue	f41c2295	7	[draft] clean-gate auto-continue seat-2 culmination — Site 4	q	0	executable-317.md
+clean-gate-auto-continue	f41c2295	7	[draft] clean-gate auto-continue seat-2 culmination — Site 4	r	0	executable-317.md
+clean-gate-auto-continue	f41c2295	7	[draft] clean-gate auto-continue seat-2 culmination — Site 4	s	9	executable-317.md
+clean-gate-auto-continue	a4d65c32	8	[draft] clean-gate auto-contin	m	2	executable-317.md
+clean-gate-auto-continue	a4d65c32	8	[draft] clean-gate auto-contin	q	0	executable-317.md
+clean-gate-auto-continue	a4d65c32	8	[draft] clean-gate auto-contin	r	0	executable-317.md
+clean-gate-auto-continue	a4d65c32	8	[draft] clean-gate auto-contin	s	9	executable-317.md
+clean-gate-auto-continue	ba19b32d	9	[draft] clean-gate auto-contin	m	2	executable-317.md
+clean-gate-auto-continue	ba19b32d	9	[draft] clean-gate auto-contin	q	0	executable-317.md
+clean-gate-auto-continue	ba19b32d	9	[draft] clean-gate auto-contin	r	0	executable-317.md
+clean-gate-auto-continue	ba19b32d	9	[draft] clean-gate auto-contin	s	10	executable-317.md
+clean-gate-auto-continue	d4fee3e3	10	[draft] clean-gate auto-contin	m	2	executable-317.md
+clean-gate-auto-continue	d4fee3e3	10	[draft] clean-gate auto-contin	q	0	executable-317.md
+clean-gate-auto-continue	d4fee3e3	10	[draft] clean-gate auto-contin	r	0	executable-317.md
+clean-gate-auto-continue	d4fee3e3	10	[draft] clean-gate auto-contin	s	10	executable-317.md
+clean-gate-auto-continue	eb6fe699	11	[draft] clean-gate auto-contin	m	2	executable-317.md
+clean-gate-auto-continue	eb6fe699	11	[draft] clean-gate auto-contin	q	0	executable-317.md
+clean-gate-auto-continue	eb6fe699	11	[draft] clean-gate auto-contin	r	0	executable-317.md
+clean-gate-auto-continue	eb6fe699	11	[draft] clean-gate auto-contin	s	10	executable-317.md
+clean-gate-auto-continue	57c05ab0	12	[draft] clean-gate auto-continue aC2 (ACID confirming of post-panel folds, apart) — dry after 1 fold	m	2	executable-317.md
+clean-gate-auto-continue	57c05ab0	12	[draft] clean-gate auto-continue aC2 (ACID confirming of post-panel folds, apart) — dry after 1 fold	q	1	executable-317.md
+clean-gate-auto-continue	57c05ab0	12	[draft] clean-gate auto-continue aC2 (ACID confirming of post-panel folds, apart) — dry after 1 fold	r	0	executable-317.md
+clean-gate-auto-continue	57c05ab0	12	[draft] clean-gate auto-continue aC2 (ACID confirming of post-panel folds, apart) — dry after 1 fold	s	9	executable-317.md
+lens-mechanization-census	65dfa3d2	0	[draft] lens-mechanization census v0 — T1 diagnostic (315->317 arc shape for the lenses)	m	2	diagnostic-322.md
+lens-mechanization-census	65dfa3d2	0	[draft] lens-mechanization census v0 — T1 diagnostic (315->317 arc shape for the lenses)	q	0	diagnostic-322.md
+lens-mechanization-census	65dfa3d2	0	[draft] lens-mechanization census v0 — T1 diagnostic (315->317 arc shape for the lenses)	r	0	diagnostic-322.md
+lens-mechanization-census	65dfa3d2	0	[draft] lens-mechanization census v0 — T1 diagnostic (315->317 arc shape for the lenses)	s	2	diagnostic-322.md
+lens-mechanization-census	dfdd0499	1	[draft] lens-mechanization census w1 lens-1 (Weak spots) culmination — 8 folds	m	2	diagnostic-322.md
+lens-mechanization-census	dfdd0499	1	[draft] lens-mechanization census w1 lens-1 (Weak spots) culmination — 8 folds	q	0	diagnostic-322.md
+lens-mechanization-census	dfdd0499	1	[draft] lens-mechanization census w1 lens-1 (Weak spots) culmination — 8 folds	r	0	diagnostic-322.md
+lens-mechanization-census	dfdd0499	1	[draft] lens-mechanization census w1 lens-1 (Weak spots) culmination — 8 folds	s	2	diagnostic-322.md
+lens-mechanization-census	165b3f86	2	[draft] lens-mechanization census w1 lens-2 (Destruction) culmination — 5 folds (2.4-aimed at the run + downstream over-claim)	m	2	diagnostic-322.md
+lens-mechanization-census	165b3f86	2	[draft] lens-mechanization census w1 lens-2 (Destruction) culmination — 5 folds (2.4-aimed at the run + downstream over-claim)	q	0	diagnostic-322.md
+lens-mechanization-census	165b3f86	2	[draft] lens-mechanization census w1 lens-2 (Destruction) culmination — 5 folds (2.4-aimed at the run + downstream over-claim)	r	0	diagnostic-322.md
+lens-mechanization-census	165b3f86	2	[draft] lens-mechanization census w1 lens-2 (Destruction) culmination — 5 folds (2.4-aimed at the run + downstream over-claim)	s	2	diagnostic-322.md
+lens-mechanization-census	d100b34c	3	[draft] lens-mechanization census w1 lens-3 (Vulnerabilities) culmination — 5 folds	m	2	diagnostic-322.md
+lens-mechanization-census	d100b34c	3	[draft] lens-mechanization census w1 lens-3 (Vulnerabilities) culmination — 5 folds	q	0	diagnostic-322.md
+lens-mechanization-census	d100b34c	3	[draft] lens-mechanization census w1 lens-3 (Vulnerabilities) culmination — 5 folds	r	0	diagnostic-322.md
+lens-mechanization-census	d100b34c	3	[draft] lens-mechanization census w1 lens-3 (Vulnerabilities) culmination — 5 folds	s	2	diagnostic-322.md
+lens-mechanization-census	c9aea7da	4	[draft] lens-mechanization census w1 lens-4 (Integration-record) culmination — 8 folds incl. CRITICAL	m	2	diagnostic-322.md
+lens-mechanization-census	c9aea7da	4	[draft] lens-mechanization census w1 lens-4 (Integration-record) culmination — 8 folds incl. CRITICAL	q	0	diagnostic-322.md
+lens-mechanization-census	c9aea7da	4	[draft] lens-mechanization census w1 lens-4 (Integration-record) culmination — 8 folds incl. CRITICAL	r	0	diagnostic-322.md
+lens-mechanization-census	c9aea7da	4	[draft] lens-mechanization census w1 lens-4 (Integration-record) culmination — 8 folds incl. CRITICAL	s	2	diagnostic-322.md
+lens-mechanization-census	f9463f1d	5	[draft] lens-mechanization census a1 (ACID, apart) culmination — 5 folds	m	2	diagnostic-322.md
+lens-mechanization-census	f9463f1d	5	[draft] lens-mechanization census a1 (ACID, apart) culmination — 5 folds	q	0	diagnostic-322.md
+lens-mechanization-census	f9463f1d	5	[draft] lens-mechanization census a1 (ACID, apart) culmination — 5 folds	r	0	diagnostic-322.md
+lens-mechanization-census	f9463f1d	5	[draft] lens-mechanization census a1 (ACID, apart) culmination — 5 folds	s	5	diagnostic-322.md
+lens-mechanization-census	e1828587	6	[draft] lens-mechanization census c1 (four lenses, rotated to under-examined regions) — 4 folds, NOT dry	m	2	diagnostic-322.md
+lens-mechanization-census	e1828587	6	[draft] lens-mechanization census c1 (four lenses, rotated to under-examined regions) — 4 folds, NOT dry	q	0	diagnostic-322.md
+lens-mechanization-census	e1828587	6	[draft] lens-mechanization census c1 (four lenses, rotated to under-examined regions) — 4 folds, NOT dry	r	0	diagnostic-322.md
+lens-mechanization-census	e1828587	6	[draft] lens-mechanization census c1 (four lenses, rotated to under-examined regions) — 4 folds, NOT dry	s	5	diagnostic-322.md
+lens-mechanization-census	6ff54a67	7	[draft] lens-mechanization census aC (ACID confirming, apart) — 2 folds then re-read dry	m	2	diagnostic-322.md
+lens-mechanization-census	6ff54a67	7	[draft] lens-mechanization census aC (ACID confirming, apart) — 2 folds then re-read dry	q	0	diagnostic-322.md
+lens-mechanization-census	6ff54a67	7	[draft] lens-mechanization census aC (ACID confirming, apart) — 2 folds then re-read dry	r	0	diagnostic-322.md
+lens-mechanization-census	6ff54a67	7	[draft] lens-mechanization census aC (ACID confirming, apart) — 2 folds then re-read dry	s	5	diagnostic-322.md
+lens-mechanization-census	bd49c30b	8	[draft] lens-mechanization census c2 (four lenses, rotated	m	2	diagnostic-322.md
+lens-mechanization-census	bd49c30b	8	[draft] lens-mechanization census c2 (four lenses, rotated	q	0	diagnostic-322.md
+lens-mechanization-census	bd49c30b	8	[draft] lens-mechanization census c2 (four lenses, rotated	r	0	diagnostic-322.md
+lens-mechanization-census	bd49c30b	8	[draft] lens-mechanization census c2 (four lenses, rotated	s	5	diagnostic-322.md
+lens-mechanization-census	356f4ca2	9	[draft] lens-mechanization census c3 (four lenses, read from bytes) — DRY AT ZERO per-lens; CYCLE CLOSED	m	2	diagnostic-322.md
+lens-mechanization-census	356f4ca2	9	[draft] lens-mechanization census c3 (four lenses, read from bytes) — DRY AT ZERO per-lens; CYCLE CLOSED	q	0	diagnostic-322.md
+lens-mechanization-census	356f4ca2	9	[draft] lens-mechanization census c3 (four lenses, read from bytes) — DRY AT ZERO per-lens; CYCLE CLOSED	r	0	diagnostic-322.md
+lens-mechanization-census	356f4ca2	9	[draft] lens-mechanization census c3 (four lenses, read from bytes) — DRY AT ZERO per-lens; CYCLE CLOSED	s	5	diagnostic-322.md
+lint-subcheck-trio	97690e6d	0	[draft] lint sub-check trio v0 — T2 (T-6 gate edit + T-1; T-7 consumed from diag-322)	m	3	executable-324.md
+lint-subcheck-trio	97690e6d	0	[draft] lint sub-check trio v0 — T2 (T-6 gate edit + T-1; T-7 consumed from diag-322)	q	0	executable-324.md
+lint-subcheck-trio	97690e6d	0	[draft] lint sub-check trio v0 — T2 (T-6 gate edit + T-1; T-7 consumed from diag-322)	r	0	executable-324.md
+lint-subcheck-trio	97690e6d	0	[draft] lint sub-check trio v0 — T2 (T-6 gate edit + T-1; T-7 consumed from diag-322)	s	2	executable-324.md
+lint-subcheck-trio	e7d60b1f	1	[draft] lint sub-check trio w1 lens-1 (Weak spots) culmination — 4 folds	m	3	executable-324.md
+lint-subcheck-trio	e7d60b1f	1	[draft] lint sub-check trio w1 lens-1 (Weak spots) culmination — 4 folds	q	1	executable-324.md
+lint-subcheck-trio	e7d60b1f	1	[draft] lint sub-check trio w1 lens-1 (Weak spots) culmination — 4 folds	r	0	executable-324.md
+lint-subcheck-trio	e7d60b1f	1	[draft] lint sub-check trio w1 lens-1 (Weak spots) culmination — 4 folds	s	2	executable-324.md
+lint-subcheck-trio	84f35f87	2	[draft] lint sub-check trio w1 lens-4 (Integration-record) culmination — 3 folds, all EXECUTED-confirmed	m	3	executable-324.md
+lint-subcheck-trio	84f35f87	2	[draft] lint sub-check trio w1 lens-4 (Integration-record) culmination — 3 folds, all EXECUTED-confirmed	q	1	executable-324.md
+lint-subcheck-trio	84f35f87	2	[draft] lint sub-check trio w1 lens-4 (Integration-record) culmination — 3 folds, all EXECUTED-confirmed	r	0	executable-324.md
+lint-subcheck-trio	84f35f87	2	[draft] lint sub-check trio w1 lens-4 (Integration-record) culmination — 3 folds, all EXECUTED-confirmed	s	3	executable-324.md
+lint-subcheck-trio	a7b866c2	3	[draft] lint sub-check trio a1 (ACID, apart) culmination — 4 folds	m	3	executable-324.md
+lint-subcheck-trio	a7b866c2	3	[draft] lint sub-check trio a1 (ACID, apart) culmination — 4 folds	q	1	executable-324.md
+lint-subcheck-trio	a7b866c2	3	[draft] lint sub-check trio a1 (ACID, apart) culmination — 4 folds	r	0	executable-324.md
+lint-subcheck-trio	a7b866c2	3	[draft] lint sub-check trio a1 (ACID, apart) culmination — 4 folds	s	6	executable-324.md
+lint-subcheck-trio	86fcde71	4	[draft] lint sub-check trio c1	m	3	executable-324.md
+lint-subcheck-trio	86fcde71	4	[draft] lint sub-check trio c1	q	1	executable-324.md
+lint-subcheck-trio	86fcde71	4	[draft] lint sub-check trio c1	r	0	executable-324.md
+lint-subcheck-trio	86fcde71	4	[draft] lint sub-check trio c1	s	7	executable-324.md
+lint-subcheck-trio	3ab6a94c	5	[draft] lint sub-check trio —	m	3	executable-324.md
+lint-subcheck-trio	3ab6a94c	5	[draft] lint sub-check trio —	q	1	executable-324.md
+lint-subcheck-trio	3ab6a94c	5	[draft] lint sub-check trio —	r	0	executable-324.md
+lint-subcheck-trio	3ab6a94c	5	[draft] lint sub-check trio —	s	8	executable-324.md
+lint-subcheck-trio	4f4e5987	6	[draft] lint sub-check trio cold seat-1 (Weak spots) culmination — 7 findings, ALL author-verified real, 2 HIGH folded	m	3	executable-324.md
+lint-subcheck-trio	4f4e5987	6	[draft] lint sub-check trio cold seat-1 (Weak spots) culmination — 7 findings, ALL author-verified real, 2 HIGH folded	q	1	executable-324.md
+lint-subcheck-trio	4f4e5987	6	[draft] lint sub-check trio cold seat-1 (Weak spots) culmination — 7 findings, ALL author-verified real, 2 HIGH folded	r	0	executable-324.md
+lint-subcheck-trio	4f4e5987	6	[draft] lint sub-check trio cold seat-1 (Weak spots) culmination — 7 findings, ALL author-verified real, 2 HIGH folded	s	8	executable-324.md
+lint-subcheck-trio	6dcc76e4	7	[draft] lint sub-check trio cold seat-2 (Destruction) culmination — 9 findings all author-verified, folded	m	4	executable-324.md
+lint-subcheck-trio	6dcc76e4	7	[draft] lint sub-check trio cold seat-2 (Destruction) culmination — 9 findings all author-verified, folded	q	1	executable-324.md
+lint-subcheck-trio	6dcc76e4	7	[draft] lint sub-check trio cold seat-2 (Destruction) culmination — 9 findings all author-verified, folded	r	0	executable-324.md
+lint-subcheck-trio	6dcc76e4	7	[draft] lint sub-check trio cold seat-2 (Destruction) culmination — 9 findings all author-verified, folded	s	11	executable-324.md
+lint-subcheck-trio	5d22bcca	8	[draft] lint sub-check trio cold seat-3 (Vulnerabilities) culmination — 7 findings all author-verified, folded	m	4	executable-324.md
+lint-subcheck-trio	5d22bcca	8	[draft] lint sub-check trio cold seat-3 (Vulnerabilities) culmination — 7 findings all author-verified, folded	q	2	executable-324.md
+lint-subcheck-trio	5d22bcca	8	[draft] lint sub-check trio cold seat-3 (Vulnerabilities) culmination — 7 findings all author-verified, folded	r	0	executable-324.md
+lint-subcheck-trio	5d22bcca	8	[draft] lint sub-check trio cold seat-3 (Vulnerabilities) culmination — 7 findings all author-verified, folded	s	10	executable-324.md
+lint-subcheck-trio	c7e6de45	9	[draft] lint sub-check trio cold seat-4 (Integration-record) culmination — 9 findings all author-verified, folded	m	5	executable-324.md
+lint-subcheck-trio	c7e6de45	9	[draft] lint sub-check trio cold seat-4 (Integration-record) culmination — 9 findings all author-verified, folded	q	2	executable-324.md
+lint-subcheck-trio	c7e6de45	9	[draft] lint sub-check trio cold seat-4 (Integration-record) culmination — 9 findings all author-verified, folded	r	0	executable-324.md
+lint-subcheck-trio	c7e6de45	9	[draft] lint sub-check trio cold seat-4 (Integration-record) culmination — 9 findings all author-verified, folded	s	12	executable-324.md
+lint-subcheck-trio	c676a23c	10	[draft] lint sub-check trio cold seat-5 (ACID/system) culmination — 13 findings all author-verified, folded; PANEL COMPLETE 7-9-7-9-13 = 45, all real, zero design re-opens	m	5	executable-324.md
+lint-subcheck-trio	c676a23c	10	[draft] lint sub-check trio cold seat-5 (ACID/system) culmination — 13 findings all author-verified, folded; PANEL COMPLETE 7-9-7-9-13 = 45, all real, zero design re-opens	q	2	executable-324.md
+lint-subcheck-trio	c676a23c	10	[draft] lint sub-check trio cold seat-5 (ACID/system) culmination — 13 findings all author-verified, folded; PANEL COMPLETE 7-9-7-9-13 = 45, all real, zero design re-opens	r	0	executable-324.md
+lint-subcheck-trio	c676a23c	10	[draft] lint sub-check trio cold seat-5 (ACID/system) culmination — 13 findings all author-verified, folded; PANEL COMPLETE 7-9-7-9-13 = 45, all real, zero design re-opens	s	12	executable-324.md
+lint-subcheck-trio	8b20747f	11	[draft] lint sub-check trio cc (panel-complete confirming close, four lenses) — 5 folds, all panel-fold residue	m	5	executable-324.md
+lint-subcheck-trio	8b20747f	11	[draft] lint sub-check trio cc (panel-complete confirming close, four lenses) — 5 folds, all panel-fold residue	q	2	executable-324.md
+lint-subcheck-trio	8b20747f	11	[draft] lint sub-check trio cc (panel-complete confirming close, four lenses) — 5 folds, all panel-fold residue	r	0	executable-324.md
+lint-subcheck-trio	8b20747f	11	[draft] lint sub-check trio cc (panel-complete confirming close, four lenses) — 5 folds, all panel-fold residue	s	11	executable-324.md
+lint-subcheck-trio	939a92f6	12	[draft] lint sub-check trio aC2 (ACID confirming, apart) — 2 folds then re-read dry	m	5	executable-324.md
+lint-subcheck-trio	939a92f6	12	[draft] lint sub-check trio aC2 (ACID confirming, apart) — 2 folds then re-read dry	q	2	executable-324.md
+lint-subcheck-trio	939a92f6	12	[draft] lint sub-check trio aC2 (ACID confirming, apart) — 2 folds then re-read dry	r	0	executable-324.md
+lint-subcheck-trio	939a92f6	12	[draft] lint sub-check trio aC2 (ACID confirming, apart) — 2 folds then re-read dry	s	11	executable-324.md
+lint-subcheck-trio	47976bfa	13	[draft] lint sub-check trio c-final (four lenses, fresh read) — DRY AT ZERO; CYCLE CLOSED	m	5	executable-324.md
+lint-subcheck-trio	47976bfa	13	[draft] lint sub-check trio c-final (four lenses, fresh read) — DRY AT ZERO; CYCLE CLOSED	q	2	executable-324.md
+lint-subcheck-trio	47976bfa	13	[draft] lint sub-check trio c-final (four lenses, fresh read) — DRY AT ZERO; CYCLE CLOSED	r	0	executable-324.md
+lint-subcheck-trio	47976bfa	13	[draft] lint sub-check trio c-final (four lenses, fresh read) — DRY AT ZERO; CYCLE CLOSED	s	12	executable-324.md
+verdict-mechanization-distribution-refresh	5477075d	0	[draft] verdict-mechanization	m	1	diagnostic-315.md
+verdict-mechanization-distribution-refresh	5477075d	0	[draft] verdict-mechanization	q	0	diagnostic-315.md
+verdict-mechanization-distribution-refresh	5477075d	0	[draft] verdict-mechanization	r	0	diagnostic-315.md
+verdict-mechanization-distribution-refresh	5477075d	0	[draft] verdict-mechanization	s	0	diagnostic-315.md
+verdict-mechanization-distribution-refresh	c6efe045	1	[draft] verdict-mechanization	m	1	diagnostic-315.md
+verdict-mechanization-distribution-refresh	c6efe045	1	[draft] verdict-mechanization	q	0	diagnostic-315.md
+verdict-mechanization-distribution-refresh	c6efe045	1	[draft] verdict-mechanization	r	0	diagnostic-315.md
+verdict-mechanization-distribution-refresh	c6efe045	1	[draft] verdict-mechanization	s	0	diagnostic-315.md
+verdict-mechanization-distribution-refresh	3bf8162e	2	[draft] verdict-mechanization refresh a1 — 5 ACID folds	m	1	diagnostic-315.md
+verdict-mechanization-distribution-refresh	3bf8162e	2	[draft] verdict-mechanization refresh a1 — 5 ACID folds	q	0	diagnostic-315.md
+verdict-mechanization-distribution-refresh	3bf8162e	2	[draft] verdict-mechanization refresh a1 — 5 ACID folds	r	0	diagnostic-315.md
+verdict-mechanization-distribution-refresh	3bf8162e	2	[draft] verdict-mechanization refresh a1 — 5 ACID folds	s	0	diagnostic-315.md
+verdict-mechanization-distribution-refresh	9c8a61aa	3	[draft] verdict-mechanization refresh c1 — NOT dry	m	1	diagnostic-315.md
+verdict-mechanization-distribution-refresh	9c8a61aa	3	[draft] verdict-mechanization refresh c1 — NOT dry	q	0	diagnostic-315.md
+verdict-mechanization-distribution-refresh	9c8a61aa	3	[draft] verdict-mechanization refresh c1 — NOT dry	r	0	diagnostic-315.md
+verdict-mechanization-distribution-refresh	9c8a61aa	3	[draft] verdict-mechanization refresh c1 — NOT dry	s	0	diagnostic-315.md
+verdict-mechanization-distribution-refresh	1eaaafa4	4	[draft] verdict-mechanization refresh — record c1 phase deviation (ACID ran with the four lenses; CEO-corrected)	m	1	diagnostic-315.md
+verdict-mechanization-distribution-refresh	1eaaafa4	4	[draft] verdict-mechanization refresh — record c1 phase deviation (ACID ran with the four lenses; CEO-corrected)	q	0	diagnostic-315.md
+verdict-mechanization-distribution-refresh	1eaaafa4	4	[draft] verdict-mechanization refresh — record c1 phase deviation (ACID ran with the four lenses; CEO-corrected)	r	0	diagnostic-315.md
+verdict-mechanization-distribution-refresh	1eaaafa4	4	[draft] verdict-mechanization refresh — record c1 phase deviation (ACID ran with the four lenses; CEO-corrected)	s	1	diagnostic-315.md
+verdict-mechanization-distribution-refresh	d118b7ac	5	[draft] verdict-mechanization refresh c2 (four lenses) — dry	m	1	diagnostic-315.md
+verdict-mechanization-distribution-refresh	d118b7ac	5	[draft] verdict-mechanization refresh c2 (four lenses) — dry	q	0	diagnostic-315.md
+verdict-mechanization-distribution-refresh	d118b7ac	5	[draft] verdict-mechanization refresh c2 (four lenses) — dry	r	0	diagnostic-315.md
+verdict-mechanization-distribution-refresh	d118b7ac	5	[draft] verdict-mechanization refresh c2 (four lenses) — dry	s	2	diagnostic-315.md
+verdict-mechanization-distribution-refresh	e637c01d	6	[draft] verdict-mechanization refresh aC (ACID confirming, apart) — dry after 1 fold x2 sites re-run	m	1	diagnostic-315.md
+verdict-mechanization-distribution-refresh	e637c01d	6	[draft] verdict-mechanization refresh aC (ACID confirming, apart) — dry after 1 fold x2 sites re-run	q	0	diagnostic-315.md
+verdict-mechanization-distribution-refresh	e637c01d	6	[draft] verdict-mechanization refresh aC (ACID confirming, apart) — dry after 1 fold x2 sites re-run	r	0	diagnostic-315.md
+verdict-mechanization-distribution-refresh	e637c01d	6	[draft] verdict-mechanization refresh aC (ACID confirming, apart) — dry after 1 fold x2 sites re-run	s	2	diagnostic-315.md
+lint-s4-hardening	26baffb5	0	initial	m	2	executable-332.md
+lint-s4-hardening	26baffb5	0	initial	q	0	executable-332.md
+lint-s4-hardening	26baffb5	0	initial	r	0	executable-332.md
+lint-s4-hardening	26baffb5	0	initial	s	7	executable-332.md
+lint-s4-hardening	d6b7132b	1	initial	m	2	executable-332.md
+lint-s4-hardening	d6b7132b	1	initial	q	0	executable-332.md
+lint-s4-hardening	d6b7132b	1	initial	r	0	executable-332.md
+lint-s4-hardening	d6b7132b	1	initial	s	7	executable-332.md
+lint-s4-hardening	6162c856	2	initial	m	2	executable-332.md
+lint-s4-hardening	6162c856	2	initial	q	0	executable-332.md
+lint-s4-hardening	6162c856	2	initial	r	0	executable-332.md
+lint-s4-hardening	6162c856	2	initial	s	7	executable-332.md
+lint-s4-hardening	990acf03	3	initial	m	2	executable-332.md
+lint-s4-hardening	990acf03	3	initial	q	0	executable-332.md
+lint-s4-hardening	990acf03	3	initial	r	0	executable-332.md
+lint-s4-hardening	990acf03	3	initial	s	8	executable-332.md
+lint-s4-hardening	7ea7ea63	4	initial	m	3	executable-332.md
+lint-s4-hardening	7ea7ea63	4	initial	q	0	executable-332.md
+lint-s4-hardening	7ea7ea63	4	initial	r	0	executable-332.md
+lint-s4-hardening	7ea7ea63	4	initial	s	8	executable-332.md
+lint-s4-hardening	8e631fcd	5	initial	m	1	executable-332.md
+lint-s4-hardening	8e631fcd	5	initial	q	0	executable-332.md
+lint-s4-hardening	8e631fcd	5	initial	r	0	executable-332.md
+lint-s4-hardening	8e631fcd	5	initial	s	9	executable-332.md
+lint-s4-hardening	bc6c6abe	6	initial	m	1	executable-332.md
+lint-s4-hardening	bc6c6abe	6	initial	q	0	executable-332.md
+lint-s4-hardening	bc6c6abe	6	initial	r	0	executable-332.md
+lint-s4-hardening	bc6c6abe	6	initial	s	9	executable-332.md
+lint-s4-hardening	f89a1d37	7	initial	m	2	executable-332.md
+lint-s4-hardening	f89a1d37	7	initial	q	0	executable-332.md
+lint-s4-hardening	f89a1d37	7	initial	r	0	executable-332.md
+lint-s4-hardening	f89a1d37	7	initial	s	6	executable-332.md
+lint-s4-hardening	2bdac557	8	initial	m	3	executable-332.md
+lint-s4-hardening	2bdac557	8	initial	q	0	executable-332.md
+lint-s4-hardening	2bdac557	8	initial	r	0	executable-332.md
+lint-s4-hardening	2bdac557	8	initial	s	7	executable-332.md
+lint-s4-hardening	c7baf9d4	9	initial	m	3	executable-332.md
+lint-s4-hardening	c7baf9d4	9	initial	q	0	executable-332.md
+lint-s4-hardening	c7baf9d4	9	initial	r	0	executable-332.md
+lint-s4-hardening	c7baf9d4	9	initial	s	10	executable-332.md
+lint-s4-hardening	dcd4b4ce	10	initial	m	4	executable-332.md
+lint-s4-hardening	dcd4b4ce	10	initial	q	1	executable-332.md
+lint-s4-hardening	dcd4b4ce	10	initial	r	0	executable-332.md
+lint-s4-hardening	dcd4b4ce	10	initial	s	14	executable-332.md
+lint-s4-hardening	cc65f2e6	11	initial	m	4	executable-332.md
+lint-s4-hardening	cc65f2e6	11	initial	q	1	executable-332.md
+lint-s4-hardening	cc65f2e6	11	initial	r	0	executable-332.md
+lint-s4-hardening	cc65f2e6	11	initial	s	17	executable-332.md
+gate2-s5-conformance	bb66761d	0	initial	m	9	executable-330.md
+gate2-s5-conformance	bb66761d	0	initial	q	2	executable-330.md
+gate2-s5-conformance	bb66761d	0	initial	r	0	executable-330.md
+gate2-s5-conformance	bb66761d	0	initial	s	3	executable-330.md
+gate2-s5-conformance	3265a9fe	1	initial	m	9	executable-330.md
+gate2-s5-conformance	3265a9fe	1	initial	q	2	executable-330.md
+gate2-s5-conformance	3265a9fe	1	initial	r	0	executable-330.md
+gate2-s5-conformance	3265a9fe	1	initial	s	3	executable-330.md
+gate2-s5-conformance	cbd5b4db	2	initial	m	9	executable-330.md
+gate2-s5-conformance	cbd5b4db	2	initial	q	2	executable-330.md
+gate2-s5-conformance	cbd5b4db	2	initial	r	0	executable-330.md
+gate2-s5-conformance	cbd5b4db	2	initial	s	5	executable-330.md
+gate2-s5-conformance	a530c8fb	3	initial	m	9	executable-330.md
+gate2-s5-conformance	a530c8fb	3	initial	q	2	executable-330.md
+gate2-s5-conformance	a530c8fb	3	initial	r	0	executable-330.md
+gate2-s5-conformance	a530c8fb	3	initial	s	5	executable-330.md
+gate2-s5-conformance	573c396e	4	initial	m	9	executable-330.md
+gate2-s5-conformance	573c396e	4	initial	q	2	executable-330.md
+gate2-s5-conformance	573c396e	4	initial	r	0	executable-330.md
+gate2-s5-conformance	573c396e	4	initial	s	6	executable-330.md
+gate2-s5-conformance	3a917214	5	initial	m	9	executable-330.md
+gate2-s5-conformance	3a917214	5	initial	q	2	executable-330.md
+gate2-s5-conformance	3a917214	5	initial	r	0	executable-330.md
+gate2-s5-conformance	3a917214	5	initial	s	6	executable-330.md
+gate2-s5-conformance	c540a24f	6	initial	m	9	executable-330.md
+gate2-s5-conformance	c540a24f	6	initial	q	2	executable-330.md
+gate2-s5-conformance	c540a24f	6	initial	r	0	executable-330.md
+gate2-s5-conformance	c540a24f	6	initial	s	6	executable-330.md
+gate2-s5-conformance	9f5ad563	7	initial	m	9	executable-330.md
+gate2-s5-conformance	9f5ad563	7	initial	q	2	executable-330.md
+gate2-s5-conformance	9f5ad563	7	initial	r	0	executable-330.md
+gate2-s5-conformance	9f5ad563	7	initial	s	6	executable-330.md
+gate2-s5-conformance	d840d69a	8	initial	m	9	executable-330.md
+gate2-s5-conformance	d840d69a	8	initial	q	2	executable-330.md
+gate2-s5-conformance	d840d69a	8	initial	r	0	executable-330.md
+gate2-s5-conformance	d840d69a	8	initial	s	6	executable-330.md
+gate2-s5-conformance	3a48a536	9	initial	m	9	executable-330.md
+gate2-s5-conformance	3a48a536	9	initial	q	2	executable-330.md
+gate2-s5-conformance	3a48a536	9	initial	r	0	executable-330.md
+gate2-s5-conformance	3a48a536	9	initial	s	6	executable-330.md
+gate2-s5-conformance	ce76b74d	10	initial	m	9	executable-330.md
+gate2-s5-conformance	ce76b74d	10	initial	q	2	executable-330.md
+gate2-s5-conformance	ce76b74d	10	initial	r	0	executable-330.md
+gate2-s5-conformance	ce76b74d	10	initial	s	7	executable-330.md
+gate2-s5-conformance	9b04e575	11	initial	m	9	executable-330.md
+gate2-s5-conformance	9b04e575	11	initial	q	2	executable-330.md
+gate2-s5-conformance	9b04e575	11	initial	r	0	executable-330.md
+gate2-s5-conformance	9b04e575	11	initial	s	8	executable-330.md
+gate2-s5-conformance	fa802311	12	initial	m	9	executable-330.md
+gate2-s5-conformance	fa802311	12	initial	q	2	executable-330.md
+gate2-s5-conformance	fa802311	12	initial	r	0	executable-330.md
+gate2-s5-conformance	fa802311	12	initial	s	7	executable-330.md
+gate2-s5-conformance	1bec8d9e	13	initial	m	9	executable-330.md
+gate2-s5-conformance	1bec8d9e	13	initial	q	2	executable-330.md
+gate2-s5-conformance	1bec8d9e	13	initial	r	0	executable-330.md
+gate2-s5-conformance	1bec8d9e	13	initial	s	10	executable-330.md
+gate2-s5-conformance	b57b752d	14	initial	m	9	executable-330.md
+gate2-s5-conformance	b57b752d	14	initial	q	3	executable-330.md
+gate2-s5-conformance	b57b752d	14	initial	r	0	executable-330.md
+gate2-s5-conformance	b57b752d	14	initial	s	10	executable-330.md
+gate2-s5-conformance	64f4a16f	15	initial	m	9	executable-330.md
+gate2-s5-conformance	64f4a16f	15	initial	q	3	executable-330.md
+gate2-s5-conformance	64f4a16f	15	initial	r	0	executable-330.md
+gate2-s5-conformance	64f4a16f	15	initial	s	10	executable-330.md
+gate2-s5-conformance	156fb172	16	initial	m	9	executable-330.md
+gate2-s5-conformance	156fb172	16	initial	q	3	executable-330.md
+gate2-s5-conformance	156fb172	16	initial	r	0	executable-330.md
+gate2-s5-conformance	156fb172	16	initial	s	10	executable-330.md
+seat-brief-codification	fbd550a3	0	draft	m	2	executable-329.md
+seat-brief-codification	fbd550a3	0	draft	q	0	executable-329.md
+seat-brief-codification	fbd550a3	0	draft	r	0	executable-329.md
+seat-brief-codification	fbd550a3	0	draft	s	1	executable-329.md
+seat-brief-codification	9fddd2e3	1	initial	m	3	executable-329.md
+seat-brief-codification	9fddd2e3	1	initial	q	0	executable-329.md
+seat-brief-codification	9fddd2e3	1	initial	r	0	executable-329.md
+seat-brief-codification	9fddd2e3	1	initial	s	0	executable-329.md
+seat-brief-codification	9fd34ba2	2	initial	m	3	executable-329.md
+seat-brief-codification	9fd34ba2	2	initial	q	1	executable-329.md
+seat-brief-codification	9fd34ba2	2	initial	r	0	executable-329.md
+seat-brief-codification	9fd34ba2	2	initial	s	2	executable-329.md
+seat-brief-codification	2282f1d0	3	initial	m	3	executable-329.md
+seat-brief-codification	2282f1d0	3	initial	q	1	executable-329.md
+seat-brief-codification	2282f1d0	3	initial	r	0	executable-329.md
+seat-brief-codification	2282f1d0	3	initial	s	2	executable-329.md
+seat-brief-codification	b16c369a	4	initial	m	3	executable-329.md
+seat-brief-codification	b16c369a	4	initial	q	1	executable-329.md
+seat-brief-codification	b16c369a	4	initial	r	0	executable-329.md
+seat-brief-codification	b16c369a	4	initial	s	2	executable-329.md
+seat-brief-codification	123314aa	5	initial	m	3	executable-329.md
+seat-brief-codification	123314aa	5	initial	q	1	executable-329.md
+seat-brief-codification	123314aa	5	initial	r	0	executable-329.md
+seat-brief-codification	123314aa	5	initial	s	2	executable-329.md
+seat-brief-codification	2369a09c	6	initial	m	3	executable-329.md
+seat-brief-codification	2369a09c	6	initial	q	1	executable-329.md
+seat-brief-codification	2369a09c	6	initial	r	0	executable-329.md
+seat-brief-codification	2369a09c	6	initial	s	3	executable-329.md
+seat-brief-codification	c145a8d5	7	initial	m	3	executable-329.md
+seat-brief-codification	c145a8d5	7	initial	q	1	executable-329.md
+seat-brief-codification	c145a8d5	7	initial	r	0	executable-329.md
+seat-brief-codification	c145a8d5	7	initial	s	5	executable-329.md
+seat-brief-codification	dfd77e17	8	initial	m	3	executable-329.md
+seat-brief-codification	dfd77e17	8	initial	q	1	executable-329.md
+seat-brief-codification	dfd77e17	8	initial	r	0	executable-329.md
+seat-brief-codification	dfd77e17	8	initial	s	5	executable-329.md
+seat-brief-codification	f1a895d0	9	initial	m	3	executable-329.md
+seat-brief-codification	f1a895d0	9	initial	q	1	executable-329.md
+seat-brief-codification	f1a895d0	9	initial	r	0	executable-329.md
+seat-brief-codification	f1a895d0	9	initial	s	7	executable-329.md
+seat-brief-codification	94969835	10	initial	m	3	executable-329.md
+seat-brief-codification	94969835	10	initial	q	1	executable-329.md
+seat-brief-codification	94969835	10	initial	r	0	executable-329.md
+seat-brief-codification	94969835	10	initial	s	7	executable-329.md
+seat-brief-codification	939b38c6	11	initial	m	3	executable-329.md
+seat-brief-codification	939b38c6	11	initial	q	2	executable-329.md
+seat-brief-codification	939b38c6	11	initial	r	0	executable-329.md
+seat-brief-codification	939b38c6	11	initial	s	7	executable-329.md
+seat-brief-codification	5296a627	12	initial	m	4	executable-329.md
+seat-brief-codification	5296a627	12	initial	q	3	executable-329.md
+seat-brief-codification	5296a627	12	initial	r	1	executable-329.md
+seat-brief-codification	5296a627	12	initial	s	7	executable-329.md
+seat-brief-codification	532819fb	13	initial	m	4	executable-329.md
+seat-brief-codification	532819fb	13	initial	q	3	executable-329.md
+seat-brief-codification	532819fb	13	initial	r	1	executable-329.md
+seat-brief-codification	532819fb	13	initial	s	10	executable-329.md
+seat-brief-codification	2aa3ab6a	14	initial	m	4	executable-329.md
+seat-brief-codification	2aa3ab6a	14	initial	q	3	executable-329.md
+seat-brief-codification	2aa3ab6a	14	initial	r	1	executable-329.md
+seat-brief-codification	2aa3ab6a	14	initial	s	10	executable-329.md
+seat-brief-codification	0062b1ce	15	initial	m	4	executable-329.md
+seat-brief-codification	0062b1ce	15	initial	q	3	executable-329.md
+seat-brief-codification	0062b1ce	15	initial	r	1	executable-329.md
+seat-brief-codification	0062b1ce	15	initial	s	10	executable-329.md
+seat-brief-codification	af6468f2	16	initial	m	4	executable-329.md
+seat-brief-codification	af6468f2	16	initial	q	3	executable-329.md
+seat-brief-codification	af6468f2	16	initial	r	1	executable-329.md
+seat-brief-codification	af6468f2	16	initial	s	10	executable-329.md
+seat-brief-codification	4b10f727	17	initial	m	4	executable-329.md
+seat-brief-codification	4b10f727	17	initial	q	4	executable-329.md
+seat-brief-codification	4b10f727	17	initial	r	1	executable-329.md
+seat-brief-codification	4b10f727	17	initial	s	11	executable-329.md
+template-qa-and-terminal-correction	e1d5cf7b	0	[draft] template qa_and_termin	m	2	executable-320.md
+template-qa-and-terminal-correction	e1d5cf7b	0	[draft] template qa_and_termin	q	0	executable-320.md
+template-qa-and-terminal-correction	e1d5cf7b	0	[draft] template qa_and_termin	r	0	executable-320.md
+template-qa-and-terminal-correction	e1d5cf7b	0	[draft] template qa_and_termin	s	2	executable-320.md
+template-qa-and-terminal-correction	4b967483	1	[draft] template correction w1 culmination — 7 folds	m	5	executable-320.md
+template-qa-and-terminal-correction	4b967483	1	[draft] template correction w1 culmination — 7 folds	q	1	executable-320.md
+template-qa-and-terminal-correction	4b967483	1	[draft] template correction w1 culmination — 7 folds	r	0	executable-320.md
+template-qa-and-terminal-correction	4b967483	1	[draft] template correction w1 culmination — 7 folds	s	2	executable-320.md
+template-qa-and-terminal-correction	c5db40bb	2	[draft] template correction a1	m	5	executable-320.md
+template-qa-and-terminal-correction	c5db40bb	2	[draft] template correction a1	q	1	executable-320.md
+template-qa-and-terminal-correction	c5db40bb	2	[draft] template correction a1	r	0	executable-320.md
+template-qa-and-terminal-correction	c5db40bb	2	[draft] template correction a1	s	2	executable-320.md
+template-qa-and-terminal-correction	6a3c19de	3	[draft] template correction c1 (four lenses) — dry after 2 folds	m	5	executable-320.md
+template-qa-and-terminal-correction	6a3c19de	3	[draft] template correction c1 (four lenses) — dry after 2 folds	q	1	executable-320.md
+template-qa-and-terminal-correction	6a3c19de	3	[draft] template correction c1 (four lenses) — dry after 2 folds	r	0	executable-320.md
+template-qa-and-terminal-correction	6a3c19de	3	[draft] template correction c1 (four lenses) — dry after 2 folds	s	4	executable-320.md
+template-qa-and-terminal-correction	a87916f3	4	[draft] template correction aC (ACID confirming, apart) — dry after 1 fold	m	5	executable-320.md
+template-qa-and-terminal-correction	a87916f3	4	[draft] template correction aC (ACID confirming, apart) — dry after 1 fold	q	1	executable-320.md
+template-qa-and-terminal-correction	a87916f3	4	[draft] template correction aC (ACID confirming, apart) — dry after 1 fold	r	0	executable-320.md
+template-qa-and-terminal-correction	a87916f3	4	[draft] template correction aC (ACID confirming, apart) — dry after 1 fold	s	5	executable-320.md
+template-qa-and-terminal-correction	ba5aed67	5	[draft] template correction se	m	5	executable-320.md
+template-qa-and-terminal-correction	ba5aed67	5	[draft] template correction se	q	1	executable-320.md
+template-qa-and-terminal-correction	ba5aed67	5	[draft] template correction se	r	0	executable-320.md
+template-qa-and-terminal-correction	ba5aed67	5	[draft] template correction se	s	5	executable-320.md
+template-qa-and-terminal-correction	7a5ae48b	6	[draft] template correction seat-2 culmination — 9 folds incl. 2 HIGH	m	5	executable-320.md
+template-qa-and-terminal-correction	7a5ae48b	6	[draft] template correction seat-2 culmination — 9 folds incl. 2 HIGH	q	0	executable-320.md
+template-qa-and-terminal-correction	7a5ae48b	6	[draft] template correction seat-2 culmination — 9 folds incl. 2 HIGH	r	0	executable-320.md
+template-qa-and-terminal-correction	7a5ae48b	6	[draft] template correction seat-2 culmination — 9 folds incl. 2 HIGH	s	6	executable-320.md
+template-qa-and-terminal-correction	142d674e	7	[draft] template correction seat-3 culmination — 9 folds incl. 2 HIGH	m	4	executable-320.md
+template-qa-and-terminal-correction	142d674e	7	[draft] template correction seat-3 culmination — 9 folds incl. 2 HIGH	q	1	executable-320.md
+template-qa-and-terminal-correction	142d674e	7	[draft] template correction seat-3 culmination — 9 folds incl. 2 HIGH	r	0	executable-320.md
+template-qa-and-terminal-correction	142d674e	7	[draft] template correction seat-3 culmination — 9 folds incl. 2 HIGH	s	8	executable-320.md
+template-qa-and-terminal-correction	8e75e2fc	8	[draft] template correction seat-4 culmination — 8 folds incl. HIGH	m	4	executable-320.md
+template-qa-and-terminal-correction	8e75e2fc	8	[draft] template correction seat-4 culmination — 8 folds incl. HIGH	q	1	executable-320.md
+template-qa-and-terminal-correction	8e75e2fc	8	[draft] template correction seat-4 culmination — 8 folds incl. HIGH	r	0	executable-320.md
+template-qa-and-terminal-correction	8e75e2fc	8	[draft] template correction seat-4 culmination — 8 folds incl. HIGH	s	10	executable-320.md
+template-qa-and-terminal-correction	151fcfb3	9	[draft] template correction seat-5 culmination — PANEL COMPLETE 10-9-9-8-10 (46 findings)	m	4	executable-320.md
+template-qa-and-terminal-correction	151fcfb3	9	[draft] template correction seat-5 culmination — PANEL COMPLETE 10-9-9-8-10 (46 findings)	q	2	executable-320.md
+template-qa-and-terminal-correction	151fcfb3	9	[draft] template correction seat-5 culmination — PANEL COMPLETE 10-9-9-8-10 (46 findings)	r	0	executable-320.md
+template-qa-and-terminal-correction	151fcfb3	9	[draft] template correction seat-5 culmination — PANEL COMPLETE 10-9-9-8-10 (46 findings)	s	11	executable-320.md
+template-qa-and-terminal-correction	eab648bc	10	[draft] template correction —	m	4	executable-320.md
+template-qa-and-terminal-correction	eab648bc	10	[draft] template correction —	q	2	executable-320.md
+template-qa-and-terminal-correction	eab648bc	10	[draft] template correction —	r	0	executable-320.md
+template-qa-and-terminal-correction	eab648bc	10	[draft] template correction —	s	10	executable-320.md
+template-qa-and-terminal-correction	1a166c6b	11	[draft] template correction cc (panel-complete confirming close, four lenses) — dry after 3 folds	m	4	executable-320.md
+template-qa-and-terminal-correction	1a166c6b	11	[draft] template correction cc (panel-complete confirming close, four lenses) — dry after 3 folds	q	2	executable-320.md
+template-qa-and-terminal-correction	1a166c6b	11	[draft] template correction cc (panel-complete confirming close, four lenses) — dry after 3 folds	r	0	executable-320.md
+template-qa-and-terminal-correction	1a166c6b	11	[draft] template correction cc (panel-complete confirming close, four lenses) — dry after 3 folds	s	12	executable-320.md
+template-qa-and-terminal-correction	4aa508b6	12	[draft] template correction aC2 (ACID confirming of post-panel folds, apart) — dry after 1 fold	m	4	executable-320.md
+template-qa-and-terminal-correction	4aa508b6	12	[draft] template correction aC2 (ACID confirming of post-panel folds, apart) — dry after 1 fold	q	2	executable-320.md
+template-qa-and-terminal-correction	4aa508b6	12	[draft] template correction aC2 (ACID confirming of post-panel folds, apart) — dry after 1 fold	r	0	executable-320.md
+template-qa-and-terminal-correction	4aa508b6	12	[draft] template correction aC2 (ACID confirming of post-panel folds, apart) — dry after 1 fold	s	13	executable-320.md
+cycle-run	d91e0450	0	[draft] cycle-run 2026-08-07 v	m	10	executable-311.md
+cycle-run	d91e0450	0	[draft] cycle-run 2026-08-07 v	q	3	executable-311.md
+cycle-run	d91e0450	0	[draft] cycle-run 2026-08-07 v	r	1	executable-311.md
+cycle-run	d91e0450	0	[draft] cycle-run 2026-08-07 v	s	10	executable-311.md
+cycle-run	45cf56d7	1	[draft] cycle-run 2026-08-07 — walk-1 culmination	m	10	executable-311.md
+cycle-run	45cf56d7	1	[draft] cycle-run 2026-08-07 — walk-1 culmination	q	3	executable-311.md
+cycle-run	45cf56d7	1	[draft] cycle-run 2026-08-07 — walk-1 culmination	r	1	executable-311.md
+cycle-run	45cf56d7	1	[draft] cycle-run 2026-08-07 — walk-1 culmination	s	13	executable-311.md
+cycle-run	6583fa71	2	[draft] cycle-run 2026-08-07 — ACID-1 culmination	m	10	executable-311.md
+cycle-run	6583fa71	2	[draft] cycle-run 2026-08-07 — ACID-1 culmination	q	3	executable-311.md
+cycle-run	6583fa71	2	[draft] cycle-run 2026-08-07 — ACID-1 culmination	r	1	executable-311.md
+cycle-run	6583fa71	2	[draft] cycle-run 2026-08-07 — ACID-1 culmination	s	14	executable-311.md
+cycle-run	460a0371	3	[draft] cycle-run 2026-08-07 — walk-2 culmination	m	10	executable-311.md
+cycle-run	460a0371	3	[draft] cycle-run 2026-08-07 — walk-2 culmination	q	3	executable-311.md
+cycle-run	460a0371	3	[draft] cycle-run 2026-08-07 — walk-2 culmination	r	1	executable-311.md
+cycle-run	460a0371	3	[draft] cycle-run 2026-08-07 — walk-2 culmination	s	15	executable-311.md
+cycle-run	90f17322	4	[draft] cycle-run 2026-08-07 — ACID-2 culmination	m	10	executable-311.md
+cycle-run	90f17322	4	[draft] cycle-run 2026-08-07 — ACID-2 culmination	q	3	executable-311.md
+cycle-run	90f17322	4	[draft] cycle-run 2026-08-07 — ACID-2 culmination	r	1	executable-311.md
+cycle-run	90f17322	4	[draft] cycle-run 2026-08-07 — ACID-2 culmination	s	14	executable-311.md
+cycle-run	3370d67b	5	[draft] cycle-run 2026-08-07 — walk-3 culmination	m	10	executable-311.md
+cycle-run	3370d67b	5	[draft] cycle-run 2026-08-07 — walk-3 culmination	q	3	executable-311.md
+cycle-run	3370d67b	5	[draft] cycle-run 2026-08-07 — walk-3 culmination	r	1	executable-311.md
+cycle-run	3370d67b	5	[draft] cycle-run 2026-08-07 — walk-3 culmination	s	14	executable-311.md
+cycle-run	8bb4d3db	6	[draft] cycle-run 2026-08-07 — cold seat 1 culmination	m	10	executable-311.md
+cycle-run	8bb4d3db	6	[draft] cycle-run 2026-08-07 — cold seat 1 culmination	q	3	executable-311.md
+cycle-run	8bb4d3db	6	[draft] cycle-run 2026-08-07 — cold seat 1 culmination	r	1	executable-311.md
+cycle-run	8bb4d3db	6	[draft] cycle-run 2026-08-07 — cold seat 1 culmination	s	14	executable-311.md
+cycle-run	bd3ea566	7	[draft] cycle-run 2026-08-07 — cold seat 2 culmination	m	10	executable-311.md
+cycle-run	bd3ea566	7	[draft] cycle-run 2026-08-07 — cold seat 2 culmination	q	3	executable-311.md
+cycle-run	bd3ea566	7	[draft] cycle-run 2026-08-07 — cold seat 2 culmination	r	1	executable-311.md
+cycle-run	bd3ea566	7	[draft] cycle-run 2026-08-07 — cold seat 2 culmination	s	15	executable-311.md
+cycle-run	a209a82a	8	[draft] cycle-run 2026-08-07 — cold seat 3 culmination	m	9	executable-311.md
+cycle-run	a209a82a	8	[draft] cycle-run 2026-08-07 — cold seat 3 culmination	q	2	executable-311.md
+cycle-run	a209a82a	8	[draft] cycle-run 2026-08-07 — cold seat 3 culmination	r	1	executable-311.md
+cycle-run	a209a82a	8	[draft] cycle-run 2026-08-07 — cold seat 3 culmination	s	15	executable-311.md
+cycle-run	fc4b3d6d	9	[draft] cycle-run 2026-08-07 — cold seat 4 culmination	m	9	executable-311.md
+cycle-run	fc4b3d6d	9	[draft] cycle-run 2026-08-07 — cold seat 4 culmination	q	2	executable-311.md
+cycle-run	fc4b3d6d	9	[draft] cycle-run 2026-08-07 — cold seat 4 culmination	r	1	executable-311.md
+cycle-run	fc4b3d6d	9	[draft] cycle-run 2026-08-07 — cold seat 4 culmination	s	15	executable-311.md
+cycle-run	93761db2	10	[draft] cycle-run 2026-08-07 — cold seat 5 culmination	m	9	executable-311.md
+cycle-run	93761db2	10	[draft] cycle-run 2026-08-07 — cold seat 5 culmination	q	2	executable-311.md
+cycle-run	93761db2	10	[draft] cycle-run 2026-08-07 — cold seat 5 culmination	r	1	executable-311.md
+cycle-run	93761db2	10	[draft] cycle-run 2026-08-07 — cold seat 5 culmination	s	16	executable-311.md
+cycle-run	ec110e56	11	[draft] cycle-run 2026-08-07 — seat-5 rider	m	9	executable-311.md
+cycle-run	ec110e56	11	[draft] cycle-run 2026-08-07 — seat-5 rider	q	2	executable-311.md
+cycle-run	ec110e56	11	[draft] cycle-run 2026-08-07 — seat-5 rider	r	1	executable-311.md
+cycle-run	ec110e56	11	[draft] cycle-run 2026-08-07 — seat-5 rider	s	16	executable-311.md
+cycle-run	48d799fa	12	[draft] cycle-run 2026-08-07 — confirming-1 culmination	m	9	executable-311.md
+cycle-run	48d799fa	12	[draft] cycle-run 2026-08-07 — confirming-1 culmination	q	2	executable-311.md
+cycle-run	48d799fa	12	[draft] cycle-run 2026-08-07 — confirming-1 culmination	r	1	executable-311.md
+cycle-run	48d799fa	12	[draft] cycle-run 2026-08-07 — confirming-1 culmination	s	16	executable-311.md
+cycle-run	61bd6375	13	[draft] cycle-run 2026-08-07 — CLOSE	m	9	executable-311.md
+cycle-run	61bd6375	13	[draft] cycle-run 2026-08-07 — CLOSE	q	2	executable-311.md
+cycle-run	61bd6375	13	[draft] cycle-run 2026-08-07 — CLOSE	r	1	executable-311.md
+cycle-run	61bd6375	13	[draft] cycle-run 2026-08-07 — CLOSE	s	17	executable-311.md
+cycle-run	9da43f6d	14	[draft] cycle-run 2026-08-07 —	m	9	executable-311.md
+cycle-run	9da43f6d	14	[draft] cycle-run 2026-08-07 —	q	2	executable-311.md
+cycle-run	9da43f6d	14	[draft] cycle-run 2026-08-07 —	r	1	executable-311.md
+cycle-run	9da43f6d	14	[draft] cycle-run 2026-08-07 —	s	17	executable-311.md
+gate1-routing	615bcbb0	0	[draft] gate1 routing v0 — T1 (T-2 data mutation)	m	1	executable-326.md
+gate1-routing	615bcbb0	0	[draft] gate1 routing v0 — T1 (T-2 data mutation)	q	0	executable-326.md
+gate1-routing	615bcbb0	0	[draft] gate1 routing v0 — T1 (T-2 data mutation)	r	0	executable-326.md
+gate1-routing	615bcbb0	0	[draft] gate1 routing v0 — T1 (T-2 data mutation)	s	2	executable-326.md
+gate1-routing	700cae6d	1	[draft] gate1 routing w1 lens-1 (Weak spots) culmination — 4 folds, ALL probe-confirmed	m	1	executable-326.md
+gate1-routing	700cae6d	1	[draft] gate1 routing w1 lens-1 (Weak spots) culmination — 4 folds, ALL probe-confirmed	q	0	executable-326.md
+gate1-routing	700cae6d	1	[draft] gate1 routing w1 lens-1 (Weak spots) culmination — 4 folds, ALL probe-confirmed	r	0	executable-326.md
+gate1-routing	700cae6d	1	[draft] gate1 routing w1 lens-1 (Weak spots) culmination — 4 folds, ALL probe-confirmed	s	2	executable-326.md
+gate1-routing	d90673b7	2	[draft] gate1 routing w1 lens-2 (Destruction) culmination — 3 folds	m	1	executable-326.md
+gate1-routing	d90673b7	2	[draft] gate1 routing w1 lens-2 (Destruction) culmination — 3 folds	q	0	executable-326.md
+gate1-routing	d90673b7	2	[draft] gate1 routing w1 lens-2 (Destruction) culmination — 3 folds	r	0	executable-326.md
+gate1-routing	d90673b7	2	[draft] gate1 routing w1 lens-2 (Destruction) culmination — 3 folds	s	2	executable-326.md
+gate1-routing	9e90fdbb	3	[draft] gate1 routing w1 lens-3 (Vulnerabilities) culmination — 2 folds + 1 verified-clean	m	1	executable-326.md
+gate1-routing	9e90fdbb	3	[draft] gate1 routing w1 lens-3 (Vulnerabilities) culmination — 2 folds + 1 verified-clean	q	0	executable-326.md
+gate1-routing	9e90fdbb	3	[draft] gate1 routing w1 lens-3 (Vulnerabilities) culmination — 2 folds + 1 verified-clean	r	0	executable-326.md
+gate1-routing	9e90fdbb	3	[draft] gate1 routing w1 lens-3 (Vulnerabilities) culmination — 2 folds + 1 verified-clean	s	3	executable-326.md
+gate1-routing	75bd67c3	4	[draft] gate1 routing w1 lens-4 (Integration-record) culmination — 4 folds	m	1	executable-326.md
+gate1-routing	75bd67c3	4	[draft] gate1 routing w1 lens-4 (Integration-record) culmination — 4 folds	q	0	executable-326.md
+gate1-routing	75bd67c3	4	[draft] gate1 routing w1 lens-4 (Integration-record) culmination — 4 folds	r	0	executable-326.md
+gate1-routing	75bd67c3	4	[draft] gate1 routing w1 lens-4 (Integration-record) culmination — 4 folds	s	3	executable-326.md
+gate1-routing	5ee157d7	5	[draft] gate1 routing lens-4 r	m	1	executable-326.md
+gate1-routing	5ee157d7	5	[draft] gate1 routing lens-4 r	q	0	executable-326.md
+gate1-routing	5ee157d7	5	[draft] gate1 routing lens-4 r	r	0	executable-326.md
+gate1-routing	5ee157d7	5	[draft] gate1 routing lens-4 r	s	3	executable-326.md
+gate1-routing	51f8bbcd	6	[draft] gate1 routing a1 (ACID, apart) culmination — 5 folds	m	1	executable-326.md
+gate1-routing	51f8bbcd	6	[draft] gate1 routing a1 (ACID, apart) culmination — 5 folds	q	0	executable-326.md
+gate1-routing	51f8bbcd	6	[draft] gate1 routing a1 (ACID, apart) culmination — 5 folds	r	0	executable-326.md
+gate1-routing	51f8bbcd	6	[draft] gate1 routing a1 (ACID, apart) culmination — 5 folds	s	4	executable-326.md
+gate1-routing	08bd8eeb	7	[draft] gate1 routing c1 (four lenses, confirming, from bytes) — 1 fold	m	1	executable-326.md
+gate1-routing	08bd8eeb	7	[draft] gate1 routing c1 (four lenses, confirming, from bytes) — 1 fold	q	0	executable-326.md
+gate1-routing	08bd8eeb	7	[draft] gate1 routing c1 (four lenses, confirming, from bytes) — 1 fold	r	0	executable-326.md
+gate1-routing	08bd8eeb	7	[draft] gate1 routing c1 (four lenses, confirming, from bytes) — 1 fold	s	5	executable-326.md
+gate1-routing	4c632fe0	8	[draft] gate1 routing aC (ACID confirming, apart) — 1 fold then re-read dry	m	1	executable-326.md
+gate1-routing	4c632fe0	8	[draft] gate1 routing aC (ACID confirming, apart) — 1 fold then re-read dry	q	0	executable-326.md
+gate1-routing	4c632fe0	8	[draft] gate1 routing aC (ACID confirming, apart) — 1 fold then re-read dry	r	0	executable-326.md
+gate1-routing	4c632fe0	8	[draft] gate1 routing aC (ACID confirming, apart) — 1 fold then re-read dry	s	5	executable-326.md
+gate1-routing	48ebbf25	9	[draft] gate1 routing c2 (four lenses, fresh read + SS5) — DRY AT ZERO; CYCLE CLOSED	m	1	executable-326.md
+gate1-routing	48ebbf25	9	[draft] gate1 routing c2 (four lenses, fresh read + SS5) — DRY AT ZERO; CYCLE CLOSED	q	0	executable-326.md
+gate1-routing	48ebbf25	9	[draft] gate1 routing c2 (four lenses, fresh read + SS5) — DRY AT ZERO; CYCLE CLOSED	r	0	executable-326.md
+gate1-routing	48ebbf25	9	[draft] gate1 routing c2 (four lenses, fresh read + SS5) — DRY AT ZERO; CYCLE CLOSED	s	5	executable-326.md
