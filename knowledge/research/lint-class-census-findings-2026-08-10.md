@@ -344,3 +344,57 @@ No existing bucket. Nearest: **O** ("other-mechanizable"). The `s` class is genu
 Three classes (m, q, r) are REDESIGN: each has a clear redesign direction (parse the command structure to identify the -F argument, or distinguish pipe from alternation). One class (s) is HOLD: the detection technique (regex) cannot solve the underlying problem (count verification) regardless of redesign.
 
 **Proportionality note (residual 5 from the diagnostic):** this diagnostic is 220+ lines to price four regexes. The answer is "hold all four." The drafting cost has exceeded the finding's value, which is itself a datum for the funnel.
+
+---
+
+# ⚠️ SECOND-READER ADDENDUM — 2026-08-10
+
+**Status of the four dispositions above: PRECISION-ONLY. They cannot reject the defect classes.**
+
+This addendum is the second read the wrap required before any build plan acts on the dispositions. It does not amend the measurements above — every number in them stands. It corrects what those numbers are evidence *for*.
+
+## A1 — The covered set excludes both cycles that generated the hypothesis
+
+The withdrawn build plan (`governance/knowledge/research/draft-lint-literal-guards-2026-08-10-WITHDRAWN.md`) rested its case on instances observed in **the v2.0 specimen-1 cycle** and **the 335 collector cycle**. Neither appears in the ten covered drafts of §(iv). The cause is mechanical, not an authoring miss:
+
+```
+$ git log --all --oneline --follow -- governance/knowledge/research/draft-group4-rescope-2026-08-10-UNDEPOSITED.md
+a7077ca docs(wrap): session 32 — DRAFTING_CYCLE v2.0 specimen 1; cycle stopped at walk 4 by CEO decision, nothing dispatched
+```
+
+**One commit.** Q4's method iterates per-phase commits looking for count decreases; specimen 1 has no pre-fold revisions to iterate. The census measured ten drafts, none of them the population the hypothesis came from.
+
+## A2 — The instances are real, and they are recorded
+
+`governance/knowledge/research/walk-register-group4-rescope-2026-08-10.md` names them, in two places matching the build plan's wording verbatim:
+
+- **m** — register :414, "C9 IS VIOLATED AT TWO LOAD-BEARING PINS. The version literal carried a section sign; the packet anchor carried an em-dash" (plan claim: "violated at two load-bearing pins"). Also :87, P10's two checkbox glyphs.
+- **q** — register :22, "P7's literal carries backticks that must survive a blockquote, a shell, and -F" (plan claim: identical phrasing).
+- **r** — register :25, resolution "never through a pipeline"; :361, the recount that returned MORE than before.
+- **s** — register :270, "Record all four" over an enumeration carrying five; also :19 and :136.
+
+A matcher restricted to the actual pattern argument — the redesign direction §(vi) names for m and q — would have fired on the section-sign pin, the em-dash anchor, the two glyphs and P7's backticks.
+
+## A3 — What the zero therefore means
+
+`Done/` is post-fold by construction: the only instances it can retain are the ones no reader caught. A fire rate over survivors measures **precision** and nothing else, and **precision over a population with no positives in it is unfalsifiable — every matcher scores zero, including a correct one.**
+
+The summary table's "Q4 verified TPs: 0" column should be read as *no positive was reachable by this method*, not as *the class does not occur*.
+
+## A4 — Correction: spot-verification depth
+
+§(v) states for each class that "All decreases result from plan restructuring." The dev log is narrower: of **13** count-decrease events, **4** were diff-read, and it records **"Verified fraction: 0/4 confirmed as defect folds"** (`knowledge/development/lint-class-census-dev-log-step-2-2026-08-10.md`, Task S2-C). The remaining nine carry the RESTRUCTURING label without a diff read. The conclusion is unchanged in direction; the evidence behind it is thinner than the findings text implies.
+
+## A5 — What survives unchanged
+
+- **The four matchers as written are unshippable.** 376 false fires, zero catches, class `s` at 100% of BLOCK files. Withdrawing the build plan was correct and remains correct.
+- **`s` HOLD is sound and A1–A3 do not weaken it.** Register :270 is the proof rather than a counterexample: a regex reading "Record all four" cannot know the list beneath it has five items. No redesign within regex fixes that.
+- **`m`/`q`/`r` REDESIGN is not yet earned or refused** — it rests on a null over the wrong population.
+
+## A6 — What is owed before any build plan
+
+1. A **labelled positive set** built from the walk register's named instances.
+2. A **recall** measurement of the four matchers as written, and of their operand-parsing redesigns, against that set — reported as a pair with the precision figures above.
+3. ⚠️ **Open question this addendum could not settle:** the register records the defects as *descriptions* ("the version literal carried a section sign"), not necessarily as the original offending lines. If the pre-fold source text is unrecoverable, the instances are hand-labelable ground truth but not machine-matchable — **and that limitation is itself the finding**, because it means no lint class can be priced against this cycle at all.
+
+Carried as bellows FORWARD rows 48 and 49. LESSONS 242.
