@@ -1,9 +1,15 @@
 # Bellows — Project Status
-**Last Updated:** 2026-07-09 (Fix _lc_plan_id derivation for type-prefixed verdict slugs — plan 150)
+**Last Updated:** 2026-08-10 (D5 collector shipped — plan 335; four lint classes priced and rejected — diagnostic 336)
 
 ## Status: Phase 1 Complete — Live (daemon running, all 10 watched paths active)
 
 ## Completed
+### Plan 335 — D5's collector (closed 2026-08-10)
+`scripts/cycle_yields.py` + `tests/test_cycle_yields.py`. D5 was adopted 2026-08-09 and never built, so specimen 1 was hand-collected over a session; every cycle that CLOSES now flows in automatically. Suite 928 → **960 passed**. Two findings outrank the pass: the fold-origin split is **absent from the machine-readable record entirely (0 of 61)** — the two plans that "have" it carry it as narrative prose, which a file-level grep reports as present — and **194 of 536 block-derived rows (36%) are UNPARSEABLE because the corpus is dialectal**, carrying three Cycle Log forms (FORWARD 47). The tool reports them rather than skipping; a skip would have made the corpus look 36% cleaner than it is.
+
+### Diagnostic 336 — four candidate lint classes priced, all four rejected (halted-complete 2026-08-10)
+`knowledge/research/lint-class-census-findings-2026-08-10.md`. Ran the funnel's stages 2 and 3 on four candidate `plan_lint` checks. **Zero true positives, 376 false, not one verified catch across 139 pre-fold commits from 10 drafts.** Three REDESIGN, one HOLD; class `s` fires on **100%** of block-carrying plans and is right zero times. **The build plan drafted for these four would have fired 376 times and caught nothing** — the funnel's measure-before-building gate vindicated by measurement, not argument. ⚠️ **Halted with its work COMPLETE, not failed:** the agent ran all three steps in one dispatch against `pause_for_verdict: always`, so the QA step was not independent and a `continue` would have overwritten committed evidence (FORWARD 46, LESSONS 240–241). **No build plan may act on these dispositions without the second reader that never ran.**
+
 ### Plan 294
 The Forward Register append is now bullet-aware: multi-item Receipt blocks emit one row per item, with plan 62's narration guard preserved as the fallback when fewer than 2 bullet lines match. NOT live until the daemon is restarted — the code is on main but the running daemon (when started) will pick up the new module at its next launch.
 
