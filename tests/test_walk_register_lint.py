@@ -1,0 +1,387 @@
+"""Tests for walk_register_lint.py — all fixtures constructed, never live registers."""
+
+import sys
+import textwrap
+from pathlib import Path
+
+import pytest
+
+BELLOWS_ROOT = Path(__file__).parent.parent.resolve()
+sys.path.insert(0, str(BELLOWS_ROOT / "scripts"))
+
+from walk_register_lint import (
+    REQUIRED_COLUMNS,
+    ROW_OK,
+    ROW_WARN,
+    STATUS_CONFORMANT,
+    STATUS_NO_TABLE,
+    STATUS_PRE_SCHEMA,
+    STATUS_UNCONFORMANT,
+    escape_pre_fold_text,
+    has_schema_declaration,
+    is_fold_table,
+    normalize_column,
+    split_table_row,
+    unescape_pre_fold_text,
+    validate_file,
+    validate_row,
+)
+
+
+def _write_register(tmp_path, name, content):
+    p = tmp_path / name
+    p.write_text(textwrap.dedent(content), encoding="utf-8")
+    return p
+
+
+# --- conformant row ---
+
+
+CONFORMANT_REGISTER = """\
+# Walk Register — test
+
+**schema_version:** `0.1`
+
+| id | walk | lens | sub_question | origin | finding | pre_fold_text | resolution |
+|---|---|---|---|---|---|---|---|
+| f1 | 1 | Weak spots | 1.1 | pre-existing | bad count | the exact bytes | fixed count |
+| f2 | 1 | Destruction | 2.1 | fold-introduced | stale ref | old ref text | new ref |
+"""
+
+
+def test_conformant_row(tmp_path):
+    fp = _write_register(tmp_path, "walk-register-test.md", CONFORMANT_REGISTER)
+    status, rows, shapes = validate_file(fp)
+    assert status == STATUS_CONFORMANT
+    assert len(rows) == 2
+    assert all(r["row_status"] == ROW_OK for r in rows)
+    assert all(r["file_status"] == STATUS_CONFORMANT for r in rows)
+
+
+# --- missing pre_fold_text (C2 — constructed, WARN must fire) ---
+
+
+MISSING_PFT_REGISTER = """\
+# Walk Register — test
+
+**schema_version:** `0.1`
+
+| id | walk | lens | sub_question | origin | finding | pre_fold_text | resolution |
+|---|---|---|---|---|---|---|---|
+| f1 | 1 | Weak spots | 1.1 | pre-existing | bad count | the bytes | fixed |
+| f2 | 1 | Destruction | 2.1 | fold-introduced | stale ref | | new ref |
+"""
+
+
+def test_missing_pre_fold_text_warns(tmp_path):
+    fp = _write_register(tmp_path, "walk-register-test.md", MISSING_PFT_REGISTER)
+    status, rows, shapes = validate_file(fp)
+    assert status == STATUS_UNCONFORMANT
+    warn_rows = [r for r in rows if r["row_status"] == ROW_WARN]
+    assert len(warn_rows) == 1
+    assert "pre_fold_text" in warn_rows[0]["missing"]
+    assert warn_rows[0]["note"] == "missing_fields"
+
+
+# --- two-shape file ---
+
+
+TWO_SHAPE_REGISTER = """\
+# Walk Register — test
+
+**schema_version:** `0.1`
+
+## Walk 1
+
+| id | walk | lens | sub_question | origin | finding | pre_fold_text | resolution |
+|---|---|---|---|---|---|---|---|
+| f1 | 1 | Weak spots | 1.1 | pre-existing | bad | old | fixed |
+
+## Walk 2
+
+| # | finding | fold |
+|---|---|---|
+| 1 | something | fixed it |
+"""
+
+
+def test_two_shape_file(tmp_path):
+    fp = _write_register(tmp_path, "walk-register-test.md", TWO_SHAPE_REGISTER)
+    status, rows, shapes = validate_file(fp)
+    assert status == STATUS_UNCONFORMANT
+    assert len(shapes) == 2
+    table_nums = {r["table"] for r in rows}
+    assert "1" in table_nums
+    assert "2" in table_nums
+    table2_rows = [r for r in rows if r["table"] == "2"]
+    assert all(r["row_status"] == ROW_WARN for r in table2_rows)
+    assert all("wrong_shape" in r["note"] for r in table2_rows)
+
+
+# --- no table at all ---
+
+
+NO_TABLE_REGISTER = """\
+# Walk Register — test
+
+**schema_version:** `0.1`
+
+No tables here. Just prose describing the walk.
+"""
+
+
+def test_no_table_file(tmp_path):
+    fp = _write_register(tmp_path, "walk-register-test.md", NO_TABLE_REGISTER)
+    status, rows, shapes = validate_file(fp)
+    assert status == STATUS_NO_TABLE
+    assert rows == []
+
+
+# --- no schema_version → PRE-SCHEMA ---
+
+
+PRE_SCHEMA_REGISTER = """\
+# Walk Register — test
+
+No schema_version declaration here.
+
+| # | sub-q | finding | fold |
+|---|---|---|---|
+| 1 | 1.1 | bad count | fixed |
+"""
+
+
+def test_pre_schema_status(tmp_path):
+    fp = _write_register(tmp_path, "walk-register-test.md", PRE_SCHEMA_REGISTER)
+    status, rows, shapes = validate_file(fp)
+    assert status == STATUS_PRE_SCHEMA
+    assert all(r["file_status"] == STATUS_PRE_SCHEMA for r in rows)
+
+
+# --- PRE-SCHEMA with multi-shape: shapes are still reported ---
+
+
+PRE_SCHEMA_MULTI_SHAPE = """\
+# Walk Register — test
+
+| # | sub-q | finding | fold |
+|---|---|---|---|
+| 1 | 1.1 | bad | fixed |
+
+| # | finding | resolution |
+|---|---|---|
+| 2 | other | also fixed |
+"""
+
+
+def test_pre_schema_multi_shape(tmp_path):
+    fp = _write_register(tmp_path, "walk-register-test.md", PRE_SCHEMA_MULTI_SHAPE)
+    status, rows, shapes = validate_file(fp)
+    assert status == STATUS_PRE_SCHEMA
+    assert len(shapes) == 2
+
+
+# --- schema_version in prose only (not a declaration) → PRE-SCHEMA ---
+
+
+SCHEMA_VERSION_IN_PROSE = """\
+# Walk Register — test
+
+The schema_version field is described in the schema document.
+
+It says to use **schema_version:** somewhere before the first table,
+but this file only mentions it in prose.
+
+| # | finding | fold |
+|---|---|---|
+| 1 | bad | fixed |
+"""
+
+
+def test_schema_version_in_prose_is_pre_schema(tmp_path):
+    fp = _write_register(tmp_path, "walk-register-test.md", SCHEMA_VERSION_IN_PROSE)
+    status, rows, shapes = validate_file(fp)
+    assert status == STATUS_PRE_SCHEMA
+
+
+# --- pipe round-trip ---
+
+
+def test_pipe_escape_round_trip():
+    original = "foo|bar"
+    escaped = escape_pre_fold_text(original)
+    assert escaped == "foo\\|bar"
+    assert unescape_pre_fold_text(escaped) == original
+
+
+# --- backslash round-trip ---
+
+
+def test_backslash_escape_round_trip():
+    original = "foo\\bar"
+    escaped = escape_pre_fold_text(original)
+    assert escaped == "foo\\\\bar"
+    assert unescape_pre_fold_text(escaped) == original
+
+
+# --- \\| sequence round-trip (the ambiguity case) ---
+
+
+def test_backslash_pipe_escape_round_trip():
+    original = "foo\\|bar"
+    escaped = escape_pre_fold_text(original)
+    assert escaped == "foo\\\\\\|bar"
+    assert unescape_pre_fold_text(escaped) == original
+
+
+# --- unescaped pipe corrupts the row ---
+
+
+def test_unescaped_pipe_corrupts_row():
+    row_with_escaped = "| f1 | 1 | WS | 1.1 | pre | bad | foo\\|bar | fixed |"
+    cells = split_table_row(row_with_escaped)
+    assert cells is not None
+    assert len(cells) == 8
+    assert cells[6] == "foo\\|bar"
+
+    row_without_escape = "| f1 | 1 | WS | 1.1 | pre | bad | foo|bar | fixed |"
+    cells_bad = split_table_row(row_without_escape)
+    assert cells_bad is not None
+    assert len(cells_bad) == 9  # corrupted — extra cell
+
+
+# --- ADDITION literal ---
+
+
+ADDITION_REGISTER = """\
+# Walk Register — test
+
+**schema_version:** `0.1`
+
+| id | walk | lens | sub_question | origin | finding | pre_fold_text | resolution |
+|---|---|---|---|---|---|---|---|
+| f1 | 1 | Weak spots | 1.1 | fold-introduced | new guard | ADDITION | guard added |
+"""
+
+
+def test_addition_literal_conformant(tmp_path):
+    fp = _write_register(tmp_path, "walk-register-test.md", ADDITION_REGISTER)
+    status, rows, shapes = validate_file(fp)
+    assert status == STATUS_CONFORMANT
+    assert len(rows) == 1
+    assert rows[0]["row_status"] == ROW_OK
+
+
+# --- empty pre_fold_text (not ADDITION, not bytes) → WARN ---
+
+
+EMPTY_PFT_REGISTER = """\
+# Walk Register — test
+
+**schema_version:** `0.1`
+
+| id | walk | lens | sub_question | origin | finding | pre_fold_text | resolution |
+|---|---|---|---|---|---|---|---|
+| f1 | 1 | Weak spots | 1.1 | fold-introduced | new guard | | guard added |
+"""
+
+
+def test_empty_pre_fold_text_warns(tmp_path):
+    fp = _write_register(tmp_path, "walk-register-test.md", EMPTY_PFT_REGISTER)
+    status, rows, shapes = validate_file(fp)
+    assert status == STATUS_UNCONFORMANT
+    assert rows[0]["row_status"] == ROW_WARN
+    assert "pre_fold_text" in rows[0]["missing"]
+
+
+# --- truncated pre_fold_text (ellipsis) → WARN ---
+
+
+TRUNCATED_PFT_REGISTER = """\
+# Walk Register — test
+
+**schema_version:** `0.1`
+
+| id | walk | lens | sub_question | origin | finding | pre_fold_text | resolution |
+|---|---|---|---|---|---|---|---|
+| f1 | 1 | Weak spots | 1.1 | pre-existing | bad | the exact bytes... more | fixed |
+"""
+
+
+def test_truncated_pre_fold_text_warns(tmp_path):
+    fp = _write_register(tmp_path, "walk-register-test.md", TRUNCATED_PFT_REGISTER)
+    status, rows, shapes = validate_file(fp)
+    assert status == STATUS_UNCONFORMANT
+    assert rows[0]["row_status"] == ROW_WARN
+    assert rows[0]["note"] == "truncated_pre_fold_text"
+
+
+# --- non-fold tables are skipped ---
+
+
+NON_FOLD_TABLE_REGISTER = """\
+# Walk Register — test
+
+**schema_version:** `0.1`
+
+| field | required | meaning |
+|---|---|---|
+| id | yes | stable id |
+
+| lens | folded | note |
+|---|---|---|
+| WS | 3 | first pass |
+"""
+
+
+def test_non_fold_tables_skipped(tmp_path):
+    fp = _write_register(tmp_path, "walk-register-test.md", NON_FOLD_TABLE_REGISTER)
+    status, rows, shapes = validate_file(fp)
+    assert status == STATUS_NO_TABLE
+    assert rows == []
+    assert shapes == []
+
+
+# --- normalize_column ---
+
+
+def test_normalize_column_strips_markdown():
+    assert normalize_column("**sub-q**") == "sub_q"
+    assert normalize_column("`pre_fold_text`") == "pre_fold_text"
+    assert normalize_column("sub question") == "sub_question"
+
+
+# --- is_fold_table detection ---
+
+
+def test_is_fold_table_positive():
+    assert is_fold_table(["#", "finding", "fold"])
+    assert is_fold_table(["#", "sub", "finding", "resolution"])
+    assert is_fold_table(["id", "walk", "lens", "sub_question", "origin",
+                          "finding", "pre_fold_text", "resolution"])
+
+
+def test_is_fold_table_negative():
+    assert not is_fold_table(["field", "required", "meaning"])
+    assert not is_fold_table(["lens", "folded", "note"])
+    assert not is_fold_table(["finding", "channel"])
+
+
+# --- directory glob mode ---
+
+
+def test_directory_glob(tmp_path):
+    _write_register(tmp_path, "walk-register-a.md", CONFORMANT_REGISTER)
+    _write_register(tmp_path, "walk-register-b.md", PRE_SCHEMA_REGISTER)
+    _write_register(tmp_path, "not-a-register.md", CONFORMANT_REGISTER)
+
+    from walk_register_lint import validate_file as vf
+
+    a_status, a_rows, _ = vf(tmp_path / "walk-register-a.md")
+    b_status, b_rows, _ = vf(tmp_path / "walk-register-b.md")
+    assert a_status == STATUS_CONFORMANT
+    assert b_status == STATUS_PRE_SCHEMA
+
+    matches = sorted(tmp_path.glob("walk-register-*.md"))
+    assert len(matches) == 2
+    assert all("walk-register-" in m.name for m in matches)

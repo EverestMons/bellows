@@ -1,0 +1,223 @@
+=== walk-register-group4-rescope-2026-08-10.md ===
+blob: ef2fa9e43a04ec2a08941ae2f9774b714bbd8b07
+--- stderr ---
+walk-register-group4-rescope-2026-08-10.md	PRE-SCHEMA	shapes: | # | sub-q | finding | fold | ; | # | finding | fold | ; | # | sub-q | finding | fold | ; | # | sub-q | finding | fold | ; | # | sub-q | finding | fold | ; | # | sub-q | finding | fold | ; | # | sub-q | finding | fold | ; | # | sub-q | finding | fold | ; | # | sub-q | finding | fold | ; | # | sub-q | finding | fold | ; | # | sub-q | finding | fold | ; | # | sub-q | finding | fold | ; | # | sub-q | finding | fold | ; | # | sub-q | finding | fold | ; | # | sub-q | finding | fold | ; | # | sub-q | finding | fold | ; | # | sub-q | finding | fold | ; | # | sub-q | finding | fold | ; | # | sub-q | finding | fold | ; | # | sub-q | finding | fold | ; | # | sub-q | finding | fold |
+
+--- stdout (header + 130 data rows) ---
+file	line	table	row_status	file_status	columns	missing	note
+walk-register-group4-rescope-2026-08-10.md	13	1	WARN	PRE-SCHEMA	| # | sub-q | finding | fold |	id,walk,lens,sub_question,origin,pre_fold_text,resolution	wrong_shape
+walk-register-group4-rescope-2026-08-10.md	14	1	WARN	PRE-SCHEMA	| # | sub-q | finding | fold |	id,walk,lens,sub_question,origin,pre_fold_text,resolution	wrong_shape
+walk-register-group4-rescope-2026-08-10.md	15	1	WARN	PRE-SCHEMA	| # | sub-q | finding | fold |	id,walk,lens,sub_question,origin,pre_fold_text,resolution	wrong_shape
+walk-register-group4-rescope-2026-08-10.md	16	1	WARN	PRE-SCHEMA	| # | sub-q | finding | fold |	id,walk,lens,sub_question,origin,pre_fold_text,resolution	wrong_shape
+walk-register-group4-rescope-2026-08-10.md	17	1	WARN	PRE-SCHEMA	| # | sub-q | finding | fold |	id,walk,lens,sub_question,origin,pre_fold_text,resolution	wrong_shape
+walk-register-group4-rescope-2026-08-10.md	18	1	WARN	PRE-SCHEMA	| # | sub-q | finding | fold |	id,walk,lens,sub_question,origin,pre_fold_text,resolution	wrong_shape
+walk-register-group4-rescope-2026-08-10.md	19	1	WARN	PRE-SCHEMA	| # | sub-q | finding | fold |	id,walk,lens,sub_question,origin,pre_fold_text,resolution	wrong_shape
+walk-register-group4-rescope-2026-08-10.md	20	1	WARN	PRE-SCHEMA	| # | sub-q | finding | fold |	id,walk,lens,sub_question,origin,pre_fold_text,resolution	wrong_shape
+walk-register-group4-rescope-2026-08-10.md	21	1	WARN	PRE-SCHEMA	| # | sub-q | finding | fold |	id,walk,lens,sub_question,origin,pre_fold_text,resolution	wrong_shape
+walk-register-group4-rescope-2026-08-10.md	22	1	WARN	PRE-SCHEMA	| # | sub-q | finding | fold |	id,walk,lens,sub_question,origin,pre_fold_text,resolution	wrong_shape
+walk-register-group4-rescope-2026-08-10.md	23	1	WARN	PRE-SCHEMA	| # | sub-q | finding | fold |	id,walk,lens,sub_question,origin,pre_fold_text,resolution	wrong_shape
+walk-register-group4-rescope-2026-08-10.md	24	1	WARN	PRE-SCHEMA	| # | sub-q | finding | fold |	id,walk,lens,sub_question,origin,pre_fold_text,resolution	wrong_shape
+walk-register-group4-rescope-2026-08-10.md	25	1	WARN	PRE-SCHEMA	| # | sub-q | finding | fold |	id,walk,lens,sub_question,origin,pre_fold_text,resolution	wrong_shape
+walk-register-group4-rescope-2026-08-10.md	26	1	WARN	PRE-SCHEMA	| # | sub-q | finding | fold |	id,walk,lens,sub_question,origin,pre_fold_text,resolution	wrong_shape
+walk-register-group4-rescope-2026-08-10.md	27	1	WARN	PRE-SCHEMA	| # | sub-q | finding | fold |	id,walk,lens,sub_question,origin,pre_fold_text,resolution	wrong_shape
+walk-register-group4-rescope-2026-08-10.md	28	1	WARN	PRE-SCHEMA	| # | sub-q | finding | fold |	id,walk,lens,sub_question,origin,pre_fold_text,resolution	wrong_shape
+walk-register-group4-rescope-2026-08-10.md	29	1	WARN	PRE-SCHEMA	| # | sub-q | finding | fold |	id,walk,lens,sub_question,origin,pre_fold_text,resolution	wrong_shape
+walk-register-group4-rescope-2026-08-10.md	30	1	WARN	PRE-SCHEMA	| # | sub-q | finding | fold |	id,walk,lens,sub_question,origin,pre_fold_text,resolution	wrong_shape
+walk-register-group4-rescope-2026-08-10.md	42	2	WARN	PRE-SCHEMA	| # | finding | fold |	id,walk,lens,sub_question,origin,pre_fold_text,resolution	wrong_shape
+walk-register-group4-rescope-2026-08-10.md	43	2	WARN	PRE-SCHEMA	| # | finding | fold |	id,walk,lens,sub_question,origin,pre_fold_text,resolution	wrong_shape
+walk-register-group4-rescope-2026-08-10.md	44	2	WARN	PRE-SCHEMA	| # | finding | fold |	id,walk,lens,sub_question,origin,pre_fold_text,resolution	wrong_shape
+walk-register-group4-rescope-2026-08-10.md	64	3	WARN	PRE-SCHEMA	| # | sub-q | finding | fold |	id,walk,lens,sub_question,origin,pre_fold_text,resolution	wrong_shape
+walk-register-group4-rescope-2026-08-10.md	65	3	WARN	PRE-SCHEMA	| # | sub-q | finding | fold |	id,walk,lens,sub_question,origin,pre_fold_text,resolution	wrong_shape
+walk-register-group4-rescope-2026-08-10.md	66	3	WARN	PRE-SCHEMA	| # | sub-q | finding | fold |	id,walk,lens,sub_question,origin,pre_fold_text,resolution	wrong_shape
+walk-register-group4-rescope-2026-08-10.md	67	3	WARN	PRE-SCHEMA	| # | sub-q | finding | fold |	id,walk,lens,sub_question,origin,pre_fold_text,resolution	wrong_shape
+walk-register-group4-rescope-2026-08-10.md	68	3	WARN	PRE-SCHEMA	| # | sub-q | finding | fold |	id,walk,lens,sub_question,origin,pre_fold_text,resolution	wrong_shape
+walk-register-group4-rescope-2026-08-10.md	69	3	WARN	PRE-SCHEMA	| # | sub-q | finding | fold |	id,walk,lens,sub_question,origin,pre_fold_text,resolution	wrong_shape
+walk-register-group4-rescope-2026-08-10.md	70	3	WARN	PRE-SCHEMA	| # | sub-q | finding | fold |	id,walk,lens,sub_question,origin,pre_fold_text,resolution	wrong_shape
+walk-register-group4-rescope-2026-08-10.md	71	3	WARN	PRE-SCHEMA	| # | sub-q | finding | fold |	id,walk,lens,sub_question,origin,pre_fold_text,resolution	wrong_shape
+walk-register-group4-rescope-2026-08-10.md	72	3	WARN	PRE-SCHEMA	| # | sub-q | finding | fold |	id,walk,lens,sub_question,origin,pre_fold_text,resolution	wrong_shape
+walk-register-group4-rescope-2026-08-10.md	73	3	WARN	PRE-SCHEMA	| # | sub-q | finding | fold |	id,walk,lens,sub_question,origin,pre_fold_text,resolution	wrong_shape
+walk-register-group4-rescope-2026-08-10.md	74	3	WARN	PRE-SCHEMA	| # | sub-q | finding | fold |	id,walk,lens,sub_question,origin,pre_fold_text,resolution	wrong_shape
+walk-register-group4-rescope-2026-08-10.md	84	4	WARN	PRE-SCHEMA	| # | sub-q | finding | fold |	id,walk,lens,sub_question,origin,pre_fold_text,resolution	wrong_shape
+walk-register-group4-rescope-2026-08-10.md	85	4	WARN	PRE-SCHEMA	| # | sub-q | finding | fold |	id,walk,lens,sub_question,origin,pre_fold_text,resolution	wrong_shape
+walk-register-group4-rescope-2026-08-10.md	86	4	WARN	PRE-SCHEMA	| # | sub-q | finding | fold |	id,walk,lens,sub_question,origin,pre_fold_text,resolution	wrong_shape
+walk-register-group4-rescope-2026-08-10.md	87	4	WARN	PRE-SCHEMA	| # | sub-q | finding | fold |	id,walk,lens,sub_question,origin,pre_fold_text,resolution	wrong_shape
+walk-register-group4-rescope-2026-08-10.md	88	4	WARN	PRE-SCHEMA	| # | sub-q | finding | fold |	id,walk,lens,sub_question,origin,pre_fold_text,resolution	wrong_shape
+walk-register-group4-rescope-2026-08-10.md	89	4	WARN	PRE-SCHEMA	| # | sub-q | finding | fold |	id,walk,lens,sub_question,origin,pre_fold_text,resolution	wrong_shape
+walk-register-group4-rescope-2026-08-10.md	90	4	WARN	PRE-SCHEMA	| # | sub-q | finding | fold |	id,walk,lens,sub_question,origin,pre_fold_text,resolution	wrong_shape
+walk-register-group4-rescope-2026-08-10.md	91	4	WARN	PRE-SCHEMA	| # | sub-q | finding | fold |	id,walk,lens,sub_question,origin,pre_fold_text,resolution	wrong_shape
+walk-register-group4-rescope-2026-08-10.md	92	4	WARN	PRE-SCHEMA	| # | sub-q | finding | fold |	id,walk,lens,sub_question,origin,pre_fold_text,resolution	wrong_shape
+walk-register-group4-rescope-2026-08-10.md	93	4	WARN	PRE-SCHEMA	| # | sub-q | finding | fold |	id,walk,lens,sub_question,origin,pre_fold_text,resolution	wrong_shape
+walk-register-group4-rescope-2026-08-10.md	94	4	WARN	PRE-SCHEMA	| # | sub-q | finding | fold |	id,walk,lens,sub_question,origin,pre_fold_text,resolution	wrong_shape
+walk-register-group4-rescope-2026-08-10.md	104	5	WARN	PRE-SCHEMA	| # | sub-q | finding | fold |	id,walk,lens,sub_question,origin,pre_fold_text,resolution	wrong_shape
+walk-register-group4-rescope-2026-08-10.md	105	5	WARN	PRE-SCHEMA	| # | sub-q | finding | fold |	id,walk,lens,sub_question,origin,pre_fold_text,resolution	wrong_shape
+walk-register-group4-rescope-2026-08-10.md	106	5	WARN	PRE-SCHEMA	| # | sub-q | finding | fold |	id,walk,lens,sub_question,origin,pre_fold_text,resolution	wrong_shape
+walk-register-group4-rescope-2026-08-10.md	107	5	WARN	PRE-SCHEMA	| # | sub-q | finding | fold |	id,walk,lens,sub_question,origin,pre_fold_text,resolution	wrong_shape
+walk-register-group4-rescope-2026-08-10.md	108	5	WARN	PRE-SCHEMA	| # | sub-q | finding | fold |	id,walk,lens,sub_question,origin,pre_fold_text,resolution	wrong_shape
+walk-register-group4-rescope-2026-08-10.md	109	5	WARN	PRE-SCHEMA	| # | sub-q | finding | fold |	id,walk,lens,sub_question,origin,pre_fold_text,resolution	wrong_shape
+walk-register-group4-rescope-2026-08-10.md	130	6	WARN	PRE-SCHEMA	| # | sub-q | finding | fold |	id,walk,lens,sub_question,origin,pre_fold_text,resolution	wrong_shape
+walk-register-group4-rescope-2026-08-10.md	131	6	WARN	PRE-SCHEMA	| # | sub-q | finding | fold |	id,walk,lens,sub_question,origin,pre_fold_text,resolution	wrong_shape
+walk-register-group4-rescope-2026-08-10.md	132	6	WARN	PRE-SCHEMA	| # | sub-q | finding | fold |	id,walk,lens,sub_question,origin,pre_fold_text,resolution	wrong_shape
+walk-register-group4-rescope-2026-08-10.md	133	6	WARN	PRE-SCHEMA	| # | sub-q | finding | fold |	id,walk,lens,sub_question,origin,pre_fold_text,resolution	wrong_shape
+walk-register-group4-rescope-2026-08-10.md	134	6	WARN	PRE-SCHEMA	| # | sub-q | finding | fold |	id,walk,lens,sub_question,origin,pre_fold_text,resolution	wrong_shape
+walk-register-group4-rescope-2026-08-10.md	135	6	WARN	PRE-SCHEMA	| # | sub-q | finding | fold |	id,walk,lens,sub_question,origin,pre_fold_text,resolution	wrong_shape
+walk-register-group4-rescope-2026-08-10.md	136	6	WARN	PRE-SCHEMA	| # | sub-q | finding | fold |	id,walk,lens,sub_question,origin,pre_fold_text,resolution	wrong_shape
+walk-register-group4-rescope-2026-08-10.md	168	7	WARN	PRE-SCHEMA	| # | sub-q | finding | fold |	id,walk,lens,sub_question,origin,pre_fold_text,resolution	wrong_shape
+walk-register-group4-rescope-2026-08-10.md	169	7	WARN	PRE-SCHEMA	| # | sub-q | finding | fold |	id,walk,lens,sub_question,origin,pre_fold_text,resolution	wrong_shape
+walk-register-group4-rescope-2026-08-10.md	170	7	WARN	PRE-SCHEMA	| # | sub-q | finding | fold |	id,walk,lens,sub_question,origin,pre_fold_text,resolution	wrong_shape
+walk-register-group4-rescope-2026-08-10.md	171	7	WARN	PRE-SCHEMA	| # | sub-q | finding | fold |	id,walk,lens,sub_question,origin,pre_fold_text,resolution	wrong_shape
+walk-register-group4-rescope-2026-08-10.md	172	7	WARN	PRE-SCHEMA	| # | sub-q | finding | fold |	id,walk,lens,sub_question,origin,pre_fold_text,resolution	wrong_shape
+walk-register-group4-rescope-2026-08-10.md	173	7	WARN	PRE-SCHEMA	| # | sub-q | finding | fold |	id,walk,lens,sub_question,origin,pre_fold_text,resolution	wrong_shape
+walk-register-group4-rescope-2026-08-10.md	174	7	WARN	PRE-SCHEMA	| # | sub-q | finding | fold |	id,walk,lens,sub_question,origin,pre_fold_text,resolution	wrong_shape
+walk-register-group4-rescope-2026-08-10.md	175	7	WARN	PRE-SCHEMA	| # | sub-q | finding | fold |	id,walk,lens,sub_question,origin,pre_fold_text,resolution	wrong_shape
+walk-register-group4-rescope-2026-08-10.md	195	8	WARN	PRE-SCHEMA	| # | sub-q | finding | fold |	id,walk,lens,sub_question,origin,pre_fold_text,resolution	wrong_shape
+walk-register-group4-rescope-2026-08-10.md	196	8	WARN	PRE-SCHEMA	| # | sub-q | finding | fold |	id,walk,lens,sub_question,origin,pre_fold_text,resolution	wrong_shape
+walk-register-group4-rescope-2026-08-10.md	197	8	WARN	PRE-SCHEMA	| # | sub-q | finding | fold |	id,walk,lens,sub_question,origin,pre_fold_text,resolution	wrong_shape
+walk-register-group4-rescope-2026-08-10.md	198	8	WARN	PRE-SCHEMA	| # | sub-q | finding | fold |	id,walk,lens,sub_question,origin,pre_fold_text,resolution	wrong_shape
+walk-register-group4-rescope-2026-08-10.md	199	8	WARN	PRE-SCHEMA	| # | sub-q | finding | fold |	id,walk,lens,sub_question,origin,pre_fold_text,resolution	wrong_shape
+walk-register-group4-rescope-2026-08-10.md	200	8	WARN	PRE-SCHEMA	| # | sub-q | finding | fold |	id,walk,lens,sub_question,origin,pre_fold_text,resolution	wrong_shape
+walk-register-group4-rescope-2026-08-10.md	201	8	WARN	PRE-SCHEMA	| # | sub-q | finding | fold |	id,walk,lens,sub_question,origin,pre_fold_text,resolution	wrong_shape
+walk-register-group4-rescope-2026-08-10.md	211	9	WARN	PRE-SCHEMA	| # | sub-q | finding | fold |	id,walk,lens,sub_question,origin,pre_fold_text,resolution	wrong_shape
+walk-register-group4-rescope-2026-08-10.md	212	9	WARN	PRE-SCHEMA	| # | sub-q | finding | fold |	id,walk,lens,sub_question,origin,pre_fold_text,resolution	wrong_shape
+walk-register-group4-rescope-2026-08-10.md	213	9	WARN	PRE-SCHEMA	| # | sub-q | finding | fold |	id,walk,lens,sub_question,origin,pre_fold_text,resolution	wrong_shape
+walk-register-group4-rescope-2026-08-10.md	214	9	WARN	PRE-SCHEMA	| # | sub-q | finding | fold |	id,walk,lens,sub_question,origin,pre_fold_text,resolution	wrong_shape
+walk-register-group4-rescope-2026-08-10.md	215	9	WARN	PRE-SCHEMA	| # | sub-q | finding | fold |	id,walk,lens,sub_question,origin,pre_fold_text,resolution	wrong_shape
+walk-register-group4-rescope-2026-08-10.md	227	10	WARN	PRE-SCHEMA	| # | sub-q | finding | fold |	id,walk,lens,sub_question,origin,pre_fold_text,resolution	wrong_shape
+walk-register-group4-rescope-2026-08-10.md	228	10	WARN	PRE-SCHEMA	| # | sub-q | finding | fold |	id,walk,lens,sub_question,origin,pre_fold_text,resolution	wrong_shape
+walk-register-group4-rescope-2026-08-10.md	229	10	WARN	PRE-SCHEMA	| # | sub-q | finding | fold |	id,walk,lens,sub_question,origin,pre_fold_text,resolution	wrong_shape
+walk-register-group4-rescope-2026-08-10.md	230	10	WARN	PRE-SCHEMA	| # | sub-q | finding | fold |	id,walk,lens,sub_question,origin,pre_fold_text,resolution	wrong_shape
+walk-register-group4-rescope-2026-08-10.md	244	11	WARN	PRE-SCHEMA	| # | sub-q | finding | fold |	id,walk,lens,sub_question,origin,pre_fold_text,resolution	wrong_shape
+walk-register-group4-rescope-2026-08-10.md	245	11	WARN	PRE-SCHEMA	| # | sub-q | finding | fold |	id,walk,lens,sub_question,origin,pre_fold_text,resolution	wrong_shape
+walk-register-group4-rescope-2026-08-10.md	246	11	WARN	PRE-SCHEMA	| # | sub-q | finding | fold |	id,walk,lens,sub_question,origin,pre_fold_text,resolution	wrong_shape
+walk-register-group4-rescope-2026-08-10.md	247	11	WARN	PRE-SCHEMA	| # | sub-q | finding | fold |	id,walk,lens,sub_question,origin,pre_fold_text,resolution	wrong_shape
+walk-register-group4-rescope-2026-08-10.md	248	11	WARN	PRE-SCHEMA	| # | sub-q | finding | fold |	id,walk,lens,sub_question,origin,pre_fold_text,resolution	wrong_shape
+walk-register-group4-rescope-2026-08-10.md	268	12	WARN	PRE-SCHEMA	| # | sub-q | finding | fold |	id,walk,lens,sub_question,origin,pre_fold_text,resolution	wrong_shape
+walk-register-group4-rescope-2026-08-10.md	269	12	WARN	PRE-SCHEMA	| # | sub-q | finding | fold |	id,walk,lens,sub_question,origin,pre_fold_text,resolution	wrong_shape
+walk-register-group4-rescope-2026-08-10.md	270	12	WARN	PRE-SCHEMA	| # | sub-q | finding | fold |	id,walk,lens,sub_question,origin,pre_fold_text,resolution	wrong_shape
+walk-register-group4-rescope-2026-08-10.md	271	12	WARN	PRE-SCHEMA	| # | sub-q | finding | fold |	id,walk,lens,sub_question,origin,pre_fold_text,resolution	wrong_shape
+walk-register-group4-rescope-2026-08-10.md	272	12	WARN	PRE-SCHEMA	| # | sub-q | finding | fold |	id,walk,lens,sub_question,origin,pre_fold_text,resolution	wrong_shape
+walk-register-group4-rescope-2026-08-10.md	273	12	WARN	PRE-SCHEMA	| # | sub-q | finding | fold |	id,walk,lens,sub_question,origin,pre_fold_text,resolution	wrong_shape
+walk-register-group4-rescope-2026-08-10.md	285	13	WARN	PRE-SCHEMA	| # | sub-q | finding | fold |	id,walk,lens,sub_question,origin,pre_fold_text,resolution	wrong_shape
+walk-register-group4-rescope-2026-08-10.md	286	13	WARN	PRE-SCHEMA	| # | sub-q | finding | fold |	id,walk,lens,sub_question,origin,pre_fold_text,resolution	wrong_shape
+walk-register-group4-rescope-2026-08-10.md	287	13	WARN	PRE-SCHEMA	| # | sub-q | finding | fold |	id,walk,lens,sub_question,origin,pre_fold_text,resolution	wrong_shape
+walk-register-group4-rescope-2026-08-10.md	288	13	WARN	PRE-SCHEMA	| # | sub-q | finding | fold |	id,walk,lens,sub_question,origin,pre_fold_text,resolution	wrong_shape
+walk-register-group4-rescope-2026-08-10.md	289	13	WARN	PRE-SCHEMA	| # | sub-q | finding | fold |	id,walk,lens,sub_question,origin,pre_fold_text,resolution	wrong_shape
+walk-register-group4-rescope-2026-08-10.md	299	14	WARN	PRE-SCHEMA	| # | sub-q | finding | fold |	id,walk,lens,sub_question,origin,pre_fold_text,resolution	wrong_shape
+walk-register-group4-rescope-2026-08-10.md	300	14	WARN	PRE-SCHEMA	| # | sub-q | finding | fold |	id,walk,lens,sub_question,origin,pre_fold_text,resolution	wrong_shape
+walk-register-group4-rescope-2026-08-10.md	301	14	WARN	PRE-SCHEMA	| # | sub-q | finding | fold |	id,walk,lens,sub_question,origin,pre_fold_text,resolution	wrong_shape
+walk-register-group4-rescope-2026-08-10.md	302	14	WARN	PRE-SCHEMA	| # | sub-q | finding | fold |	id,walk,lens,sub_question,origin,pre_fold_text,resolution	wrong_shape
+walk-register-group4-rescope-2026-08-10.md	303	14	WARN	PRE-SCHEMA	| # | sub-q | finding | fold |	id,walk,lens,sub_question,origin,pre_fold_text,resolution	wrong_shape
+walk-register-group4-rescope-2026-08-10.md	313	15	WARN	PRE-SCHEMA	| # | sub-q | finding | fold |	id,walk,lens,sub_question,origin,pre_fold_text,resolution	wrong_shape
+walk-register-group4-rescope-2026-08-10.md	314	15	WARN	PRE-SCHEMA	| # | sub-q | finding | fold |	id,walk,lens,sub_question,origin,pre_fold_text,resolution	wrong_shape
+walk-register-group4-rescope-2026-08-10.md	315	15	WARN	PRE-SCHEMA	| # | sub-q | finding | fold |	id,walk,lens,sub_question,origin,pre_fold_text,resolution	wrong_shape
+walk-register-group4-rescope-2026-08-10.md	327	16	WARN	PRE-SCHEMA	| # | sub-q | finding | fold |	id,walk,lens,sub_question,origin,pre_fold_text,resolution	wrong_shape
+walk-register-group4-rescope-2026-08-10.md	328	16	WARN	PRE-SCHEMA	| # | sub-q | finding | fold |	id,walk,lens,sub_question,origin,pre_fold_text,resolution	wrong_shape
+walk-register-group4-rescope-2026-08-10.md	329	16	WARN	PRE-SCHEMA	| # | sub-q | finding | fold |	id,walk,lens,sub_question,origin,pre_fold_text,resolution	wrong_shape
+walk-register-group4-rescope-2026-08-10.md	330	16	WARN	PRE-SCHEMA	| # | sub-q | finding | fold |	id,walk,lens,sub_question,origin,pre_fold_text,resolution	wrong_shape
+walk-register-group4-rescope-2026-08-10.md	352	17	WARN	PRE-SCHEMA	| # | sub-q | finding | fold |	id,walk,lens,sub_question,origin,pre_fold_text,resolution	wrong_shape
+walk-register-group4-rescope-2026-08-10.md	353	17	WARN	PRE-SCHEMA	| # | sub-q | finding | fold |	id,walk,lens,sub_question,origin,pre_fold_text,resolution	wrong_shape
+walk-register-group4-rescope-2026-08-10.md	354	17	WARN	PRE-SCHEMA	| # | sub-q | finding | fold |	id,walk,lens,sub_question,origin,pre_fold_text,resolution	wrong_shape
+walk-register-group4-rescope-2026-08-10.md	355	17	WARN	PRE-SCHEMA	| # | sub-q | finding | fold |	id,walk,lens,sub_question,origin,pre_fold_text,resolution	wrong_shape
+walk-register-group4-rescope-2026-08-10.md	356	17	WARN	PRE-SCHEMA	| # | sub-q | finding | fold |	id,walk,lens,sub_question,origin,pre_fold_text,resolution	wrong_shape
+walk-register-group4-rescope-2026-08-10.md	357	17	WARN	PRE-SCHEMA	| # | sub-q | finding | fold |	id,walk,lens,sub_question,origin,pre_fold_text,resolution	wrong_shape
+walk-register-group4-rescope-2026-08-10.md	373	18	WARN	PRE-SCHEMA	| # | sub-q | finding | fold |	id,walk,lens,sub_question,origin,pre_fold_text,resolution	wrong_shape
+walk-register-group4-rescope-2026-08-10.md	374	18	WARN	PRE-SCHEMA	| # | sub-q | finding | fold |	id,walk,lens,sub_question,origin,pre_fold_text,resolution	wrong_shape
+walk-register-group4-rescope-2026-08-10.md	375	18	WARN	PRE-SCHEMA	| # | sub-q | finding | fold |	id,walk,lens,sub_question,origin,pre_fold_text,resolution	wrong_shape
+walk-register-group4-rescope-2026-08-10.md	376	18	WARN	PRE-SCHEMA	| # | sub-q | finding | fold |	id,walk,lens,sub_question,origin,pre_fold_text,resolution	wrong_shape
+walk-register-group4-rescope-2026-08-10.md	386	19	WARN	PRE-SCHEMA	| # | sub-q | finding | fold |	id,walk,lens,sub_question,origin,pre_fold_text,resolution	wrong_shape
+walk-register-group4-rescope-2026-08-10.md	387	19	WARN	PRE-SCHEMA	| # | sub-q | finding | fold |	id,walk,lens,sub_question,origin,pre_fold_text,resolution	wrong_shape
+walk-register-group4-rescope-2026-08-10.md	388	19	WARN	PRE-SCHEMA	| # | sub-q | finding | fold |	id,walk,lens,sub_question,origin,pre_fold_text,resolution	wrong_shape
+walk-register-group4-rescope-2026-08-10.md	398	20	WARN	PRE-SCHEMA	| # | sub-q | finding | fold |	id,walk,lens,sub_question,origin,pre_fold_text,resolution	wrong_shape
+walk-register-group4-rescope-2026-08-10.md	399	20	WARN	PRE-SCHEMA	| # | sub-q | finding | fold |	id,walk,lens,sub_question,origin,pre_fold_text,resolution	wrong_shape
+walk-register-group4-rescope-2026-08-10.md	400	20	WARN	PRE-SCHEMA	| # | sub-q | finding | fold |	id,walk,lens,sub_question,origin,pre_fold_text,resolution	wrong_shape
+walk-register-group4-rescope-2026-08-10.md	401	20	WARN	PRE-SCHEMA	| # | sub-q | finding | fold |	id,walk,lens,sub_question,origin,pre_fold_text,resolution	wrong_shape
+walk-register-group4-rescope-2026-08-10.md	402	20	WARN	PRE-SCHEMA	| # | sub-q | finding | fold |	id,walk,lens,sub_question,origin,pre_fold_text,resolution	wrong_shape
+walk-register-group4-rescope-2026-08-10.md	414	21	WARN	PRE-SCHEMA	| # | sub-q | finding | fold |	id,walk,lens,sub_question,origin,pre_fold_text,resolution	wrong_shape
+walk-register-group4-rescope-2026-08-10.md	415	21	WARN	PRE-SCHEMA	| # | sub-q | finding | fold |	id,walk,lens,sub_question,origin,pre_fold_text,resolution	wrong_shape
+walk-register-group4-rescope-2026-08-10.md	416	21	WARN	PRE-SCHEMA	| # | sub-q | finding | fold |	id,walk,lens,sub_question,origin,pre_fold_text,resolution	wrong_shape
+walk-register-group4-rescope-2026-08-10.md	417	21	WARN	PRE-SCHEMA	| # | sub-q | finding | fold |	id,walk,lens,sub_question,origin,pre_fold_text,resolution	wrong_shape
+
+=== walk-register-lint-class-recall-2026-08-10.md ===
+blob: 7e707163c06725caa23054a2513236a3212da41a
+--- stderr ---
+walk-register-lint-class-recall-2026-08-10.md	PRE-SCHEMA	shapes: | # | sub | finding | resolution | ; | # | sub | finding | resolution | ; | # | sub | finding | resolution | ; | # | sub | finding | resolution | ; | # | sub | finding | resolution | ; | # | finding | resolution | ; | # | lens | finding | resolution |
+
+--- stdout (header + 25 data rows) ---
+file	line	table	row_status	file_status	columns	missing	note
+walk-register-lint-class-recall-2026-08-10.md	30	1	WARN	PRE-SCHEMA	| # | sub | finding | resolution |	id,walk,lens,sub_question,origin,pre_fold_text	wrong_shape
+walk-register-lint-class-recall-2026-08-10.md	31	1	WARN	PRE-SCHEMA	| # | sub | finding | resolution |	id,walk,lens,sub_question,origin,pre_fold_text	wrong_shape
+walk-register-lint-class-recall-2026-08-10.md	32	1	WARN	PRE-SCHEMA	| # | sub | finding | resolution |	id,walk,lens,sub_question,origin,pre_fold_text	wrong_shape
+walk-register-lint-class-recall-2026-08-10.md	33	1	WARN	PRE-SCHEMA	| # | sub | finding | resolution |	id,walk,lens,sub_question,origin,pre_fold_text	wrong_shape
+walk-register-lint-class-recall-2026-08-10.md	34	1	WARN	PRE-SCHEMA	| # | sub | finding | resolution |	id,walk,lens,sub_question,origin,pre_fold_text	wrong_shape
+walk-register-lint-class-recall-2026-08-10.md	40	2	WARN	PRE-SCHEMA	| # | sub | finding | resolution |	id,walk,lens,sub_question,origin,pre_fold_text	wrong_shape
+walk-register-lint-class-recall-2026-08-10.md	41	2	WARN	PRE-SCHEMA	| # | sub | finding | resolution |	id,walk,lens,sub_question,origin,pre_fold_text	wrong_shape
+walk-register-lint-class-recall-2026-08-10.md	42	2	WARN	PRE-SCHEMA	| # | sub | finding | resolution |	id,walk,lens,sub_question,origin,pre_fold_text	wrong_shape
+walk-register-lint-class-recall-2026-08-10.md	48	3	WARN	PRE-SCHEMA	| # | sub | finding | resolution |	id,walk,lens,sub_question,origin,pre_fold_text	wrong_shape
+walk-register-lint-class-recall-2026-08-10.md	49	3	WARN	PRE-SCHEMA	| # | sub | finding | resolution |	id,walk,lens,sub_question,origin,pre_fold_text	wrong_shape
+walk-register-lint-class-recall-2026-08-10.md	50	3	WARN	PRE-SCHEMA	| # | sub | finding | resolution |	id,walk,lens,sub_question,origin,pre_fold_text	wrong_shape
+walk-register-lint-class-recall-2026-08-10.md	56	4	WARN	PRE-SCHEMA	| # | sub | finding | resolution |	id,walk,lens,sub_question,origin,pre_fold_text	wrong_shape
+walk-register-lint-class-recall-2026-08-10.md	57	4	WARN	PRE-SCHEMA	| # | sub | finding | resolution |	id,walk,lens,sub_question,origin,pre_fold_text	wrong_shape
+walk-register-lint-class-recall-2026-08-10.md	58	4	WARN	PRE-SCHEMA	| # | sub | finding | resolution |	id,walk,lens,sub_question,origin,pre_fold_text	wrong_shape
+walk-register-lint-class-recall-2026-08-10.md	59	4	WARN	PRE-SCHEMA	| # | sub | finding | resolution |	id,walk,lens,sub_question,origin,pre_fold_text	wrong_shape
+walk-register-lint-class-recall-2026-08-10.md	65	5	WARN	PRE-SCHEMA	| # | sub | finding | resolution |	id,walk,lens,sub_question,origin,pre_fold_text	wrong_shape
+walk-register-lint-class-recall-2026-08-10.md	66	5	WARN	PRE-SCHEMA	| # | sub | finding | resolution |	id,walk,lens,sub_question,origin,pre_fold_text	wrong_shape
+walk-register-lint-class-recall-2026-08-10.md	67	5	WARN	PRE-SCHEMA	| # | sub | finding | resolution |	id,walk,lens,sub_question,origin,pre_fold_text	wrong_shape
+walk-register-lint-class-recall-2026-08-10.md	68	5	WARN	PRE-SCHEMA	| # | sub | finding | resolution |	id,walk,lens,sub_question,origin,pre_fold_text	wrong_shape
+walk-register-lint-class-recall-2026-08-10.md	78	6	WARN	PRE-SCHEMA	| # | finding | resolution |	id,walk,lens,sub_question,origin,pre_fold_text	wrong_shape
+walk-register-lint-class-recall-2026-08-10.md	243	7	WARN	PRE-SCHEMA	| # | lens | finding | resolution |	id,walk,sub_question,origin,pre_fold_text	wrong_shape
+walk-register-lint-class-recall-2026-08-10.md	244	7	WARN	PRE-SCHEMA	| # | lens | finding | resolution |	id,walk,sub_question,origin,pre_fold_text	wrong_shape
+walk-register-lint-class-recall-2026-08-10.md	245	7	WARN	PRE-SCHEMA	| # | lens | finding | resolution |	id,walk,sub_question,origin,pre_fold_text	wrong_shape
+walk-register-lint-class-recall-2026-08-10.md	246	7	WARN	PRE-SCHEMA	| # | lens | finding | resolution |	id,walk,sub_question,origin,pre_fold_text	wrong_shape
+walk-register-lint-class-recall-2026-08-10.md	247	7	WARN	PRE-SCHEMA	| # | lens | finding | resolution |	id,walk,sub_question,origin,pre_fold_text	wrong_shape
+
+=== walk-register-walk-register-schema-2026-08-10.md (this cycle — separate per D.2) ===
+blob: 7ebe3264acb6b31be9134534f550d2cc4ca252a5
+--- stderr ---
+walk-register-walk-register-schema-2026-08-10.md	UNCONFORMANT	shapes: | id | walk | lens | sub_q | origin | finding | pre_fold_text | resolution | ; | id | walk | lens | sub_q | origin | finding | pre_fold_text | resolution | ; | id | walk | lens | sub_q | origin | finding | pre_fold_text | resolution | ; | id | walk | lens | sub_q | origin | finding | pre_fold_text | resolution | ; | id | walk | lens | sub_q | origin | finding | pre_fold_text | resolution | ; | id | walk | lens | sub_q | origin | finding | pre_fold_text | resolution | ; | id | walk | lens | sub_q | origin | finding | pre_fold_text | resolution |
+
+--- stdout (header + 45 data rows) ---
+file	line	table	row_status	file_status	columns	missing	note
+walk-register-walk-register-schema-2026-08-10.md	58	1	WARN	UNCONFORMANT	| id | walk | lens | sub_q | origin | finding | pre_fold_text | resolution |	sub_question	wrong_shape
+walk-register-walk-register-schema-2026-08-10.md	59	1	WARN	UNCONFORMANT	| id | walk | lens | sub_q | origin | finding | pre_fold_text | resolution |	sub_question	wrong_shape
+walk-register-walk-register-schema-2026-08-10.md	60	1	WARN	UNCONFORMANT	| id | walk | lens | sub_q | origin | finding | pre_fold_text | resolution |	sub_question	wrong_shape
+walk-register-walk-register-schema-2026-08-10.md	61	1	WARN	UNCONFORMANT	| id | walk | lens | sub_q | origin | finding | pre_fold_text | resolution |	sub_question	wrong_shape
+walk-register-walk-register-schema-2026-08-10.md	62	1	WARN	UNCONFORMANT	| id | walk | lens | sub_q | origin | finding | pre_fold_text | resolution |	sub_question	wrong_shape
+walk-register-walk-register-schema-2026-08-10.md	63	1	WARN	UNCONFORMANT	| id | walk | lens | sub_q | origin | finding | pre_fold_text | resolution |	sub_question	wrong_shape
+walk-register-walk-register-schema-2026-08-10.md	64	1	WARN	UNCONFORMANT	| id | walk | lens | sub_q | origin | finding | pre_fold_text | resolution |	sub_question	wrong_shape
+walk-register-walk-register-schema-2026-08-10.md	65	1	WARN	UNCONFORMANT	| id | walk | lens | sub_q | origin | finding | pre_fold_text | resolution |	sub_question	wrong_shape
+walk-register-walk-register-schema-2026-08-10.md	66	1	WARN	UNCONFORMANT	| id | walk | lens | sub_q | origin | finding | pre_fold_text | resolution |	sub_question	wrong_shape
+walk-register-walk-register-schema-2026-08-10.md	67	1	WARN	UNCONFORMANT	| id | walk | lens | sub_q | origin | finding | pre_fold_text | resolution |	sub_question	wrong_shape
+walk-register-walk-register-schema-2026-08-10.md	68	1	WARN	UNCONFORMANT	| id | walk | lens | sub_q | origin | finding | pre_fold_text | resolution |	sub_question	wrong_shape
+walk-register-walk-register-schema-2026-08-10.md	69	1	WARN	UNCONFORMANT	| id | walk | lens | sub_q | origin | finding | pre_fold_text | resolution |	sub_question	wrong_shape
+walk-register-walk-register-schema-2026-08-10.md	70	1	WARN	UNCONFORMANT	| id | walk | lens | sub_q | origin | finding | pre_fold_text | resolution |	sub_question	wrong_shape
+walk-register-walk-register-schema-2026-08-10.md	92	2	WARN	UNCONFORMANT	| id | walk | lens | sub_q | origin | finding | pre_fold_text | resolution |	sub_question	wrong_shape
+walk-register-walk-register-schema-2026-08-10.md	93	2	WARN	UNCONFORMANT	| id | walk | lens | sub_q | origin | finding | pre_fold_text | resolution |	sub_question	wrong_shape
+walk-register-walk-register-schema-2026-08-10.md	94	2	WARN	UNCONFORMANT	| id | walk | lens | sub_q | origin | finding | pre_fold_text | resolution |	sub_question	wrong_shape
+walk-register-walk-register-schema-2026-08-10.md	95	2	WARN	UNCONFORMANT	| id | walk | lens | sub_q | origin | finding | pre_fold_text | resolution |	sub_question	wrong_shape
+walk-register-walk-register-schema-2026-08-10.md	96	2	WARN	UNCONFORMANT	| id | walk | lens | sub_q | origin | finding | pre_fold_text | resolution |	sub_question	wrong_shape
+walk-register-walk-register-schema-2026-08-10.md	97	2	WARN	UNCONFORMANT	| id | walk | lens | sub_q | origin | finding | pre_fold_text | resolution |	sub_question	wrong_shape
+walk-register-walk-register-schema-2026-08-10.md	98	2	WARN	UNCONFORMANT	| id | walk | lens | sub_q | origin | finding | pre_fold_text | resolution |	sub_question	wrong_shape
+walk-register-walk-register-schema-2026-08-10.md	99	2	WARN	UNCONFORMANT	| id | walk | lens | sub_q | origin | finding | pre_fold_text | resolution |	sub_question	wrong_shape
+walk-register-walk-register-schema-2026-08-10.md	100	2	WARN	UNCONFORMANT	| id | walk | lens | sub_q | origin | finding | pre_fold_text | resolution |	sub_question	wrong_shape
+walk-register-walk-register-schema-2026-08-10.md	120	3	WARN	UNCONFORMANT	| id | walk | lens | sub_q | origin | finding | pre_fold_text | resolution |	sub_question	wrong_shape
+walk-register-walk-register-schema-2026-08-10.md	121	3	WARN	UNCONFORMANT	| id | walk | lens | sub_q | origin | finding | pre_fold_text | resolution |	sub_question	wrong_shape
+walk-register-walk-register-schema-2026-08-10.md	122	3	WARN	UNCONFORMANT	| id | walk | lens | sub_q | origin | finding | pre_fold_text | resolution |	sub_question	wrong_shape
+walk-register-walk-register-schema-2026-08-10.md	123	3	WARN	UNCONFORMANT	| id | walk | lens | sub_q | origin | finding | pre_fold_text | resolution |	sub_question	wrong_shape
+walk-register-walk-register-schema-2026-08-10.md	124	3	WARN	UNCONFORMANT	| id | walk | lens | sub_q | origin | finding | pre_fold_text | resolution |	sub_question	wrong_shape
+walk-register-walk-register-schema-2026-08-10.md	125	3	WARN	UNCONFORMANT	| id | walk | lens | sub_q | origin | finding | pre_fold_text | resolution |	sub_question	wrong_shape
+walk-register-walk-register-schema-2026-08-10.md	145	4	WARN	UNCONFORMANT	| id | walk | lens | sub_q | origin | finding | pre_fold_text | resolution |	sub_question	wrong_shape
+walk-register-walk-register-schema-2026-08-10.md	146	4	WARN	UNCONFORMANT	| id | walk | lens | sub_q | origin | finding | pre_fold_text | resolution |	sub_question	wrong_shape
+walk-register-walk-register-schema-2026-08-10.md	147	4	WARN	UNCONFORMANT	| id | walk | lens | sub_q | origin | finding | pre_fold_text | resolution |	sub_question	wrong_shape
+walk-register-walk-register-schema-2026-08-10.md	148	4	WARN	UNCONFORMANT	| id | walk | lens | sub_q | origin | finding | pre_fold_text | resolution |	sub_question	wrong_shape
+walk-register-walk-register-schema-2026-08-10.md	149	4	WARN	UNCONFORMANT	| id | walk | lens | sub_q | origin | finding | pre_fold_text | resolution |	sub_question	wrong_shape
+walk-register-walk-register-schema-2026-08-10.md	173	5	WARN	UNCONFORMANT	| id | walk | lens | sub_q | origin | finding | pre_fold_text | resolution |	sub_question	wrong_shape
+walk-register-walk-register-schema-2026-08-10.md	174	5	WARN	UNCONFORMANT	| id | walk | lens | sub_q | origin | finding | pre_fold_text | resolution |	sub_question	wrong_shape
+walk-register-walk-register-schema-2026-08-10.md	175	5	WARN	UNCONFORMANT	| id | walk | lens | sub_q | origin | finding | pre_fold_text | resolution |	sub_question	wrong_shape
+walk-register-walk-register-schema-2026-08-10.md	176	5	WARN	UNCONFORMANT	| id | walk | lens | sub_q | origin | finding | pre_fold_text | resolution |	sub_question	wrong_shape
+walk-register-walk-register-schema-2026-08-10.md	177	5	WARN	UNCONFORMANT	| id | walk | lens | sub_q | origin | finding | pre_fold_text | resolution |	sub_question	wrong_shape
+walk-register-walk-register-schema-2026-08-10.md	199	6	WARN	UNCONFORMANT	| id | walk | lens | sub_q | origin | finding | pre_fold_text | resolution |	sub_question	wrong_shape
+walk-register-walk-register-schema-2026-08-10.md	200	6	WARN	UNCONFORMANT	| id | walk | lens | sub_q | origin | finding | pre_fold_text | resolution |	sub_question	wrong_shape
+walk-register-walk-register-schema-2026-08-10.md	201	6	WARN	UNCONFORMANT	| id | walk | lens | sub_q | origin | finding | pre_fold_text | resolution |	sub_question	wrong_shape
+walk-register-walk-register-schema-2026-08-10.md	202	6	WARN	UNCONFORMANT	| id | walk | lens | sub_q | origin | finding | pre_fold_text | resolution |	sub_question	wrong_shape
+walk-register-walk-register-schema-2026-08-10.md	228	7	WARN	UNCONFORMANT	| id | walk | lens | sub_q | origin | finding | pre_fold_text | resolution |	sub_question	wrong_shape
+walk-register-walk-register-schema-2026-08-10.md	229	7	WARN	UNCONFORMANT	| id | walk | lens | sub_q | origin | finding | pre_fold_text | resolution |	sub_question	wrong_shape
+walk-register-walk-register-schema-2026-08-10.md	230	7	WARN	UNCONFORMANT	| id | walk | lens | sub_q | origin | finding | pre_fold_text | resolution |	sub_question	wrong_shape
