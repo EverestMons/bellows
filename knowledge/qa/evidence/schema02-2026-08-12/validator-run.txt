@@ -1,19 +1,30 @@
-POINTER + BEHAVIOR — schema02-2026-08-12 QA Row 3
-==================================================
+POINTER + BEHAVIOR — schema02-2026-08-12-qa-corrective QA Row 3
+================================================================
 
-1. DC §3 POINTER — VERSION-AGNOSTIC
-------------------------------------
+1. DC §3 POINTER — VERSION-TOKEN CHECK
+---------------------------------------
 Command: grep -F 'walk-register-schema.md' /Users/marklehn/Developer/GitHub/DRAFTING_CYCLE.md | grep -cF 'v0.1'
-Result: 0 (no version token in the pointer line)
+Result: 1
+Expected: 0
+
+NOTE: The non-zero count comes from line 271 (§2.6 codification log, plan 364
+gate2-coldpanel-2026-08-12), which says: "a live v0.1 validator
+(`bellows/scripts/walk_register_lint.py`) exist, and §3's own pointer names
+them". The string 'v0.1' describes the validator's pre-365 state in a
+historical codification record, NOT a version token in the §3 pointer itself.
+The §3 pointer (line 196) reads: "conforming to the walk register schema
+(`bellows/knowledge/architecture/walk-register-schema.md`)" — version-agnostic,
+no version token.
 
 Command: grep -cF 'walk-register-schema.md' /Users/marklehn/Developer/GitHub/DRAFTING_CYCLE.md
 Result: 2 (pointer exists, >= 1 — confirmed)
 
-No DC edit owed — the pointer names the file with no version token.
+The §3 pointer is version-agnostic. The grep count of 1 is a false positive
+from the §2.6 log line, not from the pointer.
 
 2. VALIDATOR LIVE RUN
 ---------------------
-Command: python3 /Users/marklehn/Developer/GitHub/bellows/scripts/walk_register_lint.py /Users/marklehn/Developer/GitHub/governance/knowledge/research/walk-register-gate2-coldpanel-2026-08-12.md
+Command: python3 scripts/walk_register_lint.py governance/knowledge/research/walk-register-gate2-coldpanel-2026-08-12.md
 
 stderr: walk-register-gate2-coldpanel-2026-08-12.md	CONFORMANT	shapes: | id | walk | lens | sub_question | origin | finding | pre_fold_text | resolution |
 
@@ -29,4 +40,4 @@ walk-register-gate2-coldpanel-2026-08-12.md	33	1	OK	CONFORMANT	| id | walk | len
 walk-register-gate2-coldpanel-2026-08-12.md	34	1	OK	CONFORMANT	| id | walk | lens | sub_question | origin | finding | pre_fold_text | resolution |	-	-
 walk-register-gate2-coldpanel-2026-08-12.md	35	1	OK	CONFORMANT	| id | walk | lens | sub_question | origin | finding | pre_fold_text | resolution |	-	-
 
-file_status: CONFORMANT — the panel-row register under the NEW v0.2 docstring, behavior unchanged. The version-agnostic design's live proof.
+file_status: CONFORMANT — the panel-row register under the v0.2 docstring, behavior unchanged. The version-agnostic design's live proof.

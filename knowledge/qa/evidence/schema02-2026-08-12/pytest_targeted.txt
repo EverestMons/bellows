@@ -1,5 +1,5 @@
-TESTS — schema02-2026-08-12 QA Row 4
-======================================
+TESTS — schema02-2026-08-12-qa-corrective QA Row 4
+====================================================
 
 Command: cd /Users/marklehn/Developer/GitHub/bellows && python3 -m pytest tests/test_walk_register_lint.py -q
 
@@ -11,9 +11,9 @@ tests/test_walk_register_lint.py::test_conformant_row
     warnings.warn(
 
 -- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
-19 passed, 1 warning in 0.15s
+19 passed, 1 warning in 0.21s
 
-Baseline: 19 passed / 0 failed (step 1).
+Baseline: 19 passed / 0 failed.
 QA run:   19 passed / 0 failed.
 Delta:    0 (no change).
 Warning:  urllib3/LibreSSL — unrelated.

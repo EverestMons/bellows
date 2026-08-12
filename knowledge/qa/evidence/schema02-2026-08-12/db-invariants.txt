@@ -1,30 +1,36 @@
-FLIP + BLAST RADIUS — schema02-2026-08-12 QA Row 5
-====================================================
+FLIP + BLAST RADIUS — schema02-2026-08-12-qa-corrective QA Row 5
+=================================================================
 
-1. ROW 330 PER-ID
------------------
-Query: SELECT id||'|'||category||'|'||status||'|'||route||'|'||status_updated_at||'|'||status_updated_by FROM lesson_proposals WHERE id=330
-Result: 330|instrumentation|implemented|codify|2026-08-12T20:22:24Z|ceo
-
-Status: implemented (was accepted)
-Route: codify (unchanged)
-Updated by: ceo
-Timestamp: 2026-08-12T20:22:24Z (≠ prior 2026-08-12T17:12:07Z — fresh Z-stamp confirmed)
+1. ROW 330 PER-ID (A0 KEY)
+---------------------------
+Query: SELECT status||'|'||route||'|'||status_updated_by||'|'||status_updated_at FROM lesson_proposals WHERE id=330
+Result: implemented|codify|ceo|2026-08-12T20:22:24Z
+Matches A0 key EXACTLY: YES
 
 2. ACCEPTED|CODIFY QUEUE
 -------------------------
 Query: SELECT COUNT(*) FROM lesson_proposals WHERE status='accepted' AND route='codify'
 Result: 0
-
-The cold-panel batch is fully disposed.
+Queue empty: YES
 
 3. CAPTURE RE-RUN (BLAST RADIUS)
 ---------------------------------
-Query: SELECT ... FROM lesson_proposals WHERE id <= 332 AND id != 330 ORDER BY id
-Lines: 331 (matches step 1 capture exactly)
+Query: SELECT id||'|'||category||'|'||status||'|'||COALESCE(route,'')||'|'||COALESCE(status_updated_at,'')||'|'||COALESCE(status_updated_by,'') FROM lesson_proposals WHERE id <= 332 AND id != 330 ORDER BY id
+Lines: 331 (matches step 1 capture)
+Diff vs committed outside-range-ids.txt: EMPTY — zero rows changed outside id=330.
 
-Diff vs step 1 outside-range-ids.txt: EMPTY — zero rows changed outside id=330.
+4. PARTITION (id <= 332)
+-------------------------
+implemented|codify: 181
+implemented|:        89
+superseded|:         25
+rejected|:           13
+reference|reference:  9
+reference|backlog:    7
+stale|:               3
+superseded|codify:    3
+rejected|codify:      2
+Total: 332 (minus id=330 excluded = 331 capture rows)
 
-4. PARTITION
-------------
-The capture covers ids 1–332 excluding 330. All 331 rows identical between the step-1 capture (taken inside the flip transaction) and this QA re-run. The flip touched exactly one row (id=330) and nothing else.
+MAXID: 332
+Global accepted|codify queue: 0
