@@ -1,46 +1,38 @@
-DOC INTEGRITY — schema02-2026-08-12 QA Row 1+2
-================================================
+DOC INTEGRITY — schema02-2026-08-12-qa-corrective QA Row 1+2
+=============================================================
 
 1. COMMIT BY SLUG
 -----------------
 Command: git -C /Users/marklehn/Developer/GitHub/bellows log -n 1 --format='%H %s' --grep='schema02-2026-08-12' -- knowledge/architecture/walk-register-schema.md
 Result:  705ea50d46137b44c5969dc5d621eeaa89324ade [365] schema02(schema02-2026-08-12): walk-register schema v0.1 -> v0.2 — the sanctioned per-seat panel-row form + the Deviations open tail; validator docstring; 0.1 registers stay valid
-Exactly one line — confirmed.
+Exactly one line: YES
+Prefix matches 705ea50d…: YES
 
-2. COMMITTED SHAS == LIVE == STEP-1 PINS
------------------------------------------
-DOC_SHA (step 1): 6ac80fd2745b374867a4f701296b3a8c7bb40a3e23413bf186b2164b4a41ebb8
-DOC_SHA (live):   6ac80fd2745b374867a4f701296b3a8c7bb40a3e23413bf186b2164b4a41ebb8
-LINT_SHA (step 1): a3323041029dad3c94b974e9fa1956b9fdfb8fa433bc0c95f628b5b3dea82049
-LINT_SHA (live):   a3323041029dad3c94b974e9fa1956b9fdfb8fa433bc0c95f628b5b3dea82049
-Match: YES
-
-3. NUMSTAT
+2. NUMSTAT
 ----------
 Command: git -C /Users/marklehn/Developer/GitHub/bellows show 705ea50d --numstat --format=
 12	2	knowledge/architecture/walk-register-schema.md
 1	1	scripts/walk_register_lint.py
-Exactly two lines — confirmed.
+Expected 12 2 + 1 1: MATCH
 
-4. NAME-ONLY
+3. NAME-ONLY
 ------------
 Command: git -C /Users/marklehn/Developer/GitHub/bellows show 705ea50d --name-only --format=
 knowledge/architecture/walk-register-schema.md
 scripts/walk_register_lint.py
-Exactly two paths — confirmed.
+Exactly two paths: YES
 
-5. PORCELAIN CLEAN
+4. PORCELAIN CLEAN
 ------------------
 Command: git -C /Users/marklehn/Developer/GitHub/bellows status --porcelain -- knowledge/architecture/walk-register-schema.md scripts/walk_register_lint.py
 Result: (empty) — both paths porcelain clean.
 
-6. CLAUSES LANDED (QA Row 2)
+5. CLAUSES LANDED (QA Row 2)
 -----------------------------
 v0.2 title ('# Walk Register Schema — v0.2'): 1
 version line ('**schema_version:** `0.2`'): 1
-panel section ('Panel rows and the Deviations open tail'): 1
+panel section ('## Panel rows and the Deviations open tail (v0.2)'): 1
 old title ('# Walk Register Schema — v0.1'): 0
-old version ('**schema_version:** `0.1`'): 0
 Validator docstring v0.2: 1
 Validator docstring v0.1: 0
 All clauses landed; all old values absent.
