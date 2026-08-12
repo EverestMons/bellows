@@ -1,0 +1,40 @@
+Code Integrity — rule20-inject-2026-08-12
+
+=== Commit by slug ===
+$ git -C /Users/marklehn/Developer/GitHub/bellows log -n 1 --format='%H %s' --grep='rule20-inject-2026-08-12' -- gates.py
+fdf5dcd61f4dd74e0c22bdfa77ba005b276cf613 [367] rule20-inject(rule20-inject-2026-08-12): dispatcher-injected Rule 20 mandate on QA-step prompts — single-source via _gate_is_qa_step; evidence: the 360/365 stop-verdicts
+
+Exactly one line. ✅
+
+=== Committed SHAs == Live SHAs ===
+gates.py  committed: 30beceb5a3458085193913b1b4c4497f43c3923e57a909169bb892ac7863620f
+gates.py  live:      30beceb5a3458085193913b1b4c4497f43c3923e57a909169bb892ac7863620f
+Match: ✅
+
+bellows.py committed: d427cc5a5d1bc1e8b83e307f876b5acaf9e6e131e6dbbc00c1aa8fc7b2123277
+bellows.py live:      d427cc5a5d1bc1e8b83e307f876b5acaf9e6e131e6dbbc00c1aa8fc7b2123277
+Match: ✅
+
+=== Numstat ===
+$ git show fdf5dcd61f4dd74e0c22bdfa77ba005b276cf613 --numstat --format=
+3	3	bellows.py
+18	0	gates.py
+49	0	tests/test_qa_mandate.py
+
+Three lines. ✅
+gates.py: 18 insertions, 0 deletions (insertions ≥ 10, deletions 0). ✅
+bellows.py: 3 insertions, 3 deletions (deletions ≤ 3). ✅
+tests/test_qa_mandate.py: 49 insertions, 0 deletions (all-insertions). ✅
+
+=== Name-only ===
+$ git show fdf5dcd61f4dd74e0c22bdfa77ba005b276cf613 --name-only --format=
+bellows.py
+gates.py
+tests/test_qa_mandate.py
+
+Exactly three paths. ✅
+
+=== Porcelain clean ===
+$ git status --porcelain -- gates.py bellows.py tests/test_qa_mandate.py
+(empty — clean)
+✅

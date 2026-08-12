@@ -1,0 +1,19 @@
+Targeted Pytest — rule20-inject-2026-08-12
+
+$ python3 -m pytest tests/test_qa_mandate.py tests/test_gates.py tests/test_bellows.py -q
+
+........................................................................ [ 20%]
+........................................................................ [ 41%]
+........................................................................ [ 62%]
+........................................................................ [ 83%]
+.........................................................                [100%]
+=============================== warnings summary ===============================
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+345 passed, 1 warning in 5.56s
+
+Breakdown:
+  tests/test_qa_mandate.py: ≥6 passed ✅
+  tests/test_gates.py: 159 passed ✅
+  tests/test_bellows.py: 180 passed ✅
+  Total: 345 passed ✅
+  Failures: 0 ✅

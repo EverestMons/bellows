@@ -1,0 +1,29 @@
+Behavior Verification — rule20-inject-2026-08-12
+
+=== QA step (step 2) suffix ===
+$ python3 -c "import gates; s=gates.qa_mandate_suffix('## STEP 2 — QA', 2); print(len(s)); print('Rule 20 — QA Self-Check Results' in s); print('PASSED — SELF-CHECK PASSED' in s)"
+LEN: 578
+BANNER: True
+PASSED: True
+
+Nonzero length: ✅
+Banner literal present: ✅
+PASSED literal present: ✅
+
+=== Non-QA step (step 1) ===
+$ python3 -c "import gates; print(repr(gates.qa_mandate_suffix('## STEP 1 — DEV', 1)))"
+''
+
+Empty string for non-QA step: ✅
+
+=== bellows.py suffix call count ===
+$ grep -cF 'qa_mandate_suffix' bellows.py
+3
+
+Exactly 3 call sites: ✅
+
+=== Diagnostic bootstrap clean ===
+$ grep -F 'single-step investigation' bellows.py | grep -cF 'qa_mandate_suffix'
+0
+
+Diagnostic bootstrap has no suffix call: ✅
