@@ -744,6 +744,24 @@ def _gate_is_qa_step(plan_text, step_number, plan_header=None):
     return False
 
 
+QA_MANDATE_SUFFIX = (
+    " MANDATORY FOR THIS QA STEP (dispatcher-injected): after writing the QA report"
+    " WITH its verification table and ALL required evidence files, run the Rule 20"
+    " canonical self-check block from /Users/marklehn/Developer/GitHub/RULE_20_SELF_CHECK_BLOCK.md"
+    " (absolute path), then APPEND its stdout to the deposited report. The banner"
+    " 'Rule 20 — QA Self-Check Results' and the 'PASSED — SELF-CHECK PASSED' line"
+    " must appear byte-exact in the deposited report — this step's gate FAILS"
+    " mechanically without them. Report and evidence files BEFORE the block: it exits"
+    " nonzero on missing files."
+)
+
+
+def qa_mandate_suffix(plan_text, step_number, plan_header=None):
+    if _gate_is_qa_step(plan_text, step_number, plan_header):
+        return QA_MANDATE_SUFFIX
+    return ""
+
+
 def _gate_file_change_audit(files_changed):
     # Informational gate — records the files_changed list.
     # The list is passed through to the result dict by check().

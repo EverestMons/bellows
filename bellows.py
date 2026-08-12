@@ -636,9 +636,9 @@ def run_plan(plan_path: str, config: dict, response_server: server.ResponseServe
         if is_diagnostic:
             bootstrap_prompt = f"Read the diagnostic at {shadow_prompt_path}. Execute it fully — this is a single-step investigation. Deposit your findings and report Complete when done.{_id_tag_instruction}"
         elif resume_step is not None:
-            bootstrap_prompt = f"Read the plan at {shadow_prompt_path}. Execute Step {resume_step}. After completing Step {resume_step}, STOP and wait for my confirmation.{_id_tag_instruction}"
+            bootstrap_prompt = f"Read the plan at {shadow_prompt_path}. Execute Step {resume_step}. After completing Step {resume_step}, STOP and wait for my confirmation.{_id_tag_instruction}{gates.qa_mandate_suffix(plan_text, resume_step, header)}"
         else:
-            bootstrap_prompt = f"Read the plan at {shadow_prompt_path}. Execute Step 1 ONLY. After completing Step 1, STOP and wait for my confirmation before proceeding to Step 2.{_id_tag_instruction}"
+            bootstrap_prompt = f"Read the plan at {shadow_prompt_path}. Execute Step 1 ONLY. After completing Step 1, STOP and wait for my confirmation before proceeding to Step 2.{_id_tag_instruction}{gates.qa_mandate_suffix(plan_text, 1, header)}"
 
         # Create per-plan worktree for isolation
         try:
@@ -785,7 +785,7 @@ def run_plan(plan_path: str, config: dict, response_server: server.ResponseServe
             if plan_id:
                 lifecycle.record_verdict_request(plan_id, current_step, pause_reason_code="clean_gate_auto")
                 lifecycle.record_verdict_outcome(plan_id, current_step, "continue", decided_by="gate_auto")
-            default_next_prompt = f"Read the plan at {shadow_prompt_path}. Execute Step {current_step + 1}.{_id_tag_instruction}"
+            default_next_prompt = f"Read the plan at {shadow_prompt_path}. Execute Step {current_step + 1}.{_id_tag_instruction}{gates.qa_mandate_suffix(plan_text, current_step + 1, header)}"
 
             # Capture pre-step file state
             pre_diff = _capture_git_diff(wt_path)
