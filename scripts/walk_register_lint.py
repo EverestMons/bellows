@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Walk register validator — check fold-row tables against walk-register-schema v0.1.
+"""Walk register validator — check fold-row tables against walk-register-schema v0.2.
 
 Standalone, warn-only, not wired into any gate chain.
 Read-only, standard library only. Emits TSV to stdout.

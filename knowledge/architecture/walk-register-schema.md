@@ -1,6 +1,6 @@
-# Walk Register Schema — v0.1
+# Walk Register Schema — v0.2
 
-**schema_version:** `0.1`
+**schema_version:** `0.2`
 **Encoding:** UTF-8 (stated explicitly; validators open files with this encoding rather than deferring to locale)
 
 ---
@@ -104,6 +104,16 @@ Population measured 2026-08-10 (Step 1 Task B re-measurement, against authoring-
 | untracked | 1 | 1 | confirmed |
 
 **The shape population is larger than reported at authoring.** This strengthens the plan's rationale: the dialect problem is worse than stated. Six distinct fold-table shapes exist across three files at n = 3 — the dialect problem FORWARD row 47 records for Cycle Logs is already present and already worse than measured.
+
+---
+
+## Panel rows and the Deviations open tail (v0.2)
+
+**Per-seat panel rows are SANCTIONED.** Default granularity remains one row per FINDING; a cold-panel seat MAY coarsen to one row per SEAT, reusing the SAME eight required columns: `walk` carries the seat label (`panel-N`), `origin` the seat's origin tally, `finding` the seat's findings with severities and classes, `pre_fold_text` the touched sites (or a site count), `resolution` the fold summary — with per-finding detail living in the plan's own seat lines. Both panel-bearing cycles (gate2-pt3, gate2-coldpanel) converged on this form independently and each had to declare it as a deviation; a deviation filed by every member of a class is a schema amendment owed — hence 0.2. (Proposal 330, entry 322, codified 2026-08-12.)
+
+**The Deviations open tail.** A register's Deviations line naming a per-phase commit range ends with a defined OPEN TAIL — "…plus the closing commit, named in the wrap" — because a register cannot name its own closing commit (measured: every register's recovery range ended one commit early until the tail convention was improvised twice).
+
+**Version note:** registers declaring `0.1` remain valid — 0.2 is additive (a sanctioned form plus a tail convention; no column, container, or naming change). The validator checks structure, not the declared version value.
 
 ---
 
