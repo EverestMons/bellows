@@ -1,0 +1,32 @@
+POINTER + BEHAVIOR — schema02-2026-08-12 QA Row 3
+==================================================
+
+1. DC §3 POINTER — VERSION-AGNOSTIC
+------------------------------------
+Command: grep -F 'walk-register-schema.md' /Users/marklehn/Developer/GitHub/DRAFTING_CYCLE.md | grep -cF 'v0.1'
+Result: 0 (no version token in the pointer line)
+
+Command: grep -cF 'walk-register-schema.md' /Users/marklehn/Developer/GitHub/DRAFTING_CYCLE.md
+Result: 2 (pointer exists, >= 1 — confirmed)
+
+No DC edit owed — the pointer names the file with no version token.
+
+2. VALIDATOR LIVE RUN
+---------------------
+Command: python3 /Users/marklehn/Developer/GitHub/bellows/scripts/walk_register_lint.py /Users/marklehn/Developer/GitHub/governance/knowledge/research/walk-register-gate2-coldpanel-2026-08-12.md
+
+stderr: walk-register-gate2-coldpanel-2026-08-12.md	CONFORMANT	shapes: | id | walk | lens | sub_question | origin | finding | pre_fold_text | resolution |
+
+stdout (TSV):
+file	line	table	row_status	file_status	columns	missing	note
+walk-register-gate2-coldpanel-2026-08-12.md	27	1	OK	CONFORMANT	| id | walk | lens | sub_question | origin | finding | pre_fold_text | resolution |	-	-
+walk-register-gate2-coldpanel-2026-08-12.md	28	1	OK	CONFORMANT	| id | walk | lens | sub_question | origin | finding | pre_fold_text | resolution |	-	-
+walk-register-gate2-coldpanel-2026-08-12.md	29	1	OK	CONFORMANT	| id | walk | lens | sub_question | origin | finding | pre_fold_text | resolution |	-	-
+walk-register-gate2-coldpanel-2026-08-12.md	30	1	OK	CONFORMANT	| id | walk | lens | sub_question | origin | finding | pre_fold_text | resolution |	-	-
+walk-register-gate2-coldpanel-2026-08-12.md	31	1	OK	CONFORMANT	| id | walk | lens | sub_question | origin | finding | pre_fold_text | resolution |	-	-
+walk-register-gate2-coldpanel-2026-08-12.md	32	1	OK	CONFORMANT	| id | walk | lens | sub_question | origin | finding | pre_fold_text | resolution |	-	-
+walk-register-gate2-coldpanel-2026-08-12.md	33	1	OK	CONFORMANT	| id | walk | lens | sub_question | origin | finding | pre_fold_text | resolution |	-	-
+walk-register-gate2-coldpanel-2026-08-12.md	34	1	OK	CONFORMANT	| id | walk | lens | sub_question | origin | finding | pre_fold_text | resolution |	-	-
+walk-register-gate2-coldpanel-2026-08-12.md	35	1	OK	CONFORMANT	| id | walk | lens | sub_question | origin | finding | pre_fold_text | resolution |	-	-
+
+file_status: CONFORMANT — the panel-row register under the NEW v0.2 docstring, behavior unchanged. The version-agnostic design's live proof.

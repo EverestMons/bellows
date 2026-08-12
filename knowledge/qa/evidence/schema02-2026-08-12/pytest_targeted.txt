@@ -1,0 +1,19 @@
+TESTS — schema02-2026-08-12 QA Row 4
+======================================
+
+Command: cd /Users/marklehn/Developer/GitHub/bellows && python3 -m pytest tests/test_walk_register_lint.py -q
+
+Result:
+...................                                                      [100%]
+=============================== warnings summary ===============================
+tests/test_walk_register_lint.py::test_conformant_row
+  /Users/marklehn/Library/Python/3.9/lib/python/site-packages/urllib3/__init__.py:35: NotOpenSSLWarning: urllib3 v2 only supports OpenSSL 1.1.1+, currently the 'ssl' module is compiled with 'LibreSSL 2.8.3'. See: https://github.com/urllib3/urllib3/issues/3020
+    warnings.warn(
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+19 passed, 1 warning in 0.15s
+
+Baseline: 19 passed / 0 failed (step 1).
+QA run:   19 passed / 0 failed.
+Delta:    0 (no change).
+Warning:  urllib3/LibreSSL — unrelated.
