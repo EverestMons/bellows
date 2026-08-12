@@ -1,0 +1,3 @@
+verdict: continue
+
+Rule 22(b) verified at source. 12 proposals inserted at ids 315-326, coverage exactly 12/12 entries (307-318), UNCLASSIFIED now 0, INSERT-only preserved (proposals <=314 untouched), report generated at reports/lessons-report-2026-08-11.md. Every classification carries a flag-(G) reading (spot-checked 321/323/326 - mechanism-shaped with named observables); the receipt carries the SEVEN named sentinels plus a per-proposal quote_ratio table. All ten daemon gates PASS, 20 turns - the fastest step of the day on the cleanest plan of the lineage. QA row 5 owns the flag-(D) citation assert. Proceed to Step 2 (QA).
