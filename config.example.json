@@ -11,6 +11,8 @@
   "callback_port": 5000,
   "tailscale_ip": "",
   "step_timeout_seconds": 600,
+  "log_retention_days": 30,
+  "disk_min_free_gb": 2,
   "notifications": {
     "enabled": true,
     "events": {
