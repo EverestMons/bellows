@@ -6,6 +6,8 @@ import tempfile
 
 BELLOWS_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 LINT_SCRIPT = os.path.join(BELLOWS_ROOT, "scripts", "plan_lint.py")
+sys.path.insert(0, os.path.join(BELLOWS_ROOT, "scripts"))
+from plan_lint import _extract_hex_tokens, _check_pins
 
 
 def _run_lint(plan_text):
@@ -2743,3 +2745,186 @@ def test_lint_degenerate_no_new_check_warns():
     assert "Traceback" not in result_bad.stderr
     for label in new_labels:
         assert label not in result_bad.stdout, f"Unexpected {label} in unparseable plan"
+
+
+# --- Check (q): Pin verification tests ---
+
+
+def test_q_extract_hex_tokens():
+    """Token extraction: 64->sha256, 40->git, >=12->prefix, <12 ignored."""
+    sha = "a" * 64
+    git = "b" * 40
+    pfx = "c" * 16
+    short = "d" * 8
+    text = f"L1 {sha}\nL2 {git}\nL3 {pfx}\nL4 {short}\n"
+    tokens = _extract_hex_tokens(text)
+    assert len(tokens) == 3
+    kinds = {t[1]: t[2] for t in tokens}
+    assert kinds[sha] == "sha256"
+    assert kinds[git] == "git"
+    assert kinds[pfx] == "prefix"
+    assert sum(1 for _, _, k in tokens if k == "git") == 1
+
+
+def test_q_m2_sha256_match():
+    """M2: sha256 matching file -> ok, no WARN."""
+    import hashlib as _hl
+    with tempfile.NamedTemporaryFile(mode="w", suffix=".txt", delete=False) as f:
+        f.write("pin test content")
+        f.flush()
+        h = _hl.sha256(open(f.name, "rb").read()).hexdigest()
+        plan = f"shasum -a 256 `{f.name}`\n{h}\n"
+    try:
+        telemetry, warns = _check_pins(plan, None, None)
+        assert len(warns) == 0, warns
+        assert any(r[3] == "ok" for r in telemetry), telemetry
+    finally:
+        os.unlink(f.name)
+
+
+def test_q_m2_sha256_mismatch_warns():
+    """M2: wrong hash -> (q) WARN MISMATCH."""
+    with tempfile.NamedTemporaryFile(mode="w", suffix=".txt", delete=False) as f:
+        f.write("mismatch content")
+        f.flush()
+        wrong = "a" * 64
+        plan = f"shasum -a 256 `{f.name}`\n{wrong}\n"
+    try:
+        telemetry, warns = _check_pins(plan, None, None)
+        assert any("MISMATCH" in w for w in warns), warns
+        assert any(r[3] == "mismatch" for r in telemetry), telemetry
+    finally:
+        os.unlink(f.name)
+
+
+def test_q_m2_missing_file_warns():
+    """M2: file not found -> (q) WARN missing-file."""
+    h = "b" * 64
+    plan = f"shasum -a 256 `/tmp/nonexistent_q_pin_test_xyz.txt`\n{h}\n"
+    telemetry, warns = _check_pins(plan, None, None)
+    assert any("missing" in w.lower() for w in warns), warns
+    assert any(r[3] == "missing-file" for r in telemetry), telemetry
+
+
+def test_q_m2_no_sha_context_ambiguous():
+    """M2: 64-hex with no shasum context -> ambiguous, no WARN."""
+    h = "c" * 64
+    plan = f"Some text {h} with no shasum command.\n"
+    telemetry, warns = _check_pins(plan, None, None)
+    assert len(warns) == 0, warns
+    assert any(r[3] == "ambiguous" for r in telemetry), telemetry
+
+
+def test_q_m2_backtick_path():
+    """M2: backtick-quoted path extracted and checked."""
+    import hashlib as _hl
+    with tempfile.NamedTemporaryFile(mode="w", suffix=".md", delete=False) as f:
+        f.write("backtick path test")
+        f.flush()
+        h = _hl.sha256(open(f.name, "rb").read()).hexdigest()
+        plan = f"Run shasum -a 256 `{f.name}` to verify.\n{h}\n"
+    try:
+        telemetry, warns = _check_pins(plan, None, None)
+        assert len(warns) == 0, warns
+        assert any(r[3] == "ok" for r in telemetry), telemetry
+    finally:
+        os.unlink(f.name)
+
+
+def test_q_m1_resolve_project():
+    """M1: 40-hex resolves in project repo -> ok, no WARN."""
+    with tempfile.TemporaryDirectory() as td:
+        subprocess.run(["git", "init", td], capture_output=True, check=True)
+        subprocess.run(
+            ["git", "-C", td, "-c", "user.email=t@t", "-c", "user.name=t",
+             "commit", "--allow-empty", "-m", "test"],
+            capture_output=True, check=True,
+        )
+        head = subprocess.run(
+            ["git", "-C", td, "rev-parse", "HEAD"],
+            capture_output=True, text=True, check=True,
+        ).stdout.strip()
+        plan = f"The commit is {head} here.\n"
+        telemetry, warns = _check_pins(plan, td, td)
+        assert len(warns) == 0, warns
+        assert any(r[3] == "ok" for r in telemetry), telemetry
+
+
+def test_q_m1_unresolved_warns():
+    """M1: 40-hex unresolved -> (q) WARN."""
+    with tempfile.TemporaryDirectory() as td:
+        subprocess.run(["git", "init", td], capture_output=True, check=True)
+        subprocess.run(
+            ["git", "-C", td, "-c", "user.email=t@t", "-c", "user.name=t",
+             "commit", "--allow-empty", "-m", "test"],
+            capture_output=True, check=True,
+        )
+        fake = "f" * 40
+        plan = f"The commit is {fake} here.\n"
+        telemetry, warns = _check_pins(plan, td, td)
+        assert any("unresolved" in w.lower() for w in warns), warns
+        assert any(r[3] == "unresolved" for r in telemetry), telemetry
+
+
+def test_q_m1_cross_repo():
+    """M1: resolves in root but not project -> cross-repo, no WARN."""
+    with tempfile.TemporaryDirectory() as root_td:
+        with tempfile.TemporaryDirectory() as proj_td:
+            subprocess.run(["git", "init", root_td], capture_output=True, check=True)
+            subprocess.run(
+                ["git", "-C", root_td, "-c", "user.email=t@t", "-c", "user.name=t",
+                 "commit", "--allow-empty", "-m", "root"],
+                capture_output=True, check=True,
+            )
+            root_head = subprocess.run(
+                ["git", "-C", root_td, "rev-parse", "HEAD"],
+                capture_output=True, text=True, check=True,
+            ).stdout.strip()
+            subprocess.run(["git", "init", proj_td], capture_output=True, check=True)
+            subprocess.run(
+                ["git", "-C", proj_td, "-c", "user.email=t@t", "-c", "user.name=t",
+                 "commit", "--allow-empty", "-m", "proj"],
+                capture_output=True, check=True,
+            )
+            plan = f"The commit is {root_head} here.\n"
+            telemetry, warns = _check_pins(plan, proj_td, root_td)
+            assert len(warns) == 0, warns
+            assert any(r[3] == "cross-repo" for r in telemetry), telemetry
+
+
+def test_q_fenced_block_pin_seen():
+    """C3: pin inside fenced block IS seen (raw-text scan)."""
+    fake = "f" * 40
+    text = f"```\n{fake}\n```\n"
+    tokens = _extract_hex_tokens(text)
+    assert any(t[1] == fake for t in tokens), "pin inside fence must be seen"
+
+
+def test_q_warn_first_exit_zero():
+    """C1: plan whose pins all fail still exits 0 with (q) WARN present."""
+    fake64 = "a" * 64
+    plan = f"""\
+# Test Plan
+**Dispatch Mode:** bellows | **pause_for_verdict:** always
+
+shasum -a 256 `/tmp/nonexistent_c1_fixture_xyz.txt`
+{fake64}
+"""
+    result = _run_lint(plan)
+    assert result.returncode == 0, f"exit {result.returncode}\n{result.stdout}"
+    assert "(q) WARN" in result.stdout
+
+
+def test_q_no_crash_pathological():
+    """No-crash contract: directory as pinned path lints without raising."""
+    fake64 = "a" * 64
+    plan = f"""\
+# Test Plan
+**Dispatch Mode:** bellows | **pause_for_verdict:** always
+
+shasum -a 256 `/tmp`
+{fake64}
+"""
+    result = _run_lint(plan)
+    assert result.returncode == 0
+    assert "Traceback" not in result.stderr
