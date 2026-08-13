@@ -385,3 +385,102 @@ def test_directory_glob(tmp_path):
     matches = sorted(tmp_path.glob("walk-register-*.md"))
     assert len(matches) == 2
     assert all("walk-register-" in m.name for m in matches)
+
+
+# ---- v0.3 guards (wrl-guards-2026-08-13) ----
+
+V03_HEADER = "**schema_version:** `0.3`\n\n"
+FOLD_HEADER = (
+    "| id | walk | lens | sub_question | origin | finding | pre_fold_text | resolution |\n"
+    "|---|---|---|---|---|---|---|---|\n"
+)
+
+
+def _v03_file(tmp_path, body, name="walk-register-v03-fixture.md"):
+    p = tmp_path / name
+    p.write_text(V03_HEADER + body, encoding="utf-8")
+    return p
+
+
+def test_annotated_verbatim_ellipsis_is_ok(tmp_path):
+    body = FOLD_HEADER + (
+        "| f1 | 1 | ACID | 5.1 | pre-existing | prefix `abc…` is verbatim-ellipsis "
+        "| pin `abc…` matched | kept |\n"
+    )
+    status, rows, _ = validate_file(_v03_file(tmp_path, body))
+    assert status == "CONFORMANT"
+    assert rows[0]["note"] == "verbatim_ellipsis_annotated"
+    assert rows[0]["row_status"] == "OK"
+
+
+def test_unannotated_ellipsis_still_warns(tmp_path):
+    body = FOLD_HEADER + (
+        "| f1 | 1 | ACID | 5.1 | pre-existing | elided | the guard ... elided | kept |\n"
+    )
+    status, rows, _ = validate_file(_v03_file(tmp_path, body))
+    assert status == "UNCONFORMANT"
+    assert rows[0]["note"] == "truncated_pre_fold_text"
+
+
+def test_duplicate_row_warns_and_flips_status(tmp_path):
+    row = "| f1 | 1 | ACID | 5.1 | pre-existing | dup | ADDITION | kept |\n"
+    body = FOLD_HEADER + row + row
+    status, rows, _ = validate_file(_v03_file(tmp_path, body))
+    assert status == "UNCONFORMANT"
+    assert any(r["note"] == "duplicate_row" for r in rows)
+
+
+def test_repeated_table_header_is_not_duplicate_row(tmp_path):
+    body = (
+        FOLD_HEADER
+        + "| f1 | 1 | ACID | 5.1 | pre-existing | a | ADDITION | kept |\n\n"
+        + FOLD_HEADER
+        + "| f2 | 2 | ACID | 5.1 | pre-existing | b | ADDITION | kept |\n"
+    )
+    status, rows, _ = validate_file(_v03_file(tmp_path, body))
+    assert status == "CONFORMANT"
+    assert not any(r["note"] == "duplicate_row" for r in rows)
+
+
+def test_headerless_rows_warn_and_flip_status(tmp_path):
+    body = (
+        FOLD_HEADER
+        + "| f1 | 1 | ACID | 5.1 | pre-existing | a | ADDITION | kept |\n"
+        + "\nprose paragraph\n\n"
+        + "| f2 | 2 | ACID | 5.1 | pre-existing | detached | ADDITION | kept |\n"
+    )
+    status, rows, _ = validate_file(_v03_file(tmp_path, body))
+    assert status == "UNCONFORMANT"
+    assert any(r["note"] == "headerless_rows" for r in rows)
+
+
+def test_adjacent_duplicate_line_is_advisory_only(tmp_path):
+    body = (
+        FOLD_HEADER
+        + "| f1 | 1 | ACID | 5.1 | pre-existing | a | ADDITION | kept |\n\n"
+        + "the open tail line\nthe open tail line\n"
+    )
+    status, rows, _ = validate_file(_v03_file(tmp_path, body))
+    assert status == "CONFORMANT"
+    assert any(r["note"] == "duplicate_adjacent_line" for r in rows)
+
+
+def test_fenced_pipe_rows_are_ignored_by_guards(tmp_path):
+    body = (
+        FOLD_HEADER
+        + "| f1 | 1 | ACID | 5.1 | pre-existing | a | ADDITION | kept |\n\n"
+        + "```\n| x | x | x | x | x | x | x | x |\n| x | x | x | x | x | x | x | x |\n```\n"
+    )
+    status, rows, _ = validate_file(_v03_file(tmp_path, body))
+    assert status == "CONFORMANT"
+    assert not any(r["note"] in ("headerless_rows", "duplicate_row") for r in rows)
+
+
+def test_fully_detached_rows_no_table_still_flagged(tmp_path):
+    body = (
+        "prose only, no table header anywhere\n\n"
+        "| f1 | 1 | ACID | 5.1 | pre-existing | detached | ADDITION | kept |\n"
+    )
+    status, rows, _ = validate_file(_v03_file(tmp_path, body))
+    assert status == "UNCONFORMANT"
+    assert any(r["note"] == "headerless_rows" for r in rows)

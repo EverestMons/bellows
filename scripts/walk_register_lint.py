@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Walk register validator — check fold-row tables against walk-register-schema v0.2.
+"""Walk register validator — check fold-row tables against walk-register-schema v0.3.
 
 Standalone, warn-only, not wired into any gate chain.
 Read-only, standard library only. Emits TSV to stdout.
@@ -34,6 +34,7 @@ SCHEMA_DECL_RE = re.compile(
 FOLD_MARKERS = {"fold", "resolution", "pre_fold_text"}
 
 TRUNCATION_RE = re.compile(r"\.\.\.|…")
+VERBATIM_ELLIPSIS_MARKER = "verbatim-ellipsis"
 
 COLUMNS = [
     "file", "line", "table", "row_status", "file_status",
@@ -118,6 +119,7 @@ def has_schema_declaration(text):
 def extract_tables(text):
     lines = text.splitlines()
     tables = []
+    consumed = set()
     i = 0
     while i < len(lines):
         cells = split_table_row(lines[i])
@@ -143,11 +145,12 @@ def extract_tables(text):
                         continue
                     data_rows.append((j + 1, row_cells))
                     j += 1
+                consumed.update(range(header_line, j + 1))
                 tables.append((header_cells, data_rows, header_line))
                 i = j
                 continue
         i += 1
-    return tables
+    return tables, consumed
 
 
 def validate_row(norm_cols, row_cells):
@@ -177,6 +180,14 @@ def validate_row(norm_cols, row_cells):
 
     pft_val = row_cells[pft_idx].strip()
     if pft_val != "ADDITION" and TRUNCATION_RE.search(pft_val):
+        f_idx = REQUIRED_COLUMNS.index("finding")
+        r_idx = REQUIRED_COLUMNS.index("resolution")
+        annotated = any(
+            VERBATIM_ELLIPSIS_MARKER in row_cells[i]
+            for i in (f_idx, r_idx) if i < len(row_cells)
+        )
+        if annotated:
+            return ROW_OK, [], "verbatim_ellipsis_annotated"
         return ROW_WARN, ["pre_fold_text"], "truncated_pre_fold_text"
 
     return ROW_OK, [], "-"
@@ -186,7 +197,7 @@ def validate_file(filepath):
     text = filepath.read_text(encoding="utf-8")
     pre_schema = not has_schema_declaration(text)
 
-    tables = extract_tables(text)
+    tables, consumed = extract_tables(text)
     fold_tables = []
     shapes = []
     for hdr, data, hline in tables:
@@ -196,7 +207,12 @@ def validate_file(filepath):
 
     if not fold_tables:
         status = STATUS_PRE_SCHEMA if pre_schema else STATUS_NO_TABLE
-        return status, [], shapes
+        extra_rows, extra_unconformant = _structural_guards(text, consumed, filepath)
+        if extra_unconformant:
+            status = STATUS_UNCONFORMANT
+        for r in extra_rows:
+            r["file_status"] = status
+        return status, extra_rows, shapes
 
     if pre_schema:
         file_status = STATUS_PRE_SCHEMA
@@ -217,6 +233,7 @@ def validate_file(filepath):
         file_status = STATUS_UNCONFORMANT if any_warn else STATUS_CONFORMANT
 
     rows = []
+    extra_rows, extra_unconformant = _structural_guards(text, consumed, filepath)
     for tidx, (hdr, data, _hline) in enumerate(fold_tables, 1):
         norm = [normalize_column(c) for c in hdr]
         shape = "| " + " | ".join(hdr) + " |"
@@ -233,7 +250,74 @@ def validate_file(filepath):
                 "note": note,
             })
 
+    if extra_unconformant and file_status == STATUS_CONFORMANT:
+        file_status = STATUS_UNCONFORMANT
+        for r in rows:
+            r["file_status"] = file_status
+    for r in extra_rows:
+        r["file_status"] = file_status
+    rows.extend(extra_rows)
     return file_status, rows, shapes
+
+
+def _structural_guards(text, consumed, filepath):
+    """v0.3 guards: duplicate fold rows, headerless pipe rows, adjacent duplicate prose lines.
+
+    duplicate_row / headerless_rows are structural (flip file_status);
+    duplicate_adjacent_line is advisory (reported, no status flip).
+    """
+    lines = text.splitlines()
+    extra = []
+    unconformant = False
+    seen_rows = {}
+    in_fence = False
+    prev_stripped = None
+    prev_num = 0
+    for num, line in enumerate(lines, 1):
+        stripped = line.strip()
+        if stripped.startswith("```"):
+            in_fence = not in_fence
+            prev_stripped = None
+            continue
+        if in_fence:
+            prev_stripped = None
+            continue
+        cells = split_table_row(line)
+        if cells is not None and not is_separator_row(cells):
+            if num in consumed:
+                if len(cells) == len(REQUIRED_COLUMNS) and \
+                        [normalize_column(c) for c in cells] != REQUIRED_COLUMNS:
+                    key = tuple(cells)
+                    if key in seen_rows:
+                        extra.append({
+                            "file": filepath.name, "line": str(num), "table": "-",
+                            "row_status": ROW_WARN, "columns": "-",
+                            "missing": "-", "note": "duplicate_row",
+                        })
+                        unconformant = True
+                    else:
+                        seen_rows[key] = num
+            elif len(cells) >= len(REQUIRED_COLUMNS) - 1:
+                extra.append({
+                    "file": filepath.name, "line": str(num), "table": "-",
+                    "row_status": ROW_WARN, "columns": "-",
+                    "missing": "-", "note": "headerless_rows",
+                })
+                unconformant = True
+            prev_stripped = None
+            continue
+        if cells is None and stripped:
+            if stripped == prev_stripped and num == prev_num + 1:
+                extra.append({
+                    "file": filepath.name, "line": str(num), "table": "-",
+                    "row_status": ROW_WARN, "columns": "-",
+                    "missing": "-", "note": "duplicate_adjacent_line",
+                })
+            prev_stripped = stripped
+            prev_num = num
+        elif not stripped:
+            prev_stripped = None
+    return extra, unconformant
 
 
 def make_tsv_row(row_dict):
