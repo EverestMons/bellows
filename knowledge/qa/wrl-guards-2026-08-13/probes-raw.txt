@@ -1,0 +1,126 @@
+=== ITEM 1: Task C probe battery against CAPTURE_COMMIT extractions ===
+--- Probe 1: schema v0.3 header ---
+grep -cF '# Walk Register Schema — v0.3' = 1 (expect 1)
+--- Probe 2: v0.3 changelog header ---
+grep -cF '## v0.3 — the verbatim-ellipsis annotation' = 1 (expect 1)
+--- Probe 3: v0.2 header retired ---
+grep -cF '# Walk Register Schema — v0.2' = 0 (expect 0)
+--- Probe 4: VERBATIM_ELLIPSIS_MARKER count ---
+grep -cF 'VERBATIM_ELLIPSIS_MARKER' = 2 (expect 2)
+--- Probe 5: _structural_guards count ---
+grep -cF '_structural_guards' = 3 (expect 3)
+--- Probe 6: test_headerless_rows_warn_and_flip_status ---
+grep -cF 'def test_headerless_rows_warn_and_flip_status' = 1 (expect 1)
+
+--- Probe 7: targeted tests ---
+...........................                                              [100%]
+=============================== warnings summary ===============================
+tests/test_walk_register_lint.py::test_conformant_row
+  /Users/marklehn/Library/Python/3.9/lib/python/site-packages/urllib3/__init__.py:35: NotOpenSSLWarning: urllib3 v2 only supports OpenSSL 1.1.1+, currently the 'ssl' module is compiled with 'LibreSSL 2.8.3'. See: https://github.com/urllib3/urllib3/issues/3020
+    warnings.warn(
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+27 passed, 1 warning in 0.25s
+
+--- Probe 8: corpus sweep ---
+Sweep tally:
+ 310 -
+  46 headerless_rows
+   1 note
+  39 truncated_pre_fold_text
+ 187 wrong_shape
+=== ITEM 2: C1 byte-identity ===
+--- Validator byte-identity (committed vs reference) ---
+diff_exit=0
+--- Tests byte-identity (committed vs reference) ---
+diff_exit=0
+--- Schema builder currency check ---
+builder porcelain: ''
+builder last commit: '7c933ad'
+--- Schema byte-identity (committed vs builder output from pre-edit doc) ---
+pre_edit_show_exit=0
+    7496
+OK — 3 edits (schema); 7460→10725 chars
+schema_diff_exit=0
+
+=== ITEM 3: C4 numstat ===
+18	2	knowledge/architecture/walk-register-schema.md
+60	0	knowledge/development/wrl-guards-dev-2026-08-13.md
+88	4	scripts/walk_register_lint.py
+99	0	tests/test_walk_register_lint.py
+
+--- toplevel ---
+/Users/marklehn/Developer/GitHub/bellows/.bellows-worktrees/392
+--- single non-amend commit (one parent) ---
+tree d5c2a91ae65a8e3924b2b2e264d968352ea2e9aa
+parent 5eb98db6608cab6816fa635150a4c0faecda9864
+author Mark Lehn <marklehn@icloud.com> 1786659298 -0500
+committer Mark Lehn <marklehn@icloud.com> 1786659298 -0500
+
+--- subject matches Task D form ---
+a38801b [392] wrl-guards(wrl-guards-2026-08-13): schema v0.3 + verbatim-ellipsis annotation + duplicate/headerless guards + 7 tests
+
+=== ITEM 4: Full suite ===
+........................................................................ [  7%]
+........................................................................ [ 14%]
+........................................................................ [ 21%]
+........................................................................ [ 28%]
+........................................................................ [ 35%]
+........................................................................ [ 42%]
+........................................................................ [ 49%]
+........................................................................ [ 56%]
+........................................................................ [ 63%]
+........................................................................ [ 70%]
+........................................................................ [ 77%]
+........................................................................ [ 84%]
+........................................................................ [ 91%]
+........................................................................ [ 98%]
+.................                                                        [100%]
+=============================== warnings summary ===============================
+../../../../../Library/Python/3.9/lib/python/site-packages/urllib3/__init__.py:35
+  /Users/marklehn/Library/Python/3.9/lib/python/site-packages/urllib3/__init__.py:35: NotOpenSSLWarning: urllib3 v2 only supports OpenSSL 1.1.1+, currently the 'ssl' module is compiled with 'LibreSSL 2.8.3'. See: https://github.com/urllib3/urllib3/issues/3020
+    warnings.warn(
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+1025 passed, 1 warning in 26.74s
+=== ITEM 5: Gate-neutrality ===
+--- verbatim_ellipsis_annotated in plan_lint.py ---
+count=0 (expect 0)
+--- verbatim_ellipsis_annotated in gates.py ---
+count= (expect 0)
+--- headerless_rows in plan_lint.py ---
+count=0 (expect 0)
+--- headerless_rows in gates.py ---
+count= (expect 0)
+--- duplicate_adjacent_line in plan_lint.py ---
+count=0 (expect 0)
+--- duplicate_adjacent_line in gates.py ---
+count= (expect 0)
+--- positive control: Drafting Cycle in plan_lint.py ---
+count=11 (expect >0)
+=== ITEM 4 (cont): corpus sweep re-run ===
+QA sweep tally:
+ 310 -
+  46 headerless_rows
+   1 note
+  39 truncated_pre_fold_text
+ 187 wrong_shape
+
+--- Dev note sweep tally (from Step 1) ---
+=== ITEM 4 (cont): register porcelain ===
+(end of porcelain)
+=== ITEM 5 (corrected path): Gate-neutrality ===
+--- verbatim_ellipsis_annotated in plan_lint.py ---
+count=0 (expect 0)
+--- verbatim_ellipsis_annotated in gates.py ---
+count=0 (expect 0)
+--- headerless_rows in plan_lint.py ---
+count=0 (expect 0)
+--- headerless_rows in gates.py ---
+count=0 (expect 0)
+--- duplicate_adjacent_line in plan_lint.py ---
+count=0 (expect 0)
+--- duplicate_adjacent_line in gates.py ---
+count=0 (expect 0)
+--- positive control: Drafting Cycle in plan_lint.py ---
+count=11 (expect >0)
