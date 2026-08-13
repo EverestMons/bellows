@@ -1354,7 +1354,7 @@ def _apply_ledger_updates(parsed, project_path, plan_id, files_changed=None):
         if any("FORWARD.md" in f for f in files_changed):
             _log("INFO", "ledger: agent wrote FORWARD.md old-style, skipping daemon write",
                  slug=slug)
-        elif forward_text:
+        elif forward_text and not _forward_text_is_empty_or_none(forward_text):
             # Idempotency check: skip if this exact write was already applied
             fw_step_id_key = f"{plan_id}-{parsed.get('_step_number')}"
             fw_content_hash = hashlib.sha256(forward_text.encode()).hexdigest()
@@ -1365,6 +1365,8 @@ def _apply_ledger_updates(parsed, project_path, plan_id, files_changed=None):
                 _append_forward_row(project_path, plan_id, forward_text)
                 lifecycle.record_ledger_write(fw_step_id_key, "FORWARD.md", fw_content_hash)
                 _log("INFO", "ledger: appended new row to FORWARD.md", slug=slug)
+        elif forward_text:
+            _log("INFO", "ledger: forward register empty/NONE — nothing to append", slug=slug)
     except Exception as e:
         _log("WARN", f"⚠ _apply_ledger_updates failed: {e}",
              slug=slug_for(os.path.basename(project_path)))
@@ -1414,6 +1416,16 @@ def _append_project_status(project_path, plan_id, milestone_text):
          f"docs(status): PROJECT_STATUS milestone for plan {plan_id} (daemon-post-merge)"],
         capture_output=True, text=True, timeout=10,
     )
+
+
+def _forward_text_is_empty_or_none(text):
+    stripped = text.strip()
+    if not stripped:
+        return True
+    normalized = stripped.lower()
+    if normalized.endswith('.'):
+        normalized = normalized[:-1]
+    return normalized == 'none'
 
 
 BULLET_RE = re.compile(r"^(?:-\s|\d+\.\s)")

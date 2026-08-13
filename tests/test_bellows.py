@@ -5461,3 +5461,63 @@ class TestRunAuthPreflight:
         with patch("bellows.subprocess.run") as mock_run:
             bellows._run_auth_preflight()
             mock_run.assert_not_called()
+
+
+class TestForwardTextIsEmptyOrNone:
+    """Truth table for _forward_text_is_empty_or_none."""
+
+    @pytest.mark.parametrize("text", [
+        "NONE",
+        "NONE.",
+        "none",
+        " None. ",
+        "   ",
+        "",
+    ])
+    def test_empty_or_none_returns_true(self, text):
+        assert bellows._forward_text_is_empty_or_none(text) is True
+
+    @pytest.mark.parametrize("text", [
+        "NONE and also a real item",
+        "- Implement the frobnicator",
+    ])
+    def test_real_content_returns_false(self, text):
+        assert bellows._forward_text_is_empty_or_none(text) is False
+
+
+class TestForwardAppendPositiveControl:
+    """Positive control: _append_forward_row with a real item appends exactly one row."""
+
+    FORWARD_FIXTURE = (
+        "# Forward Register\n\n"
+        "| # | Added | Item | Type | Plan-id link | Status |\n"
+        "|---|---|---|---|---|---|\n"
+        "| 1 | 2026-05-13 | First item | deferred-work | — | open |\n"
+    )
+
+    def _make_git_repo(self, tmp_path):
+        subprocess.run(["git", "init", str(tmp_path)], capture_output=True, check=True)
+        subprocess.run(["git", "-C", str(tmp_path), "config", "user.email", "test@test.com"],
+                        capture_output=True, check=True)
+        subprocess.run(["git", "-C", str(tmp_path), "config", "user.name", "Test"],
+                        capture_output=True, check=True)
+        gitkeep = tmp_path / ".gitkeep"
+        gitkeep.write_text("")
+        subprocess.run(["git", "-C", str(tmp_path), "add", ".gitkeep"],
+                        capture_output=True, check=True)
+        subprocess.run(["git", "-C", str(tmp_path), "commit", "-m", "init"],
+                        capture_output=True, check=True)
+        return str(tmp_path)
+
+    def test_real_item_appends_one_row(self, tmp_path):
+        project = self._make_git_repo(tmp_path / "proj")
+        knowledge_dir = os.path.join(project, "knowledge")
+        os.makedirs(knowledge_dir)
+        forward_path = os.path.join(knowledge_dir, "FORWARD.md")
+        with open(forward_path, "w") as f:
+            f.write(self.FORWARD_FIXTURE)
+        bellows._append_forward_row(project, 99, "Implement the frobnicator")
+        with open(forward_path, "r") as f:
+            content = f.read()
+        rows = [ln for ln in content.splitlines() if ln.startswith("| ") and not ln.startswith("| #") and not ln.startswith("|---")]
+        assert len(rows) == 2
