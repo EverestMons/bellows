@@ -1,6 +1,6 @@
-# Walk Register Schema — v0.2
+# Walk Register Schema — v0.3
 
-**schema_version:** `0.2`
+**schema_version:** `0.3`
 **Encoding:** UTF-8 (stated explicitly; validators open files with this encoding rather than deferring to locale)
 
 ---
@@ -120,3 +120,19 @@ Population measured 2026-08-10 (Step 1 Task B re-measurement, against authoring-
 ## Cost
 
 Capturing `pre_fold_text` means every fold's author copies the pre-edit bytes before editing. That is a real authoring burden and this plan does not pretend otherwise — it is the price of the record being joinable. Diagnostic 337 is what the alternative costs: two diagnostics ending at the same wall because the record describes folds in prose a reader can follow and no tool can join.
+
+---
+
+## v0.3 — the verbatim-ellipsis annotation, structural guards, and the every-tier coherence line
+
+**The verbatim-ellipsis annotation.** `pre_fold_text` carrying a literal source ellipsis (`...` or `…`) as part of COMPLETE pre-image bytes is verbatim, not truncation — rule (a) forbids rewriting it, and the validator previously could not distinguish the two (the s40sweep ingest register owned the false-positive class; the 2026-08-13 gate1 packet's rider routed it here). The author attests per row by placing the literal marker `verbatim-ellipsis` in the row's `finding` or `resolution` cell (never inside `pre_fold_text` itself); the validator then reports the row OK with note `verbatim_ellipsis_annotated`. An unannotated ellipsis stays `truncated_pre_fold_text` — the annotation is an attestation and prices like one (the lens-attestation rules apply). ⚠️ The marker is a substring match: a row whose finding or resolution merely MENTIONS the marker token silently annotates a real truncation — a known, priced collision channel (the validator is warn-only and the author-verify duty covers it; describe the marker rather than exhibiting it in rows that are not attesting). Closed registers carrying prose ownership notes stay byte-stable and UNCONFORMANT per their own text; the annotation is forward-looking.
+
+**Structural guards (validator v0.3).** Three classes, measured live in the committed corpus at authoring:
+
+- `duplicate_row` — two byte-identical eight-cell data rows within any parsed table in one file (the DUP-APPEND channel class, measured twice in one register during the s40sweep arc; the guard reads all parsed tables, not only fold tables — stated mechanism). Structural: flips the file UNCONFORMANT. Repeated table HEADERS are the multi-table norm and are excluded from this guard.
+- `headerless_rows` — pipe rows with fold-row cell counts (seven or more cells) that belong to no parsed table (no header+separator reaches them; a blank line or prose detached them — including a file with no parsed table at all). Such rows were INVISIBLE to v0.2 validation — measured at authoring: 46 rows across 4 committed registers, including 16 panel-seat rows in one register no validator run had ever read. Structural: flips UNCONFORMANT.
+- `duplicate_adjacent_line` — two adjacent byte-identical non-empty prose lines outside tables and code fences (the duplicated open-tail line's shape). Advisory: reported, does not flip status.
+
+**The record-coherence check runs at EVERY tier (the gate2-dc deferral, landed).** The walk-0 battery and every culmination run the register-rows ↔ per-phase-commits check, both directions, at every tier — T1 included, not only where DRAFTING_CYCLE §2.6's residue battery mandates it for T2 panels. (A declared synthesis: the deferral's letter covered the walk-0 battery home; the every-culmination cadence is §2.6's own, restated here so the tier widening carries it — stated, not silent.) The register licenses the cycle's own record at every tier. The check is git-side and deliberately outside this validator (the validator stays repo-blind).
+
+**Version note:** 0.3 is additive — no column, container, or naming change; 0.1/0.2 registers stay valid as written (closed registers are not retro-annotated).
