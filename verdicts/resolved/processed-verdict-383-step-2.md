@@ -1,0 +1,2 @@
+verdict: continue
+Terminal QA — Rule 22(b) PASS on RAW evidence (full-suite.txt): 2 failed, 2560 passed, 1 warning. The 2 failures are the two CLAUDE.md-known pre-existing failures; 0 regressions; 2560 vs 378 baseline 2559 = +1 (the new spawn-flag test). Gate clean, Rule 20 banner byte-exact. Final step — closing plan 383 to Done. NOTE (T-3): proves the flag value only; the real proof is the CEO live retry on the work machine (fetched, not not_xml).

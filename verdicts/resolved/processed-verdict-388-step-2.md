@@ -1,0 +1,2 @@
+verdict: continue
+Terminal QA — Rule 22(b) PASS on RAW evidence: 2 failed, 2573 passed, 1 warning. The 2 failures are the two CLAUDE.md-known pre-existing failures; 0 regressions; 2573 vs 387 baseline 2567 = +6 (the fetch_single + route tests). Gate clean, rule_20 PASS. Final step — closing plan 388 to Done. NOTE (T-3): real proof is pressing Fetch XML on a known-good invoice on the work machine (fetched+enriched, gates 6-9 populate).
