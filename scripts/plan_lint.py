@@ -11,8 +11,10 @@ Checks:
 Exit 0 if all checks pass, exit 1 otherwise.
 """
 
+import hashlib
 import os
 import re
+import subprocess
 import sys
 from pathlib import Path
 
@@ -35,6 +37,142 @@ def _parse_qa_steps(qa_steps_raw):
         return {int(tok.strip()) for tok in s.split(",") if tok.strip()}
     except (ValueError, TypeError):
         return set()
+
+
+_SHA_PAT = r'\bsha(?:sum|256(?:sum)?)\b'
+
+
+def _extract_hex_tokens(text):
+    """Extract maximal hex runs >=12 chars. Returns [(line_num, token, kind)]."""
+    hex_re = re.compile(r'[0-9a-fA-F]+')
+    results = []
+    for line_num, line in enumerate(text.splitlines(), 1):
+        for m in hex_re.finditer(line):
+            tok = m.group(0)
+            n = len(tok)
+            if n < 12:
+                continue
+            if n == 64:
+                results.append((line_num, tok, 'sha256'))
+            elif n == 40:
+                results.append((line_num, tok, 'git'))
+            else:
+                results.append((line_num, tok, 'prefix'))
+    return results
+
+
+def _extract_pin_path(context_lines):
+    """Extract file path from context lines containing a shasum/sha256 invocation."""
+    for line in context_lines:
+        if not re.search(_SHA_PAT, line, re.IGNORECASE):
+            continue
+        for m in re.finditer(r'`([^`\n]+)`', line):
+            cand = m.group(1).strip()
+            cmd_m = re.match(
+                r'sha(?:sum|256(?:sum)?)\s+(?:-a\s+\d+\s+)?([^-\s]\S*)',
+                cand, re.IGNORECASE,
+            )
+            if cmd_m:
+                return cmd_m.group(1).strip().strip('`')
+            if re.match(r'sha', cand, re.IGNORECASE) or cand.startswith('-'):
+                continue
+            if '/' in cand or re.search(r'\.\w+$', cand):
+                return cand
+        abs_m = re.search(r'(/[A-Za-z0-9_./-]+)', line)
+        if abs_m:
+            return abs_m.group(1).rstrip(')')
+    return None
+
+
+def _check_pins(plan_text, project_repo, root_repo):
+    """Check pin tokens against file hashes (M2) and git repos (M1).
+    Returns (telemetry, warns).
+    """
+    text_lines = plan_text.splitlines()
+    tokens = _extract_hex_tokens(plan_text)
+    telemetry = []
+    warns = []
+
+    for line_num, token, kind in tokens:
+        tp = token[:12]
+
+        if kind == 'sha256':
+            ctx_idx = [i for i in [line_num - 2, line_num - 1, line_num]
+                       if 0 <= i < len(text_lines)]
+            ctx = [text_lines[i] for i in ctx_idx]
+            if not any(re.search(_SHA_PAT, ln, re.IGNORECASE) for ln in ctx):
+                telemetry.append(('sha256', line_num, tp, 'ambiguous'))
+                continue
+            file_path = _extract_pin_path(ctx)
+            if not file_path:
+                telemetry.append(('sha256', line_num, tp, 'ambiguous'))
+                continue
+            if os.path.isabs(file_path):
+                resolved = file_path
+            elif project_repo:
+                resolved = os.path.join(str(project_repo), file_path)
+            else:
+                telemetry.append(('sha256', line_num, tp, 'ambiguous'))
+                continue
+            if not os.path.isfile(resolved):
+                warns.append(
+                    f"(q) WARN: line {line_num} sha256 pin {tp}… file missing: {file_path}")
+                telemetry.append(('sha256', line_num, tp, 'missing-file'))
+                continue
+            try:
+                actual = hashlib.sha256(Path(resolved).read_bytes()).hexdigest()
+                if actual.lower() == token.lower():
+                    telemetry.append(('sha256', line_num, tp, 'ok'))
+                else:
+                    warns.append(
+                        f"(q) WARN: line {line_num} sha256 pin {tp}… MISMATCH on {file_path}")
+                    telemetry.append(('sha256', line_num, tp, 'mismatch'))
+            except Exception:
+                warns.append(
+                    f"(q) WARN: line {line_num} sha256 pin {tp}… file not readable: {file_path}")
+                telemetry.append(('sha256', line_num, tp, 'missing-file'))
+
+        elif kind == 'git':
+            repos = []
+            if project_repo and os.path.exists(
+                    os.path.join(str(project_repo), '.git')):
+                repos.append(('project', str(project_repo)))
+            if root_repo and os.path.exists(
+                    os.path.join(str(root_repo), '.git')):
+                repos.append(('root', str(root_repo)))
+            line_text = text_lines[line_num - 1] if line_num <= len(text_lines) else ''
+            for cm in re.finditer(r'git\s+-C\s+(/\S+)', line_text):
+                extra = cm.group(1)
+                if os.path.exists(os.path.join(extra, '.git')):
+                    repos.append(('named', extra))
+            if not repos:
+                telemetry.append(('git', line_num, tp, 'repo-unavailable'))
+                continue
+            resolved_in = None
+            for label, repo in repos:
+                try:
+                    r = subprocess.run(
+                        ['git', '-C', repo, 'cat-file', '-e', token],
+                        capture_output=True, timeout=5,
+                    )
+                    if r.returncode == 0:
+                        resolved_in = label
+                        break
+                except Exception:
+                    continue
+            if resolved_in == 'project':
+                telemetry.append(('git', line_num, tp, 'ok'))
+            elif resolved_in is not None:
+                telemetry.append(('git', line_num, tp, 'cross-repo'))
+            else:
+                warns.append(
+                    f"(q) WARN: line {line_num} git pin {tp}… unresolved")
+                telemetry.append(('git', line_num, tp, 'unresolved'))
+
+        else:
+            telemetry.append(('prefix', line_num, tp, 'ambiguous'))
+
+    return telemetry, warns
 
 
 def lint(plan_path):
@@ -489,6 +627,21 @@ def lint(plan_path):
             has_check = 'check:' in scanned.lower()
             if not has_backtick and not has_check:
                 print(f"(p) WARN: C{m_p.group(1)} has no backtick-quoted command or check: token")
+
+    # (q) Pin verification (WARN-only, advisory — scans RAW plan_text, not clean_text)
+    # Pins live inside fenced bootstrap blocks; clean_text would blind this check.
+    try:
+        repo_base = BELLOWS_ROOT.parent
+        project_name = header.get("project", "") if header else ""
+        p_repo = str(repo_base / project_name) if project_name else None
+        r_repo = str(repo_base)
+        pin_telemetry, pin_warns = _check_pins(plan_text, p_repo, r_repo)
+        for kind, line, prefix, result in pin_telemetry:
+            print(f"PIN-CHECK: kind={kind} line={line} token={prefix}… result={result}")
+        for w in pin_warns:
+            print(w)
+    except Exception as e:
+        print(f"(q) WARN: check errored ({e})")
 
     for status, check, detail in results:
         print(f"{status}: {check} — {detail}")
