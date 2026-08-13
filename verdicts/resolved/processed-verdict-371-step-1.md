@@ -1,0 +1,3 @@
+verdict: continue
+
+Clean mechanical gate (all rows PASS, zero failures, exactly the three scoped files; teardown merged clean at cccef59). Rule 22(b) verified by the Planner BY EXECUTION, not summary: my own run of the targeted module reproduces the claimed counts (122 passed, matching the dev note's 110→122, +12); check (q) present in scripts/plan_lint.py with the spec'd helpers (_extract_hex_tokens line 45, _check_pins line 87 — the testability seam); and a live run on Done/diagnostic-370.md emitted one PIN-CHECK line per token with all four real git pins result=ok and EXIT 0 — the warn-first surface behaving on first contact with a real plan. Proceed to Step 2 (QA: full suite foreground + the C1 exit-0 rehearsal + the two-location C2 proof).
