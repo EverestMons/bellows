@@ -41,6 +41,9 @@ MISPLACED_VERDICT_SCAN_VERBOSE = False
 # Module-level scope means daemon startup automatically resets the set.
 _warned_no_match: set[str] = set()
 
+# --- Disk-low notification onset dedup ---
+_disk_low_notified = False
+
 
 # --- Terminal output infrastructure ---
 _last_plan_event_time = 0.0
@@ -113,6 +116,65 @@ def _rotate_logs() -> None:
             os.remove(old_path)
         os.rename(consult_path, old_path)
         print(f"Bellows: rotated planner-consultation.jsonl (>10MB)")
+
+
+def _prune_old_logs(config: dict) -> None:
+    """Startup-only: delete logs/*.json older than log_retention_days.
+
+    Contract: never kill the daemon — degrade silently on any failure.
+    """
+    retention_days = config.get("log_retention_days", 30)
+    logs_dir = BELLOWS_ROOT / "logs"
+    if not logs_dir.is_dir():
+        return
+    cutoff = time.time() - retention_days * 86400
+    pruned = 0
+    try:
+        for fname in os.listdir(logs_dir):
+            if not fname.endswith(".json"):
+                continue
+            fpath = logs_dir / fname
+            if not fpath.is_file():
+                continue
+            try:
+                if os.path.getmtime(fpath) < cutoff:
+                    os.remove(fpath)
+                    _log("INFO", f"pruned old log: {fname}")
+                    pruned += 1
+            except OSError as e:
+                _log("WARN", f"could not prune {fname}: {e}")
+    except Exception as e:
+        _log("WARN", f"log pruning aborted: {e}")
+    _log("INFO", f"log retention: {pruned} file(s) pruned (threshold: {retention_days} days)")
+
+
+def _disk_preflight(config: dict) -> bool:
+    """Pre-claim check: return False if free space is below disk_min_free_gb.
+
+    Contract: never kill the daemon — degrade to allow on statvfs failure.
+    """
+    global _disk_low_notified
+    min_free_gb = config.get("disk_min_free_gb", 2)
+    try:
+        st = os.statvfs(str(BELLOWS_ROOT))
+        free_bytes = st.f_bavail * st.f_frsize
+        free_gb = free_bytes / (1024 ** 3)
+    except OSError as e:
+        _log("WARN", f"disk preflight: statvfs failed: {e}")
+        return True
+    if free_gb < min_free_gb:
+        _log("ERROR", f"disk preflight FAILED: {free_gb:.2f} GB free < {min_free_gb} GB threshold — claim skipped")
+        if not _disk_low_notified:
+            _disk_low_notified = True
+            app_key = config.get("pushover", {}).get("app_key", "")
+            user_key = config.get("pushover", {}).get("user_key", "")
+            if app_key and user_key:
+                notifier.push(app_key, user_key, "Bellows — Disk Low",
+                              f"Free: {free_gb:.2f} GB, threshold: {min_free_gb} GB — claims paused")
+        return False
+    if _disk_low_notified:
+        _disk_low_notified = False
+    return True
 
 
 class WorktreeCreationError(Exception):
@@ -582,6 +644,10 @@ def run_plan(plan_path: str, config: dict, response_server: server.ResponseServe
                 total_steps=total_steps,
                 deposit_placeholder_name=base_filename,
             )
+            if not _disk_preflight(config):
+                if bellows is not None:
+                    bellows._seen.discard(verdict.slug_from_path(plan_path))
+                return
             # Single rename: deposit placeholder → in-progress-<type>-<id>.md
             id_canonical = f"{plan_type}-{plan_id}.md"
             inprogress_path = os.path.join(plan_dir, f"in-progress-{id_canonical}")
@@ -2321,6 +2387,7 @@ class Bellows:
         if log_existed:
             _log("INFO", "── session restart ──────────────────────────────")
         _log("INFO", f"session log: {session_log_path}")
+        _prune_old_logs(self.config)
         # Brief pause to allow keychain and Claude Code auth to settle
         time.sleep(3)
         _run_auth_preflight(observer=observer, response_server=self.response_server)
