@@ -1,0 +1,9 @@
+PRE-MOVE shasum -a 256 (sources):
+8b45bb9ea0d843ded2420026c5137472b90be99285d51b3aad64d895d1f28a57  knowledge/decisions/halted-diagnostic-336.md
+3cd60e9cf0c8de5ae57dbe68f8c9700bc7e4f22da8ccc91aa91549569e067c99  knowledge/decisions/halted-executable-365.md
+8d1c262b4f5a6a4b2f4a328347a146d2e79e1717578cf74d209875f4fae142d2  knowledge/decisions/halted-diagnostic-369.md
+
+POST-MOVE shasum -a 256 (destinations):
+8b45bb9ea0d843ded2420026c5137472b90be99285d51b3aad64d895d1f28a57  knowledge/decisions/archived-halted-plans/halted-diagnostic-336.md
+3cd60e9cf0c8de5ae57dbe68f8c9700bc7e4f22da8ccc91aa91549569e067c99  knowledge/decisions/archived-halted-plans/halted-executable-365.md
+8d1c262b4f5a6a4b2f4a328347a146d2e79e1717578cf74d209875f4fae142d2  knowledge/decisions/archived-halted-plans/halted-diagnostic-369.md
