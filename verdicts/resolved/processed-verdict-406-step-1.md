@@ -1,0 +1,2 @@
+verdict: stop
+Transient step death, not a plan defect -- re-dispatching. Step 1's claude -p exited code 1 with files_changed=[] after 15s (never ran); the cascade (receipt Blocked, deposit-missing, rule_22) all follow from the agent not executing. Daemon is healthy (concurrent plan 404 closed green at the same time), so this is a one-off blip. No work was committed. Stopping to re-deposit the same (genuinely-cycled) plan for a fresh Step-1 run.
