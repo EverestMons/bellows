@@ -1,0 +1,96 @@
+Probes raw output — plan 418 Step 2 QA
+CAPTURE_COMMIT: 47133e9
+Date: 2026-08-14
+
+=== Precondition ===
+$ git log --oneline -1 -- scripts/fold_check.py
+47133e9 [418] fold-check(gate2-348-2026-08-14): the fold post-condition tool — diff the machine-readable state against a pre-fold baseline
+Independence: commit made by a prior dispatch context (Step 1), not this one.
+
+=== Item 1 — Task C probe battery against committed content ===
+Extraction:
+$ git show 47133e9:scripts/fold_check.py > <scratch>/fold_check.py; echo "show_exit=$?"
+show_exit=0  (7693 bytes)
+$ git show 47133e9:tests/test_fold_check.py > <scratch>/test_fold_check.py; echo "show_exit=$?"
+show_exit=0  (7597 bytes)
+
+Probes:
+$ grep -oF "def fold_check" <scratch>/fold_check.py | wc -l
+0  (expected 0 — PASS)
+$ grep -oF "class ReaderCrashed" <scratch>/fold_check.py | wc -l
+1  (expected 1 — PASS)
+$ grep -oF "FOLD-CHECK DRIFT" <scratch>/fold_check.py | wc -l
+1  (expected 1 — PASS)
+$ grep -oF "FOLD-CHECK CLEAN" <scratch>/fold_check.py | wc -l
+1  (expected 1 — PASS)
+$ grep -oF "def test_" <scratch>/test_fold_check.py | wc -l
+15  (expected 15 — PASS)
+
+=== Item 2 — C1 byte-identity ===
+Reference status in root repo:
+$ git -C /Users/marklehn/Developer/GitHub status --porcelain -- governance/knowledge/research/fold-check-reference-2026-08-14.py governance/knowledge/research/fold-check-tests-reference-2026-08-14.py
+(empty — clean)
+$ git -C /Users/marklehn/Developer/GitHub log -1 --format=%h -- governance/knowledge/research/fold-check-reference-2026-08-14.py
+f9ac2c1  (NON-EMPTY — PASS)
+$ git -C /Users/marklehn/Developer/GitHub log -1 --format=%h -- governance/knowledge/research/fold-check-tests-reference-2026-08-14.py
+f9ac2c1  (NON-EMPTY — PASS)
+
+$ diff <reference-impl> scripts/fold_check.py
+diff_impl_exit=0  (byte-identical — PASS)
+$ diff <reference-tests> tests/test_fold_check.py
+diff_tests_exit=0  (byte-identical — PASS)
+
+=== Item 3 — C4 CAPTURE_COMMIT ===
+$ git show 47133e9 --numstat --format=
+46	0	knowledge/development/fold-check-dev-2026-08-14.md
+200	0	scripts/fold_check.py
+228	0	tests/test_fold_check.py
+Exactly three paths — PASS.
+
+$ git rev-parse --show-toplevel
+/Users/marklehn/Developer/GitHub/bellows/.bellows-worktrees/418
+
+$ git cat-file -p 47133e9 | grep -F "parent" | wc -l
+1  (single parent, non-amend — PASS)
+
+$ git log --format=%s -1 47133e9
+[418] fold-check(gate2-348-2026-08-14): the fold post-condition tool — diff the machine-readable state against a pre-fold baseline
+Subject matches Task D form — PASS.
+
+=== Item 4 — C5 gate-wiring ===
+$ grep -oF "fold_check" gates.py | wc -l
+0  (expected 0 — PASS)
+$ grep -oF "fold_check" bellows.py | wc -l
+0  (expected 0 — PASS)
+Positive controls:
+$ grep -oF "Deposits" gates.py | wc -l
+8  (>0 — PASS)
+$ grep -oF "plan" bellows.py | wc -l
+478  (>0 — PASS)
+
+=== Item 5 — Full suite ===
+$ python3 -m pytest tests/ -q
+1040 passed, 1 warning in 25.78s
+Expected 1040 passed / 0 failed — PASS.
+
+=== Item 6 — Live proof (independently re-run, scratch-only) ===
+Plan used: executable-302.md (different from Step 1's plans 392 and 306).
+First attempt on executable-392.md yielded CLEAN (appended line did not change signals — reported, not a pass). Switched to executable-302.md which contains "newest same-class".
+
+$ cp knowledge/decisions/Done/executable-302.md <scratch>/probe.md
+$ python3 scripts/fold_check.py --save-baseline <scratch>/probe.md
+BASELINE SAVED: <scratch>/.probe.md.foldcheck.json
+readers=1 signals=4
+  plan_lint: exit=1 signals=4
+
+$ sed -i '' '/newest same-class/d' <scratch>/probe.md
+(removed 3 occurrences of "newest same-class")
+
+$ python3 scripts/fold_check.py <scratch>/probe.md
+FOLD-CHECK DRIFT — the fold changed the machine-readable state:
+  VANISHED: plan_lint: FAIL: (d) step 2 scope — **Scope:** block present but parses to zero entries
+
+If a change is INTENDED, re-save the baseline and say so in the fold's record.
+fold_check_exit=1
+
+Exit 1 with FOLD-CHECK DRIFT confirmed — PASS.
