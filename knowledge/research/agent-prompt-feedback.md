@@ -1,5 +1,7 @@
 # Agent Prompt Feedback
 
+The diagnostic instructions were clear and well-structured. The Q1–Q6 framework covered all necessary aspects. The explicit requirement to cite `file:line` and quote code kept findings grounded. The cross-reference to the prior state-divergence diagnostic was essential — Q6's idle guard and SIGTERM handler recommendation could not have been properly scoped without understanding the mid-transition hazards already catalogued there. The "do not fix — investigate and describe" constraint was appropriate for this class of problem where the fix shape depends on understanding the full machinery first.
+
 None.
 
 None.
