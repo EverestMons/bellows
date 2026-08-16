@@ -8,6 +8,7 @@ from logging.handlers import RotatingFileHandler
 import os
 import pathlib
 import re
+import signal
 import shutil
 import sqlite3
 import subprocess
@@ -43,6 +44,51 @@ _warned_no_match: set[str] = set()
 
 # --- Disk-low notification onset dedup ---
 _disk_low_notified = False
+
+_DRAIN_TIMEOUT = 30  # seconds — SIGTERM drain waits this long for in-flight threads
+
+
+class LockAcquireError(Exception):
+    """Raised when another instance holds the lock."""
+
+
+def acquire_instance_lock(lock_path: str):
+    """Acquire the flock-based instance lock, write PID+timestamp.
+
+    Returns the file object (fd kept open to hold the flock).
+    Raises LockAcquireError with a diagnostic message on failure.
+    """
+    fd = os.open(lock_path, os.O_RDWR | os.O_CREAT, 0o644)
+    lock_file = os.fdopen(fd, "r+")
+    try:
+        fcntl.flock(lock_file, fcntl.LOCK_EX | fcntl.LOCK_NB)
+    except (BlockingIOError, OSError):
+        lock_file.seek(0)
+        content = lock_file.read().strip()
+        lock_file.close()
+        if content:
+            parts = content.split(None, 1)
+            if len(parts) == 2:
+                holder_pid, started = parts
+                try:
+                    start_dt = datetime.fromisoformat(started)
+                    age = datetime.now() - start_dt
+                    msg = (f"another Bellows instance holds .bellows.lock — "
+                           f"PID {holder_pid}, started {started} ({age}) — "
+                           f"stop it or use the stop path — exiting")
+                except ValueError:
+                    msg = (f"another Bellows instance holds .bellows.lock — "
+                           f"PID {holder_pid} — exiting")
+            else:
+                msg = "another Bellows instance holds .bellows.lock — exiting"
+        else:
+            msg = "another Bellows instance holds .bellows.lock — exiting"
+        raise LockAcquireError(msg)
+    lock_file.seek(0)
+    lock_file.truncate()
+    lock_file.write(f"{os.getpid()} {datetime.now().isoformat()}\n")
+    lock_file.flush()
+    return lock_file
 
 
 # --- Terminal output infrastructure ---
@@ -1845,6 +1891,9 @@ class PlanHandler(FileSystemEventHandler):
             return
         if verdict.slug_from_path(path) in self.orchestrator._seen:
             return
+        if self.orchestrator._shutting_down:
+            _log("INFO", "shutdown in progress — refusing new plan dispatch", slug=slug_for(filename))
+            return
         group = extract_parallel_group(filename)
         if group:
             if not from_rescan:
@@ -1942,6 +1991,7 @@ class Bellows:
         self.response_server = server.ResponseServer(config["callback_port"])
         self._active_lock = threading.Lock()
         self._active_count = 0
+        self._shutting_down = False
         self._seen = set()
         self._cycle_nudge_last_eval: float = 0.0
         self._cycle_nudge_suppressed_ts: Optional[str] = None
@@ -1959,8 +2009,6 @@ class Bellows:
                 _log("WARN", f"⚠ worktree prune failed for {project_root}: {e}")
 
     def _run_tracked(self, path: str, resume_step: Optional[int] = None):
-        with self._active_lock:
-            self._active_count += 1
         try:
             run_plan(path, self.config, self.response_server, resume_step=resume_step, bellows=self)
         finally:
@@ -1990,13 +2038,25 @@ class Bellows:
             notifier.notify_queue_empty()
 
     def handle_new_plan(self, path: str, resume_step: Optional[int] = None):
+        if self._shutting_down:
+            _log("INFO", "shutdown in progress — refusing new plan", slug=slug_for(os.path.basename(path)))
+            return
+        with self._active_lock:
+            self._active_count += 1
         t = threading.Thread(target=self._run_tracked, args=(path,), kwargs={"resume_step": resume_step}, daemon=True)
         t.start()
         time.sleep(2)  # Stagger thread starts to avoid simultaneous claude -p auth hits
         _log("EVENT", f"▶ started", slug=slug_for(os.path.basename(path)))
 
     def handle_parallel_group(self, paths: list):
-        threads = [threading.Thread(target=self._run_tracked, args=(p,), daemon=True) for p in paths]
+        if self._shutting_down:
+            _log("INFO", "shutdown in progress — refusing parallel group")
+            return
+        threads = []
+        for p in paths:
+            with self._active_lock:
+                self._active_count += 1
+            threads.append(threading.Thread(target=self._run_tracked, args=(p,), daemon=True))
         for t in threads:
             t.start()
             time.sleep(2)
@@ -2375,6 +2435,35 @@ class Bellows:
         for decisions_path in self.config.get("watched_projects", []):
             observer.schedule(handler, decisions_path, recursive=False)
         observer.start()
+
+        def _sigterm_handler(signum, frame):
+            if self._shutting_down:
+                _log("WARN", "second signal during drain — forcing immediate exit")
+                observer.stop()
+                self.response_server.stop()
+                sys.exit(1)
+            self._shutting_down = True
+            _log("INFO", f"SIGTERM received — draining in-flight plans ({_DRAIN_TIMEOUT}s timeout)")
+            deadline = time.time() + _DRAIN_TIMEOUT
+            drained = False
+            while time.time() < deadline:
+                with self._active_lock:
+                    if self._active_count == 0:
+                        drained = True
+                        break
+                time.sleep(0.5)
+            if not drained:
+                with self._active_lock:
+                    remaining = self._active_count
+                _log("WARN", f"drain timeout — {remaining} daemon thread(s) will be abandoned "
+                     f"(re-enters 2026-05-24 divergence hazard)")
+            _log("INFO", "SIGTERM shutdown complete")
+            observer.stop()
+            self.response_server.stop()
+            sys.exit(0)
+
+        signal.signal(signal.SIGTERM, _sigterm_handler)
+
         print("=" * 50)
         print("  🔥 Bellows is running")
         print(f"  Source: bellows.py @ {_source_sha()}")
@@ -2471,11 +2560,10 @@ if __name__ == "__main__":
 
     # G2: flock single-instance guard — must precede all DB/recovery/watcher work
     _lock_path = str(BELLOWS_ROOT / ".bellows.lock")
-    _lock_fd = open(_lock_path, "w")
     try:
-        fcntl.flock(_lock_fd, fcntl.LOCK_EX | fcntl.LOCK_NB)
-    except (BlockingIOError, OSError):
-        _log("ERROR", "another Bellows instance holds .bellows.lock — exiting")
+        _lock_fd = acquire_instance_lock(_lock_path)
+    except LockAcquireError as e:
+        _log("ERROR", str(e))
         sys.exit(1)
     # _lock_fd intentionally kept open — kernel releases flock on process death
 
