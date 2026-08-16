@@ -1,0 +1,8 @@
+verdict: continue
+Clean gate — qa_checkpoint, 0 gate failures. Rule 22(b): the Planner read the report and its raw evidence files, and independently re-read the doctrine file and the corpus fresh.
+
+All eight verification items ✅, each with a raw evidence file, and the four that the cold panel earned all check out: **Item 2** builder byte-identity reports "identical" — the committed builder run against the pre-edit blob reproduces the committed post-edit file, proving no hand edit entered; **Item 3** the re-run HALTs (anchors consumed, no double-apply); **Item 4** carries pre/post pairs for every landing probe, proving each post-condition was earnable; **Item 8** the flip reads `implemented|codify|ceo` with implemented at 282. Item 7's gate-neutrality sweep was re-run at HEAD and binds itself to `CAPTURE_COMMIT: 0fc69565…` — the token X1-7's fold created, consumed exactly as designed.
+
+Independently re-measured by the Planner: `PLANNER_TEMPLATE.md` reads `**Version:** 4.89` in COMMITTED HEAD with porcelain empty; proposal 353 `implemented|codify|ceo`; the accepted set is exactly `{340,342,346,350,352}`; implemented 282. QA deposits committed (`c00483c`), porcelain clean. Rule 20 banner and PASSED line both present.
+
+Terminal step → Done/. This completes the arc the CEO opened with "per-project lessons channel + glossary": entry 345 → proposal 353 → Gate-1 codify → PLANNER_TEMPLATE v4.89. Session Wrap step 7 now names a third destination for project-domain knowledge, Phase 1.5 Source B reads that bin as a standing source, and the Planner's ACL grants the append the new rule requires — the omission a cold scout caught before it shipped a rule its own executor was forbidden to obey.
