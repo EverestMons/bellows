@@ -1,5 +1,7 @@
 # Agent Prompt Feedback
 
+Corrective fix was mechanical and exact — the QA finding from 430 specified the 4 tests and the fix (`mock_orch._shutting_down = False`), Step 1 applied it per-test, and the full suite greened on first run. No surprises.
+
 Per-test mock-attribute fix applied cleanly — 4 lines added, no shared fixture available. The root cause (MagicMock auto-truthy attributes defeating a newly-added boolean gate) is a known pattern; the QA finding's specified fix (`mock_orch._shutting_down = False`) was exact and sufficient. No surprises.
 
 Step 1's `_shutting_down` gate at `PlanHandler._handle` (line 2031) was correctly specified and implemented, but its interaction with 4 pre-existing tests that use `MagicMock()` orchestrators was not caught by the targeted test strategy. These tests auto-create truthy `_shutting_down` attributes. The fix is trivial (`mock_orch._shutting_down = False`), but since only targeted tests were specified for Steps 1-2, the regression was invisible until the full-suite QA run. A future plan adding a gate to a hot path like `_handle` should include a directive to audit existing mock-based tests for the new attribute.
