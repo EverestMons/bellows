@@ -1125,6 +1125,7 @@ def test_handle_parallel_from_watchdog_adds_pending_not_dispatched():
     not dispatch, and not add to _seen."""
     mock_orch = MagicMock()
     mock_orch._seen = set()
+    mock_orch._shutting_down = False
     handler = bellows.PlanHandler(mock_orch)
 
     with tempfile.TemporaryDirectory() as tmp:
@@ -1195,6 +1196,7 @@ def test_nonparallel_plan_dispatches_immediately_from_handle():
     """Non-parallel plan via _handle (from_rescan=False) must dispatch immediately."""
     mock_orch = MagicMock()
     mock_orch._seen = set()
+    mock_orch._shutting_down = False
     handler = bellows.PlanHandler(mock_orch)
 
     with tempfile.TemporaryDirectory() as tmp:
@@ -1226,6 +1228,7 @@ def test_two_parallel_siblings_collected_as_one_group():
         mock_orch = MagicMock()
         mock_orch.config = {"watched_projects": [tmp]}
         mock_orch._seen = set()
+        mock_orch._shutting_down = False
         handler = bellows.PlanHandler(mock_orch)
 
         # Simulate watchdog events: both files deferred
@@ -3045,6 +3048,7 @@ def test_seen_uses_slug_not_path():
     """After dispatch, bellows._seen must contain the slug (not the full path)."""
     mock_orch = MagicMock()
     mock_orch._seen = set()
+    mock_orch._shutting_down = False
     handler = bellows.PlanHandler(mock_orch)
 
     with tempfile.TemporaryDirectory() as tmp:
