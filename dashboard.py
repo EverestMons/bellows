@@ -395,12 +395,28 @@ class CursesShell:
         return False
 
     def _do_restart(self, stdscr):
-        """Restart sequence: terminate → wait for lock → respawn."""
+        """Restart sequence: terminate → wait for lock → respawn.
+
+        If the lock is still held after _terminate_child (non-child incumbent),
+        delegates to bellows.py stop (guarded stop path) before respawning.
+        """
         self._terminate_child()
         if not self._wait_for_lock_release():
-            # Lock not released — don't respawn
-            self.mode = "normal"
-            return
+            try:
+                result = subprocess.run(
+                    [sys.executable, "bellows.py", "stop"],
+                    cwd=str(self.bellows_root),
+                    capture_output=True, text=True, timeout=30,
+                )
+            except Exception:
+                self.mode = "normal"
+                return
+            if result.returncode != 0:
+                self.mode = "normal"
+                return
+            if not self._wait_for_lock_release():
+                self.mode = "normal"
+                return
         self._spawn_child()
         self.mode = "normal"
 
@@ -420,7 +436,23 @@ class CursesShell:
         self._has_colors = init_colors()
         stdscr.clear()
 
-        self._spawn_child()
+        lock_path = str(self.bellows_root / ".bellows.lock")
+        if status.probe_daemon(lock_path):
+            pid = status.get_daemon_pid(lock_path)
+            if pid:
+                uptime = status.get_uptime(pid)
+                msg = (f"Daemon PID {pid} (up {uptime or '?'}) already holds the lock "
+                       f"— press r to restart with the guarded stop path")
+            else:
+                msg = ("A daemon already holds the lock "
+                       "— press r to restart with the guarded stop path")
+            try:
+                stdscr.addstr(0, 0, msg)
+                stdscr.refresh()
+            except curses.error:
+                pass
+        else:
+            self._spawn_child()
 
         while True:
             # Get terminal size

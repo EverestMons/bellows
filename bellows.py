@@ -91,6 +91,143 @@ def acquire_instance_lock(lock_path: str):
     return lock_file
 
 
+# --- Stop path constants (mirror dashboard.py:34-35 — not imported to avoid curses dep) ---
+_STOP_SIGTERM_TIMEOUT = 5
+_STOP_SIGKILL_TIMEOUT = 2
+
+
+def _discover_holder(lock_path):
+    """Discover the lock holder via lsof. Returns (pid, error_msg).
+
+    pid is int on success, None on failure. error_msg is str on failure.
+    Refuses if lsof returns more than one PID (ambiguous).
+    """
+    try:
+        result = subprocess.run(
+            ["lsof", "-t", lock_path],
+            capture_output=True, text=True, timeout=5,
+        )
+        pids = [p.strip() for p in result.stdout.strip().splitlines() if p.strip()]
+    except Exception:
+        return None, "cannot identify holder (lsof unavailable or failed)"
+    if len(pids) == 0:
+        return None, "cannot identify holder (lsof returned no PIDs)"
+    if len(pids) > 1:
+        return None, f"ambiguous: lsof returned {len(pids)} PIDs ({', '.join(pids)}) — refusing"
+    try:
+        return int(pids[0]), None
+    except ValueError:
+        return None, f"cannot parse lsof output as PID: {pids[0]!r}"
+
+
+def _verify_identity(pid):
+    """Identity guard: verify the PID's command line contains 'bellows.py'."""
+    try:
+        result = subprocess.run(
+            ["ps", "-o", "command=", "-p", str(pid)],
+            capture_output=True, text=True, timeout=5,
+        )
+        return "bellows.py" in result.stdout
+    except Exception:
+        return False
+
+
+def _check_idle(db_path, config):
+    """Idle guard: refuse only when a plan row has status='running'.
+
+    An awaiting_verdict or NULL status is a paused/idle daemon and does NOT block.
+    Orphaned in-progress-* files (no corresponding running row) do NOT block — that
+    stuck state is precisely what the operator is trying to clear.
+    Returns (is_idle: bool, reason: str|None).
+    """
+    import status as status_mod
+    try:
+        rows = status_mod.query_in_flight(db_path)
+    except Exception as e:
+        return False, f"cannot query lifecycle.db: {e}"
+    for row in rows:
+        if row["status"] == "running":
+            plan_id = row["id"]
+            return False, f"plan #{plan_id} has status='running'"
+    return True, None
+
+
+def stop_daemon(lock_path, db_path, config):
+    """Guarded stop path — reaches any incumbent regardless of how it was started.
+
+    Implements the ordered guard sequence: flock-first → identity → idle → signal →
+    re-acquire. Refuse is the default; killing requires both guards to pass.
+    Returns (success: bool, message: str).
+    """
+    # (1) Attempt flock acquire — if succeeds, no incumbent to kill
+    try:
+        lock_file = acquire_instance_lock(lock_path)
+        lock_file.close()
+        return True, "no running daemon (lock was free/stale)"
+    except LockAcquireError:
+        pass
+
+    # (2) Discover holder via lsof
+    holder_pid, err = _discover_holder(lock_path)
+    if holder_pid is None:
+        return False, f"REFUSE — {err}"
+
+    # (3) Identity guard — verify the PID is actually bellows.py
+    if not _verify_identity(holder_pid):
+        return False, (f"REFUSE — PID {holder_pid} holds the lock but is not bellows.py "
+                       f"(identity guard failed)")
+
+    # (4) Idle guard — refuse only on status='running'
+    idle, reason = _check_idle(db_path, config)
+    if not idle:
+        return False, f"REFUSE — daemon is busy: {reason} (PID {holder_pid})"
+
+    # (5) Both guards passed — send SIGTERM, escalate to SIGKILL if needed
+    try:
+        os.kill(holder_pid, signal.SIGTERM)
+    except ProcessLookupError:
+        pass
+    except PermissionError:
+        return False, f"REFUSE — no permission to signal PID {holder_pid}"
+
+    deadline = time.time() + _STOP_SIGTERM_TIMEOUT
+    while time.time() < deadline:
+        try:
+            os.kill(holder_pid, 0)
+            time.sleep(0.2)
+        except ProcessLookupError:
+            break
+
+    still_alive = False
+    try:
+        os.kill(holder_pid, 0)
+        still_alive = True
+    except ProcessLookupError:
+        pass
+
+    if still_alive:
+        try:
+            os.kill(holder_pid, signal.SIGKILL)
+        except ProcessLookupError:
+            pass
+        deadline = time.time() + _STOP_SIGKILL_TIMEOUT
+        while time.time() < deadline:
+            try:
+                os.kill(holder_pid, 0)
+                time.sleep(0.2)
+            except ProcessLookupError:
+                break
+
+    # (6) Re-acquire flock as authoritative arbiter
+    try:
+        lock_file = acquire_instance_lock(lock_path)
+        lock_file.close()
+        return True, f"stopped daemon PID {holder_pid}"
+    except LockAcquireError:
+        return False, (f"REFUSE — re-acquire failed after signalling PID {holder_pid} "
+                       f"(another process raced and won)")
+
+
 # --- Terminal output infrastructure ---
 _last_plan_event_time = 0.0
 _plan_event_lock = threading.Lock()
@@ -2534,6 +2671,25 @@ class Bellows:
 
 
 if __name__ == "__main__":
+    if len(sys.argv) > 1 and sys.argv[1] in ("stop", "restart"):
+        _lock_path = str(BELLOWS_ROOT / ".bellows.lock")
+        _db_path = str(BELLOWS_ROOT / "lifecycle.db")
+        _config = load_config()
+        _success, _msg = stop_daemon(_lock_path, _db_path, _config)
+        print(_msg)
+        if not _success:
+            sys.exit(1)
+        if sys.argv[1] == "restart":
+            subprocess.Popen(
+                [sys.executable, "bellows.py"],
+                cwd=str(BELLOWS_ROOT),
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL,
+                stdin=subprocess.DEVNULL,
+            )
+            print("restarted — new daemon spawned")
+        sys.exit(0)
+
     config = load_config()
     _rotate_logs()
 
