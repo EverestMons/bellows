@@ -1,5 +1,7 @@
 # Agent Prompt Feedback
 
+The cold-panel corrections in the plan were essential and saved significant investigation time: (a) placing the SIGTERM handler registration inside `start()` rather than at module level was correct — `observer` is a local variable inside `start()`, unreachable from the module scope; (b) the `daemon=True` finding was confirmed at both spawn sites (lines 2046 and 2057), making the drain mandatory. The instruction to extract `acquire_instance_lock()` as a testable function was well-placed — it allowed all lock tests to exercise the production code path directly. The non-truncating open requirement (fold 2.1) was the most critical correctness constraint: without it, the second starter's `open("w")` truncates the holder's PID before the flock check, defeating the entire diagnostic feature.
+
 The diagnostic instructions were clear and well-structured. The Q1–Q6 framework covered all necessary aspects. The explicit requirement to cite `file:line` and quote code kept findings grounded. The cross-reference to the prior state-divergence diagnostic was essential — Q6's idle guard and SIGTERM handler recommendation could not have been properly scoped without understanding the mid-transition hazards already catalogued there. The "do not fix — investigate and describe" constraint was appropriate for this class of problem where the fix shape depends on understanding the full machinery first.
 
 None.
