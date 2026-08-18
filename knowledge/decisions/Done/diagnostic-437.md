@@ -1,0 +1,77 @@
+# Auto-continue-unless-errors: QA-result gate + default auto-continue pause mode — Scoping Diagnostic (DRAFT, walk-0)
+
+**Type:** Diagnostic
+**Project:** bellows
+**Predecessor / clone-diff target (walk 1):** the `qa_and_terminal` mode arc (PLANNER_TEMPLATE:1038; diag-315 → plan 317 → plan 318 canary) — the nearest shipped analogue: daemon-level mechanical clean-gate continue with a measured miss rate. This diagnostic scopes the EXTENSION of that mechanism to QA + terminal steps, gated by a new substantive QA-result check.
+**Depends on:** none — investigates EXISTING code at HEAD.
+**Created:** 2026-08-18
+**Author:** Planner
+**dispatch_mode:** bellows
+**pause_for_verdict:** always
+**Priority:** 10
+**cycle_tier:** T1 — read-only design/scoping diagnostic; no code or config changed here. The downstream EXECUTABLE it scopes changes the daemon's pause-decision path (highest blast radius in the shop) and inherits a money-path-equivalent tier + cold seat.
+**Deposit target:** `knowledge/research/bellows-autocontinue-design-2026-08-18.md` (id minted by the daemon at claim — predict-not-mint; promote drafts/ → decisions/, commit the rename before the daemon claims; arm the gate-watcher).
+
+---
+
+## CEO decisions (settled 2026-08-18 — fixed constraints, NOT open questions)
+- **D1 — Bellows-native.** The daemon itself auto-continues; the daemon's existing pause+notify-on-failure IS the "watcher." NO external per-plan watcher process.
+- **D2 — Default for all plans.** Auto-continue-unless-errors becomes the PLANNER_TEMPLATE default; the Planner opts OUT (e.g. `pause_for_verdict: always`) for high-stakes tranche/money plans where a mid-step read earns its price.
+- **D3 (implied by "auto-continue unless errors"):** a clean final QA auto-closes to Done unattended, but `notify_plan_complete` still fires so the CEO sees the ship.
+
+## Motivating request (CEO, 2026-08-18)
+"When a plan is issued to bellows, a watcher should always be dispatched to watch that plan, and auto-continue that plan unless there are errors to handle." Session-45 shipped plan 435 under `pause_for_verdict: always`, forcing the Planner to manually review + verdict every step. The capability to auto-continue largely EXISTS but is (a) per-plan opt-in, (b) manual at QA/terminal, and (c) unsafe to auto-apply at QA because gates check structure, not test substance.
+
+## Established findings (verified this session, HEAD — the diagnostic RE-VERIFIES each)
+- **F1 — the daemon already auto-continues clean non-QA steps.** `bellows.py:1032` "All gates passed and not QA — continue to next step", recording `clean_gate_auto` + `continue` (`decided_by='gate_auto'`). The auto-continue machinery already exists.
+- **F2 — the pause trigger set** (`bellows.py:993-996`, mirrored at `:1118`): pause iff `not gate_result["passed"]` OR `is_qa_step` OR agent `verdict_requested` OR `header_says_pause(...)`. **`is_qa_step` is an UNCONDITIONAL pause trigger — independent of pause mode.** No mode auto-continues a clean QA step.
+- **F3 — the four pause modes** (`header_says_pause`, `bellows.py:627-640`; `RECOGNIZED_PAUSE_TOKENS`, `plan_lint.py:28`): `always`, `after_step_1`, `after_qa_step`, `qa_and_terminal`. All either pause at QA or leave `is_qa_step` (F2) to pause it. **None auto-continue a clean QA/terminal step.**
+- **F4 — THE SAFETY GAP: QA gates check structure, not test substance.** `gates.check` (`gates.py:216-232`) runs: receipt_status, ceo_flags, no_errors, no_permission_denials, deposit_exists, rule_20_self_check (banner + PASSED line + evidence-file presence + no-hedging-in-positive-rows), rule_22_verification, file_change_audit, scope_check. **NONE parse the full-suite result.** A QA step can pass every gate while its evidence file shows a regression — the "2 failed / 2738 passed" read is done only by the Planner, manually (session-45 plan 435). Auto-continuing clean QA without a new gate risks auto-shipping a regression to main.
+- **F5 — gate failure always pauses + notifies.** On pause the daemon posts a verdict-request AND fires `notify_verdict_request` (`bellows.py:~1025`). This IS the "surface errors to handle" channel — no new notifier needed.
+- **F6 — sparse-header default is `after_step_1`** (`bellows.py:652,775`), and `plan_lint` check 9 (`PLANNER_TEMPLATE:1423`) mandates `always` for multi-step diagnostics. Both must change under D2.
+- **F7 (Walk 1) — the terminal is governed by a SEPARATE `auto_close` header, and `is_qa_step` guards THREE sites, not one.** The final-step pause set (`bellows.py:1116-1120`) mirrors F2 AND adds `or not effective_auto_close`; `effective_auto_close = str(header.get("auto_close","false")).lower()=="true"` (`:~989`) — independent of `pause_for_verdict`. The auto-close path (`:1160-1167`) explicitly requires `not gate_result["is_qa_step"]`, so **a final QA step NEVER auto-closes today, even with `auto_close: true`.** Consequence: the design must (a) edit `is_qa_step` at all THREE sites (`:993` non-final, `:1118` final-pause, `:1160` auto-close exclusion) under `on_failure`, and (b) COORDINATE the terminal — `on_failure` must imply `effective_auto_close` (or the doctrine requires `auto_close: true` alongside it), else a clean final step pauses on `not effective_auto_close` regardless.
+- **F8 (Walk 1) — SAFETY INVARIANT (coupling):** dropping `is_qa_step` from the pause sets is safe ONLY because the new QA-result gate makes a regression fail `gate_result["passed"]` → pause via the first, always-on condition. The `is_qa_step` drop and the QA-result gate MUST ship in the same executable; the drop without the gate would auto-ship regressions. And (Walk 2, Q8) the invariant has a THIRD leg: correct `is_qa_step` DETECTION — a mis-declared QA step evades the gate and auto-ships. Full invariant: `on_failure` is safe iff (QA-result gate present) AND (is_qa_step drop is mode-guarded) AND (QA-step declaration is lint-enforced as a FAIL). All three are the cold seat's primary target on the executable.
+
+## STEP 1 — DIAG: verify findings at HEAD + resolve the design forks + deposit the design doc
+
+Read-only. Re-verify F1–F6 against HEAD (cite exact line numbers, which drift). Then RESOLVE the design questions below and deposit a single design doc that the downstream executable implements verbatim.
+
+**Q1 — QA-result gate: where does the known-failure BASELINE come from?** The gate must parse the QA evidence file, extract the pytest summary (`N failed, M passed`), and fail iff failures exceed a declared baseline. Options to evaluate: (a) a new plan-header field e.g. `known_failures: <int>` or a named list; (b) the project's CLAUDE.md documented baseline (invoice-pulse names its 2 in prose — fragile to parse); (c) a per-project `.bellows-baseline` file listing known-failing test node-ids (most precise — compares node-ids, not just a count). Recommend (c) with (a) as the low-friction interim. SURFACE as a CEO fork.
+**Q2 — which evidence file, and how is its path resolved?** The QA step already declares `required_evidence_files` + `evidence_dir` in its Rule 20 context and Deposits block. The gate reads `<evidence_dir>/<full-suite-file>`, greps the last `=====` pytest summary line. Define the summary-line regex and the "no summary line found" failure behavior (fail closed — a QA step claiming tests but with no parseable result must PAUSE, never auto-continue).
+**Q3 — the new pause mode (THREE sites — F7).** Add token `on_failure` to `RECOGNIZED_PAUSE_TOKENS` (`plan_lint.py:28`), `header_says_pause` (`bellows.py:627`, return False for a clean step), and `STRING_TYPED_HEADER_FIELDS` handling. The `is_qa_step` unconditional trigger must be dropped WHEN `mode == on_failure` at ALL THREE sites: `bellows.py:993-996` (non-final while-loop), `:1116-1120` (final-step pause), and `:1160-1167` (auto-close exclusion — relax `not is_qa_step` so a clean QA final step can auto-close). The drop is guarded by the mode, so other modes are untouched (Q7). The `not gate_result["passed"]` condition (which now includes the QA-result gate, F8) remains always-on, so a QA regression still pauses.
+**Q4 — terminal auto-close coordination (D3 — F7).** A clean final step pauses on `or not effective_auto_close` (`:1120`) unless `auto_close` is true — SEPARATE from `pause_for_verdict`. Resolve: `on_failure` IMPLIES auto-close — the precise edit is at `bellows.py:989`: `effective_auto_close = str(header.get("auto_close","false")).lower()=="true" or header.get("pause_for_verdict")=="on_failure"` (one header, no pairing footgun). Confirm the clean-final auto-close path fires `notify_plan_complete` (`bellows.py:~2455`) so the ship is visible.
+**Q8 — is_qa_step DETECTION is now safety-critical (Walk 2).** Under `on_failure` the QA-result gate only runs where `_gate_is_qa_step` fires, so a **mis-declared** QA step (missing from `qa_steps` / no QA heading) auto-continues with NO test check — reopening F4. `qa_and_terminal` guards this with a WARN (`plan_lint.py:410-416`); `on_failure` needs the SAME check but as a **FAIL** (a mis-declared QA under `on_failure` auto-ships unchecked, a strictly worse outcome than under `qa_and_terminal`). Add an `on_failure`-branch to that lint: require a parseable `qa_steps` (or a detectable QA heading) or FAIL. This makes correct QA-step declaration a hard precondition of the mode.
+**Q5 — the no-test-QA hole.** A QA step that declares NO test evidence (doc/DB plans) would auto-continue with no substantive check. Resolve: under `on_failure`, if `is_qa_step` and no parseable test result exists, FAIL CLOSED to a pause (the mode's safety invariant: QA auto-continues ONLY on a proven-clean test result). SURFACE as a CEO fork (fail-closed vs allow-doc-QA-auto-continue).
+**Q6 — doctrine (D2).** Specify the PLANNER_TEMPLATE edits: default `pause_for_verdict` → `on_failure`; the opt-OUT guidance (tranche/money/high-stakes → `always`, citing plan 203's rote-step-1 catch); update the sparse-header default (F6) and `plan_lint` check 9 (F6) so multi-step diagnostics are no longer forced to `always` but DEFAULT to `on_failure` with `always` available.
+**Q7 — backward compat.** Confirm existing `always`/`after_step_1`/`after_qa_step`/`qa_and_terminal` plans are unaffected (the new token is additive; the `is_qa_step`-drop is guarded by `mode == on_failure`).
+
+**Deposits:**
+- `knowledge/research/bellows-autocontinue-design-2026-08-18.md` — the resolved design: exact gate spec (Q1/Q2/Q5), exact daemon + plan_lint diffs (Q3/Q4), doctrine diffs (Q6), compat proof (Q7), the executable's step plan, and every CEO fork enumerated.
+
+---
+
+## Design forks for the CEO (surfaced by this diagnostic)
+- **Fork A (Q1):** baseline source — per-project `.bellows-baseline` node-id file (precise) vs a `known_failures: N` header field (low-friction). Planner leans node-id file.
+- **Fork B (Q5):** a QA step with no parseable test result under `on_failure` — FAIL CLOSED to a pause (safe; Planner default) vs allow-auto-continue for declared doc/DB QA. Deciding fail-closed means doc-only plans keep a terminal pause unless they opt into a lighter mode.
+- **Fork C:** rollout — flip the default immediately (D2) vs a canary window (mirror plan 318: run `on_failure` on N low-stakes plans, measure the QA-gate catch rate, then flip). Planner leans canary given F4's blast radius.
+
+## Drafting Cycle
+**Walk-0 context pin:** Read-only design diagnostic for a core-infra change. CEO decisions D1/D2/D3 settled. The load-bearing finding is F4 (gates check structure, not substance) — the entire safety of D2 rests on the new QA-result gate being correct, so the executable this scopes carries a cold seat on the gate's parse logic + fail-closed invariant. Biggest open design risk: the baseline source (Fork A) and the no-test-QA hole (Fork B).
+**Walk 1 — RUN (all five lenses over the whole artifact, verified against HEAD). Yield 2, both structural.**
+- **Destruction (F7, folded → F7 + Q3 + Q4):** reading the terminal logic proved the design under-specified it — `is_qa_step` guards THREE sites (`:993`, `:1116-1120`, `:1160-1167`), not one, and the terminal is governed by a SEPARATE `auto_close` header (`effective_auto_close`), so a clean final QA step never auto-closes today. A one-site edit would have shipped a mode that still pauses at QA/terminal. Q3/Q4 rewritten to enumerate all three sites + the auto_close coordination (mode implies auto-close).
+- **Vulnerabilities (F8, folded → F8):** made the coupling invariant explicit — the `is_qa_step` drop is safe ONLY with the QA-result gate present (a regression must fail `gate_result["passed"]`); the two MUST ship in one executable. This is the cold seat's primary target.
+- **Weak spots:** dry — Q1/Q2/Q5 forks already surfaced; the fail-closed no-summary-line rule holds.
+- **Integration:** dry — the `qa_and_terminal` precedent (PLANNER_TEMPLATE:1038) and the notify-on-pause channel (F5) verified accurate.
+- **ACID:** dry — the change is additive (new token) + mode-guarded (Q7 compat holds).
+
+**Direction after Walk 1:** PROCEED. Yield 2, both material. Carries → Walk 2.
+
+**Walk 2 — RUN (all five lenses over the folded draft, verified against HEAD). Yield 2 + one confirmation.**
+- **Vulnerabilities (Q8, folded → Q8 + F8):** the biggest catch — under `on_failure` a MIS-DECLARED QA step (evading `_gate_is_qa_step`) auto-continues with no QA-result gate, reopening F4. `qa_and_terminal` only WARNs on this (`plan_lint.py:410-416`); `on_failure` must FAIL. Added Q8: correct QA-step declaration is a lint-enforced precondition of the mode. F8's safety invariant gained a third leg (detection correctness).
+- **Integration (folded → Q4):** pinned the exact auto-close edit site — `effective_auto_close` computed at `bellows.py:989`; Q4 now specifies the one-line `or pause_for_verdict=="on_failure"` edit there.
+- **Destruction (confirmation):** swept ALL `is_qa_step`/`effective_auto_close` consumers — the three CONDITION sites (`:994`, `:1118`, `:1163`) are complete; `:1003`/`:1128` are display-only `_pause_reason` branches needing no change; `:898` is a worktree-failure default (is_qa_step=False), irrelevant. No fourth site missed.
+- **Weak spots:** dry. **ACID:** dry — additive + mode-guarded holds.
+
+**Direction after Walk 2:** PROCEED to a closing pass. Yield 2 → 2, but the second round's findings are precise design details (a line number, a lint branch) not structural gaps; the daemon-edit surface is now fully enumerated and every `is_qa_step` site verified. No fold invalidated D1/D2/D3 or the target. The CEO forks (A/B/C) and the QA-result-gate parse spec are DEFERRED to the deposited design doc — correct for a scoping diagnostic (it surfaces forks, does not pre-decide CEO calls).
+
+**Closing:** record-only re-read RAN — every finding anchor (F1–F8; Q1–Q8) resolves once against its cited `bellows.py`/`plan_lint.py` line; the daemon-edit surface is the three condition sites (`:994`/`:1118`/`:1163`) + the `:989` auto-close computation, stated consistently in F7/Q3/Q4; the coupling invariant (F8) is three-legged and consistent with Q8; CEO forks A/B/C enumerated; D1/D2/D3 intact. Step structure `## STEP 1 — DIAG` (executor-parseable). Last lens event is a dry pass. `plan_lint` at the deposit path — exit 0 (benign residual: "mentions tests but declares no test scope" — a read-only design diagnostic legitimately has no test scope; the word "test" refers to the QA-result subject). **§2 bar MET — deposit once.**
