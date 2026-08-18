@@ -218,6 +218,8 @@ def check(parsed, plan_text, step_number, project_path, files_changed=None, wt_p
     _gate_rule_20_self_check(is_qa_step, plan_text, step_number, project_path, parsed, failures, wt_path=wt_path)
     # Gate 6c: Rule 22 verification (blocking)
     _gate_rule_22_verification(is_qa_step, plan_text, step_number, project_path, parsed, failures, wt_path=wt_path)
+    # Gate 6d: QA test-result gate (blocking, QA steps only)
+    _gate_qa_test_result(is_qa_step, plan_text, step_number, project_path, parsed, failures, wt_path=wt_path, plan_header=header)
     # Gate 7: file change audit (informational)
     _gate_file_change_audit(files_changed)
     # Gate 8: scope check
@@ -719,6 +721,79 @@ def _gate_rule_22_verification(is_qa_step, plan_text, step_number, project_path,
                         "evidence": f"(d) Hedging keyword '{kw}' in positive-status row: {line.strip()[:120]}. See {qa_report_path} line {i}.",
                     })
                     break
+
+
+_PYTEST_SUMMARY_RE = re.compile(r'=+\s+.+\s+=+')
+
+
+def _gate_qa_test_result(is_qa_step, plan_text, step_number, project_path, parsed, failures, wt_path=None, plan_header=None):
+    """Verify QA-deposited evidence contains a clean pytest summary (no regressions)."""
+    if not is_qa_step:
+        return
+
+    step_text = _extract_step_text(plan_text, step_number)
+    if not step_text:
+        return
+
+    deposit_paths = _extract_plan_required_deposits(step_text)
+    txt_paths = [p for p in deposit_paths if p.endswith(".txt")]
+    if not txt_paths:
+        receipt_paths = _extract_agent_declared_deposits(parsed)
+        txt_paths = [p for p in receipt_paths if p.endswith(".txt")]
+
+    if not txt_paths:
+        failures.append({"gate": "qa_test_result", "evidence": "no .txt evidence deposit found — cannot certify test result; pausing"})
+        return
+
+    preferred = [p for p in txt_paths if "full-suite" in os.path.basename(p)]
+    evidence_path = preferred[0] if preferred else txt_paths[0]
+
+    resolved = _resolve_deposit_path(evidence_path, project_path, wt_path=wt_path)
+    if resolved is None:
+        failures.append({"gate": "qa_test_result", "evidence": f"evidence file unreadable: {evidence_path} (file not found)"})
+        return
+
+    try:
+        with open(resolved, "r", encoding="utf-8") as f:
+            content = f.read()
+    except (FileNotFoundError, UnicodeDecodeError, OSError) as e:
+        failures.append({"gate": "qa_test_result", "evidence": f"evidence file unreadable: {evidence_path} ({e})"})
+        return
+
+    summary_line = None
+    for line in content.splitlines():
+        if _PYTEST_SUMMARY_RE.match(line.strip()):
+            summary_line = line
+
+    failed_m = re.search(r'(\d+)\s+failed', summary_line) if summary_line else None
+    errors_m = re.search(r'(\d+)\s+error', summary_line) if summary_line else None
+    passed_m = re.search(r'(\d+)\s+passed', summary_line) if summary_line else None
+
+    if not passed_m:
+        failures.append({"gate": "qa_test_result", "evidence": "no parseable pytest summary — cannot certify clean; pausing"})
+        return
+
+    failed_count = int(failed_m.group(1)) if failed_m else 0
+    errors_count = int(errors_m.group(1)) if errors_m else 0
+    bad = failed_count + errors_count
+
+    try:
+        kf = int(plan_header.get("known_failures", 0)) if plan_header else 0
+    except (ValueError, TypeError):
+        failures.append({"gate": "qa_test_result", "evidence": f"known_failures header malformed — cannot certify; pausing"})
+        return
+
+    if bad > kf:
+        delta = bad - kf
+        breakdown = []
+        if failed_count:
+            breakdown.append(f"{failed_count} failed")
+        if errors_count:
+            breakdown.append(f"{errors_count} errors")
+        failures.append({
+            "gate": "qa_test_result",
+            "evidence": f"pytest regressions: {' + '.join(breakdown)} (bad={bad}, known_failures={kf}, delta={delta})",
+        })
 
 
 def _gate_is_qa_step(plan_text, step_number, plan_header=None):

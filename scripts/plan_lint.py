@@ -202,6 +202,15 @@ def lint(plan_path):
         elif pv:
             results.append(("PASS", "(a) pause_for_verdict", pv))
 
+        kf_raw = header.get("known_failures")
+        if kf_raw is not None:
+            try:
+                int(kf_raw)
+                results.append(("PASS", "(a) known_failures", str(kf_raw)))
+            except (ValueError, TypeError):
+                results.append(("FAIL", "(a) known_failures", f"non-integer value: {kf_raw!r} — must be an int (daemon fail-closes on malformed values)"))
+                all_passed = False
+
     # Extract step numbers from plan
     clean_text = gates.strip_fenced_code_blocks(plan_text)
     step_headers = re.findall(r'^(## STEP (\d+)\b[^\n]*)', clean_text, re.MULTILINE)
