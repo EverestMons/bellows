@@ -723,6 +723,10 @@ def _gate_rule_22_verification(is_qa_step, plan_text, step_number, project_path,
                     break
 
 
+# Content-based (borders optional) per canary 441 finding / fix 442 —
+# piped pytest output (-q | cat) writes a BORDERLESS counts line;
+# a border-requiring regex fail-closes on clean suites. Do not revert
+# to =+...=+ (border-based).
 _PYTEST_SUMMARY_RE = re.compile(r'\b\d+\s+(?:passed|failed|error|errors|xfailed|xpassed)\b')
 
 
