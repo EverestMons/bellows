@@ -723,7 +723,7 @@ def _gate_rule_22_verification(is_qa_step, plan_text, step_number, project_path,
                     break
 
 
-_PYTEST_SUMMARY_RE = re.compile(r'=+\s+.+\s+=+')
+_PYTEST_SUMMARY_RE = re.compile(r'\b\d+\s+(?:passed|failed|error|errors|xfailed|xpassed)\b')
 
 
 def _gate_qa_test_result(is_qa_step, plan_text, step_number, project_path, parsed, failures, wt_path=None, plan_header=None):
@@ -762,7 +762,7 @@ def _gate_qa_test_result(is_qa_step, plan_text, step_number, project_path, parse
 
     summary_line = None
     for line in content.splitlines():
-        if _PYTEST_SUMMARY_RE.match(line.strip()):
+        if _PYTEST_SUMMARY_RE.search(line.strip()):
             summary_line = line
 
     failed_m = re.search(r'(\d+)\s+failed', summary_line) if summary_line else None

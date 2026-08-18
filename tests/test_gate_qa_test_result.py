@@ -201,6 +201,37 @@ class TestNoTxtDeposit:
         assert "no .txt evidence deposit" in failures[0]["evidence"]
 
 
+class TestBorderlessEvidence:
+    """Regression tests for borderless pytest summaries (canary 441 defect)."""
+
+    def test_borderless_clean_passes(self, tmp_path):
+        plan = _make_plan()
+        evidence = "collected 1101 items\n=== warnings summary ===\n1101 passed, 1 warning in 31.08s"
+        failures = _run_gate(tmp_path, plan, 2, evidence)
+        assert failures == []
+
+    def test_borderless_failed_pauses(self, tmp_path):
+        plan = _make_plan()
+        evidence = "2 failed, 100 passed in 5s"
+        failures = _run_gate(tmp_path, plan, 2, evidence)
+        assert len(failures) == 1
+        assert "bad=2" in failures[0]["evidence"]
+
+    def test_borderless_zero_failed_with_errors(self, tmp_path):
+        plan = _make_plan()
+        evidence = "0 failed, 5 passed, 3 errors in 2s"
+        failures = _run_gate(tmp_path, plan, 2, evidence)
+        assert len(failures) == 1
+        assert "3 errors" in failures[0]["evidence"]
+        assert "bad=3" in failures[0]["evidence"]
+
+    def test_warnings_summary_header_not_matched(self, tmp_path):
+        plan = _make_plan()
+        evidence = "collected 100 items\n=== warnings summary ===\n100 passed, 1 warning in 10.00s"
+        failures = _run_gate(tmp_path, plan, 2, evidence)
+        assert failures == []
+
+
 class TestLastSummaryLineUsed:
     def test_multiple_summaries_uses_last(self, tmp_path):
         plan = _make_plan()
