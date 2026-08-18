@@ -636,6 +636,8 @@ def header_says_pause(header: dict, current_step: int, total_steps: int, is_qa_s
     if pv == "qa_and_terminal":
         # Pause at QA steps and at the terminal step; at terminal this wins over auto_close
         return is_qa_step or is_final_step(current_step, total_steps)
+    if pv == "on_failure":
+        return False
     if pv:
         _log("WARN", f"⚠️ unrecognized pause_for_verdict value: {pv!r} (recognized: 'always', 'after_step_1', 'after_qa_step', 'qa_and_terminal') — treating as no-pause")
     return False
@@ -986,12 +988,15 @@ def run_plan(plan_path: str, config: dict, response_server: server.ResponseServe
 
         header = gate_result.get("plan_header", {})
         _apply_defensive_header_defaults(header, total_steps)
-        effective_auto_close = str(header.get("auto_close", "false")).lower() == "true"
+        effective_auto_close = (
+            str(header.get("auto_close", "false")).lower() == "true"
+            or header.get("pause_for_verdict") == "on_failure"
+        )
 
         while not is_final_step(current_step, total_steps):
             # Check gates: if failed, QA step, verdict-request file, or header says pause
             if (not gate_result["passed"]
-                    or gate_result["is_qa_step"]
+                    or (gate_result["is_qa_step"] and header.get("pause_for_verdict") != "on_failure")
                     or gate_result.get("verdict_requested", {}).get("requested", False)
                     or header_says_pause(header, current_step, total_steps, gate_result["is_qa_step"])):
                 log_path = str(BELLOWS_ROOT / "logs")
@@ -1115,7 +1120,7 @@ def run_plan(plan_path: str, config: dict, response_server: server.ResponseServe
         # pause conditions plus `not effective_auto_close` so single-step plans
         # (where the loop is never entered) get the full set of pause checks.
         if (not gate_result["passed"]
-                or gate_result["is_qa_step"]
+                or (gate_result["is_qa_step"] and header.get("pause_for_verdict") != "on_failure")
                 or gate_result.get("verdict_requested", {}).get("requested", False)
                 or header_says_pause(header, current_step, total_steps, gate_result["is_qa_step"])
                 or not effective_auto_close):
@@ -1160,7 +1165,7 @@ def run_plan(plan_path: str, config: dict, response_server: server.ResponseServe
         # effective_auto_close is True. Diagnostics default to NOT auto-close (pause for
         # verdict) unless auto_close: true is set in the plan header.
         if (gate_result["passed"]
-                and not gate_result["is_qa_step"]
+                and (not gate_result["is_qa_step"] or header.get("pause_for_verdict") == "on_failure")
                 and not header_says_pause(header, current_step, total_steps, gate_result["is_qa_step"])
                 and not gate_result.get("verdict_requested", {}).get("requested", False)
                 and effective_auto_close):

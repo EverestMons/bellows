@@ -25,7 +25,7 @@ import gates
 
 RECOGNIZED_DISPATCH_MODES = {"bellows", "manual_bootstrap"}
 # Mirrored from bellows.py header_says_pause — do not invent
-RECOGNIZED_PAUSE_TOKENS = {"always", "after_step_1", "after_qa_step", "qa_and_terminal"}
+RECOGNIZED_PAUSE_TOKENS = {"always", "after_step_1", "after_qa_step", "qa_and_terminal", "on_failure"}
 
 
 def _parse_qa_steps(qa_steps_raw):
@@ -423,6 +423,13 @@ def lint(plan_path):
         qs_set = _parse_qa_steps(qs_raw) if qs_raw else set()
         if not qs_set:
             print("WARN: pause_for_verdict=qa_and_terminal but qa_steps is missing or unparseable — QA steps may advance mechanically")
+
+    if header and header.get("pause_for_verdict") == "on_failure":
+        qs_raw = header.get("qa_steps", "")
+        qs_set = _parse_qa_steps(qs_raw) if qs_raw else set()
+        if not qs_set:
+            results.append(("FAIL", "(i) on_failure qa_steps", "pause_for_verdict=on_failure requires a parseable qa_steps field"))
+            all_passed = False
 
     # --- Checks (j), (k), (l) — whole-plan-text scope, NOT inside dc_block ---
     # Unlike (g)/(h) which operate inside the Drafting Cycle dc_block scope,
