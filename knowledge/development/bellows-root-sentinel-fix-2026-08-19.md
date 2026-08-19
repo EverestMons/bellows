@@ -52,5 +52,5 @@ Both `lifecycle.py:21` and `runner.py:23` resolve at import time from the canoni
 ## Output Receipt
 
 - **Status:** Complete
-- **DEV commit sha:** PENDING_COMMIT
+- **DEV commit sha:** decbe74
 - **Deposits:** `bellows_root.py`, `tests/test_bellows_root.py`, `knowledge/development/bellows-root-sentinel-fix-2026-08-19.md`
