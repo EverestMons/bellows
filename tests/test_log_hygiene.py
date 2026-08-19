@@ -185,6 +185,77 @@ def test_config_defaults_log_retention_days():
 
 
 def test_config_defaults_disk_min_free_gb():
-    """disk_min_free_gb defaults to 2 when absent from config."""
+    """disk_min_free_gb defaults to 5 when absent from config."""
     config = {}
-    assert config.get("disk_min_free_gb", 2) == 2
+    assert config.get("disk_min_free_gb", 5) == 5
+
+
+# --- Mid-session hygiene helper tests ---
+
+
+def test_hygiene_skips_before_interval():
+    """Before the interval elapses, _maybe_run_hygiene is a no-op."""
+    prune_mock = MagicMock()
+    rotate_mock = MagicMock()
+    last = 1000.0
+    now = 1000.0 + 3600  # 1h < 6h interval
+    interval = 6 * 3600
+    with patch.object(bellows, "_prune_old_logs", prune_mock), \
+         patch.object(bellows, "_rotate_logs", rotate_mock):
+        result = bellows._maybe_run_hygiene({}, last, now, interval)
+    assert result == last
+    assert prune_mock.call_count == 0
+    assert rotate_mock.call_count == 0
+
+
+def test_hygiene_runs_after_interval():
+    """After the interval elapses, both callees fire and timestamp advances."""
+    prune_mock = MagicMock()
+    rotate_mock = MagicMock()
+    last = 1000.0
+    interval = 6 * 3600
+    now = last + interval  # exactly at interval
+    with patch.object(bellows, "_prune_old_logs", prune_mock), \
+         patch.object(bellows, "_rotate_logs", rotate_mock):
+        result = bellows._maybe_run_hygiene({}, last, now, interval)
+    assert result == now
+    assert prune_mock.call_count == 1
+    assert rotate_mock.call_count == 1
+
+
+def test_hygiene_tick_prunes_old_log(tmp_path):
+    """Integration: the hygiene helper reaches the real prune and deletes old logs."""
+    logs_dir = tmp_path / "logs"
+    logs_dir.mkdir()
+
+    old = logs_dir / "step-ancient.json"
+    old.write_text("{}")
+    cutoff_mtime = time.time() - 31 * 86400
+    os.utime(old, (cutoff_mtime, cutoff_mtime))
+
+    fresh = logs_dir / "step-recent.json"
+    fresh.write_text("{}")
+
+    interval = 6 * 3600
+    with patch.object(bellows, "BELLOWS_ROOT", tmp_path), \
+         patch.object(bellows, "_log"):
+        bellows._maybe_run_hygiene(
+            {"log_retention_days": 30},
+            last_hygiene=0.0, now=interval + 1, interval=interval,
+        )
+
+    assert not old.exists()
+    assert fresh.exists()
+
+
+def test_hygiene_swallows_callee_error():
+    """A callee error must not propagate — the run loop has no guard."""
+    log_mock = MagicMock()
+    interval = 6 * 3600
+    now = interval + 1
+    with patch.object(bellows, "_prune_old_logs", side_effect=RuntimeError("boom")), \
+         patch.object(bellows, "_log", log_mock):
+        result = bellows._maybe_run_hygiene({}, last_hygiene=0.0, now=now, interval=interval)
+    assert result == now
+    warn_calls = [c for c in log_mock.call_args_list if c[0][0] == "WARN"]
+    assert len(warn_calls) >= 1
