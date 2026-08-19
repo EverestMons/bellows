@@ -1,0 +1,23 @@
+=== LIVE CANARY — cycle_check.py against real Done/ blocks ===
+
+--- (a) diagnostic-429.md ---
+Expected: BAR_MET or CONTINUE (clean terminal, no ESCALATE/crash)
+BAR_MET
+EXIT: 0
+
+--- (b) executable-286.md ---
+Expected: no false FAIL/ESCALATE (legacy bare-count, no class split)
+CONTINUE
+EXIT: 0
+
+--- (c) diagnostic-460.md ---
+Expected: parses without unparseable (Walk-N STATUS format)
+BAR_MET
+EXIT: 0
+
+--- (d) crafted multiple-DC-block input ---
+Expected: ESCALATE:unparseable, exit 1
+ESCALATE:unparseable
+EXIT: 1
+
+=== ALL CANARY CHECKS PASSED ===

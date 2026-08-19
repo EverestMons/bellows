@@ -1,0 +1,42 @@
+============================= test session starts ==============================
+platform darwin -- Python 3.9.6, pytest-8.4.2, pluggy-1.6.0 -- /Library/Developer/CommandLineTools/usr/bin/python3
+cachedir: .pytest_cache
+rootdir: /Users/marklehn/Developer/GitHub/bellows/.bellows-worktrees/464
+plugins: anyio-4.12.1, xdist-3.8.0, timeout-2.4.0, cov-7.0.0
+collecting ... collected 27 items
+
+tests/test_cycle_check.py::test_unparseable_no_block PASSED              [  3%]
+tests/test_cycle_check.py::test_unparseable_multi_block PASSED           [  7%]
+tests/test_cycle_check.py::test_unparseable_no_parseable_lens PASSED     [ 11%]
+tests/test_cycle_check.py::test_assert_fail_1 PASSED                     [ 14%]
+tests/test_cycle_check.py::test_assert_fail_2 PASSED                     [ 18%]
+tests/test_cycle_check.py::test_assert_fail_3 PASSED                     [ 22%]
+tests/test_cycle_check.py::test_restructuring_fold PASSED                [ 25%]
+tests/test_cycle_check.py::test_yield_rising PASSED                      [ 29%]
+tests/test_cycle_check.py::test_plateau_at_3 PASSED                      [ 33%]
+tests/test_cycle_check.py::test_bar_met PASSED                           [ 37%]
+tests/test_cycle_check.py::test_continue_mid_cycle PASSED                [ 40%]
+tests/test_cycle_check.py::test_na_class_split_legacy PASSED             [ 44%]
+tests/test_cycle_check.py::test_zero_walk PASSED                         [ 48%]
+tests/test_cycle_check.py::test_mixed_parseable_unparseable PASSED       [ 51%]
+tests/test_cycle_check.py::test_uncommitted_walk PASSED                  [ 55%]
+tests/test_cycle_check.py::test_claimed_close_unmet PASSED               [ 59%]
+tests/test_cycle_check.py::test_walk_status_lines_parsed PASSED          [ 62%]
+tests/test_cycle_check.py::test_walk_status_cross_check_fail PASSED      [ 66%]
+tests/test_cycle_check.py::test_compact_dry_format PASSED                [ 70%]
+tests/test_cycle_check.py::test_walk_register_cross_repo PASSED          [ 74%]
+tests/test_cycle_check.py::test_closure_markers_detected PASSED          [ 77%]
+tests/test_cycle_check.py::test_no_plateau_at_2 PASSED                   [ 81%]
+tests/test_cycle_check.py::test_na_instruction_counts PASSED             [ 85%]
+tests/test_cycle_check.py::test_assert_3_baseline_exists PASSED          [ 88%]
+tests/test_cycle_check.py::test_cli_exit_codes PASSED                    [ 92%]
+tests/test_cycle_check.py::test_bar_met_with_record_only_folds PASSED    [ 96%]
+tests/test_cycle_check.py::test_bar_met_instruction_zero_current PASSED  [100%]
+
+=============================== warnings summary ===============================
+tests/test_cycle_check.py::test_unparseable_no_block
+  /Users/marklehn/Library/Python/3.9/lib/python/site-packages/urllib3/__init__.py:35: NotOpenSSLWarning: urllib3 v2 only supports OpenSSL 1.1.1+, currently the 'ssl' module is compiled with 'LibreSSL 2.8.3'. See: https://github.com/urllib3/urllib3/issues/3020
+    warnings.warn(
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+======================== 27 passed, 1 warning in 0.43s =========================

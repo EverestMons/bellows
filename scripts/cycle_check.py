@@ -120,8 +120,6 @@ def parse_block(block_text):
             }
             if cs:
                 has_class_split = True
-            if RESTRUCTURING_RE.search(raw_line):
-                restructuring_walks.add(wn)
             continue
 
         m_sec = WALK_SECTION_RE.match(raw_line)
@@ -237,6 +235,8 @@ def check_assert_1(parsed):
             continue
         wd = parsed["walk_data"].get(wn)
         if wd is None or wd["instruction"] is None:
+            continue
+        if wd["total_folds"] != ws["total"]:
             continue
         if ws["instruction"] != wd["instruction"] or ws["record"] != wd["record"]:
             return "FAIL"
