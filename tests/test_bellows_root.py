@@ -1,4 +1,6 @@
 """Tests for bellows_root.resolve_bellows_root()."""
+import pytest
+
 from bellows_root import resolve_bellows_root
 
 
@@ -9,30 +11,42 @@ def test_resolves_to_dir_with_config(tmp_path):
 
 
 def test_walks_up_to_config(tmp_path):
-    """Negative worktree-resolution test.
+    """config.json walk must win even when bellows.py exists in a worktree.
 
     Builds a simulated worktree layout:
         <tmp>/canonical/config.json
-        <tmp>/canonical/.bellows-worktrees/wt1/
+        <tmp>/canonical/bellows.py          (tracked sentinel)
+        <tmp>/canonical/.bellows-worktrees/wt1/bellows.py   (also tracked)
 
     The helper should walk up from wt1 and return <tmp>/canonical (the dir
-    containing config.json).  The legacy `Path(__file__).parent` approach would
-    return the wt1 dir itself — this test FAILS under that legacy behavior and
-    PASSES only under the walk-up helper.
+    containing config.json), NOT wt1 (which contains bellows.py).  A wrong
+    combined-check implementation would stop at wt1.
     """
     canonical = tmp_path / "canonical"
     canonical.mkdir()
     (canonical / "config.json").write_text("{}")
+    (canonical / "bellows.py").write_text("# sentinel")
     wt_dir = canonical / ".bellows-worktrees" / "wt1"
     wt_dir.mkdir(parents=True)
+    (wt_dir / "bellows.py").write_text("# sentinel")
 
     result = resolve_bellows_root(_start=wt_dir)
     assert result == canonical, f"Expected walk-up to canonical {canonical}, got {result}"
 
 
-def test_falls_back_when_no_config(tmp_path):
-    """No config.json anywhere in the tmp tree — falls back to _start dir."""
+def test_non_bellows_tree_raises(tmp_path):
+    """Non-bellows tree (no sentinel anywhere) must raise, not return a path."""
     deep = tmp_path / "a" / "b" / "c"
     deep.mkdir(parents=True)
-    result = resolve_bellows_root(_start=deep)
-    assert result == deep
+    with pytest.raises(ValueError, match="no bellows sentinel"):
+        resolve_bellows_root(_start=deep)
+
+
+def test_fresh_clone_resolves_via_bellows_py(tmp_path):
+    """Fresh clone: bellows.py present, config.json absent — resolves to root."""
+    clone_root = tmp_path / "bellows-fresh"
+    clone_root.mkdir()
+    (clone_root / "bellows.py").write_text("# sentinel")
+    sub = clone_root / "subdir"
+    sub.mkdir()
+    assert resolve_bellows_root(_start=sub) == clone_root

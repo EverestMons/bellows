@@ -2,19 +2,22 @@
 
 Under worktree execution, __file__ resolves inside .bellows-worktrees/<wt>/,
 so the legacy `Path(__file__).parent` yields the worktree dir, not canonical
-bellows. This walks up to the nearest ancestor containing config.json (the
-gitignored, canonical-only operational config), which is absent from worktrees.
+bellows. Two-sentinel walk: first for config.json (gitignored, canonical-only),
+then for bellows.py (tracked, present in worktrees and fresh clones). Raises
+ValueError if neither sentinel is found in any ancestor — a loud failure beats
+a stray lifecycle.db in the wrong repo.
 Standalone (pathlib only) to avoid the bellows<->runner import cycle.
 """
 from pathlib import Path
 
 
 def resolve_bellows_root(_start=None) -> Path:
-    """Return the canonical bellows root (ancestor containing config.json).
+    """Return the canonical bellows root via two-sentinel walk.
 
-    Falls back to the start dir (legacy `Path(__file__).parent` behavior) when
-    no config.json is found in any ancestor -- preserves current behavior in
-    CI / fresh-clone environments without a config.json.
+    Walk 1: ancestor containing config.json (canonical operational config).
+    Walk 2: ancestor containing bellows.py (tracked sentinel for CI/fresh-clone
+    where the gitignored config.json is absent).
+    Raises ValueError if neither sentinel is found.
 
     `_start` is for testing only; production calls resolve from this file.
     """
@@ -24,6 +27,18 @@ def resolve_bellows_root(_start=None) -> Path:
         if (current / "config.json").exists():
             return current
         parent = current.parent
-        if parent == current:  # filesystem root reached
-            return start
+        if parent == current:
+            break
         current = parent
+    current = start
+    while True:
+        if (current / "bellows.py").exists():
+            return current
+        parent = current.parent
+        if parent == current:
+            break
+        current = parent
+    raise ValueError(
+        f"resolve_bellows_root: no bellows sentinel (config.json or bellows.py) "
+        f"found in any ancestor of {start}"
+    )
