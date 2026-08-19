@@ -337,7 +337,7 @@ def _disk_preflight(config: dict) -> bool:
     Contract: never kill the daemon — degrade to allow on statvfs failure.
     """
     global _disk_low_notified
-    min_free_gb = config.get("disk_min_free_gb", 2)
+    min_free_gb = config.get("disk_min_free_gb", 5)
     try:
         st = os.statvfs(str(BELLOWS_ROOT))
         free_bytes = st.f_bavail * st.f_frsize
@@ -358,6 +358,31 @@ def _disk_preflight(config: dict) -> bool:
     if _disk_low_notified:
         _disk_low_notified = False
     return True
+
+
+def _maybe_run_hygiene(config: dict, last_hygiene: float, now: float,
+                       interval: float) -> float:
+    """Periodic mid-session log hygiene, driven from the run loop.
+
+    The startup calls to _prune_old_logs/_rotate_logs are not enough for a
+    daemon up for days; this fires every `interval` seconds. Returns the
+    timestamp to store as the next last_hygiene (advanced only when the
+    interval has elapsed — advanced even on failure so a persistent error
+    does not retry every loop tick).
+
+    MUST NOT raise: it runs from the `while True` run loop, which has no
+    try/except around its body — a propagating error would crash the daemon.
+    _prune_old_logs guards itself internally, but _rotate_logs does NOT
+    (bare os.remove/os.rename), so this wraps both in a fail-safe.
+    """
+    if now - last_hygiene < interval:
+        return last_hygiene
+    try:
+        _prune_old_logs(config)
+        _rotate_logs()
+    except Exception as e:
+        _log("WARN", f"mid-session hygiene failed (skipping until next interval): {e}")
+    return now
 
 
 class WorktreeCreationError(Exception):
@@ -2655,6 +2680,9 @@ class Bellows:
         last_rescan = time.time()
         last_heartbeat = time.time()
         heartbeat_counter = 0
+        HYGIENE_INTERVAL = 6 * 3600  # 6h — mid-session log hygiene; the startup
+                                     # call alone leaves a multi-day daemon unpruned
+        last_hygiene = time.time()
         try:
             while True:
                 time.sleep(1)
@@ -2681,6 +2709,7 @@ class Bellows:
                                 _log("INFO", f"  Module: {mod_name} @ {fp}")
                         heartbeat_counter += 1
                     last_heartbeat = time.time()
+                last_hygiene = _maybe_run_hygiene(self.config, last_hygiene, time.time(), HYGIENE_INTERVAL)
         except KeyboardInterrupt:
             observer.stop()
         observer.join()
