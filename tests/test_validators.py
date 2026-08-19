@@ -441,3 +441,28 @@ def test_qa_and_terminal_accepted_by_pause_for_verdict_check():
     """qa_and_terminal is a recognized pause_for_verdict value — no warning."""
     result = validators.check_pause_for_verdict_value({"pause_for_verdict": "qa_and_terminal"})
     assert result is None, f"Expected None (accepted), got warning: {result}"
+
+
+# ===================================================================
+# V5 — Reserved canonical-id-form predicate (plan 449, RC-2)
+# ===================================================================
+
+# --- Test 33: reserved canonical forms match ---
+
+def test_reserved_canonical_form_matches():
+    """Daemon-owned canonical id-form filenames are detected as reserved."""
+    assert validators.is_reserved_canonical_form("diagnostic-444.md") is True
+    assert validators.is_reserved_canonical_form("executable-1.md") is True
+    assert validators.is_reserved_canonical_form("qa-99.md") is True
+
+
+# --- Test 34: legitimate deposits are not reserved ---
+
+def test_reserved_form_allows_legit_deposits():
+    """Descriptive slugs, lifecycle-prefixed forms, and edge cases are not reserved."""
+    assert validators.is_reserved_canonical_form("diagnostic-base-rate-class-break-alignment-2026-08-18.md") is False
+    assert validators.is_reserved_canonical_form("in-progress-diagnostic-444.md") is False
+    assert validators.is_reserved_canonical_form("halted-diagnostic-444.md") is False
+    assert validators.is_reserved_canonical_form("diagnostic-foo.md") is False
+    assert validators.is_reserved_canonical_form("executable-.md") is False
+    assert validators.is_reserved_canonical_form("diagnostic-444.txt") is False
