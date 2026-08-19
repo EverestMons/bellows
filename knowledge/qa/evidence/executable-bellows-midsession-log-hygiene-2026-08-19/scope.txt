@@ -1,0 +1,14 @@
+$ git --no-pager show --name-only --format= 5ca338b
+
+bellows.py
+config.example.json
+knowledge/development/bellows-midsession-log-hygiene-2026-08-19.md
+tests/test_log_hygiene.py
+
+Files in DEV commit: bellows.py, config.example.json, tests/test_log_hygiene.py, knowledge/development/bellows-midsession-log-hygiene-2026-08-19.md
+config.json absent: PASS (gitignored file not touched)
+
+---SYNTAX CHECK---
+$ python3 -c "import ast; ast.parse(open('bellows.py').read())"
+exit code: 0
+syntax check: PASS
