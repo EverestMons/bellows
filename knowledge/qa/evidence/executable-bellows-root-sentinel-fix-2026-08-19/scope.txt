@@ -1,0 +1,7 @@
+$ git --no-pager show --name-only --format= decbe74
+
+bellows_root.py
+knowledge/development/bellows-root-sentinel-fix-2026-08-19.md
+tests/test_bellows_root.py
+
+Scope assertion: PASS — only bellows_root.py, tests/test_bellows_root.py, and knowledge/ paths changed. No unintended production files.
