@@ -151,6 +151,16 @@ def check_header_field_types(header: dict) -> list[dict]:
     return warnings
 
 
+def is_reserved_canonical_form(base_filename: str) -> bool:
+    """True if base_filename is the daemon-owned canonical id-form <type>-<N>.md.
+    The daemon mints these names itself at claim (in-progress-<type>-<id>.md,
+    Done/<type>-<id>.md). A FRESH deposit using this form is never legitimate —
+    it is a leaked in-progress/Done file (e.g. a worktree teardown-merge
+    re-materializing decisions/<type>-<id>.md). Minting for it orphans a row
+    (see the diagnostic-444 -> phantom-445 collision, 2026-08-18)."""
+    return bool(re.fullmatch(r"(?:diagnostic|executable|qa)-\d+\.md", base_filename))
+
+
 def validate_at_claim(header: dict, plan_path: str, config: dict, plan_text: str) -> dict:
     """Run all claim-time validators on a plan.
 

@@ -779,6 +779,17 @@ def run_plan(plan_path: str, config: dict, response_server: server.ResponseServe
 
         # Claim-time dispatch mode validation (Rule 35)
         if not plan_filename.startswith("in-progress-"):
+            # Reserved-namespace guard (RC-2): the daemon owns the canonical
+            # id-form <type>-<N>.md. A fresh deposit using that form is a leaked
+            # in-progress/Done file, never a real plan — minting orphans a row.
+            if validators.is_reserved_canonical_form(base_filename):
+                _log("WARN", f"reserved canonical-id-form deposit '{base_filename}' — daemon owns this namespace; quarantining without minting", slug=slug_for(plan_name))
+                halted_path = os.path.join(plan_dir, f"halted-{base_filename}")
+                shutil.move(plan_path, halted_path)
+                if bellows is not None:
+                    bellows._seen.discard(verdict.slug_from_path(plan_path))
+                return
+
             validation_result = validators.validate_at_claim(header, plan_path, config, metadata_text)
             if validation_result["rejected"]:
                 halted_path = os.path.join(plan_dir, f"halted-{base_filename}")
