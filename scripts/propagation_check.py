@@ -191,6 +191,17 @@ def main(argv=None):
     region = instruction_region(text, args.region_end)
     decls = declared_values(text)
     print(f"declared symbols: {decls or '(none found)'}")
+    if not decls:
+        # ⚠️ A clean report over ZERO parsed declarations is the failure mode this
+        # tool exists to prevent, not a pass. Measured 2026-08-19: a cycle plan
+        # declared its quantities as `| N1 | batch size | — | **25** |` — no
+        # backticked symbol — so declared_values() matched nothing and detector 1
+        # reported "none" over a plan it could not read. Same shape as the
+        # instruction_region bug: silent, total, and indistinguishable from success.
+        print("\nERROR: no symbol declarations parsed — detector (1) cannot run.")
+        print("  Expected a Numbers-discipline row of the form:  | Dn | **`SYM`** … | … | **VALUE** | …")
+        print("  This is EXIT 2 (could not run), never a clean result.")
+        return 2
     print(f"instruction region: {len(region.splitlines())} lines "
           f"of {len(text.splitlines())}\n")
 
