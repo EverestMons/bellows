@@ -1,0 +1,7 @@
+verdict: stop
+
+DEV step succeeded and is durably committed to anvil main as 20e56c4 (cycle-21 dev log + cycle-21-findings report + prompt-feedback). Planner-verified against ground truth, not agent summary: cycle_reports row for cycle 21 landed in anvil.db (files_scanned=295, chunks_scored=5166, findings_count=3283); the audit-findings file exists at the canonical invoice-pulse path (18,740 bytes); 10 CRITICAL intent gaps, all current invoice-pulse functions except dispute_brief, which the in-plan phantom check correctly flagged as DELETED for triage exclusion.
+
+The sole gate failure (deposit_exists / rule_22_verification) is a false negative I authored: the plan declared the deposit as audit-findings-2026-08-18.md (local date), but lab.py:103 stamps the filename in UTC, so the cycle correctly wrote audit-findings-2026-08-19.md. The deposit is present; only the plan's predicted name was wrong. All other gate rows PASS (receipt Complete, no errors/flags/permission-denials, scope clean, file_change_audit clean).
+
+Stopping rather than continuing because Step 2 (QA) carries the same hardcoded -08-18 paths in its verification one-liners — a blind continue would cascade the identical false negative into QA. Per no-redo grammar, correcting via a QA-only re-deposit against committed HEAD 20e56c4 with the correct -08-19 paths. No DEV rework needed; the cycle product is complete and durable.
