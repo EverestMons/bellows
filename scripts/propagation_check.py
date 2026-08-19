@@ -39,6 +39,8 @@ import argparse
 import re
 import sys
 
+_DECLARING_LINES: set[str] = set()
+
 QUALIFIERS = ("measured", "walk 0", "at walk", "until w", "until s", "read ",
               "was ", "were ", "earlier form", "before s1", "before w",
               "this line claimed", "capstone", "baseline", "instance")
@@ -65,7 +67,12 @@ def instruction_region(text, region_end):
 
 
 def declared_values(text):
-    """symbol -> value, from `X` ... **NN** on one line of the Numbers table."""
+    """symbol -> value, from `X` ... **NN** on one line of the Numbers table.
+
+    Also returns the set of DECLARING lines, so detector (1) does not flag the
+    very row it parsed the declaration from — the self-referential false
+    positive that made a correct table look like four divergences.
+    """
     out = {}
     for line in text.splitlines():
         if not line.startswith("|"):
@@ -74,12 +81,15 @@ def declared_values(text):
         val = re.search(r"\*\*(\d[\d,]*)\*\*", line)
         if sym and val:
             out[sym.group(1)] = val.group(1).replace(",", "")
+            _DECLARING_LINES.add(line.strip())
     return out
 
 
 def detect_restated(region, decls):
     hits = []
     for n, line in enumerate(region.splitlines(), 1):
+        if line.strip() in _DECLARING_LINES:
+            continue          # the declaration itself is not a restatement
         low = line.lower()
         for sym, val in decls.items():
             if len(val) < 2:          # 1-digit values are too common to be signal
