@@ -46,4 +46,4 @@ The live `config.json` is gitignored and does NOT set `disk_min_free_gb`, so it 
 ## Output Receipt
 
 - **Status:** Complete
-- **DEV commit sha:** (see commit below)
+- **DEV commit sha:** 5ca338b
