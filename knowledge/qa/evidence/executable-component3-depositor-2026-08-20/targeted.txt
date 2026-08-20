@@ -1,0 +1,39 @@
+============================= test session starts ==============================
+platform darwin -- Python 3.9.6, pytest-8.4.2, pluggy-1.6.0 -- /Library/Developer/CommandLineTools/usr/bin/python3
+cachedir: .pytest_cache
+rootdir: /Users/marklehn/Developer/GitHub/bellows/.bellows-worktrees/481
+plugins: anyio-4.12.1, xdist-3.8.0, timeout-2.4.0, cov-7.0.0
+collecting ... collected 24 items
+
+tests/test_depositor.py::TestImportWhitelist::test_depositor_imports_no_dispatch_functions PASSED [  4%]
+tests/test_depositor.py::TestClassAssignment::test_read_only_class PASSED [  8%]
+tests/test_depositor.py::TestClassAssignment::test_register_writing_class PASSED [ 12%]
+tests/test_depositor.py::TestClassAssignment::test_governed_tooling_class PASSED [ 16%]
+tests/test_depositor.py::TestClassAssignment::test_empty_writes_returns_none PASSED [ 20%]
+tests/test_depositor.py::TestClassMismatch::test_declared_readonly_with_register_write_holds PASSED [ 25%]
+tests/test_depositor.py::TestCollision::test_writes_intersect_writes_with_in_flight_holds PASSED [ 29%]
+tests/test_depositor.py::TestCollision::test_writes_intersect_writes_with_sibling_holds PASSED [ 33%]
+tests/test_depositor.py::TestCollision::test_file_vs_file_collision PASSED [ 37%]
+tests/test_depositor.py::TestCollision::test_prefix_vs_file_collision PASSED [ 41%]
+tests/test_depositor.py::TestCollision::test_prefix_vs_prefix_collision PASSED [ 45%]
+tests/test_depositor.py::TestFailSafe::test_empty_writes_holds PASSED    [ 50%]
+tests/test_depositor.py::TestClear::test_readonly_no_collision_clears PASSED [ 54%]
+tests/test_depositor.py::TestHoldMechanics::test_hold_creates_holdfile_and_json PASSED [ 58%]
+tests/test_depositor.py::TestHandleAdditive::test_roadmap_file_still_skipped PASSED [ 62%]
+tests/test_depositor.py::TestHandleWiring::test_handle_routes_ready_to_depositor PASSED [ 66%]
+tests/test_depositor.py::TestConcurrentEvaluate::test_two_concurrent_evals_one_clear PASSED [ 70%]
+tests/test_depositor.py::TestRestartReeval::test_hold_stays_held_on_restart PASSED [ 75%]
+tests/test_depositor.py::TestPathB::test_legacy_deposits_block_extraction PASSED [ 79%]
+tests/test_depositor.py::TestDashboardDeposits::test_deposits_panel_renders PASSED [ 83%]
+tests/test_depositor.py::TestDashboardDeposits::test_deposits_panel_empty PASSED [ 87%]
+tests/test_depositor.py::TestDashboardDeposits::test_deposits_panel_caps_rows PASSED [ 91%]
+tests/test_depositor.py::TestDiskLow::test_disk_low_holds PASSED         [ 95%]
+tests/test_depositor.py::TestClearDeletesHoldJson::test_clear_removes_stale_hold_json PASSED [100%]
+
+=============================== warnings summary ===============================
+tests/test_depositor.py::TestImportWhitelist::test_depositor_imports_no_dispatch_functions
+  /Users/marklehn/Library/Python/3.9/lib/python/site-packages/urllib3/__init__.py:35: NotOpenSSLWarning: urllib3 v2 only supports OpenSSL 1.1.1+, currently the 'ssl' module is compiled with 'LibreSSL 2.8.3'. See: https://github.com/urllib3/urllib3/issues/3020
+    warnings.warn(
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+======================== 24 passed, 1 warning in 0.54s =========================

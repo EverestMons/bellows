@@ -1,0 +1,30 @@
+============================================================
+SCENARIO 1: read-only plan, no collision → CLEAR
+  PASS: CLEARED to scenario1-readonly.md
+
+============================================================
+SCENARIO 2: register-writing plan → HOLD
+  PASS: HELD — reason: class:register-writing
+
+============================================================
+SCENARIO 3: declared read-only, writes governed register → class-mismatch HOLD
+  PASS: HELD — reason: class_mismatch
+
+============================================================
+SCENARIO 4: two colliding ready- siblings → HOLD
+  PASS: HELD — reason: collision:writes∩writes with sibling:ready-scenario4-sibling-b.md
+
+============================================================
+INVARIANT: live knowledge/decisions/ unchanged
+  PASS: live knowledge/decisions/ is clean (no changes)
+
+============================================================
+CANARY SUMMARY
+============================================================
+  [PASS] Scenario 1: read-only CLEAR: PASS
+  [PASS] Scenario 2: register-writing HOLD: PASS
+  [PASS] Scenario 3: class-mismatch HOLD: PASS
+  [PASS] Scenario 4: sibling collision HOLD: PASS
+  [PASS] Invariant: live tree unchanged: PASS
+
+ALL SCENARIOS PASSED
