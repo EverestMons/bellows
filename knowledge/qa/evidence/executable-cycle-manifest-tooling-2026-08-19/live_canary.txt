@@ -1,0 +1,71 @@
+=== CANARY 1: --emit-manifest executable-464 ===
+
+## Cycle Manifest
+tier: T1
+target: <declare>
+class: <declare>
+reads: <declare>
+writes: <declare>
+open_forks: <declare>
+walks: 6
+yields: 5, 2, 2, 1, 1, 0
+validation: cycle_check=BAR_MET, plan_lint=0_FAIL, fold_check=N/A
+coherence: N/A (no register declared)
+
+EXIT CODE: 0
+
+=== CANARY 2: --emit-manifest diagnostic-460 ===
+
+## Cycle Manifest
+tier: T1
+target: <declare>
+class: <declare>
+reads: <declare>
+writes: <declare>
+open_forks: <declare>
+walks: 4
+yields: 7, 2, 2, 0
+validation: cycle_check=BAR_MET, plan_lint=0_FAIL, fold_check=N/A
+coherence: N/A (no register declared)
+
+EXIT CODE: 0
+
+=== CANARY 3: read-only invariant (SHA checksum before/after) ===
+PRE-RUN:
+5c18ff876ac13c36557f9acbf5a01f2bd6fbf12b  executable-464.md
+8681d0bc26bdc1885427a4d1236550bac65dc0ca  diagnostic-460.md
+POST-RUN (after --emit-manifest on both files):
+5c18ff876ac13c36557f9acbf5a01f2bd6fbf12b  executable-464.md
+8681d0bc26bdc1885427a4d1236550bac65dc0ca  diagnostic-460.md
+CHECKSUMS MATCH — files byte-unchanged
+
+=== CANARY 4: plan_lint on plan with well-formed stanza ===
+(o1) INFO: candidates=1 excluded=1 fired=0
+(o2) WARN: Deposits entry `knowledge/development/dev-log.md` is not project-prefixed or absolute
+PASS: (a) header — parsed
+PASS: (a) dispatch_mode — bellows
+PASS: (a) pause_for_verdict — always
+PASS: (b) step 1 deposits — 1 path(s)
+
+STANZA PLAN EXIT: 0
+
+=== CANARY 5: plan_lint on real stanza-LESS Done plan ===
+(o1) INFO: candidates=6 excluded=4 fired=0
+(o2) WARN: Deposits entry `bellows.py` is not project-prefixed or absolute
+(o2) WARN: Deposits entry `config.example.json` is not project-prefixed or absolute
+(o2) WARN: Deposits entry `tests/test_log_hygiene.py` is not project-prefixed or absolute
+(o2) WARN: Deposits entry `knowledge/development/bellows-midsession-log-hygiene-2026-08-19.md` is not project-prefixed or absolute
+(o2) WARN: Deposits entry `knowledge/qa/2026-08-19-bellows-midsession-log-hygiene-qa.md` is not project-prefixed or absolute
+(o2) WARN: Deposits entry `knowledge/qa/evidence/executable-bellows-midsession-log-hygiene-2026-08-19/` is not project-prefixed or absolute
+(o2) WARN: Deposits entry `knowledge/qa/evidence/executable-bellows-midsession-log-hygiene-2026-08-19/full_suite.txt` is not project-prefixed or absolute
+PIN-CHECK: kind=prefix line=28 token=de6aa0ce38d5… result=ambiguous
+PIN-CHECK: kind=prefix line=44 token=de6aa0ce38d5… result=ambiguous
+PASS: (a) header — parsed
+PASS: (a) dispatch_mode — bellows
+PASS: (a) pause_for_verdict — after_step_1
+PASS: (b) step 1 deposits — 4 path(s)
+PASS: (b) step 2 deposits — 3 path(s)
+PASS: (c) QA banner pair — both strings present
+
+STANZA-LESS EXIT: 0
+
