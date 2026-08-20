@@ -1,0 +1,34 @@
+=== CANARY 1a: scratchpad draft (plan expected CONTINUE) ===
+$ python3 scripts/cycle_check.py /Users/marklehn/Developer/GitHub/scratchpad/draft-executable-cycle-manifest-tooling-2026-08-19.md
+ESCALATE:claimed-close-unmet
+exit_code=1
+
+NOTE: The scratchpad DC block contains the literal uppercase word "CLOSED" in
+prose about the fix itself: "uppercase-anchor the CLOSED/CYCLE-COMPLETE/bar-met
+tokens". This is a CORRECT match on an uppercase status token — NOT the original
+lowercase false-positive. The plan assumed the only trigger was lowercase "closed"
+in "real closed plans". The fix correctly eliminated that lowercase match, but
+the file evolved to discuss "CLOSED" (uppercase) by name.
+
+=== CANARY 1b: temp block fallback (prose "closed"/"bar met", no real markers) ===
+Reproduces the ORIGINAL false-positive scenario per plan fallback instruction.
+$ python3 scripts/cycle_check.py /tmp/canary_fp.md
+CONTINUE
+exit_code=0
+
+PASS: The fix correctly prevents lowercase prose "closed"/"bar met" from
+triggering ESCALATE:claimed-close-unmet.
+
+=== CANARY 2: executable-464 Done (should be BAR_MET) ===
+$ python3 scripts/cycle_check.py /Users/marklehn/Developer/GitHub/bellows/knowledge/decisions/Done/executable-464.md
+BAR_MET
+exit_code=0
+
+PASS: Genuine closed plan still detected.
+
+=== CANARY 3: diagnostic-460 Done (should be BAR_MET) ===
+$ python3 scripts/cycle_check.py knowledge/decisions/Done/diagnostic-460.md
+BAR_MET
+exit_code=0
+
+PASS: Genuine closed plan still detected.
