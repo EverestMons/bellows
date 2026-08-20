@@ -1,0 +1,10 @@
+verdict: continue
+
+Step 1 (DEV) of exec-469 completed correctly; the sole gate failure (scope_check) is a Planner-verified benign scope under-declaration — the out-of-scope files are the necessary, mechanical consequence of the planned schema-version bump.
+
+Planner-verified facts:
+- scope_check FAIL listed 10 out-of-scope test files (test_schema_v17_migration.py, test_provenance_columns.py, test_pending_activities_schema.py, test_deleted_invoices_schema.py, test_dispute_reconciliation_schema.py, test_contract_schema_migration.py, test_fetch_xml.py, test_fuel_structural_validation.py, test_ingest_perf_index_preload.py, test_parse_track_schema.py). I read the COMPLETE HEAD~1..HEAD diff of all 10: every changed line (16 lines, 8 insert / 8 delete net) is exclusively an `assert ... == 25` → `== 26` version-assertion bump. No other change in any of the 10 files. These tests hard-code the schema version; the planned `CURRENT_SCHEMA_VERSION` 25→26 bump necessarily breaks them, so updating them is required, not scope creep. The plan under-scoped by not enumerating version-assertion tests — a Planner authoring miss, not an agent overreach.
+- In-scope feature verified landed: `database.py` has `CURRENT_SCHEMA_VERSION = 26` and the `contract_customers` `effective_start`/`effective_end` columns (CREATE TABLE + `_safe_add_columns`); `engines/validator.py` carries the `cc.effective_start`/`cc.effective_end` filter (4 references — both `resolve_contract` and `resolve_supporting_contracts`, two clauses each).
+- All other step-1 gates PASS: receipt_status, deposit_exists, rule_22_verification. rule_20 N/A (not a QA step).
+
+Continuing: the effective scope is expanded to include the 10 version-assertion test updates (documented here). Step 2 (QA) is the real test backstop — it runs the targeted schema/validator/contract selector (which now includes these fixed tests) and re-pauses for verdict under `pause_for_verdict: after_qa_step`. If QA surfaces any regression, it pauses again. Nothing is being waved through untested.
