@@ -497,3 +497,100 @@ def test_bar_met_instruction_zero_current(tmp_path):
     verdict, code = cycle_check.run_check(plan)
     assert verdict == "BAR_MET"
     assert code == 0
+
+
+# ---------- --emit-manifest ----------
+
+
+def test_emit_manifest_well_formed(tmp_path):
+    """--emit-manifest emits a well-formed 10-field stanza with correct computed fields."""
+    plan = _make_plan(tmp_path, (
+        "**Tier:** T1\n"
+        "- Weak spots: w1 2 folded — instruction 2 / record 0; w2 dry.\n"
+        "- Destruction: w1 1 folded — instruction 1 / record 0; w2 dry.\n"
+        "- Vulnerabilities: w1 dry; w2 dry.\n"
+        "- Integration-record: w1 dry; w2 dry.\n"
+        "- ACID: w1 dry; w2 dry.\n"
+        "**Closing:** walk 2 dry; cycle CLOSED.\n"
+    ))
+    original_bytes = plan.read_bytes()
+    r = subprocess.run(
+        [sys.executable, str(SCRIPTS / "cycle_check.py"), "--emit-manifest", str(plan)],
+        capture_output=True, text=True, timeout=30,
+    )
+    assert r.returncode == 0
+    assert plan.read_bytes() == original_bytes
+
+    output = r.stdout
+    assert "## Cycle Manifest" in output
+    assert "tier: T1" in output
+    assert "walks: 2" in output
+    assert "yields: 3, 0" in output
+    assert "cycle_check=BAR_MET" in output
+    assert "plan_lint=" in output
+    assert "fold_check=" in output
+    assert "coherence: N/A" in output
+    assert "target: <declare>" in output
+    assert "class: <declare>" in output
+    assert "reads: <declare>" in output
+    assert "writes: <declare>" in output
+    assert "open_forks: <declare>" in output
+
+
+def test_emit_manifest_stdout_only(tmp_path):
+    """--emit-manifest writes NO file — plan is byte-unchanged after the run."""
+    plan = _make_plan(tmp_path, (
+        "- Weak spots: w1 1 folded — instruction 1 / record 0; w2 dry.\n"
+        "- Destruction: w1 dry; w2 dry.\n"
+    ))
+    original = plan.read_bytes()
+    files_before = set(tmp_path.iterdir())
+    subprocess.run(
+        [sys.executable, str(SCRIPTS / "cycle_check.py"), "--emit-manifest", str(plan)],
+        capture_output=True, text=True, timeout=30,
+    )
+    assert plan.read_bytes() == original
+    assert set(tmp_path.iterdir()) == files_before
+
+
+def test_emit_manifest_declare_placeholders(tmp_path):
+    """Undeclared authored fields get <declare> placeholders."""
+    plan = _make_plan(tmp_path, (
+        "- Weak spots: w1 1 folded — instruction 1 / record 0; w2 dry.\n"
+        "- Destruction: w1 dry; w2 dry.\n"
+    ))
+    r = subprocess.run(
+        [sys.executable, str(SCRIPTS / "cycle_check.py"), "--emit-manifest", str(plan)],
+        capture_output=True, text=True, timeout=30,
+    )
+    assert r.returncode == 0
+    for field in ["target", "class", "reads", "writes", "open_forks"]:
+        assert f"{field}: <declare>" in r.stdout
+
+
+def test_emit_manifest_na_yields_no_class_split(tmp_path):
+    """Yields N/A when instruction counts are not parseable (no class splits)."""
+    plan = _make_plan(tmp_path, (
+        "- Weak spots: w1 5 folded; w2 3 folded; w3 dry.\n"
+        "- Destruction: w1 2 folded; w2 dry; w3 dry.\n"
+    ))
+    r = subprocess.run(
+        [sys.executable, str(SCRIPTS / "cycle_check.py"), "--emit-manifest", str(plan)],
+        capture_output=True, text=True, timeout=30,
+    )
+    assert r.returncode == 0
+    assert "yields: N/A" in r.stdout
+
+
+def test_emit_manifest_coherence_no_register(tmp_path):
+    """Coherence is N/A when no walk register is declared."""
+    plan = _make_plan(tmp_path, (
+        "- Weak spots: w1 1 folded — instruction 1 / record 0; w2 dry.\n"
+        "- Destruction: w1 dry; w2 dry.\n"
+    ))
+    r = subprocess.run(
+        [sys.executable, str(SCRIPTS / "cycle_check.py"), "--emit-manifest", str(plan)],
+        capture_output=True, text=True, timeout=30,
+    )
+    assert r.returncode == 0
+    assert "coherence: N/A (no register declared)" in r.stdout

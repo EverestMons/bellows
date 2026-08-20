@@ -37,6 +37,7 @@ RESTRUCTURING_RE = re.compile(
 CLOSURE_RE = re.compile(
     r"\*\*Closing:\*\*|\bCLOSED\b|\bCYCLE\s+COMPLETE\b"
 )
+MANIFEST_HEADING_RE = re.compile(r"^## Cycle Manifest\s*$", re.MULTILINE)
 
 
 def walk_number(token):
@@ -415,9 +416,180 @@ def run_check(plan_path):
     return verdict, 0
 
 
+def parse_manifest_stanza(plan_text):
+    """Extract fields from an existing ## Cycle Manifest stanza in the plan.
+    Returns dict of field_name→value, or empty dict if no stanza found.
+    Handles 2-space continuation lines for multi-line values."""
+    m = MANIFEST_HEADING_RE.search(plan_text)
+    if not m:
+        return {}
+    start = m.end()
+    end_m = re.search(r"^(?:## |---)", plan_text[start:], re.MULTILINE)
+    stanza_text = plan_text[start:start + end_m.start()] if end_m else plan_text[start:]
+
+    fields = {}
+    current_key = None
+    current_val = None
+    for line in stanza_text.splitlines():
+        stripped = line.strip()
+        if not stripped:
+            continue
+        if line.startswith("  ") and current_key:
+            current_val = current_val.rstrip(",") + ", " + stripped.rstrip(",")
+            fields[current_key] = current_val
+            continue
+        fm = re.match(r"^(\w[\w_]*):\s*(.*)", stripped)
+        if fm:
+            current_key = fm.group(1)
+            current_val = fm.group(2).strip()
+            fields[current_key] = current_val
+    return fields
+
+
+def _extract_tier_from_plan(plan_text, dc_block):
+    """Extract tier (T0/T1/T2) from DC block Tier line or header cycle_tier."""
+    if dc_block:
+        m = re.search(r"\*\*Tier:\*\*\s*(T[012])\b", dc_block)
+        if m:
+            return m.group(1)
+    m = re.search(r"\*\*cycle_tier:\*\*\s*(T[012])\b", plan_text)
+    if m:
+        return m.group(1)
+    return None
+
+
+def _compute_coherence(parsed, plan_path):
+    """Compute the coherence field value for --emit-manifest."""
+    ref = parsed.get("walk_register_ref")
+    if not ref:
+        return "N/A (no register declared)"
+    git_root = _find_git_root(plan_path)
+    if not git_root:
+        return "N/A"
+    reg_path = git_root / ref
+    if not reg_path.exists():
+        return "N/A"
+    walk_data = parsed.get("walk_data", {})
+    total_walks = max(walk_data.keys()) if walk_data else 0
+    if total_walks == 0:
+        return "N/A"
+    try:
+        reg_text = reg_path.read_text(encoding="utf-8")
+        walks_with_rows = 0
+        for wn in range(1, total_walks + 1):
+            if re.search(rf"\b[Ww]alk\s+{wn}\b|\bw{wn}\b", reg_text):
+                walks_with_rows += 1
+        return f"{walks_with_rows}/{total_walks} walks have register rows"
+    except Exception:
+        return "N/A"
+
+
+def emit_manifest(plan_path):
+    """Emit a complete ## Cycle Manifest stanza to STDOUT. Returns exit code.
+    Strictly read-only — writes nothing, modifies no file."""
+    try:
+        plan_text = plan_path.read_text(encoding="utf-8")
+    except Exception as e:
+        print(f"ERROR: cannot read {plan_path}: {e}", file=sys.stderr)
+        return 2
+
+    blocks = extract_dc_blocks(plan_text)
+    dc_block = blocks[0] if len(blocks) == 1 else None
+
+    if dc_block:
+        parsed = parse_block(dc_block)
+        walk_data = parsed["walk_data"]
+        walk_count = max(walk_data.keys()) if walk_data else 0
+
+        instruction_counts = get_instruction_counts(parsed)
+        yields_parts = []
+        yields_ok = walk_count > 0
+        for wn in range(1, walk_count + 1):
+            ic = instruction_counts.get(wn)
+            if ic is None:
+                yields_ok = False
+                break
+            yields_parts.append(str(ic))
+        yields_str = ", ".join(yields_parts) if yields_ok else "N/A"
+
+        verdict, _ = run_check(plan_path)
+        if verdict is None:
+            verdict = "N/A"
+
+        try:
+            lint_r = subprocess.run(
+                [sys.executable, str(Path(__file__).resolve().parent / "plan_lint.py"),
+                 str(plan_path)],
+                capture_output=True, text=True, timeout=30,
+            )
+            fail_count = lint_r.stdout.count("FAIL:")
+            lint_val = f"{fail_count}_FAIL"
+        except Exception:
+            lint_val = "N/A"
+
+        baseline = plan_path.parent / f".{plan_path.name}.foldcheck.json"
+        if baseline.exists():
+            try:
+                fc_r = subprocess.run(
+                    [sys.executable,
+                     str(Path(__file__).resolve().parent / "fold_check.py"),
+                     str(plan_path)],
+                    capture_output=True, text=True, timeout=30,
+                )
+                fold_verdict = "PASS" if fc_r.returncode == 0 else "N/A"
+            except Exception:
+                fold_verdict = "N/A"
+        else:
+            fold_verdict = "N/A"
+
+        validation_str = (
+            f"cycle_check={verdict}, plan_lint={lint_val}, fold_check={fold_verdict}"
+        )
+        coherence_str = _compute_coherence(parsed, plan_path)
+    else:
+        walk_count = "N/A"
+        yields_str = "N/A"
+        validation_str = "N/A"
+        coherence_str = "N/A"
+
+    existing = parse_manifest_stanza(plan_text)
+
+    tier = existing.get("tier")
+    if not tier:
+        tier = _extract_tier_from_plan(plan_text, dc_block)
+    if not tier:
+        tier = "<declare>"
+
+    target = existing.get("target", "<declare>")
+    plan_class = existing.get("class", "<declare>")
+    reads = existing.get("reads", "<declare>")
+    writes = existing.get("writes", "<declare>")
+    open_forks = existing.get("open_forks", "<declare>")
+
+    print("## Cycle Manifest")
+    print(f"tier: {tier}")
+    print(f"target: {target}")
+    print(f"class: {plan_class}")
+    print(f"reads: {reads}")
+    print(f"writes: {writes}")
+    print(f"open_forks: {open_forks}")
+    print(f"walks: {walk_count}")
+    print(f"yields: {yields_str}")
+    print(f"validation: {validation_str}")
+    print(f"coherence: {coherence_str}")
+    return 0
+
+
 def main():
+    if len(sys.argv) == 3 and sys.argv[1] == "--emit-manifest":
+        plan_path = Path(sys.argv[2])
+        if not plan_path.exists():
+            print(f"ERROR: {plan_path} not found", file=sys.stderr)
+            sys.exit(2)
+        sys.exit(emit_manifest(plan_path))
+
     if len(sys.argv) != 2:
-        print("Usage: cycle_check.py <plan.md>", file=sys.stderr)
+        print("Usage: cycle_check.py [--emit-manifest] <plan.md>", file=sys.stderr)
         sys.exit(2)
     plan_path = Path(sys.argv[1])
     if not plan_path.exists():

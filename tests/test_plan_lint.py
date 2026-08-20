@@ -2928,3 +2928,190 @@ shasum -a 256 `/tmp`
     result = _run_lint(plan)
     assert result.returncode == 0
     assert "Traceback" not in result.stderr
+
+
+# --- Cycle Manifest stanza shape check ---
+
+
+def test_lint_stanza_well_formed_no_warn():
+    """Well-formed Cycle Manifest stanza → no stanza WARN, exit 0."""
+    plan = """\
+# Test Plan
+**Date:** 2026-08-19 | **Dispatch Mode:** bellows | **pause_for_verdict:** always | **cycle_tier:** T1
+
+## Drafting Cycle
+**Tier:** T1 — triggers fired: T-8 (novel).
+**Walks:** 2.
+- Weak spots: w1 1 folded; w2 dry.
+- Destruction: w1 dry; w2 dry.
+- Vulnerabilities: w1 dry; w2 dry.
+- Integration-record: w1 dry; w2 dry.
+- ACID: w1 dry; w2 dry.
+**Closing:** walk 2 dry; last event = lens pass; deposited once.
+
+## Cycle Manifest
+tier: T1
+target: bellows/scripts/example.py
+class: governed-tooling
+reads: bellows/scripts/example.py, bellows/tests/test_example.py
+writes: bellows/scripts/example.py, bellows/tests/test_example.py
+open_forks: none
+walks: 2
+yields: 1, 0
+validation: cycle_check=BAR_MET, plan_lint=0_FAIL
+coherence: N/A (no register declared)
+
+## STEP 1 — DEV
+
+> Do the work.
+>
+> **Deposits:**
+> - `knowledge/development/dev-log.md`
+"""
+    result = _run_lint(plan)
+    assert result.returncode == 0, f"Expected exit 0, got {result.returncode}\nstdout: {result.stdout}"
+    assert "Cycle Manifest" not in result.stdout
+
+
+def test_lint_stanza_missing_field_warns():
+    """Missing field in Cycle Manifest stanza → WARN naming the field, exit 0."""
+    plan = """\
+# Test Plan
+**Date:** 2026-08-19 | **Dispatch Mode:** bellows | **pause_for_verdict:** always | **cycle_tier:** T1
+
+## Drafting Cycle
+**Tier:** T1 — triggers fired: T-8 (novel).
+**Closing:** walk 1 dry.
+
+## Cycle Manifest
+tier: T1
+target: bellows/scripts/example.py
+class: governed-tooling
+reads: bellows/scripts/example.py
+writes: bellows/scripts/example.py
+open_forks: none
+walks: 1
+yields: 0
+validation: cycle_check=BAR_MET, plan_lint=0_FAIL
+
+## STEP 1 — DEV
+
+> Do the work.
+>
+> **Deposits:**
+> - `knowledge/development/dev-log.md`
+"""
+    result = _run_lint(plan)
+    assert result.returncode == 0, f"Expected exit 0 (WARN only), got {result.returncode}\nstdout: {result.stdout}"
+    assert "coherence" in result.stdout
+
+
+def test_lint_stanza_bad_class_warns():
+    """Invalid class value in stanza → WARN, exit 0."""
+    plan = """\
+# Test Plan
+**Date:** 2026-08-19 | **Dispatch Mode:** bellows | **pause_for_verdict:** always | **cycle_tier:** T1
+
+## Drafting Cycle
+**Tier:** T1 — triggers fired: T-8 (novel).
+**Closing:** walk 1 dry.
+
+## Cycle Manifest
+tier: T1
+target: bellows/scripts/example.py
+class: write-everything
+reads: bellows/scripts/example.py
+writes: bellows/scripts/example.py
+open_forks: none
+walks: 1
+yields: 0
+validation: cycle_check=BAR_MET, plan_lint=0_FAIL
+coherence: N/A (no register declared)
+
+## STEP 1 — DEV
+
+> Do the work.
+>
+> **Deposits:**
+> - `knowledge/development/dev-log.md`
+"""
+    result = _run_lint(plan)
+    assert result.returncode == 0, f"Expected exit 0 (WARN only), got {result.returncode}\nstdout: {result.stdout}"
+    assert "class" in result.stdout.lower()
+    assert "write-everything" in result.stdout
+
+
+def test_lint_stanza_empty_reads_warns():
+    """Empty reads in stanza → WARN, exit 0."""
+    plan = """\
+# Test Plan
+**Date:** 2026-08-19 | **Dispatch Mode:** bellows | **pause_for_verdict:** always | **cycle_tier:** T1
+
+## Drafting Cycle
+**Tier:** T1 — triggers fired: T-8 (novel).
+**Closing:** walk 1 dry.
+
+## Cycle Manifest
+tier: T1
+target: bellows/scripts/example.py
+class: governed-tooling
+reads:
+writes: bellows/scripts/example.py
+open_forks: none
+walks: 1
+yields: 0
+validation: cycle_check=BAR_MET, plan_lint=0_FAIL
+coherence: N/A (no register declared)
+
+## STEP 1 — DEV
+
+> Do the work.
+>
+> **Deposits:**
+> - `knowledge/development/dev-log.md`
+"""
+    result = _run_lint(plan)
+    assert result.returncode == 0, f"Expected exit 0 (WARN only), got {result.returncode}\nstdout: {result.stdout}"
+    assert "reads" in result.stdout
+
+
+def test_lint_stanza_declare_placeholder_warns():
+    """<declare> placeholder in stanza → WARN about incomplete template, exit 0."""
+    plan = """\
+# Test Plan
+**Date:** 2026-08-19 | **Dispatch Mode:** bellows | **pause_for_verdict:** always | **cycle_tier:** T1
+
+## Drafting Cycle
+**Tier:** T1 — triggers fired: T-8 (novel).
+**Closing:** walk 1 dry.
+
+## Cycle Manifest
+tier: T1
+target: <declare>
+class: <declare>
+reads: <declare>
+writes: <declare>
+open_forks: none
+walks: 1
+yields: 0
+validation: cycle_check=BAR_MET, plan_lint=0_FAIL
+coherence: N/A (no register declared)
+
+## STEP 1 — DEV
+
+> Do the work.
+>
+> **Deposits:**
+> - `knowledge/development/dev-log.md`
+"""
+    result = _run_lint(plan)
+    assert result.returncode == 0, f"Expected exit 0 (WARN only), got {result.returncode}\nstdout: {result.stdout}"
+    assert "<declare>" in result.stdout
+    assert "incomplete template" in result.stdout.lower()
+
+
+def test_lint_stanza_absent_no_warn():
+    """Plan without Cycle Manifest stanza produces NO stanza-related WARN."""
+    result = _run_lint(GOOD_PLAN)
+    assert result.returncode == 0
+    assert "Cycle Manifest" not in result.stdout

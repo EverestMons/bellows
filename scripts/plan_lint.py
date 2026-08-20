@@ -416,6 +416,69 @@ def lint(plan_path):
                 if any_lens_ran and closing_claims_unread:
                     print("WARN: Drafting Cycle Closing claims no lens has read the artifact, but lens results are recorded")
 
+    # (f-stanza) Cycle Manifest stanza shape check (WARN-only, presence-optional)
+    manifest_m = re.search(r'^## Cycle Manifest\s*$', plan_text, re.MULTILINE)
+    if manifest_m:
+        stanza_start = manifest_m.end()
+        stanza_end_m = re.search(r'^(?:## |---)', plan_text[stanza_start:], re.MULTILINE)
+        stanza_text = plan_text[stanza_start:stanza_start + stanza_end_m.start()] if stanza_end_m else plan_text[stanza_start:]
+
+        stanza_fields = {}
+        s_current_key = None
+        s_current_val = None
+        for s_line in stanza_text.splitlines():
+            s_stripped = s_line.strip()
+            if not s_stripped:
+                continue
+            if s_line.startswith("  ") and s_current_key:
+                s_current_val = s_current_val.rstrip(",") + ", " + s_stripped.rstrip(",")
+                stanza_fields[s_current_key] = s_current_val
+                continue
+            s_fm = re.match(r'^(\w[\w_]*):\s*(.*)', s_stripped)
+            if s_fm:
+                s_current_key = s_fm.group(1)
+                s_current_val = s_fm.group(2).strip()
+                stanza_fields[s_current_key] = s_current_val
+
+        _STANZA_REQUIRED = [
+            "tier", "target", "class", "reads", "writes",
+            "open_forks", "walks", "yields", "validation", "coherence",
+        ]
+        _STANZA_VALID_CLASSES = {"read-only", "governed-tooling", "register-writing"}
+
+        has_declare = False
+        for sf in _STANZA_REQUIRED:
+            sv = stanza_fields.get(sf, "")
+            if not sv:
+                print(f"(f) WARN: Cycle Manifest stanza missing or empty field: {sf}")
+            elif sv == "<declare>":
+                has_declare = True
+
+        if has_declare:
+            print("(f) WARN: Cycle Manifest stanza contains <declare> placeholder(s) — incomplete template")
+
+        class_val = stanza_fields.get("class", "")
+        if class_val and class_val != "<declare>" and class_val not in _STANZA_VALID_CLASSES:
+            print(f"(f) WARN: Cycle Manifest class value {class_val!r} not in {_STANZA_VALID_CLASSES}")
+
+        reads_val = stanza_fields.get("reads", "")
+        if not reads_val:
+            pass  # already warned above as missing
+        elif reads_val == "<declare>":
+            pass  # already warned as <declare>
+
+        if class_val and class_val != "read-only" and class_val != "<declare>":
+            writes_val = stanza_fields.get("writes", "")
+            if not writes_val or writes_val == "<declare>":
+                print("(f) WARN: Cycle Manifest non-read-only plan has empty or undeclared writes")
+
+        validation_val = stanza_fields.get("validation", "")
+        if validation_val and validation_val != "<declare>":
+            if "cycle_check=" not in validation_val:
+                print("(f) WARN: Cycle Manifest validation missing cycle_check= entry")
+            if "plan_lint=" not in validation_val:
+                print("(f) WARN: Cycle Manifest validation missing plan_lint= entry")
+
     # (i) qa_and_terminal ↔ qa_steps coupling: under this mode a mis-declared QA step
     # advances mechanically — the lint is the authoring-time guard.
     if header and header.get("pause_for_verdict") == "qa_and_terminal":
