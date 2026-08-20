@@ -10,6 +10,7 @@ The dashboard never acquires .bellows.lock — only .bellows-dashboard.lock.
 
 import curses
 import fcntl
+import json
 import os
 import glob as glob_mod
 import re
@@ -39,6 +40,7 @@ COLOR_HEADER_RUN = 1
 COLOR_HEADER_STOP = 2
 COLOR_INFLIGHT = 3
 COLOR_AWAITING = 4
+COLOR_DEPOSITS = 5
 
 # Separator character
 SEPARATOR_CHAR = "\u2500"  # ─ box-drawing horizontal
@@ -57,6 +59,7 @@ def init_colors():
     curses.init_pair(COLOR_HEADER_STOP, curses.COLOR_RED, -1)
     curses.init_pair(COLOR_INFLIGHT, curses.COLOR_CYAN, -1)
     curses.init_pair(COLOR_AWAITING, curses.COLOR_YELLOW, -1)
+    curses.init_pair(COLOR_DEPOSITS, curses.COLOR_MAGENTA, -1)
     return True
 
 
@@ -154,6 +157,37 @@ def assemble_state(bellows_root, child_proc=None):
     log_absent = raw_lines is None
     feed_lines = filter_feed_lines(raw_lines) if raw_lines else []
 
+    # Deposit staging state
+    deposit_rows = []
+    try:
+        config_path = bellows_root / "config.json"
+        if config_path.exists():
+            with open(config_path) as cf:
+                cfg = json.load(cf)
+            for wp in cfg.get("watched_projects", []):
+                if os.path.isdir(wp):
+                    for fname in os.listdir(wp):
+                        if fname.startswith("ready-") and fname.endswith(".md"):
+                            deposit_rows.append({
+                                "file": fname, "status": "READY",
+                                "reason": "", "dir": wp,
+                            })
+                        elif fname.startswith("hold-") and fname.endswith(".md"):
+                            hj = os.path.join(wp, fname.replace(".md", ".hold.json"))
+                            reason = ""
+                            if os.path.exists(hj):
+                                try:
+                                    with open(hj) as hf:
+                                        reason = json.load(hf).get("hold_reason", "")
+                                except Exception:
+                                    reason = "(unreadable)"
+                            deposit_rows.append({
+                                "file": fname, "status": "HOLD",
+                                "reason": reason, "dir": wp,
+                            })
+    except Exception:
+        pass
+
     return {
         "daemon_running": daemon_running,
         "pid": pid,
@@ -166,6 +200,7 @@ def assemble_state(bellows_root, child_proc=None):
         "child_exit_code": child_exit_code,
         "db_absent": db_absent,
         "log_absent": log_absent,
+        "deposit_rows": deposit_rows,
     }
 
 
@@ -204,6 +239,8 @@ def render_screen(state, height, width, mode="normal", has_colors=False):
         attr_inflight = curses.A_BOLD | (COLOR_INFLIGHT << 8)
         attr_awaiting = curses.A_BOLD | (COLOR_AWAITING << 8)
         attr_awaiting_row = COLOR_AWAITING << 8
+        attr_deposits = curses.A_BOLD | (COLOR_DEPOSITS << 8)
+        attr_deposits_row = COLOR_DEPOSITS << 8
         attr_feed_header = curses.A_DIM
         attr_separator = curses.A_DIM
         attr_footer = curses.A_REVERSE
@@ -213,6 +250,8 @@ def render_screen(state, height, width, mode="normal", has_colors=False):
         attr_inflight = curses.A_BOLD
         attr_awaiting = curses.A_BOLD | curses.A_REVERSE
         attr_awaiting_row = curses.A_REVERSE
+        attr_deposits = curses.A_BOLD
+        attr_deposits_row = 0
         attr_feed_header = curses.A_DIM
         attr_separator = curses.A_DIM
         attr_footer = curses.A_BOLD
@@ -260,6 +299,21 @@ def render_screen(state, height, width, mode="normal", has_colors=False):
     rows.append((_fit(awaiting_lines[0], width), attr_awaiting))
     for line in awaiting_lines[1:]:
         rows.append((_fit(line, width), attr_awaiting_row if has_awaiting else 0))
+
+    # --- Separator ---
+    rows.append((SEPARATOR_CHAR * width, attr_separator))
+
+    # --- DEPOSITS ---
+    deposit_rows_data = state.get("deposit_rows", [])
+    if deposit_rows_data:
+        deposit_text = status.render_depositor_status(deposit_rows_data)
+    else:
+        deposit_text = "DEPOSITS\n (none)"
+    deposit_lines = deposit_text.split("\n")
+    has_deposits = bool(deposit_rows_data)
+    rows.append((_fit(deposit_lines[0], width), attr_deposits))
+    for line in deposit_lines[1:]:
+        rows.append((_fit(line, width), attr_deposits_row if has_deposits else 0))
 
     # --- Separator ---
     rows.append((SEPARATOR_CHAR * width, attr_separator))

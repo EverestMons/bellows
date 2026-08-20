@@ -37,6 +37,7 @@ def _make_state(**overrides):
         "child_exit_code": None,
         "db_absent": False,
         "log_absent": False,
+        "deposit_rows": [],
     }
     base.update(overrides)
     return base
@@ -197,8 +198,8 @@ class TestRenderEmptyPanes:
         joined = "\n".join(lines)
 
         assert "(none)" in joined
-        # IN-FLIGHT (none), AWAITING VERDICT (none), EVENT FEED (none)
-        assert joined.count("(none)") == 3
+        # IN-FLIGHT (none), AWAITING VERDICT (none), DEPOSITS (none), EVENT FEED (none)
+        assert joined.count("(none)") == 4
 
 
 # ---------------------------------------------------------------------------
@@ -587,8 +588,8 @@ class TestSeparatorRules:
         separator_count = sum(
             1 for text in lines if text and all(c == dashboard.SEPARATOR_CHAR for c in text)
         )
-        # 3 separators: after header, after IN-FLIGHT, after AWAITING VERDICT
-        assert separator_count == 3, f"Expected 3 separators, got {separator_count}"
+        # 4 separators: after header, after IN-FLIGHT, after AWAITING VERDICT, after DEPOSITS
+        assert separator_count == 4, f"Expected 4 separators, got {separator_count}"
 
     def test_separator_full_width(self):
         width = 100

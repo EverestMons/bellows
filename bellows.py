@@ -405,6 +405,7 @@ import notifier
 import server
 import validators
 import lifecycle
+import depositor
 
 
 def load_config(path: str = "config.json") -> dict:
@@ -2061,8 +2062,15 @@ class PlanHandler(FileSystemEventHandler):
             return
         filename = os.path.basename(path)
         if not is_runnable_plan(filename):
+            if filename.startswith("ready-") and filename.endswith(".md"):
+                dep = getattr(self.orchestrator, "depositor", None)
+                if dep is not None:
+                    threading.Thread(
+                        target=dep.evaluate, args=(path,), daemon=True,
+                    ).start()
+                return
             if (filename.endswith(".md")
-                    and not filename.startswith(("in-progress-", "verdict-pending-", "halted-", "parked-", "roadmap-"))
+                    and not filename.startswith(("in-progress-", "verdict-pending-", "halted-", "parked-", "roadmap-", "hold-"))
                     and verdict.slug_from_path(path) not in self.orchestrator._seen):
                 _log("WARN", f"⚠️ skipped — prefix not in dispatch whitelist", slug=slug_for(filename))
                 self.orchestrator._seen.add(verdict.slug_from_path(path))
@@ -2173,6 +2181,13 @@ class Bellows:
         self._seen = set()
         self._cycle_nudge_last_eval: float = 0.0
         self._cycle_nudge_suppressed_ts: Optional[str] = None
+
+        self.depositor = depositor.Depositor(
+            disk_preflight_fn=_disk_preflight,
+            shutting_down_check=lambda: self._shutting_down,
+            config=config,
+            lifecycle_db_path=str(BELLOWS_ROOT / "lifecycle.db"),
+        )
 
         # Startup: prune stale worktree registrations from prior crashes
         for wp in config.get("watched_projects", []):
@@ -2330,6 +2345,17 @@ class Bellows:
                     if is_runnable_plan(fname):
                         full_path = os.path.join(decisions_path, fname)
                         handler._handle(full_path, from_rescan=True)
+
+        # DISC-2: recovery net — re-scan ready- files missed by watchdog
+        for decisions_path in self.config.get("watched_projects", []):
+            if os.path.isdir(decisions_path):
+                for fname in os.listdir(decisions_path):
+                    if fname.startswith("ready-") and fname.endswith(".md"):
+                        full_path = os.path.join(decisions_path, fname)
+                        threading.Thread(
+                            target=self.depositor.evaluate,
+                            args=(full_path,), daemon=True,
+                        ).start()
 
     def _scan_misplaced_verdicts(self, pending_dir):
         """Scan pending_dir for verdict response files that belong in resolved/."""
@@ -2676,6 +2702,10 @@ class Bellows:
                         full_path = os.path.join(decisions_path, fname)
                         _log("EVENT", f"startup scan found {fname}")
                         handler._handle(full_path)
+
+        # Depositor startup re-evaluation (ready- and hold- files)
+        self.depositor.reevaluate_on_startup()
+
         rescan_interval = 30
         last_rescan = time.time()
         last_heartbeat = time.time()

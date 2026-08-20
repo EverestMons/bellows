@@ -181,6 +181,24 @@ def render_awaiting_verdict(rows):
     return "\n".join(lines)
 
 
+def render_depositor_status(rows, max_rows=8):
+    """Render DEPOSITS section."""
+    lines = ["DEPOSITS"]
+    if not rows:
+        lines.append(" (none)")
+        return "\n".join(lines)
+    shown = rows[:max_rows]
+    for row in shown:
+        fname = row["file"]
+        st = row["status"]
+        reason = truncate(row.get("reason", ""), 50)
+        lines.append(f" {fname:<40s}  {st:<6s}  {reason}")
+    remaining = len(rows) - len(shown)
+    if remaining > 0:
+        lines.append(f" …({remaining} more)")
+    return "\n".join(lines)
+
+
 # ---------------------------------------------------------------------------
 # DB query helpers (importable — all read-only, ?mode=ro)
 # ---------------------------------------------------------------------------
