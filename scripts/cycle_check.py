@@ -36,8 +36,6 @@ RESTRUCTURING_RE = re.compile(
 )
 CLOSURE_RE = re.compile(
     r"\*\*Closing:\*\*|\bCLOSED\b|\bCYCLE\s+COMPLETE\b"
-    r"|\bbar\s+met\b|§2\s+bar\s+met",
-    re.IGNORECASE,
 )
 
 

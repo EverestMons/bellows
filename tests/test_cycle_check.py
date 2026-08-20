@@ -258,6 +258,52 @@ def test_claimed_close_unmet(tmp_path):
     assert code == 1
 
 
+# ---------- closure false-positive regression ----------
+
+
+def test_prose_closed_not_false_positive(tmp_path):
+    """Mid-cycle block with prose 'closed'/'bar met' but no real closure markers.
+    Must NOT trigger claimed-close-unmet (the bug this fix repairs).
+    """
+    plan = _make_plan(tmp_path, (
+        "- Weak spots: w1 3 folded — instruction 2 / record 1.\n"
+        "- Destruction: w1 1 folded — instruction 1 / record 0.\n"
+        "Emit-manifest against real closed plans, a closed loop, bar met the criteria.\n"
+    ))
+    verdict, code = cycle_check.run_check(plan)
+    assert verdict == "CONTINUE"
+    assert code == 0
+
+
+def test_genuine_closure_still_detected(tmp_path):
+    """A genuine closure (**Closing:** + CLOSED, walk dry) → BAR_MET."""
+    plan = _make_plan(tmp_path, (
+        "- Weak spots: w1 2 folded — instruction 2 / record 0; w2 dry.\n"
+        "- Destruction: w1 1 folded — instruction 1 / record 0; w2 dry.\n"
+        "- Vulnerabilities: w1 dry; w2 dry.\n"
+        "- Integration-record: w1 dry; w2 dry.\n"
+        "- ACID: w1 dry; w2 dry.\n"
+        "**Closing:** walk 2 dry; cycle CLOSED.\n"
+    ))
+    verdict, code = cycle_check.run_check(plan)
+    assert verdict == "BAR_MET"
+    assert code == 0
+
+
+def test_fabricated_close_guard_survives(tmp_path):
+    """THE GUARD MUST SURVIVE: **Closing:** + CLOSED present but walk NOT dry
+    (instruction folds remain) → must STILL fire ESCALATE:claimed-close-unmet.
+    """
+    plan = _make_plan(tmp_path, (
+        "- Weak spots: w1 3 folded — instruction 2 / record 1.\n"
+        "- Destruction: w1 1 folded — instruction 1 / record 0.\n"
+        "**Closing:** walk 1 dry; cycle CLOSED.\n"
+    ))
+    verdict, code = cycle_check.run_check(plan)
+    assert verdict == "ESCALATE:claimed-close-unmet"
+    assert code == 1
+
+
 # ---------- Walk-N STATUS lines ----------
 
 
@@ -331,8 +377,7 @@ def test_walk_register_cross_repo(tmp_path, monkeypatch):
 
 
 def test_closure_markers_detected():
-    for marker in ["**Closing:** walk 2 dry.", "CLOSED", "CYCLE COMPLETE",
-                    "bar met", "§2 bar met"]:
+    for marker in ["**Closing:** walk 2 dry.", "CLOSED", "CYCLE COMPLETE"]:
         block = f"- Weak spots: w1 1 folded.\n{marker}\n"
         parsed = cycle_check.parse_block(block)
         assert parsed["claims_closure"], f"Failed to detect: {marker}"
