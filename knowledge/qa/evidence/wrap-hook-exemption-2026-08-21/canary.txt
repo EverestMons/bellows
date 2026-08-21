@@ -1,0 +1,104 @@
+===============================================================================
+CANARY EVIDENCE — wrap-hook-exemption plan A, Step 3
+Date: 2026-08-21
+===============================================================================
+
+--- PRE-CANARY: governance-root sentinel check ---
+$ find /Users/marklehn/Developer/GitHub -maxdepth 1 -name '.wrap-in-progress*'
+(no output — clean)
+
+--- (i-b) DAEMON SETS THE MARKER — LIVE-VERIFIED ---
+$ env | grep -F BELLOWS_DISPATCH
+BELLOWS_DISPATCH=1
+
+The daemon was restarted at the Step-2 verdict gate. This session was spawned
+by the post-edit runner.py carrying env={**os.environ, "BELLOWS_DISPATCH": "1"}.
+BELLOWS_DISPATCH=1 is present in OUR environment — live-verified.
+
+Spawn sites carrying env=:
+  runner.py:224:    env={**os.environ, "BELLOWS_DISPATCH": "1"},
+  planner.py:135:   env={**os.environ, "BELLOWS_DISPATCH": "1"},
+  bellows.py:2000:  env={**os.environ, "BELLOWS_DISPATCH": "1"},
+
+--- (i-a) THE HOOK HONOURS THE MARKER — LIVE SPAWN ---
+Form: live spawn (preferred)
+Scratch root: /var/folders/vf/8nw0z7hj1m34w6z48l5dp54w0000gn/T/tmp.Q751kSfTRt
+Scratch sentinel armed: touch <scratch>/.wrap-in-progress (verified present)
+Session UUID: 7e7a700b-a849-493a-b6e3-f972f53714bc
+
+$ BELLOWS_DISPATCH=1 ELUVIAN_WRAP_ROOT=/var/folders/vf/8nw0z7hj1m34w6z48l5dp54w0000gn/T/tmp.Q751kSfTRt claude -p "reply OK" --session-id 7e7a700b-a849-493a-b6e3-f972f53714bc --max-turns 1 < /dev/null
+OK
+exit code: 0
+
+hooks.log entries for 7e7a700b-a849-493a-b6e3-f972f53714bc:
+  2026-08-21T16:04:21	SessionStart	daemon-exempt sid=7e7a700b-a849-493a-b6e3-f972f53714bc
+  2026-08-21T16:04:21	UserPromptSubmit-arm	ignored sid=7e7a700b-a849-493a-b6e3-f972f53714bc
+  2026-08-21T16:04:26	Stop	daemon-exempt sid=7e7a700b-a849-493a-b6e3-f972f53714bc
+
+Scratch sentinel after child exit: INTACT
+
+RESULT (i-a): PASSED — SessionStart and Stop both logged daemon-exempt with pinned UUID.
+Scratch sentinel survived (exempt session did not unlink).
+
+--- (ii) INTERACTIVE LOCK INTACT — LIVE SPAWN ---
+Form: live spawn (preferred, with env -u BELLOWS_DISPATCH)
+Scratch root: /var/folders/vf/8nw0z7hj1m34w6z48l5dp54w0000gn/T/tmp.qil2HFNmkc
+Scratch sentinel armed: touch <scratch2>/.wrap-in-progress (verified present)
+Session UUID: 6337f3c8-835a-452c-8c5a-8ea222eef88a
+
+Pre-spawn governance-root check:
+$ find /Users/marklehn/Developer/GitHub -maxdepth 1 -name '.wrap-in-progress*'
+(no output — clean)
+
+$ env -u BELLOWS_DISPATCH ELUVIAN_WRAP_ROOT=/var/folders/vf/8nw0z7hj1m34w6z48l5dp54w0000gn/T/tmp.qil2HFNmkc claude -p "reply OK" --session-id 6337f3c8-835a-452c-8c5a-8ea222eef88a --max-turns 1 < /dev/null
+Error: Reached max turns (1)
+exit code: 1
+
+hooks.log entries for 6337f3c8-835a-452c-8c5a-8ea222eef88a:
+  2026-08-21T16:04:39	SessionStart	DEBT-injected sid=6337f3c8-835a-452c-8c5a-8ea222eef88a
+  2026-08-21T16:04:39	UserPromptSubmit-arm	ignored sid=6337f3c8-835a-452c-8c5a-8ea222eef88a
+  2026-08-21T16:04:45	Stop	armed-BLOCK sid=6337f3c8-835a-452c-8c5a-8ea222eef88a
+
+Scratch sentinel after child exit: INTACT
+
+Note: wrap_check exited nonzero (the repos were not all clean), which is why
+the Stop hook took the armed-BLOCK branch rather than the unlink-and-allow branch.
+This confirms the environment was suitable for the (ii) assertion.
+
+RESULT (ii): PASSED — Non-exempt session was BLOCKED by armed sentinel. Stop hook
+returned decision:block and logged armed-BLOCK with pinned UUID. The CEO's
+interactive lock is INTACT.
+
+--- SETTINGS VERIFICATION (item 3) ---
+$ diff ~/.claude/settings.json bellows/hooks/settings-backup-2026-08-21.json
+21c21
+<             "command": "/usr/bin/python3 /Users/marklehn/Developer/GitHub/bellows/hooks/eluvian/wrap_arm_hook.py",
+---
+>             "command": "/usr/bin/python3 /Users/marklehn/.claude/eluvian/wrap_arm_hook.py",
+55c55
+<             "command": "/usr/bin/python3 /Users/marklehn/Developer/GitHub/bellows/hooks/eluvian/wrap_stop_hook.py",
+---
+>             "command": "/usr/bin/python3 /Users/marklehn/.claude/eluvian/wrap_stop_hook.py",
+67c67
+<             "command": "/usr/bin/python3 /Users/marklehn/Developer/GitHub/bellows/hooks/eluvian/wrap_debt_hook.py",
+---
+>             "command": "/usr/bin/python3 /Users/marklehn/.claude/eluvian/wrap_debt_hook.py",
+
+Only differing lines: the three eluvian hook command paths. No other delta.
+
+$ python3 -m json.tool ~/.claude/settings.json > /dev/null
+(exit 0 — valid JSON)
+
+$ python3 -m json.tool bellows/hooks/settings-backup-2026-08-21.json > /dev/null
+(exit 0 — valid JSON)
+
+RESULT (item 3): PASSED — settings.json now points at vendored copies; only the
+three eluvian hook paths differ from the backup; both files are valid JSON.
+
+===============================================================================
+SUMMARY
+  (i-a) daemon exempt:        PASSED (live spawn)
+  (i-b) daemon sets marker:   LIVE-VERIFIED (BELLOWS_DISPATCH=1 in own env)
+  (ii)  interactive lock:     PASSED (live spawn, armed-BLOCK confirmed)
+  (3)   settings verification: PASSED
+===============================================================================
