@@ -1,0 +1,11 @@
+verdict: stop
+
+exec-490 step 2 (QA) — STOP. Two independent reasons; a corrective re-deposit under a fresh slug follows ([[bellows-verdict-grammar-no-redo]]: stop + corrected re-deposit, never a redo).
+
+**Reason 1 — QA gate genuinely FAILED (deposits/verification):** the QA agent ran pytest but never wrote the QA report `.md` (`knowledge/qa/plan-lint-check-f-qa-2026-08-21.md`) and never committed the evidence (`pytest_full.txt` "exists on disk but is not committed — will be lost at teardown"). `deposit_exists`, `deposit_uncommitted`, `rule_20_self_check`, `rule_22_verification` all FAIL. This alone is a QA process failure.
+
+**Reason 2 — the CODE has a real regression the corpus-canary caught (the load-bearing reason):** Planner-verified by re-running against the DEV commit `0dbdcd1`. The full unit suite is green (**133 passed**), BUT the plan's own corpus-regression scan (§QA step) fires on TWO shipped plans: `diagnostic-429.md` and `executable-430.md` both **false-WARN**. Root cause verified: both express their FINAL walk (walk 2, dry) as a combined `wN`-LESS line under a `**Walk 2 … DRY**` header (`- Weak spots: dry. — Destruction: dry. …`). The DEV check-(f) computes `max_walk` ONLY from `\bw\d\b` tokens on lens lines, so it sees max_walk=1, sums walk-1's instruction folds, and WARNs. The real final walk (2) is dry. This is a format diag-489's census never checked ([[live-canary-catches-real-format-gaps]] — the 133 constructed tests inherited the same blind spot as the code; only the live-corpus scan caught it, vindicating the walk-2 corpus-regression fold).
+
+**Corrective (fresh slug, DEV+QA):** `max_walk` must also consider `**Walk N**` / `**Walk N STATUS:**` section headers (cycle_check's `WALK_SECTION_RE`/`WALK_STATUS_RE`), so a final dry walk carried by a header + `wN`-less line yields no final-walk instruction segment → instruction_sum 0 → SILENT. Add a test for the 429/430 format; re-run QA properly (report + commit + the corpus scan must show ZERO false-WARN over the WHOLE Done/ corpus, not a sample).
+
+⚠️ **The DEV commit `0dbdcd1` is on `main`** (this bellows config commits DEV to main, not an isolated branch), so the broken-but-WARN-only check-(f) is currently live; the corrective repairs it forward (WARN-only, does not block deposits, so no emergency revert needed). Plan 490 halts here.
