@@ -1,0 +1,74 @@
+{
+  "hooks": {
+    "UserPromptSubmit": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/usr/bin/python3 /Users/marklehn/.claude/eluvian/wrap_arm_hook.py",
+            "timeout": 30
+          }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "mcp__voice-harness__launch_voice_harness",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/Users/marklehn/Developer/voiceharness/.venv/bin/python3 /Users/marklehn/Developer/voiceharness/mcp_server/attach_hook.py",
+            "timeout": 45
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "INPUT=$(cat); curl -s --max-time 1830 -X POST http://127.0.0.1:8791/hooks/stop -H 'Content-Type: application/json' -d \"$INPUT\" || echo '{}'",
+            "timeout": 1860
+          }
+        ]
+      },
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/usr/bin/python3 /Users/marklehn/.claude/eluvian/wrap_stop_hook.py",
+            "timeout": 130
+          }
+        ]
+      }
+    ],
+    "SessionStart": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/usr/bin/python3 /Users/marklehn/.claude/eluvian/wrap_debt_hook.py",
+            "timeout": 130
+          }
+        ]
+      }
+    ],
+    "PermissionRequest": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "INPUT=$(cat); curl -s --max-time 300 -X POST http://127.0.0.1:8791/hooks/permission-request -H 'Content-Type: application/json' -d \"$INPUT\" || echo '{}'",
+            "timeout": 330
+          }
+        ]
+      }
+    ]
+  }
+}
