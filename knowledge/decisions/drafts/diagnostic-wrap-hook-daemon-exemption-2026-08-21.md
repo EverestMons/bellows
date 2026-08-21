@@ -75,6 +75,14 @@ The Eluvian wrap-enforcement layer ([[wrap-completion-lock]], built 2026-08-20) 
 - ACID (alone, on the four-lens-folded draft): w4 dry — walk 4's single fold widens a population and touches no probe, count, path, or reconciliation clause.
 **Walk 4 STATUS:** 1 folded — instruction 1 / record 0 — NOT dry. Yield 17 → 8 → 2 → 1.
 
+**Walk 5 — closing walk, lens-by-lens over the whole artifact:**
+- Weak spots (1.4):   w5 dry — every question now carries its own failure mode (Q2 counting + controls, Q3 skip condition + non-firing-hook distinction, Q4 positive control, Q5 leak path, Q7 fork, Q8 testability constraint); no remaining instruction depends on an unproven premise or an unnamed source.
+- Destruction (2.4):  w5 dry — the agent's total write surface is one findings file plus scratch under the step's tmp area; DB access is `mode=ro`, the sentinel is read-only with a precheck, and the commit is repo-asserted and pathspec-scoped.
+- Vulnerabilities:    w5 dry — gate surface re-checked against the plan's shape: Deposits and Scope name ONE identical, UNCONDITIONAL path (no `deposit_exists` conditional-file trap), the only repo-changed file is that path (`scope_check` satisfied), `pause_for_verdict: after_step_1` is in the recognized set, and with no QA step the `rule_20_self_check` / `qa_test_result` gates do not apply.
+- Integration-record: w5 dry — record vs artifact: five walks plus one declared non-bar-discharging sweep, per-lens commits throughout, fold counts reconcile (17 + 8 + 2 + 1 + sweep 4), and every live-file pin the Context asserts was Planner-verified this session and is listed for agent re-verification.
+- ACID (alone, on the four-lens-folded draft): w5 dry — no fold from any walk re-opens another; the Q5↔Q7↔Q8 reconciliation clause is the only cross-section dependency and it is stated from both ends.
+**Walk 5 STATUS:** 0 folded — instruction 0 / record 0 — **DRY**. Yield 17 → 8 → 2 → 1 → 0; the last event before deposit is a dry pass, and the final walk carries zero INSTRUCTION-class findings (§2 bar met on the class test).
+
 ## STEP 1 — READ-ONLY DIAGNOSTIC (characterize + census + exemption design + canary spec)
 
 **Role:** DEV (read-only audit). Contract: `/Users/marklehn/Developer/GitHub/READONLY_AUDIT_CONTRACT.md`. Read it first and comply.
