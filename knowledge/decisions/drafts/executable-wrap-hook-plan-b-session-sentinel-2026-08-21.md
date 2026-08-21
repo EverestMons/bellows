@@ -35,6 +35,8 @@ Both are one root cause: **`.wrap-in-progress` is a single file at the governanc
 
 **Role:** DEV. Edit ONLY under `bellows/hooks/eluvian/`.
 
+⚠️⚠️ **YOUR EDITS GO LIVE THE MOMENT YOU SAVE THEM — check that no wrap is armed before you start.** The hook *wiring* (the `command` paths in `settings.json`) is read at session start, but the hook *scripts* are executed as fresh subprocesses on every event, so they are re-read each time: the instant you write these files, every live session on this machine — including the CEO's — begins running your in-progress code. Therefore: before editing, confirm `ls /Users/marklehn/Developer/GitHub/.wrap-in-progress*` finds NOTHING. If a sentinel exists, a wrap is in flight and you must STOP and report rather than edit the lock out from under it. Re-check after your final edit, and say in your Receipt what both checks returned. (The bare-sentinel compatibility rule in (1) is what makes a mid-flight legacy wrap survive this transition at all — it is not a licence to edit during one.)
+
 ⚠️ **Verify plan A's groundwork FIRST.** Confirm in the vendored copies that (a) each hook parses its stdin payload and has `session_id` available, and (b) the sentinel root honours `ELUVIAN_WRAP_ROOT`. If either is absent, STOP — plan A is not actually closed and this plan is being run out of order.
 
 **(1) Per-session sentinel.** All three hooks already read stdin and discard it; parse it instead and take `session_id`.
