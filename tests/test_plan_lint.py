@@ -1022,6 +1022,114 @@ def test_lint_cycle_status_mutual_exclusivity():
     assert "dry lens pass" not in result.stdout.lower()
 
 
+# --- 490: Class-split check-(f) tests (honing unit c) ---
+
+def test_lint_cycle_classsplit_false_clean_now_warns():
+    """(f-cs1) False-clean: final walk instruction fold on Weak spots + dry ACID → now WARNs."""
+    plan = """\
+# Test Plan — class-split false-clean
+**Date:** 2026-08-21 | **Dispatch Mode:** bellows | **pause_for_verdict:** always | **cycle_tier:** T1
+
+## Drafting Cycle
+**Tier:** T1 — triggers fired: T-8 (novel).
+**Walks:** 2.
+- Weak spots:         w1 1 folded — instruction 1 / record 0; w2 1 folded — instruction 1 / record 0.
+- Destruction:        w1 dry; w2 dry.
+- Vulnerabilities:    w1 dry; w2 dry.
+- Integration-record: w1 dry; w2 dry.
+- ACID:               w1 1 folded — instruction 1 / record 0; w2 dry.
+**Closing:** walk 2; deposited once.
+"""
+    result = _run_lint(plan)
+    assert result.returncode == 0, f"Expected exit 0 (WARN only), got {result.returncode}\nstdout: {result.stdout}"
+    assert "fold" in result.stdout.lower()
+    assert "dry lens pass" in result.stdout.lower()
+
+
+def test_lint_cycle_classsplit_judged_stop_silent():
+    """(f-cs2) Judged-stop: final walk instruction 0 / record N on all lenses → SILENT."""
+    plan = """\
+# Test Plan — class-split judged stop
+**Date:** 2026-08-21 | **Dispatch Mode:** bellows | **pause_for_verdict:** always | **cycle_tier:** T1
+
+## Drafting Cycle
+**Tier:** T1 — triggers fired: T-8 (novel).
+**Walks:** 2.
+- Weak spots:         w1 1 folded — instruction 1 / record 0; w2 1 folded — instruction 0 / record 1.
+- Destruction:        w1 dry; w2 dry.
+- Vulnerabilities:    w1 dry; w2 dry.
+- Integration-record: w1 dry; w2 1 folded — instruction 0 / record 1.
+- ACID:               w1 1 folded — instruction 1 / record 0; w2 1 folded — instruction 0 / record 1.
+**Closing:** walk 2; instruction 0 / record 3; deposited once.
+"""
+    result = _run_lint(plan)
+    assert result.returncode == 0, f"Expected exit 0, got {result.returncode}\nstdout: {result.stdout}"
+    assert "fold as last event" not in result.stdout.lower()
+
+
+def test_lint_cycle_classsplit_legacy_arrow_silent():
+    """(f-cs3) Legacy-arrow format (no class split anywhere) → SILENT (fallback)."""
+    plan = """\
+# Test Plan — legacy arrow
+**Date:** 2026-08-21 | **Dispatch Mode:** bellows | **pause_for_verdict:** always | **cycle_tier:** T1
+
+## Drafting Cycle
+**Tier:** T1 — triggers fired: T-8 (novel).
+**Walks:** 2.
+- Weak spots:         w1 → v1: 2 folded; w2 dry.
+- Destruction:        w1 dry; w2 dry.
+- Vulnerabilities:    w1 dry; w2 dry.
+- Integration-record: w1 dry; w2 dry.
+- ACID:               w1 dry; w2 dry.
+**Closing:** walk 2 dry; last event = lens pass; deposited once.
+"""
+    result = _run_lint(plan)
+    assert result.returncode == 0, f"Expected exit 0, got {result.returncode}\nstdout: {result.stdout}"
+    assert "fold as last event" not in result.stdout.lower()
+
+
+def test_lint_cycle_classsplit_dry_only_silent():
+    """(f-cs4) Dry-only / compact (no class split anywhere) → SILENT (fallback)."""
+    plan = """\
+# Test Plan — dry only
+**Date:** 2026-08-21 | **Dispatch Mode:** bellows | **pause_for_verdict:** always | **cycle_tier:** T1
+
+## Drafting Cycle
+**Tier:** T1 — triggers fired: T-8 (novel).
+**Walks:** 1.
+- Weak spots:         w1 dry.
+- Destruction:        w1 dry.
+- Vulnerabilities:    w1 dry.
+- Integration-record: w1 dry.
+- ACID:               w1 dry.
+**Closing:** walk 1 dry; last event = lens pass; deposited once.
+"""
+    result = _run_lint(plan)
+    assert result.returncode == 0, f"Expected exit 0, got {result.returncode}\nstdout: {result.stdout}"
+    assert "fold as last event" not in result.stdout.lower()
+
+
+def test_lint_cycle_classsplit_multi_segment_regression_silent():
+    """(f-cs5) Multi-segment: earlier-walk instruction folds + final-walk dry → SILENT (no false-WARN)."""
+    plan = """\
+# Test Plan — multi-segment regression
+**Date:** 2026-08-21 | **Dispatch Mode:** bellows | **pause_for_verdict:** always | **cycle_tier:** T1
+
+## Drafting Cycle
+**Tier:** T1 — triggers fired: T-8 (novel).
+**Walks:** 5.
+- Weak spots:         w1 2 folded — instruction 2 / record 0; w2 2 folded — instruction 2 / record 0; w5 dry.
+- Destruction:        w1 dry; w2 dry; w5 dry.
+- Vulnerabilities:    w1 1 folded — instruction 1 / record 0; w2 dry; w5 dry.
+- Integration-record: w1 dry; w2 dry; w5 dry.
+- ACID:               w1 1 folded — instruction 1 / record 0; w2 1 folded — instruction 1 / record 0; w5 dry.
+**Closing:** walk 5 dry; last event = lens pass; deposited once.
+"""
+    result = _run_lint(plan)
+    assert result.returncode == 0, f"Expected exit 0, got {result.returncode}\nstdout: {result.stdout}"
+    assert "fold as last event" not in result.stdout.lower()
+
+
 # --- M2 (row 27): cold-panel content check tests ---
 
 def test_lint_m2_hollow_bold_warns():

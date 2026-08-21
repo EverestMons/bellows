@@ -368,13 +368,44 @@ def lint(plan_path):
                 )
                 closing_pos = re.search(r'^\*\*Closing:\*\*', dc_block, re.MULTILINE)
                 search_region = dc_block[:closing_pos.start()] if closing_pos else dc_block
-                last_lens_line = None
+                lens_lines = []
                 for line in search_region.splitlines():
                     if lens_line_re.match(line):
-                        last_lens_line = line
+                        lens_lines.append(line)
 
-                if last_lens_line is not None:
-                    ll_lower = last_lens_line.lower()
+                _class_split_re = re.compile(r'instruction\s+(\d+)\s*/\s*record\s+(\d+)')
+                has_class_split = any(_class_split_re.search(l) for l in lens_lines)
+
+                if has_class_split:
+                    _walk_token_re = re.compile(r'\bw(\d+)\b')
+                    max_walk = 0
+                    for l in lens_lines:
+                        clean = re.sub(r'\([^)]*\)', '', l)
+                        for m in _walk_token_re.finditer(clean):
+                            wn = int(m.group(1))
+                            if wn > max_walk:
+                                max_walk = wn
+                    instruction_sum = 0
+                    if max_walk > 0:
+                        for l in lens_lines:
+                            clean = re.sub(r'\([^)]*\)', '', l)
+                            segments = re.split(r';\s*', clean)
+                            expanded = []
+                            for seg in segments:
+                                expanded.extend(re.split(r'\.\s+(?=w\d)', seg))
+                            for seg in expanded:
+                                m = _walk_token_re.search(seg)
+                                if m and int(m.group(1)) == max_walk:
+                                    cs = _class_split_re.search(seg)
+                                    if cs:
+                                        instruction_sum += int(cs.group(1))
+                                    elif 'fold' in seg.lower():
+                                        instruction_sum += 1
+                                    break
+                    if instruction_sum > 0:
+                        print("WARN: Drafting Cycle closing indicates fold as last event, not a dry lens pass (DRAFTING_CYCLE.md §2)")
+                elif lens_lines:
+                    ll_lower = lens_lines[-1].lower()
                     has_fold = 'fold' in ll_lower
                     cleaned = re.sub(r'\b(?:not|no|never)\s+(?:\w+\s+)?dry\b', '', ll_lower)
                     has_dry = bool(re.search(r'\bdry\b', cleaned))
