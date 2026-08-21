@@ -94,6 +94,13 @@ Builds directly on **diagnostic-495** (`bellows/knowledge/research/wrap-hook-dae
 - ACID (alone, on the four-lens-folded draft): w7 dry — no fold re-opens another; the one cross-section dependency (Step 3 verifies what Step 2 (F) performs, using the id Step 2 (B) writes) is stated consistently from both ends.
 **Walk 7 STATUS:** 0 folded — instruction 0 / record 0 — **DRY**. Yield 8 → 8 → 2 → 8 → 4 → 1 → 0. The last event before deposit is a dry pass and the final walk carries zero INSTRUCTION-class findings (§2 bar met on the class test).
 
+**§5 Conformance pass (run at shape-stability, AFTER the closing dry walk; exit codes are the LAST run's):**
+- `plan_lint.py` → **exit 0**, 10 PASS / 0 FAIL. Declared WARNs, each understood: two `step N mentions tests but declares no test scope` (steps 1 and 3 RUN the suite but create no `test_*.py`; step 2, which does, PASSES the check), and two `missing path` notices for `tests/test_wrap_hooks.py` and `pytest_baseline.txt` — both are artifacts this plan CREATES, so their absence now is correct.
+- `propagation_check.py` → **exit 2 (COULD NOT RUN)** — no Numbers-discipline symbol table is declared, so detector (1) has nothing to check. Recorded as could-not-run, NOT as clean ([[reason-for-not-running-is-itself-a-claim]]).
+- ⚠️ **Cold panel (T2, §2.6): NOT YET RUN — this plan is not deposit-ready until it is.** Recorded here rather than waived: §1 computes T2 from T-6, and §2.6 requires the panel once the bar is met. The warm cycle reached BAR_MET; the panel is the remaining gate.
+
+**Closing:** Seven walks (yield **8 → 8 → 2 → 8 → 4 → 1 → 0**), of which walks 1–4 ran on the paired artifact before the CEO-directed split and walks 5–7 on this plan. `cycle_check`: CONTINUE ×3 → **ESCALATE:yield-rising** → split → CONTINUE ×2 → **BAR_MET**. The cycle's highest-value catches were self-referential: the exemption marker would have been inherited by its own acceptance test and by pytest, inverting every assertion that the lock still blocks; and walk 5 found that three of the split's four folds were CUT DAMAGE, including a dangling reference that would have told the agent to implement plan B's sentinel behavior here. The step order is the safety property — Step 1 is purely additive, and the live wiring is repointed only after targeted tests pass, so every halt state leaves the CEO's lock working.
+
 ## Halt states (what the world looks like if this plan stops after each step)
 
 `pause_for_verdict: always`, so every step ends at a verdict gate. The Planner must be able to read a halt without re-deriving the state:
