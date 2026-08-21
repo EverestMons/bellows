@@ -69,7 +69,7 @@ Both are one root cause: **`.wrap-in-progress` is a single file at the governanc
 
 **Closing:** line` (cleared by this block) and two `missing path` notices for `tests/test_wrap_sentinel.py` and plan A's `pytest_baseline.txt` — the first is created by this plan, the second by plan A, which must close first.
 - `propagation_check.py` → **exit 2 (COULD NOT RUN)** — no Numbers-discipline symbol table is declared, so detector (1) has nothing to check. Recorded as could-not-run, NOT as clean ([[reason-for-not-running-is-itself-a-claim]]).
-- ⚠️ **Cold panel (T2, §2.6): NOT YET RUN — this plan is not deposit-ready until it is.** Recorded here rather than waived: §1 computes T2 from T-6, and §2.6 requires the panel once the bar is met. The warm cycle reached BAR_MET; the panel is the remaining gate.
+- **Cold panel (T2, §2.6): RUN AND CLOSED 2026-08-21** — four sequential seats; see the panel record in the §5 block below.
 
 **Closing:** Three walks (yield **7 → 1 → 1**), the final one carrying zero INSTRUCTION-class findings (its sole fold is a RECORD-class scope correction). `cycle_check`: CONTINUE ×2 → **BAR_MET**. Three of walk 1's folds were cross-artifact SWEEPS into plan A rather than fixes recorded only here ([[fold-sweep-every-site]]), and the ACID pass caught an acceptance test that could not have been run at all — it required `wrap_check` to PASS while the QA step necessarily holds uncommitted evidence, so the unlink assertions were re-homed to unit tests where the checker can be monkeypatched. The plan claims exactly what it can deliver: ownership and misattribution are fixed, independent concurrent wrapping on shared repos is NOT, and that bound is stated in the Context rather than designed around.
 
