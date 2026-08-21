@@ -298,3 +298,35 @@ full-existing-suite-stays-green row.
 
 No code is edited by this diagnostic. The downstream executable builds
 from this spec.
+
+---
+
+## Appendix: Post-Executable Verification (dispatch 491)
+
+Re-verification after the downstream executable (dispatch 490) applied the
+fix and added the test matrix rows. All claims in §§1–5 confirmed.
+
+**Census (§1):** re-ran grep across `knowledge/decisions/Done/*.md` —
+50 DC plans, 16 lens-line class-split, 1 legacy-arrow on lens lines,
+33 neither. Exact match with original census.
+
+**False-clean proof (§2a):** ran the §2a constructed input through the
+NOW-FIXED `plan_lint.py` — correctly emits
+`WARN: Drafting Cycle closing indicates fold as last event, not a dry lens pass`.
+The false-clean is resolved.
+
+**Judged-stop (§2b):** ran the §2b constructed input — NO fold/dry WARN.
+Legitimate judged stop correctly silent under the fix.
+
+**Code-to-spec match (§3):** the fix at `plan_lint.py:365–413` implements
+§3(a)–(g) exactly: parenthetical stripping (L383/391), segment splitting
+on `;` and `. ` before `wN` (L392–395), max-walk across all lens lines
+(L380–387), instruction sum on final-walk segments only (L396–404),
+fallback to last-lens heuristic when no class split detected (L407–413),
+WARN posture (L406).
+
+**Test suite (§5 row vi):** `pytest tests/test_plan_lint.py -k test_lint_cycle`
+— 27/27 passed (22 original + 5 class-split rows from the test matrix).
+Assertion counts post-executable: 17 `"fold as last event" not in` (was 13)
++ 11 `"dry lens pass" in` (was 10) + 5 `"dry lens pass" not in` (unchanged)
+= 33 fold/dry assertions across 27 test functions.
