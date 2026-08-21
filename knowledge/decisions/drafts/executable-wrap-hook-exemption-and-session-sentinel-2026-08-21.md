@@ -86,7 +86,9 @@ Builds directly on **diagnostic-495** (`bellows/knowledge/research/wrap-hook-dae
 
 ## STEP 2 — DEV: daemon exemption + per-session sentinel (edit the VENDORED copies, then repoint)
 
-**Role:** DEV. Edit ONLY under `bellows/hooks/eluvian/` — never `~/.claude/eluvian/` directly. The repoint in item 5 is what makes the vendored copies live.
+**Role:** DEV. Edit ONLY under `bellows/hooks/eluvian/` — never `~/.claude/eluvian/` directly. The repoint in (F) is what makes the vendored copies live.
+
+⚠️ **EXECUTION ORDER — (A0) → (A) → (B) → (C) → (D) → (E) → (G) → (F).** The items are LETTERED for reference, not sequenced for execution, and (F) is deliberately out of alphabetical order: it is the LAST action, gated on (G)'s tests being green. Do not execute this section top-to-bottom. Read this ordering line as authoritative wherever it conflicts with document order.
 
 **(A0) FIRST ACTION — back up the live settings file.** Copy `~/.claude/settings.json` verbatim to `/Users/marklehn/Developer/GitHub/bellows/hooks/settings-backup-2026-08-21.json` before anything else. ⚠️ Do this at the START, not as part of (F): it is a pure read-and-copy that is safe on every path, and this step's declared Deposits are treated as REQUIRED by `deposit_exists` and `rule_22_verification` — so if the backup were only written during (F), a CORRECT halt at (G) (tests not green, repoint deliberately not done) would gate-FAIL on a missing deposit ([[bellows-plan-deposits-block-format]] Convention 4: a Deposits block lists only files the step produces on EVERY path). Creating it first makes it unconditional.
 
