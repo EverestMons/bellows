@@ -1,0 +1,60 @@
+=== Two-Session Sentinel Canary ===
+Date: 2026-08-21T21:28:45Z
+Hooks: /Users/marklehn/Developer/GitHub/bellows/hooks/eluvian (vendored, plan-A-wired)
+Scratch dir: /var/folders/vf/8nw0z7hj1m34w6z48l5dp54w0000gn/T/tmpt589490z
+BELLOWS_DISPATCH: (unset)
+ELUVIAN_WRAP_ROOT: /var/folders/vf/8nw0z7hj1m34w6z48l5dp54w0000gn/T/tmpt589490z
+
+=== Pre-check: governance root sentinels ===
+(none — clean)
+
+=== (i) Session A arms ===
+Payload: {"session_id":"canary-session-AAAA-1111","prompt":"/wrap"}
+Output: {"hookSpecificOutput": {"hookEventName": "UserPromptSubmit", "additionalContext": "[wrap-lock ARMED] A session wrap was requested; the completion lock is engaged. Follow the /wrap ritual (eluvian-session-wrap-ritual memory); you cannot end a turn until wrap_check.py verifies all four repos. If this was not a wrap request, remove /var/folders/vf/8nw0z7hj1m34w6z48l5dp54w0000gn/T/tmpt589490z/.wrap-in-progress-canary-session-AAAA-1111 to disarm."}}
+Sentinels after arm: ['.wrap-in-progress-canary-session-AAAA-1111']
+Bare exists: NO
+Per-session A exists: YES
+
+>>> (i) PASSED: per-session sentinel created, no bare file
+
+=== (ii) Session B (UNARMED) runs Stop hook ===
+Payload: {"session_id":"canary-session-BBBB-2222"}
+Raw output:
+{"decision": "block", "reason": "SESSION WRAP INCOMPLETE \u2014 the following steps are not verifiably done:\n\n  \u2717 [1/project] bellows: 2 uncommitted file(s) in knowledge/decisions/Done/ \u2014 commit completed plan files.\n  \u2717 [2/bellows] 5 uncommitted file(s) under verdicts/resolved/ \u2014 commit consumed verdicts.\n  \u2717 [2/bellows] 60 commit(s) not pushed \u2014 push bellows.\n  \u2717 [3/root] bellows gitlink is uncommitted \u2014 `git add bellows` and commit the bump.\n  \u2717 [3/root] 1 commit(s) not pushed \u2014 push governance root.\n  \u2717 [4/memory] 2 uncommitted change(s) in the memory repo \u2014 commit memories + MEMORY.md.\n\nComplete these, then this lock clears automatically.\n\n[wrap-lock] This turn is blocked until the wrap verifies. Complete the steps above; the lock clears automatically. (To abort YOUR wrap, delete /var/folders/vf/8nw0z7hj1m34w6z48l5dp54w0000gn/T/tmpt589490z/.wrap-in-progress-canary-session-BBBB-2222.)\n\n\u26a0\ufe0f OTHER SESSION(S) ARE ALSO WRAPPING:\n  \u2022 .wrap-in-progress-canary-session-AAAA-1111 (age: 0s)\n\nSome or all of the listed items above may belong to another session. Do NOT commit, push, add, or otherwise resolve work you did not do \u2014 wait for the other session to finish. A fresh sentinel means the session is likely still active; a stale one (hours old) may indicate an abandoned wrap. Clearing a FOREIGN sentinel is the CEO's decision alone and never the model's."}
+
+Decision: block
+A's sentinel still exists: YES
+B's sentinel exists: NO
+
+>>> (ii) PASSED: B BLOCKED (ARM-IF-ANY), A's sentinel preserved (non-removal of foreign sentinel)
+
+=== (iii) Both armed, B's Stop hook ===
+Arming B...
+Sentinels: ['.wrap-in-progress-canary-session-AAAA-1111', '.wrap-in-progress-canary-session-BBBB-2222']
+
+Raw output:
+{"decision": "block", "reason": "SESSION WRAP INCOMPLETE \u2014 the following steps are not verifiably done:\n\n  \u2717 [1/project] bellows: 2 uncommitted file(s) in knowledge/decisions/Done/ \u2014 commit completed plan files.\n  \u2717 [2/bellows] 5 uncommitted file(s) under verdicts/resolved/ \u2014 commit consumed verdicts.\n  \u2717 [2/bellows] 60 commit(s) not pushed \u2014 push bellows.\n  \u2717 [3/root] bellows gitlink is uncommitted \u2014 `git add bellows` and commit the bump.\n  \u2717 [3/root] 1 commit(s) not pushed \u2014 push governance root.\n  \u2717 [4/memory] 2 uncommitted change(s) in the memory repo \u2014 commit memories + MEMORY.md.\n\nComplete these, then this lock clears automatically.\n\n[wrap-lock] This turn is blocked until the wrap verifies. Complete the steps above; the lock clears automatically. (To abort YOUR wrap, delete /var/folders/vf/8nw0z7hj1m34w6z48l5dp54w0000gn/T/tmpt589490z/.wrap-in-progress-canary-session-BBBB-2222.)\n\n\u26a0\ufe0f OTHER SESSION(S) ARE ALSO WRAPPING:\n  \u2022 .wrap-in-progress-canary-session-AAAA-1111 (age: 0s)\n\nSome or all of the listed items above may belong to another session. Do NOT commit, push, add, or otherwise resolve work you did not do \u2014 wait for the other session to finish. A fresh sentinel means the session is likely still active; a stale one (hours old) may indicate an abandoned wrap. Clearing a FOREIGN sentinel is the CEO's decision alone and never the model's."}
+
+Decision: block
+Names foreign sentinel: YES
+Includes age: YES
+Instructs waiting: YES
+Includes 'Do NOT': YES
+
+>>> (iii) PASSED: B blocked on own sentinel, message names A's foreign sentinel with age, instructs waiting
+
+=== Unit-test assertions (iv), (v), (vi) — from test_wrap_sentinel.py ===
+These ran as part of the full suite (1231 passed). Specific tests:
+  (iv) TestDisarmDefect::test_b_removes_only_own_on_pass — PASSED
+  (v)  TestDisarmDefect::test_a_can_still_clear_own_on_pass — PASSED
+  (vi) TestBareSentinel::test_bare_clears_on_pass + test_bare_never_renamed_on_block + test_bare_never_renamed_on_pass — all PASSED
+
+=== Post-check: governance root sentinels ===
+(none — clean)
+
+=== Hooks log ===
+2026-08-21T16:28:45	UserPromptSubmit-arm	ARMED sid=canary-session-AAAA-1111
+2026-08-21T16:28:45	Stop	armed-BLOCK sid=canary-session-BBBB-2222
+2026-08-21T16:28:45	UserPromptSubmit-arm	ARMED sid=canary-session-BBBB-2222
+2026-08-21T16:28:45	Stop	armed-BLOCK sid=canary-session-BBBB-2222
+
