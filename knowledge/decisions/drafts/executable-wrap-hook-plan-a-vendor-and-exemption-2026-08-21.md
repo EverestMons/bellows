@@ -86,6 +86,14 @@ Builds directly on **diagnostic-495** (`bellows/knowledge/research/wrap-hook-dae
 - ACID (alone, on the four-lens-folded draft): w6 dry — the single fold replaces one verification with two and touches nothing else; no fold from walks 1–5 is re-opened.
 **Walk 6 STATUS:** 1 folded — instruction 1 / record 0 — NOT dry. Yield 8 → 8 → 2 → 8 → 4 → 1, falling again now that the cut damage is closed.
 
+**Walk 7 — closing walk, lens-by-lens over the whole artifact:**
+- Weak spots (1.4):   w7 dry — every instruction that asks for a judgement now carries its own failure mode, and the load-bearing safety rule (W5-1) was re-verified against source rather than recalled: `wrap_stop_hook.py`'s last-resort handler prints `{"systemMessage": ...}` and `sys.exit(0)` — it ALLOWS, with no `decision: block`, confirming that an unhandled parse error would silently disable the lock exactly as the fold states.
+- Destruction (2.4):  w7 dry — the write surface is unchanged from walk 6: seven vendored artifacts plus a baseline (Step 1), six edited files plus a backup and a test module (Step 2), three QA artifacts (Step 3), and the single out-of-repo `settings.json` edit, which is bounded by a diff and two JSON parses.
+- Vulnerabilities:    w7 dry — Scope/Deposits parity verified MECHANICALLY rather than by eye (the [[freeze-checklist-is-undefined-doctrine]] failure this session already produced once): step 1 = 8/8, step 2 = 8/8, step 3 = 3/3, and each step's two lists are set-equal. No conditional file appears in any Deposits block.
+- Integration-record: w7 dry — the recorded yield series (8 → 8 → 2 → 8 → 4 → 1 → 0) matches the per-walk STATUS lines; walks 1–4 remain labelled as paired-artifact provenance; the ESCALATE and its CEO-directed resolution are both on the record.
+- ACID (alone, on the four-lens-folded draft): w7 dry — no fold re-opens another; the one cross-section dependency (Step 3 verifies what Step 2 (F) performs, using the id Step 2 (B) writes) is stated consistently from both ends.
+**Walk 7 STATUS:** 0 folded — instruction 0 / record 0 — **DRY**. Yield 8 → 8 → 2 → 8 → 4 → 1 → 0. The last event before deposit is a dry pass and the final walk carries zero INSTRUCTION-class findings (§2 bar met on the class test).
+
 ## Halt states (what the world looks like if this plan stops after each step)
 
 `pause_for_verdict: always`, so every step ends at a verdict gate. The Planner must be able to read a halt without re-deriving the state:
