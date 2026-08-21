@@ -39,6 +39,14 @@ Both are one root cause: **`.wrap-in-progress` is a single file at the governanc
 - ACID (alone, on the four-lens-folded draft): w1 1 folded — instruction 1 (A1 assertions (ii)/(iii) required "with `wrap_check` passing", but `wrap_check` inspects the four real git repos and `ELUVIAN_WRAP_ROOT` does not redirect that — mid-QA the repo necessarily holds uncommitted evidence, so the unlink branch is UNREACHABLE in a canary and the only way to satisfy it would be committing one's own evidence mid-verification → assertions split by vehicle: ownership-under-block in the canary, unlink-on-pass in unit tests where the checker can be monkeypatched).
 **Walk 1 STATUS:** 7 folded — instruction 7 / record 0 — NOT dry. Three folds were cross-artifact sweeps into plan A, and the ACID fold caught an acceptance test that could not have been run at all.
 
+**Walk 2 — lens-by-lens over the whole artifact:**
+- Weak spots (1.4):   w2 1 folded — instruction 1 (W2-1 the plan handled a MISSING `session_id` but not an UNUSABLE one: `data.get("session_id", "")` returns an empty string when the key is present but blank, producing `.wrap-in-progress-` — neither bare nor per-session, owned by nobody, matched by the foreign-sentinel glob, and never cleared. A `raising=False` fallback keyed on a missing KEY cannot catch it → explicit non-empty + charset validation, with the empty-string case tested).
+- Destruction (2.4):  w2 dry — the validation fold's failure path routes to the legacy bare-sentinel behavior, i.e. exactly today's semantics; the worst case degrades to the status quo rather than to an unlocked or unclearable state.
+- Vulnerabilities:    w2 dry — with validation in place the `.wrap-in-progress-*` glob can no longer match a malformed, unowned file, which closes the only way a foreign-sentinel report could be populated by this plan's own bug rather than by a real second session.
+- Integration-record: w2 dry — the two fallback bullets in (1) are consistent (invalid id and missing id both take bare behavior); the canary/unit split from walk 1 still names every assertion exactly once, in one vehicle.
+- ACID (alone, on the four-lens-folded draft): w2 dry — the single fold adds a precondition to one code path and re-uses the already-specified fallback; no other fold, probe, or assertion is touched.
+**Walk 2 STATUS:** 1 folded — instruction 1 / record 0 — NOT dry. Yield 7 → 1.
+
 ## STEP 1 — DEV: per-session sentinel + anti-hijack message
 
 **Role:** DEV. Edit ONLY under `bellows/hooks/eluvian/`.
