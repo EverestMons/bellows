@@ -59,6 +59,14 @@ The Eluvian wrap-enforcement layer ([[wrap-completion-lock]], built 2026-08-20) 
 - ACID (alone, on the four-lens-folded draft): w2 1 folded — instruction 0 / record 1 (the Context asserted the sentinel-disarm attribution as FACT while lens 3 was busy mandating that exactly this class be labelled inferred — the plan violated its own instruction in its own account of itself; labelled it, with the supporting two-source join shown).
 **Walk 2 STATUS:** 8 folded — instruction 6 / record 2 — NOT dry. The chain lens1→lens2→lens4 (cite precedent → find its leak → stop the citation reading as endorsement) is sequential folding paying for itself: a batched pass would have shipped the citation without the leak analysis.
 
+**Walk 3 — lens-by-lens over the whole artifact:**
+- Weak spots (1.4):   w3 1 folded — instruction 1 (Q3 has a defined SKIP path, so an unmeasured premise could be absorbed silently into Q5's confident design — the exact 489→490 failure; mandated a closing `## What could not be measured` section, with an EMPTY one declared a legitimate result so its presence cannot be gamed).
+- Destruction (2.4):  w3 1 folded — instruction 1 (the census queries two DBs the daemon is CONCURRENTLY writing — `lifecycle.db-wal`/`-shm` present — so a plain-path open could create or upgrade a journal on a live DB; mandated `file:<abs>?mode=ro`).
+- Vulnerabilities:    w3 dry — the candidate finding (that the `mode=ro` URI form might not work in the `sqlite3` CLI and would strand the census) was TESTED rather than assumed: `sqlite3 "file:<abs>/lifecycle.db?mode=ro" "select count(*) from plans;"` returns a row, exit 0. No fold; the instruction is executable as written.
+- Integration-record: w3 dry — Q2's `mode=ro` mandate, the MUST-PRESERVE read-only contract, and the `## What could not be measured` requirement are mutually consistent; the WAL/-shm claim was verified present; Deposits and Scope still name exactly one identical path.
+- ACID (alone, on the four-lens-folded draft): w3 dry — walk 3's two folds are independent (a reporting-surface addition and an access-mode constraint); neither touches a probe, a count, or a path the other relies on, and neither re-opens a walk-1 or walk-2 fold.
+**Walk 3 STATUS:** 2 folded — instruction 2 / record 0 — NOT dry (bar unmet: the class test is zero INSTRUCTION-class findings on the final walk). Yield 17 → 8 → 2, falling, and both walk-3 folds are reporting-contract items rather than defects in the substance.
+
 ## STEP 1 — READ-ONLY DIAGNOSTIC (characterize + census + exemption design + canary spec)
 
 **Role:** DEV (read-only audit). Contract: `/Users/marklehn/Developer/GitHub/READONLY_AUDIT_CONTRACT.md`. Read it first and comply.
