@@ -52,6 +52,14 @@ Builds directly on **diagnostic-495** (`bellows/knowledge/research/wrap-hook-dae
 - ACID (alone, on the four-lens-folded draft): w2 2 folded — instruction 2 (A2-1 canary (i) asserted lines "for that session" against a log that **structurally cannot express it** — `hooks.log` has no session id, so the assertion was unearnable ([[earn-the-clean-gate-dont-author-it]]); since (C) already parses `session_id`, `hooklog` now appends it on every branch, which simultaneously closes the owed instrumentation diagnostic-495 identified; A2-2 the assertion was re-specified to match by ID rather than recency, because other sessions write to that log concurrently).
 **Walk 2 STATUS:** 8 folded — instruction 7 / record 1 — NOT dry. The two highest-value folds are self-referential: the fix's own marker would have broken its acceptance test (W2-1), and the acceptance test asserted a property the log could not carry until this plan added it (A2-1).
 
+## Halt states (what the world looks like if this plan stops after each step)
+
+`pause_for_verdict: always`, so every step ends at a verdict gate. The Planner must be able to read a halt without re-deriving the state:
+- **After Step 1:** vendored copies committed in the repo; `~/.claude/` untouched; `settings.json` unchanged. The live lock runs exactly the code it runs today. **Nothing is owed** — Step 1 is purely additive and safe to leave indefinitely.
+- **After Step 2:** the live wiring points at the vendored copies, which carry the exemption and per-session sentinel and have passed TARGETED tests but not the full suite or the live canary. The lock is believed working but not yet live-proven. **A halt here is acceptable but not indefinite** — the revert is `settings-backup-2026-08-21.json`, and the originals under `~/.claude/eluvian/` are still present and unmodified.
+- **Mid-Step-2 halt (tests not green, repoint deliberately not done):** identical to "after Step 1" for the live layer — nothing is repointed, so nothing is at risk. This is the designed failure path, not a broken state.
+- **After Step 3:** fully shipped and live-verified.
+
 ## STEP 1 — DEV: vendor the enforcement layer into the repo (ADDITIVE ONLY, zero behavior change)
 
 **Role:** DEV.
