@@ -16,25 +16,31 @@ from __future__ import annotations
 
 import datetime
 import json
+import os
 import subprocess
 import sys
 from pathlib import Path
 
 CHECK = Path(__file__).with_name("wrap_check.py")
-LOG = Path("/Users/marklehn/.claude/eluvian/hooks.log")
+_DEFAULT_LOG = Path("/Users/marklehn/.claude/eluvian/hooks.log")
+
+_BELLOWS_DISPATCH_ALLOW = {"1", "true", "yes"}
 
 
-def hooklog(event: str, detail: str = "") -> None:
-    """Append-only trace proving the HARNESS invoked this hook. Never raises."""
+def _log_path():
+    return Path(os.environ.get("ELUVIAN_HOOKS_LOG") or str(_DEFAULT_LOG))
+
+
+def hooklog(event, detail=""):
     try:
         ts = datetime.datetime.now().isoformat(timespec="seconds")
-        with LOG.open("a") as f:
+        with _log_path().open("a") as f:
             f.write(f"{ts}\t{event}\t{detail}\n")
     except Exception:
         pass
 
 
-def emit(context: str | None):
+def emit(context):
     out = {}
     if context:
         out = {
@@ -47,24 +53,44 @@ def emit(context: str | None):
     sys.exit(0)
 
 
-def main():
+def _parse_session_id(raw):
     try:
-        sys.stdin.read()
+        if raw and raw.strip():
+            data = json.loads(raw)
+            if isinstance(data, dict):
+                sid = data.get("session_id")
+                if sid:
+                    return str(sid)
     except Exception:
         pass
+    return "unknown"
+
+
+def main():
+    try:
+        raw = sys.stdin.read()
+    except Exception:
+        raw = ""
+
+    session_id = _parse_session_id(raw)
+
+    if os.environ.get("BELLOWS_DISPATCH", "").strip().lower() in _BELLOWS_DISPATCH_ALLOW:
+        hooklog("SessionStart", f"daemon-exempt sid={session_id}")
+        emit(None)
+
     try:
         res = subprocess.run(
             [sys.executable, str(CHECK)],
             capture_output=True, text=True, timeout=120,
         )
     except Exception:
-        emit(None)  # fail open, silent
+        emit(None)
 
     if res.returncode == 0:
-        hooklog("SessionStart", "clean")
-        emit(None)  # no debt -> stay quiet
+        hooklog("SessionStart", f"clean sid={session_id}")
+        emit(None)
 
-    hooklog("SessionStart", "DEBT-injected")
+    hooklog("SessionStart", f"DEBT-injected sid={session_id}")
     checklist = (res.stdout or "").strip()
     emit(
         "⚠️ UNWRAPPED SESSION DEBT DETECTED. A prior session ended without "

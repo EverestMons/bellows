@@ -221,6 +221,7 @@ def run_step(
             stderr=subprocess.PIPE,
             text=True,
             cwd=project_path,
+            env={**os.environ, "BELLOWS_DISPATCH": "1"},
         )
     except Exception as e:
         _write_log(log_path, {

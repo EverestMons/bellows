@@ -1997,6 +1997,7 @@ def _run_auth_preflight(observer=None, response_server=None):
             capture_output=True,
             text=True,
             timeout=15,
+            env={**os.environ, "BELLOWS_DISPATCH": "1"},
         )
     except subprocess.TimeoutExpired:
         _log(

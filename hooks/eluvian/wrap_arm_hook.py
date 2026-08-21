@@ -16,28 +16,21 @@ Match policy (deliberate bias toward arming):
   "can you explain the wrap") do not.
 
 FAIL-OPEN: never blocks the prompt; on any error it just lets the prompt through.
+
+No daemon-exemption guard: a daemon prompt never matches the arm trigger,
+and adding one would be an untested change with no failure it prevents.
 """
 from __future__ import annotations
 
 import datetime
 import json
+import os
 import re
 import sys
 from pathlib import Path
 
-ROOT = Path("/Users/marklehn/Developer/GitHub")
-SENTINEL = ROOT / ".wrap-in-progress"
-LOG = Path("/Users/marklehn/.claude/eluvian/hooks.log")
-
-
-def hooklog(event: str, detail: str = "") -> None:
-    """Append-only trace proving the HARNESS invoked this hook. Never raises."""
-    try:
-        ts = datetime.datetime.now().isoformat(timespec="seconds")
-        with LOG.open("a") as f:
-            f.write(f"{ts}\t{event}\t{detail}\n")
-    except Exception:
-        pass
+_DEFAULT_ROOT = Path("/Users/marklehn/Developer/GitHub")
+_DEFAULT_LOG = Path("/Users/marklehn/.claude/eluvian/hooks.log")
 
 # Anchored at message start. Allows a short polite/lead-in prefix only.
 TRIGGER = re.compile(
@@ -48,6 +41,40 @@ TRIGGER = re.compile(
 )
 
 
+def _wrap_root():
+    return Path(os.environ.get("ELUVIAN_WRAP_ROOT") or str(_DEFAULT_ROOT))
+
+
+def _sentinel_path():
+    return _wrap_root() / ".wrap-in-progress"
+
+
+def _log_path():
+    return Path(os.environ.get("ELUVIAN_HOOKS_LOG") or str(_DEFAULT_LOG))
+
+
+def hooklog(event, detail=""):
+    try:
+        ts = datetime.datetime.now().isoformat(timespec="seconds")
+        with _log_path().open("a") as f:
+            f.write(f"{ts}\t{event}\t{detail}\n")
+    except Exception:
+        pass
+
+
+def _parse_session_id(raw):
+    try:
+        if raw and raw.strip():
+            data = json.loads(raw)
+            if isinstance(data, dict):
+                sid = data.get("session_id")
+                if sid:
+                    return str(sid)
+    except Exception:
+        pass
+    return "unknown"
+
+
 def main():
     try:
         raw = sys.stdin.read()
@@ -55,11 +82,18 @@ def main():
     except Exception:
         print("{}")
         return
+
+    try:
+        session_id = str(data["session_id"]) if data.get("session_id") else "unknown"
+    except Exception:
+        session_id = "unknown"
+
     prompt = (data.get("prompt") or "").strip()
     if TRIGGER.search(prompt):
-        hooklog("UserPromptSubmit-arm", "ARMED")
+        sentinel = _sentinel_path()
+        hooklog("UserPromptSubmit-arm", f"ARMED sid={session_id}")
         try:
-            SENTINEL.touch()
+            sentinel.touch()
             print(json.dumps({
                 "hookSpecificOutput": {
                     "hookEventName": "UserPromptSubmit",
@@ -68,14 +102,14 @@ def main():
                         "completion lock is engaged. Follow the /wrap ritual "
                         "(eluvian-session-wrap-ritual memory); you cannot end a "
                         "turn until wrap_check.py verifies all four repos. If this "
-                        f"was not a wrap request, remove {SENTINEL} to disarm."
+                        f"was not a wrap request, remove {sentinel} to disarm."
                     ),
                 }
             }))
             return
         except Exception:
             pass
-    hooklog("UserPromptSubmit-arm", "ignored")
+    hooklog("UserPromptSubmit-arm", f"ignored sid={session_id}")
     print("{}")
 
 

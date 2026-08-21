@@ -132,6 +132,7 @@ def consult(
                     capture_output=True,
                     text=True,
                     timeout=120,
+                    env={**os.environ, "BELLOWS_DISPATCH": "1"},
                 )
             except subprocess.TimeoutExpired:
                 fallback = {"decision": "escalate", "reason": "Planner consultation timed out", "next_step_prompt": None}

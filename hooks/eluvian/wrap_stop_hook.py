@@ -16,23 +16,38 @@ since no turn-end hook can veto a terminal close.)
 FAIL-OPEN: any error in this hook or the checker allows the stop. A guard that
 can itself trap the operator is worse than the skip it prevents.
 """
+from __future__ import annotations
+
 import datetime
 import json
+import os
 import subprocess
 import sys
 from pathlib import Path
 
-ROOT = Path("/Users/marklehn/Developer/GitHub")
-SENTINEL = ROOT / ".wrap-in-progress"
+_DEFAULT_ROOT = Path("/Users/marklehn/Developer/GitHub")
 CHECK = Path(__file__).with_name("wrap_check.py")
-LOG = Path("/Users/marklehn/.claude/eluvian/hooks.log")
+_DEFAULT_LOG = Path("/Users/marklehn/.claude/eluvian/hooks.log")
+
+_BELLOWS_DISPATCH_ALLOW = {"1", "true", "yes"}
 
 
-def hooklog(event: str, detail: str = "") -> None:
-    """Append-only trace proving the HARNESS invoked this hook. Never raises."""
+def _wrap_root():
+    return Path(os.environ.get("ELUVIAN_WRAP_ROOT") or str(_DEFAULT_ROOT))
+
+
+def _sentinel_path():
+    return _wrap_root() / ".wrap-in-progress"
+
+
+def _log_path():
+    return Path(os.environ.get("ELUVIAN_HOOKS_LOG") or str(_DEFAULT_LOG))
+
+
+def hooklog(event, detail=""):
     try:
         ts = datetime.datetime.now().isoformat(timespec="seconds")
-        with LOG.open("a") as f:
+        with _log_path().open("a") as f:
             f.write(f"{ts}\t{event}\t{detail}\n")
     except Exception:
         pass
@@ -43,21 +58,41 @@ def allow():
     sys.exit(0)
 
 
-def block(reason: str):
+def block(reason):
     print(json.dumps({"decision": "block", "reason": reason}))
     sys.exit(0)
 
 
-def main():
-    # Drain stdin (hook receives JSON; we don't need its contents).
+def _parse_session_id(raw):
     try:
-        sys.stdin.read()
+        if raw and raw.strip():
+            data = json.loads(raw)
+            if isinstance(data, dict):
+                sid = data.get("session_id")
+                if sid:
+                    return str(sid)
     except Exception:
         pass
+    return "unknown"
 
-    if not SENTINEL.exists():
-        hooklog("Stop", "unarmed-allow")
-        allow()  # wrap not armed -> nothing to enforce
+
+def main():
+    try:
+        raw = sys.stdin.read()
+    except Exception:
+        raw = ""
+
+    session_id = _parse_session_id(raw)
+
+    if os.environ.get("BELLOWS_DISPATCH", "").strip().lower() in _BELLOWS_DISPATCH_ALLOW:
+        hooklog("Stop", f"daemon-exempt sid={session_id}")
+        allow()
+
+    sentinel = _sentinel_path()
+
+    if not sentinel.exists():
+        hooklog("Stop", f"unarmed-allow sid={session_id}")
+        allow()
 
     try:
         res = subprocess.run(
@@ -65,29 +100,27 @@ def main():
             capture_output=True, text=True, timeout=120,
         )
     except Exception as exc:
-        # Checker won't run -> fail open, but leave the sentinel so the next
-        # turn re-attempts enforcement rather than silently disarming.
         block(
             f"[wrap-lock] Could not run wrap_check ({exc}). Wrap is still armed. "
             f"Run `python3 {CHECK}` manually to see remaining steps, or remove "
-            f"{SENTINEL} to disarm."
+            f"{sentinel} to disarm."
         )
 
     if res.returncode == 0:
         try:
-            SENTINEL.unlink()
+            sentinel.unlink()
         except FileNotFoundError:
             pass
-        hooklog("Stop", "armed-pass-disarm")
-        allow()  # wrap complete -> disarm and let the turn end
+        hooklog("Stop", f"armed-pass-disarm sid={session_id}")
+        allow()
 
-    hooklog("Stop", "armed-BLOCK")
+    hooklog("Stop", f"armed-BLOCK sid={session_id}")
     reason = (res.stdout or "").strip() or "Session wrap is incomplete."
     block(
         reason
         + "\n\n[wrap-lock] This turn is blocked until the wrap verifies. "
         + "Complete the steps above; the lock clears automatically. "
-        + f"(To abort a wrap, delete {SENTINEL}.)"
+        + f"(To abort a wrap, delete {sentinel}.)"
     )
 
 
@@ -95,6 +128,5 @@ if __name__ == "__main__":
     try:
         main()
     except Exception as exc:
-        # Absolute last-resort fail-open.
         print(json.dumps({"systemMessage": f"wrap_stop_hook error, allowing: {exc}"}))
         sys.exit(0)
