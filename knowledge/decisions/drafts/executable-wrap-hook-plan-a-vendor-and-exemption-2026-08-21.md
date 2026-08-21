@@ -78,6 +78,14 @@ Builds directly on **diagnostic-495** (`bellows/knowledge/research/wrap-hook-dae
 - ACID (alone, on the four-lens-folded draft): w5 dry — walk 5's folds are independent (one runtime-safety rule, three provenance repairs); none touches a probe, a deposit path, a test assertion, or the execution order.
 **Walk 5 STATUS:** 4 folded — instruction 3 / record 1 — NOT dry. Yield 8 → 8 → 2 → 8 → 4. ⚠️ Three of four are CUT DAMAGE — the split itself introduced defects, exactly as [[a-subtractive-cut-needs-a-diff-review]] predicts, and one of them (the dangling (C) reference) would have told the agent to implement plan B's sentinel behavior inside plan A.
 
+**Walk 6 — lens-by-lens over the whole artifact:**
+- Weak spots (1.4):   w6 1 folded — instruction 1 (W6-1 Step 3 item 3 told QA to `cmp` the backup against "the pre-edit original" — but after (F) that original exists ONLY as the backup, so the assertion compares a file to itself and can never fail: an unearnable check dressed as verification ([[earn-the-clean-gate-dont-author-it]]) → replaced with the two checkable claims, a bounded `diff` (only the three eluvian paths may differ) and a JSON parse of both files).
+- Destruction (2.4):  w6 dry — no instruction added or removed changes what the step writes; the revert path (backup file) is unaffected and the originals under `~/.claude/eluvian/` remain untouched by every path.
+- Vulnerabilities:    w6 dry — re-checked the three probes this plan asks an agent to earn: the byte-identity `cmp` in Step 1 (real files on both sides), the `hooks.log` id assertion in Step 3 (i) (earnable only because (B) adds the id), and the bounded `diff` from W6-1. None now rests on a comparison whose two sides are the same artifact.
+- Integration-record: w6 dry — Step 3's three items agree with Step 2's (F): the repoint it verifies is the one (F) performs, the backup it diffs is the one (A0) takes, and the id it greps is the one (B) writes.
+- ACID (alone, on the four-lens-folded draft): w6 dry — the single fold replaces one verification with two and touches nothing else; no fold from walks 1–5 is re-opened.
+**Walk 6 STATUS:** 1 folded — instruction 1 / record 0 — NOT dry. Yield 8 → 8 → 2 → 8 → 4 → 1, falling again now that the cut damage is closed.
+
 ## Halt states (what the world looks like if this plan stops after each step)
 
 `pause_for_verdict: always`, so every step ends at a verdict gate. The Planner must be able to read a halt without re-deriving the state:
