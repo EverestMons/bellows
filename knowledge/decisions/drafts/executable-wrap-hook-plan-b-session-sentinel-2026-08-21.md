@@ -49,7 +49,7 @@ Both are one root cause: **`.wrap-in-progress` is a single file at the governanc
 
 ## STEP 1 — DEV: per-session sentinel + anti-hijack message
 
-**Role:** DEV. Edit ONLY under `bellows/hooks/eluvian/`.
+**Role:** DEV. Edit ONLY under `bellows/hooks/eluvian/`. ⚠️ **`wrap_debt_hook.py` is deliberately NOT in this plan's scope and must not be edited.** Premise verified against source 2026-08-21: it contains **0** occurrences of `wrap-in-progress` and **0** of `SENTINEL` (positive control: `wrap_stop_hook.py` has 2 of the former), i.e. the SessionStart debt gate never consults a sentinel, so per-session ownership has nothing to change there. Plan A already exempts it for daemon sessions. Declaring it here would either invite a gratuitous edit to a FAIL-OPEN hook or leave a declared deposit the step does not touch ([[subtractive-trim-verify-the-premise]] — the premise for this removal is the grep above, not an assumption).
 
 ⚠️⚠️ **YOUR EDITS GO LIVE THE MOMENT YOU SAVE THEM — check that no wrap is armed before you start.** The hook *wiring* (the `command` paths in `settings.json`) is read at session start, but the hook *scripts* are executed as fresh subprocesses on every event, so they are re-read each time: the instant you write these files, every live session on this machine — including the CEO's — begins running your in-progress code. Therefore: before editing, confirm `ls /Users/marklehn/Developer/GitHub/.wrap-in-progress*` finds NOTHING. If a sentinel exists, a wrap is in flight and you must STOP and report rather than edit the lock out from under it. Re-check after your final edit, and say in your Receipt what both checks returned. (The bare-sentinel compatibility rule in (1) is what makes a mid-flight legacy wrap survive this transition at all — it is not a licence to edit during one.)
 
@@ -70,13 +70,11 @@ Both are one root cause: **`.wrap-in-progress` is a single file at the governanc
 **Scope:**
 - `/Users/marklehn/Developer/GitHub/bellows/hooks/eluvian/wrap_stop_hook.py`
 - `/Users/marklehn/Developer/GitHub/bellows/hooks/eluvian/wrap_arm_hook.py`
-- `/Users/marklehn/Developer/GitHub/bellows/hooks/eluvian/wrap_debt_hook.py`
 - `/Users/marklehn/Developer/GitHub/bellows/tests/test_wrap_sentinel.py`
 
 **Deposits:**
 - `/Users/marklehn/Developer/GitHub/bellows/hooks/eluvian/wrap_stop_hook.py`
 - `/Users/marklehn/Developer/GitHub/bellows/hooks/eluvian/wrap_arm_hook.py`
-- `/Users/marklehn/Developer/GitHub/bellows/hooks/eluvian/wrap_debt_hook.py`
 - `/Users/marklehn/Developer/GitHub/bellows/tests/test_wrap_sentinel.py`
 
 **Commit:** repo-asserting absolute form (`git -C /Users/marklehn/Developer/GitHub/bellows add <abs> && git -C ... commit -m "..."`), explicit pathspec, add before commit. Your final operation is the commit.
