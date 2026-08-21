@@ -67,6 +67,14 @@ The Eluvian wrap-enforcement layer ([[wrap-completion-lock]], built 2026-08-20) 
 - ACID (alone, on the four-lens-folded draft): w3 dry — walk 3's two folds are independent (a reporting-surface addition and an access-mode constraint); neither touches a probe, a count, or a path the other relies on, and neither re-opens a walk-1 or walk-2 fold.
 **Walk 3 STATUS:** 2 folded — instruction 2 / record 0 — NOT dry (bar unmet: the class test is zero INSTRUCTION-class findings on the final walk). Yield 17 → 8 → 2, falling, and both walk-3 folds are reporting-contract items rather than defects in the substance.
 
+**Walk 4 — lens-by-lens over the whole artifact:**
+- Weak spots (1.4):   w4 1 folded — instruction 1 (the out-of-scope-push scan was scoped to channel-2 (BLOCKED) steps only; a channel-1 injection alone directs a worker to resolve wrap debt "BEFORE starting new work" and it can act without ever being blocked — so the census would have systematically under-counted the harm it exists to size. Widened to either-channel).
+- Destruction (2.4):  w4 dry — the widened scan reads more logs and writes nothing new; no new path, DB, or process is touched by the fold.
+- Vulnerabilities:    w4 dry — Q4's positive control still resolves (`runner.py:201-207` remains the cited known site after all folds); no probe in the plan now rests on an unproven literal.
+- Integration-record: w4 dry — the widened Q2 scope stays consistent with the hooks.log corroboration clause (which already spans both channels) and with the Context's account of exec-493 (which carried both).
+- ACID (alone, on the four-lens-folded draft): w4 dry — walk 4's single fold widens a population and touches no probe, count, path, or reconciliation clause.
+**Walk 4 STATUS:** 1 folded — instruction 1 / record 0 — NOT dry. Yield 17 → 8 → 2 → 1.
+
 ## STEP 1 — READ-ONLY DIAGNOSTIC (characterize + census + exemption design + canary spec)
 
 **Role:** DEV (read-only audit). Contract: `/Users/marklehn/Developer/GitHub/READONLY_AUDIT_CONTRACT.md`. Read it first and comply.
