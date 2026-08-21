@@ -4,16 +4,20 @@ Eluvian wrap-arm — Claude Code `UserPromptSubmit` hook.
 
 Makes the PHRASE the trigger, not the model's memory. When the user's message is a
 wrap command ("/wrap", "session wrap", "wrap the session", "wrap up"), this drops
-the `.wrap-in-progress` sentinel so the Stop-hook completion lock engages — WITHOUT
-relying on the model to remember to arm it.
+a per-session `.wrap-in-progress-{session_id}` sentinel so the Stop-hook completion
+lock engages — WITHOUT relying on the model to remember to arm it.
 
 Match policy (deliberate bias toward arming):
   - A false ARM is cheap: the next turn gets blocked with the checklist; abort with
-    `rm .wrap-in-progress`.
+    `rm .wrap-in-progress-*`.
   - A false MISS is the failure we're eliminating (a silent skip).
   So we match liberally BUT anchor to the message start, so command-style messages
   ("session wrap") arm while questions/discussion ("when I say session wrap...",
   "can you explain the wrap") do not.
+
+Per-session sentinel: each session arms `.wrap-in-progress-{session_id}` so
+ownership is scoped. Missing or invalid session_id falls back to the bare
+`.wrap-in-progress` (legacy behavior) — do NOT invent an id.
 
 FAIL-OPEN: never blocks the prompt; on any error it just lets the prompt through.
 
@@ -40,17 +44,33 @@ TRIGGER = re.compile(
     re.IGNORECASE,
 )
 
+_VALID_SESSION_ID = re.compile(r"^[A-Za-z0-9-]+$")
+
 
 def _wrap_root():
     return Path(os.environ.get("ELUVIAN_WRAP_ROOT") or str(_DEFAULT_ROOT))
 
 
-def _sentinel_path():
-    return _wrap_root() / ".wrap-in-progress"
-
-
 def _log_path():
     return Path(os.environ.get("ELUVIAN_HOOKS_LOG") or str(_DEFAULT_LOG))
+
+
+def _validate_session_id(raw_id):
+    """Return raw_id if non-empty and [A-Za-z0-9-] only, else None."""
+    if not raw_id or not isinstance(raw_id, str):
+        return None
+    raw_id = raw_id.strip()
+    if not raw_id or not _VALID_SESSION_ID.match(raw_id):
+        return None
+    return raw_id
+
+
+def _sentinel_for(session_id):
+    """Per-session sentinel if valid id, bare sentinel otherwise."""
+    root = _wrap_root()
+    if session_id:
+        return root / f".wrap-in-progress-{session_id}"
+    return root / ".wrap-in-progress"
 
 
 def hooklog(event, detail=""):
@@ -62,19 +82,6 @@ def hooklog(event, detail=""):
         pass
 
 
-def _parse_session_id(raw):
-    try:
-        if raw and raw.strip():
-            data = json.loads(raw)
-            if isinstance(data, dict):
-                sid = data.get("session_id")
-                if sid:
-                    return str(sid)
-    except Exception:
-        pass
-    return "unknown"
-
-
 def main():
     try:
         raw = sys.stdin.read()
@@ -83,15 +90,14 @@ def main():
         print("{}")
         return
 
-    try:
-        session_id = str(data["session_id"]) if data.get("session_id") else "unknown"
-    except Exception:
-        session_id = "unknown"
+    raw_sid = data.get("session_id")
+    session_id = _validate_session_id(str(raw_sid) if raw_sid is not None else None)
+    log_sid = session_id or "unknown"
 
     prompt = (data.get("prompt") or "").strip()
     if TRIGGER.search(prompt):
-        sentinel = _sentinel_path()
-        hooklog("UserPromptSubmit-arm", f"ARMED sid={session_id}")
+        sentinel = _sentinel_for(session_id)
+        hooklog("UserPromptSubmit-arm", f"ARMED sid={log_sid}")
         try:
             sentinel.touch()
             print(json.dumps({
@@ -109,7 +115,7 @@ def main():
             return
         except Exception:
             pass
-    hooklog("UserPromptSubmit-arm", f"ignored sid={session_id}")
+    hooklog("UserPromptSubmit-arm", f"ignored sid={log_sid}")
     print("{}")
 
 

@@ -311,7 +311,7 @@ class TestArmHookSessionId:
             "ELUVIAN_HOOKS_LOG": str(tmp_path / "hooks.log"),
         })
 
-        assert (tmp_path / ".wrap-in-progress").exists()
+        assert (tmp_path / ".wrap-in-progress-test-id").exists()
 
 
 # ---------- ELUVIAN_WRAP_ROOT override ----------
@@ -343,8 +343,8 @@ class TestWrapRootOverride:
             "ELUVIAN_HOOKS_LOG": str(tmp_path / "hooks.log"),
         })
 
-        assert (custom_root / ".wrap-in-progress").exists()
-        assert not (tmp_path / ".wrap-in-progress").exists()
+        assert (custom_root / ".wrap-in-progress-test").exists()
+        assert not (tmp_path / ".wrap-in-progress-test").exists()
 
     def test_override_not_bound_at_import(self, tmp_path):
         """The sentinel must resolve at call time, not import time.
@@ -360,7 +360,7 @@ class TestWrapRootOverride:
         })
 
         assert result.returncode == 0
-        assert (custom_root / ".wrap-in-progress").exists()
+        assert (custom_root / ".wrap-in-progress-test").exists()
 
 
 # ---------- Lock-intact (unexempt blocks when armed) ----------
