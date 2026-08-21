@@ -385,23 +385,39 @@ def lint(plan_path):
                             wn = int(m.group(1))
                             if wn > max_walk:
                                 max_walk = wn
+                    _walk_header_re = re.compile(r'\*\*Walk\s+(\d+)\b')
+                    for m in _walk_header_re.finditer(dc_block):
+                        wn = int(m.group(1))
+                        if wn > max_walk:
+                            max_walk = wn
+
                     instruction_sum = 0
                     if max_walk > 0:
-                        for l in lens_lines:
-                            clean = re.sub(r'\([^)]*\)', '', l)
-                            segments = re.split(r';\s*', clean)
-                            expanded = []
-                            for seg in segments:
-                                expanded.extend(re.split(r'\.\s+(?=w\d)', seg))
-                            for seg in expanded:
-                                m = _walk_token_re.search(seg)
-                                if m and int(m.group(1)) == max_walk:
-                                    cs = _class_split_re.search(seg)
-                                    if cs:
-                                        instruction_sum += int(cs.group(1))
-                                    elif 'fold' in seg.lower():
-                                        instruction_sum += 1
-                                    break
+                        _status_re = re.compile(
+                            r'\*\*Walk\s+(\d+)\s+STATUS:\*\*.*?instruction\s+(\d+)', re.I)
+                        status_hit = None
+                        for sm in _status_re.finditer(dc_block):
+                            if int(sm.group(1)) == max_walk:
+                                status_hit = sm
+                                break
+                        if status_hit:
+                            instruction_sum = int(status_hit.group(2))
+                        else:
+                            for l in lens_lines:
+                                clean = re.sub(r'\([^)]*\)', '', l)
+                                segments = re.split(r';\s*', clean)
+                                expanded = []
+                                for seg in segments:
+                                    expanded.extend(re.split(r'\.\s+(?=w\d)', seg))
+                                for seg in expanded:
+                                    m = _walk_token_re.search(seg)
+                                    if m and int(m.group(1)) == max_walk:
+                                        cs = _class_split_re.search(seg)
+                                        if cs:
+                                            instruction_sum += int(cs.group(1))
+                                        elif 'fold' in seg.lower():
+                                            instruction_sum += 1
+                                        break
                     if instruction_sum > 0:
                         print("WARN: Drafting Cycle closing indicates fold as last event, not a dry lens pass (DRAFTING_CYCLE.md §2)")
                 elif lens_lines:

@@ -1130,6 +1130,32 @@ def test_lint_cycle_classsplit_multi_segment_regression_silent():
     assert "fold as last event" not in result.stdout.lower()
 
 
+def test_lint_cycle_classsplit_final_dry_walk_headered_silent():
+    """(f-cs6) Headered final-dry-walk (diagnostic-429 format): Walk 2 header + wN-less dry line → SILENT."""
+    plan = """\
+# Test Plan — headered final-dry-walk
+**Date:** 2026-08-21 | **Dispatch Mode:** bellows | **pause_for_verdict:** always | **cycle_tier:** T1
+
+## Drafting Cycle
+**Tier:** T1 — triggers fired: T-7 (authored-from diagnostic).
+
+**Walk 1 (all instruction-class — bar unmet, drove walk 2):**
+- Weak spots:      w1 1 folded — instruction 1 / record 0.
+- Destruction:     w1 1 folded — instruction 1 / record 0.
+- Vulnerabilities: w1 2 folded — instruction 2 / record 0.
+- Integration:     w1 2 folded — instruction 2 / record 0.
+- ACID:            w1 1 folded — instruction 1 / record 0.
+
+**Walk 2 (over the folded draft — all five lenses DRY):**
+- Weak spots: dry. — Destruction: dry. — Vulnerabilities: dry. — Integration: dry. — ACID: dry.
+
+**Closing:** walk 2 full dry — instruction 0 / record 0; the last event before deposit is a dry lens pass. Deposited once.
+"""
+    result = _run_lint(plan)
+    assert result.returncode == 0, f"Expected exit 0, got {result.returncode}\nstdout: {result.stdout}"
+    assert "fold as last event" not in result.stdout.lower()
+
+
 # --- M2 (row 27): cold-panel content check tests ---
 
 def test_lint_m2_hollow_bold_warns():
