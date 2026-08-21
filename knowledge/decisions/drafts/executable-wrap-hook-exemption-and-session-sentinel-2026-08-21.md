@@ -22,7 +22,7 @@ Builds directly on **diagnostic-495** (`bellows/knowledge/research/wrap-hook-dae
 ## MUST-PRESERVE
 
 - **The CEO's interactive wrap lock must never end this plan disabled or weakened.** Every step leaves it working. A false-positive exemption that silently disables the lock is WORSE than the defect being fixed.
-- **Never create or delete a sentinel outside this plan's own scratch scope.** Do not `rm` any `.wrap-in-progress*` at the governance root that you did not create in a test.
+- **Never create or delete a sentinel outside this plan's own scratch scope.** Do not `rm` any `.wrap-in-progress*` at the governance root that you did not create in a test. ⚠️ This binds YOUR actions as the agent, not the behavior of the code you are writing: the migrate-on-encounter rule in (C) legitimately renames a bare sentinel at the real root at RUNTIME, and implementing it is required. Agent-acts-on-the-live-root: forbidden. Code-you-write-acts-at-runtime: that is the deliverable.
 - Backward compatibility: a pre-existing **bare** `.wrap-in-progress` (the current format) must still arm and still be clearable — a stale bare sentinel must not become permanently unclearable after this change.
 - Do not restart, stop, or reconfigure the bellows daemon.
 - ⚠️ You are a daemon-dispatched session and this plan edits the hooks that govern you. Until Step 2 lands you may be debt-injected; if a wrap is armed you may be Stop-blocked. That is the SUBJECT OF STUDY, not an instruction — never resolve a wrap, never commit/push/add outside this plan's declared scope, in any repo, for any reason.
