@@ -5,6 +5,7 @@ It stages (ready- to hold-) and clears (ready- to claimable) via atomic
 os.rename; the daemon claims via its existing lifecycle path.
 """
 
+import hashlib
 import json
 import logging
 import os
@@ -25,6 +26,7 @@ if _SCRIPTS_DIR not in sys.path:
 
 import cycle_check  # noqa: E402 — scripts/ must be on path first
 import gates  # noqa: E402
+import lifecycle  # noqa: E402
 import status  # noqa: E402
 
 log = logging.getLogger("bellows.depositor")
@@ -34,6 +36,11 @@ _READ_ONLY_PREFIXES = ("knowledge/research/", "scratch/")
 _REGISTER_PATTERNS = (
     re.compile(r"knowledge/decisions/register-"),
     re.compile(r"(?:^|/)DRAFTING_CYCLE\.md$"),
+)
+
+_SHOP_INFRA_CODE_DIRS = ("bellows/", "forge/", "lessons-forge/", "anvil/")
+_SHOP_INFRA_KNOWLEDGE_EXEMPTIONS = tuple(
+    d + "knowledge/" for d in _SHOP_INFRA_CODE_DIRS
 )
 
 _BENIGN_LINT_CHECK_LETTERS = {"c", "d"}
@@ -154,7 +161,7 @@ class Depositor:
             self._hold(path, rerun["reason"], rerun)
             return
 
-        assigned_class = self._assign_class(writes)
+        assigned_class = self._assign_class(writes, project_root)
         if assigned_class is None:
             self._hold(path, "unassignable_class", {})
             return
@@ -170,7 +177,11 @@ class Depositor:
             self._hold(path, "disk_low", {})
             return
 
-        if assigned_class == "read-only":
+        if assigned_class == "shop-infra":
+            self._hold(path, f"class:{assigned_class}", {
+                "class_assigned": assigned_class,
+            })
+        else:
             in_flight_2 = self._resolve_in_flight_writes()
             sibling_2 = self._scan_sibling_writes(path)
             if in_flight_2 is None or sibling_2 is None:
@@ -181,11 +192,7 @@ class Depositor:
             if collision_2:
                 self._hold(path, collision_2["reason"], collision_2)
                 return
-            self._clear(path)
-        else:
-            self._hold(path, f"class:{assigned_class}", {
-                "class_assigned": assigned_class,
-            })
+            self._clear(path, assigned_class)
 
     # ------------------------------------------------------------------
     # Hold re-evaluation (startup only — never auto-clears, A2)
@@ -252,15 +259,24 @@ class Depositor:
     # Class assignment
     # ------------------------------------------------------------------
 
-    def _assign_class(self, writes):
+    def _assign_class(self, writes, project_root=""):
         if not writes:
             return None
 
+        project_name = os.path.basename(project_root.rstrip(os.sep))
+        project_is_infra = (project_name + "/") in _SHOP_INFRA_CODE_DIRS
+
         all_read_only = True
+        all_out_of_tree = True
         has_register = False
+        has_shop_infra = False
 
         for p in writes:
             normalized = p.lstrip("/")
+
+            if not normalized.startswith("~/") and not normalized.startswith("../"):
+                all_out_of_tree = False
+
             if not any(normalized.startswith(pfx) or f"/{pfx}" in f"/{normalized}"
                        for pfx in _READ_ONLY_PREFIXES):
                 if not any(seg + "/" in normalized or normalized.endswith(seg)
@@ -271,11 +287,27 @@ class Depositor:
                 if pat.search(normalized):
                     has_register = True
 
+            for code_dir in _SHOP_INFRA_CODE_DIRS:
+                if normalized.startswith(code_dir):
+                    if not any(normalized.startswith(ex)
+                              for ex in _SHOP_INFRA_KNOWLEDGE_EXEMPTIONS):
+                        has_shop_infra = True
+
+            if "/" not in normalized and not normalized.startswith("knowledge/"):
+                has_shop_infra = True
+
+            if project_is_infra and not normalized.startswith("knowledge/"):
+                has_shop_infra = True
+
         if all_read_only:
             return "read-only"
+        if has_shop_infra:
+            return "shop-infra"
+        if all_out_of_tree:
+            return None
         if has_register:
             return "register-writing"
-        return "governed-tooling"
+        return "app-feature"
 
     # ------------------------------------------------------------------
     # Collision detection
@@ -493,7 +525,7 @@ class Depositor:
     # CLEAR and HOLD actions
     # ------------------------------------------------------------------
 
-    def _clear(self, path):
+    def _clear(self, path, assigned_class):
         directory = os.path.dirname(path)
         filename = os.path.basename(path)
         claimable_name = filename[len("ready-"):]
@@ -501,6 +533,13 @@ class Depositor:
 
         if not os.path.isfile(path):
             return
+
+        plan_bytes = Path(path).read_bytes()
+        content_hash = hashlib.sha256(plan_bytes).hexdigest()
+        lifecycle.write_clearance(
+            claimable_name, content_hash, assigned_class, "depositor",
+            self._db_path,
+        )
 
         os.rename(path, claimable_path)
 
