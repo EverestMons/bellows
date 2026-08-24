@@ -239,7 +239,8 @@ def consume_clearance(content_hash, plan_path, db_path=None):
 
 
 def mint_and_claim(plan_type, target_project, title, dispatch_mode, tier,
-                   total_steps, deposit_placeholder_name, db_path=None):
+                   total_steps, deposit_placeholder_name, db_path=None,
+                   content_hash=None, clearance_plan_path=None):
     """Mint a global-monotonic id and write the initial plans row atomically.
 
     Returns the minted integer id.
@@ -262,6 +263,12 @@ def mint_and_claim(plan_type, target_project, title, dispatch_mode, tier,
             (plan_id, plan_type, target_project, title, dispatch_mode, tier,
              total_steps, deposit_placeholder_name, datetime.now().isoformat()),
         )
+        if content_hash is not None and clearance_plan_path is not None:
+            conn.execute(
+                "UPDATE clearances SET consumed_at = ? "
+                "WHERE content_hash = ? AND plan_path = ? AND consumed_at IS NULL",
+                (datetime.now().isoformat(), content_hash, clearance_plan_path),
+            )
         conn.execute("COMMIT")
         return plan_id
     except Exception:
