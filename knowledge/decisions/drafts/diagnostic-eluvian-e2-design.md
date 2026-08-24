@@ -35,9 +35,14 @@ R1 — *"bellows only accepting a drafting cycle cleared plan — this is the on
 **Tier:** T1 computed — T-7 fires twice over (consumes audit+rulings; feeds the executable). T-2/T-5/T-6 do not fire (read-only).
 **Walk register:** `governance/knowledge/research/walk-register-diagnostic-eluvian-e2-design.md`
 **Walks:** walk 0 pinned; walks 1+ under v2.13 auto-advance, per-lens commits, cycle_check branched after each walk.
-**Direction verdict (after walk 1):** owed.
-**Cold panel:** owed — decided at the freeze with reasoning.
-**Conformance (§5):** per lens from walk 1.
+**Direction verdict (after walk 1): PROCEED.** Tested, not judged: walk 1 sharpened D-4/D-5/D-6 and surfaced the N/A tension for explicit resolution; no premise failed, no ruling was touched, and the two-step 478→481 shape stands. None of the forcing classes fires.
+- Weak spots:          w1 2 folded — instruction 2 / record 0 (clear-tool entry shape; the N/A tension)
+- Destruction:         w1 1 folded — instruction 1 / record 0 (rule-based shop-infra membership)
+- Vulnerabilities:     w1 1 folded — instruction 1 / record 0 (safe-if-dispatched canary)
+- Integration-record:  w1 dry
+- ACID:                w1 dry (sweep exit-gated; first fold script aborted on an anchor-from-memory and the sweep caught the unlanded folds — see the register's walk-1 process note)
+**Cold panel:** owed — decided at the freeze with reasoning (the EXECUTABLE, not this read-only design, is where the audit mandates the full panel).
+**Conformance (§5):** per lens; recorded at the **walk-1 close**: plan_lint exit 0 / 0 FAIL; register CONFORMANT (STDERR) after one headerless-rows fire was obeyed; propagation exit 0; fold_check baseline saved at this close.
 
 ## Cycle Manifest
 tier: T1
