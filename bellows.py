@@ -408,6 +408,51 @@ import lifecycle
 import depositor
 
 
+def _retire_receipts(plan_id):
+    """Move receipts for a completed/halted plan to receipts/archived/.
+
+    Looks up the deposit_placeholder_name from lifecycle.db, derives the slug,
+    globs matching receipt files, and filters by JSON slug equality (the glob
+    alone over-matches prefix-extending slugs).
+    Fail-toward-WARN: a receipts error must never break a plan close.
+    """
+    if not plan_id:
+        return
+    try:
+        receipts_dir = BELLOWS_ROOT / "receipts"
+        if not receipts_dir.is_dir():
+            return
+        conn = sqlite3.connect(str(BELLOWS_ROOT / "lifecycle.db"))
+        row = conn.execute(
+            "SELECT deposit_placeholder_name FROM plans WHERE id = ?",
+            (plan_id,),
+        ).fetchone()
+        conn.close()
+        if not row or not row[0]:
+            return
+        placeholder = row[0]
+        slug = placeholder
+        if slug.endswith(".md"):
+            slug = slug[:-3]
+        archived = receipts_dir / "archived"
+        matches = list(receipts_dir.glob(f"receipt-{slug}-*.json"))
+        if not matches:
+            return
+        archived.mkdir(exist_ok=True)
+        for receipt_path in matches:
+            if not receipt_path.is_file():
+                continue
+            try:
+                data = json.loads(receipt_path.read_text())
+                if data.get("slug") != slug:
+                    continue
+            except Exception:
+                continue
+            shutil.move(str(receipt_path), str(archived / receipt_path.name))
+    except Exception as e:
+        _log("WARN", f"receipt retirement failed for plan {plan_id}: {e}")
+
+
 def load_config(path: str = "config.json") -> dict:
     # Two-file config layout:
     #   config.json          — operational settings (committed to git)
@@ -1258,6 +1303,7 @@ def run_plan(plan_path: str, config: dict, response_server: server.ResponseServe
             _delete_shadow(plan_filename)
             _done_doc_ref = os.path.relpath(done_path, project_path)
             lifecycle.mark_plan_state(plan_id, "closed", closed_at=datetime.now().isoformat(), plan_doc_ref=_done_doc_ref) if plan_id else None
+            _retire_receipts(plan_id)
             notifier.notify_plan_complete(plan_name, total_cost)
             _log("EVENT", f"✅ AUTO-CLOSED", slug=slug_for(plan_name))
             return
@@ -2547,6 +2593,7 @@ class Bellows:
                                 _halt_project_root = str(pathlib.Path(decisions_path).parents[1])
                                 _halt_doc_ref = os.path.relpath(halted_path, _halt_project_root)
                                 lifecycle.mark_plan_state(_lc_plan_id, "halted", closed_at=datetime.now().isoformat(), plan_doc_ref=_halt_doc_ref) if _lc_plan_id else None
+                                _retire_receipts(_lc_plan_id)
                                 notifier.notify_plan_halted(original_name)
                                 break
                             is_diag = original_name.startswith("diagnostic-")
@@ -2580,6 +2627,7 @@ class Bellows:
                                 _done_project_root = str(pathlib.Path(decisions_path).parents[1])
                                 _done_doc_ref = os.path.relpath(done_path, _done_project_root)
                                 lifecycle.mark_plan_state(_lc_plan_id, "closed", closed_at=datetime.now().isoformat(), plan_doc_ref=_done_doc_ref) if _lc_plan_id else None
+                                _retire_receipts(_lc_plan_id)
                                 notifier.notify_plan_complete(original_name, 0.0)
                                 _log("EVENT", f"verdict continue-to-done", slug=slug_for(original_name))
                             else:
@@ -2609,6 +2657,7 @@ class Bellows:
                             _stop_project_root = str(pathlib.Path(decisions_path).parents[1])
                             _stop_doc_ref = os.path.relpath(halted_path, _stop_project_root)
                             lifecycle.mark_plan_state(_lc_plan_id, "halted", closed_at=datetime.now().isoformat(), plan_doc_ref=_stop_doc_ref) if _lc_plan_id else None
+                            _retire_receipts(_lc_plan_id)
                             _log("EVENT", f"verdict stop — halting", slug=slug_for(original_name))
                             notifier.notify_plan_halted(original_name)
                         break  # only one match per verdict

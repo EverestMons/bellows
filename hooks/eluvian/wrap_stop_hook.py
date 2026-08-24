@@ -205,7 +205,7 @@ def main():
 
     try:
         res = subprocess.run(
-            [sys.executable, str(CHECK)],
+            [sys.executable, str(CHECK), session_id or ""],
             capture_output=True, text=True, timeout=120,
         )
     except Exception as exc:

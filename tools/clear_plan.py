@@ -16,12 +16,6 @@ Residuals, stated: collision/disk checks are not re-run — the daemon's
 claim-time re-check still gates hash and clearance; the clearance INSERT is
 the one sanctioned out-of-daemon lifecycle.db write (human-invoked, single
 row, its own short connection).
-
-BOOTSTRAP NOTE (2026-08-24): this release arm is the declared ONE-TIME manual
-patch that releases executable-eluvian-e3-receipts — the plan whose DEV step
-supersedes this file with the authored version (see that plan's Deposit
-ritual and open fork 4). The 513 shape: a sanctioned bypass retired by the
-very plan it releases.
 """
 
 import argparse
@@ -34,7 +28,7 @@ from pathlib import Path
 
 _HERE = os.path.dirname(os.path.abspath(__file__))
 _BELLOWS_ROOT = os.path.dirname(_HERE)
-_BENIGN_LINT_CHECK_LETTERS = {"c", "d"}  # mirrors depositor.py's filter
+_BENIGN_LINT_CHECK_LETTERS = {"c", "d"}
 
 
 def _fail(msg):
@@ -86,14 +80,12 @@ def release_class_hold(hold_path):
     filename, hold_json = v
     claimable_name = filename[len("hold-"):]
 
-    # Gate 1: cycle_check — BAR_MET required (read the verdict channel).
     sys.path.insert(0, os.path.join(_BELLOWS_ROOT, "scripts"))
     import cycle_check
     verdict, _ = cycle_check.run_check(Path(hold_path))
     if verdict != "BAR_MET":
         return _fail(f"cycle_check gate: {verdict} (BAR_MET required) — file left held")
 
-    # Gate 2: plan_lint — 0 NON-BENIGN FAIL (the depositor's own filter).
     lint = subprocess.run(
         [sys.executable, os.path.join(_BELLOWS_ROOT, "scripts", "plan_lint.py"), hold_path],
         capture_output=True, text=True, timeout=60,
@@ -111,7 +103,6 @@ def release_class_hold(hold_path):
                 print(fl, file=sys.stderr)
             return _fail(f"plan_lint gate: {len(non_benign)} non-benign FAIL — file left held")
 
-    # Class from the plan's own Cycle Manifest — refuse, never guess (S3-6).
     with open(hold_path, "rb") as fh:
         plan_bytes = fh.read()
     m = re.search(r"^class:\s*(\S+)\s*$",
@@ -122,15 +113,13 @@ def release_class_hold(hold_path):
 
     content_hash = hashlib.sha256(plan_bytes).hexdigest()
 
-    # The one sanctioned out-of-daemon lifecycle.db write: basename, raw-bytes
-    # hash — every claim-path consumer keys on the basename (S2-5).
     sys.path.insert(0, _BELLOWS_ROOT)
     import lifecycle
     lifecycle.write_clearance(claimable_name, content_hash, assigned_class, "clear_tool")
 
     bare_path = os.path.join(os.path.dirname(hold_path), claimable_name)
     os.rename(hold_path, bare_path)
-    os.remove(hold_json)  # both release paths dispose of the sidecar (S2-6)
+    os.remove(hold_json)
 
     print(f"Released class hold: {claimable_name}")
     print(f"Clearance written: cleared_by=clear_tool class={assigned_class} hash={content_hash[:12]}")

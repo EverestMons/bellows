@@ -29,9 +29,12 @@ Ritual reference: eluvian-session-wrap-ritual memory. Four repos:
 from __future__ import annotations
 
 import datetime
+import json
 import os
+import sqlite3
 import subprocess
 import sys
+from datetime import datetime as dt
 from pathlib import Path
 
 # Machine layouts differ (shop machine: ~/Developer/GitHub; Mac mini:
@@ -39,6 +42,8 @@ from pathlib import Path
 ROOT = Path(os.environ.get("ELUVIAN_WRAP_ROOT")
             or "/Users/marklehn/Developer/GitHub")
 BELLOWS = ROOT / "bellows"
+RECEIPTS = BELLOWS / "receipts"
+LIFECYCLE_DB = BELLOWS / "lifecycle.db"
 MEMORY = Path(os.environ.get("ELUVIAN_WRAP_MEMORY")
               or "/Users/marklehn/.claude/projects/-Users-marklehn-Developer-GitHub/memory")
 BATON = ROOT / "shop_next_session.md"
@@ -82,7 +87,7 @@ def project_done_dirs() -> list[Path]:
     return sorted(ROOT.glob("*/knowledge/decisions/Done"))
 
 
-def check() -> list[str]:
+def check(session_id: str | None = None) -> list[str]:
     """Return a list of failure messages. Empty list == wrap complete."""
     fails: list[str] = []
     today = datetime.date.today().isoformat()
@@ -105,6 +110,12 @@ def check() -> list[str]:
         fails.append(
             f"[2/bellows] {len(v_dirty)} uncommitted file(s) under "
             f"verdicts/resolved/ — commit consumed verdicts."
+        )
+    r_dirty = porcelain(BELLOWS, "receipts")
+    if r_dirty:
+        fails.append(
+            f"[2/bellows] {len(r_dirty)} uncommitted file(s) under "
+            f"receipts/ — commit receipts."
         )
     b_ahead = unpushed_count(BELLOWS)
     if b_ahead:
@@ -150,12 +161,171 @@ def check() -> list[str]:
     if m_ahead:
         fails.append(f"[4/memory] {m_ahead} commit(s) not pushed — push the memory repo.")
 
+    # --- Step 2r: deposit receipts — every own-session deposit attested --------
+    _check_receipts(session_id, fails)
+
     return fails
 
 
-def main() -> int:
+def _check_receipts(session_id: str | None, fails: list[str]) -> None:
+    """[2r/receipts] group: blocking arm (own session) + warning arm (24h)."""
+    # SKIP: receipts dir absent or unreadable
+    if not RECEIPTS.is_dir():
+        print("[2r/receipts] SKIPPED — receipts directory absent.")
+        return
     try:
-        fails = check()
+        receipt_files = list(RECEIPTS.iterdir())
+    except OSError:
+        print("[2r/receipts] SKIPPED — receipts directory unreadable.")
+        return
+
+    # Load all receipt data (active + archived for warning arm)
+    active_receipts = []
+    for p in receipt_files:
+        if p.is_dir() or not p.suffix == ".json":
+            continue
+        try:
+            data = json.loads(p.read_text())
+            if not isinstance(data, dict):
+                print(f"[2r/receipts] WARNING: malformed receipt file {p.name} — skipped (not a failure).")
+                continue
+            # Field validation: slug, content_hash, session_id, armed_at must be present and parseable
+            r_slug = data.get("slug")
+            r_hash = data.get("content_hash")
+            r_sid = data.get("session_id")
+            r_armed = data.get("armed_at")
+            if not all(isinstance(v, str) and v for v in [r_slug, r_hash, r_sid]):
+                print(f"[2r/receipts] WARNING: malformed receipt file {p.name} — skipped (not a failure).")
+                continue
+            if r_armed:
+                try:
+                    dt.fromisoformat(r_armed)
+                except (ValueError, TypeError):
+                    print(f"[2r/receipts] WARNING: malformed receipt file {p.name} — skipped (not a failure).")
+                    continue
+            active_receipts.append(data)
+        except (json.JSONDecodeError, OSError):
+            print(f"[2r/receipts] WARNING: malformed receipt file {p.name} — skipped (not a failure).")
+
+    # Also load archived receipts (for warning arm only)
+    archived_receipts = []
+    archived_dir = RECEIPTS / "archived"
+    if archived_dir.is_dir():
+        try:
+            for p in archived_dir.iterdir():
+                if p.is_dir() or not p.suffix == ".json":
+                    continue
+                try:
+                    data = json.loads(p.read_text())
+                    if isinstance(data, dict) and data.get("content_hash"):
+                        archived_receipts.append(data)
+                except Exception:
+                    pass
+        except OSError:
+            pass
+
+    all_receipt_hashes = {r.get("content_hash") for r in active_receipts + archived_receipts if r.get("content_hash")}
+
+    # Open lifecycle.db read-only for clearance cross-check
+    db_available = False
+    db_conn = None
+    try:
+        db_conn = sqlite3.connect(f"file:{LIFECYCLE_DB}?mode=ro", uri=True)
+        db_available = True
+    except Exception:
+        print("[2r/receipts] SKIPPED — lifecycle.db not readable for clearance cross-check.")
+
+    # --- Hold sidecars: slug set from all watched project trees ---
+    hold_slugs = set()
+    try:
+        for sidecar in ROOT.glob("*/knowledge/decisions/*.hold.json"):
+            name = sidecar.name
+            if name.startswith("hold-") and name.endswith(".hold.json"):
+                hold_slug = name[len("hold-"):-len(".hold.json")]
+                if hold_slug:
+                    hold_slugs.add(hold_slug)
+    except OSError:
+        pass
+
+    # --- BLOCKING arm: own-session receipts vs clearances/hold-sidecars ---
+    if session_id:
+        own_receipts = [r for r in active_receipts if r.get("session_id") == session_id]
+        matchless_count = 0
+        for r in own_receipts:
+            r_hash = r.get("content_hash", "")
+            r_slug = r.get("slug", "")
+            r_armed = r.get("armed_at", "")
+            matched = False
+            # Check clearance: SELECT 1 FROM clearances WHERE content_hash = ? (NO consumed_at filter)
+            if db_available and db_conn and r_hash:
+                try:
+                    row = db_conn.execute(
+                        "SELECT 1 FROM clearances WHERE content_hash = ?",
+                        (r_hash,),
+                    ).fetchone()
+                    if row:
+                        matched = True
+                except Exception:
+                    pass
+            # Check hold sidecar
+            if not matched and r_slug in hold_slugs:
+                matched = True
+            if not matched:
+                # Pending-evaluation grace: armed_at younger than 10 minutes → note, not failure
+                grace = False
+                if r_armed:
+                    try:
+                        armed_dt = dt.fromisoformat(r_armed)
+                        age_seconds = (dt.now() - armed_dt).total_seconds()
+                        if age_seconds < 600:
+                            grace = True
+                    except (ValueError, TypeError):
+                        pass
+                if grace:
+                    print(f"[2r/receipts] Note: receipt for {r_slug} is pending evaluation "
+                          f"(armed <10 min ago) — not blocking.")
+                else:
+                    matchless_count += 1
+        if matchless_count > 0:
+            fails.append(
+                f"[2r/receipts] {matchless_count} receipt(s) from this session match no "
+                f"clearance or hold — stale, mistyped, or abandoned deposit. If the deposit "
+                f"was deliberately abandoned, remove the receipt file — that is the sanctioned disarm."
+            )
+        elif own_receipts:
+            print(f"[2r/receipts] OK — {len(own_receipts)} own-session receipt(s), all matched.")
+        else:
+            print(f"[2r/receipts] OK — no deposits in this session (session {session_id}).")
+    else:
+        print("[2r/receipts] SKIPPED (blocking arm) — no session_id provided; "
+              "receipt check requires session context.")
+
+    # --- WARNING arm: 24h lookback, any-session, non-blocking ---
+    if db_available and db_conn:
+        try:
+            cutoff = (dt.now() - datetime.timedelta(hours=24)).isoformat()
+            rows = db_conn.execute(
+                "SELECT content_hash FROM clearances WHERE cleared_at > ?",
+                (cutoff,),
+            ).fetchall()
+            unattested = [row[0] for row in rows if row[0] not in all_receipt_hashes]
+            if unattested:
+                print(f"[2r/receipts] WARNING: {len(unattested)} cleared deposit(s) in the "
+                      f"last 24h without a receipt — arm a watcher and write a receipt at every deposit.")
+        except Exception:
+            pass
+
+    if db_conn:
+        try:
+            db_conn.close()
+        except Exception:
+            pass
+
+
+def main() -> int:
+    session_id = sys.argv[1] if len(sys.argv) > 1 and sys.argv[1] else None
+    try:
+        fails = check(session_id)
     except Exception as exc:  # FAIL-OPEN — a broken checker must never trap
         print(f"wrap_check: internal error, failing open (allowing): {exc}")
         return 0

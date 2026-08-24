@@ -17,6 +17,7 @@ from __future__ import annotations
 import datetime
 import json
 import os
+import re
 import subprocess
 import sys
 from pathlib import Path
@@ -25,6 +26,7 @@ CHECK = Path(__file__).with_name("wrap_check.py")
 _DEFAULT_LOG = Path("/Users/marklehn/.claude/eluvian/hooks.log")
 
 _BELLOWS_DISPATCH_ALLOW = {"1", "true", "yes"}
+_VALID_SESSION_ID = re.compile(r"^[A-Za-z0-9-]+$")
 
 
 def _log_path():
@@ -78,9 +80,12 @@ def main():
         hooklog("SessionStart", f"daemon-exempt sid={session_id}")
         emit(None)
 
+    check_sid = "" if session_id == "unknown" else session_id
+    if check_sid and not _VALID_SESSION_ID.match(check_sid):
+        check_sid = ""
     try:
         res = subprocess.run(
-            [sys.executable, str(CHECK)],
+            [sys.executable, str(CHECK), check_sid],
             capture_output=True, text=True, timeout=120,
         )
     except Exception:
