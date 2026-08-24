@@ -1,4 +1,4 @@
-"""Tests for the admission flip substrate (Step 1 / DEV-A).
+"""Tests for the admission flip (Steps 1+2 / DEV-A + DEV-B).
 
 All tests use tmp dirs and tmp DBs — no real watched path is ever named.
 """
@@ -13,16 +13,15 @@ from unittest.mock import patch, MagicMock
 
 import pytest
 
-sys.path.insert(
-    0,
-    os.path.join(
-        os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "scripts"
-    ),
-)
+_BELLOWS_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, os.path.join(_BELLOWS_ROOT, "scripts"))
+sys.path.insert(0, os.path.join(_BELLOWS_ROOT, "tools"))
 
+import bellows
 import depositor
 import lifecycle
 from lifecycle import init_lifecycle_db
+from clear_plan import clear_plan
 
 
 # ---------------------------------------------------------------------------
@@ -391,3 +390,311 @@ class TestClearancesDDL:
         assert "idx_clearances_active" in idx_names
         idx_sql = [i[1] for i in indexes if i[0] == "idx_clearances_active"][0]
         assert "consumed_at IS NULL" in idx_sql
+
+
+# ===========================================================================
+# STEP 2 / DEV-B — Claim path tests
+# ===========================================================================
+
+
+# ---------------------------------------------------------------------------
+# Gate truth table: is_claimable
+# ---------------------------------------------------------------------------
+
+class TestIsClaimableGate:
+    def _write_plan(self, d, name, content=b"# Test plan\n"):
+        p = Path(d) / name
+        p.write_bytes(content)
+        return str(p)
+
+    def test_no_clearance_row(self, tmp_path, tmp_db):
+        path = self._write_plan(tmp_path, "executable-gate-1.md")
+        assert not bellows.is_claimable(path, tmp_db)
+
+    def test_cleared(self, tmp_path, tmp_db):
+        content = b"# Cleared plan\n"
+        path = self._write_plan(tmp_path, "executable-gate-2.md", content)
+        h = hashlib.sha256(content).hexdigest()
+        lifecycle.write_clearance("executable-gate-2.md", h, "read-only",
+                                  "depositor", tmp_db)
+        assert bellows.is_claimable(path, tmp_db)
+
+    def test_drift(self, tmp_path, tmp_db):
+        original = b"# Original content\n"
+        h = hashlib.sha256(original).hexdigest()
+        lifecycle.write_clearance("executable-gate-3.md", h, "read-only",
+                                  "depositor", tmp_db)
+        path = self._write_plan(tmp_path, "executable-gate-3.md",
+                                b"# Modified content\n")
+        assert not bellows.is_claimable(path, tmp_db)
+
+    def test_consumed(self, tmp_path, tmp_db):
+        content = b"# Consumed plan\n"
+        path = self._write_plan(tmp_path, "executable-gate-4.md", content)
+        h = hashlib.sha256(content).hexdigest()
+        lifecycle.write_clearance("executable-gate-4.md", h, "read-only",
+                                  "depositor", tmp_db)
+        lifecycle.consume_clearance(h, "executable-gate-4.md", tmp_db)
+        assert not bellows.is_claimable(path, tmp_db)
+
+    def test_unreadable_db_missing(self, tmp_path):
+        content = b"# Plan\n"
+        path = self._write_plan(tmp_path, "executable-gate-5.md", content)
+        missing_db = str(tmp_path / "nonexistent" / "lifecycle.db")
+        assert not bellows.is_claimable(path, missing_db)
+
+    def test_unreadable_db_corrupt(self, tmp_path):
+        content = b"# Plan\n"
+        path = self._write_plan(tmp_path, "executable-gate-6.md", content)
+        bad_db = str(tmp_path / "corrupt.db")
+        Path(bad_db).write_bytes(b"not a database")
+        assert not bellows.is_claimable(path, bad_db)
+
+    def test_unreadable_db_no_clearances_table(self, tmp_path):
+        content = b"# Plan\n"
+        path = self._write_plan(tmp_path, "executable-gate-7.md", content)
+        bare_db = str(tmp_path / "bare.db")
+        conn = sqlite3.connect(bare_db)
+        conn.execute("CREATE TABLE dummy (id INTEGER)")
+        conn.commit()
+        conn.close()
+        assert not bellows.is_claimable(path, bare_db)
+
+
+# ---------------------------------------------------------------------------
+# Replay pair
+# ---------------------------------------------------------------------------
+
+class TestReplayPair:
+    def test_other_path_copy_refuses(self, tmp_path, tmp_db):
+        content = b"# Same content\n"
+        h = hashlib.sha256(content).hexdigest()
+        lifecycle.write_clearance("executable-original.md", h, "read-only",
+                                  "depositor", tmp_db)
+        copy_path = tmp_path / "executable-copy.md"
+        copy_path.write_bytes(content)
+        assert not bellows.is_claimable(str(copy_path), tmp_db)
+
+    def test_post_consumption_refuses(self, tmp_path, tmp_db):
+        content = b"# Consume me\n"
+        h = hashlib.sha256(content).hexdigest()
+        name = "executable-replay-consume.md"
+        plan_path = tmp_path / name
+        plan_path.write_bytes(content)
+        lifecycle.write_clearance(name, h, "read-only", "depositor", tmp_db)
+        lifecycle.consume_clearance(h, name, tmp_db)
+        assert not bellows.is_claimable(str(plan_path), tmp_db)
+
+    def test_fresh_reclear_after_transient_death(self, tmp_path, tmp_db):
+        content = b"# Transient death recovery\n"
+        h = hashlib.sha256(content).hexdigest()
+        name = "executable-replay-reclear.md"
+        plan_path = tmp_path / name
+        plan_path.write_bytes(content)
+        lifecycle.write_clearance(name, h, "read-only", "depositor", tmp_db)
+        lifecycle.consume_clearance(h, name, tmp_db)
+        assert not bellows.is_claimable(str(plan_path), tmp_db)
+        lifecycle.write_clearance(name, h, "read-only", "depositor", tmp_db)
+        assert bellows.is_claimable(str(plan_path), tmp_db)
+
+
+# ---------------------------------------------------------------------------
+# Auto-HOLD arm
+# ---------------------------------------------------------------------------
+
+class TestAutoHoldArm:
+    def _make_handler(self, decisions_dir, db_path):
+        orch = MagicMock()
+        orch.config = {"watched_projects": [decisions_dir]}
+        orch._seen = set()
+        orch.depositor = MagicMock()
+        orch.depositor._db_path = db_path
+        handler = bellows.PlanHandler(orch)
+        return handler, orch
+
+    def test_one_effective_hold_per_slug(self, tmp_path, tmp_db):
+        d = str(tmp_path / "decisions")
+        os.makedirs(d)
+        plan = Path(d) / "executable-arm-test.md"
+        plan.write_bytes(b"# No clearance\n")
+        handler, orch = self._make_handler(d, tmp_db)
+
+        handler._handle(str(plan))
+
+        assert os.path.exists(os.path.join(d, "hold-executable-arm-test.md"))
+        assert not os.path.exists(str(plan))
+        hold_json = os.path.join(d, "hold-executable-arm-test.hold.json")
+        assert os.path.exists(hold_json)
+        with open(hold_json) as f:
+            data = json.load(f)
+        assert data["hold_reason"] == "no_clearance"
+
+    def test_repeat_attempt_safe_noop(self, tmp_path, tmp_db):
+        d = str(tmp_path / "decisions")
+        os.makedirs(d)
+        plan = Path(d) / "executable-arm-repeat.md"
+        plan.write_bytes(b"# No clearance\n")
+        handler, orch = self._make_handler(d, tmp_db)
+
+        handler._handle(str(plan))
+        assert os.path.exists(os.path.join(d, "hold-executable-arm-repeat.md"))
+
+        plan.write_bytes(b"# No clearance again\n")
+        handler._handle(str(plan))
+
+    def test_never_adds_to_seen(self, tmp_path, tmp_db):
+        d = str(tmp_path / "decisions")
+        os.makedirs(d)
+        plan = Path(d) / "executable-arm-seen.md"
+        plan.write_bytes(b"# No clearance\n")
+        handler, orch = self._make_handler(d, tmp_db)
+        assert len(orch._seen) == 0
+        handler._handle(str(plan))
+        assert len(orch._seen) == 0
+
+    def test_vanished_source_exception_safe(self, tmp_path, tmp_db):
+        d = str(tmp_path / "decisions")
+        os.makedirs(d)
+        vanished = os.path.join(d, "executable-arm-vanished.md")
+        handler, orch = self._make_handler(d, tmp_db)
+        handler._handle(vanished)
+
+    def test_mid_claim_skip(self, tmp_path, tmp_db):
+        d = str(tmp_path / "decisions")
+        os.makedirs(d)
+        plan = Path(d) / "executable-arm-midclaim.md"
+        plan.write_bytes(b"# No clearance\n")
+        handler, orch = self._make_handler(d, tmp_db)
+        import verdict as verdict_mod
+        slug = verdict_mod.slug_from_path(str(plan))
+        orch._seen.add(slug)
+
+        handler._handle(str(plan))
+        assert os.path.exists(str(plan)), "plan should NOT be held — slug in _seen"
+        assert not os.path.exists(
+            os.path.join(d, "hold-executable-arm-midclaim.md")
+        )
+
+
+# ---------------------------------------------------------------------------
+# collect_group
+# ---------------------------------------------------------------------------
+
+class TestCollectGroup:
+    def test_mixed_group_dispatches_claimable_holds_unclearable(
+        self, tmp_path, tmp_db
+    ):
+        d = str(tmp_path / "decisions")
+        os.makedirs(d)
+
+        cleared_content = b"# Cleared member\n"
+        cleared_hash = hashlib.sha256(cleared_content).hexdigest()
+        cleared_name = "parallel-1-executable-cleared.md"
+        (Path(d) / cleared_name).write_bytes(cleared_content)
+        lifecycle.write_clearance(cleared_name, cleared_hash, "app-feature",
+                                  "depositor", tmp_db)
+
+        unclearable_name = "parallel-1-executable-unclearable.md"
+        (Path(d) / unclearable_name).write_bytes(b"# No clearance\n")
+
+        orch = MagicMock()
+        orch.config = {"watched_projects": [d]}
+        orch._seen = set()
+        orch.depositor = MagicMock()
+        orch.depositor._db_path = tmp_db
+        handler = bellows.PlanHandler(orch)
+
+        result = handler.collect_group(d, "parallel-1")
+
+        assert len(result) == 1
+        assert os.path.basename(result[0]) == cleared_name
+        assert os.path.exists(
+            os.path.join(d, "hold-" + unclearable_name)
+        )
+
+    def test_full_path_resolves(self, tmp_path, tmp_db):
+        d = str(tmp_path / "decisions")
+        os.makedirs(d)
+        content = b"# Full path test\n"
+        h = hashlib.sha256(content).hexdigest()
+        name = "parallel-2-executable-fp.md"
+        (Path(d) / name).write_bytes(content)
+        lifecycle.write_clearance(name, h, "app-feature", "depositor", tmp_db)
+
+        orch = MagicMock()
+        orch.config = {"watched_projects": [d]}
+        orch._seen = set()
+        orch.depositor = MagicMock()
+        orch.depositor._db_path = tmp_db
+        handler = bellows.PlanHandler(orch)
+
+        result = handler.collect_group(d, "parallel-2")
+        assert len(result) == 1
+        assert os.path.isabs(result[0])
+        assert os.path.exists(result[0])
+
+
+# ---------------------------------------------------------------------------
+# Consumed-at inside mint_and_claim transaction (correction 24)
+# ---------------------------------------------------------------------------
+
+class TestConsumeInTransaction:
+    def test_mint_and_claim_stamps_consumed_at(self, tmp_db):
+        h = "deadbeef" * 8
+        name = "executable-consume-tx.md"
+        lifecycle.write_clearance(name, h, "app-feature", "depositor", tmp_db)
+        assert lifecycle.has_clearance(h, name, tmp_db)
+
+        lifecycle.mint_and_claim(
+            plan_type="executable",
+            target_project="/tmp/proj",
+            title="test",
+            dispatch_mode="bellows",
+            tier="T0",
+            total_steps=1,
+            deposit_placeholder_name=name,
+            db_path=tmp_db,
+            content_hash=h,
+            clearance_plan_path=name,
+        )
+        assert not lifecycle.has_clearance(h, name, tmp_db)
+
+
+# ---------------------------------------------------------------------------
+# Clear tool preconditions + rename target
+# ---------------------------------------------------------------------------
+
+class TestClearTool:
+    def test_rejects_non_hold(self, tmp_path):
+        p = tmp_path / "executable-test.md"
+        p.write_bytes(b"# plan\n")
+        assert not clear_plan(str(p))
+
+    def test_rejects_missing_sidecar(self, tmp_path):
+        p = tmp_path / "hold-executable-test.md"
+        p.write_bytes(b"# plan\n")
+        assert not clear_plan(str(p))
+
+    def test_rejects_nonexistent(self, tmp_path):
+        p = tmp_path / "hold-executable-missing.md"
+        assert not clear_plan(str(p))
+
+    def test_rejects_non_md(self, tmp_path):
+        p = tmp_path / "hold-executable-test.txt"
+        p.write_bytes(b"# plan\n")
+        sidecar = tmp_path / "hold-executable-test.hold.json"
+        sidecar.write_text('{"hold_reason": "test"}')
+        assert not clear_plan(str(p))
+
+    def test_rename_hold_to_ready(self, tmp_path):
+        p = tmp_path / "hold-executable-clear-test.md"
+        p.write_bytes(b"# plan\n")
+        sidecar = tmp_path / "hold-executable-clear-test.hold.json"
+        sidecar.write_text('{"hold_reason": "no_clearance"}')
+
+        assert clear_plan(str(p))
+        assert not os.path.exists(str(p))
+        assert not os.path.exists(str(sidecar))
+        assert os.path.exists(
+            str(tmp_path / "ready-executable-clear-test.md")
+        )

@@ -854,6 +854,17 @@ def run_plan(plan_path: str, config: dict, response_server: server.ResponseServe
                 if _line.startswith("# "):
                     plan_title = _line[2:].strip()
                     break
+            # Claim-time re-check: one read_bytes, hash, decode (corrections 10/26)
+            raw_bytes = Path(plan_path).read_bytes()
+            content_hash = hashlib.sha256(raw_bytes).hexdigest()
+            plan_text = raw_bytes.decode("utf-8")
+            if not lifecycle.has_clearance(content_hash, base_filename):
+                _log("WARN", "⚠️ claim-time re-check failed — no valid clearance", slug=slug_for(plan_name))
+                halted_path = os.path.join(plan_dir, f"halted-{base_filename}")
+                shutil.move(plan_path, halted_path)
+                if bellows is not None:
+                    bellows._seen.discard(verdict.slug_from_path(plan_path))
+                return
             # Mint id + write plans row atomically
             dispatch_mode = header.get("dispatch_mode", header.get("Dispatch Mode", ""))
             tier = header.get("tier", header.get("Tier", ""))
@@ -865,6 +876,8 @@ def run_plan(plan_path: str, config: dict, response_server: server.ResponseServe
                 tier=tier,
                 total_steps=total_steps,
                 deposit_placeholder_name=base_filename,
+                content_hash=content_hash,
+                clearance_plan_path=base_filename,
             )
             if not _disk_preflight(config):
                 if bellows is not None:
@@ -2035,6 +2048,19 @@ def is_runnable_plan(filename: str) -> bool:
     return bool(re.match(r"^(parallel-\d+-)?(executable|diagnostic|qa)-.*\.md$", filename))
 
 
+def is_claimable(path, db_path):
+    """Name-pattern AND clearance-lookup. Whole-body try: any exception → False."""
+    try:
+        filename = os.path.basename(path)
+        if not is_runnable_plan(filename):
+            return False
+        raw_bytes = Path(path).read_bytes()
+        content_hash = hashlib.sha256(raw_bytes).hexdigest()
+        return lifecycle.has_clearance(content_hash, filename, db_path)
+    except Exception:
+        return False
+
+
 def extract_parallel_group(filename: str) -> Optional[str]:
     match = re.match(r"^(parallel-\d+)-", filename)
     return match.group(1) if match else None
@@ -2052,8 +2078,24 @@ class PlanHandler(FileSystemEventHandler):
         for fname in files:
             if fname.startswith(group + "-") and is_runnable_plan(fname):
                 full_path = os.path.join(decisions_path, fname)
-                if verdict.slug_from_path(full_path) not in self.orchestrator._seen:
+                if verdict.slug_from_path(full_path) in self.orchestrator._seen:
+                    continue
+                if is_claimable(full_path, self.orchestrator.depositor._db_path):
                     result.append(full_path)
+                else:
+                    try:
+                        slug = verdict.slug_from_path(full_path)
+                        if slug not in self.orchestrator._seen:
+                            hold_name = "hold-" + fname
+                            hold_path = os.path.join(decisions_path, hold_name)
+                            hold_json = os.path.splitext(hold_path)[0] + ".hold.json"
+                            with open(hold_json, "w") as f:
+                                json.dump({"hold_reason": "no_clearance",
+                                           "held_at": datetime.now().isoformat()}, f, indent=2)
+                            os.rename(full_path, hold_path)
+                            _log("WARN", "⚠️ auto-HOLD — no clearance record", slug=slug_for(fname))
+                    except Exception:
+                        _log("WARN", f"⚠️ auto-HOLD arm failed", slug=slug_for(fname))
         return result
 
     def _handle(self, path: str, from_rescan: bool = False):
@@ -2075,6 +2117,21 @@ class PlanHandler(FileSystemEventHandler):
                     and verdict.slug_from_path(path) not in self.orchestrator._seen):
                 _log("WARN", f"⚠️ skipped — prefix not in dispatch whitelist", slug=slug_for(filename))
                 self.orchestrator._seen.add(verdict.slug_from_path(path))
+            return
+        if not is_claimable(path, self.orchestrator.depositor._db_path):
+            try:
+                slug = verdict.slug_from_path(path)
+                if slug not in self.orchestrator._seen:
+                    hold_name = "hold-" + filename
+                    hold_path = os.path.join(os.path.dirname(path), hold_name)
+                    hold_json = os.path.splitext(hold_path)[0] + ".hold.json"
+                    with open(hold_json, "w") as f:
+                        json.dump({"hold_reason": "no_clearance",
+                                   "held_at": datetime.now().isoformat()}, f, indent=2)
+                    os.rename(path, hold_path)
+                    _log("WARN", "⚠️ auto-HOLD — no clearance record", slug=slug_for(filename))
+            except Exception:
+                _log("WARN", f"⚠️ auto-HOLD arm failed — plan visible but unclearable", slug=slug_for(filename))
             return
         if verdict.slug_from_path(path) in self.orchestrator._seen:
             return
