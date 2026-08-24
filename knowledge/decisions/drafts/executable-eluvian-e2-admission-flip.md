@@ -31,6 +31,7 @@ R1: *"bellows only accepting a drafting cycle cleared plan — this is the only 
 | X5 | `lifecycle.py` DDL insertion point | after the `idx_plans_active_placeholder` index block, before `conn.commit()` (measured at lines ~163-169 of 737) | anchored by the index name, not the line number |
 | X6 | `bellows/tools/` | **does not exist** | `mkdir -p` it; the clear tool is its first file — and this is the failability proof for its post-condition |
 | X7 | clearances table | **absent** from lifecycle.db | `pragma_table_info('clearances')` returns nothing — failability proof for D-1's post-condition |
+| X8 | grandfather set today | **parked- 0 · hold- 0 · halted- ≈16–18 (enumerate exactly)** | per-dir scan of all 10 watched dirs; `parked_steps` lives in **bellows.db** (not lifecycle.db) and is EMPTY — the design's "41 parked" reproduces nowhere (correction 20) |
 
 ## Drafting Cycle
 **Tier:** T2 computed — **T-5/T-6-adjacent (daemon claim path = live-guard code)**, T-7 fires (builds from the 511 design). ⚠️ **FULL COLD PANEL AT THE FREEZE — mandated by the audit's risk class and the 481 precedent, not decided ad hoc:** scout → discovery → execution → capstone, sequential, findings folded between seats, every finding author-verified before folding.
@@ -50,7 +51,7 @@ tier: T2
 target: bellows.py
 class: governed-tooling
 reads: /Users/marklehn/Developer/GitHub/bellows/knowledge/research/e2-admission-flip-design-2026-08-24.md, /Users/marklehn/Developer/GitHub/governance/knowledge/research/eluvian-path-rulings-2026-08-24.md
-writes: bellows.py, depositor.py, lifecycle.py, tools/clear_plan.py, tests/test_admission_flip.py
+writes: bellows.py, depositor.py, lifecycle.py, gates.py, scripts/plan_lint.py, tools/clear_plan.py, tests/test_admission_flip.py
 open_forks: (1) activation (restart + canary) is post-close Planner/CEO work; (2) the design's two escalatable-not-blocking notes (shop-infra rule maintenance; clear-tool async reporting) ride along unresolved
 walks: 0
 yields: (owed)
@@ -72,6 +73,21 @@ N/A
 8. **(S-8, MED) Taxonomy consumers swept:** new gap row — `plan_lint.py:494` `_STANZA_VALID_CLASSES` becomes `{"read-only","app-feature","register-writing","shop-infra","governed-tooling"}` (old name retained as LEGACY-declarable), and the depositor's `class_mismatch` check accepts declared `governed-tooling` as matching a computed `app-feature` OR `shop-infra` — so pre-flip manifests (including this plan's own) neither lint invalid nor hard-hold after activation.
 9. **(S-9, LOW, hardening) Deposit ritual:** when staging `ready-`, copy the fold-check sidecar beside it under both the `ready-` name and the post-clear name (dotfiles are not claimable) — removes any dependence on commit-message luck in cycle_check's context detection.
 
+**Discovery-seat corrections (seat 2), same authority:**
+
+10. **(D-1, HIGH) The gate re-checks at CLAIM.** `run_plan` re-reads the file (bellows.py:761) and shadows/executes THOSE bytes with no clearance re-verification — the tamper invariant held only clear→gate. Corrected: in `run_plan`'s fresh-deposit branch, immediately before `mint_and_claim`, recompute sha256 over the just-loaded `plan_text` bytes and require `has_clearance` (and per correction 14, an unconsumed row); mismatch → the auto-HOLD disposition, never a claim. That read IS the executed content; the check moves to it.
+11. **(D-2, HIGH) The write set was incomplete for correction 8:** `scripts/plan_lint.py` (and per correction 17, `gates.py`) join Deposits, Scope, the manifest `writes:`, and the A4 commit list. A binding correction with no scope entry is a deterministic half-landing.
+12. **(D-3, HIGH) `app-feature` is POSITIVE, not residual.** The design's snippet ends `return "app-feature"` under a paragraph claiming no catch-all remains — and flips the old fail-closed default to fail-open for out-of-tree write sets (e.g. a `~/.claude/...`-only writer). Corrected: `app-feature` requires every non-read-only write to RESOLVE INSIDE a watched project's tree; anything unresolvable returns None → the existing `unassignable_class` HOLD. Test row: an out-of-tree-only write set expects HOLD.
+13. **(D-4, MED) The acceptance table gains adversarial rows** beyond the historical 20: a non-governance root-level write (expect `app-feature`), an absolute-spelling shop-infra write (expect `shop-infra`), an out-of-tree-only set (expect `unassignable_class`) — the rows that distinguish the corrected rule from project-blind lookalikes.
+14. **(D-5, MED) Clearance is not a bearer token.** `is_claimable` matches `(content_hash, plan_path)`, and a successful `mint_and_claim` stamps the row `consumed_at` (row kept for audit); `is_claimable` requires `consumed_at IS NULL`. A byte-identical copy of an ever-cleared plan at another path — or the same plan replayed after close — no longer dispatches. Replay test mandated.
+15. **(D-6, MED) The auto-HOLD arm is itself exception-safe:** its rename + sidecar write get their own fail-toward-WARN try (skip and log; the next rescan retries) — an arm exception must never unwind the rescan loop or startup scan.
+16. **(D-7, MED) No `_seen.add` in the arm.** The hold-rename already removes the file from every funnel, and the only `_seen` eraser runs on watchdog events the rescan funnel never fires — a missed event would wedge a legitimately cleared plan forever. The D-6 try's log is the once-per-attempt record.
+17. **(D-11, LOW) `gates.py:29` `SCOPE_ALLOWLIST_PREFIXES` gains `hold-` and `ready-`** — the flip makes both standard decisions-dir churn, and the working-tree diff fallback would otherwise mint a new spurious scope_check failure class.
+18. **(D-8, MED) The pre-clear recheck moves WITH the clear branch:** the second sibling/in-flight/collision recheck currently wrapped in `if assigned_class == "read-only"` applies to EVERY auto-clearing class — collision protection cannot be weakest where write sets are real.
+19. **(D-9, LOW) Hash RAW bytes:** both writer and checker hash `Path(path).read_bytes()` — `read_text().encode()` normalizes newlines and quietly survives a CRLF rewrite, and cross-tool `shasum` comparisons must match during incidents.
+20. **(D-10, LOW) Grandfather counts corrected and re-derived at dispatch:** `parked-` files today = 0 (the design's "41" reproduces nowhere; `parked_steps` lives in bellows.db and is EMPTY), `halted-` ≈ 16–18 (enumerate exactly), `hold-` = 0. X8 pins them.
+21. **(D-12, LOW) B4's inertness claim is scoped:** imported modules and the DB stay inert until restart; scripts run as SUBPROCESSES (`plan_lint.py` via depositor.py:451-456) activate for the OLD daemon at merge. QA states both halves.
+
 ## MUST-PRESERVE
 
 - ⚠️⚠️ **THE FLIP MUST FAIL TOWARD HOLD, NEVER TOWARD DISPATCH.** Any error inside `is_claimable` (DB unreadable, hash failure) returns False and the auto-HOLD arm fires — an admission check that fails open re-opens bypass (a) with extra steps. Test this branch explicitly.
@@ -91,11 +107,11 @@ N/A
 
 **A1 — implement the Rule 27 gap table, ALL rows, in the design's numbering.** The design is the spec; do not re-derive mechanisms. Summary of the change set (the design's table governs where it and this differ): lifecycle.py — `clearances` DDL (X5 anchor) + `write_clearance()` / `has_clearance()`; depositor.py — clearance write in `_clear()` after the rename, auto-clear expansion (read-only + app-feature + register-writing on full-pass; shop-infra HELD), rule-based `_assign_class` replacement + its constants; bellows.py — `is_claimable(path, db_path)` beside `is_runnable_plan` (which stays untouched), gated at the TWO sites per design-correction 3 (`_handle` entry with the auto-HOLD `no_clearance` arm mirroring the once-per-slug WARN discipline, and `collect_group` on full_path); rescan/startup keep the bare listing filter; `tools/clear_plan.py` per D-5(b) with its three preconditions and async outcome message.
 
-**A2 — targeted tests, new file `tests/test_admission_flip.py`:** the design's D-7 table, including at minimum: clearance write/read round-trip on a tmp DB; `is_claimable` False on (no record, byte-drift after clearance, unreadable DB — the fail-toward-HOLD branch); the auto-HOLD arm renames + writes `.hold.json` `no_clearance` exactly once per slug — including via the rescan funnel (design-correction 3); the class split's 20-plan acceptance table parameterized WITH project identity (design-correction 1); same-hash re-insert idempotent (design-correction 4); clear-tool preconditions + rename target; the restated enumerate property per design-correction 7. Run the NEW file plus the design's named neighbor suites (`test_bellows.py` depositor/claim regions, `test_cycle_check.py`) — targeted, not full.
+**A2 — targeted tests, new file `tests/test_admission_flip.py`:** the design's D-7 table, including at minimum: clearance write/read round-trip on a tmp DB; `is_claimable` False on (no record, byte-drift after clearance, unreadable DB — the fail-toward-HOLD branch); the auto-HOLD arm renames + writes `.hold.json` `no_clearance` exactly once per slug — including via the rescan funnel (design-correction 3); the class split's 20-plan acceptance table parameterized WITH project identity (design-correction 1); same-hash re-insert idempotent (design-correction 4); clear-tool preconditions + rename target; the restated enumerate property per design-correction 7; the claim-time re-check holds on gate-window drift (correction 10); the replay test (correction 14: other-path copy and post-consumption same-path both refuse); the adversarial class rows (correction 13); the arm's exception-safety (correction 15). Run the NEW file plus the design's named neighbor suites (`test_bellows.py` depositor/claim regions, `test_cycle_check.py`) — targeted, not full.
 
 **A3 — verify before committing:** new-file tests green; `python3 -m pytest tests/test_admission_flip.py -q` output pasted raw; `py_compile` all four changed modules; `pragma_table_info('clearances')` on a tmp-initialized DB shows the DDL landed.
 
-**A4 — commit** (worktree): `git add bellows.py depositor.py lifecycle.py tools/clear_plan.py tests/test_admission_flip.py && git commit -m "[<id>] admission flip: clearance record, is_claimable, auto-HOLD, class split, clear tool (INERT until restart)"`. `<id>` from your plan filename.
+**A4 — commit** (worktree): `git add bellows.py depositor.py lifecycle.py gates.py scripts/plan_lint.py tools/clear_plan.py tests/test_admission_flip.py && git commit -m "[<id>] admission flip: clearance record, is_claimable, auto-HOLD, class split, clear tool (INERT until restart)"`. `<id>` from your plan filename.
 
 ⚠️ **IF ANY A3 CHECK FAILS: no commit, no revert, no retry — leave the worktree as evidence, report every measured value, raise `### Flags for CEO`.**
 
@@ -103,6 +119,8 @@ N/A
 - `/Users/marklehn/Developer/GitHub/bellows/bellows.py`
 - `/Users/marklehn/Developer/GitHub/bellows/depositor.py`
 - `/Users/marklehn/Developer/GitHub/bellows/lifecycle.py`
+- `/Users/marklehn/Developer/GitHub/bellows/gates.py`
+- `/Users/marklehn/Developer/GitHub/bellows/scripts/plan_lint.py`
 - `/Users/marklehn/Developer/GitHub/bellows/tools/clear_plan.py`
 - `/Users/marklehn/Developer/GitHub/bellows/tests/test_admission_flip.py`
 
@@ -110,6 +128,8 @@ N/A
 - `/Users/marklehn/Developer/GitHub/bellows/bellows.py`
 - `/Users/marklehn/Developer/GitHub/bellows/depositor.py`
 - `/Users/marklehn/Developer/GitHub/bellows/lifecycle.py`
+- `/Users/marklehn/Developer/GitHub/bellows/gates.py`
+- `/Users/marklehn/Developer/GitHub/bellows/scripts/plan_lint.py`
 - `/Users/marklehn/Developer/GitHub/bellows/tools/clear_plan.py`
 - `/Users/marklehn/Developer/GitHub/bellows/tests/test_admission_flip.py`
 
@@ -120,7 +140,7 @@ N/A
 **B1 — full suite.** `python3 -m pytest tests/ -q` from the worktree root; deposit RAW output as `pytest_full.txt`. Baseline was **1231 collected, green, known_failures 0** — ⚠️ the count GROWS by the new file's tests; assert zero failures and zero errors, report the new total. ⚠️ **The hot-path-guard lesson applies: `is_claimable` is a new boolean gate on the dispatch path and MagicMock-based tests elsewhere may break silently — the full suite is exactly where that class surfaces; name every failure and diagnose before any classification.**
 **B2 — re-verify the change set against the design's Rule 27 table:** every row's change present at its site (by context anchor); the two ENUMERATE sites verifiably UNCHANGED (`git diff` scoped to their functions is empty); `is_runnable_plan` itself byte-unchanged.
 **B3 — behavioral spot-probes on a tmp environment** (never the live daemon): clearance round-trip; byte-drift invalidation; fail-toward-HOLD on an unreadable DB; the 20-plan class table.
-**B4 — the INERT claim:** assert the LIVE daemon (old code) is untouched — its PID unchanged since claim, and the live lifecycle.db has NO clearances table yet (the DDL runs at init, which happens at restart). State plainly: activation is post-close.
+**B4 — the INERT claim, correctly scoped (correction 21):** assert the LIVE daemon's imported modules are untouched — PID unchanged since claim, live lifecycle.db has NO clearances table (DDL runs at init = restart) — AND state the subprocess exception: `plan_lint.py` runs fresh per depositor evaluation, so its S-8 edit activates for the old daemon at merge (additive WARN-set change, harmless, but QA says it rather than certifying blanket inertness). Activation of everything else is post-close.
 
 > **QA SELF-CHECK — Rule 20.** Post the block from `/Users/marklehn/Developer/GitHub/RULE_20_SELF_CHECK_BLOCK.md` verbatim, under the banner **`Rule 20 — QA Self-Check Results`**, and close with **`PASSED — SELF-CHECK PASSED`** only if every check genuinely passed. ⚠️ Both literals are matched by `plan_lint` check (c) and neither may be paraphrased. The Rule 20 block and the B1–B4 results go in the `.md` deposit; the raw suite output goes in `pytest_full.txt` — the two QA gates scan DIFFERENT extensions.
 
