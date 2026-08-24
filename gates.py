@@ -26,7 +26,7 @@ SCOPE_ALLOWLIST = [
 ]
 
 # Basenames matching these prefixes are plan lifecycle files and are always allowed
-SCOPE_ALLOWLIST_PREFIXES = ("in-progress-", "verdict-pending-", "halted-")
+SCOPE_ALLOWLIST_PREFIXES = ("in-progress-", "verdict-pending-", "halted-", "hold-", "ready-")
 
 # Read-class tools whose denials do NOT block agent execution. Agents fall back
 # to bash equivalents (grep/rg, find/ls, cat) when these are denied. Per BACKLOG #2

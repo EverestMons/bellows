@@ -491,7 +491,7 @@ def lint(plan_path):
             "tier", "target", "class", "reads", "writes",
             "open_forks", "walks", "yields", "validation", "coherence",
         ]
-        _STANZA_VALID_CLASSES = {"read-only", "governed-tooling", "register-writing"}
+        _STANZA_VALID_CLASSES = {"read-only", "governed-tooling", "register-writing", "shop-infra", "app-feature"}
 
         has_declare = False
         for sf in _STANZA_REQUIRED:

@@ -166,6 +166,22 @@ def init_lifecycle_db(db_path=None):
         ON plans (deposit_placeholder_name)
         WHERE lifecycle_state IN ('claimed','in_progress','awaiting_verdict')
     """)
+    conn.execute("""
+        CREATE TABLE IF NOT EXISTS clearances (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            plan_path TEXT NOT NULL,
+            content_hash TEXT NOT NULL,
+            assigned_class TEXT NOT NULL,
+            cleared_by TEXT NOT NULL CHECK (cleared_by IN ('depositor', 'clear_tool')),
+            cleared_at TEXT NOT NULL,
+            consumed_at TEXT
+        )
+    """)
+    conn.execute("""
+        CREATE UNIQUE INDEX IF NOT EXISTS idx_clearances_active
+        ON clearances (content_hash, plan_path)
+        WHERE consumed_at IS NULL
+    """)
     conn.commit()
     conn.close()
 
@@ -181,6 +197,45 @@ def active_plan_for_placeholder(placeholder_name, db_path=None):
     ).fetchone()
     conn.close()
     return row[0] if row else None
+
+
+def write_clearance(plan_path, content_hash, assigned_class, cleared_by,
+                    db_path=None):
+    path = db_path or LIFECYCLE_DB_PATH
+    conn = sqlite3.connect(path)
+    conn.execute(
+        "INSERT OR IGNORE INTO clearances "
+        "(plan_path, content_hash, assigned_class, cleared_by, cleared_at) "
+        "VALUES (?, ?, ?, ?, ?)",
+        (plan_path, content_hash, assigned_class, cleared_by,
+         datetime.now().isoformat()),
+    )
+    conn.commit()
+    conn.close()
+
+
+def has_clearance(content_hash, plan_path, db_path=None):
+    path = db_path or LIFECYCLE_DB_PATH
+    conn = sqlite3.connect(f"file:{path}?mode=ro", uri=True)
+    row = conn.execute(
+        "SELECT 1 FROM clearances "
+        "WHERE content_hash = ? AND plan_path = ? AND consumed_at IS NULL",
+        (content_hash, plan_path),
+    ).fetchone()
+    conn.close()
+    return row is not None
+
+
+def consume_clearance(content_hash, plan_path, db_path=None):
+    path = db_path or LIFECYCLE_DB_PATH
+    conn = sqlite3.connect(path)
+    conn.execute(
+        "UPDATE clearances SET consumed_at = ? "
+        "WHERE content_hash = ? AND plan_path = ? AND consumed_at IS NULL",
+        (datetime.now().isoformat(), content_hash, plan_path),
+    )
+    conn.commit()
+    conn.close()
 
 
 def mint_and_claim(plan_type, target_project, title, dispatch_mode, tier,

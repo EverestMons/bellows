@@ -129,12 +129,12 @@ class TestClassAssignment:
     def test_register_writing_class(self, tmp_path):
         dep = self._dep(tmp_path)
         assert dep._assign_class(["knowledge/decisions/register-cycles.md"]) == "register-writing"
-        assert dep._assign_class(["DRAFTING_CYCLE.md"]) == "register-writing"
+        assert dep._assign_class(["DRAFTING_CYCLE.md"]) == "shop-infra"
 
-    def test_governed_tooling_class(self, tmp_path):
+    def test_shop_infra_class(self, tmp_path):
         dep = self._dep(tmp_path)
-        assert dep._assign_class(["bellows/depositor.py"]) == "governed-tooling"
-        assert dep._assign_class(["bellows/bellows.py", "bellows/status.py"]) == "governed-tooling"
+        assert dep._assign_class(["bellows/depositor.py"]) == "shop-infra"
+        assert dep._assign_class(["bellows/bellows.py", "bellows/status.py"]) == "shop-infra"
 
     def test_empty_writes_returns_none(self, tmp_path):
         dep = self._dep(tmp_path)
@@ -455,9 +455,9 @@ class TestConcurrentEvaluate:
 
         original_clear = dep._clear
 
-        def counting_clear(p):
+        def counting_clear(*args):
             results["cleared"] += 1
-            original_clear(p)
+            original_clear(*args)
 
         dep._clear = counting_clear
 
