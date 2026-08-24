@@ -1,0 +1,2197 @@
+.......................................................................F [  5%]
+FFFF..................FF.FFF.FFF.F.........................FFFFF...FFFFF [ 11%]
+..........F.......F.....FF.......FFFFF......FFFFF....................... [ 16%]
+.........................................F.............................. [ 22%]
+........................................................................ [ 27%]
+........................................................................ [ 33%]
+..................................................................F..... [ 39%]
+........................................................................ [ 44%]
+........................................................................ [ 50%]
+........................................................................ [ 55%]
+........................................................................ [ 61%]
+........................................................................ [ 67%]
+........................................................................ [ 72%]
+........................................................................ [ 78%]
+........................................................................ [ 83%]
+........................................................................ [ 89%]
+........................................................................ [ 95%]
+................................................................         [100%]
+=================================== FAILURES ===================================
+___________________ test_diagnostic_auto_close_moves_to_done ___________________
+
+    def test_diagnostic_auto_close_moves_to_done():
+        with tempfile.TemporaryDirectory() as tmp:
+            decisions_dir = os.path.join(tmp, "proj", "knowledge", "decisions")
+            os.makedirs(decisions_dir)
+            plan_filename = "diagnostic-foo-2026-04-15.md"
+            plan_path = os.path.join(decisions_dir, plan_filename)
+            with open(plan_path, "w") as f:
+                f.write("## Diagnostic\nSingle-step investigation.\n")
+    
+            config = {
+                "default_model": "claude-sonnet-4-6",
+                "pushover": {"app_key": "", "user_key": ""},
+                "callback_port": 5999,
+                "step_timeout_seconds": 600,
+            }
+    
+            clean_parsed = {
+                "session_id": "test-session",
+                "is_error": False,
+                "stop_reason": "end_turn",
+                "result_text": "",
+                "cost_usd": 0.05,
+                "permission_denials": [],
+                "receipt_status": "Complete",
+                "ceo_flags": [],
+                "escalate": False,
+            }
+            clean_gates = {
+                "passed": True,
+                "failures": [],
+                "is_qa_step": False,
+                "files_changed": [],
+                "plan_header": {"auto_close": "true"},
+                "verdict_requested": {"requested": False, "body": None},
+            }
+    
+            with patch("bellows.runner.run_step", return_value=clean_parsed), \
+                 patch("bellows.gates.check", return_value=clean_gates), \
+                 patch("bellows.notifier.notify_plan_complete") as mock_notify, \
+                 patch("bellows.verdict.log_to_ledger") as mock_ledger, \
+                 patch("bellows._capture_git_diff", return_value=""), \
+                 patch("bellows._create_worktree", return_value="/tmp/wt"), \
+                 patch("bellows._teardown_worktree"), \
+                 patch("bellows.record_run"), \
+                 patch("bellows.validators.validate_at_claim", return_value={"rejected": False, "reject_reason": "", "warnings": []}):
+                response_server = MagicMock()
+                bellows.run_plan(plan_path, config, response_server)
+    
+            # After claim, plan is renamed to id-canonical: diagnostic-1.md (fresh DB → id=1)
+            done_path = os.path.join(decisions_dir, "Done", "diagnostic-1.md")
+>           assert os.path.isfile(done_path), f"plan not moved to Done/: {done_path}"
+E           AssertionError: plan not moved to Done/: /var/folders/vf/8nw0z7hj1m34w6z48l5dp54w0000gn/T/tmpgo27vynb/proj/knowledge/decisions/Done/diagnostic-1.md
+E           assert False
+E            +  where False = <function isfile at 0x1035eb670>('/var/folders/vf/8nw0z7hj1m34w6z48l5dp54w0000gn/T/tmpgo27vynb/proj/knowledge/decisions/Done/diagnostic-1.md')
+E            +    where <function isfile at 0x1035eb670> = <module 'posixpath' from '/Library/Developer/CommandLineTools/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/posixpath.py'>.isfile
+E            +      where <module 'posixpath' from '/Library/Developer/CommandLineTools/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/posixpath.py'> = os.path
+
+tests/test_bellows.py:236: AssertionError
+----------------------------- Captured stdout call -----------------------------
+15:34:49 [EVENT] [diagnostic-foo] ⏳ RUNNING
+15:34:49 [WARN] [diagnostic-foo] ⚠️ claim-time re-check failed — no valid clearance
+________________ test_clean_diagnostic_no_header_posts_verdict _________________
+
+    def test_clean_diagnostic_no_header_posts_verdict():
+        """Phase 8.1: clean diagnostic with no plan header should pause for verdict
+        instead of stranding. Diagnostic default = auto_close=False."""
+        with tempfile.TemporaryDirectory() as tmp:
+            decisions_dir = os.path.join(tmp, "proj", "knowledge", "decisions")
+            os.makedirs(decisions_dir)
+            plan_filename = "diagnostic-no-header-2026-04-16.md"
+            plan_path = os.path.join(decisions_dir, plan_filename)
+            with open(plan_path, "w") as f:
+                f.write("## Diagnostic\nSingle-step investigation, no header.\n")
+    
+            config = {
+                "default_model": "claude-sonnet-4-6",
+                "pushover": {"app_key": "", "user_key": ""},
+                "callback_port": 5999,
+                "step_timeout_seconds": 600,
+            }
+    
+            clean_parsed = {
+                "session_id": "test-session",
+                "is_error": False,
+                "stop_reason": "end_turn",
+                "result_text": "",
+                "cost_usd": 0.05,
+                "permission_denials": [],
+                "receipt_status": "Complete",
+                "ceo_flags": [],
+                "escalate": False,
+            }
+            clean_gates = {
+                "passed": True,
+                "failures": [],
+                "is_qa_step": False,
+                "files_changed": [],
+                "plan_header": {},  # empty — triggers diagnostic default effective_auto_close=False
+                "verdict_requested": {"requested": False, "body": None},
+            }
+    
+            with patch("bellows.runner.run_step", return_value=clean_parsed), \
+                 patch("bellows.gates.check", return_value=clean_gates), \
+                 patch("bellows.notifier.push"), \
+                 patch("bellows.notifier.notify_verdict_request") as mock_notify_verdict, \
+                 patch("bellows.verdict.post_verdict_request") as mock_post_verdict, \
+                 patch("bellows.verdict.log_to_ledger") as mock_ledger, \
+                 patch("bellows._capture_git_diff", return_value=""), \
+                 patch("bellows._create_worktree", return_value="/tmp/wt"), \
+                 patch("bellows._teardown_worktree"), \
+                 patch("bellows.record_run"), \
+                 patch("bellows.validators.validate_at_claim", return_value={"rejected": False, "reject_reason": "", "warnings": []}):
+                response_server = MagicMock()
+                bellows.run_plan(plan_path, config, response_server)
+    
+            # Verdict request was posted
+>           mock_post_verdict.assert_called_once()
+
+tests/test_bellows.py:296: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <MagicMock name='post_verdict_request' id='4465226272'>
+
+    def assert_called_once(self):
+        """assert that the mock was called only once.
+        """
+        if not self.call_count == 1:
+            msg = ("Expected '%s' to have been called once. Called %s times.%s"
+                   % (self._mock_name or 'mock',
+                      self.call_count,
+                      self._calls_repr()))
+>           raise AssertionError(msg)
+E           AssertionError: Expected 'post_verdict_request' to have been called once. Called 0 times.
+
+/Library/Developer/CommandLineTools/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/unittest/mock.py:886: AssertionError
+----------------------------- Captured stdout call -----------------------------
+15:34:49 [EVENT] [diagnostic-no-header] ⏳ RUNNING
+15:34:49 [WARN] [diagnostic-no-header] ⚠️ claim-time re-check failed — no valid clearance
+_____________ test_clean_diagnostic_auto_close_true_moves_to_done ______________
+
+    def test_clean_diagnostic_auto_close_true_moves_to_done():
+        """Phase 8.1 regression: diagnostic with auto_close: true header should still
+        move to Done (matches the existing Phase 7-polish test path)."""
+        with tempfile.TemporaryDirectory() as tmp:
+            decisions_dir = os.path.join(tmp, "proj", "knowledge", "decisions")
+            os.makedirs(decisions_dir)
+            plan_filename = "diagnostic-auto-close-2026-04-16.md"
+            plan_path = os.path.join(decisions_dir, plan_filename)
+            with open(plan_path, "w") as f:
+                f.write("## Diagnostic\nSingle-step.\n")
+    
+            config = {
+                "default_model": "claude-sonnet-4-6",
+                "pushover": {"app_key": "", "user_key": ""},
+                "callback_port": 5999,
+                "step_timeout_seconds": 600,
+            }
+    
+            clean_parsed = {
+                "session_id": "test-session",
+                "is_error": False,
+                "stop_reason": "end_turn",
+                "result_text": "",
+                "cost_usd": 0.05,
+                "permission_denials": [],
+                "receipt_status": "Complete",
+                "ceo_flags": [],
+                "escalate": False,
+            }
+            clean_gates = {
+                "passed": True,
+                "failures": [],
+                "is_qa_step": False,
+                "files_changed": [],
+                "plan_header": {"auto_close": "true"},
+                "verdict_requested": {"requested": False, "body": None},
+            }
+    
+            with patch("bellows.runner.run_step", return_value=clean_parsed), \
+                 patch("bellows.gates.check", return_value=clean_gates), \
+                 patch("bellows.notifier.notify_plan_complete") as mock_notify, \
+                 patch("bellows.verdict.log_to_ledger") as mock_ledger, \
+                 patch("bellows._capture_git_diff", return_value=""), \
+                 patch("bellows._create_worktree", return_value="/tmp/wt"), \
+                 patch("bellows._teardown_worktree"), \
+                 patch("bellows.record_run"), \
+                 patch("bellows.validators.validate_at_claim", return_value={"rejected": False, "reject_reason": "", "warnings": []}):
+                response_server = MagicMock()
+                bellows.run_plan(plan_path, config, response_server)
+    
+            # After claim, plan is renamed to id-canonical: diagnostic-1.md (fresh DB → id=1)
+            done_path = os.path.join(decisions_dir, "Done", "diagnostic-1.md")
+>           assert os.path.isfile(done_path), f"plan not moved to Done/: {done_path}"
+E           AssertionError: plan not moved to Done/: /var/folders/vf/8nw0z7hj1m34w6z48l5dp54w0000gn/T/tmpyewwvdey/proj/knowledge/decisions/Done/diagnostic-1.md
+E           assert False
+E            +  where False = <function isfile at 0x1035eb670>('/var/folders/vf/8nw0z7hj1m34w6z48l5dp54w0000gn/T/tmpyewwvdey/proj/knowledge/decisions/Done/diagnostic-1.md')
+E            +    where <function isfile at 0x1035eb670> = <module 'posixpath' from '/Library/Developer/CommandLineTools/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/posixpath.py'>.isfile
+E            +      where <module 'posixpath' from '/Library/Developer/CommandLineTools/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/posixpath.py'> = os.path
+
+tests/test_bellows.py:366: AssertionError
+----------------------------- Captured stdout call -----------------------------
+15:34:49 [EVENT] [diagnostic-auto-close] ⏳ RUNNING
+15:34:49 [WARN] [diagnostic-auto-close] ⚠️ claim-time re-check failed — no valid clearance
+________________ test_executable_no_header_defaults_to_verdict _________________
+
+    def test_executable_no_header_defaults_to_verdict():
+        """Disable-auto-close: executable plan with no auto_close header key should
+        pause for verdict at terminal step, NOT auto-close to Done."""
+        with tempfile.TemporaryDirectory() as tmp:
+            decisions_dir = os.path.join(tmp, "proj", "knowledge", "decisions")
+            os.makedirs(decisions_dir)
+            plan_filename = "executable-no-header-2026-04-24.md"
+            plan_path = os.path.join(decisions_dir, plan_filename)
+            with open(plan_path, "w") as f:
+                f.write("## STEP 1\nDo stuff.\n")
+    
+            config = {
+                "default_model": "claude-sonnet-4-6",
+                "pushover": {"app_key": "", "user_key": ""},
+                "callback_port": 5999,
+                "step_timeout_seconds": 600,
+            }
+    
+            clean_parsed = _make_fake_run_step_result()
+            clean_gates = {
+                "passed": True,
+                "failures": [],
+                "is_qa_step": False,
+                "files_changed": [],
+                "plan_header": {},  # no auto_close key — new default should be False
+                "verdict_requested": {"requested": False, "body": None},
+            }
+    
+            with patch("bellows.runner.run_step", return_value=clean_parsed), \
+                 patch("bellows.gates.check", return_value=clean_gates), \
+                 patch("bellows.notifier.push"), \
+                 patch("bellows.notifier.notify_verdict_request") as mock_notify_verdict, \
+                 patch("bellows.verdict.post_verdict_request") as mock_post_verdict, \
+                 patch("bellows.verdict.log_to_ledger") as mock_ledger, \
+                 patch("bellows._capture_git_diff", return_value=""), \
+                 patch("bellows._create_worktree", return_value="/tmp/wt"), \
+                 patch("bellows._teardown_worktree"), \
+                 patch("bellows.record_run"), \
+                 patch("bellows.validators.validate_at_claim", return_value={"rejected": False, "reject_reason": "", "warnings": []}):
+                response_server = MagicMock()
+                bellows.run_plan(plan_path, config, response_server)
+    
+            # Verdict request was posted (pause branch fired)
+>           mock_post_verdict.assert_called_once()
+
+tests/test_bellows.py:416: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <MagicMock name='post_verdict_request' id='4464878112'>
+
+    def assert_called_once(self):
+        """assert that the mock was called only once.
+        """
+        if not self.call_count == 1:
+            msg = ("Expected '%s' to have been called once. Called %s times.%s"
+                   % (self._mock_name or 'mock',
+                      self.call_count,
+                      self._calls_repr()))
+>           raise AssertionError(msg)
+E           AssertionError: Expected 'post_verdict_request' to have been called once. Called 0 times.
+
+/Library/Developer/CommandLineTools/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/unittest/mock.py:886: AssertionError
+----------------------------- Captured stdout call -----------------------------
+15:34:49 [EVENT] [executable-no-header] ⏳ RUNNING
+15:34:49 [WARN] [executable-no-header] ⚠️ claim-time re-check failed — no valid clearance
+____________ test_executable_explicit_auto_close_true_still_closes _____________
+
+    def test_executable_explicit_auto_close_true_still_closes():
+        """Disable-auto-close regression guard: executable plan with explicit
+        auto_close: true header should still auto-close to Done."""
+        with tempfile.TemporaryDirectory() as tmp:
+            decisions_dir = os.path.join(tmp, "proj", "knowledge", "decisions")
+            os.makedirs(decisions_dir)
+            plan_filename = "executable-explicit-close-2026-04-24.md"
+            plan_path = os.path.join(decisions_dir, plan_filename)
+            with open(plan_path, "w") as f:
+                f.write("## STEP 1\nDo stuff.\n")
+    
+            config = {
+                "default_model": "claude-sonnet-4-6",
+                "pushover": {"app_key": "", "user_key": ""},
+                "callback_port": 5999,
+                "step_timeout_seconds": 600,
+            }
+    
+            clean_parsed = _make_fake_run_step_result()
+            clean_gates = {
+                "passed": True,
+                "failures": [],
+                "is_qa_step": False,
+                "files_changed": [],
+                "plan_header": {"auto_close": "true"},  # explicit opt-in
+                "verdict_requested": {"requested": False, "body": None},
+            }
+    
+            with patch("bellows.runner.run_step", return_value=clean_parsed), \
+                 patch("bellows.gates.check", return_value=clean_gates), \
+                 patch("bellows.notifier.notify_plan_complete") as mock_notify, \
+                 patch("bellows.verdict.log_to_ledger") as mock_ledger, \
+                 patch("bellows._capture_git_diff", return_value=""), \
+                 patch("bellows._create_worktree", return_value="/tmp/wt"), \
+                 patch("bellows._teardown_worktree"), \
+                 patch("bellows.record_run"), \
+                 patch("bellows.validators.validate_at_claim", return_value={"rejected": False, "reject_reason": "", "warnings": []}):
+                response_server = MagicMock()
+                bellows.run_plan(plan_path, config, response_server)
+    
+            # After claim, plan is renamed to id-canonical: executable-1.md (fresh DB → id=1)
+            done_path = os.path.join(decisions_dir, "Done", "executable-1.md")
+>           assert os.path.isfile(done_path), f"explicit auto_close:true plan not moved to Done/: {done_path}"
+E           AssertionError: explicit auto_close:true plan not moved to Done/: /var/folders/vf/8nw0z7hj1m34w6z48l5dp54w0000gn/T/tmpndftlydr/proj/knowledge/decisions/Done/executable-1.md
+E           assert False
+E            +  where False = <function isfile at 0x1035eb670>('/var/folders/vf/8nw0z7hj1m34w6z48l5dp54w0000gn/T/tmpndftlydr/proj/knowledge/decisions/Done/executable-1.md')
+E            +    where <function isfile at 0x1035eb670> = <module 'posixpath' from '/Library/Developer/CommandLineTools/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/posixpath.py'>.isfile
+E            +      where <module 'posixpath' from '/Library/Developer/CommandLineTools/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/posixpath.py'> = os.path
+
+tests/test_bellows.py:470: AssertionError
+----------------------------- Captured stdout call -----------------------------
+15:34:49 [EVENT] [executable-explicit-close] ⏳ RUNNING
+15:34:49 [WARN] [executable-explicit-close] ⚠️ claim-time re-check failed — no valid clearance
+________ test_handle_parallel_from_watchdog_adds_pending_not_dispatched ________
+
+    def test_handle_parallel_from_watchdog_adds_pending_not_dispatched():
+        """Parallel plan via on_created (from_rescan=False) must add to _pending_groups,
+        not dispatch, and not add to _seen."""
+        mock_orch = MagicMock()
+        mock_orch._seen = set()
+        mock_orch._shutting_down = False
+        handler = bellows.PlanHandler(mock_orch)
+    
+        with tempfile.TemporaryDirectory() as tmp:
+            mock_orch.config = {"watched_projects": [tmp]}
+            fname = "parallel-1-executable-foo-2026-04-16.md"
+            path = os.path.join(tmp, fname)
+            open(path, "w").close()
+    
+            handler._handle(path)  # default from_rescan=False
+    
+>       assert "parallel-1" in handler._pending_groups
+E       AssertionError: assert 'parallel-1' in {}
+E        +  where {} = <bellows.PlanHandler object at 0x10a5c6a00>._pending_groups
+
+tests/test_bellows.py:1139: AssertionError
+----------------------------- Captured stdout call -----------------------------
+15:34:50 [WARN] [parallel-1-executable-foo] ⚠️ auto-HOLD — no clearance record
+______________ test_rescan_dispatches_pending_group_after_settle _______________
+
+    def test_rescan_dispatches_pending_group_after_settle():
+        """_rescan must dispatch pending groups whose first-seen timestamp is > 5s ago."""
+        with tempfile.TemporaryDirectory() as tmp:
+            fname_a = "parallel-1-executable-foo-2026-04-16.md"
+            fname_b = "parallel-1-executable-bar-2026-04-16.md"
+            for fname in [fname_a, fname_b]:
+                open(os.path.join(tmp, fname), "w").close()
+    
+            config = {"watched_projects": [tmp], "callback_port": 5999}
+            b = bellows.Bellows(config)
+            mock_orch = MagicMock()
+            mock_orch.config = {"watched_projects": [tmp]}
+            mock_orch._seen = set()
+            handler = bellows.PlanHandler(mock_orch)
+            # Simulate group first seen 10s ago (well past 5s settle window)
+            handler._pending_groups["parallel-1"] = time.time() - 10
+    
+            with patch.object(b, "handle_parallel_group") as mock_dispatch, \
+                 patch.object(b, "_consume_verdicts"):
+                b._rescan(handler)
+    
+>           mock_dispatch.assert_called_once()
+
+tests/test_bellows.py:1166: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <MagicMock name='handle_parallel_group' id='4464986432'>
+
+    def assert_called_once(self):
+        """assert that the mock was called only once.
+        """
+        if not self.call_count == 1:
+            msg = ("Expected '%s' to have been called once. Called %s times.%s"
+                   % (self._mock_name or 'mock',
+                      self.call_count,
+                      self._calls_repr()))
+>           raise AssertionError(msg)
+E           AssertionError: Expected 'handle_parallel_group' to have been called once. Called 0 times.
+
+/Library/Developer/CommandLineTools/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/unittest/mock.py:886: AssertionError
+----------------------------- Captured stdout call -----------------------------
+15:34:50 [WARN] resume-parked: DB query failed: no such table: parked_steps
+15:34:50 [WARN] [parallel-1-executable-foo] ⚠️ auto-HOLD — no clearance record
+15:34:50 [WARN] [parallel-1-executable-bar] ⚠️ auto-HOLD — no clearance record
+___________ test_nonparallel_plan_dispatches_immediately_from_handle ___________
+
+    def test_nonparallel_plan_dispatches_immediately_from_handle():
+        """Non-parallel plan via _handle (from_rescan=False) must dispatch immediately."""
+        mock_orch = MagicMock()
+        mock_orch._seen = set()
+        mock_orch._shutting_down = False
+        handler = bellows.PlanHandler(mock_orch)
+    
+        with tempfile.TemporaryDirectory() as tmp:
+            mock_orch.config = {"watched_projects": [tmp]}
+            fname = "executable-foo-2026-04-16.md"
+            path = os.path.join(tmp, fname)
+            open(path, "w").close()
+    
+            handler._handle(path)  # default from_rescan=False
+    
+>       mock_orch.handle_new_plan.assert_called_once_with(path)
+
+tests/test_bellows.py:1210: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <MagicMock name='mock.handle_new_plan' id='4465121792'>
+args = ('/var/folders/vf/8nw0z7hj1m34w6z48l5dp54w0000gn/T/tmp_uivdjmx/executable-foo-2026-04-16.md',)
+kwargs = {}
+msg = "Expected 'handle_new_plan' to be called once. Called 0 times."
+
+    def assert_called_once_with(self, /, *args, **kwargs):
+        """assert that the mock was called exactly once and that that call was
+        with the specified arguments."""
+        if not self.call_count == 1:
+            msg = ("Expected '%s' to be called once. Called %s times.%s"
+                   % (self._mock_name or 'mock',
+                      self.call_count,
+                      self._calls_repr()))
+>           raise AssertionError(msg)
+E           AssertionError: Expected 'handle_new_plan' to be called once. Called 0 times.
+
+/Library/Developer/CommandLineTools/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/unittest/mock.py:918: AssertionError
+----------------------------- Captured stdout call -----------------------------
+15:34:50 [WARN] [executable-foo] ⚠️ auto-HOLD — no clearance record
+______________ test_two_parallel_siblings_collected_as_one_group _______________
+
+    def test_two_parallel_siblings_collected_as_one_group():
+        """Two parallel siblings deferred to _pending_groups are dispatched together
+        as one group after the settle window expires."""
+        with tempfile.TemporaryDirectory() as tmp:
+            fname_a = "parallel-1-executable-forge-annotation-2026-04-16.md"
+            fname_b = "parallel-1-executable-forge-budget-2026-04-16.md"
+            path_a = os.path.join(tmp, fname_a)
+            path_b = os.path.join(tmp, fname_b)
+            open(path_a, "w").close()
+            open(path_b, "w").close()
+    
+            config = {"watched_projects": [tmp], "callback_port": 5999}
+            b = bellows.Bellows(config)
+            mock_orch = MagicMock()
+            mock_orch.config = {"watched_projects": [tmp]}
+            mock_orch._seen = set()
+            mock_orch._shutting_down = False
+            handler = bellows.PlanHandler(mock_orch)
+    
+            # Simulate watchdog events: both files deferred
+            handler._handle(path_a)  # adds group to _pending_groups
+            handler._handle(path_b)  # group already present, returns immediately
+    
+>           assert "parallel-1" in handler._pending_groups
+E           AssertionError: assert 'parallel-1' in {}
+E            +  where {} = <bellows.PlanHandler object at 0x10a20c6d0>._pending_groups
+
+tests/test_bellows.py:1238: AssertionError
+----------------------------- Captured stdout call -----------------------------
+15:34:50 [WARN] [parallel-1-executable-forge-an] ⚠️ auto-HOLD — no clearance record
+15:34:50 [WARN] [parallel-1-executable-forge-bu] ⚠️ auto-HOLD — no clearance record
+_________________ test_run_plan_claims_file_before_runner_runs _________________
+
+    def test_run_plan_claims_file_before_runner_runs():
+        """run_plan must mint an id and rename to in-progress-<type>-<id>.md before calling runner.run_step."""
+        with tempfile.TemporaryDirectory() as tmp:
+            decisions_dir = os.path.join(tmp, "proj", "knowledge", "decisions")
+            os.makedirs(decisions_dir)
+            plan_filename = "executable-claim-test-2026-04-16.md"
+            plan_path = os.path.join(decisions_dir, plan_filename)
+            with open(plan_path, "w") as f:
+                f.write("# Claim Test\n## STEP 1\nDo stuff.\n")
+    
+            config = {
+                "default_model": "claude-sonnet-4-6",
+                "pushover": {"app_key": "", "user_key": ""},
+                "callback_port": 5999,
+                "step_timeout_seconds": 600,
+            }
+    
+            claim_state = {}
+    
+            def fake_run_step(prompt, *args, **kwargs):
+                claim_state["original_exists"] = os.path.exists(plan_path)
+                # Check for any in-progress file (id-canonical naming: in-progress-executable-<id>.md)
+                inprogress_files = [f for f in os.listdir(decisions_dir) if f.startswith("in-progress-")]
+                claim_state["inprogress_exists"] = len(inprogress_files) > 0
+                if inprogress_files:
+                    claim_state["inprogress_name"] = inprogress_files[0]
+                return _make_fake_run_step_result()
+    
+            with patch("bellows.runner.run_step", side_effect=fake_run_step), \
+                 patch("bellows.gates.check", return_value=_clean_gates()), \
+                 patch("bellows.notifier.push"), \
+                 patch("bellows.verdict.log_to_ledger"), \
+                 patch("bellows._capture_git_diff", return_value=""), \
+                 patch("bellows._create_worktree", return_value="/tmp/wt"), \
+                 patch("bellows._teardown_worktree"), \
+                 patch("bellows.record_run"), \
+                 patch("bellows.validators.validate_at_claim", return_value={"rejected": False, "reject_reason": "", "warnings": []}):
+                response_server = MagicMock()
+                bellows.run_plan(plan_path, config, response_server)
+    
+>           assert not claim_state.get("original_exists", True), \
+                "Original plan file must not exist when runner.run_step is called"
+E           AssertionError: Original plan file must not exist when runner.run_step is called
+E           assert not True
+E            +  where True = <built-in method get of dict object at 0x10a4b0240>('original_exists', True)
+E            +    where <built-in method get of dict object at 0x10a4b0240> = {}.get
+
+tests/test_bellows.py:1328: AssertionError
+----------------------------- Captured stdout call -----------------------------
+15:34:50 [EVENT] [executable-claim-test] ⏳ RUNNING
+15:34:50 [WARN] [executable-claim-test] ⚠️ claim-time re-check failed — no valid clearance
+_______________ test_run_plan_bootstrap_prompt_uses_shadow_path ________________
+
+    def test_run_plan_bootstrap_prompt_uses_shadow_path():
+        """Bootstrap prompt passed to runner must reference the shadow cache path, not the in-progress path."""
+        with tempfile.TemporaryDirectory() as tmp:
+            decisions_dir = os.path.join(tmp, "proj", "knowledge", "decisions")
+            os.makedirs(decisions_dir)
+            plan_filename = "executable-bootstrap-prompt-2026-04-16.md"
+            plan_path = os.path.join(decisions_dir, plan_filename)
+            with open(plan_path, "w") as f:
+                f.write("## STEP 1\nDo stuff.\n")
+    
+            config = {
+                "default_model": "claude-sonnet-4-6",
+                "pushover": {"app_key": "", "user_key": ""},
+                "callback_port": 5999,
+                "step_timeout_seconds": 600,
+            }
+    
+            captured_prompts = []
+    
+            def fake_run_step(prompt, *args, **kwargs):
+                captured_prompts.append(prompt)
+                return _make_fake_run_step_result()
+    
+            with patch("bellows.runner.run_step", side_effect=fake_run_step), \
+                 patch("bellows.gates.check", return_value=_clean_gates()), \
+                 patch("bellows.notifier.push"), \
+                 patch("bellows.verdict.log_to_ledger"), \
+                 patch("bellows._capture_git_diff", return_value=""), \
+                 patch("bellows._create_worktree", return_value="/tmp/wt"), \
+                 patch("bellows._teardown_worktree"), \
+                 patch("bellows.record_run"), \
+                 patch("bellows.validators.validate_at_claim", return_value={"rejected": False, "reject_reason": "", "warnings": []}):
+                response_server = MagicMock()
+                bellows.run_plan(plan_path, config, response_server)
+    
+>           assert len(captured_prompts) >= 1
+E           assert 0 >= 1
+E            +  where 0 = len([])
+
+tests/test_bellows.py:1406: AssertionError
+----------------------------- Captured stdout call -----------------------------
+15:34:50 [EVENT] [executable-bootstrap-prompt] ⏳ RUNNING
+15:34:50 [WARN] [executable-bootstrap-prompt] ⚠️ claim-time re-check failed — no valid clearance
+______________ test_run_plan_continuation_prompt_uses_shadow_path ______________
+
+    def test_run_plan_continuation_prompt_uses_shadow_path():
+        """Mid-loop continuation prompt must reference the shadow cache path, not in-progress path."""
+        with tempfile.TemporaryDirectory() as tmp:
+            decisions_dir = os.path.join(tmp, "proj", "knowledge", "decisions")
+            os.makedirs(decisions_dir)
+            plan_filename = "executable-cont-shadow-2026-04-19.md"
+            plan_path = os.path.join(decisions_dir, plan_filename)
+            with open(plan_path, "w") as f:
+                f.write("## STEP 1\nDo stuff.\n## STEP 2\nDo more stuff.\n")
+    
+            config = {
+                "default_model": "claude-sonnet-4-6",
+                "pushover": {"app_key": "", "user_key": ""},
+                "callback_port": 5999,
+                "step_timeout_seconds": 600,
+            }
+    
+            captured_prompts = []
+    
+            def fake_run_step(prompt, *args, **kwargs):
+                captured_prompts.append(prompt)
+                return _make_fake_run_step_result()
+    
+            # Use a non-sparse plan_header (>= 3 keys) so _apply_defensive_header_defaults
+            # doesn't inject pause_for_verdict — this test is about shadow path, not pause behavior.
+            advance_gates = _clean_gates()
+            advance_gates["plan_header"] = {"auto_close": "true", "pause_for_verdict": "never", "Total Steps": "2"}
+    
+            with patch("bellows.runner.run_step", side_effect=fake_run_step), \
+                 patch("bellows.gates.check", return_value=advance_gates), \
+                 patch("bellows.notifier.push"), \
+                 patch("bellows.verdict.log_to_ledger"), \
+                 patch("bellows._capture_git_diff", return_value=""), \
+                 patch("bellows._create_worktree", return_value="/tmp/wt"), \
+                 patch("bellows._teardown_worktree"), \
+                 patch("bellows.record_run"), \
+                 patch("bellows.validators.validate_at_claim", return_value={"rejected": False, "reject_reason": "", "warnings": []}):
+                response_server = MagicMock()
+                bellows.run_plan(plan_path, config, response_server)
+    
+>           assert len(captured_prompts) >= 2, \
+                f"Expected at least 2 prompts (bootstrap + continuation). Got {len(captured_prompts)}"
+E           AssertionError: Expected at least 2 prompts (bootstrap + continuation). Got 0
+E           assert 0 >= 2
+E            +  where 0 = len([])
+
+tests/test_bellows.py:1456: AssertionError
+----------------------------- Captured stdout call -----------------------------
+15:34:50 [EVENT] [executable-cont-shadow] ⏳ RUNNING
+15:34:50 [WARN] [executable-cont-shadow] ⚠️ sparse header (0 keys) for 2-step plan — defaulting pause_for_verdict to after_step_1 (safe-pause)
+15:34:50 [WARN] [executable-cont-shadow] ⚠️ claim-time re-check failed — no valid clearance
+_______________ test_run_plan_diagnostic_prompt_uses_shadow_path _______________
+
+    def test_run_plan_diagnostic_prompt_uses_shadow_path():
+        """Diagnostic bootstrap prompt must reference the shadow cache path."""
+        with tempfile.TemporaryDirectory() as tmp:
+            decisions_dir = os.path.join(tmp, "proj", "knowledge", "decisions")
+            os.makedirs(decisions_dir)
+            plan_filename = "diagnostic-shadow-test-2026-04-19.md"
+            plan_path = os.path.join(decisions_dir, plan_filename)
+            with open(plan_path, "w") as f:
+                f.write("## STEP 1\nInvestigate stuff.\n")
+    
+            config = {
+                "default_model": "claude-sonnet-4-6",
+                "pushover": {"app_key": "", "user_key": ""},
+                "callback_port": 5999,
+                "step_timeout_seconds": 600,
+            }
+    
+            captured_prompts = []
+    
+            def fake_run_step(prompt, *args, **kwargs):
+                captured_prompts.append(prompt)
+                return _make_fake_run_step_result()
+    
+            with patch("bellows.runner.run_step", side_effect=fake_run_step), \
+                 patch("bellows.gates.check", return_value=_clean_gates(auto_close="false")), \
+                 patch("bellows.notifier.push"), \
+                 patch("bellows.notifier.notify_verdict_request"), \
+                 patch("bellows.verdict.log_to_ledger"), \
+                 patch("bellows.verdict.post_verdict_request"), \
+                 patch("bellows._capture_git_diff", return_value=""), \
+                 patch("bellows._create_worktree", return_value="/tmp/wt"), \
+                 patch("bellows._teardown_worktree"), \
+                 patch("bellows.record_run"), \
+                 patch("bellows.validators.validate_at_claim", return_value={"rejected": False, "reject_reason": "", "warnings": []}):
+                response_server = MagicMock()
+                bellows.run_plan(plan_path, config, response_server)
+    
+>           assert len(captured_prompts) >= 1
+E           assert 0 >= 1
+E            +  where 0 = len([])
+
+tests/test_bellows.py:1506: AssertionError
+----------------------------- Captured stdout call -----------------------------
+15:34:50 [EVENT] [diagnostic-shadow-test] ⏳ RUNNING
+15:34:50 [WARN] [diagnostic-shadow-test] ⚠️ claim-time re-check failed — no valid clearance
+____________________ test_shadow_path_resolves_after_claim _____________________
+
+    def test_shadow_path_resolves_after_claim():
+        """After run_plan claims a plan, the shadow file must exist with pristine content."""
+        with tempfile.TemporaryDirectory() as tmp:
+            decisions_dir = os.path.join(tmp, "proj", "knowledge", "decisions")
+            os.makedirs(decisions_dir)
+            plan_filename = "executable-shadow-resolve-2026-04-19.md"
+            plan_path = os.path.join(decisions_dir, plan_filename)
+            plan_content = "## STEP 1\nDo stuff.\n"
+            with open(plan_path, "w") as f:
+                f.write(plan_content)
+    
+            config = {
+                "default_model": "claude-sonnet-4-6",
+                "pushover": {"app_key": "", "user_key": ""},
+                "callback_port": 5999,
+                "step_timeout_seconds": 600,
+            }
+    
+            shadow_state = {}
+    
+            def fake_run_step(prompt, *args, **kwargs):
+                # Capture shadow file state during execution (before auto-close deletes it)
+                # After id-canonical rename, the shadow is keyed by the new name.
+                # Find the actual in-progress file to derive the shadow path.
+                inprogress_files = [f for f in os.listdir(decisions_dir) if f.startswith("in-progress-")]
+                if inprogress_files:
+                    shadow_file = bellows._shadow_path(inprogress_files[0])
+                else:
+                    shadow_file = bellows._shadow_path(plan_filename)
+                shadow_state["exists"] = shadow_file.exists()
+                if shadow_file.exists():
+                    shadow_state["content"] = shadow_file.read_text()
+                return _make_fake_run_step_result()
+    
+            with patch("bellows.runner.run_step", side_effect=fake_run_step), \
+                 patch("bellows.gates.check", return_value=_clean_gates()), \
+                 patch("bellows.notifier.push"), \
+                 patch("bellows.verdict.log_to_ledger"), \
+                 patch("bellows._capture_git_diff", return_value=""), \
+                 patch("bellows._create_worktree", return_value="/tmp/wt"), \
+                 patch("bellows._teardown_worktree"), \
+                 patch("bellows.record_run"), \
+                 patch("bellows.validators.validate_at_claim", return_value={"rejected": False, "reject_reason": "", "warnings": []}):
+                response_server = MagicMock()
+                bellows.run_plan(plan_path, config, response_server)
+    
+>           assert shadow_state.get("exists", False), \
+                "Shadow file must exist after claim, during runner execution"
+E           AssertionError: Shadow file must exist after claim, during runner execution
+E           assert False
+E            +  where False = <built-in method get of dict object at 0x10a17cb00>('exists', False)
+E            +    where <built-in method get of dict object at 0x10a17cb00> = {}.get
+
+tests/test_bellows.py:1607: AssertionError
+----------------------------- Captured stdout call -----------------------------
+15:34:50 [EVENT] [executable-shadow-resolve] ⏳ RUNNING
+15:34:50 [WARN] [executable-shadow-resolve] ⚠️ claim-time re-check failed — no valid clearance
+________________ test_run_plan_creates_worktree_before_pre_diff ________________
+
+    def test_run_plan_creates_worktree_before_pre_diff():
+        """Worktree creation must happen before the first _capture_git_diff call."""
+        with tempfile.TemporaryDirectory() as tmp:
+            decisions_dir = os.path.join(tmp, "proj", "knowledge", "decisions")
+            os.makedirs(decisions_dir)
+            plan_filename = "executable-wt-order-2026-05-03.md"
+            plan_path = os.path.join(decisions_dir, plan_filename)
+            with open(plan_path, "w") as f:
+                f.write("## STEP 1\nDo stuff.\n")
+    
+            config = {
+                "default_model": "claude-sonnet-4-6",
+                "pushover": {"app_key": "", "user_key": ""},
+                "callback_port": 5999,
+                "step_timeout_seconds": 600,
+            }
+    
+            call_order = []
+    
+            def track_create_worktree(project_path, slug):
+                call_order.append("create_worktree")
+                return "/tmp/wt-sentinel"
+    
+            def track_capture_diff(path):
+                call_order.append("capture_git_diff")
+                return ""
+    
+            with patch("bellows._create_worktree", side_effect=track_create_worktree), \
+                 patch("bellows._capture_git_diff", side_effect=track_capture_diff), \
+                 patch("bellows._teardown_worktree"), \
+                 patch("bellows.runner.run_step", return_value=_make_fake_run_step_result()), \
+                 patch("bellows.gates.check", return_value=_clean_gates()), \
+                 patch("bellows.notifier.push"), \
+                 patch("bellows.verdict.log_to_ledger"), \
+                 patch("bellows.record_run"), \
+                 patch("bellows.validators.validate_at_claim", return_value={"rejected": False, "reject_reason": "", "warnings": []}):
+                response_server = MagicMock()
+                bellows.run_plan(plan_path, config, response_server)
+    
+>           assert "create_worktree" in call_order
+E           AssertionError: assert 'create_worktree' in []
+
+tests/test_bellows.py:2169: AssertionError
+----------------------------- Captured stdout call -----------------------------
+15:34:50 [EVENT] [executable-wt-order] ⏳ RUNNING
+15:34:50 [WARN] [executable-wt-order] ⚠️ claim-time re-check failed — no valid clearance
+______________ test_run_plan_passes_wt_path_to_capture_and_runner ______________
+
+    def test_run_plan_passes_wt_path_to_capture_and_runner():
+        """run_plan must route _capture_git_diff and runner.run_step through the worktree path."""
+        with tempfile.TemporaryDirectory() as tmp:
+            decisions_dir = os.path.join(tmp, "proj", "knowledge", "decisions")
+            os.makedirs(decisions_dir)
+            plan_filename = "executable-wt-path-2026-05-03.md"
+            plan_path = os.path.join(decisions_dir, plan_filename)
+            with open(plan_path, "w") as f:
+                f.write("## STEP 1\nDo stuff.\n")
+    
+            config = {
+                "default_model": "claude-sonnet-4-6",
+                "pushover": {"app_key": "", "user_key": ""},
+                "callback_port": 5999,
+                "step_timeout_seconds": 600,
+            }
+    
+            with patch("bellows._create_worktree", return_value="WT_PATH_SENTINEL"), \
+                 patch("bellows._capture_git_diff", return_value="") as mock_capture, \
+                 patch("bellows._teardown_worktree"), \
+                 patch("bellows.runner.run_step", return_value=_make_fake_run_step_result()) as mock_runner, \
+                 patch("bellows.gates.check", return_value=_clean_gates()), \
+                 patch("bellows.notifier.push"), \
+                 patch("bellows.verdict.log_to_ledger"), \
+                 patch("bellows.record_run"), \
+                 patch("bellows.validators.validate_at_claim", return_value={"rejected": False, "reject_reason": "", "warnings": []}):
+                response_server = MagicMock()
+                bellows.run_plan(plan_path, config, response_server)
+    
+            # _capture_git_diff must receive the worktree path, not the project path
+            for call in mock_capture.call_args_list:
+                assert call[0][0] == "WT_PATH_SENTINEL", \
+                    f"_capture_git_diff called with {call[0][0]!r}, expected 'WT_PATH_SENTINEL'"
+    
+            # runner.run_step second positional arg must be the worktree path
+>           assert mock_runner.call_count >= 1
+E           AssertionError: assert 0 >= 1
+E            +  where 0 = <MagicMock name='run_step' id='4466511392'>.call_count
+
+tests/test_bellows.py:2212: AssertionError
+----------------------------- Captured stdout call -----------------------------
+15:34:51 [EVENT] [executable-wt-path] ⏳ RUNNING
+15:34:51 [WARN] [executable-wt-path] ⚠️ claim-time re-check failed — no valid clearance
+______________ test_run_plan_tears_down_worktree_after_final_gate ______________
+
+    def test_run_plan_tears_down_worktree_after_final_gate():
+        """Teardown must happen after gates.check and before Done move on auto-close."""
+        with tempfile.TemporaryDirectory() as tmp:
+            decisions_dir = os.path.join(tmp, "proj", "knowledge", "decisions")
+            os.makedirs(decisions_dir)
+            plan_filename = "executable-wt-teardown-order-2026-05-03.md"
+            plan_path = os.path.join(decisions_dir, plan_filename)
+            with open(plan_path, "w") as f:
+                f.write("## STEP 1\nDo stuff.\n")
+    
+            config = {
+                "default_model": "claude-sonnet-4-6",
+                "pushover": {"app_key": "", "user_key": ""},
+                "callback_port": 5999,
+                "step_timeout_seconds": 600,
+            }
+    
+            call_order = []
+    
+            def track_gates_check(*args, **kwargs):
+                call_order.append("gates_check")
+                return _clean_gates()
+    
+            def track_teardown(*args, **kwargs):
+                call_order.append("teardown")
+    
+            with patch("bellows._create_worktree", return_value="/tmp/wt"), \
+                 patch("bellows._capture_git_diff", return_value=""), \
+                 patch("bellows._teardown_worktree", side_effect=track_teardown), \
+                 patch("bellows.runner.run_step", return_value=_make_fake_run_step_result()), \
+                 patch("bellows.gates.check", side_effect=track_gates_check), \
+                 patch("bellows.notifier.push"), \
+                 patch("bellows.verdict.log_to_ledger"), \
+                 patch("bellows.record_run"), \
+                 patch("bellows.validators.validate_at_claim", return_value={"rejected": False, "reject_reason": "", "warnings": []}):
+                response_server = MagicMock()
+                bellows.run_plan(plan_path, config, response_server)
+    
+>           assert "gates_check" in call_order
+E           AssertionError: assert 'gates_check' in []
+
+tests/test_bellows.py:2256: AssertionError
+----------------------------- Captured stdout call -----------------------------
+15:34:51 [EVENT] [executable-wt-teardown-order] ⏳ RUNNING
+15:34:51 [WARN] [executable-wt-teardown-order] ⚠️ claim-time re-check failed — no valid clearance
+________________ test_run_plan_strict_pause_on_creation_failure ________________
+
+    def test_run_plan_strict_pause_on_creation_failure():
+        """WorktreeCreationError triggers gate_failure verdict and blocks runner dispatch."""
+        with tempfile.TemporaryDirectory() as tmp:
+            decisions_dir = os.path.join(tmp, "proj", "knowledge", "decisions")
+            os.makedirs(decisions_dir)
+            plan_filename = "executable-wt-fail-2026-05-03.md"
+            plan_path = os.path.join(decisions_dir, plan_filename)
+            with open(plan_path, "w") as f:
+                f.write("## STEP 1\nDo stuff.\n")
+    
+            config = {
+                "default_model": "claude-sonnet-4-6",
+                "pushover": {"app_key": "", "user_key": ""},
+                "callback_port": 5999,
+                "step_timeout_seconds": 600,
+            }
+    
+            with patch("bellows._create_worktree", side_effect=bellows.WorktreeCreationError("test failure")), \
+                 patch("bellows.verdict.post_verdict_request") as mock_verdict, \
+                 patch("bellows.runner.run_step") as mock_runner, \
+                 patch("bellows.notifier.push"), \
+                 patch("bellows.record_run"), \
+                 patch("bellows.validators.validate_at_claim", return_value={"rejected": False, "reject_reason": "", "warnings": []}):
+                response_server = MagicMock()
+                bellows.run_plan(plan_path, config, response_server)
+    
+            # Verdict posted with gate_failure
+>           mock_verdict.assert_called_once()
+
+tests/test_bellows.py:2295: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <MagicMock name='post_verdict_request' id='4467229456'>
+
+    def assert_called_once(self):
+        """assert that the mock was called only once.
+        """
+        if not self.call_count == 1:
+            msg = ("Expected '%s' to have been called once. Called %s times.%s"
+                   % (self._mock_name or 'mock',
+                      self.call_count,
+                      self._calls_repr()))
+>           raise AssertionError(msg)
+E           AssertionError: Expected 'post_verdict_request' to have been called once. Called 0 times.
+
+/Library/Developer/CommandLineTools/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/unittest/mock.py:886: AssertionError
+----------------------------- Captured stdout call -----------------------------
+15:34:51 [EVENT] [executable-wt-fail] ⏳ RUNNING
+15:34:51 [WARN] [executable-wt-fail] ⚠️ claim-time re-check failed — no valid clearance
+____________________ test_run_plan_pauses_on_merge_conflict ____________________
+
+    def test_run_plan_pauses_on_merge_conflict():
+        """WorktreeTeardownError on auto-close triggers gate_failure verdict."""
+        with tempfile.TemporaryDirectory() as tmp:
+            decisions_dir = os.path.join(tmp, "proj", "knowledge", "decisions")
+            os.makedirs(decisions_dir)
+            plan_filename = "executable-wt-cp-conflict-2026-05-03.md"
+            plan_path = os.path.join(decisions_dir, plan_filename)
+            with open(plan_path, "w") as f:
+                f.write("## STEP 1\nDo stuff.\n")
+    
+            config = {
+                "default_model": "claude-sonnet-4-6",
+                "pushover": {"app_key": "", "user_key": ""},
+                "callback_port": 5999,
+                "step_timeout_seconds": 600,
+            }
+    
+            with patch("bellows._create_worktree", return_value="/tmp/wt"), \
+                 patch("bellows._capture_git_diff", return_value=""), \
+                 patch("bellows._teardown_worktree",
+                       side_effect=bellows.WorktreeTeardownError("merge conflict")), \
+                 patch("bellows.runner.run_step", return_value=_make_fake_run_step_result()), \
+                 patch("bellows.gates.check", return_value=_clean_gates()), \
+                 patch("bellows.verdict.post_verdict_request") as mock_verdict, \
+                 patch("bellows.notifier.push"), \
+                 patch("bellows.record_run"), \
+                 patch("bellows.validators.validate_at_claim", return_value={"rejected": False, "reject_reason": "", "warnings": []}):
+                response_server = MagicMock()
+                bellows.run_plan(plan_path, config, response_server)
+    
+            # Verdict posted with gate_failure
+>           mock_verdict.assert_called_once()
+
+tests/test_bellows.py:2339: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <MagicMock name='post_verdict_request' id='4466965712'>
+
+    def assert_called_once(self):
+        """assert that the mock was called only once.
+        """
+        if not self.call_count == 1:
+            msg = ("Expected '%s' to have been called once. Called %s times.%s"
+                   % (self._mock_name or 'mock',
+                      self.call_count,
+                      self._calls_repr()))
+>           raise AssertionError(msg)
+E           AssertionError: Expected 'post_verdict_request' to have been called once. Called 0 times.
+
+/Library/Developer/CommandLineTools/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/unittest/mock.py:886: AssertionError
+----------------------------- Captured stdout call -----------------------------
+15:34:51 [EVENT] [executable-wt-cp-conflict] ⏳ RUNNING
+15:34:51 [WARN] [executable-wt-cp-conflict] ⚠️ claim-time re-check failed — no valid clearance
+______________________ test_mode_a_detected_and_recovered ______________________
+
+    def test_mode_a_detected_and_recovered():
+        """B2: agent moves plan to Done/ during execution — file recovered, synthetic gate failure injected."""
+        with tempfile.TemporaryDirectory() as tmp:
+            decisions_dir = os.path.join(tmp, "proj", "knowledge", "decisions")
+            done_dir = os.path.join(decisions_dir, "Done")
+            os.makedirs(decisions_dir)
+            os.makedirs(done_dir)
+            plan_filename = "executable-mode-a-test-2026-05-06.md"
+            plan_path = os.path.join(decisions_dir, plan_filename)
+            # After claim, id-canonical name is executable-1.md (fresh DB → id=1)
+            id_canonical = "executable-1.md"
+            with open(plan_path, "w") as f:
+                f.write("## STEP 1\nDo stuff.\n")
+    
+            config = {
+                "default_model": "claude-sonnet-4-6",
+                "pushover": {"app_key": "", "user_key": ""},
+                "callback_port": 5999,
+                "step_timeout_seconds": 600,
+            }
+    
+            def agent_moves_to_done(*args, **kwargs):
+                """Simulate agent moving in-progress file to Done/ during execution."""
+                ip = os.path.join(decisions_dir, f"in-progress-{id_canonical}")
+                if os.path.exists(ip):
+                    os.rename(ip, os.path.join(done_dir, id_canonical))
+                return _make_fake_run_step_result()
+    
+            with patch("bellows._create_worktree", return_value="/tmp/wt"), \
+                 patch("bellows._capture_git_diff", return_value=""), \
+                 patch("bellows._teardown_worktree"), \
+                 patch("bellows.runner.run_step", side_effect=agent_moves_to_done), \
+                 patch("bellows.gates.check", return_value=_clean_gates(auto_close="false")), \
+                 patch("bellows.verdict.post_verdict_request") as mock_verdict, \
+                 patch("bellows.notifier.notify_verdict_request"), \
+                 patch("bellows.notifier.push"), \
+                 patch("bellows.record_run"), \
+                 patch("bellows.validators.validate_at_claim", return_value={"rejected": False, "reject_reason": "", "warnings": []}):
+                response_server = MagicMock()
+                bellows.run_plan(plan_path, config, response_server)
+    
+            # File should be recovered to verdict-pending- (via normal pause flow after gate failure)
+            inprogress_path = os.path.join(decisions_dir, f"in-progress-{id_canonical}")
+            verdict_pending = os.path.join(decisions_dir, f"verdict-pending-{id_canonical}")
+>           assert os.path.exists(inprogress_path) or os.path.exists(verdict_pending), \
+                "Plan should be recovered from Done/ (at in-progress or verdict-pending)"
+E           AssertionError: Plan should be recovered from Done/ (at in-progress or verdict-pending)
+E           assert (False or False)
+E            +  where False = <function exists at 0x1035eb5e0>('/var/folders/vf/8nw0z7hj1m34w6z48l5dp54w0000gn/T/tmpm2tyf2_2/proj/knowledge/decisions/in-progress-executable-1.md')
+E            +    where <function exists at 0x1035eb5e0> = <module 'posixpath' from '/Library/Developer/CommandLineTools/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/posixpath.py'>.exists
+E            +      where <module 'posixpath' from '/Library/Developer/CommandLineTools/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/posixpath.py'> = os.path
+E            +  and   False = <function exists at 0x1035eb5e0>('/var/folders/vf/8nw0z7hj1m34w6z48l5dp54w0000gn/T/tmpm2tyf2_2/proj/knowledge/decisions/verdict-pending-executable-1.md')
+E            +    where <function exists at 0x1035eb5e0> = <module 'posixpath' from '/Library/Developer/CommandLineTools/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/posixpath.py'>.exists
+E            +      where <module 'posixpath' from '/Library/Developer/CommandLineTools/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/posixpath.py'> = os.path
+
+tests/test_bellows.py:2456: AssertionError
+----------------------------- Captured stdout call -----------------------------
+15:34:51 [EVENT] [executable-mode-a-test] ⏳ RUNNING
+15:34:51 [WARN] [executable-mode-a-test] ⚠️ claim-time re-check failed — no valid clearance
+_____________________ test_mode_a_no_detection_normal_flow _____________________
+
+    def test_mode_a_no_detection_normal_flow():
+        """B2: normal flow — in-progress file exists, no Mode A detection, no synthetic failure."""
+        with tempfile.TemporaryDirectory() as tmp:
+            decisions_dir = os.path.join(tmp, "proj", "knowledge", "decisions")
+            os.makedirs(decisions_dir)
+            plan_filename = "executable-mode-a-normal-2026-05-06.md"
+            plan_path = os.path.join(decisions_dir, plan_filename)
+            with open(plan_path, "w") as f:
+                f.write("## STEP 1\nDo stuff.\n")
+    
+            config = {
+                "default_model": "claude-sonnet-4-6",
+                "pushover": {"app_key": "", "user_key": ""},
+                "callback_port": 5999,
+                "step_timeout_seconds": 600,
+            }
+    
+            clean_gate = _clean_gates(auto_close="false")
+    
+            with patch("bellows._create_worktree", return_value="/tmp/wt"), \
+                 patch("bellows._capture_git_diff", return_value=""), \
+                 patch("bellows._teardown_worktree"), \
+                 patch("bellows.runner.run_step", return_value=_make_fake_run_step_result()), \
+                 patch("bellows.gates.check", return_value=clean_gate), \
+                 patch("bellows.verdict.post_verdict_request") as mock_verdict, \
+                 patch("bellows.notifier.notify_verdict_request"), \
+                 patch("bellows.notifier.push"), \
+                 patch("bellows.record_run"), \
+                 patch("bellows.validators.validate_at_claim", return_value={"rejected": False, "reject_reason": "", "warnings": []}):
+                response_server = MagicMock()
+                bellows.run_plan(plan_path, config, response_server)
+    
+            # Verdict posted (auto_close=false, single-step plan pauses) but no Mode A failure
+>           mock_verdict.assert_called_once()
+
+tests/test_bellows.py:2503: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <MagicMock name='post_verdict_request' id='4466551248'>
+
+    def assert_called_once(self):
+        """assert that the mock was called only once.
+        """
+        if not self.call_count == 1:
+            msg = ("Expected '%s' to have been called once. Called %s times.%s"
+                   % (self._mock_name or 'mock',
+                      self.call_count,
+                      self._calls_repr()))
+>           raise AssertionError(msg)
+E           AssertionError: Expected 'post_verdict_request' to have been called once. Called 0 times.
+
+/Library/Developer/CommandLineTools/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/unittest/mock.py:886: AssertionError
+----------------------------- Captured stdout call -----------------------------
+15:34:51 [EVENT] [executable-mode-a-normal] ⏳ RUNNING
+15:34:51 [WARN] [executable-mode-a-normal] ⚠️ claim-time re-check failed — no valid clearance
+_____________________ test_mode_a_missing_file_not_in_done _____________________
+
+    def test_mode_a_missing_file_not_in_done():
+        """B2: in-progress file deleted (not moved to Done/) — warning logged, no Mode A classification."""
+        with tempfile.TemporaryDirectory() as tmp:
+            decisions_dir = os.path.join(tmp, "proj", "knowledge", "decisions")
+            os.makedirs(decisions_dir)
+            plan_filename = "executable-mode-a-deleted-2026-05-06.md"
+            plan_path = os.path.join(decisions_dir, plan_filename)
+            inprogress_path = os.path.join(decisions_dir, f"in-progress-{plan_filename}")
+            with open(plan_path, "w") as f:
+                f.write("## STEP 1\nDo stuff.\n")
+    
+            config = {
+                "default_model": "claude-sonnet-4-6",
+                "pushover": {"app_key": "", "user_key": ""},
+                "callback_port": 5999,
+                "step_timeout_seconds": 600,
+            }
+    
+            def agent_deletes_file(*args, **kwargs):
+                """Simulate agent deleting the in-progress file without moving to Done/."""
+                if os.path.exists(inprogress_path):
+                    os.remove(inprogress_path)
+                return _make_fake_run_step_result()
+    
+            clean_gate = _clean_gates(auto_close="false")
+    
+            with patch("bellows._create_worktree", return_value="/tmp/wt"), \
+                 patch("bellows._capture_git_diff", return_value=""), \
+                 patch("bellows._teardown_worktree"), \
+                 patch("bellows.runner.run_step", side_effect=agent_deletes_file), \
+                 patch("bellows.gates.check", return_value=clean_gate), \
+                 patch("bellows.verdict.post_verdict_request") as mock_verdict, \
+                 patch("bellows.notifier.notify_verdict_request"), \
+                 patch("bellows.notifier.push"), \
+                 patch("bellows.record_run"), \
+                 patch("bellows.validators.validate_at_claim", return_value={"rejected": False, "reject_reason": "", "warnings": []}):
+                response_server = MagicMock()
+                bellows.run_plan(plan_path, config, response_server)
+    
+            # Verdict posted but no unauthorized_done_move failure
+>           mock_verdict.assert_called_once()
+
+tests/test_bellows.py:2550: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <MagicMock name='post_verdict_request' id='4467226896'>
+
+    def assert_called_once(self):
+        """assert that the mock was called only once.
+        """
+        if not self.call_count == 1:
+            msg = ("Expected '%s' to have been called once. Called %s times.%s"
+                   % (self._mock_name or 'mock',
+                      self.call_count,
+                      self._calls_repr()))
+>           raise AssertionError(msg)
+E           AssertionError: Expected 'post_verdict_request' to have been called once. Called 0 times.
+
+/Library/Developer/CommandLineTools/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/unittest/mock.py:886: AssertionError
+----------------------------- Captured stdout call -----------------------------
+15:34:51 [EVENT] [executable-mode-a-deleted] ⏳ RUNNING
+15:34:51 [WARN] [executable-mode-a-deleted] ⚠️ claim-time re-check failed — no valid clearance
+_________________________ test_mode_a_recovery_failure _________________________
+
+    def test_mode_a_recovery_failure():
+        """B2: agent moves to Done/, recovery shutil.move raises — synthetic failure still injected."""
+        with tempfile.TemporaryDirectory() as tmp:
+            decisions_dir = os.path.join(tmp, "proj", "knowledge", "decisions")
+            done_dir = os.path.join(decisions_dir, "Done")
+            os.makedirs(decisions_dir)
+            os.makedirs(done_dir)
+            plan_filename = "executable-mode-a-recovery-fail-2026-05-06.md"
+            plan_path = os.path.join(decisions_dir, plan_filename)
+            # After claim, id-canonical name is executable-1.md (fresh DB → id=1)
+            id_canonical = "executable-1.md"
+            with open(plan_path, "w") as f:
+                f.write("## STEP 1\nDo stuff.\n")
+    
+            config = {
+                "default_model": "claude-sonnet-4-6",
+                "pushover": {"app_key": "", "user_key": ""},
+                "callback_port": 5999,
+                "step_timeout_seconds": 600,
+            }
+    
+            def agent_moves_to_done(*args, **kwargs):
+                ip = os.path.join(decisions_dir, f"in-progress-{id_canonical}")
+                if os.path.exists(ip):
+                    os.rename(ip, os.path.join(done_dir, id_canonical))
+                return _make_fake_run_step_result()
+    
+            original_shutil_move = shutil.move
+    
+            def patched_shutil_move(src, dst):
+                # Block the recovery move (Done/ → in-progress), allow all others
+                if "Done" in str(src) and "in-progress-" in str(dst):
+                    raise PermissionError("simulated recovery failure")
+                return original_shutil_move(src, dst)
+    
+            with patch("bellows._create_worktree", return_value="/tmp/wt"), \
+                 patch("bellows._capture_git_diff", return_value=""), \
+                 patch("bellows._teardown_worktree"), \
+                 patch("bellows.runner.run_step", side_effect=agent_moves_to_done), \
+                 patch("bellows.shutil.move", side_effect=patched_shutil_move), \
+                 patch("bellows.gates.check", return_value=_clean_gates(auto_close="false")), \
+                 patch("bellows.verdict.post_verdict_request") as mock_verdict, \
+                 patch("bellows.notifier.notify_verdict_request"), \
+                 patch("bellows.notifier.push"), \
+                 patch("bellows.record_run"), \
+                 patch("bellows.validators.validate_at_claim", return_value={"rejected": False, "reject_reason": "", "warnings": []}):
+                response_server = MagicMock()
+                bellows.run_plan(plan_path, config, response_server)
+    
+            # Synthetic failure should still be injected even though recovery failed
+>           mock_verdict.assert_called_once()
+
+tests/test_bellows.py:2607: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <MagicMock name='post_verdict_request' id='4467601120'>
+
+    def assert_called_once(self):
+        """assert that the mock was called only once.
+        """
+        if not self.call_count == 1:
+            msg = ("Expected '%s' to have been called once. Called %s times.%s"
+                   % (self._mock_name or 'mock',
+                      self.call_count,
+                      self._calls_repr()))
+>           raise AssertionError(msg)
+E           AssertionError: Expected 'post_verdict_request' to have been called once. Called 0 times.
+
+/Library/Developer/CommandLineTools/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/unittest/mock.py:886: AssertionError
+----------------------------- Captured stdout call -----------------------------
+15:34:51 [EVENT] [executable-mode-a-recovery-fai] ⏳ RUNNING
+15:34:51 [WARN] [executable-mode-a-recovery-fai] ⚠️ claim-time re-check failed — no valid clearance
+_______________ test_mode_a_synthetic_failure_in_verdict_request _______________
+
+    def test_mode_a_synthetic_failure_in_verdict_request():
+        """B2 end-to-end: Mode A triggers verdict request with unauthorized_done_move gate."""
+        with tempfile.TemporaryDirectory() as tmp:
+            decisions_dir = os.path.join(tmp, "proj", "knowledge", "decisions")
+            done_dir = os.path.join(decisions_dir, "Done")
+            os.makedirs(decisions_dir)
+            os.makedirs(done_dir)
+            plan_filename = "executable-mode-a-e2e-2026-05-06.md"
+            plan_path = os.path.join(decisions_dir, plan_filename)
+            # After claim, id-canonical name is executable-1.md (fresh DB → id=1)
+            id_canonical = "executable-1.md"
+            with open(plan_path, "w") as f:
+                f.write("## STEP 1\nDo stuff.\n")
+    
+            config = {
+                "default_model": "claude-sonnet-4-6",
+                "pushover": {"app_key": "", "user_key": ""},
+                "callback_port": 5999,
+                "step_timeout_seconds": 600,
+            }
+    
+            def agent_moves_to_done(*args, **kwargs):
+                ip = os.path.join(decisions_dir, f"in-progress-{id_canonical}")
+                if os.path.exists(ip):
+                    os.rename(ip, os.path.join(done_dir, id_canonical))
+                return _make_fake_run_step_result()
+    
+            # Use real gates.check but mock runner — allows end-to-end gate flow
+            # We need to also capture what verdict.post_verdict_request receives
+            verdict_calls = []
+    
+            def capture_verdict(*args, **kwargs):
+                verdict_calls.append({"args": args, "kwargs": kwargs})
+    
+            with patch("bellows._create_worktree", return_value="/tmp/wt"), \
+                 patch("bellows._capture_git_diff", return_value=""), \
+                 patch("bellows._teardown_worktree"), \
+                 patch("bellows.runner.run_step", side_effect=agent_moves_to_done), \
+                 patch("bellows.gates.check", return_value=_clean_gates(auto_close="false")), \
+                 patch("bellows.verdict.post_verdict_request", side_effect=capture_verdict), \
+                 patch("bellows.notifier.notify_verdict_request"), \
+                 patch("bellows.notifier.push"), \
+                 patch("bellows.record_run"), \
+                 patch("bellows.validators.validate_at_claim", return_value={"rejected": False, "reject_reason": "", "warnings": []}):
+                response_server = MagicMock()
+                bellows.run_plan(plan_path, config, response_server)
+    
+>           assert len(verdict_calls) == 1, f"Expected 1 verdict call, got {len(verdict_calls)}"
+E           AssertionError: Expected 1 verdict call, got 0
+E           assert 0 == 1
+E            +  where 0 = len([])
+
+tests/test_bellows.py:2662: AssertionError
+----------------------------- Captured stdout call -----------------------------
+15:34:51 [EVENT] [executable-mode-a-e2e] ⏳ RUNNING
+15:34:51 [WARN] [executable-mode-a-e2e] ⚠️ claim-time re-check failed — no valid clearance
+_________________________ test_seen_uses_slug_not_path _________________________
+
+    def test_seen_uses_slug_not_path():
+        """After dispatch, bellows._seen must contain the slug (not the full path)."""
+        mock_orch = MagicMock()
+        mock_orch._seen = set()
+        mock_orch._shutting_down = False
+        handler = bellows.PlanHandler(mock_orch)
+    
+        with tempfile.TemporaryDirectory() as tmp:
+            mock_orch.config = {"watched_projects": [tmp]}
+            fname = "executable-widget-2026-05-11.md"
+            path = os.path.join(tmp, fname)
+            open(path, "w").close()
+    
+            handler._handle(path)
+    
+        slug = verdict.slug_from_path(path)
+>       assert slug in mock_orch._seen, f"slug {slug!r} should be in _seen"
+E       AssertionError: slug 'widget-2026-05-11' should be in _seen
+E       assert 'widget-2026-05-11' in set()
+E        +  where set() = <MagicMock id='4467819568'>._seen
+
+tests/test_bellows.py:3063: AssertionError
+----------------------------- Captured stdout call -----------------------------
+15:34:51 [WARN] [executable-widget] ⚠️ auto-HOLD — no clearance record
+______ test_apply_defensive_header_defaults_propagates_to_reparsed_header ______
+
+    def test_apply_defensive_header_defaults_propagates_to_reparsed_header():
+        """Item 4 regression: after gates.check() re-parses the header at line ~498, run_plan must
+        call _apply_defensive_header_defaults again so header_says_pause() consumers see the default."""
+        with tempfile.TemporaryDirectory() as tmp:
+            decisions_dir = os.path.join(tmp, "proj", "knowledge", "decisions")
+            os.makedirs(decisions_dir)
+            plan_filename = "executable-item4-test-2026-05-26.md"
+            plan_path = os.path.join(decisions_dir, plan_filename)
+            plan_text = "## STEP 1\nDo stuff.\n## STEP 2\nDo more stuff.\n"
+            with open(plan_path, "w") as f:
+                f.write(plan_text)
+    
+            config = {
+                "default_model": "claude-sonnet-4-6",
+                "pushover": {"app_key": "", "user_key": ""},
+                "callback_port": 5999,
+                "step_timeout_seconds": 600,
+            }
+    
+            # gates.check returns a sparse plan_header (missing pause_for_verdict)
+            # simulating the re-parse that drops the defensive default
+            sparse_gate_result = {
+                "passed": True,
+                "failures": [],
+                "is_qa_step": False,
+                "files_changed": [],
+                "plan_header": {"project": "bellows"},
+                "verdict_requested": {"requested": False, "body": None},
+            }
+    
+            captured_headers = []
+            original_header_says_pause = bellows.header_says_pause
+    
+            def spy_header_says_pause(header, *args, **kwargs):
+                captured_headers.append(dict(header))
+                return original_header_says_pause(header, *args, **kwargs)
+    
+            with patch("bellows.runner.run_step", return_value=_make_fake_run_step_result()), \
+                 patch("bellows.gates.check", return_value=sparse_gate_result), \
+                 patch("bellows.notifier.push"), \
+                 patch("bellows.verdict.log_to_ledger"), \
+                 patch("bellows._capture_git_diff", return_value=""), \
+                 patch("bellows._create_worktree", return_value="/tmp/wt"), \
+                 patch("bellows._teardown_worktree"), \
+                 patch("bellows.record_run"), \
+                 patch("bellows.validators.validate_at_claim", return_value={"rejected": False, "reject_reason": "", "warnings": []}), \
+                 patch("bellows.header_says_pause", side_effect=spy_header_says_pause):
+                response_server = MagicMock()
+                bellows.run_plan(plan_path, config, response_server)
+    
+            # The header passed to header_says_pause must contain the defensive default
+>           assert len(captured_headers) >= 1, "header_says_pause should have been called"
+E           AssertionError: header_says_pause should have been called
+E           assert 0 >= 1
+E            +  where 0 = len([])
+
+tests/test_bellows.py:3308: AssertionError
+----------------------------- Captured stdout call -----------------------------
+15:34:51 [EVENT] [executable-item4-test] ⏳ RUNNING
+15:34:51 [WARN] [executable-item4-test] ⚠️ sparse header (0 keys) for 2-step plan — defaulting pause_for_verdict to after_step_1 (safe-pause)
+15:34:51 [WARN] [executable-item4-test] ⚠️ claim-time re-check failed — no valid clearance
+___________________ test_auto_close_yaml_bool_does_not_crash ___________________
+
+    def test_auto_close_yaml_bool_does_not_crash():
+        """YAML frontmatter can return auto_close as Python bool True.
+        Verify str() coercion prevents AttributeError on .lower()."""
+        with tempfile.TemporaryDirectory() as tmp:
+            decisions_dir = os.path.join(tmp, "proj", "knowledge", "decisions")
+            os.makedirs(decisions_dir)
+            plan_filename = "executable-yaml-bool-true-2026-05-17.md"
+            plan_path = os.path.join(decisions_dir, plan_filename)
+            with open(plan_path, "w") as f:
+                f.write("## STEP 1\nDo stuff.\n")
+    
+            config = {
+                "default_model": "claude-sonnet-4-6",
+                "pushover": {"app_key": "", "user_key": ""},
+                "callback_port": 5999,
+                "step_timeout_seconds": 600,
+            }
+    
+            clean_parsed = _make_fake_run_step_result()
+            # Simulate YAML-parsed bool True (not string "true")
+            clean_gates = {
+                "passed": True,
+                "failures": [],
+                "is_qa_step": False,
+                "files_changed": [],
+                "plan_header": {"auto_close": True},  # Python bool from pyyaml
+                "verdict_requested": {"requested": False, "body": None},
+            }
+    
+            with patch("bellows.runner.run_step", return_value=clean_parsed), \
+                 patch("bellows.gates.check", return_value=clean_gates), \
+                 patch("bellows.notifier.notify_plan_complete") as mock_notify, \
+                 patch("bellows.verdict.log_to_ledger") as mock_ledger, \
+                 patch("bellows._capture_git_diff", return_value=""), \
+                 patch("bellows._create_worktree", return_value="/tmp/wt"), \
+                 patch("bellows._teardown_worktree"), \
+                 patch("bellows.record_run"), \
+                 patch("bellows.validators.validate_at_claim", return_value={"rejected": False, "reject_reason": "", "warnings": []}):
+                response_server = MagicMock()
+                # This must NOT raise AttributeError
+                bellows.run_plan(plan_path, config, response_server)
+    
+            # effective_auto_close should be True — plan moves to Done
+            # After claim, plan is renamed to id-canonical: executable-1.md (fresh DB → id=1)
+            done_path = os.path.join(decisions_dir, "Done", "executable-1.md")
+>           assert os.path.isfile(done_path), f"plan not moved to Done/ with bool True: {done_path}"
+E           AssertionError: plan not moved to Done/ with bool True: /var/folders/vf/8nw0z7hj1m34w6z48l5dp54w0000gn/T/tmp_ff9arsi/proj/knowledge/decisions/Done/executable-1.md
+E           assert False
+E            +  where False = <function isfile at 0x1035eb670>('/var/folders/vf/8nw0z7hj1m34w6z48l5dp54w0000gn/T/tmp_ff9arsi/proj/knowledge/decisions/Done/executable-1.md')
+E            +    where <function isfile at 0x1035eb670> = <module 'posixpath' from '/Library/Developer/CommandLineTools/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/posixpath.py'>.isfile
+E            +      where <module 'posixpath' from '/Library/Developer/CommandLineTools/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/posixpath.py'> = os.path
+
+tests/test_bellows.py:3468: AssertionError
+----------------------------- Captured stdout call -----------------------------
+15:34:52 [EVENT] [executable-yaml-bool-true] ⏳ RUNNING
+15:34:52 [WARN] [executable-yaml-bool-true] ⚠️ claim-time re-check failed — no valid clearance
+_______________________ test_auto_close_yaml_bool_false ________________________
+
+    def test_auto_close_yaml_bool_false():
+        """YAML frontmatter can return auto_close as Python bool False.
+        Verify str() coercion prevents AttributeError and resolves to False."""
+        with tempfile.TemporaryDirectory() as tmp:
+            decisions_dir = os.path.join(tmp, "proj", "knowledge", "decisions")
+            os.makedirs(decisions_dir)
+            plan_filename = "executable-yaml-bool-false-2026-05-17.md"
+            plan_path = os.path.join(decisions_dir, plan_filename)
+            with open(plan_path, "w") as f:
+                f.write("## STEP 1\nDo stuff.\n")
+    
+            config = {
+                "default_model": "claude-sonnet-4-6",
+                "pushover": {"app_key": "", "user_key": ""},
+                "callback_port": 5999,
+                "step_timeout_seconds": 600,
+            }
+    
+            clean_parsed = _make_fake_run_step_result()
+            # Simulate YAML-parsed bool False (not string "false")
+            clean_gates = {
+                "passed": True,
+                "failures": [],
+                "is_qa_step": False,
+                "files_changed": [],
+                "plan_header": {"auto_close": False},  # Python bool from pyyaml
+                "verdict_requested": {"requested": False, "body": None},
+            }
+    
+            with patch("bellows.runner.run_step", return_value=clean_parsed), \
+                 patch("bellows.gates.check", return_value=clean_gates), \
+                 patch("bellows.notifier.push"), \
+                 patch("bellows.notifier.notify_verdict_request") as mock_notify_verdict, \
+                 patch("bellows.verdict.post_verdict_request") as mock_post_verdict, \
+                 patch("bellows.verdict.log_to_ledger") as mock_ledger, \
+                 patch("bellows._capture_git_diff", return_value=""), \
+                 patch("bellows._create_worktree", return_value="/tmp/wt"), \
+                 patch("bellows._teardown_worktree"), \
+                 patch("bellows.record_run"), \
+                 patch("bellows.validators.validate_at_claim", return_value={"rejected": False, "reject_reason": "", "warnings": []}):
+                response_server = MagicMock()
+                # This must NOT raise AttributeError
+                bellows.run_plan(plan_path, config, response_server)
+    
+            # effective_auto_close should be False — plan pauses for verdict
+            done_path = os.path.join(decisions_dir, "Done", plan_filename)
+            assert not os.path.exists(done_path), "plan should NOT auto-close with bool False"
+>           mock_post_verdict.assert_called_once()
+
+tests/test_bellows.py:3520: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <MagicMock name='post_verdict_request' id='4466012464'>
+
+    def assert_called_once(self):
+        """assert that the mock was called only once.
+        """
+        if not self.call_count == 1:
+            msg = ("Expected '%s' to have been called once. Called %s times.%s"
+                   % (self._mock_name or 'mock',
+                      self.call_count,
+                      self._calls_repr()))
+>           raise AssertionError(msg)
+E           AssertionError: Expected 'post_verdict_request' to have been called once. Called 0 times.
+
+/Library/Developer/CommandLineTools/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/unittest/mock.py:886: AssertionError
+----------------------------- Captured stdout call -----------------------------
+15:34:52 [EVENT] [executable-yaml-bool-false] ⏳ RUNNING
+15:34:52 [WARN] [executable-yaml-bool-false] ⚠️ claim-time re-check failed — no valid clearance
+_______ test_pause_site_1_worktree_creation_failure_renames_before_post ________
+
+    def test_pause_site_1_worktree_creation_failure_renames_before_post():
+        """Site 1: WorktreeCreationError — rename to verdict-pending-* must precede verdict.post_verdict_request."""
+        with tempfile.TemporaryDirectory() as tmp:
+            decisions_dir = os.path.join(tmp, "proj", "knowledge", "decisions")
+            os.makedirs(decisions_dir)
+            plan_filename = "executable-rv1-site1-2026-05-24.md"
+            plan_path = os.path.join(decisions_dir, plan_filename)
+            with open(plan_path, "w") as f:
+                f.write("## STEP 1\nDo stuff.\n")
+    
+            config = {
+                "default_model": "claude-sonnet-4-6",
+                "pushover": {"app_key": "", "user_key": ""},
+                "callback_port": 5999,
+                "step_timeout_seconds": 600,
+            }
+    
+            call_order, tracking_move, tracking_post = _make_ordering_tracker()
+    
+            with patch("bellows._create_worktree", side_effect=bellows.WorktreeCreationError("test failure")), \
+                 patch("shutil.move", side_effect=tracking_move), \
+                 patch("bellows.verdict.post_verdict_request", side_effect=tracking_post), \
+                 patch("bellows.runner.run_step") as mock_runner, \
+                 patch("bellows.notifier.push"), \
+                 patch("bellows.record_run"), \
+                 patch("bellows.validators.validate_at_claim", return_value={"rejected": False, "reject_reason": "", "warnings": []}):
+                response_server = MagicMock()
+                bellows.run_plan(plan_path, config, response_server)
+    
+>           assert "rename" in call_order, f"shutil.move to verdict-pending-* was not called: {call_order}"
+E           AssertionError: shutil.move to verdict-pending-* was not called: []
+E           assert 'rename' in []
+
+tests/test_bellows.py:3860: AssertionError
+----------------------------- Captured stdout call -----------------------------
+15:34:52 [EVENT] [executable-rv1-site1] ⏳ RUNNING
+15:34:52 [WARN] [executable-rv1-site1] ⚠️ claim-time re-check failed — no valid clearance
+_____ test_pause_site_2_intermediate_step_gate_failure_renames_before_post _____
+
+    def test_pause_site_2_intermediate_step_gate_failure_renames_before_post():
+        """Site 2: Intermediate-step gate failure — rename to verdict-pending-* must precede verdict.post_verdict_request."""
+        with tempfile.TemporaryDirectory() as tmp:
+            decisions_dir = os.path.join(tmp, "proj", "knowledge", "decisions")
+            os.makedirs(decisions_dir)
+            plan_filename = "executable-rv1-site2-2026-05-24.md"
+            plan_path = os.path.join(decisions_dir, plan_filename)
+            with open(plan_path, "w") as f:
+                f.write("## STEP 1\nDo stuff.\n## STEP 2\nMore stuff.\n")
+    
+            config = {
+                "default_model": "claude-sonnet-4-6",
+                "pushover": {"app_key": "", "user_key": ""},
+                "callback_port": 5999,
+                "step_timeout_seconds": 600,
+            }
+    
+            call_order, tracking_move, tracking_post = _make_ordering_tracker()
+    
+            def failing_gates(*args, **kwargs):
+                return {
+                    "passed": False,
+                    "failures": [{"gate": "test_gate", "evidence": "forced failure"}],
+                    "is_qa_step": False,
+                    "files_changed": [],
+                    "plan_header": {"auto_close": "false"},
+                    "verdict_requested": {"requested": False, "body": None},
+                }
+    
+            with patch("bellows._create_worktree", return_value="/tmp/wt"), \
+                 patch("bellows._capture_git_diff", return_value=""), \
+                 patch("bellows._teardown_worktree"), \
+                 patch("bellows.runner.run_step", return_value=_make_fake_run_step_result()), \
+                 patch("bellows.gates.check", side_effect=failing_gates), \
+                 patch("shutil.move", side_effect=tracking_move), \
+                 patch("bellows.verdict.post_verdict_request", side_effect=tracking_post), \
+                 patch("bellows.notifier.notify_verdict_request"), \
+                 patch("bellows.notifier.push"), \
+                 patch("bellows.record_run"), \
+                 patch("bellows.validators.validate_at_claim", return_value={"rejected": False, "reject_reason": "", "warnings": []}):
+                response_server = MagicMock()
+                bellows.run_plan(plan_path, config, response_server)
+    
+>           assert "rename" in call_order, f"shutil.move to verdict-pending-* was not called: {call_order}"
+E           AssertionError: shutil.move to verdict-pending-* was not called: []
+E           assert 'rename' in []
+
+tests/test_bellows.py:3911: AssertionError
+----------------------------- Captured stdout call -----------------------------
+15:34:52 [EVENT] [executable-rv1-site2] ⏳ RUNNING
+15:34:52 [WARN] [executable-rv1-site2] ⚠️ sparse header (0 keys) for 2-step plan — defaulting pause_for_verdict to after_step_1 (safe-pause)
+15:34:52 [WARN] [executable-rv1-site2] ⚠️ claim-time re-check failed — no valid clearance
+________ test_pause_site_3_final_step_gate_failure_renames_before_post _________
+
+    def test_pause_site_3_final_step_gate_failure_renames_before_post():
+        """Site 3: Final-step gate failure — rename to verdict-pending-* must precede verdict.post_verdict_request."""
+        with tempfile.TemporaryDirectory() as tmp:
+            decisions_dir = os.path.join(tmp, "proj", "knowledge", "decisions")
+            os.makedirs(decisions_dir)
+            plan_filename = "executable-rv1-site3-2026-05-24.md"
+            plan_path = os.path.join(decisions_dir, plan_filename)
+            with open(plan_path, "w") as f:
+                f.write("## STEP 1\nDo stuff.\n")
+    
+            config = {
+                "default_model": "claude-sonnet-4-6",
+                "pushover": {"app_key": "", "user_key": ""},
+                "callback_port": 5999,
+                "step_timeout_seconds": 600,
+            }
+    
+            call_order, tracking_move, tracking_post = _make_ordering_tracker()
+    
+            def failing_gates(*args, **kwargs):
+                return {
+                    "passed": False,
+                    "failures": [{"gate": "test_gate", "evidence": "forced failure"}],
+                    "is_qa_step": False,
+                    "files_changed": [],
+                    "plan_header": {"auto_close": "false"},
+                    "verdict_requested": {"requested": False, "body": None},
+                }
+    
+            with patch("bellows._create_worktree", return_value="/tmp/wt"), \
+                 patch("bellows._capture_git_diff", return_value=""), \
+                 patch("bellows._teardown_worktree"), \
+                 patch("bellows.runner.run_step", return_value=_make_fake_run_step_result()), \
+                 patch("bellows.gates.check", side_effect=failing_gates), \
+                 patch("shutil.move", side_effect=tracking_move), \
+                 patch("bellows.verdict.post_verdict_request", side_effect=tracking_post), \
+                 patch("bellows.notifier.notify_verdict_request"), \
+                 patch("bellows.notifier.push"), \
+                 patch("bellows.record_run"), \
+                 patch("bellows.validators.validate_at_claim", return_value={"rejected": False, "reject_reason": "", "warnings": []}):
+                response_server = MagicMock()
+                bellows.run_plan(plan_path, config, response_server)
+    
+>           assert "rename" in call_order, f"shutil.move to verdict-pending-* was not called: {call_order}"
+E           AssertionError: shutil.move to verdict-pending-* was not called: []
+E           assert 'rename' in []
+
+tests/test_bellows.py:3962: AssertionError
+----------------------------- Captured stdout call -----------------------------
+15:34:52 [EVENT] [executable-rv1-site3] ⏳ RUNNING
+15:34:52 [WARN] [executable-rv1-site3] ⚠️ claim-time re-check failed — no valid clearance
+______ test_pause_site_4_auto_close_teardown_failure_renames_before_post _______
+
+    def test_pause_site_4_auto_close_teardown_failure_renames_before_post():
+        """Site 4: Auto-close teardown failure — rename to verdict-pending-* must precede verdict.post_verdict_request."""
+        with tempfile.TemporaryDirectory() as tmp:
+            decisions_dir = os.path.join(tmp, "proj", "knowledge", "decisions")
+            os.makedirs(decisions_dir)
+            plan_filename = "executable-rv1-site4-2026-05-24.md"
+            plan_path = os.path.join(decisions_dir, plan_filename)
+            with open(plan_path, "w") as f:
+                f.write("## STEP 1\nDo stuff.\n")
+    
+            config = {
+                "default_model": "claude-sonnet-4-6",
+                "pushover": {"app_key": "", "user_key": ""},
+                "callback_port": 5999,
+                "step_timeout_seconds": 600,
+            }
+    
+            call_order, tracking_move, tracking_post = _make_ordering_tracker()
+    
+            with patch("bellows._create_worktree", return_value="/tmp/wt"), \
+                 patch("bellows._capture_git_diff", return_value=""), \
+                 patch("bellows._teardown_worktree",
+                       side_effect=bellows.WorktreeTeardownError("merge conflict")), \
+                 patch("bellows.runner.run_step", return_value=_make_fake_run_step_result()), \
+                 patch("bellows.gates.check", return_value=_clean_gates()), \
+                 patch("shutil.move", side_effect=tracking_move), \
+                 patch("bellows.verdict.post_verdict_request", side_effect=tracking_post), \
+                 patch("bellows.notifier.push"), \
+                 patch("bellows.record_run"), \
+                 patch("bellows.validators.validate_at_claim", return_value={"rejected": False, "reject_reason": "", "warnings": []}):
+                response_server = MagicMock()
+                bellows.run_plan(plan_path, config, response_server)
+    
+>           assert "rename" in call_order, f"shutil.move to verdict-pending-* was not called: {call_order}"
+E           AssertionError: shutil.move to verdict-pending-* was not called: []
+E           assert 'rename' in []
+
+tests/test_bellows.py:4003: AssertionError
+----------------------------- Captured stdout call -----------------------------
+15:34:52 [EVENT] [executable-rv1-site4] ⏳ RUNNING
+15:34:52 [WARN] [executable-rv1-site4] ⚠️ claim-time re-check failed — no valid clearance
+________ test_gates_log_includes_failure_gates_and_files_changed_count _________
+
+    def test_gates_log_includes_failure_gates_and_files_changed_count():
+        """Fix F: gate log message must include failure gate names and files_changed count."""
+        with tempfile.TemporaryDirectory() as tmp:
+            decisions_dir = os.path.join(tmp, "proj", "knowledge", "decisions")
+            os.makedirs(decisions_dir)
+            plan_filename = "executable-gate-log-expand-2026-05-26.md"
+            plan_path = os.path.join(decisions_dir, plan_filename)
+            with open(plan_path, "w") as f:
+                f.write("## STEP 1\nDo stuff.\n")
+    
+            config = {
+                "default_model": "claude-sonnet-4-6",
+                "pushover": {"app_key": "", "user_key": ""},
+                "callback_port": 5999,
+                "step_timeout_seconds": 600,
+            }
+    
+            def failing_gates_with_files(*args, **kwargs):
+                return {
+                    "passed": False,
+                    "failures": [
+                        {"gate": "scope_check", "evidence": "out-of-scope"},
+                        {"gate": "deposit_exists", "evidence": "missing deposit"},
+                    ],
+                    "is_qa_step": False,
+                    "files_changed": ["a.py", "b.py", "c.py"],
+                    "plan_header": {"auto_close": "false"},
+                    "verdict_requested": {"requested": False, "body": None},
+                }
+    
+            log_calls = []
+            original_log = bellows._log
+    
+            def capture_log(level, msg, **kwargs):
+                log_calls.append((level, msg))
+                original_log(level, msg, **kwargs)
+    
+            with patch("bellows._create_worktree", return_value="/tmp/wt"), \
+                 patch("bellows._capture_git_diff", return_value=""), \
+                 patch("bellows._teardown_worktree"), \
+                 patch("bellows.runner.run_step", return_value=_make_fake_run_step_result()), \
+                 patch("bellows.gates.check", side_effect=failing_gates_with_files), \
+                 patch("bellows._log", side_effect=capture_log), \
+                 patch("shutil.move"), \
+                 patch("bellows.verdict.post_verdict_request", return_value="/tmp/verdict.md"), \
+                 patch("bellows.notifier.notify_verdict_request"), \
+                 patch("bellows.notifier.push"), \
+                 patch("bellows.record_run"), \
+                 patch("bellows.validators.validate_at_claim", return_value={"rejected": False, "reject_reason": "", "warnings": []}):
+                response_server = MagicMock()
+                bellows.run_plan(plan_path, config, response_server)
+    
+            gate_log_msgs = [msg for level, msg in log_calls if "gates step" in msg]
+>           assert len(gate_log_msgs) >= 1, f"Expected at least one 'gates step' log, got: {log_calls}"
+E           AssertionError: Expected at least one 'gates step' log, got: [('EVENT', '⏳ RUNNING'), ('WARN', '⚠️ claim-time re-check failed — no valid clearance')]
+E           assert 0 >= 1
+E            +  where 0 = len([])
+
+tests/test_bellows.py:4064: AssertionError
+----------------------------- Captured stdout call -----------------------------
+15:34:52 [EVENT] [executable-gate-log-expand] ⏳ RUNNING
+15:34:52 [WARN] [executable-gate-log-expand] ⚠️ claim-time re-check failed — no valid clearance
+_____________________ test_claim_rename_draft_placeholder ______________________
+
+    def test_claim_rename_draft_placeholder():
+        """diagnostic-draft-143022.md claims to in-progress-diagnostic-<id>.md, verifiable during execution."""
+        import re
+        with tempfile.TemporaryDirectory() as tmp:
+            decisions_dir = os.path.join(tmp, "proj", "knowledge", "decisions")
+            os.makedirs(decisions_dir)
+            plan_path = os.path.join(decisions_dir, "diagnostic-draft-143022.md")
+            with open(plan_path, "w") as f:
+                f.write("# Draft Diagnostic\n## STEP 1\nInvestigate.\n")
+    
+            config = {
+                "default_model": "claude-sonnet-4-6",
+                "pushover": {"app_key": "", "user_key": ""},
+                "callback_port": 5999,
+                "step_timeout_seconds": 600,
+            }
+    
+            claim_state = {}
+    
+            def capture_claim(prompt, *args, **kwargs):
+                inprogress_files = [f for f in os.listdir(decisions_dir) if f.startswith("in-progress-")]
+                claim_state["inprogress_files"] = inprogress_files
+                return _make_fake_run_step_result()
+    
+            with patch("bellows.runner.run_step", side_effect=capture_claim), \
+                 patch("bellows.gates.check", return_value=_clean_gates()), \
+                 patch("bellows.notifier.push"), \
+                 patch("bellows.verdict.log_to_ledger"), \
+                 patch("bellows._capture_git_diff", return_value=""), \
+                 patch("bellows._create_worktree", return_value="/tmp/wt"), \
+                 patch("bellows._teardown_worktree"), \
+                 patch("bellows.record_run"), \
+                 patch("bellows.validators.validate_at_claim", return_value={"rejected": False, "reject_reason": "", "warnings": []}):
+                response_server = MagicMock()
+                bellows.run_plan(plan_path, config, response_server)
+    
+            inprogress = claim_state.get("inprogress_files", [])
+>           assert len(inprogress) >= 1, f"Expected in-progress-diagnostic-<id>.md during execution, got: {inprogress}"
+E           AssertionError: Expected in-progress-diagnostic-<id>.md during execution, got: []
+E           assert 0 >= 1
+E            +  where 0 = len([])
+
+tests/test_bellows.py:4171: AssertionError
+----------------------------- Captured stdout call -----------------------------
+15:34:52 [EVENT] [diagnostic-draft-143022] ⏳ RUNNING
+15:34:52 [WARN] [diagnostic-draft-143022] ⚠️ claim-time re-check failed — no valid clearance
+__________________ test_claim_rename_legacy_descriptive_slug ___________________
+
+    def test_claim_rename_legacy_descriptive_slug():
+        """diagnostic-foo-bar-2026-06-10.md claims to in-progress-diagnostic-<id>.md, verifiable during execution."""
+        import re
+        with tempfile.TemporaryDirectory() as tmp:
+            decisions_dir = os.path.join(tmp, "proj", "knowledge", "decisions")
+            os.makedirs(decisions_dir)
+            plan_path = os.path.join(decisions_dir, "diagnostic-foo-bar-2026-06-10.md")
+            with open(plan_path, "w") as f:
+                f.write("# Legacy Diagnostic\n## STEP 1\nInvestigate.\n")
+    
+            config = {
+                "default_model": "claude-sonnet-4-6",
+                "pushover": {"app_key": "", "user_key": ""},
+                "callback_port": 5999,
+                "step_timeout_seconds": 600,
+            }
+    
+            claim_state = {}
+    
+            def capture_claim(prompt, *args, **kwargs):
+                inprogress_files = [f for f in os.listdir(decisions_dir) if f.startswith("in-progress-")]
+                claim_state["inprogress_files"] = inprogress_files
+                return _make_fake_run_step_result()
+    
+            with patch("bellows.runner.run_step", side_effect=capture_claim), \
+                 patch("bellows.gates.check", return_value=_clean_gates()), \
+                 patch("bellows.notifier.push"), \
+                 patch("bellows.verdict.log_to_ledger"), \
+                 patch("bellows._capture_git_diff", return_value=""), \
+                 patch("bellows._create_worktree", return_value="/tmp/wt"), \
+                 patch("bellows._teardown_worktree"), \
+                 patch("bellows.record_run"), \
+                 patch("bellows.validators.validate_at_claim", return_value={"rejected": False, "reject_reason": "", "warnings": []}):
+                response_server = MagicMock()
+                bellows.run_plan(plan_path, config, response_server)
+    
+            inprogress = claim_state.get("inprogress_files", [])
+>           assert len(inprogress) >= 1, f"Expected in-progress-diagnostic-<id>.md during execution, got: {inprogress}"
+E           AssertionError: Expected in-progress-diagnostic-<id>.md during execution, got: []
+E           assert 0 >= 1
+E            +  where 0 = len([])
+
+tests/test_bellows.py:4214: AssertionError
+----------------------------- Captured stdout call -----------------------------
+15:34:52 [EVENT] [diagnostic-foo-bar] ⏳ RUNNING
+15:34:52 [WARN] [diagnostic-foo-bar] ⚠️ claim-time re-check failed — no valid clearance
+____________________ test_lifecycle_writes_auto_close_flow _____________________
+
+    def test_lifecycle_writes_auto_close_flow():
+        """Full auto-close lifecycle: claim → step start → step end → auto-close.
+        Verifies steps, gate_events, and plans.closed_at rows are written."""
+        import lifecycle
+        import sqlite3
+    
+        with tempfile.TemporaryDirectory() as tmp:
+            decisions_dir = os.path.join(tmp, "proj", "knowledge", "decisions")
+            os.makedirs(decisions_dir)
+            plan_filename = "diagnostic-lc-auto-close-2026-06-11.md"
+            plan_path = os.path.join(decisions_dir, plan_filename)
+            with open(plan_path, "w") as f:
+                f.write("## Diagnostic\nSingle-step.\n")
+    
+            config = {
+                "default_model": "claude-sonnet-4-6",
+                "pushover": {"app_key": "", "user_key": ""},
+                "callback_port": 5999,
+                "step_timeout_seconds": 600,
+            }
+    
+            with patch("bellows.runner.run_step", return_value=_make_fake_run_step_result()), \
+                 patch("bellows.gates.check", return_value=_clean_gates()), \
+                 patch("bellows.notifier.notify_plan_complete"), \
+                 patch("bellows.verdict.log_to_ledger"), \
+                 patch("bellows._capture_git_diff", return_value=""), \
+                 patch("bellows._create_worktree", return_value="/tmp/wt"), \
+                 patch("bellows._teardown_worktree", return_value=[]), \
+                 patch("bellows.record_run"), \
+                 patch("bellows.validators.validate_at_claim", return_value={"rejected": False, "reject_reason": "", "warnings": []}), \
+                 patch("bellows._build_deposit_records", return_value=[]):
+                response_server = MagicMock()
+                bellows.run_plan(plan_path, config, response_server)
+    
+            conn = sqlite3.connect(lifecycle.LIFECYCLE_DB_PATH)
+            # Plan should exist and be closed
+            plan_row = conn.execute("SELECT lifecycle_state, closed_at FROM plans WHERE id = 1").fetchone()
+>           assert plan_row is not None, "plans row not found"
+E           AssertionError: plans row not found
+E           assert None is not None
+
+tests/test_bellows.py:4261: AssertionError
+----------------------------- Captured stdout call -----------------------------
+15:34:52 [EVENT] [diagnostic-lc-auto-close] ⏳ RUNNING
+15:34:52 [WARN] [diagnostic-lc-auto-close] ⚠️ claim-time re-check failed — no valid clearance
+___________________ test_lifecycle_writes_verdict_pause_flow ___________________
+
+    def test_lifecycle_writes_verdict_pause_flow():
+        """Verdict-pause lifecycle: claim → step start → step end → verdict request.
+        Verifies verdicts row is written with pause_reason_code."""
+        import lifecycle
+        import sqlite3
+    
+        with tempfile.TemporaryDirectory() as tmp:
+            decisions_dir = os.path.join(tmp, "proj", "knowledge", "decisions")
+            os.makedirs(decisions_dir)
+            plan_filename = "executable-lc-verdict-2026-06-11.md"
+            plan_path = os.path.join(decisions_dir, plan_filename)
+            with open(plan_path, "w") as f:
+                f.write("# LC Verdict Test\n**pause_for_verdict:** always\n## STEP 1\nDo stuff.\n## STEP 2\nMore stuff.\n")
+    
+            config = {
+                "default_model": "claude-sonnet-4-6",
+                "pushover": {"app_key": "", "user_key": ""},
+                "callback_port": 5999,
+                "step_timeout_seconds": 600,
+            }
+    
+            with patch("bellows.runner.run_step", return_value=_make_fake_run_step_result()), \
+                 patch("bellows.gates.check", return_value=_clean_gates(auto_close="false")), \
+                 patch("bellows.notifier.push"), \
+                 patch("bellows.notifier.notify_verdict_request"), \
+                 patch("bellows.verdict.post_verdict_request", return_value="/path/to/vr.md") as mock_post_vr, \
+                 patch("bellows._capture_git_diff", return_value=""), \
+                 patch("bellows._create_worktree", return_value="/tmp/wt"), \
+                 patch("bellows._teardown_worktree", return_value=[]), \
+                 patch("bellows.record_run"), \
+                 patch("bellows.validators.validate_at_claim", return_value={"rejected": False, "reject_reason": "", "warnings": []}), \
+                 patch("bellows._build_deposit_records", return_value=[]):
+                response_server = MagicMock()
+                bellows.run_plan(plan_path, config, response_server)
+    
+            conn = sqlite3.connect(lifecycle.LIFECYCLE_DB_PATH)
+            # Verdicts row should be written
+            vr_row = conn.execute("SELECT plan_id, step_number, outcome, pause_reason_code, verdict_file_ref FROM verdicts WHERE plan_id = 1").fetchone()
+>           assert vr_row is not None, "verdicts row not found"
+E           AssertionError: verdicts row not found
+E           assert None is not None
+
+tests/test_bellows.py:4316: AssertionError
+----------------------------- Captured stdout call -----------------------------
+15:34:52 [EVENT] [executable-lc-verdict] ⏳ RUNNING
+15:34:52 [WARN] [executable-lc-verdict] ⚠️ claim-time re-check failed — no valid clearance
+_________________ test_lifecycle_meta_and_derivations_at_claim _________________
+
+    def test_lifecycle_meta_and_derivations_at_claim():
+        """Verify record_meta and record_derivations are called at claim time."""
+        import lifecycle
+        import sqlite3
+    
+        with tempfile.TemporaryDirectory() as tmp:
+            decisions_dir = os.path.join(tmp, "proj", "knowledge", "decisions")
+            os.makedirs(decisions_dir)
+            plan_filename = "executable-lc-derivations-2026-06-11.md"
+            plan_path = os.path.join(decisions_dir, plan_filename)
+            with open(plan_path, "w") as f:
+                f.write("# LC Derivations Test\n## STEP 1\nThis implements diagnostic 42.\n")
+    
+            config = {
+                "default_model": "claude-sonnet-4-6",
+                "pushover": {"app_key": "", "user_key": ""},
+                "callback_port": 5999,
+                "step_timeout_seconds": 600,
+            }
+    
+            # Pre-create diagnostic 42 in the lifecycle DB so the FK constraint is satisfied
+            lifecycle.mint_and_claim("diagnostic", "/proj", "Diag42", "bellows", "small", 1, "d.md")
+            # Burn ids until we reach 42
+            for i in range(40):
+                lifecycle.mint_and_claim("diagnostic", "/proj", "Filler", "bellows", "small", 1, f"f{i}.md")
+            diag_42_id = lifecycle.mint_and_claim("diagnostic", "/proj", "Diag42Real", "bellows", "small", 1, "d42.md")
+            assert diag_42_id == 42
+    
+            with patch("bellows.runner.run_step", return_value=_make_fake_run_step_result()), \
+                 patch("bellows.gates.check", return_value=_clean_gates()), \
+                 patch("bellows.notifier.notify_plan_complete"), \
+                 patch("bellows.verdict.log_to_ledger"), \
+                 patch("bellows._capture_git_diff", return_value=""), \
+                 patch("bellows._create_worktree", return_value="/tmp/wt"), \
+                 patch("bellows._teardown_worktree", return_value=[]), \
+                 patch("bellows.record_run"), \
+                 patch("bellows.validators.validate_at_claim", return_value={"rejected": False, "reject_reason": "", "warnings": []}), \
+                 patch("bellows._build_deposit_records", return_value=[]):
+                response_server = MagicMock()
+                bellows.run_plan(plan_path, config, response_server)
+    
+            conn = sqlite3.connect(lifecycle.LIFECYCLE_DB_PATH)
+            # executable_meta should be written
+            meta_row = conn.execute("SELECT plan_id FROM executable_meta").fetchone()
+>           assert meta_row is not None
+E           assert None is not None
+
+tests/test_bellows.py:4371: AssertionError
+----------------------------- Captured stdout call -----------------------------
+15:34:52 [EVENT] [executable-lc-derivations] ⏳ RUNNING
+15:34:52 [WARN] [executable-lc-derivations] ⚠️ claim-time re-check failed — no valid clearance
+___________ test_dispatch_starts_fresh_when_db_has_orphan_slug_rows ____________
+
+    def test_dispatch_starts_fresh_when_db_has_orphan_slug_rows():
+        """When a new executable plan is deposited and the DB contains rows for the same slug
+        from a prior session (orphan rows from a Done/ or halted plan), Bellows must dispatch
+        step 1 fresh — not phantom-resume to a later step. Regression for the 2026-05-01
+        phantom-resume bug fixed by F3 removal of Phase 3b/3c DB-resume logic."""
+        import sqlite3
+        with tempfile.TemporaryDirectory() as tmp:
+            tmp_path = Path(tmp)
+    
+            decisions_dir = tmp_path / "proj" / "knowledge" / "decisions"
+            decisions_dir.mkdir(parents=True)
+            (decisions_dir / "Done").mkdir()
+    
+            plan_filename = "executable-regression-slug-collision-2026-05-01.md"
+            plan_path = decisions_dir / plan_filename
+            plan_content = "## STEP 1\nDo stuff.\n## STEP 2\nDo more stuff.\n"
+            plan_path.write_text(plan_content)
+    
+            # Create shadow cache (simulates a prior same-slug plan leaving shadow behind)
+            shadow_path = bellows._shadow_path(plan_filename)
+            shadow_path.parent.mkdir(parents=True, exist_ok=True)
+            shadow_path.write_text(plan_content)
+    
+            # Insert orphan DB rows for the same slug (prior session completed steps 1+2)
+            db_path = str(tmp_path / "test.db")
+            conn = sqlite3.connect(db_path)
+            conn.execute(
+                "CREATE TABLE IF NOT EXISTS runs "
+                "(id INTEGER PRIMARY KEY, plan_path TEXT, project TEXT, session_id TEXT, "
+                "step INTEGER, status TEXT, cost_usd REAL, started_at TEXT, completed_at TEXT, "
+                "timestamp TEXT, cost REAL, plan_slug TEXT)"
+            )
+            plan_slug = bellows.verdict.slug_from_path(plan_filename)
+            for step in (1, 2):
+                conn.execute(
+                    "INSERT INTO runs (timestamp, plan_path, project, session_id, step, status, cost, plan_slug) "
+                    "VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+                    ("2026-05-01T10:00:00", str(plan_path), "proj", "old-session", step, "Complete", 0.01, plan_slug),
+                )
+            conn.commit()
+            conn.close()
+    
+            config = {
+                "default_model": "claude-sonnet-4-6",
+                "pushover": {"app_key": "", "user_key": ""},
+                "callback_port": 5999,
+                "step_timeout_seconds": 600,
+            }
+    
+            with patch("bellows.runner.run_step", return_value=_make_fake_run_step_result()) as mock_run_step, \
+                 patch("bellows.gates.check", return_value=_clean_gates()), \
+                 patch("bellows.notifier.push"), \
+                 patch("bellows.verdict.log_to_ledger"), \
+                 patch("bellows._capture_git_diff", return_value=""), \
+                 patch("bellows._create_worktree", return_value="/tmp/wt"), \
+                 patch("bellows._teardown_worktree"), \
+                 patch("bellows.record_run"), \
+                 patch("bellows.DB_PATH", db_path), \
+                 patch("bellows.validators.validate_at_claim", return_value={"rejected": False, "reject_reason": "", "warnings": []}):
+                response_server = MagicMock()
+                bellows.run_plan(str(plan_path), config, response_server, resume_step=None)
+    
+            # The FIRST call's bootstrap prompt must dispatch Step 1, not phantom-resume to Step 3
+>           first_prompt = mock_run_step.call_args_list[0][0][0]
+E           IndexError: list index out of range
+
+tests/test_consume_verdicts.py:246: IndexError
+----------------------------- Captured stdout call -----------------------------
+15:34:55 [EVENT] [executable-regression-slug-col] ⏳ RUNNING
+15:34:55 [WARN] [executable-regression-slug-col] ⚠️ sparse header (0 keys) for 2-step plan — defaulting pause_for_verdict to after_step_1 (safe-pause)
+15:34:55 [WARN] [executable-regression-slug-col] ⚠️ claim-time re-check failed — no valid clearance
+_ TestCleanGateAutoRunPlanIntegration.test_clean_gate_auto_row_lands_on_mechanical_advance _
+
+self = <test_gate_transaction_mechanization.TestCleanGateAutoRunPlanIntegration object at 0x109d50580>
+
+    def test_clean_gate_auto_row_lands_on_mechanical_advance(self):
+        """Multi-step plan whose non-terminal step advances mechanically:
+        a clean_gate_auto row must be written for that step."""
+        with tempfile.TemporaryDirectory() as tmp:
+            decisions_dir = os.path.join(tmp, "proj", "knowledge", "decisions")
+            os.makedirs(decisions_dir)
+            plan_filename = "executable-clean-gate-auto-test-2026-08-08.md"
+            plan_path = os.path.join(decisions_dir, plan_filename)
+            with open(plan_path, "w") as f:
+                f.write("## STEP 1\nDo stuff.\n## STEP 2\nDo more stuff.\n")
+    
+            config = {
+                "default_model": "claude-sonnet-4-6",
+                "pushover": {"app_key": "", "user_key": ""},
+                "callback_port": 5999,
+                "step_timeout_seconds": 600,
+            }
+    
+            with patch("bellows.runner.run_step", return_value=_make_fake_parsed()), \
+                 patch("bellows.gates.check", return_value=_advance_gates()), \
+                 patch("bellows.notifier.push"), \
+                 patch("bellows.verdict.log_to_ledger"), \
+                 patch("bellows._capture_git_diff", return_value=""), \
+                 patch("bellows._create_worktree", return_value="/tmp/wt"), \
+                 patch("bellows._teardown_worktree"), \
+                 patch("bellows.record_run"), \
+                 patch("bellows.validators.validate_at_claim", return_value={"rejected": False, "reject_reason": "", "warnings": []}):
+                response_server = MagicMock()
+                bellows.run_plan(plan_path, config, response_server)
+    
+            # Query the lifecycle DB for the clean_gate_auto row at step 1
+            import lifecycle as lc
+            conn = sqlite3.connect(lc.LIFECYCLE_DB_PATH)
+            rows = conn.execute(
+                "SELECT pause_reason_code, outcome, decided_by FROM verdicts "
+                "WHERE step_number = 1 AND pause_reason_code = 'clean_gate_auto'"
+            ).fetchall()
+            conn.close()
+    
+>           assert len(rows) >= 1, "clean_gate_auto row must land for the mechanically advanced step"
+E           AssertionError: clean_gate_auto row must land for the mechanically advanced step
+E           assert 0 >= 1
+E            +  where 0 = len([])
+
+tests/test_gate_transaction_mechanization.py:399: AssertionError
+----------------------------- Captured stdout call -----------------------------
+15:35:04 [EVENT] [executable-clean-gate-auto-tes] ⏳ RUNNING
+15:35:04 [WARN] [executable-clean-gate-auto-tes] ⚠️ sparse header (0 keys) for 2-step plan — defaulting pause_for_verdict to after_step_1 (safe-pause)
+15:35:04 [WARN] [executable-clean-gate-auto-tes] ⚠️ claim-time re-check failed — no valid clearance
+=============================== warnings summary ===============================
+../../../../../Library/Python/3.9/lib/python/site-packages/urllib3/__init__.py:35
+  /Users/marklehn/Library/Python/3.9/lib/python/site-packages/urllib3/__init__.py:35: NotOpenSSLWarning: urllib3 v2 only supports OpenSSL 1.1.1+, currently the 'ssl' module is compiled with 'LibreSSL 2.8.3'. See: https://github.com/urllib3/urllib3/issues/3020
+    warnings.warn(
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED tests/test_bellows.py::test_diagnostic_auto_close_moves_to_done - Asse...
+FAILED tests/test_bellows.py::test_clean_diagnostic_no_header_posts_verdict
+FAILED tests/test_bellows.py::test_clean_diagnostic_auto_close_true_moves_to_done
+FAILED tests/test_bellows.py::test_executable_no_header_defaults_to_verdict
+FAILED tests/test_bellows.py::test_executable_explicit_auto_close_true_still_closes
+FAILED tests/test_bellows.py::test_handle_parallel_from_watchdog_adds_pending_not_dispatched
+FAILED tests/test_bellows.py::test_rescan_dispatches_pending_group_after_settle
+FAILED tests/test_bellows.py::test_nonparallel_plan_dispatches_immediately_from_handle
+FAILED tests/test_bellows.py::test_two_parallel_siblings_collected_as_one_group
+FAILED tests/test_bellows.py::test_run_plan_claims_file_before_runner_runs - ...
+FAILED tests/test_bellows.py::test_run_plan_bootstrap_prompt_uses_shadow_path
+FAILED tests/test_bellows.py::test_run_plan_continuation_prompt_uses_shadow_path
+FAILED tests/test_bellows.py::test_run_plan_diagnostic_prompt_uses_shadow_path
+FAILED tests/test_bellows.py::test_shadow_path_resolves_after_claim - Asserti...
+FAILED tests/test_bellows.py::test_run_plan_creates_worktree_before_pre_diff
+FAILED tests/test_bellows.py::test_run_plan_passes_wt_path_to_capture_and_runner
+FAILED tests/test_bellows.py::test_run_plan_tears_down_worktree_after_final_gate
+FAILED tests/test_bellows.py::test_run_plan_strict_pause_on_creation_failure
+FAILED tests/test_bellows.py::test_run_plan_pauses_on_merge_conflict - Assert...
+FAILED tests/test_bellows.py::test_mode_a_detected_and_recovered - AssertionE...
+FAILED tests/test_bellows.py::test_mode_a_no_detection_normal_flow - Assertio...
+FAILED tests/test_bellows.py::test_mode_a_missing_file_not_in_done - Assertio...
+FAILED tests/test_bellows.py::test_mode_a_recovery_failure - AssertionError: ...
+FAILED tests/test_bellows.py::test_mode_a_synthetic_failure_in_verdict_request
+FAILED tests/test_bellows.py::test_seen_uses_slug_not_path - AssertionError: ...
+FAILED tests/test_bellows.py::test_apply_defensive_header_defaults_propagates_to_reparsed_header
+FAILED tests/test_bellows.py::test_auto_close_yaml_bool_does_not_crash - Asse...
+FAILED tests/test_bellows.py::test_auto_close_yaml_bool_false - AssertionErro...
+FAILED tests/test_bellows.py::test_pause_site_1_worktree_creation_failure_renames_before_post
+FAILED tests/test_bellows.py::test_pause_site_2_intermediate_step_gate_failure_renames_before_post
+FAILED tests/test_bellows.py::test_pause_site_3_final_step_gate_failure_renames_before_post
+FAILED tests/test_bellows.py::test_pause_site_4_auto_close_teardown_failure_renames_before_post
+FAILED tests/test_bellows.py::test_gates_log_includes_failure_gates_and_files_changed_count
+FAILED tests/test_bellows.py::test_claim_rename_draft_placeholder - Assertion...
+FAILED tests/test_bellows.py::test_claim_rename_legacy_descriptive_slug - Ass...
+FAILED tests/test_bellows.py::test_lifecycle_writes_auto_close_flow - Asserti...
+FAILED tests/test_bellows.py::test_lifecycle_writes_verdict_pause_flow - Asse...
+FAILED tests/test_bellows.py::test_lifecycle_meta_and_derivations_at_claim - ...
+FAILED tests/test_consume_verdicts.py::test_dispatch_starts_fresh_when_db_has_orphan_slug_rows
+FAILED tests/test_gate_transaction_mechanization.py::TestCleanGateAutoRunPlanIntegration::test_clean_gate_auto_row_lands_on_mechanical_advance
+40 failed, 1248 passed, 1 warning in 40.73s
