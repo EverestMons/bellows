@@ -37,12 +37,13 @@ R1: *"bellows only accepting a drafting cycle cleared plan — this is the only 
 **Walk register:** `governance/knowledge/research/walk-register-executable-eluvian-e2.md`
 **Walks:** walk 0 pinned; walks 1+ under v2.13 auto-advance, per-lens commits, cycle_check branched after each walk.
 **Direction verdict (after walk 1): PROCEED.** Tested, not judged: one isolation hazard folded; the binding to design-511 held under attack; no premise or ruling touched. None of the forcing classes fires.
-- Weak spots:          w1 dry (binding attacked, held)
-- Destruction:         w1 dry (mixed-state windows attacked, held by design)
-- Vulnerabilities:     w1 1 folded — instruction 1 / record 0 (test-dir isolation)
-- Integration-record:  w1 dry (gate-lesson checklist verified: known_failures, named .txt, banner pair)
-- ACID:                w1 dry (sweep exit-gated)
-**Conformance (§5):** per lens; recorded at the **walk-1 close**: plan_lint exit 0 / 0 FAIL; register CONFORMANT (STDERR); propagation exit 0; fold_check baseline saved at this close.
+- Weak spots:          w1 dry (binding attacked, held); w2 dry
+- Destruction:         w1 dry (mixed-state windows attacked, held by design); w2 dry
+- Vulnerabilities:     w1 1 folded — instruction 1 / record 0 (test-dir isolation); w2 dry
+- Integration-record:  w1 dry (gate-lesson checklist verified: known_failures, named .txt, banner pair); w2 dry
+- ACID:                w1 dry (sweep exit-gated); w2 dry
+**Conformance (§5):** per lens; recorded at the **walk-2 close** (the phase label is the LAST run): plan_lint exit 0 / 0 FAIL; register CONFORMANT (STDERR); propagation exit 0; fold_check exit 0 against the walk-1 baseline.
+**Warm phase closed at walk 2 (instruction series 1 → 0); the freeze now convenes the mandated FULL COLD PANEL** — scout → discovery → execution → capstone, sequential, each seat's findings author-verified and folded before the next seat reads. The panel's verdict gates the deposit; the cycle does not close until the panel's fold set is swept.
 
 ## Cycle Manifest
 tier: T2
