@@ -24,8 +24,15 @@ The admission flip is the law now; 40 pre-existing tests predate it. Their refus
 | F4 | flip negative tests | test_admission_flip.py contains the refusal cases (no-record, drift, consumed, replay) | `grep -c` them; they are the control arm and must remain UNTOUCHED and passing |
 
 ## Drafting Cycle
-**Tier:** T1 — corrective, tests-only. **Walks:** walk 0 pinned; walk 1 under v2.13; close at dry.
-**Direction verdict (after walk 1):** owed.
+**Tier:** T1 — corrective, tests-only. **Walks:** walk 0 pinned; **walks 1–2 complete** — walk 1 folded the census-preservation guard (B1's rolling overwrite would have destroyed 513's sha-pinned red exhibit), walk 2 dry across all lenses.
+**Direction verdict (after walk 1): PROCEED** — the fold sharpened evidence handling; nothing touched the stop verdict's mandate.
+- Weak spots:          w1 1 folded — instruction 1 / record 0; w2 dry
+- Destruction:         w1 dry; w2 dry
+- Vulnerabilities:     w1 dry (blanket-autoclear detector mechanical); w2 dry
+- Integration-record:  w1 dry; w2 dry
+- ACID:                w1 dry (sweep exit-gated); w2 dry
+**Conformance (§5):** recorded at the **walk-2 close**: plan_lint exit 0 / 0 FAIL; register CONFORMANT (STDERR); propagation exit 0; fold_check baseline saved at this close.
+**Closing:** **walk 2 met the bar — all lenses dry.** Instruction series **1 → 0**. ⚠️ The cycle is CLOSED; deposit via ready- with sidecars; expected HOLD `class:governed-tooling` under the live old code; release by rename (the flip is not yet active — its own corrective still travels the old lane).
 **Cold panel: DECLINED with reasoning** — tests-only corrective implementing an enumerated stop verdict; the control arm is mechanical; the highest-risk failure (blanket auto-clear) has a named detector.
 **Conformance (§5):** per lens from walk 1.
 
@@ -36,10 +43,10 @@ class: governed-tooling
 reads: /Users/marklehn/Developer/GitHub/bellows/knowledge/research/pytest_full.txt, /Users/marklehn/Developer/GitHub/bellows/lifecycle.py
 writes: tests/conftest.py, tests/test_bellows.py, tests/test_consume_verdicts.py, tests/test_gate_transaction_mechanization.py
 open_forks: none
-walks: 0
-yields: (owed)
-validation: (owed)
-coherence: N/A — the emitter's sentinel; NOT hand-filled
+walks: 2
+yields: 1, 0
+validation: cycle_check=BAR_MET, plan_lint=0_FAIL, fold_check=PASS
+coherence: N/A (no register declared)
 N/A
 
 ## MUST-PRESERVE

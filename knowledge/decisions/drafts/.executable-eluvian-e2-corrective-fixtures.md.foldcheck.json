@@ -1,0 +1,9 @@
+{
+  "plan_lint": {
+    "exit": 0,
+    "signals": [
+      "(n) WARN: `grep -c \"autouse\" tests/conftest.py` \u2014 grep on literal pattern without -F (ugrep-shim hazard)",
+      "PIN-CHECK: kind=sha256 line=N token=20765e662442\u2026 result=ambiguous"
+    ]
+  }
+}
