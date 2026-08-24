@@ -2,16 +2,12 @@
   "plan_lint": {
     "exit": 0,
     "signals": [
-      "(f) WARN: Cycle Manifest validation missing cycle_check= entry",
-      "(f) WARN: Cycle Manifest validation missing plan_lint= entry",
       "(o1) WARN: missing path `tests/test_admission_flip.py`",
       "PIN-CHECK: kind=prefix line=N token=553a5d7d92e2\u2026 result=ambiguous",
       "PIN-CHECK: kind=prefix line=N token=6a22a9ea306d\u2026 result=ambiguous",
       "PIN-CHECK: kind=prefix line=N token=c8652ec63c6c\u2026 result=ambiguous",
       "PIN-CHECK: kind=sha256 line=N token=801f66d406be\u2026 result=ambiguous",
       "PIN-CHECK: kind=sha256 line=N token=801f66d406be\u2026 result=ok",
-      "WARN: Drafting Cycle block has no **Closing:** line (DRAFTING_CYCLE.md \u00a73)",
-      "WARN: Drafting Cycle closing indicates fold as last event, not a dry lens pass (DRAFTING_CYCLE.md \u00a72)",
       "WARN: T2 plan missing cold-panel line in Drafting Cycle block (DRAFTING_CYCLE.md \u00a73)"
     ]
   }
