@@ -29,13 +29,18 @@ Ritual reference: eluvian-session-wrap-ritual memory. Four repos:
 from __future__ import annotations
 
 import datetime
+import os
 import subprocess
 import sys
 from pathlib import Path
 
-ROOT = Path("/Users/marklehn/Developer/GitHub")
+# Machine layouts differ (shop machine: ~/Developer/GitHub; Mac mini:
+# ~/Developer/eluvian-governance). Same override names as the arm/stop hooks.
+ROOT = Path(os.environ.get("ELUVIAN_WRAP_ROOT")
+            or "/Users/marklehn/Developer/GitHub")
 BELLOWS = ROOT / "bellows"
-MEMORY = Path("/Users/marklehn/.claude/projects/-Users-marklehn-Developer-GitHub/memory")
+MEMORY = Path(os.environ.get("ELUVIAN_WRAP_MEMORY")
+              or "/Users/marklehn/.claude/projects/-Users-marklehn-Developer-GitHub/memory")
 BATON = ROOT / "shop_next_session.md"
 
 
