@@ -16,10 +16,20 @@ import subprocess
 import sys
 from pathlib import Path
 
-_GOV_ROOT = Path("/Users/marklehn/Developer/GitHub")
+# Machine layouts differ (shop machine: ~/Developer/GitHub; Mac mini:
+# ~/Developer/eluvian-governance). Same override name as the wrap hooks.
+_GOV_ROOT = Path(os.environ.get("ELUVIAN_WRAP_ROOT")
+                 or "/Users/marklehn/Developer/GitHub")
 _DOCTRINE = _GOV_ROOT / "ELUVIAN_PATH.md"
 _BATON = _GOV_ROOT / "shop_next_session.md"
-_STATUS_PY = _GOV_ROOT / "bellows" / "status.py"
+# bellows is a populated submodule on the shop machine, a sibling checkout on
+# the mini (the root's submodule dirs sit uninitialized there).
+_STATUS_PY = next(
+    (p for p in (_GOV_ROOT / "bellows" / "status.py",
+                 Path.home() / "Developer" / "bellows" / "status.py")
+     if p.exists()),
+    _GOV_ROOT / "bellows" / "status.py",
+)
 _DEFAULT_LOG = Path("/Users/marklehn/.claude/eluvian/hooks.log")
 
 _PARKED_RE = re.compile(r"⏸|PARKED|RESUME AT", re.IGNORECASE)
