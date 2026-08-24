@@ -34,15 +34,16 @@ R1 — *"bellows only accepting a drafting cycle cleared plan — this is the on
 ## Drafting Cycle
 **Tier:** T1 computed — T-7 fires twice over (consumes audit+rulings; feeds the executable). T-2/T-5/T-6 do not fire (read-only).
 **Walk register:** `governance/knowledge/research/walk-register-diagnostic-eluvian-e2-design.md`
-**Walks:** walk 0 pinned; walks 1+ under v2.13 auto-advance, per-lens commits, cycle_check branched after each walk.
+**Walks:** walk 0 pinned; **walks 1–2 complete** — five lenses each, sequential, v2.13 auto-advance, cycle_check branched after each walk; walk 1 folded 4 (with the anchor-from-memory incident caught by the exit-gated sweep), walk 2 dry across all lenses.
 **Direction verdict (after walk 1): PROCEED.** Tested, not judged: walk 1 sharpened D-4/D-5/D-6 and surfaced the N/A tension for explicit resolution; no premise failed, no ruling was touched, and the two-step 478→481 shape stands. None of the forcing classes fires.
-- Weak spots:          w1 2 folded — instruction 2 / record 0 (clear-tool entry shape; the N/A tension)
-- Destruction:         w1 1 folded — instruction 1 / record 0 (rule-based shop-infra membership)
-- Vulnerabilities:     w1 1 folded — instruction 1 / record 0 (safe-if-dispatched canary)
-- Integration-record:  w1 dry
-- ACID:                w1 dry (sweep exit-gated; first fold script aborted on an anchor-from-memory and the sweep caught the unlanded folds — see the register's walk-1 process note)
+- Weak spots:          w1 2 folded — instruction 2 / record 0 (clear-tool entry shape; the N/A tension); w2 dry
+- Destruction:         w1 1 folded — instruction 1 / record 0 (rule-based shop-infra membership); w2 dry
+- Vulnerabilities:     w1 1 folded — instruction 1 / record 0 (safe-if-dispatched canary); w2 dry
+- Integration-record:  w1 dry; w2 dry
+- ACID:                w1 dry (sweep exit-gated; first fold script aborted on an anchor-from-memory and the sweep caught the unlanded folds — see the register's walk-1 process note); w2 dry
 **Cold panel:** owed — decided at the freeze with reasoning (the EXECUTABLE, not this read-only design, is where the audit mandates the full panel).
-**Conformance (§5):** per lens; recorded at the **walk-1 close**: plan_lint exit 0 / 0 FAIL; register CONFORMANT (STDERR) after one headerless-rows fire was obeyed; propagation exit 0; fold_check baseline saved at this close.
+**Conformance (§5):** per lens; recorded at the **walk-2 close** (the phase label is the LAST run): plan_lint exit 0 / 0 FAIL; register CONFORMANT (STDERR); propagation exit 0; fold_check exit 0 against the walk-1 baseline.
+**Closing:** **walk 2 met the bar — all five lenses dry.** Instruction series **4 → 0**. No restructuring fold. Closing-record re-read swept the Walks line at this close; the cold-panel decision stays where the audit put it — on the EXECUTABLE. ⚠️ The cycle is CLOSED; the deposit travels the lane: ready- staging → depositor gates → auto-clear (read-only) → daemon claim.
 
 ## Cycle Manifest
 tier: T1
@@ -51,10 +52,10 @@ class: read-only
 reads: /Users/marklehn/Developer/GitHub/bellows/bellows.py, /Users/marklehn/Developer/GitHub/bellows/depositor.py, /Users/marklehn/Developer/GitHub/bellows/lifecycle.py, /Users/marklehn/Developer/GitHub/bellows/lifecycle.db, /Users/marklehn/Developer/GitHub/governance/knowledge/research/eluvian-path-audit-2026-08-24.md, /Users/marklehn/Developer/GitHub/governance/knowledge/research/eluvian-path-rulings-2026-08-24.md
 writes: knowledge/research/e2-admission-flip-design-2026-08-24.md
 open_forks: none authored here — the design implements ruled forks; anything it cannot settle without a NEW ruling is listed in its §Open questions for the CEO rather than decided silently
-walks: 0
-yields: (owed)
-validation: (owed)
-coherence: N/A — the emitter's sentinel; NOT hand-filled
+walks: 2
+yields: 4, 0
+validation: cycle_check=BAR_MET, plan_lint=0_FAIL, fold_check=N/A
+coherence: N/A
 N/A
 
 ## MUST-PRESERVE

@@ -2,11 +2,7 @@
   "plan_lint": {
     "exit": 0,
     "signals": [
-      "(f) WARN: Cycle Manifest validation missing cycle_check= entry",
-      "(f) WARN: Cycle Manifest validation missing plan_lint= entry",
       "(o1) WARN: missing path `knowledge/research/e2-admission-flip-design-N-N-N.md`",
-      "WARN: Drafting Cycle block has no **Closing:** line (DRAFTING_CYCLE.md \u00a73)",
-      "WARN: Drafting Cycle closing indicates fold as last event, not a dry lens pass (DRAFTING_CYCLE.md \u00a72)",
       "WARN: step 1 mentions tests but declares no test scope"
     ]
   }
