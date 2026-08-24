@@ -55,6 +55,14 @@ done-on-another-machine-and-not-pulled (measured 2026-08-24).
    (`shop_next_session.md`: preserve carried threads, add this arc's ships, demote
    prior ones — append your OWN session block only; never rewrite another
    machine's blocks), `git add bellows` to bump the submodule gitlink, commit
+3c. **Carried items → tuyere threads** (GOVERNANCE §5b in the tuyere repo) —
+   enter this session's carried/deferred items as threads so the mutable
+   to-do state lives in the database, not the baton:
+   `python3 -m tuyere.threads add "<imperative title>" --project <p> --body "<standalone context>" --origin '{"kind":"wrap","date":"<date>"}'`
+   (run from a tuyere checkout with DB access; close finished ones with
+   `threads done <id>`). The baton block stays the NARRATIVE record — write
+   carried items there as prose too, but the thread row is the tracked copy.
+   No tuyere checkout on this machine → record in the baton alone, as before.
    (`docs: session wrap <date> — … refresh baton, bump bellows`), then push.
    On the mini the submodule dirs are uninitialized — bump the gitlink with
    `git update-index --cacheinfo 160000,<bellows-HEAD-sha>,bellows` instead.
