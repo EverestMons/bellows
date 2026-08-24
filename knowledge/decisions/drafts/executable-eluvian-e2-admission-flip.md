@@ -59,7 +59,7 @@ N/A
 - ⚠️ **The depositor writes the clearance row AFTER the rename succeeds, keyed to the sha256 of the CLAIMABLE file's bytes** — the same bytes the daemon will snapshot at claim. A post-clearance byte change invalidates clearance BY CONSTRUCTION; that is a feature, and a test proves it.
 - ⚠️ **`_assign_class` replacement is FORCE-CLASSIFYING: no catch-all `return` may remain.** An unmatchable write set HOLDs as `unassignable_class` (existing arm). The design's 20-plan acceptance table is reproduced as a parameterized test.
 - ⚠️ **The safety invariant survives: the depositor never mints, never dispatches; the clear tool never evaluates — it renames `hold-` → `ready-` and the live daemon's evaluator decides** (design D-5, option (b)).
-- ⚠️ **Worktree discipline:** all writes at project-relative paths under YOUR cwd; commit there; teardown merges. lifecycle.db is NOT written by tests against the live path — every test uses a tmp DB.
+- ⚠️ **Worktree discipline:** all writes at project-relative paths under YOUR cwd; commit there; teardown merges. ⚠️⚠️ **Test isolation is DIRS as well as DBs: every test uses a tmp DB AND tmp directories — no test may name a real watched `knowledge/decisions/` path, because a test that renames or creates a claimable-looking file in a LIVE watched dir summons the RUNNING daemon mid-test.** The clear-tool and auto-HOLD tests in particular construct their own scratch dirs.
 - ⚠️ **EVERY DATE IS A FIXED LITERAL.** **`grep` is ugrep: `-F` for literals.**
 - ⚠️ **DEV runs TARGETED tests only; the full suite belongs to QA** (long runs tempt end_turn before commit).
 
