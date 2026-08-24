@@ -36,11 +36,16 @@ Audit bypass (f): *no artifact proves a watcher was armed after a deposit* — t
 ## Drafting Cycle
 **Tier:** T1 computed — T-7 fires twice over (consumes audit+rulings+baton correction; feeds the executable). T-2/T-5/T-6 do not fire (read-only).
 **Walk register:** `governance/knowledge/research/walk-register-diagnostic-eluvian-e3-design.md`
-**Walks:** walk 0 pinned; walks 1–n OWED — five lenses each, sequential, v2.13 auto-advance, cycle_check branched after each walk. This line is rewritten at the close from the register's actual rows, never ahead of them.
-**Direction verdict (after walk 1):** owed.
-**Cold panel:** owed — decided at the freeze with reasoning (the EXECUTABLE, not this read-only design, is where the E-family's panel evidence points; E2's panel ran on the build).
-**Conformance (§5):** owed per lens; recorded at the close from actual runs.
-**Closing:** owed. ⚠️ When the cycle closes, the deposit travels the lane: ready- staging → depositor gates → auto-clear (read-only) → daemon claim. ⚠️ **This deposit is activation canary arm (ii)** — the first real `ready-` plan through the LIVE admission flip; the depositing session observes clearance row 1 and the claim, and records both.
+**Walks:** walk 0 pinned; **walks 1–3 complete** — five lenses each, sequential, v2.13 auto-advance, cycle_check branched after each walk; walk 1 folded 5, walk 2 folded 3, walk 3 dry across all lenses.
+**Direction verdict (after walk 1): PROCEED.** Tested, not judged: walk 1's five folds are all instruction-tier; no premise failed, no ruling was touched, the 511→513 two-step shape stands. None of the forcing classes fires.
+- Weak spots:          w1 3 folded — instruction 3 / record 0 (SessionStart arm; verdicts/ precedent; ordering contract); w2 1 folded (central D-3/D-4 tension named); w3 dry
+- Destruction:         w1 1 folded — instruction 1 / record 0 (FAIL-OPEN real mechanism: an unhandled step exception allows the ENTIRE wrap); w2 dry; w3 dry
+- Vulnerabilities:     w1 dry; w2 1 folded (D-7 citation-decoration incentive scoped away); w3 dry
+- Integration-record:  w1 1 folded (config.json into reads); w2 1 folded (ELUVIAN_PATH.md + 512 census into reads); w3 dry
+- ACID:                w1 dry (sweep 5/5 green); w2 dry (sweep 3/3 green, census verified on disk); w3 dry
+**Cold panel: DEFERRED to the E3 executable, decided at this freeze with reasoning** — the same call 511 recorded for E2, for the same measured reason: the E-family's panel evidence (46 findings / 16 HIGH) was earned on the BUILD, where the execution seat measures what readers cannot; this read-only design's output is the executable's input and gets attacked by that cycle and its panel.
+**Conformance (§5):** recorded at the walk-3 close from actual runs: plan_lint exit 0 / 0 FAIL at the lintmirror deposit path; register CONFORMANT (STDERR channel, both walk tables); cycle_check BAR_MET (verdict channel); fold_check N/A (no scripted-fold baseline in a hand-folded T1 cycle).
+**Closing:** **walk 3 met the bar — all five lenses dry.** Instruction series **5 → 3 → 0**. No restructuring fold. ⚠️ The cycle is CLOSED; the deposit travels the lane: ready- staging → depositor gates → auto-clear (read-only) → daemon claim. ⚠️ **This deposit is activation canary arm (ii)** — the first real `ready-` plan through the LIVE admission flip; the depositing session observes clearance row 1 and the claim, and records both.
 
 ## Cycle Manifest
 tier: T1
@@ -49,9 +54,9 @@ class: read-only
 reads: /Users/marklehn/Developer/GitHub/bellows/bellows.py, /Users/marklehn/Developer/GitHub/bellows/depositor.py, /Users/marklehn/Developer/GitHub/bellows/lifecycle.py, /Users/marklehn/Developer/GitHub/bellows/lifecycle.db, /Users/marklehn/Developer/GitHub/bellows/hooks/eluvian/wrap_check.py, /Users/marklehn/Developer/GitHub/bellows/hooks/eluvian/wrap_stop_hook.py, /Users/marklehn/Developer/GitHub/bellows/hooks/eluvian/wrap_debt_hook.py, /Users/marklehn/Developer/GitHub/bellows/tools/clear_plan.py, /Users/marklehn/Developer/GitHub/bellows/tests/test_wrap_hooks.py, /Users/marklehn/Developer/GitHub/bellows/tests/test_wrap_sentinel.py, /Users/marklehn/Developer/GitHub/bellows/config.json, /Users/marklehn/Developer/GitHub/ELUVIAN_PATH.md, /Users/marklehn/Developer/GitHub/governance/knowledge/research/wrap-lock-portability-census-2026-08-24.md, /Users/marklehn/Developer/GitHub/governance/knowledge/research/eluvian-path-audit-2026-08-24.md, /Users/marklehn/Developer/GitHub/governance/knowledge/research/eluvian-path-rulings-2026-08-24.md
 writes: knowledge/research/e3-deposit-receipts-design-2026-08-24.md
 open_forks: none authored here — the design implements the audit's §E3 under the baton's slug-key correction; anything needing a NEW CEO ruling is listed in D-7 rather than decided silently
-walks: 0
-yields: none
-validation: pending
+walks: 3
+yields: 5, 3, 0
+validation: cycle_check=BAR_MET, plan_lint=0_FAIL, fold_check=N/A
 coherence: N/A
 N/A
 
