@@ -1,5 +1,17 @@
 # tests/conftest.py
+import hashlib
+import os
+from pathlib import Path
+
 import pytest
+
+
+def clear_plan_for_test(path, db_path=None):
+    import lifecycle
+    raw_bytes = Path(path).read_bytes()
+    content_hash = hashlib.sha256(raw_bytes).hexdigest()
+    basename = os.path.basename(path)
+    lifecycle.write_clearance(basename, content_hash, "governed-tooling", "depositor", db_path)
 
 
 @pytest.fixture(autouse=True)

@@ -14,7 +14,9 @@ import pytest
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 import bellows
+import lifecycle
 import verdict
+from conftest import clear_plan_for_test
 
 
 def test_load_config():
@@ -191,6 +193,7 @@ def test_diagnostic_auto_close_moves_to_done():
         plan_path = os.path.join(decisions_dir, plan_filename)
         with open(plan_path, "w") as f:
             f.write("## Diagnostic\nSingle-step investigation.\n")
+        clear_plan_for_test(plan_path)
 
         config = {
             "default_model": "claude-sonnet-4-6",
@@ -250,6 +253,7 @@ def test_clean_diagnostic_no_header_posts_verdict():
         plan_path = os.path.join(decisions_dir, plan_filename)
         with open(plan_path, "w") as f:
             f.write("## Diagnostic\nSingle-step investigation, no header.\n")
+        clear_plan_for_test(plan_path)
 
         config = {
             "default_model": "claude-sonnet-4-6",
@@ -321,6 +325,7 @@ def test_clean_diagnostic_auto_close_true_moves_to_done():
         plan_path = os.path.join(decisions_dir, plan_filename)
         with open(plan_path, "w") as f:
             f.write("## Diagnostic\nSingle-step.\n")
+        clear_plan_for_test(plan_path)
 
         config = {
             "default_model": "claude-sonnet-4-6",
@@ -380,6 +385,7 @@ def test_executable_no_header_defaults_to_verdict():
         plan_path = os.path.join(decisions_dir, plan_filename)
         with open(plan_path, "w") as f:
             f.write("## STEP 1\nDo stuff.\n")
+        clear_plan_for_test(plan_path)
 
         config = {
             "default_model": "claude-sonnet-4-6",
@@ -435,6 +441,7 @@ def test_executable_explicit_auto_close_true_still_closes():
         plan_path = os.path.join(decisions_dir, plan_filename)
         with open(plan_path, "w") as f:
             f.write("## STEP 1\nDo stuff.\n")
+        clear_plan_for_test(plan_path)
 
         config = {
             "default_model": "claude-sonnet-4-6",
@@ -1133,6 +1140,8 @@ def test_handle_parallel_from_watchdog_adds_pending_not_dispatched():
         fname = "parallel-1-executable-foo-2026-04-16.md"
         path = os.path.join(tmp, fname)
         open(path, "w").close()
+        mock_orch.depositor._db_path = lifecycle.LIFECYCLE_DB_PATH
+        clear_plan_for_test(path)
 
         handler._handle(path)  # default from_rescan=False
 
@@ -1148,13 +1157,16 @@ def test_rescan_dispatches_pending_group_after_settle():
         fname_a = "parallel-1-executable-foo-2026-04-16.md"
         fname_b = "parallel-1-executable-bar-2026-04-16.md"
         for fname in [fname_a, fname_b]:
-            open(os.path.join(tmp, fname), "w").close()
+            fpath = os.path.join(tmp, fname)
+            open(fpath, "w").close()
+            clear_plan_for_test(fpath)
 
         config = {"watched_projects": [tmp], "callback_port": 5999}
         b = bellows.Bellows(config)
         mock_orch = MagicMock()
         mock_orch.config = {"watched_projects": [tmp]}
         mock_orch._seen = set()
+        mock_orch.depositor._db_path = lifecycle.LIFECYCLE_DB_PATH
         handler = bellows.PlanHandler(mock_orch)
         # Simulate group first seen 10s ago (well past 5s settle window)
         handler._pending_groups["parallel-1"] = time.time() - 10
@@ -1204,6 +1216,8 @@ def test_nonparallel_plan_dispatches_immediately_from_handle():
         fname = "executable-foo-2026-04-16.md"
         path = os.path.join(tmp, fname)
         open(path, "w").close()
+        mock_orch.depositor._db_path = lifecycle.LIFECYCLE_DB_PATH
+        clear_plan_for_test(path)
 
         handler._handle(path)  # default from_rescan=False
 
@@ -1222,6 +1236,8 @@ def test_two_parallel_siblings_collected_as_one_group():
         path_b = os.path.join(tmp, fname_b)
         open(path_a, "w").close()
         open(path_b, "w").close()
+        clear_plan_for_test(path_a)
+        clear_plan_for_test(path_b)
 
         config = {"watched_projects": [tmp], "callback_port": 5999}
         b = bellows.Bellows(config)
@@ -1229,6 +1245,7 @@ def test_two_parallel_siblings_collected_as_one_group():
         mock_orch.config = {"watched_projects": [tmp]}
         mock_orch._seen = set()
         mock_orch._shutting_down = False
+        mock_orch.depositor._db_path = lifecycle.LIFECYCLE_DB_PATH
         handler = bellows.PlanHandler(mock_orch)
 
         # Simulate watchdog events: both files deferred
@@ -1294,6 +1311,7 @@ def test_run_plan_claims_file_before_runner_runs():
         plan_path = os.path.join(decisions_dir, plan_filename)
         with open(plan_path, "w") as f:
             f.write("# Claim Test\n## STEP 1\nDo stuff.\n")
+        clear_plan_for_test(plan_path)
 
         config = {
             "default_model": "claude-sonnet-4-6",
@@ -1377,6 +1395,7 @@ def test_run_plan_bootstrap_prompt_uses_shadow_path():
         plan_path = os.path.join(decisions_dir, plan_filename)
         with open(plan_path, "w") as f:
             f.write("## STEP 1\nDo stuff.\n")
+        clear_plan_for_test(plan_path)
 
         config = {
             "default_model": "claude-sonnet-4-6",
@@ -1422,6 +1441,7 @@ def test_run_plan_continuation_prompt_uses_shadow_path():
         plan_path = os.path.join(decisions_dir, plan_filename)
         with open(plan_path, "w") as f:
             f.write("## STEP 1\nDo stuff.\n## STEP 2\nDo more stuff.\n")
+        clear_plan_for_test(plan_path)
 
         config = {
             "default_model": "claude-sonnet-4-6",
@@ -1475,6 +1495,7 @@ def test_run_plan_diagnostic_prompt_uses_shadow_path():
         plan_path = os.path.join(decisions_dir, plan_filename)
         with open(plan_path, "w") as f:
             f.write("## STEP 1\nInvestigate stuff.\n")
+        clear_plan_for_test(plan_path)
 
         config = {
             "default_model": "claude-sonnet-4-6",
@@ -1568,6 +1589,7 @@ def test_shadow_path_resolves_after_claim():
         plan_content = "## STEP 1\nDo stuff.\n"
         with open(plan_path, "w") as f:
             f.write(plan_content)
+        clear_plan_for_test(plan_path)
 
         config = {
             "default_model": "claude-sonnet-4-6",
@@ -2136,6 +2158,7 @@ def test_run_plan_creates_worktree_before_pre_diff():
         plan_path = os.path.join(decisions_dir, plan_filename)
         with open(plan_path, "w") as f:
             f.write("## STEP 1\nDo stuff.\n")
+        clear_plan_for_test(plan_path)
 
         config = {
             "default_model": "claude-sonnet-4-6",
@@ -2183,6 +2206,7 @@ def test_run_plan_passes_wt_path_to_capture_and_runner():
         plan_path = os.path.join(decisions_dir, plan_filename)
         with open(plan_path, "w") as f:
             f.write("## STEP 1\nDo stuff.\n")
+        clear_plan_for_test(plan_path)
 
         config = {
             "default_model": "claude-sonnet-4-6",
@@ -2224,6 +2248,7 @@ def test_run_plan_tears_down_worktree_after_final_gate():
         plan_path = os.path.join(decisions_dir, plan_filename)
         with open(plan_path, "w") as f:
             f.write("## STEP 1\nDo stuff.\n")
+        clear_plan_for_test(plan_path)
 
         config = {
             "default_model": "claude-sonnet-4-6",
@@ -2274,6 +2299,7 @@ def test_run_plan_strict_pause_on_creation_failure():
         plan_path = os.path.join(decisions_dir, plan_filename)
         with open(plan_path, "w") as f:
             f.write("## STEP 1\nDo stuff.\n")
+        clear_plan_for_test(plan_path)
 
         config = {
             "default_model": "claude-sonnet-4-6",
@@ -2314,6 +2340,7 @@ def test_run_plan_pauses_on_merge_conflict():
         plan_path = os.path.join(decisions_dir, plan_filename)
         with open(plan_path, "w") as f:
             f.write("## STEP 1\nDo stuff.\n")
+        clear_plan_for_test(plan_path)
 
         config = {
             "default_model": "claude-sonnet-4-6",
@@ -2422,6 +2449,7 @@ def test_mode_a_detected_and_recovered():
         id_canonical = "executable-1.md"
         with open(plan_path, "w") as f:
             f.write("## STEP 1\nDo stuff.\n")
+        clear_plan_for_test(plan_path)
 
         config = {
             "default_model": "claude-sonnet-4-6",
@@ -2476,6 +2504,7 @@ def test_mode_a_no_detection_normal_flow():
         plan_path = os.path.join(decisions_dir, plan_filename)
         with open(plan_path, "w") as f:
             f.write("## STEP 1\nDo stuff.\n")
+        clear_plan_for_test(plan_path)
 
         config = {
             "default_model": "claude-sonnet-4-6",
@@ -2517,6 +2546,7 @@ def test_mode_a_missing_file_not_in_done():
         inprogress_path = os.path.join(decisions_dir, f"in-progress-{plan_filename}")
         with open(plan_path, "w") as f:
             f.write("## STEP 1\nDo stuff.\n")
+        clear_plan_for_test(plan_path)
 
         config = {
             "default_model": "claude-sonnet-4-6",
@@ -2567,6 +2597,7 @@ def test_mode_a_recovery_failure():
         id_canonical = "executable-1.md"
         with open(plan_path, "w") as f:
             f.write("## STEP 1\nDo stuff.\n")
+        clear_plan_for_test(plan_path)
 
         config = {
             "default_model": "claude-sonnet-4-6",
@@ -2625,6 +2656,7 @@ def test_mode_a_synthetic_failure_in_verdict_request():
         id_canonical = "executable-1.md"
         with open(plan_path, "w") as f:
             f.write("## STEP 1\nDo stuff.\n")
+        clear_plan_for_test(plan_path)
 
         config = {
             "default_model": "claude-sonnet-4-6",
@@ -3056,6 +3088,8 @@ def test_seen_uses_slug_not_path():
         fname = "executable-widget-2026-05-11.md"
         path = os.path.join(tmp, fname)
         open(path, "w").close()
+        mock_orch.depositor._db_path = lifecycle.LIFECYCLE_DB_PATH
+        clear_plan_for_test(path)
 
         handler._handle(path)
 
@@ -3265,6 +3299,7 @@ def test_apply_defensive_header_defaults_propagates_to_reparsed_header():
         plan_text = "## STEP 1\nDo stuff.\n## STEP 2\nDo more stuff.\n"
         with open(plan_path, "w") as f:
             f.write(plan_text)
+        clear_plan_for_test(plan_path)
 
         config = {
             "default_model": "claude-sonnet-4-6",
@@ -3430,6 +3465,7 @@ def test_auto_close_yaml_bool_does_not_crash():
         plan_path = os.path.join(decisions_dir, plan_filename)
         with open(plan_path, "w") as f:
             f.write("## STEP 1\nDo stuff.\n")
+        clear_plan_for_test(plan_path)
 
         config = {
             "default_model": "claude-sonnet-4-6",
@@ -3480,6 +3516,7 @@ def test_auto_close_yaml_bool_false():
         plan_path = os.path.join(decisions_dir, plan_filename)
         with open(plan_path, "w") as f:
             f.write("## STEP 1\nDo stuff.\n")
+        clear_plan_for_test(plan_path)
 
         config = {
             "default_model": "claude-sonnet-4-6",
@@ -3837,6 +3874,7 @@ def test_pause_site_1_worktree_creation_failure_renames_before_post():
         plan_path = os.path.join(decisions_dir, plan_filename)
         with open(plan_path, "w") as f:
             f.write("## STEP 1\nDo stuff.\n")
+        clear_plan_for_test(plan_path)
 
         config = {
             "default_model": "claude-sonnet-4-6",
@@ -3874,6 +3912,7 @@ def test_pause_site_2_intermediate_step_gate_failure_renames_before_post():
         plan_path = os.path.join(decisions_dir, plan_filename)
         with open(plan_path, "w") as f:
             f.write("## STEP 1\nDo stuff.\n## STEP 2\nMore stuff.\n")
+        clear_plan_for_test(plan_path)
 
         config = {
             "default_model": "claude-sonnet-4-6",
@@ -3925,6 +3964,7 @@ def test_pause_site_3_final_step_gate_failure_renames_before_post():
         plan_path = os.path.join(decisions_dir, plan_filename)
         with open(plan_path, "w") as f:
             f.write("## STEP 1\nDo stuff.\n")
+        clear_plan_for_test(plan_path)
 
         config = {
             "default_model": "claude-sonnet-4-6",
@@ -3976,6 +4016,7 @@ def test_pause_site_4_auto_close_teardown_failure_renames_before_post():
         plan_path = os.path.join(decisions_dir, plan_filename)
         with open(plan_path, "w") as f:
             f.write("## STEP 1\nDo stuff.\n")
+        clear_plan_for_test(plan_path)
 
         config = {
             "default_model": "claude-sonnet-4-6",
@@ -4017,6 +4058,7 @@ def test_gates_log_includes_failure_gates_and_files_changed_count():
         plan_path = os.path.join(decisions_dir, plan_filename)
         with open(plan_path, "w") as f:
             f.write("## STEP 1\nDo stuff.\n")
+        clear_plan_for_test(plan_path)
 
         config = {
             "default_model": "claude-sonnet-4-6",
@@ -4140,6 +4182,7 @@ def test_claim_rename_draft_placeholder():
         plan_path = os.path.join(decisions_dir, "diagnostic-draft-143022.md")
         with open(plan_path, "w") as f:
             f.write("# Draft Diagnostic\n## STEP 1\nInvestigate.\n")
+        clear_plan_for_test(plan_path)
 
         config = {
             "default_model": "claude-sonnet-4-6",
@@ -4183,6 +4226,7 @@ def test_claim_rename_legacy_descriptive_slug():
         plan_path = os.path.join(decisions_dir, "diagnostic-foo-bar-2026-06-10.md")
         with open(plan_path, "w") as f:
             f.write("# Legacy Diagnostic\n## STEP 1\nInvestigate.\n")
+        clear_plan_for_test(plan_path)
 
         config = {
             "default_model": "claude-sonnet-4-6",
@@ -4234,6 +4278,7 @@ def test_lifecycle_writes_auto_close_flow():
         plan_path = os.path.join(decisions_dir, plan_filename)
         with open(plan_path, "w") as f:
             f.write("## Diagnostic\nSingle-step.\n")
+        clear_plan_for_test(plan_path)
 
         config = {
             "default_model": "claude-sonnet-4-6",
@@ -4288,6 +4333,7 @@ def test_lifecycle_writes_verdict_pause_flow():
         plan_path = os.path.join(decisions_dir, plan_filename)
         with open(plan_path, "w") as f:
             f.write("# LC Verdict Test\n**pause_for_verdict:** always\n## STEP 1\nDo stuff.\n## STEP 2\nMore stuff.\n")
+        clear_plan_for_test(plan_path)
 
         config = {
             "default_model": "claude-sonnet-4-6",
@@ -4336,6 +4382,7 @@ def test_lifecycle_meta_and_derivations_at_claim():
         plan_path = os.path.join(decisions_dir, plan_filename)
         with open(plan_path, "w") as f:
             f.write("# LC Derivations Test\n## STEP 1\nThis implements diagnostic 42.\n")
+        clear_plan_for_test(plan_path)
 
         config = {
             "default_model": "claude-sonnet-4-6",

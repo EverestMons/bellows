@@ -9,6 +9,7 @@ from unittest.mock import MagicMock, patch
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 import bellows
+from conftest import clear_plan_for_test
 
 
 def _make_fake_run_step_result():
@@ -197,6 +198,7 @@ def test_dispatch_starts_fresh_when_db_has_orphan_slug_rows():
         plan_path = decisions_dir / plan_filename
         plan_content = "## STEP 1\nDo stuff.\n## STEP 2\nDo more stuff.\n"
         plan_path.write_text(plan_content)
+        clear_plan_for_test(str(plan_path))
 
         # Create shadow cache (simulates a prior same-slug plan leaving shadow behind)
         shadow_path = bellows._shadow_path(plan_filename)

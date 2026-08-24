@@ -9,6 +9,7 @@ import sqlite3
 import lifecycle
 import gates
 import bellows
+from conftest import clear_plan_for_test
 
 
 STANDARD_GATES = [
@@ -367,6 +368,7 @@ class TestCleanGateAutoRunPlanIntegration:
             plan_path = os.path.join(decisions_dir, plan_filename)
             with open(plan_path, "w") as f:
                 f.write("## STEP 1\nDo stuff.\n## STEP 2\nDo more stuff.\n")
+            clear_plan_for_test(plan_path)
 
             config = {
                 "default_model": "claude-sonnet-4-6",
