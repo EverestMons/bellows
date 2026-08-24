@@ -36,8 +36,13 @@ R1: *"bellows only accepting a drafting cycle cleared plan — this is the only 
 **Tier:** T2 computed — **T-5/T-6-adjacent (daemon claim path = live-guard code)**, T-7 fires (builds from the 511 design). ⚠️ **FULL COLD PANEL AT THE FREEZE — mandated by the audit's risk class and the 481 precedent, not decided ad hoc:** scout → discovery → execution → capstone, sequential, findings folded between seats, every finding author-verified before folding.
 **Walk register:** `governance/knowledge/research/walk-register-executable-eluvian-e2.md`
 **Walks:** walk 0 pinned; walks 1+ under v2.13 auto-advance, per-lens commits, cycle_check branched after each walk.
-**Direction verdict (after walk 1):** owed.
-**Conformance (§5):** per lens from walk 1.
+**Direction verdict (after walk 1): PROCEED.** Tested, not judged: one isolation hazard folded; the binding to design-511 held under attack; no premise or ruling touched. None of the forcing classes fires.
+- Weak spots:          w1 dry (binding attacked, held)
+- Destruction:         w1 dry (mixed-state windows attacked, held by design)
+- Vulnerabilities:     w1 1 folded — instruction 1 / record 0 (test-dir isolation)
+- Integration-record:  w1 dry (gate-lesson checklist verified: known_failures, named .txt, banner pair)
+- ACID:                w1 dry (sweep exit-gated)
+**Conformance (§5):** per lens; recorded at the **walk-1 close**: plan_lint exit 0 / 0 FAIL; register CONFORMANT (STDERR); propagation exit 0; fold_check baseline saved at this close.
 
 ## Cycle Manifest
 tier: T2
