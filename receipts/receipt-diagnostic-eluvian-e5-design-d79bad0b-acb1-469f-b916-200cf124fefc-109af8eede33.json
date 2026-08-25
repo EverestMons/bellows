@@ -1,0 +1,8 @@
+{
+  "slug": "diagnostic-eluvian-e5-design",
+  "content_hash": "109af8eede338879cba69da861c8910a7685115a026f43939720c6ba67c1825f",
+  "session_id": "d79bad0b-acb1-469f-b916-200cf124fefc",
+  "armed_at": "2026-08-25T07:00:13.678616",
+  "watcher": "gate-watcher armed in depositing session",
+  "attestation_boundary": "This receipt proves the watcher was ARMED at write time. It does NOT prove the watcher stayed alive. Liveness of a session-local monitor is not externally verifiable."
+}
