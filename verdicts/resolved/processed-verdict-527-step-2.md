@@ -1,0 +1,5 @@
+continue
+
+All gates PASS including rule_20 and rule_22 — no parser false positive this run. Rule 22(b) verified: raw suite 1435 passed / 0 failed, accounting exact and self-contained (1435 total − 23 new = 1412 inherited, delta 0 against the V6 pin); Rule 20 banner byte-exact; evidence under the per-plan path knowledge/qa/evidence/no-receipt-admission-hold/. The step-1 verification already confirmed every panel-mandated production shape on merged main (stage-12 call, hold- slug stripping, positive routing, first-wins original_reason carry).
+
+Terminal step of 2 — plan closes. R-F3 IS BUILT: receipts become structural at admission from the next deliberate daemon restart — the depositor holds any deposit without a matching active slug+hash receipt; the release ritual is deadlock-free (the hold-slug fix); the class-release tool refuses non-class provenance (positive routing). This completes the last build in the E-family arc's orbit. Post-restart canary: the first deposit proves the happy path; a deliberate receipt-less sandbox deposit can prove the negative live if the CEO wants it demonstrated.
