@@ -65,7 +65,9 @@ def test_cleanup_normalizes_prefixed_verdict_slug():
         pending_dir = tmp_path / "verdicts" / "pending"
         pending_dir.mkdir(parents=True)
         pending_file = pending_dir / "verdict-request-foo-2026-05-01-step-1.md"
-        pending_file.write_text("# Verdict Request\n**Plan:** " + str(verdict_pending_path))
+        pending_file.write_text(
+            "# Verdict Request\n**Plan:** " + str(verdict_pending_path) +
+            '\n**Gate Result JSON:** {"failures": [], "files_changed": []}')
 
         config = {
             "watched_projects": [str(decisions_dir)],
@@ -115,7 +117,9 @@ def test_cleanup_unprefixed_verdict_slug():
         pending_dir = tmp_path / "verdicts" / "pending"
         pending_dir.mkdir(parents=True)
         pending_file = pending_dir / "verdict-request-qux-2026-05-01-step-1.md"
-        pending_file.write_text("# Verdict Request\n**Plan:** " + str(verdict_pending_path))
+        pending_file.write_text(
+            "# Verdict Request\n**Plan:** " + str(verdict_pending_path) +
+            '\n**Gate Result JSON:** {"failures": [], "files_changed": []}')
 
         config = {
             "watched_projects": [str(decisions_dir)],
@@ -393,7 +397,8 @@ def test_consume_verdict_continue_advances_step_when_precondition_failure_absent
         # No precondition_failure field — simulates pre-fix verdict-request files
         pending_file.write_text(_make_verdict_request_content(
             str(verdict_pending_path), step_number=1, total_steps=2,
-            precondition_failure=None))
+            precondition_failure=None,
+            gate_result_json={"failures": [], "files_changed": []}))
 
         config = {
             "watched_projects": [str(decisions_dir)],
@@ -444,7 +449,8 @@ def test_consume_verdict_continue_advances_step_when_precondition_failure_false(
         pending_file = pending_dir / "verdict-request-precond-false-2026-05-24-step-1.md"
         pending_file.write_text(_make_verdict_request_content(
             str(verdict_pending_path), step_number=1, total_steps=2,
-            precondition_failure=False))
+            precondition_failure=False,
+            gate_result_json={"failures": [], "files_changed": []}))
 
         config = {
             "watched_projects": [str(decisions_dir)],
@@ -522,8 +528,8 @@ def test_consume_verdict_continue_retries_step_when_precondition_failure_true():
         )
 
 
-def test_consume_verdicts_parses_gate_result_json_continue_to_done():
-    """E.4: continue verdict on final step passes parsed gate_result to log_to_ledger."""
+def test_consume_verdicts_rejects_continue_with_unoverridden_failures_final_step():
+    """E4: continue verdict on final step with unoverridden gate failures is rejected."""
     with tempfile.TemporaryDirectory() as tmp:
         tmp_path = Path(tmp)
 
@@ -566,22 +572,73 @@ def test_consume_verdicts_parses_gate_result_json_continue_to_done():
                  "found": True, "verdict": "continue", "reason": "approved"
              }), \
              patch("bellows.verdict.log_to_ledger") as mock_ledger, \
+             patch("bellows.notifier.push"), \
+             patch("bellows.lifecycle.record_verdict_outcome") as mock_record, \
+             patch("bellows.lifecycle.record_verdict_request"):
+            b._consume_verdicts()
+
+        assert verdict_pending_path.exists(), "Plan must stay verdict-pending after rejection"
+        rejected_verdict = verdicts_resolved / f"processed-rejected-{verdict_fname}"
+        assert rejected_verdict.exists(), f"Verdict must be renamed to processed-rejected-: {rejected_verdict}"
+        assert pending_file.exists(), "Request file must be preserved on rejection"
+        mock_ledger.assert_called_once()
+        assert mock_ledger.call_args[0][3] == "continue-rejected"
+        mock_record.assert_called_once()
+        assert mock_record.call_args[1]["decided_by"] == "gate_recheck"
+
+
+def test_consume_verdicts_advances_continue_to_done_with_clean_gates():
+    """E4: continue verdict on final step with clean gates advances to Done."""
+    with tempfile.TemporaryDirectory() as tmp:
+        tmp_path = Path(tmp)
+
+        decisions_dir = tmp_path / "proj" / "knowledge" / "decisions"
+        decisions_dir.mkdir(parents=True)
+        (decisions_dir / "Done").mkdir()
+
+        plan_filename = "executable-gate-json-done-clean-2026-05-26.md"
+        verdict_pending_name = f"verdict-pending-{plan_filename}"
+        verdict_pending_path = decisions_dir / verdict_pending_name
+        verdict_pending_path.write_text("## STEP 1\nDo stuff.\n")
+
+        verdicts_resolved = tmp_path / "verdicts" / "resolved"
+        verdicts_resolved.mkdir(parents=True)
+        verdict_fname = "verdict-gate-json-done-clean-2026-05-26-step-1.md"
+        (verdicts_resolved / verdict_fname).write_text("continue\nApproved.")
+
+        pending_dir = tmp_path / "verdicts" / "pending"
+        pending_dir.mkdir(parents=True)
+        pending_file = pending_dir / "verdict-request-gate-json-done-clean-2026-05-26-step-1.md"
+        gate_data = {"failures": [], "files_changed": ["a.py", "b.py"]}
+        pending_file.write_text(_make_verdict_request_content(
+            str(verdict_pending_path), step_number=1, total_steps=1,
+            gate_result_json=gate_data))
+
+        config = {
+            "watched_projects": [str(decisions_dir)],
+            "default_model": "claude-sonnet-4-6",
+            "pushover": {"app_key": "", "user_key": ""},
+            "callback_port": 5999,
+        }
+
+        b = bellows.Bellows(config)
+
+        with patch("bellows.BELLOWS_ROOT", tmp_path), \
+             patch("bellows.verdict.check_verdict", return_value={
+                 "found": True, "verdict": "continue", "reason": "approved"
+             }), \
+             patch("bellows.verdict.log_to_ledger") as mock_ledger, \
              patch("bellows.notifier.push"):
             b._consume_verdicts()
 
+        done_path = decisions_dir / "Done" / plan_filename
+        assert done_path.is_file(), f"Plan should move to Done with clean gates: {done_path}"
         mock_ledger.assert_called_once()
-        call_args = mock_ledger.call_args
-        logged_gate_result = call_args[0][2]
-        assert logged_gate_result["failures"] == gate_data["failures"], (
-            f"Expected failures from JSON metadata, got: {logged_gate_result['failures']}"
-        )
-        assert logged_gate_result["files_changed"] == gate_data["files_changed"], (
-            f"Expected files_changed from JSON metadata, got: {logged_gate_result['files_changed']}"
-        )
+        assert mock_ledger.call_args[0][3] == "continue-to-done"
 
 
-def test_consume_verdicts_parses_gate_result_json_continue_resume():
-    """E.4: continue verdict on non-final step passes parsed gate_result to log_to_ledger."""
+def test_consume_verdicts_rejects_continue_with_unoverridden_failures_resume():
+    """E4: continue verdict on non-final step with unoverridden gate failures is rejected."""
     with tempfile.TemporaryDirectory() as tmp:
         tmp_path = Path(tmp)
 
@@ -625,22 +682,74 @@ def test_consume_verdicts_parses_gate_result_json_continue_resume():
              }), \
              patch("bellows.verdict.log_to_ledger") as mock_ledger, \
              patch("bellows.notifier.push"), \
-             patch.object(b, "handle_new_plan"):
+             patch("bellows.lifecycle.record_verdict_outcome") as mock_record, \
+             patch("bellows.lifecycle.record_verdict_request"), \
+             patch.object(b, "handle_new_plan") as mock_handle:
             b._consume_verdicts()
 
+        mock_handle.assert_not_called()
+        assert verdict_pending_path.exists(), "Plan must stay verdict-pending after rejection"
+        rejected_verdict = verdicts_resolved / f"processed-rejected-{verdict_fname}"
+        assert rejected_verdict.exists(), f"Verdict must be renamed to processed-rejected-"
+        assert pending_file.exists(), "Request file must be preserved on rejection"
         mock_ledger.assert_called_once()
-        call_args = mock_ledger.call_args
-        logged_gate_result = call_args[0][2]
-        assert logged_gate_result["failures"] == gate_data["failures"], (
-            f"Expected failures from JSON metadata, got: {logged_gate_result['failures']}"
-        )
-        assert logged_gate_result["files_changed"] == gate_data["files_changed"], (
-            f"Expected files_changed from JSON metadata, got: {logged_gate_result['files_changed']}"
-        )
+        assert mock_ledger.call_args[0][3] == "continue-rejected"
+        mock_record.assert_called_once()
+        assert mock_record.call_args[1]["decided_by"] == "gate_recheck"
 
 
-def test_consume_verdicts_falls_back_to_empty_when_metadata_absent():
-    """E.4 backward compat: pre-fix pending file without Gate Result JSON → empty arrays."""
+def test_consume_verdicts_advances_continue_resume_with_clean_gates():
+    """E4: continue verdict on non-final step with clean gates advances normally."""
+    with tempfile.TemporaryDirectory() as tmp:
+        tmp_path = Path(tmp)
+
+        decisions_dir = tmp_path / "proj" / "knowledge" / "decisions"
+        decisions_dir.mkdir(parents=True)
+        (decisions_dir / "Done").mkdir()
+
+        plan_filename = "executable-gate-json-resume-clean-2026-05-26.md"
+        verdict_pending_name = f"verdict-pending-{plan_filename}"
+        verdict_pending_path = decisions_dir / verdict_pending_name
+        verdict_pending_path.write_text("## STEP 1\nDo stuff.\n## STEP 2\nMore stuff.\n")
+
+        verdicts_resolved = tmp_path / "verdicts" / "resolved"
+        verdicts_resolved.mkdir(parents=True)
+        verdict_fname = "verdict-gate-json-resume-clean-2026-05-26-step-1.md"
+        (verdicts_resolved / verdict_fname).write_text("continue\nApproved.")
+
+        pending_dir = tmp_path / "verdicts" / "pending"
+        pending_dir.mkdir(parents=True)
+        pending_file = pending_dir / "verdict-request-gate-json-resume-clean-2026-05-26-step-1.md"
+        gate_data = {"failures": [], "files_changed": ["src/main.py"]}
+        pending_file.write_text(_make_verdict_request_content(
+            str(verdict_pending_path), step_number=1, total_steps=2,
+            gate_result_json=gate_data))
+
+        config = {
+            "watched_projects": [str(decisions_dir)],
+            "default_model": "claude-sonnet-4-6",
+            "pushover": {"app_key": "", "user_key": ""},
+            "callback_port": 5999,
+        }
+
+        b = bellows.Bellows(config)
+
+        with patch("bellows.BELLOWS_ROOT", tmp_path), \
+             patch("bellows.verdict.check_verdict", return_value={
+                 "found": True, "verdict": "continue", "reason": "approved"
+             }), \
+             patch("bellows.verdict.log_to_ledger") as mock_ledger, \
+             patch("bellows.notifier.push"), \
+             patch.object(b, "handle_new_plan") as mock_handle:
+            b._consume_verdicts()
+
+        mock_handle.assert_called_once()
+        _, kwargs = mock_handle.call_args
+        assert kwargs.get("resume_step") == 2, f"Expected resume_step=2, got: {mock_handle.call_args}"
+
+
+def test_consume_verdicts_refuses_when_gate_result_json_absent():
+    """E4 fail-closed: pending file without Gate Result JSON → continue refused as unverifiable."""
     with tempfile.TemporaryDirectory() as tmp:
         tmp_path = Path(tmp)
 
@@ -661,7 +770,6 @@ def test_consume_verdicts_falls_back_to_empty_when_metadata_absent():
         pending_dir = tmp_path / "verdicts" / "pending"
         pending_dir.mkdir(parents=True)
         pending_file = pending_dir / "verdict-request-gate-json-absent-2026-05-26-step-1.md"
-        # No gate_result_json — simulates pre-fix pending file
         pending_file.write_text(_make_verdict_request_content(
             str(verdict_pending_path), step_number=1, total_steps=1))
 
@@ -679,18 +787,17 @@ def test_consume_verdicts_falls_back_to_empty_when_metadata_absent():
                  "found": True, "verdict": "continue", "reason": "approved"
              }), \
              patch("bellows.verdict.log_to_ledger") as mock_ledger, \
-             patch("bellows.notifier.push"):
+             patch("bellows.notifier.push"), \
+             patch("bellows.lifecycle.record_verdict_outcome"), \
+             patch("bellows.lifecycle.record_verdict_request"):
             b._consume_verdicts()
 
+        assert verdict_pending_path.exists(), "Plan must stay verdict-pending (refusal)"
+        rejected_verdict = verdicts_resolved / f"processed-rejected-{verdict_fname}"
+        assert rejected_verdict.exists(), "Verdict must be renamed to processed-rejected-"
+        assert pending_file.exists(), "Request file must be preserved on refusal"
         mock_ledger.assert_called_once()
-        call_args = mock_ledger.call_args
-        logged_gate_result = call_args[0][2]
-        assert logged_gate_result["failures"] == [], (
-            f"Expected empty failures for pre-fix pending file, got: {logged_gate_result['failures']}"
-        )
-        assert logged_gate_result["files_changed"] == [], (
-            f"Expected empty files_changed for pre-fix pending file, got: {logged_gate_result['files_changed']}"
-        )
+        assert mock_ledger.call_args[0][3] == "continue-rejected"
 
 
 def test_no_match_warning_logged_once():
@@ -996,7 +1103,8 @@ def test_consume_verdict_continue_to_done_calls_mark_plan_state_for_qa_plan():
         pending_dir.mkdir(parents=True)
         pending_file = pending_dir / "verdict-request-qa-149-step-1.md"
         pending_file.write_text(_make_verdict_request_content(
-            str(verdict_pending_path), step_number=1, total_steps=1))
+            str(verdict_pending_path), step_number=1, total_steps=1,
+            gate_result_json={"failures": [], "files_changed": []}))
 
         config = {
             "watched_projects": [str(decisions_dir)],
@@ -1014,7 +1122,8 @@ def test_consume_verdict_continue_to_done_calls_mark_plan_state_for_qa_plan():
              patch("bellows.verdict.log_to_ledger"), \
              patch("bellows.notifier.push"), \
              patch("bellows.lifecycle.mark_plan_state") as mock_mark, \
-             patch("bellows.lifecycle.record_verdict_outcome"):
+             patch("bellows.lifecycle.record_verdict_outcome"), \
+             patch("bellows.lifecycle.get_overridden_gates_for_step", return_value=set()):
             b._consume_verdicts()
 
         # mark_plan_state must be called with plan_id=149 and state="closed"
@@ -1152,5 +1261,572 @@ def test_continue_advances_normally_without_teardown_failure():
         assert ledger_call[0][3] == "continue", (
             f"Expected ledger action 'continue', got: {ledger_call[0][3]}"
         )
+
+
+# ---------------------------------------------------------------------------
+# E4 gate re-check — new behavior tests
+# ---------------------------------------------------------------------------
+
+
+def test_continue_clean_advances_regression():
+    """E4 regression: continue + clean gates (no failures) still advances."""
+    with tempfile.TemporaryDirectory() as tmp:
+        tmp_path = Path(tmp)
+        decisions_dir = tmp_path / "proj" / "knowledge" / "decisions"
+        decisions_dir.mkdir(parents=True)
+        (decisions_dir / "Done").mkdir()
+
+        plan_filename = "executable-e4-clean-2026-08-24.md"
+        verdict_pending_path = decisions_dir / f"verdict-pending-{plan_filename}"
+        verdict_pending_path.write_text("## STEP 1\nDo stuff.\n## STEP 2\nMore.\n")
+
+        verdicts_resolved = tmp_path / "verdicts" / "resolved"
+        verdicts_resolved.mkdir(parents=True)
+        verdict_fname = "verdict-e4-clean-2026-08-24-step-1.md"
+        (verdicts_resolved / verdict_fname).write_text("continue\nApproved.")
+
+        pending_dir = tmp_path / "verdicts" / "pending"
+        pending_dir.mkdir(parents=True)
+        pending_file = pending_dir / "verdict-request-e4-clean-2026-08-24-step-1.md"
+        pending_file.write_text(_make_verdict_request_content(
+            str(verdict_pending_path), step_number=1, total_steps=2,
+            gate_result_json={"failures": [], "files_changed": []}))
+
+        config = {
+            "watched_projects": [str(decisions_dir)],
+            "default_model": "claude-sonnet-4-6",
+            "pushover": {"app_key": "", "user_key": ""},
+            "callback_port": 5999,
+        }
+        b = bellows.Bellows(config)
+
+        with patch("bellows.BELLOWS_ROOT", tmp_path), \
+             patch("bellows.verdict.check_verdict", return_value={
+                 "found": True, "verdict": "continue", "reason": "approved"
+             }), \
+             patch("bellows.verdict.log_to_ledger"), \
+             patch("bellows.notifier.push"), \
+             patch.object(b, "handle_new_plan") as mock_handle:
+            b._consume_verdicts()
+
+        mock_handle.assert_called_once()
+        assert mock_handle.call_args[1]["resume_step"] == 2
+
+
+def test_continue_failed_unoverridden_rejects():
+    """E4: continue with unoverridden gate failures → rejected, plan stays verdict-pending,
+    NULL row resolved continue-rejected PLUS fresh pending row, request file preserved,
+    verdict file renamed, second scan is no-op (idempotency)."""
+    with tempfile.TemporaryDirectory() as tmp:
+        tmp_path = Path(tmp)
+        decisions_dir = tmp_path / "proj" / "knowledge" / "decisions"
+        decisions_dir.mkdir(parents=True)
+        (decisions_dir / "Done").mkdir()
+
+        plan_filename = "executable-e4-reject-2026-08-24.md"
+        verdict_pending_path = decisions_dir / f"verdict-pending-{plan_filename}"
+        verdict_pending_path.write_text("## STEP 1\nDo stuff.\n## STEP 2\nMore.\n")
+
+        verdicts_resolved = tmp_path / "verdicts" / "resolved"
+        verdicts_resolved.mkdir(parents=True)
+        verdict_fname = "verdict-e4-reject-2026-08-24-step-1.md"
+        (verdicts_resolved / verdict_fname).write_text("continue\nApproved.")
+
+        pending_dir = tmp_path / "verdicts" / "pending"
+        pending_dir.mkdir(parents=True)
+        pending_file = pending_dir / "verdict-request-e4-reject-2026-08-24-step-1.md"
+        gate_data = {"failures": [{"gate": "no_errors", "evidence": "errors found"}], "files_changed": []}
+        pending_file.write_text(_make_verdict_request_content(
+            str(verdict_pending_path), step_number=1, total_steps=2,
+            gate_result_json=gate_data))
+
+        config = {
+            "watched_projects": [str(decisions_dir)],
+            "default_model": "claude-sonnet-4-6",
+            "pushover": {"app_key": "", "user_key": ""},
+            "callback_port": 5999,
+        }
+        b = bellows.Bellows(config)
+
+        with patch("bellows.BELLOWS_ROOT", tmp_path), \
+             patch("bellows.verdict.check_verdict", return_value={
+                 "found": True, "verdict": "continue", "reason": "approved"
+             }), \
+             patch("bellows.verdict.log_to_ledger") as mock_ledger, \
+             patch("bellows.notifier.push"), \
+             patch("bellows.lifecycle.record_verdict_outcome") as mock_outcome, \
+             patch("bellows.lifecycle.record_verdict_request") as mock_req, \
+             patch.object(b, "handle_new_plan") as mock_handle:
+            b._consume_verdicts()
+
+        assert verdict_pending_path.exists(), "Plan must stay verdict-pending"
+        assert pending_file.exists(), "Request file must be preserved (C-2)"
+        rejected_verdict = verdicts_resolved / f"processed-rejected-{verdict_fname}"
+        assert rejected_verdict.exists(), "Verdict must be renamed to processed-rejected-"
+        mock_handle.assert_not_called()
+        mock_outcome.assert_called_once()
+        assert mock_outcome.call_args[0][2] == "continue-rejected"
+        assert mock_outcome.call_args[1]["decided_by"] == "gate_recheck"
+        mock_req.assert_called_once()
+
+        # Idempotency: second scan is a no-op (verdict already renamed)
+        with patch("bellows.BELLOWS_ROOT", tmp_path), \
+             patch("bellows.verdict.check_verdict", return_value={"found": False}), \
+             patch("bellows.notifier.push"):
+            b._consume_verdicts()
+        assert verdict_pending_path.exists(), "Plan must still be verdict-pending after re-scan"
+
+
+def test_continue_failed_overridden_advances():
+    """E4: continue with failures overridden in gate_events → advances."""
+    import sqlite3
+    with tempfile.TemporaryDirectory() as tmp:
+        tmp_path = Path(tmp)
+        decisions_dir = tmp_path / "proj" / "knowledge" / "decisions"
+        decisions_dir.mkdir(parents=True)
+        (decisions_dir / "Done").mkdir()
+
+        plan_filename = "executable-501.md"
+        verdict_pending_path = decisions_dir / f"verdict-pending-{plan_filename}"
+        verdict_pending_path.write_text("## STEP 1\nDo stuff.\n## STEP 2\nMore.\n")
+
+        verdicts_resolved = tmp_path / "verdicts" / "resolved"
+        verdicts_resolved.mkdir(parents=True)
+        verdict_fname = "verdict-executable-501-step-1.md"
+        (verdicts_resolved / verdict_fname).write_text("continue\nApproved.")
+
+        pending_dir = tmp_path / "verdicts" / "pending"
+        pending_dir.mkdir(parents=True)
+        pending_file = pending_dir / "verdict-request-501-step-1.md"
+        gate_data = {"failures": [{"gate": "scope_check", "evidence": "out-of-scope"}], "files_changed": []}
+        pending_file.write_text(_make_verdict_request_content(
+            str(verdict_pending_path), step_number=1, total_steps=2,
+            gate_result_json=gate_data))
+
+        # Set up tmp lifecycle DB with overridden gate_events row
+        import lifecycle
+        db_path = str(tmp_path / "lifecycle.db")
+        lifecycle.init_lifecycle_db(db_path)
+        conn = sqlite3.connect(db_path)
+        conn.execute("INSERT INTO id_sequence (id, next_id) VALUES (1, 502) ON CONFLICT DO UPDATE SET next_id=502")
+        conn.execute("INSERT INTO plans (id, type, target_project, lifecycle_state, created_at) VALUES (501, 'executable', 'proj', 'awaiting_verdict', '2026-08-24')")
+        conn.execute("INSERT INTO steps (plan_id, step_number, status) VALUES (501, 1, 'awaiting_verdict')")
+        step_id = conn.execute("SELECT id FROM steps WHERE plan_id=501 AND step_number=1").fetchone()[0]
+        conn.execute("INSERT INTO gate_events (step_id, gate_name, result, overridden, override_ref) VALUES (?, 'scope_check', 'fail', 1, 'CEO approved')", (step_id,))
+        conn.commit()
+        conn.close()
+
+        config = {
+            "watched_projects": [str(decisions_dir)],
+            "default_model": "claude-sonnet-4-6",
+            "pushover": {"app_key": "", "user_key": ""},
+            "callback_port": 5999,
+        }
+        b = bellows.Bellows(config)
+
+        with patch("bellows.BELLOWS_ROOT", tmp_path), \
+             patch("bellows.verdict.check_verdict", return_value={
+                 "found": True, "verdict": "continue", "reason": "approved"
+             }), \
+             patch("bellows.verdict.log_to_ledger"), \
+             patch("bellows.notifier.push"), \
+             patch("bellows.lifecycle.LIFECYCLE_DB_PATH", db_path), \
+             patch("bellows.lifecycle.record_verdict_outcome"), \
+             patch.object(b, "handle_new_plan") as mock_handle:
+            b._consume_verdicts()
+
+        mock_handle.assert_called_once()
+        assert mock_handle.call_args[1]["resume_step"] == 2
+
+
+def test_request_file_absent_refuses():
+    """E4 C-1: absent request file → refused as unverifiable (id-native WITH gate_events pass rows)."""
+    with tempfile.TemporaryDirectory() as tmp:
+        tmp_path = Path(tmp)
+        decisions_dir = tmp_path / "proj" / "knowledge" / "decisions"
+        decisions_dir.mkdir(parents=True)
+        (decisions_dir / "Done").mkdir()
+
+        plan_filename = "executable-e4-absent-req-2026-08-24.md"
+        verdict_pending_path = decisions_dir / f"verdict-pending-{plan_filename}"
+        verdict_pending_path.write_text("## STEP 1\nDo stuff.\n")
+
+        verdicts_resolved = tmp_path / "verdicts" / "resolved"
+        verdicts_resolved.mkdir(parents=True)
+        verdict_fname = "verdict-e4-absent-req-2026-08-24-step-1.md"
+        (verdicts_resolved / verdict_fname).write_text("continue\nApproved.")
+
+        pending_dir = tmp_path / "verdicts" / "pending"
+        pending_dir.mkdir(parents=True)
+        # No request file created
+
+        config = {
+            "watched_projects": [str(decisions_dir)],
+            "default_model": "claude-sonnet-4-6",
+            "pushover": {"app_key": "", "user_key": ""},
+            "callback_port": 5999,
+        }
+        b = bellows.Bellows(config)
+
+        with patch("bellows.BELLOWS_ROOT", tmp_path), \
+             patch("bellows.verdict.check_verdict", return_value={
+                 "found": True, "verdict": "continue", "reason": "approved"
+             }), \
+             patch("bellows.verdict.log_to_ledger") as mock_ledger, \
+             patch("bellows.notifier.push"), \
+             patch("bellows.lifecycle.record_verdict_outcome"), \
+             patch("bellows.lifecycle.record_verdict_request"):
+            b._consume_verdicts()
+
+        assert verdict_pending_path.exists(), "Plan must stay verdict-pending (refusal)"
+        rejected_verdict = verdicts_resolved / f"processed-rejected-{verdict_fname}"
+        assert rejected_verdict.exists(), "Verdict must be renamed to processed-rejected-"
+        mock_ledger.assert_called_once()
+        assert mock_ledger.call_args[0][3] == "continue-rejected"
+
+
+def test_legacy_slug_with_clean_request_advances():
+    """E4: legacy slug-only plan + clean request file → advances."""
+    with tempfile.TemporaryDirectory() as tmp:
+        tmp_path = Path(tmp)
+        decisions_dir = tmp_path / "proj" / "knowledge" / "decisions"
+        decisions_dir.mkdir(parents=True)
+        (decisions_dir / "Done").mkdir()
+
+        plan_filename = "diagnostic-legacy-test-2026-08-24.md"
+        verdict_pending_path = decisions_dir / f"verdict-pending-{plan_filename}"
+        verdict_pending_path.write_text("## Diagnostic\nSingle step.\n")
+
+        verdicts_resolved = tmp_path / "verdicts" / "resolved"
+        verdicts_resolved.mkdir(parents=True)
+        verdict_fname = "verdict-legacy-test-2026-08-24-step-1.md"
+        (verdicts_resolved / verdict_fname).write_text("continue\nApproved.")
+
+        pending_dir = tmp_path / "verdicts" / "pending"
+        pending_dir.mkdir(parents=True)
+        pending_file = pending_dir / "verdict-request-legacy-test-2026-08-24-step-1.md"
+        pending_file.write_text(_make_verdict_request_content(
+            str(verdict_pending_path), step_number=1, total_steps=1,
+            gate_result_json={"failures": [], "files_changed": []}))
+
+        config = {
+            "watched_projects": [str(decisions_dir)],
+            "default_model": "claude-sonnet-4-6",
+            "pushover": {"app_key": "", "user_key": ""},
+            "callback_port": 5999,
+        }
+        b = bellows.Bellows(config)
+
+        with patch("bellows.BELLOWS_ROOT", tmp_path), \
+             patch("bellows.verdict.check_verdict", return_value={
+                 "found": True, "verdict": "continue", "reason": "approved"
+             }), \
+             patch("bellows.verdict.log_to_ledger") as mock_ledger, \
+             patch("bellows.notifier.push"):
+            b._consume_verdicts()
+
+        done_path = decisions_dir / "Done" / plan_filename
+        assert done_path.is_file(), "Legacy plan should advance to Done with clean gates"
+
+
+def test_teardown_in_fallback_routes_to_halted():
+    """E4 C-3: worktree_teardown failure → the :2581 guard's halted routing, NOT rejection."""
+    with tempfile.TemporaryDirectory() as tmp:
+        tmp_path = Path(tmp)
+        decisions_dir = tmp_path / "proj" / "knowledge" / "decisions"
+        decisions_dir.mkdir(parents=True)
+        (decisions_dir / "Done").mkdir()
+
+        plan_filename = "executable-e4-teardown-2026-08-24.md"
+        verdict_pending_path = decisions_dir / f"verdict-pending-{plan_filename}"
+        verdict_pending_path.write_text("## STEP 1\nDo stuff.\n## STEP 2\nMore.\n")
+
+        verdicts_resolved = tmp_path / "verdicts" / "resolved"
+        verdicts_resolved.mkdir(parents=True)
+        verdict_fname = "verdict-e4-teardown-2026-08-24-step-1.md"
+        (verdicts_resolved / verdict_fname).write_text("continue\nApproved.")
+
+        pending_dir = tmp_path / "verdicts" / "pending"
+        pending_dir.mkdir(parents=True)
+        pending_file = pending_dir / "verdict-request-e4-teardown-2026-08-24-step-1.md"
+        gate_data = {"failures": [{"gate": "worktree_teardown", "evidence": "merge conflict"}], "files_changed": []}
+        pending_file.write_text(_make_verdict_request_content(
+            str(verdict_pending_path), step_number=1, total_steps=2,
+            gate_result_json=gate_data))
+
+        config = {
+            "watched_projects": [str(decisions_dir)],
+            "default_model": "claude-sonnet-4-6",
+            "pushover": {"app_key": "", "user_key": ""},
+            "callback_port": 5999,
+        }
+        b = bellows.Bellows(config)
+
+        with patch("bellows.BELLOWS_ROOT", tmp_path), \
+             patch("bellows.verdict.check_verdict", return_value={
+                 "found": True, "verdict": "continue", "reason": "approved"
+             }), \
+             patch("bellows.verdict.log_to_ledger") as mock_ledger, \
+             patch("bellows.notifier.push"), \
+             patch("bellows.lifecycle.record_verdict_outcome"), \
+             patch("bellows.lifecycle.mark_plan_state"):
+            b._consume_verdicts()
+
+        halted_path = decisions_dir / f"halted-{plan_filename}"
+        assert halted_path.exists(), "Teardown failure must route to halted- (not rejection)"
+        assert not verdict_pending_path.exists(), "Plan must be moved out of verdict-pending-"
+        mock_ledger.assert_called_once()
+        assert mock_ledger.call_args[0][3] == "continue-blocked-worktree-teardown"
+
+
+def test_stop_verdict_byte_identical():
+    """E4: stop verdicts are byte-identical — NOT routed through the re-check."""
+    with tempfile.TemporaryDirectory() as tmp:
+        tmp_path = Path(tmp)
+        decisions_dir = tmp_path / "proj" / "knowledge" / "decisions"
+        decisions_dir.mkdir(parents=True)
+        (decisions_dir / "Done").mkdir()
+
+        plan_filename = "executable-e4-stop-2026-08-24.md"
+        verdict_pending_path = decisions_dir / f"verdict-pending-{plan_filename}"
+        verdict_pending_path.write_text("## STEP 1\nDo stuff.\n## STEP 2\nMore.\n")
+
+        verdicts_resolved = tmp_path / "verdicts" / "resolved"
+        verdicts_resolved.mkdir(parents=True)
+        verdict_fname = "verdict-e4-stop-2026-08-24-step-1.md"
+        (verdicts_resolved / verdict_fname).write_text("stop\nBlocked.")
+
+        pending_dir = tmp_path / "verdicts" / "pending"
+        pending_dir.mkdir(parents=True)
+
+        config = {
+            "watched_projects": [str(decisions_dir)],
+            "default_model": "claude-sonnet-4-6",
+            "pushover": {"app_key": "", "user_key": ""},
+            "callback_port": 5999,
+        }
+        b = bellows.Bellows(config)
+
+        with patch("bellows.BELLOWS_ROOT", tmp_path), \
+             patch("bellows.verdict.check_verdict", return_value={
+                 "found": True, "verdict": "stop", "reason": "blocked"
+             }), \
+             patch("bellows.verdict.log_to_ledger") as mock_ledger, \
+             patch("bellows.notifier.push"), \
+             patch("bellows.lifecycle.record_verdict_outcome") as mock_outcome, \
+             patch("bellows.lifecycle.mark_plan_state"):
+            b._consume_verdicts()
+
+        halted_path = decisions_dir / f"halted-{plan_filename}"
+        assert halted_path.exists(), "Stop verdict must halt plan"
+        mock_outcome.assert_called_once()
+        assert mock_outcome.call_args[0][2] == "stop"
+
+
+def test_recheck_exception_skips_without_consuming():
+    """E4 C-5: exception in re-check → WARN, skip verdict file, retried next poll."""
+    with tempfile.TemporaryDirectory() as tmp:
+        tmp_path = Path(tmp)
+        decisions_dir = tmp_path / "proj" / "knowledge" / "decisions"
+        decisions_dir.mkdir(parents=True)
+        (decisions_dir / "Done").mkdir()
+
+        plan_filename = "executable-e4-exc-2026-08-24.md"
+        verdict_pending_path = decisions_dir / f"verdict-pending-{plan_filename}"
+        verdict_pending_path.write_text("## STEP 1\nDo stuff.\n## STEP 2\nMore.\n")
+
+        verdicts_resolved = tmp_path / "verdicts" / "resolved"
+        verdicts_resolved.mkdir(parents=True)
+        verdict_fname = "verdict-e4-exc-2026-08-24-step-1.md"
+        (verdicts_resolved / verdict_fname).write_text("continue\nApproved.")
+
+        pending_dir = tmp_path / "verdicts" / "pending"
+        pending_dir.mkdir(parents=True)
+        pending_file = pending_dir / "verdict-request-e4-exc-2026-08-24-step-1.md"
+        pending_file.write_text(_make_verdict_request_content(
+            str(verdict_pending_path), step_number=1, total_steps=2,
+            gate_result_json={"failures": [], "files_changed": []}))
+
+        config = {
+            "watched_projects": [str(decisions_dir)],
+            "default_model": "claude-sonnet-4-6",
+            "pushover": {"app_key": "", "user_key": ""},
+            "callback_port": 5999,
+        }
+        b = bellows.Bellows(config)
+
+        def _boom(*a, **kw):
+            raise RuntimeError("simulated explosion")
+
+        with patch("bellows.BELLOWS_ROOT", tmp_path), \
+             patch("bellows.verdict.check_verdict", return_value={
+                 "found": True, "verdict": "continue", "reason": "approved"
+             }), \
+             patch("bellows.verdict.log_to_ledger"), \
+             patch("bellows.notifier.push"), \
+             patch("bellows.lifecycle.record_verdict_outcome", side_effect=_boom):
+            b._consume_verdicts()
+
+        assert verdict_pending_path.exists(), "Plan must stay verdict-pending"
+        assert (verdicts_resolved / verdict_fname).exists(), "Verdict file must stay in resolved/"
+        assert pending_file.exists(), "Request file must stay"
+
+
+def test_stale_gate_events_with_clean_retry_advances():
+    """E4 C-9: first-pass fail rows in gate_events + clean retry request → advances."""
+    import sqlite3
+    with tempfile.TemporaryDirectory() as tmp:
+        tmp_path = Path(tmp)
+        decisions_dir = tmp_path / "proj" / "knowledge" / "decisions"
+        decisions_dir.mkdir(parents=True)
+        (decisions_dir / "Done").mkdir()
+
+        plan_filename = "executable-502.md"
+        verdict_pending_path = decisions_dir / f"verdict-pending-{plan_filename}"
+        verdict_pending_path.write_text("## STEP 1\nDo stuff.\n## STEP 2\nMore.\n")
+
+        verdicts_resolved = tmp_path / "verdicts" / "resolved"
+        verdicts_resolved.mkdir(parents=True)
+        verdict_fname = "verdict-executable-502-step-1.md"
+        (verdicts_resolved / verdict_fname).write_text("continue\nApproved.")
+
+        pending_dir = tmp_path / "verdicts" / "pending"
+        pending_dir.mkdir(parents=True)
+        pending_file = pending_dir / "verdict-request-502-step-1.md"
+        pending_file.write_text(_make_verdict_request_content(
+            str(verdict_pending_path), step_number=1, total_steps=2,
+            gate_result_json={"failures": [], "files_changed": []}))
+
+        # Stale fail rows in gate_events (from a prior failed attempt)
+        import lifecycle
+        db_path = str(tmp_path / "lifecycle.db")
+        lifecycle.init_lifecycle_db(db_path)
+        conn = sqlite3.connect(db_path)
+        conn.execute("INSERT INTO id_sequence (id, next_id) VALUES (1, 503) ON CONFLICT DO UPDATE SET next_id=503")
+        conn.execute("INSERT INTO plans (id, type, target_project, lifecycle_state, created_at) VALUES (502, 'executable', 'proj', 'awaiting_verdict', '2026-08-24')")
+        conn.execute("INSERT INTO steps (plan_id, step_number, status) VALUES (502, 1, 'awaiting_verdict')")
+        step_id = conn.execute("SELECT id FROM steps WHERE plan_id=502 AND step_number=1").fetchone()[0]
+        conn.execute("INSERT INTO gate_events (step_id, gate_name, result, overridden, override_ref) VALUES (?, 'no_errors', 'fail', 0, NULL)", (step_id,))
+        conn.commit()
+        conn.close()
+
+        config = {
+            "watched_projects": [str(decisions_dir)],
+            "default_model": "claude-sonnet-4-6",
+            "pushover": {"app_key": "", "user_key": ""},
+            "callback_port": 5999,
+        }
+        b = bellows.Bellows(config)
+
+        with patch("bellows.BELLOWS_ROOT", tmp_path), \
+             patch("bellows.verdict.check_verdict", return_value={
+                 "found": True, "verdict": "continue", "reason": "approved"
+             }), \
+             patch("bellows.verdict.log_to_ledger"), \
+             patch("bellows.notifier.push"), \
+             patch("bellows.lifecycle.LIFECYCLE_DB_PATH", db_path), \
+             patch("bellows.lifecycle.record_verdict_outcome"), \
+             patch.object(b, "handle_new_plan") as mock_handle:
+            b._consume_verdicts()
+
+        mock_handle.assert_called_once()
+        assert mock_handle.call_args[1]["resume_step"] == 2
+
+
+def test_precondition_retry_routes_before_c1():
+    """E4 C-12: precondition-failure retry's request routes to retry arm before C-1."""
+    with tempfile.TemporaryDirectory() as tmp:
+        tmp_path = Path(tmp)
+        decisions_dir = tmp_path / "proj" / "knowledge" / "decisions"
+        decisions_dir.mkdir(parents=True)
+        (decisions_dir / "Done").mkdir()
+
+        plan_filename = "executable-e4-precond-2026-08-24.md"
+        verdict_pending_path = decisions_dir / f"verdict-pending-{plan_filename}"
+        verdict_pending_path.write_text("## STEP 1\nDo stuff.\n## STEP 2\nMore.\n")
+
+        verdicts_resolved = tmp_path / "verdicts" / "resolved"
+        verdicts_resolved.mkdir(parents=True)
+        verdict_fname = "verdict-e4-precond-2026-08-24-step-1.md"
+        (verdicts_resolved / verdict_fname).write_text("continue\nApproved.")
+
+        pending_dir = tmp_path / "verdicts" / "pending"
+        pending_dir.mkdir(parents=True)
+        pending_file = pending_dir / "verdict-request-e4-precond-2026-08-24-step-1.md"
+        # Precondition failure with no gate JSON — C-12 skips C-1
+        pending_file.write_text(_make_verdict_request_content(
+            str(verdict_pending_path), step_number=1, total_steps=2,
+            precondition_failure=True))
+
+        config = {
+            "watched_projects": [str(decisions_dir)],
+            "default_model": "claude-sonnet-4-6",
+            "pushover": {"app_key": "", "user_key": ""},
+            "callback_port": 5999,
+        }
+        b = bellows.Bellows(config)
+
+        with patch("bellows.BELLOWS_ROOT", tmp_path), \
+             patch("bellows.verdict.check_verdict", return_value={
+                 "found": True, "verdict": "continue", "reason": "approved"
+             }), \
+             patch("bellows.verdict.log_to_ledger"), \
+             patch("bellows.notifier.push"), \
+             patch.object(b, "handle_new_plan") as mock_handle:
+            b._consume_verdicts()
+
+        mock_handle.assert_called_once()
+        assert mock_handle.call_args[1]["resume_step"] == 1, \
+            "Precondition failure must retry same step"
+
+
+def test_override_gate_tool_writes_all_matching_rows():
+    """E4: --override-gate writes ALL matching unoverridden fail rows via --db-path."""
+    import sqlite3
+    import lifecycle
+    with tempfile.TemporaryDirectory() as tmp:
+        db_path = os.path.join(tmp, "lifecycle.db")
+        lifecycle.init_lifecycle_db(db_path)
+        conn = sqlite3.connect(db_path)
+        conn.execute("INSERT INTO id_sequence (id, next_id) VALUES (1, 100) ON CONFLICT DO UPDATE SET next_id=100")
+        conn.execute("INSERT INTO plans (id, type, target_project, lifecycle_state, created_at) VALUES (99, 'executable', 'proj', 'awaiting_verdict', '2026-08-24')")
+        conn.execute("INSERT INTO steps (plan_id, step_number, status) VALUES (99, 1, 'awaiting_verdict')")
+        step_id = conn.execute("SELECT id FROM steps WHERE plan_id=99 AND step_number=1").fetchone()[0]
+        conn.execute("INSERT INTO gate_events (step_id, gate_name, result, overridden, override_ref) VALUES (?, 'scope_check', 'fail', 0, NULL)", (step_id,))
+        conn.execute("INSERT INTO gate_events (step_id, gate_name, result, overridden, override_ref) VALUES (?, 'scope_check', 'fail', 0, NULL)", (step_id,))
+        conn.commit()
+        conn.close()
+
+        sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "tools"))
+        from clear_plan import override_gate
+        result = override_gate("executable-99", "1", "scope_check", "CEO approved", db_path=db_path)
+        assert result is True
+
+        conn = sqlite3.connect(db_path)
+        rows = conn.execute("SELECT overridden, override_ref FROM gate_events WHERE gate_name='scope_check' AND result='fail'").fetchall()
+        conn.close()
+        assert all(r[0] == 1 for r in rows), "All matching rows must be overridden"
+        assert all(r[1] == "CEO approved" for r in rows), "All matching rows must have override_ref"
+
+
+def test_override_gate_tool_refuses_no_match():
+    """E4: --override-gate refuses when no matching unoverridden fail rows exist."""
+    import sqlite3
+    import lifecycle
+    with tempfile.TemporaryDirectory() as tmp:
+        db_path = os.path.join(tmp, "lifecycle.db")
+        lifecycle.init_lifecycle_db(db_path)
+        conn = sqlite3.connect(db_path)
+        conn.execute("INSERT INTO id_sequence (id, next_id) VALUES (1, 100) ON CONFLICT DO UPDATE SET next_id=100")
+        conn.execute("INSERT INTO plans (id, type, target_project, lifecycle_state, created_at) VALUES (99, 'executable', 'proj', 'awaiting_verdict', '2026-08-24')")
+        conn.execute("INSERT INTO steps (plan_id, step_number, status) VALUES (99, 1, 'awaiting_verdict')")
+        conn.commit()
+        conn.close()
+
+        sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "tools"))
+        from clear_plan import override_gate
+        result = override_gate("99", "1", "nonexistent_gate", "ref", db_path=db_path)
+        assert result is False
+
 
 

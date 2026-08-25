@@ -516,6 +516,13 @@ def test_verdict_continue_at_final_step_moves_to_done():
         verdict_fname = f"verdict-diagnostic-test-2026-04-16-step-1.md"
         (verdicts_resolved / verdict_fname).write_text("continue\nApproved.")
 
+        pending_dir = tmp_path / "verdicts" / "pending"
+        pending_dir.mkdir(parents=True)
+        pending_file = pending_dir / "verdict-request-test-2026-04-16-step-1.md"
+        pending_file.write_text(
+            f"**Plan:** {verdict_pending_path}\n"
+            f'**Gate Result JSON:** {json.dumps({"failures": [], "files_changed": []})}')
+
         config = {
             "watched_projects": [str(decisions_dir)],
             "default_model": "claude-sonnet-4-6",
@@ -851,6 +858,13 @@ def test_consume_verdicts_continue_calls_handle_new_plan_with_resume_step():
         verdict_fname = "verdict-bar-2026-04-16-step-1.md"
         (verdicts_resolved / verdict_fname).write_text("continue\nApproved.")
 
+        pending_dir = tmp_path / "verdicts" / "pending"
+        pending_dir.mkdir(parents=True)
+        pending_file = pending_dir / "verdict-request-bar-2026-04-16-step-1.md"
+        pending_file.write_text(
+            f"**Plan:** {verdict_pending_path}\n"
+            f'**Gate Result JSON:** {json.dumps({"failures": [], "files_changed": []})}')
+
         config = {
             "watched_projects": [str(decisions_dir)],
             "default_model": "claude-sonnet-4-6",
@@ -898,7 +912,9 @@ def test_consume_verdicts_deletes_pending_file():
         pending_dir = tmp_path / "verdicts" / "pending"
         pending_dir.mkdir(parents=True)
         pending_file = pending_dir / "verdict-request-baz-2026-04-16-step-1.md"
-        pending_file.write_text("# Verdict Request\nPlease review.")
+        pending_file.write_text(
+            f"**Plan:** {verdict_pending_path}\n"
+            f'**Gate Result JSON:** {json.dumps({"failures": [], "files_changed": []})}')
 
         config = {
             "watched_projects": [str(decisions_dir)],
@@ -999,6 +1015,7 @@ def test_consume_verdicts_scopes_to_project_from_pending_file():
         pending_req.write_text(
             f"**Plan:** {proj_a_decisions / verdict_pending_name}\n"
             "**Step:** 1\n"
+            f'**Gate Result JSON:** {json.dumps({"failures": [], "files_changed": []})}'
         )
 
         config = {
@@ -1045,9 +1062,12 @@ def test_consume_verdicts_fallback_to_all_watched_when_pending_missing():
         verdicts_resolved.mkdir(parents=True)
         (verdicts_resolved / f"verdict-{slug}-step-1.md").write_text("continue\nApproved.")
 
-        # No pending request file — pending dir exists but file is absent
+        # Pending file WITHOUT Plan path — triggers fallback to all watched_projects
         pending_dir = tmp_path / "verdicts" / "pending"
         pending_dir.mkdir(parents=True)
+        pending_file = pending_dir / f"verdict-request-{slug}-step-1.md"
+        pending_file.write_text(
+            f'**Gate Result JSON:** {json.dumps({"failures": [], "files_changed": []})}')
 
         config = {
             "watched_projects": [str(decisions_dir)],
@@ -1067,9 +1087,9 @@ def test_consume_verdicts_fallback_to_all_watched_when_pending_missing():
              patch.object(b, "handle_new_plan"):
             b._consume_verdicts()
 
-        # Plan was still consumed via fallback
+        # Plan was still consumed via fallback (no Plan path in request → all watched searched)
         assert not (decisions_dir / verdict_pending_name).exists(), \
-            "plan should be consumed even without a pending request file (fallback)"
+            "plan should be consumed via fallback when pending file has no Plan path"
 
 
 def test_consume_verdicts_break_prevents_double_consumption():
@@ -1093,9 +1113,11 @@ def test_consume_verdicts_break_prevents_double_consumption():
         verdicts_resolved.mkdir(parents=True)
         (verdicts_resolved / f"verdict-{slug}-step-1.md").write_text("continue\nApproved.")
 
-        # No pending request file → fallback, so both dirs (just one here) are searched
         pending_dir = tmp_path / "verdicts" / "pending"
         pending_dir.mkdir(parents=True)
+        pending_file = pending_dir / f"verdict-request-{slug}-step-1.md"
+        pending_file.write_text(
+            f'**Gate Result JSON:** {json.dumps({"failures": [], "files_changed": []})}')
 
         config = {
             "watched_projects": [str(decisions_dir)],
@@ -1890,6 +1912,13 @@ def test_consume_verdicts_match_still_moves_to_processed():
         verdicts_resolved.mkdir(parents=True)
         verdict_fname = "verdict-matched-2026-04-24-step-1.md"
         (verdicts_resolved / verdict_fname).write_text("continue\nApproved.")
+
+        pending_dir = tmp_path / "verdicts" / "pending"
+        pending_dir.mkdir(parents=True)
+        pending_file = pending_dir / "verdict-request-matched-2026-04-24-step-1.md"
+        pending_file.write_text(
+            f"**Plan:** {verdict_pending_path}\n"
+            f'**Gate Result JSON:** {json.dumps({"failures": [], "files_changed": []})}')
 
         config = {
             "watched_projects": [str(decisions_dir)],
@@ -3364,6 +3393,13 @@ def test_seen_cleared_on_continue_to_done():
         verdicts_resolved.mkdir(parents=True)
         verdict_fname = "verdict-seen-clear-test-2026-05-11-step-1.md"
         (verdicts_resolved / verdict_fname).write_text("continue\nApproved.")
+
+        pending_dir = tmp_path / "verdicts" / "pending"
+        pending_dir.mkdir(parents=True)
+        pending_file = pending_dir / "verdict-request-seen-clear-test-2026-05-11-step-1.md"
+        pending_file.write_text(
+            f"**Plan:** {verdict_pending_path}\n"
+            f'**Gate Result JSON:** {json.dumps({"failures": [], "files_changed": []})}')
 
         config = {
             "watched_projects": [str(decisions_dir)],

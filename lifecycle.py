@@ -585,6 +585,27 @@ def record_verdict_outcome(plan_id, step_number, outcome, decided_by=None,
         _warn(f"record_verdict_outcome failed for plan {plan_id} step {step_number}: {e}")
 
 
+def get_overridden_gates_for_step(plan_id, step_number, db_path):
+    """Return the set of gate names carrying overridden=1 fail rows for this plan+step."""
+    if plan_id is None:
+        return set()
+    try:
+        conn = sqlite3.connect(f"file:{db_path}?mode=ro", uri=True)
+        rows = conn.execute(
+            """SELECT DISTINCT ge.gate_name
+               FROM gate_events ge
+               JOIN steps s ON ge.step_id = s.id
+               WHERE s.plan_id = ? AND s.step_number = ?
+                 AND ge.result = 'fail' AND ge.overridden = 1""",
+            (plan_id, step_number),
+        ).fetchall()
+        conn.close()
+        return {r[0] for r in rows}
+    except Exception as e:
+        _warn(f"get_overridden_gates_for_step failed for plan {plan_id} step {step_number}: {e}")
+        return set()
+
+
 def record_meta(plan_id, plan_type, header=None, db_path=None):
     """Insert a diagnostic_meta or executable_meta row from parsed header fields."""
     if plan_id is None:

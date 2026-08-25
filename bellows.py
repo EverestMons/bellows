@@ -2461,6 +2461,112 @@ class Bellows:
                             args=(full_path,), daemon=True,
                         ).start()
 
+    _RECHECK_SKIP = object()
+
+    @staticmethod
+    def _recheck_refuse(_lc_plan_id, step_number, plan_slug,
+                        full_plan_path, gate_result, fname, resolved_dir,
+                        pause_reason_code, refusal_class, detail,
+                        app_key, user_key, gate_list=None):
+        _log("ERROR", f"continue verdict REFUSED — {refusal_class}: {detail}", slug=plan_slug)
+        summary = f"{refusal_class}: {detail}"
+        lifecycle.record_verdict_outcome(
+            _lc_plan_id, step_number, "continue-rejected",
+            decided_by="gate_recheck", disposition_summary=summary)
+        lifecycle.record_verdict_request(_lc_plan_id, step_number)
+        verdict.log_to_ledger(
+            full_plan_path, step_number, gate_result,
+            "continue-rejected",
+            f"continue verdict refused — {refusal_class}: {detail}",
+            pause_reason_code=pause_reason_code)
+        rejected_name = f"processed-rejected-{fname}"
+        rejected_path = resolved_dir / rejected_name
+        if rejected_path.exists():
+            stem = fname.rsplit(".", 1)[0]
+            i = 2
+            while True:
+                suffixed_name = f"processed-rejected-{stem}-{i}.md"
+                if not (resolved_dir / suffixed_name).exists():
+                    rejected_path = resolved_dir / suffixed_name
+                    break
+                i += 1
+        shutil.move(str(resolved_dir / fname), str(rejected_path))
+        gate_text = ", ".join(gate_list) if gate_list else refusal_class
+        notifier.push(
+            app_key, user_key,
+            title="Bellows — Continue Refused",
+            message=f"Plan: {plan_slug}\nStep: {step_number}\nRefusal: {refusal_class}\nGates: {gate_text}")
+
+    def _recheck_continue_gates(self, _lc_plan_id, step_number, plan_slug,
+                                pending_req_file, gate_result_from_request,
+                                gate_result, precondition_failure_from_request,
+                                full_plan_path, fname, resolved_dir,
+                                pause_reason_code_from_request, reason,
+                                app_key, user_key):
+        try:
+            if precondition_failure_from_request:
+                lifecycle.record_verdict_outcome(
+                    _lc_plan_id, step_number, "continue",
+                    decided_by="verdict_file", disposition_summary=reason)
+                return False
+
+            if not pending_req_file.exists():
+                self._recheck_refuse(
+                    _lc_plan_id, step_number, plan_slug,
+                    full_plan_path, gate_result, fname, resolved_dir,
+                    pause_reason_code_from_request,
+                    "unverifiable", "request file absent",
+                    app_key, user_key)
+                return True
+
+            if gate_result_from_request is None:
+                self._recheck_refuse(
+                    _lc_plan_id, step_number, plan_slug,
+                    full_plan_path, gate_result, fname, resolved_dir,
+                    pause_reason_code_from_request,
+                    "unverifiable", "no parseable Gate Result JSON in request file",
+                    app_key, user_key)
+                return True
+
+            failures = gate_result_from_request.get("failures", [])
+
+            if any(f.get("gate") == "worktree_teardown" for f in failures):
+                lifecycle.record_verdict_outcome(
+                    _lc_plan_id, step_number, "continue",
+                    decided_by="verdict_file", disposition_summary=reason)
+                return False
+
+            overridden_gates = lifecycle.get_overridden_gates_for_step(
+                _lc_plan_id, step_number, lifecycle.LIFECYCLE_DB_PATH)
+
+            surviving = []
+            for f in failures:
+                gate = f.get("gate", "unknown")
+                if gate in overridden_gates:
+                    continue
+                if f.get("overridden", False):
+                    continue
+                surviving.append(gate)
+
+            if surviving:
+                self._recheck_refuse(
+                    _lc_plan_id, step_number, plan_slug,
+                    full_plan_path, gate_result, fname, resolved_dir,
+                    pause_reason_code_from_request,
+                    "failed-gates",
+                    f"unoverridden failures: {', '.join(surviving)}",
+                    app_key, user_key, surviving)
+                return True
+
+            lifecycle.record_verdict_outcome(
+                _lc_plan_id, step_number, "continue",
+                decided_by="verdict_file", disposition_summary=reason)
+            return False
+
+        except Exception as e:
+            _log("WARN", f"gate re-check exception: {e} — skipping this verdict file, retried next poll", slug=plan_slug)
+            return self._RECHECK_SKIP
+
     def _scan_misplaced_verdicts(self, pending_dir):
         """Scan pending_dir for verdict response files that belong in resolved/."""
         if not os.path.isdir(pending_dir):
@@ -2558,6 +2664,8 @@ class Bellows:
             # Find the verdict-pending plan — scoped to plan's project if pending file exists
             search_dirs = [scoped_decisions_path] if scoped_decisions_path else self.config.get("watched_projects", [])
             plan_matched = False
+            _rejected = False
+            _skip_verdict_recheck = False
             for decisions_path in search_dirs:
                 if not os.path.isdir(decisions_path):
                     continue
@@ -2571,9 +2679,23 @@ class Bellows:
                         # Derive plan_id from slug for lifecycle DB writes (id-native plans only)
                         _lc_id_match = re.fullmatch(r"(?:(?:diagnostic|executable|qa)-)?(\d+)", plan_slug)
                         _lc_plan_id = int(_lc_id_match.group(1)) if _lc_id_match else None
-                        lifecycle.record_verdict_outcome(_lc_plan_id, step_number, v, decided_by="verdict_file", disposition_summary=reason)
+                        if v != "continue":
+                            lifecycle.record_verdict_outcome(_lc_plan_id, step_number, v, decided_by="verdict_file", disposition_summary=reason)
 
                         if v == "continue":
+                            _recheck = self._recheck_continue_gates(
+                                _lc_plan_id, step_number, plan_slug,
+                                pending_req_file, gate_result_from_request,
+                                gate_result, precondition_failure_from_request,
+                                full_plan_path, fname, resolved_dir,
+                                pause_reason_code_from_request, reason,
+                                app_key, user_key)
+                            if _recheck is self._RECHECK_SKIP:
+                                _skip_verdict_recheck = True
+                                break
+                            _rejected = _recheck
+                            if _rejected:
+                                break
                             # Guard: block continue when prior step's worktree teardown failed (Gap 1b).
                             # An uncleared worktree_teardown failure means Step N's commits were never
                             # merged to main — advancing would orphan them. Route to halted-
@@ -2664,14 +2786,16 @@ class Bellows:
                 if plan_matched:
                     break  # also break directory loop
 
+            if _skip_verdict_recheck:
+                continue
+
             if plan_matched:
-                # Clean up pending verdict request file — stale after verdict consumption
-                pending_file = BELLOWS_ROOT / "verdicts" / "pending" / f"verdict-request-{cleanup_slug}-step-{step_number}.md"
-                if pending_file.exists():
-                    pending_file.unlink()
-                # Move the verdict file out of resolved to prevent re-processing
-                processed_path = resolved_dir / f"processed-{fname}"
-                shutil.move(str(resolved_dir / fname), str(processed_path))
+                if not _rejected:
+                    pending_file = BELLOWS_ROOT / "verdicts" / "pending" / f"verdict-request-{cleanup_slug}-step-{step_number}.md"
+                    if pending_file.exists():
+                        pending_file.unlink()
+                    processed_path = resolved_dir / f"processed-{fname}"
+                    shutil.move(str(resolved_dir / fname), str(processed_path))
                 _warned_no_match.discard(fname)
             else:
                 # No match — check if plan is already in Done/ OR halted in decisions/ (stale verdict)

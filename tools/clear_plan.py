@@ -12,6 +12,9 @@ FAIL, the depositor's own filter), then writes the clearance row itself
 (cleared_by='clear_tool' — the DDL enum arm built for exactly this) and
 renames hold- -> the bare claimable name, removing the sidecar.
 
+--override-gate: override a gate failure for a specific (plan, step, gate)
+triple. The deliberate human act that brings gate_events.overridden alive.
+
 Residuals, stated: collision/disk checks are not re-run — the daemon's
 claim-time re-check still gates hash and clearance; the clearance INSERT is
 the one sanctioned out-of-daemon lifecycle.db write (human-invoked, single
@@ -20,6 +23,7 @@ row, its own short connection).
 
 import argparse
 import hashlib
+import json
 import os
 import re
 import subprocess
@@ -129,17 +133,121 @@ def release_class_hold(hold_path):
     return True
 
 
+def override_gate(plan_id_or_slug, step, gate, ref, db_path=None, pending_dir=None):
+    """Override a gate failure for a (plan, step, gate) triple."""
+    sys.path.insert(0, _BELLOWS_ROOT)
+    import lifecycle
+
+    step = int(step)
+    id_match = re.fullmatch(r"(?:(?:diagnostic|executable|qa)-)?(\d+)", plan_id_or_slug)
+
+    if id_match:
+        plan_id = int(id_match.group(1))
+        path = db_path or lifecycle.LIFECYCLE_DB_PATH
+        import sqlite3
+        conn = sqlite3.connect(path)
+        cur = conn.execute(
+            """SELECT ge.id FROM gate_events ge
+               JOIN steps s ON ge.step_id = s.id
+               WHERE s.plan_id = ? AND s.step_number = ?
+                 AND ge.gate_name = ? AND ge.result = 'fail'
+                 AND ge.overridden = 0""",
+            (plan_id, step, gate),
+        )
+        rows = cur.fetchall()
+        if not rows:
+            conn.close()
+            return _fail(f"no unoverridden fail rows for plan={plan_id} step={step} gate={gate}")
+        conn.execute(
+            """UPDATE gate_events SET overridden = 1, override_ref = ?
+               WHERE id IN (
+                   SELECT ge.id FROM gate_events ge
+                   JOIN steps s ON ge.step_id = s.id
+                   WHERE s.plan_id = ? AND s.step_number = ?
+                     AND ge.gate_name = ? AND ge.result = 'fail'
+                     AND ge.overridden = 0
+               )""",
+            (ref, plan_id, step, gate),
+        )
+        conn.commit()
+        updated = conn.total_changes
+        conn.close()
+        print(f"Overridden {updated} fail row(s) for plan={plan_id} step={step} gate={gate}")
+        print(f"override_ref={ref}")
+    else:
+        resolved_pending_dir = Path(pending_dir) if pending_dir else Path(_BELLOWS_ROOT) / "verdicts" / "pending"
+        req_pattern = re.compile(
+            rf"^verdict-request-{re.escape(plan_id_or_slug)}-step-{step}\.md$")
+        found = None
+        if resolved_pending_dir.is_dir():
+            for f in os.listdir(resolved_pending_dir):
+                if req_pattern.match(f):
+                    found = resolved_pending_dir / f
+                    break
+        if found is None:
+            return _fail(f"no pending request file for slug={plan_id_or_slug} step={step} in {resolved_pending_dir}")
+
+        text = found.read_text()
+        gate_json = None
+        gate_line_idx = None
+        for i, line in enumerate(text.splitlines()):
+            if line.startswith("**Gate Result JSON:**"):
+                try:
+                    gate_json = json.loads(line.split(":**", 1)[1].strip())
+                    gate_line_idx = i
+                except (json.JSONDecodeError, IndexError):
+                    pass
+        if gate_json is None:
+            return _fail(f"no parseable Gate Result JSON in {found}")
+
+        marked = 0
+        for f_entry in gate_json.get("failures", []):
+            if f_entry.get("gate") == gate and not f_entry.get("overridden", False):
+                f_entry["overridden"] = True
+                f_entry["override_ref"] = ref
+                marked += 1
+        if marked == 0:
+            return _fail(f"no unoverridden failure for gate={gate} in request file")
+
+        lines = text.splitlines()
+        lines[gate_line_idx] = f"**Gate Result JSON:** {json.dumps(gate_json)}"
+        found.write_text("\n".join(lines))
+        print(f"Marked {marked} failure(s) overridden for slug={plan_id_or_slug} step={step} gate={gate}")
+        print(f"override_ref={ref}")
+        print(f"Request file: {found}")
+
+    return True
+
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
-    parser.add_argument("hold_file", help="path to the hold-*.md file")
+    parser.add_argument("hold_file", nargs="?", default=None,
+                        help="path to the hold-*.md file")
     parser.add_argument("--release-class-hold", action="store_true",
                         help="deliberate human release of a class-held plan: "
                              "re-runs cycle_check + plan_lint, writes the "
                              "clearance (cleared_by=clear_tool), renames to "
                              "the bare claimable name")
+    parser.add_argument("--override-gate", nargs=3,
+                        metavar=("PLAN_ID", "STEP", "GATE"),
+                        help="override a gate failure: plan-id-or-slug, step number, gate name")
+    parser.add_argument("--ref", help="override justification reference (required with --override-gate)")
+    parser.add_argument("--db-path", help="lifecycle DB path (default: repo-resolved)")
+    parser.add_argument("--pending-dir", help="pending verdicts directory (default: repo-resolved)")
     args = parser.parse_args()
-    if args.release_class_hold:
+
+    if args.override_gate:
+        if not args.ref:
+            parser.error("--ref is required with --override-gate")
+        success = override_gate(args.override_gate[0], args.override_gate[1],
+                                args.override_gate[2], args.ref,
+                                db_path=args.db_path, pending_dir=args.pending_dir)
+    elif args.release_class_hold:
+        if not args.hold_file:
+            parser.error("hold_file is required with --release-class-hold")
         success = release_class_hold(args.hold_file)
     else:
+        if not args.hold_file:
+            parser.error("hold_file is required")
         success = clear_plan(args.hold_file)
     sys.exit(0 if success else 1)
