@@ -90,6 +90,20 @@ def _is_positive_status_row(line):
     return False
 
 
+NA_STATUS_TOKENS = ["N/A", "n/a", "NA"]
+
+
+def _is_na_status_row(line):
+    """True if the markdown table row contains a bounded N/A token in any cell."""
+    if "|" not in line:
+        return False
+    cells = [c.strip() for c in line.split("|")]
+    for cell in cells:
+        if any(cell.lower() == token.lower() for token in NA_STATUS_TOKENS):
+            return True
+    return False
+
+
 def _hedging_in_status_vicinity(line: str, keyword: str) -> bool:
     """True if the hedging keyword appears in or adjacent to the row's status-bearing cell."""
     if "|" not in line:
@@ -686,7 +700,10 @@ def _gate_rule_22_verification(is_qa_step, plan_text, step_number, project_path,
         if not in_verification_section:
             continue  # Skip tables outside verification sections
         # Data row inside a verification-section table
-        if "\u274c" in stripped:
+        # Strip paired backtick spans before \u274c scan; unpaired backticks are
+        # fail-safe (the pattern never completes, so unstripped text is scanned).
+        scan_target = re.sub(r'`[^`]+`', '', stripped)
+        if "\u274c" in scan_target:
             # Explicit failure markers always fire regardless of table type
             failures.append({
                 "gate": "rule_22_verification",
@@ -694,6 +711,8 @@ def _gate_rule_22_verification(is_qa_step, plan_text, step_number, project_path,
             })
         elif _is_positive_status_row(line):
             current_table_has_positive_row = True
+        elif _is_na_status_row(line):
+            pass
         else:
             # Defer "missing status" — discard if table has no positive-status rows
             current_table_failures.append({

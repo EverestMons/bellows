@@ -1935,6 +1935,211 @@ def test_rule_22_d_pending_in_status_cell_still_fires(tmp_path):
     assert "pending" in d_failures[0]["evidence"]
 
 
+# ---------------------------------------------------------------------------
+# Plan 532 — rule_22(c) scoping fix tests (shapes A + B)
+# ---------------------------------------------------------------------------
+
+# A-class: backtick-stripping the ❌ scan
+
+def test_rule_22_c_quoted_failure_marker_in_passing_row_passes(tmp_path):
+    """A1: C4 reproduction — backtick-quoted ❌ in a ✅ row does not fire."""
+    report = tmp_path / "knowledge" / "qa" / "qa-report.md"
+    report.parent.mkdir(parents=True)
+    report.write_text(
+        "# QA Report\n\n"
+        "## Deliverable Verification\n\n"
+        "| # | Check | Status |\n"
+        "|---|---|---|\n"
+        "| 4 | `❌ worktree teardown failed:` count == 2 | ✅ |\n"
+    )
+    parsed = _clean_parsed()
+    failures = []
+    gates._gate_rule_22_verification(True, RULE_22_QA_PLAN, 2, str(tmp_path), parsed, failures)
+    c_failures = [f for f in failures if f["gate"] == "rule_22_verification" and "(c)" in f["evidence"]]
+    assert c_failures == [], f"backtick-quoted ❌ should not fire: {c_failures}"
+
+
+def test_rule_22_c_unquoted_failure_marker_still_fires(tmp_path):
+    """A2: bare ❌ outside backticks still fires."""
+    report = tmp_path / "knowledge" / "qa" / "qa-report.md"
+    report.parent.mkdir(parents=True)
+    report.write_text(
+        "# QA Report\n\n"
+        "## Deliverable Verification\n\n"
+        "| Check | Status | Evidence |\n"
+        "|---|---|---|\n"
+        "| gates.py | ✅ | present |\n"
+        "| verdict.py | ❌ | missing |\n"
+    )
+    parsed = _clean_parsed()
+    failures = []
+    gates._gate_rule_22_verification(True, RULE_22_QA_PLAN, 2, str(tmp_path), parsed, failures)
+    c_failures = [f for f in failures if f["gate"] == "rule_22_verification" and "(c)" in f["evidence"]]
+    assert len(c_failures) == 1
+
+
+def test_rule_22_c_failure_marker_in_unpaired_backtick_still_fires(tmp_path):
+    """A3: unpaired backtick — ❌ not inside a complete span, still fires (fail-safe)."""
+    report = tmp_path / "knowledge" / "qa" / "qa-report.md"
+    report.parent.mkdir(parents=True)
+    report.write_text(
+        "# QA Report\n\n"
+        "## Deliverable Verification\n\n"
+        "| Check | Status | Evidence |\n"
+        "|---|---|---|\n"
+        "| gates.py | ✅ | present |\n"
+        "| check `foo | ❌ bar |\n"
+    )
+    parsed = _clean_parsed()
+    failures = []
+    gates._gate_rule_22_verification(True, RULE_22_QA_PLAN, 2, str(tmp_path), parsed, failures)
+    c_failures = [f for f in failures if f["gate"] == "rule_22_verification" and "(c)" in f["evidence"]]
+    assert len(c_failures) == 1
+
+
+def test_rule_22_c_failure_marker_hidden_in_backticks_bypasses(tmp_path):
+    """A4: documented false-negative — ❌ hidden inside backticks, the ❌ scanner does
+    NOT fire. The row still fires as 'missing status' (the cell is empty after stripping),
+    which is correct — the backtick-strip only scopes the ❌ scan, not status evaluation."""
+    report = tmp_path / "knowledge" / "qa" / "qa-report.md"
+    report.parent.mkdir(parents=True)
+    report.write_text(
+        "# QA Report\n\n"
+        "## Deliverable Verification\n\n"
+        "| Check | Status | Evidence |\n"
+        "|---|---|---|\n"
+        "| gates.py | ✅ | present |\n"
+        "| verdict.py | `❌` | evidence |\n"
+    )
+    parsed = _clean_parsed()
+    failures = []
+    gates._gate_rule_22_verification(True, RULE_22_QA_PLAN, 2, str(tmp_path), parsed, failures)
+    c_failures = [f for f in failures if f["gate"] == "rule_22_verification" and "(c)" in f["evidence"]]
+    fail_marker_fires = [f for f in c_failures if "missing status" not in f["evidence"]]
+    assert fail_marker_fires == [], f"❌ scanner should NOT fire on backtick-hidden ❌: {fail_marker_fires}"
+    missing_status = [f for f in c_failures if "missing status" in f["evidence"]]
+    assert len(missing_status) == 1, "row with only `❌` as status still fires as missing-status"
+
+
+def test_rule_22_c_multiple_backtick_spans_stripped(tmp_path):
+    """A5: multiple backtick spans both containing ❌ — both stripped, ✅ passes."""
+    report = tmp_path / "knowledge" / "qa" / "qa-report.md"
+    report.parent.mkdir(parents=True)
+    report.write_text(
+        "# QA Report\n\n"
+        "## Deliverable Verification\n\n"
+        "| Check | Status |\n"
+        "|---|---|\n"
+        "| `foo ❌` bar `baz ❌` | ✅ |\n"
+    )
+    parsed = _clean_parsed()
+    failures = []
+    gates._gate_rule_22_verification(True, RULE_22_QA_PLAN, 2, str(tmp_path), parsed, failures)
+    c_failures = [f for f in failures if f["gate"] == "rule_22_verification" and "(c)" in f["evidence"]]
+    assert c_failures == [], f"multiple backtick spans should be stripped: {c_failures}"
+
+
+# B-class: bounded N/A token
+
+def test_rule_22_c_na_status_row_skipped_in_mixed_table(tmp_path):
+    """B1: C5 reproduction — N/A row in a table with ✅ rows does not fire."""
+    report = tmp_path / "knowledge" / "qa" / "qa-report.md"
+    report.parent.mkdir(parents=True)
+    report.write_text(
+        "# QA Report\n\n"
+        "## Deliverable Verification\n\n"
+        "| # | Check | Status |\n"
+        "|---|---|---|\n"
+        "| G1 | gates.py present | ✅ |\n"
+        "| G8 | ~/.claude memory entry | N/A |\n"
+    )
+    parsed = _clean_parsed()
+    failures = []
+    gates._gate_rule_22_verification(True, RULE_22_QA_PLAN, 2, str(tmp_path), parsed, failures)
+    c_failures = [f for f in failures if f["gate"] == "rule_22_verification" and "(c)" in f["evidence"]]
+    assert c_failures == [], f"N/A row should not fire: {c_failures}"
+
+
+def test_rule_22_c_na_row_does_not_count_as_positive(tmp_path):
+    """B2: N/A-only table — N/A rows do not make current_table_has_positive_row True;
+    deferred rows are discarded."""
+    report = tmp_path / "knowledge" / "qa" / "qa-report.md"
+    report.parent.mkdir(parents=True)
+    report.write_text(
+        "# QA Report\n\n"
+        "## Deliverable Verification\n\n"
+        "| Check | Status |\n"
+        "|---|---|\n"
+        "| item A | N/A |\n"
+        "| item B | |\n"
+    )
+    parsed = _clean_parsed()
+    failures = []
+    gates._gate_rule_22_verification(True, RULE_22_QA_PLAN, 2, str(tmp_path), parsed, failures)
+    c_failures = [f for f in failures if f["gate"] == "rule_22_verification" and "(c)" in f["evidence"]]
+    assert c_failures == [], f"N/A-only table should discard deferred rows: {c_failures}"
+
+
+def test_rule_22_c_na_case_insensitive(tmp_path):
+    """B3: lowercase n/a is accepted."""
+    report = tmp_path / "knowledge" / "qa" / "qa-report.md"
+    report.parent.mkdir(parents=True)
+    report.write_text(
+        "# QA Report\n\n"
+        "## Deliverable Verification\n\n"
+        "| Check | Status |\n"
+        "|---|---|\n"
+        "| gates.py | ✅ |\n"
+        "| info row | n/a |\n"
+    )
+    parsed = _clean_parsed()
+    failures = []
+    gates._gate_rule_22_verification(True, RULE_22_QA_PLAN, 2, str(tmp_path), parsed, failures)
+    c_failures = [f for f in failures if f["gate"] == "rule_22_verification" and "(c)" in f["evidence"]]
+    assert c_failures == [], f"lowercase n/a should be accepted: {c_failures}"
+
+
+def test_rule_22_c_na_not_substring_match(tmp_path):
+    """B4: N/A as substring in prose does not match — cell must be bounded N/A."""
+    report = tmp_path / "knowledge" / "qa" / "qa-report.md"
+    report.parent.mkdir(parents=True)
+    report.write_text(
+        "# QA Report\n\n"
+        "## Deliverable Verification\n\n"
+        "| Check | Status |\n"
+        "|---|---|\n"
+        "| gates.py | ✅ |\n"
+        "| info | N/A-ish prose |\n"
+    )
+    parsed = _clean_parsed()
+    failures = []
+    gates._gate_rule_22_verification(True, RULE_22_QA_PLAN, 2, str(tmp_path), parsed, failures)
+    c_failures = [f for f in failures if f["gate"] == "rule_22_verification" and "(c)" in f["evidence"]]
+    assert len(c_failures) == 1, f"N/A as substring should fire as missing-status: {c_failures}"
+    assert "missing status" in c_failures[0]["evidence"]
+
+
+def test_rule_22_c_genuine_missing_status_still_fires_with_na_present(tmp_path):
+    """B5: counter-test — table with ✅, N/A, AND a status-less row still fires on the status-less row."""
+    report = tmp_path / "knowledge" / "qa" / "qa-report.md"
+    report.parent.mkdir(parents=True)
+    report.write_text(
+        "# QA Report\n\n"
+        "## Deliverable Verification\n\n"
+        "| Check | Status |\n"
+        "|---|---|\n"
+        "| gates.py | ✅ |\n"
+        "| info row | N/A |\n"
+        "| verdict.py | |\n"
+    )
+    parsed = _clean_parsed()
+    failures = []
+    gates._gate_rule_22_verification(True, RULE_22_QA_PLAN, 2, str(tmp_path), parsed, failures)
+    c_failures = [f for f in failures if f["gate"] == "rule_22_verification" and "(c)" in f["evidence"]]
+    assert len(c_failures) == 1
+    assert "missing status" in c_failures[0]["evidence"]
+
+
 # --- scope_check union-of-all-step-texts tests ---
 
 UNION_3STEP_PLAN = """\
