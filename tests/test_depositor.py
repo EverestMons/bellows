@@ -1,5 +1,6 @@
 """Tests for depositor.py — in-bellows depositor + dashboard DEPOSITS panel."""
 
+import hashlib
 import json
 import os
 import re
@@ -19,6 +20,37 @@ import status
 from lifecycle import init_lifecycle_db
 
 BELLOWS_ROOT = Path(__file__).resolve().parent.parent
+
+
+@pytest.fixture(autouse=True)
+def _isolate_receipts(monkeypatch, tmp_path):
+    """Isolation: every depositor test scans a tmp receipts dir, never the live one."""
+    isolated_root = tmp_path / "bellows_root"
+    isolated_root.mkdir(exist_ok=True)
+    (isolated_root / "receipts").mkdir(exist_ok=True)
+    monkeypatch.setattr(depositor, "resolve_bellows_root", lambda: isolated_root)
+
+
+def _write_receipt_for_plan(tmp_path, plan_path):
+    """Write a receipt matching the staged ready-*.md plan into the isolated receipts dir."""
+    filename = os.path.basename(plan_path)
+    slug = filename
+    if slug.startswith("ready-"):
+        slug = slug[len("ready-"):]
+    if slug.endswith(".md"):
+        slug = slug[:-len(".md")]
+    content_hash = hashlib.sha256(Path(plan_path).read_bytes()).hexdigest()
+    receipts_dir = tmp_path / "bellows_root" / "receipts"
+    receipts_dir.mkdir(parents=True, exist_ok=True)
+    receipt = {
+        "slug": slug,
+        "content_hash": content_hash,
+        "session_id": "test-session",
+        "armed_at": "2026-08-25T00:00:00",
+    }
+    rpath = receipts_dir / f"receipt-{slug}-test-{content_hash[:12]}.json"
+    rpath.write_text(json.dumps(receipt))
+    return str(rpath)
 
 
 # ---------------------------------------------------------------------------
@@ -149,7 +181,7 @@ class TestClassMismatch:
     @patch("depositor.cycle_check")
     @patch("depositor.subprocess")
     def test_declared_readonly_with_register_write_holds(
-        self, mock_subprocess, mock_cc, decisions_dir, lifecycle_db
+        self, mock_subprocess, mock_cc, decisions_dir, lifecycle_db, tmp_path
     ):
         mock_cc.run_check.return_value = ("BAR_MET", 0)
         mock_cc.parse_manifest_stanza.return_value = {
@@ -163,6 +195,7 @@ class TestClassMismatch:
             plan_class="read-only",
         )
         path = _stage_plan(decisions_dir, "executable-test", plan_text)
+        _write_receipt_for_plan(tmp_path, path)
         dep = _make_depositor(decisions_dir, lifecycle_db)
         dep.evaluate(path)
 
@@ -312,7 +345,7 @@ class TestClear:
     @patch("depositor.cycle_check")
     @patch("depositor.subprocess")
     def test_readonly_no_collision_clears(
-        self, mock_subprocess, mock_cc, decisions_dir, lifecycle_db
+        self, mock_subprocess, mock_cc, decisions_dir, lifecycle_db, tmp_path
     ):
         mock_cc.run_check.return_value = ("BAR_MET", 0)
         mock_cc.parse_manifest_stanza.return_value = {}
@@ -320,6 +353,7 @@ class TestClear:
 
         plan_text = _make_plan(writes=["knowledge/research/result.md"])
         path = _stage_plan(decisions_dir, "diagnostic-clear", plan_text)
+        _write_receipt_for_plan(tmp_path, path)
 
         dep = _make_depositor(decisions_dir, lifecycle_db)
         dep.evaluate(path)
@@ -340,7 +374,7 @@ class TestHoldMechanics:
     @patch("depositor.cycle_check")
     @patch("depositor.subprocess")
     def test_hold_creates_holdfile_and_json(
-        self, mock_subprocess, mock_cc, decisions_dir, lifecycle_db
+        self, mock_subprocess, mock_cc, decisions_dir, lifecycle_db, tmp_path
     ):
         mock_cc.run_check.return_value = ("BAR_MET", 0)
         mock_cc.parse_manifest_stanza.return_value = {}
@@ -348,6 +382,7 @@ class TestHoldMechanics:
 
         plan_text = _make_plan(writes=["bellows/depositor.py"])
         path = _stage_plan(decisions_dir, "executable-hold", plan_text)
+        _write_receipt_for_plan(tmp_path, path)
 
         dep = _make_depositor(decisions_dir, lifecycle_db)
         dep.evaluate(path)
@@ -358,7 +393,7 @@ class TestHoldMechanics:
         hold_json = hold_path.replace(".md", ".hold.json")
         assert os.path.exists(hold_json)
         data = json.loads(Path(hold_json).read_text())
-        assert "hold_reason" in data
+        assert data["hold_reason"] == "class:shop-infra"
 
         import bellows
         assert bellows.is_runnable_plan("hold-executable-hold.md") is False
@@ -436,7 +471,7 @@ class TestConcurrentEvaluate:
     @patch("depositor.cycle_check")
     @patch("depositor.subprocess")
     def test_two_concurrent_evals_one_clear(
-        self, mock_subprocess, mock_cc, decisions_dir, lifecycle_db
+        self, mock_subprocess, mock_cc, decisions_dir, lifecycle_db, tmp_path
     ):
         mock_cc.run_check.return_value = ("BAR_MET", 0)
         mock_cc.parse_manifest_stanza.return_value = {}
@@ -444,6 +479,7 @@ class TestConcurrentEvaluate:
 
         plan_text = _make_plan(writes=["knowledge/research/concurrent.md"])
         path = _stage_plan(decisions_dir, "diagnostic-concurrent", plan_text)
+        _write_receipt_for_plan(tmp_path, path)
 
         dep = _make_depositor(decisions_dir, lifecycle_db)
         # Override dedup window so both threads CAN try
@@ -471,8 +507,7 @@ class TestConcurrentEvaluate:
         depositor._DEDUP_WINDOW = original_dedup
 
         claimable = os.path.join(decisions_dir, "diagnostic-concurrent.md")
-        # Exactly one clear: the second eval sees the file already gone (step b)
-        assert results["cleared"] <= 1
+        assert results["cleared"] == 1
 
 
 # ---------------------------------------------------------------------------
@@ -515,7 +550,7 @@ class TestPathB:
     @patch("depositor.cycle_check")
     @patch("depositor.subprocess")
     def test_legacy_deposits_block_extraction(
-        self, mock_subprocess, mock_cc, decisions_dir, lifecycle_db
+        self, mock_subprocess, mock_cc, decisions_dir, lifecycle_db, tmp_path
     ):
         """Path B: plans with no manifest stanza use **Deposits:** block."""
         mock_cc.run_check.return_value = ("BAR_MET", 0)
@@ -524,6 +559,7 @@ class TestPathB:
 
         plan_text = _make_plan(writes=["knowledge/research/legacy-result.md"])
         path = _stage_plan(decisions_dir, "diagnostic-legacy", plan_text)
+        _write_receipt_for_plan(tmp_path, path)
 
         dep = _make_depositor(decisions_dir, lifecycle_db)
         dep.evaluate(path)
@@ -572,13 +608,14 @@ class TestDashboardDeposits:
 class TestDiskLow:
     @patch("depositor.cycle_check")
     @patch("depositor.subprocess")
-    def test_disk_low_holds(self, mock_subprocess, mock_cc, decisions_dir, lifecycle_db):
+    def test_disk_low_holds(self, mock_subprocess, mock_cc, decisions_dir, lifecycle_db, tmp_path):
         mock_cc.run_check.return_value = ("BAR_MET", 0)
         mock_cc.parse_manifest_stanza.return_value = {}
         mock_subprocess.run.return_value = MagicMock(returncode=0, stdout="PASS: all")
 
         plan_text = _make_plan(writes=["knowledge/research/disk.md"])
         path = _stage_plan(decisions_dir, "diagnostic-disk", plan_text)
+        _write_receipt_for_plan(tmp_path, path)
 
         dep = _make_depositor(decisions_dir, lifecycle_db, disk_ok=False)
         dep.evaluate(path)
@@ -597,7 +634,7 @@ class TestClearDeletesHoldJson:
     @patch("depositor.cycle_check")
     @patch("depositor.subprocess")
     def test_clear_removes_stale_hold_json(
-        self, mock_subprocess, mock_cc, decisions_dir, lifecycle_db
+        self, mock_subprocess, mock_cc, decisions_dir, lifecycle_db, tmp_path
     ):
         mock_cc.run_check.return_value = ("BAR_MET", 0)
         mock_cc.parse_manifest_stanza.return_value = {}
@@ -611,6 +648,7 @@ class TestClearDeletesHoldJson:
 
         plan_text = _make_plan(writes=["knowledge/research/stale.md"])
         path = _stage_plan(decisions_dir, "diagnostic-stale", plan_text)
+        _write_receipt_for_plan(tmp_path, path)
 
         dep = _make_depositor(decisions_dir, lifecycle_db)
         dep.evaluate(path)

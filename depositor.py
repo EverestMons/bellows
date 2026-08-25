@@ -161,6 +161,10 @@ class Depositor:
             self._hold(path, rerun["reason"], rerun)
             return
 
+        if not self._check_receipt(path):
+            self._hold(path, "no_receipt", {})
+            return
+
         assigned_class = self._assign_class(writes, project_root)
         if assigned_class is None:
             self._hold(path, "unassignable_class", {})
@@ -525,6 +529,41 @@ class Depositor:
     # CLEAR and HOLD actions
     # ------------------------------------------------------------------
 
+    def _check_receipt(self, path):
+        """Fail-closed receipt check: True only if a matching active receipt exists."""
+        filename = os.path.basename(path)
+        slug = filename
+        if slug.startswith("ready-"):
+            slug = slug[len("ready-"):]
+        if slug.endswith(".md"):
+            slug = slug[:-len(".md")]
+
+        plan_bytes = Path(path).read_bytes()
+        content_hash = hashlib.sha256(plan_bytes).hexdigest()
+
+        receipts_dir = self._bellows_root / "receipts"
+        try:
+            entries = os.listdir(receipts_dir)
+        except OSError:
+            # Fail-closed: unreadable/missing receipts directory → no match
+            return False
+
+        for entry in entries:
+            if not entry.endswith(".json"):
+                continue
+            entry_path = os.path.join(str(receipts_dir), entry)
+            if os.path.isdir(entry_path):
+                continue
+            try:
+                with open(entry_path) as f:
+                    data = json.load(f)
+            except (json.JSONDecodeError, OSError):
+                continue
+            if data.get("slug") == slug and data.get("content_hash") == content_hash:
+                return True
+
+        return False
+
     def _clear(self, path, assigned_class):
         directory = os.path.dirname(path)
         filename = os.path.basename(path)
@@ -580,9 +619,24 @@ class Depositor:
     def _update_hold_json(self, path, reason, details=None):
         hold_json_path = path.replace(".md", ".hold.json")
         try:
+            existing = {}
+            try:
+                with open(hold_json_path) as f:
+                    existing = json.load(f)
+            except (OSError, json.JSONDecodeError, ValueError):
+                pass
+
             data = {"hold_reason": reason, "held_at": datetime.now().isoformat()}
             if details:
-                data.update({k: v for k, v in details.items() if k != "reason"})
+                data.update({k: v for k, v in details.items()
+                             if k not in ("reason", "original_reason")})
+
+            if existing:
+                if "original_reason" in existing:
+                    data["original_reason"] = existing["original_reason"]
+                elif existing.get("hold_reason") != reason:
+                    data["original_reason"] = existing["hold_reason"]
+
             with open(hold_json_path, "w") as f:
                 json.dump(data, f, indent=2)
         except Exception:

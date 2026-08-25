@@ -84,6 +84,29 @@ def release_class_hold(hold_path):
     filename, hold_json = v
     claimable_name = filename[len("hold-"):]
 
+    try:
+        with open(hold_json) as f:
+            sidecar = json.load(f)
+    except (json.JSONDecodeError, OSError):
+        return _fail("cannot read sidecar for routing check")
+
+    hold_reason = sidecar.get("hold_reason", "")
+    original_reason = sidecar.get("original_reason")
+
+    allowed = False
+    if hold_reason.startswith("class:"):
+        allowed = True
+    elif hold_reason == "held_pending_ceo_release":
+        if original_reason is None or original_reason.startswith("class:"):
+            allowed = True
+
+    if not allowed:
+        return _fail(
+            "release_class_hold is for class holds only; "
+            "this hold releases via clear_plan "
+            "(the depositor re-evaluates all gates)"
+        )
+
     sys.path.insert(0, os.path.join(_BELLOWS_ROOT, "scripts"))
     import cycle_check
     verdict, _ = cycle_check.run_check(Path(hold_path))

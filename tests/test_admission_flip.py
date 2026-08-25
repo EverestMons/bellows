@@ -24,6 +24,15 @@ from lifecycle import init_lifecycle_db
 from clear_plan import clear_plan
 
 
+@pytest.fixture(autouse=True)
+def _isolate_receipts(monkeypatch, tmp_path):
+    """Isolation: every depositor test scans a tmp receipts dir, never the live one."""
+    isolated_root = tmp_path / "bellows_root"
+    isolated_root.mkdir(exist_ok=True)
+    (isolated_root / "receipts").mkdir(exist_ok=True)
+    monkeypatch.setattr(depositor, "resolve_bellows_root", lambda: isolated_root)
+
+
 # ---------------------------------------------------------------------------
 # Fixtures
 # ---------------------------------------------------------------------------

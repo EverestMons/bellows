@@ -65,6 +65,8 @@ def write_receipt(plan_path, session_id):
     slug = basename
     if slug.startswith("ready-"):
         slug = slug[len("ready-"):]
+    elif slug.startswith("hold-"):
+        slug = slug[len("hold-"):]
     if slug.endswith(".md"):
         slug = slug[:-len(".md")]
     if not slug:
