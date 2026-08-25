@@ -1,0 +1,8 @@
+{
+  "slug": "executable-eluvian-e5-keying",
+  "content_hash": "ff66a9e9e6e307e9463a0d69f37ba48af5552bfcd5c449c7be24b195d8bf9951",
+  "session_id": "d79bad0b-acb1-469f-b916-200cf124fefc",
+  "armed_at": "2026-08-25T08:02:52.253873",
+  "watcher": "gate-watcher armed in depositing session",
+  "attestation_boundary": "This receipt proves the watcher was ARMED at write time. It does NOT prove the watcher stayed alive. Liveness of a session-local monitor is not externally verifiable."
+}
