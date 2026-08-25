@@ -48,9 +48,22 @@ done-on-another-machine-and-not-pulled (measured 2026-08-24).
    (house format; not while a lessons-forge cycle plan sits un-run; verify the
    prior last entry intact after append). Planner working-pattern lessons → the
    memory repo. **Then add a line to `shop_next_session.md`:**
-   `Lessons-swept: <today's date> — <one-line delta, or 'none'>`
-   (the lock verifies this line exists with today's date; that is how 3b becomes
-   un-skippable).
+   `Lessons-swept: <today's date> [sid: <first-8-of-session-id>] — <one-line delta, or 'none'>`
+   (the stop-hook lock verifies the NEWEST such line carries THIS session's id;
+   the debt hook checks for today's date. Your session prefix is the first 8
+   characters of the session UUID — visible in `hooks.log` or receipt filenames).
+   **Law:** never start a baton line with a bare `Lessons-swept:` except the
+   affirmation itself — format examples in prose must be backticked.
+3d. **Domain-knowledge sweep.** Ask: "what domain knowledge did this session
+   surface that belongs in the project's glossary?" For each project touched
+   this session, review the session's work and deposit any DEFINITIONS (not
+   runbooks, not traps — per the glossary discriminator) into
+   `<project>/knowledge/glossary.md`. If the file does not exist, create it
+   with the scaffold: a `# Glossary — <project-name>` header, the discriminator
+   note (DEFINITION goes here; RUNBOOK goes in CLAUDE.md; TRAP goes into CODE),
+   and a `<!-- Entries below. Format: ## Term \n definition \n -->` comment.
+   If nothing qualifies, move on — the step is complete when the question has
+   been asked, not when an entry has been written.
 3. **Governance root** (`$ELUVIAN_WRAP_ROOT`) — refresh the baton
    (`shop_next_session.md`: preserve carried threads, add this arc's ships, demote
    prior ones — append your OWN session block only; never rewrite another

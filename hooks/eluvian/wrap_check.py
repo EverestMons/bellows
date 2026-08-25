@@ -31,6 +31,7 @@ from __future__ import annotations
 import datetime
 import json
 import os
+import re
 import sqlite3
 import subprocess
 import sys
@@ -87,7 +88,20 @@ def project_done_dirs() -> list[Path]:
     return sorted(ROOT.glob("*/knowledge/decisions/Done"))
 
 
-def check(session_id: str | None = None) -> list[str]:
+def _find_newest_sweep_line(baton_text):
+    for line in baton_text.splitlines():
+        stripped = line.strip().lstrip(">").strip()
+        if stripped.lower().startswith("lessons-swept:"):
+            return stripped
+    return None
+
+
+def _extract_sid(sweep_line):
+    m = re.search(r'\[sid:\s*([A-Za-z0-9-]+)\]', sweep_line)
+    return m.group(1) if m else None
+
+
+def check(session_id: str | None = None, caller: str = "stop") -> list[str]:
     """Return a list of failure messages. Empty list == wrap complete."""
     fails: list[str] = []
     today = datetime.date.today().isoformat()
@@ -138,17 +152,48 @@ def check(session_id: str | None = None) -> list[str]:
         baton_text = BATON.read_text(errors="replace") if BATON.exists() else ""
     except Exception:
         baton_text = ""
-    swept_ok = any(
-        line.strip().lower().startswith("lessons-swept:") and today in line
-        for line in baton_text.splitlines()
-    )
-    if not swept_ok:
-        fails.append(
-            f"[3b/lessons] No `Lessons-swept: {today}` line in the baton. Do the 3b "
-            f"transferable-lessons sweep AS ITS OWN ACT (distinct from the arc note), "
-            f"then add a `Lessons-swept: {today} — <delta, or 'none'>` line to "
-            f"shop_next_session.md and commit."
+    if caller == "debt" or not session_id:
+        swept_ok = any(
+            line.strip().lstrip(">").strip().lower().startswith("lessons-swept:")
+            and today in line
+            for line in baton_text.splitlines()
         )
+        if not swept_ok:
+            fails.append(
+                f"[3b/lessons] No `Lessons-swept: {today}` line in the baton. Do the 3b "
+                f"transferable-lessons sweep AS ITS OWN ACT (distinct from the arc note), "
+                f"then add a `Lessons-swept: {today} [sid: <session-prefix-8>] — "
+                f"<delta, or 'none'>` line to shop_next_session.md and commit."
+            )
+    else:
+        newest = _find_newest_sweep_line(baton_text)
+        if newest is None:
+            fails.append(
+                f"[3b/lessons] No Lessons-swept: line found in the baton. Do the 3b "
+                f"transferable-lessons sweep AS ITS OWN ACT (distinct from the arc note), "
+                f"then add a `Lessons-swept: {today} [sid: {session_id[:8]}] — "
+                f"<delta, or 'none'>` line to shop_next_session.md and commit."
+            )
+        else:
+            sid_in_line = _extract_sid(newest)
+            if sid_in_line and session_id.startswith(sid_in_line) and len(sid_in_line) >= 8:
+                pass
+            elif sid_in_line:
+                fails.append(
+                    f"[3b/lessons] The newest Lessons-swept: line belongs to session "
+                    f"{sid_in_line}, not this session ({session_id[:8]}). Do the 3b "
+                    f"transferable-lessons sweep AS ITS OWN ACT (distinct from the arc "
+                    f"note), then add a `Lessons-swept: {today} [sid: {session_id[:8]}] "
+                    f"— <delta, or 'none'>` line to shop_next_session.md and commit."
+                )
+            else:
+                fails.append(
+                    f"[3b/lessons] The newest Lessons-swept: line has no session-id key "
+                    f"(historical format). Do the 3b transferable-lessons sweep AS ITS "
+                    f"OWN ACT (distinct from the arc note), then add a "
+                    f"`Lessons-swept: {today} [sid: {session_id[:8]}] — <delta, or "
+                    f"'none'>` line to shop_next_session.md and commit."
+                )
 
     # --- Step 4: memory repo — committed AND pushed (if touched) ---------------
     m_dirty = porcelain(MEMORY)
@@ -324,8 +369,9 @@ def _check_receipts(session_id: str | None, fails: list[str]) -> None:
 
 def main() -> int:
     session_id = sys.argv[1] if len(sys.argv) > 1 and sys.argv[1] else None
+    caller = sys.argv[2] if len(sys.argv) > 2 and sys.argv[2] else "stop"
     try:
-        fails = check(session_id)
+        fails = check(session_id, caller)
     except Exception as exc:  # FAIL-OPEN — a broken checker must never trap
         print(f"wrap_check: internal error, failing open (allowing): {exc}")
         return 0

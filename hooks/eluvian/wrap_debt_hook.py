@@ -85,7 +85,7 @@ def main():
         check_sid = ""
     try:
         res = subprocess.run(
-            [sys.executable, str(CHECK), check_sid],
+            [sys.executable, str(CHECK), check_sid, "debt"],
             capture_output=True, text=True, timeout=120,
         )
     except Exception:
