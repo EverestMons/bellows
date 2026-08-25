@@ -35,11 +35,16 @@ Bypass (e): a same-day second wrap inherits the prior session's `Lessons-swept:`
 ## Drafting Cycle
 **Tier:** T1 computed — T-7 fires twice over. Read-only.
 **Walk register:** `governance/knowledge/research/walk-register-diagnostic-eluvian-e5-design.md`
-**Walks:** walk 0 pinned; walks 1–n OWED — five lenses each, sequential, v2.13 auto-advance, cycle_check branched after each walk. Rewritten at the close from the register's actual rows, never ahead of them.
-**Direction verdict (after walk 1):** owed.
-**Cold panel:** owed — decided at the freeze with reasoning (the E-family rule puts the panel on the EXECUTABLE: 46/33/31-finding yields on the three builds).
-**Conformance (§5):** owed per lens; recorded at the close from actual runs.
-**Closing:** owed. The deposit travels the lane with the receipt ritual → auto-clear (read-only) → claim. ⚠️ **This plan's CLOSE is the E3 retirement canary:** its receipt should move to `receipts/archived/` when the daemon closes it — the first close under the restarted daemon — and the depositing session records the observation either way.
+**Walks:** walk 0 pinned; **walks 1–2 complete** — five lenses each, sequential, v2.13 auto-advance, cycle_check branched after each walk; walk 1 folded 2, walk 2 dry across all lenses.
+**Direction verdict (after walk 1): PROCEED.** Tested, not judged: two instruction folds (the debt-hook polarity arm; the LESSONS.md read); no premise failed; R2 and the audit stand.
+- Weak spots:          w1 1 folded — instruction 1 / record 0; w2 dry
+- Destruction:         w1 dry; w2 dry
+- Vulnerabilities:     w1 dry; w2 dry
+- Integration-record:  w1 1 folded — instruction 1 / record 0; w2 dry
+- ACID:                w1 dry; w2 dry — sweeps exit-gated
+**Cold panel: DEFERRED to the E5 executable, decided at this freeze with reasoning** — the fourth application of the E-family rule (panel yields 46/33/31 all on builds; the execution seat measures what readers cannot).
+**Conformance (§5):** recorded at the walk-2 close from actual runs: plan_lint exit 0 / 0 FAIL at the lintmirror deposit path; register CONFORMANT (STDERR channel, branched-on); cycle_check BAR_MET (verdict channel); fold_check N/A (hand-folded T1 cycle).
+**Closing:** **walk 2 met the bar — all five lenses dry.** Instruction series **2 → 0**. ⚠️ The cycle is CLOSED; the deposit travels the lane with the receipt ritual → auto-clear (read-only) → claim. ⚠️ **This plan's CLOSE is the E3 retirement canary:** its receipt should move to `receipts/archived/` when the daemon closes it — the first close under the restarted daemon — and the depositing session records the observation either way.
 
 ## Cycle Manifest
 tier: T1
@@ -48,9 +53,9 @@ class: read-only
 reads: /Users/marklehn/Developer/GitHub/LESSONS.md, /Users/marklehn/Developer/GitHub/bellows/hooks/eluvian/wrap_check.py, /Users/marklehn/Developer/GitHub/bellows/hooks/eluvian/wrap_stop_hook.py, /Users/marklehn/Developer/GitHub/bellows/hooks/eluvian/wrap_debt_hook.py, /Users/marklehn/Developer/GitHub/bellows/hooks/commands/wrap.md, /Users/marklehn/Developer/GitHub/shop_next_session.md, /Users/marklehn/Developer/GitHub/bellows/tests/test_wrap_hooks.py, /Users/marklehn/Developer/GitHub/bellows/tests/test_wrap_sentinel.py, /Users/marklehn/Developer/GitHub/ELUVIAN_PATH.md, /Users/marklehn/Developer/GitHub/governance/knowledge/research/eluvian-path-audit-2026-08-24.md, /Users/marklehn/Developer/GitHub/governance/knowledge/research/eluvian-path-rulings-2026-08-24.md
 writes: knowledge/research/e5-wrap-keying-glossary-design-2026-08-25.md
 open_forks: none authored here — R2 and the audit govern; anything needing a NEW ruling (e.g. glossary bootstrap breadth) lands in D-7
-walks: 0
-yields: none
-validation: pending
+walks: 2
+yields: 2, 0
+validation: cycle_check=BAR_MET, plan_lint=0_FAIL, fold_check=N/A
 coherence: N/A
 
 ## MUST-PRESERVE
