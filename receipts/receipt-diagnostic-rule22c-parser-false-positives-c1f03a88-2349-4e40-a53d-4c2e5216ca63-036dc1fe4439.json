@@ -1,0 +1,8 @@
+{
+  "slug": "diagnostic-rule22c-parser-false-positives",
+  "content_hash": "036dc1fe4439692feb54f7b625cbd6b236696dbfe0ee855b4cc1ae87f1fbb8d3",
+  "session_id": "c1f03a88-2349-4e40-a53d-4c2e5216ca63",
+  "armed_at": "2026-08-25T16:16:38.160889",
+  "watcher": "gate-watcher armed in depositing session",
+  "attestation_boundary": "This receipt proves the watcher was ARMED at write time. It does NOT prove the watcher stayed alive. Liveness of a session-local monitor is not externally verifiable."
+}
