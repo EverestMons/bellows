@@ -1,0 +1,3 @@
+continue
+
+All gates PASS (files_changed=3: wrap.md, wrap_check.py, the sentinel test file). Rule 22(b) verified against merged ae4f851: both wrap.md clauses landed byte-per-spec (the push-each law in step 1; the classes-not-narratives + no-duplicate guards in 3b's parenthetical — read directly, and the R-F1 symlink means the live command already serves them); the [1/project] push arm at wrap_check.py:120-123 clones the bellows shape with the None fail-open exactly as specced; the sentinel suite passes 33/33 on the merged tree including the new arms and the doc-pinning test. Step 2 (QA) proceeds.
