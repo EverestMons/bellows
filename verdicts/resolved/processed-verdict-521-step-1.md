@@ -1,0 +1,7 @@
+continue
+
+All eleven gates PASS (header_pause only — pause_for_verdict as authored). Rule 22(b) verified against the merged deposit knowledge/research/teardown-silent-block-evidence-names-2026-08-25.md (399 lines, landed on main at e65c7b3 — the teardown itself merged clean this run): all eight pins re-derived with probes shown (P5 extended: 67 per-plan evidence files across 239 evidence dirs; P4 extended: 513 and 514 also declare the flat name); D-1 through D-6 each grounded in file:line; D-7 lists four CEO forks, none decided silently; the Rule 27 gap table enumerates 11 change sites.
+
+Planner-independent spot-verification at verdict time: (1) record_gate_events at bellows.py:1080 confirmed BEFORE the while-loop teardown at :1111 — the deposit's sequencing claim holds on both paths; (2) the recheck short-circuit at :2533-2537 reads exactly as the deposit's D-5 composition analysis states (worktree_teardown bypasses the override check; an overridden row would be inert); (3) PLANNER_TEMPLATE.md Rule 18 confirmed prescribing knowledge/qa/evidence/<plan-slug>/<check-name>.txt with the slug fixed at authoring time — the D-4 recommendation (option b) restores the template's own convention, and the template's rationale already settles the id-vs-slug question the same way P8 does.
+
+Terminal step of 1 — plan closes. Follow-up: the executable authors from this deposit's Rule 27 gap table after the CEO rules on D-7's four forks (evidence-name option a/b; park-path posture; Gap-1c reinstatement; explicit override exclusion).
