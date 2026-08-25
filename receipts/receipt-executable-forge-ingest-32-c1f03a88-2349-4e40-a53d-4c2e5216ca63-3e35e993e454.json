@@ -1,0 +1,8 @@
+{
+  "slug": "executable-forge-ingest-32",
+  "content_hash": "3e35e993e454fc34c67a62f67f5ff67a553f4b08dea75d14242fc97fbb66a6a6",
+  "session_id": "c1f03a88-2349-4e40-a53d-4c2e5216ca63",
+  "armed_at": "2026-08-25T15:43:38.977606",
+  "watcher": "gate-watcher armed in depositing session",
+  "attestation_boundary": "This receipt proves the watcher was ARMED at write time. It does NOT prove the watcher stayed alive. Liveness of a session-local monitor is not externally verifiable."
+}
