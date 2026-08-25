@@ -26,3 +26,6 @@ E5's 3b affirmation form: `Lessons-swept: <date> [sid: <first-8-of-session-id>] 
 
 ## verdict act
 The Planner's continue/stop adjudication of a paused step, written as `verdicts/resolved/verdict-<id>-step-<N>.md`; since 2026-08-25 performed via `tools/issue_verdict.py` (location and grammar correct by construction — the bare-handed form is retired).
+
+## dirty-tree precheck (intersection form)
+The teardown-time guard (since exec-523) that refuses a worktree merge only when the live main tree's dirty paths INTERSECT the branch's changed files — commit-gated (skipped when the branch has no commits), quotepath-normalized, `-z -uall` porcelain-parsed. Lifecycle dirt a plan does not touch never blocks; dirt on a file the plan ships blocks with the exact filename and stash-first recovery. Its failures carry the `worktree_teardown_dirty_tree:` marker that keys the Gap-1c one-verdict retry.
