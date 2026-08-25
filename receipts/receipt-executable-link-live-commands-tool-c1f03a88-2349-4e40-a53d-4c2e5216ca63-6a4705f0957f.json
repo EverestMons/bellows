@@ -1,0 +1,8 @@
+{
+  "slug": "executable-link-live-commands-tool",
+  "content_hash": "6a4705f0957f83dc6c91daffd4fed0b7dc38da8fc7682be59e7f1dd4a5184169",
+  "session_id": "c1f03a88-2349-4e40-a53d-4c2e5216ca63",
+  "armed_at": "2026-08-25T16:47:12.348571",
+  "watcher": "gate-watcher armed in depositing session",
+  "attestation_boundary": "This receipt proves the watcher was ARMED at write time. It does NOT prove the watcher stayed alive. Liveness of a session-local monitor is not externally verifiable."
+}
