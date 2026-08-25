@@ -510,6 +510,27 @@ def record_gate_events(step_id, gate_result, db_path=None):
         _warn(f"record_gate_events failed for step_id {step_id}: {e}")
 
 
+def record_single_gate_event(step_id, gate_name, result, reason_code, db_path=None):
+    """Insert a single gate_events row (overridden=0, override_ref=NULL).
+
+    No-op when step_id is None.
+    """
+    if step_id is None:
+        return
+    try:
+        path = db_path or LIFECYCLE_DB_PATH
+        conn = sqlite3.connect(path)
+        conn.execute(
+            """INSERT INTO gate_events (step_id, gate_name, result, reason_code, overridden, override_ref)
+               VALUES (?, ?, ?, ?, 0, NULL)""",
+            (step_id, gate_name, result, reason_code),
+        )
+        conn.commit()
+        conn.close()
+    except Exception as e:
+        _warn(f"record_single_gate_event failed for step_id {step_id}: {e}")
+
+
 def record_deposits(step_id, deposits_list, db_path=None):
     """Insert deposits rows. deposits_list: list of dicts with declared_path, type, landed."""
     if step_id is None or not deposits_list:

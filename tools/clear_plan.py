@@ -135,6 +135,11 @@ def release_class_hold(hold_path):
 
 def override_gate(plan_id_or_slug, step, gate, ref, db_path=None, pending_dir=None):
     """Override a gate failure for a (plan, step, gate) triple."""
+    if gate == "worktree_teardown":
+        print("worktree_teardown failures cannot be overridden — commits are not landed; "
+              "stash the dirty files on main (git stash push -- <files>), then re-issue continue")
+        sys.exit(1)
+
     sys.path.insert(0, _BELLOWS_ROOT)
     import lifecycle
 

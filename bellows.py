@@ -765,7 +765,26 @@ def _maybe_park_session_limit(
     try:
         _teardown_worktree(project_path, wt_path, plan_slug, plan_id=plan_id)
     except (WorktreeTeardownError, Exception) as e:
-        _log("WARN", f"worktree teardown during park: {e}", slug=slug)
+        # Halted- route: a teardown-failed park leaves the failure invisible (no verdict
+        # request, no gate row) and the parked plan's auto-resume would re-enter the same
+        # failed teardown; halting surfaces the failure for R2 immediately, with the
+        # worktree branch intact. Resume's Gap-2a stranded-cleanup preserves un-landed
+        # commits on bellows-preserved/* before the -D; the teardown-site delete is safe -d.
+        _log("ERROR", f"❌ worktree teardown failed during park — routing to halted-: {e}", slug=slug)
+        halted_path = os.path.join(plan_dir, f"halted-{base_filename}")
+        _cleanup_verdicts_for_slug(plan_slug)
+        if bellows_ref is not None:
+            bellows_ref._seen.discard(plan_slug)
+        if os.path.exists(inprogress_path):
+            shutil.move(inprogress_path, halted_path)
+        _delete_shadow(base_filename)
+        lifecycle.mark_plan_state(plan_id, "halted", closed_at=datetime.now().isoformat(), plan_doc_ref=os.path.relpath(halted_path, project_path)) if plan_id else None
+        _retire_receipts(plan_id)
+        record_run(db_path, halted_path, project_path,
+                   parsed.get("session_id", ""), current_step, "Halted",
+                   parsed.get("cost_usd", 0.0), plan_slug)
+        notifier.notify_plan_halted(base_filename)
+        return True
 
     # Rename in-progress → parked (restart-safe ordering: rename first)
     parked_path = os.path.join(plan_dir, f"parked-{base_filename}")
@@ -1112,6 +1131,9 @@ def run_plan(plan_path: str, config: dict, response_server: server.ResponseServe
                     lifecycle.record_commits(_lc_step_id, os.path.basename(project_path), _lc_commit_shas)
                     _apply_ledger_updates(parsed, project_path, plan_id, files_changed=files_changed)
                 except WorktreeTeardownError as e:
+                    _log("ERROR", f"❌ worktree teardown failed: {e}", slug=slug_for(plan_name))
+                    gate_result["passed"] = False
+                    lifecycle.record_single_gate_event(_lc_step_id, "worktree_teardown", "fail", str(e))
                     _pause_reason = "gate_failure"
                     gate_result["failures"].append({"gate": "worktree_teardown", "evidence": str(e)})
                 # Rename-first ordering (RV-1 closure, 2026-05-24): rename plan BEFORE posting verdict-request,
@@ -1239,6 +1261,9 @@ def run_plan(plan_path: str, config: dict, response_server: server.ResponseServe
                 lifecycle.record_commits(_lc_step_id, os.path.basename(project_path), _lc_commit_shas)
                 _apply_ledger_updates(parsed, project_path, plan_id, files_changed=files_changed)
             except WorktreeTeardownError as e:
+                _log("ERROR", f"❌ worktree teardown failed: {e}", slug=slug_for(plan_name))
+                gate_result["passed"] = False
+                lifecycle.record_single_gate_event(_lc_step_id, "worktree_teardown", "fail", str(e))
                 _pause_reason = "gate_failure"
                 gate_result["failures"].append({"gate": "worktree_teardown", "evidence": str(e)})
             # Rename-first ordering (RV-1 closure, 2026-05-24): rename plan BEFORE posting verdict-request,
@@ -1272,6 +1297,7 @@ def run_plan(plan_path: str, config: dict, response_server: server.ResponseServe
             except WorktreeTeardownError as e:
                 # Cherry-pick conflict on auto-close — convert to gate_failure pause
                 _log("ERROR", f"❌ worktree teardown failed on auto-close: {e}", slug=slug_for(plan_name))
+                lifecycle.record_single_gate_event(_lc_step_id, "worktree_teardown", "fail", str(e))
                 log_path = str(BELLOWS_ROOT / "logs")
                 gate_result["failures"].append({"gate": "worktree_teardown", "evidence": str(e)})
                 gate_result["passed"] = False
@@ -1937,6 +1963,99 @@ def _teardown_worktree(project_path: str, wt_path: str, slug: str, plan_id: int 
                 except OSError as e:
                     _log("WARN", f"⚠ could not remove .git/index.lock: {e}", slug=slug)
 
+    # (b2) Dirty-tree precheck: only when the branch has commits to land
+    if commit_shas:
+        try:
+            diff_result = subprocess.run(
+                ["git", "-c", "core.quotepath=false", "--no-pager", "diff",
+                 "--name-only", f"{main_branch}...{branch_name}"],
+                cwd=project_path, capture_output=True, text=True, timeout=30,
+            )
+        except Exception as exc:
+            raise WorktreeTeardownError(
+                f"dirty-tree precheck failed (diff exception): {exc}"
+            ) from exc
+        if diff_result.returncode != 0:
+            raise WorktreeTeardownError(
+                f"dirty-tree precheck failed (diff rc={diff_result.returncode}): {diff_result.stderr.strip()}"
+            )
+        branch_files = set(diff_result.stdout.strip().splitlines()) if diff_result.stdout.strip() else set()
+
+        try:
+            status_result = subprocess.run(
+                ["git", "-c", "core.quotepath=false", "--no-pager", "status",
+                 "--porcelain", "-z", "-uall"],
+                cwd=project_path, capture_output=True, text=True, timeout=30,
+            )
+        except Exception as exc:
+            raise WorktreeTeardownError(
+                f"dirty-tree precheck failed (status exception): {exc}"
+            ) from exc
+        if status_result.returncode != 0:
+            raise WorktreeTeardownError(
+                f"dirty-tree precheck failed (status rc={status_result.returncode}): {status_result.stderr.strip()}"
+            )
+
+        dirty_paths = set()
+        if status_result.stdout:
+            tokens = status_result.stdout.split('\0')
+            i = 0
+            while i < len(tokens):
+                token = tokens[i]
+                if not token:
+                    i += 1
+                    continue
+                if len(token) < 3 or token[2] != ' ':
+                    i += 1
+                    continue
+                xy = token[:2]
+                path = token[3:]
+                dirty_paths.add(path)
+                if xy[0] in ('R', 'C') or xy[1] in ('R', 'C'):
+                    i += 1
+                    if i < len(tokens) and tokens[i]:
+                        dirty_paths.add(tokens[i])
+                i += 1
+
+        intersecting = set()
+        for dp in dirty_paths:
+            if dp in branch_files:
+                intersecting.add(dp)
+            else:
+                dp_prefix = dp.rstrip('/') + '/'
+                for bf in branch_files:
+                    if bf.startswith(dp_prefix):
+                        intersecting.add(dp)
+                        break
+
+        if intersecting:
+            sorted_files = sorted(intersecting)
+            if len(sorted_files) > 10:
+                display = "\n".join(sorted_files[:10]) + f"\n... ({len(sorted_files) - 10} more files)"
+            else:
+                display = "\n".join(sorted_files)
+            stash_files = " ".join(sorted_files[:10])
+            raise WorktreeTeardownError(
+                f"worktree_teardown_dirty_tree: local main has uncommitted changes "
+                f"that would conflict with merge from worktree.\n"
+                f"\n"
+                f"Dirty files intersecting branch changes ({len(sorted_files)} file(s)):\n"
+                f"{display}\n"
+                f"\n"
+                f"Recovery:\n"
+                f"\n"
+                f"  Primary — stash the conflicting files:\n"
+                f"    cd {project_path}\n"
+                f"    git stash push -- {stash_files}\n"
+                f"    Then: re-issue continue verdict to retry teardown.\n"
+                f"\n"
+                f"  Secondary — commit the dirty copy (when you want that content to win):\n"
+                f"    cd {project_path}\n"
+                f"    git add {stash_files}\n"
+                f"    git commit -m 'chore: commit dirty files before teardown'\n"
+                f"    Then: re-issue continue verdict (retry will conflict on content; R2 recovery applies)."
+            )
+
     # (c) Merge worktree branch onto main
     # Primary: --ff-only (linear history when main has not advanced)
     result = subprocess.run(
@@ -1988,6 +2107,49 @@ def _teardown_worktree(project_path: str, wt_path: str, slug: str, plan_id: int 
         _log("WARN", f"⚠ branch cleanup failed for {branch_name}", slug=slug)
 
     return commit_shas
+
+
+def _retry_recoverable_teardown(gate_result: dict, project_path: str, wt_path: str,
+                                slug: str, plan_id: int = None) -> list:
+    """Re-attempt a recoverable (dirty-tree-only) worktree teardown at verdict-consume time.
+
+    Called inside the continue branch, BEFORE the Gap-1b halt guard.
+    On success, clears all worktree_teardown failures from gate_result["failures"]
+    and returns the landed SHAs. On any skip or failure, returns empty list
+    and leaves gate_result unchanged for the Gap-1b guard to halt.
+
+    Never raises. Never removes non-worktree_teardown failures.
+    """
+    wt_fails = [f for f in gate_result.get("failures", []) if f.get("gate") == "worktree_teardown"]
+    if not wt_fails:
+        return []
+
+    all_wt = all(f.get("gate") == "worktree_teardown" for f in gate_result.get("failures", []))
+    if not all_wt:
+        _log("INFO", "mixed-failure continue — not retrying teardown; leaving for Gap-1b", slug=slug)
+        return []
+
+    if not os.path.isdir(wt_path):
+        _log("INFO", f"worktree gone at {wt_path} — skipping teardown retry; leaving for Gap-1b", slug=slug)
+        return []
+
+    if not all("worktree_teardown_dirty_tree" in (f.get("evidence") or "") for f in wt_fails):
+        _log("INFO", "non-dirty-tree teardown failure (content conflict) — not retrying; leaving for Gap-1b", slug=slug)
+        return []
+
+    try:
+        landed_shas = _teardown_worktree(project_path, wt_path, slug, plan_id=plan_id)
+        gate_result["failures"] = [f for f in gate_result.get("failures", []) if f.get("gate") != "worktree_teardown"]
+        # Residual: _apply_ledger_updates cannot run here (parsed dict no longer exists);
+        # recovered steps lose their FORWARD.md ledger rows.
+        _log("EVENT", "recoverable teardown re-attempt succeeded — commits landed", slug=slug)
+        return landed_shas
+    except WorktreeTeardownError as e:
+        _log("WARN", f"teardown retry still failing ({e}) — leaving failure for Gap-1b halt", slug=slug)
+        return []
+    except Exception as e:
+        _log("WARN", f"teardown retry errored ({e}) — leaving failure for Gap-1b halt", slug=slug)
+        return []
 
 
 def _source_sha() -> str:
@@ -2530,6 +2692,8 @@ class Bellows:
 
             failures = gate_result_from_request.get("failures", [])
 
+            # E4 short-circuit: worktree_teardown failures bypass the override path
+            # (see Gap-1b guard and A8 tool refusal in clear_plan.py)
             if any(f.get("gate") == "worktree_teardown" for f in failures):
                 lifecycle.record_verdict_outcome(
                     _lc_plan_id, step_number, "continue",
@@ -2696,6 +2860,14 @@ class Bellows:
                             _rejected = _recheck
                             if _rejected:
                                 break
+                            # Gap-1c: re-attempt a recoverable (dirty-tree-only) teardown before the Gap-1b halt.
+                            _c_project_path = str(pathlib.Path(decisions_path).parents[1])
+                            _c_wt_path = os.path.join(_c_project_path, ".bellows-worktrees", cleanup_slug)
+                            _c_landed_shas = _retry_recoverable_teardown(
+                                gate_result, _c_project_path, _c_wt_path, cleanup_slug, plan_id=_lc_plan_id)
+                            if _c_landed_shas:
+                                _c_step_id = lifecycle.get_step_id(_lc_plan_id, step_number)
+                                lifecycle.record_commits(_c_step_id, os.path.basename(_c_project_path), _c_landed_shas)
                             # Guard: block continue when prior step's worktree teardown failed (Gap 1b).
                             # An uncleared worktree_teardown failure means Step N's commits were never
                             # merged to main — advancing would orphan them. Route to halted-
