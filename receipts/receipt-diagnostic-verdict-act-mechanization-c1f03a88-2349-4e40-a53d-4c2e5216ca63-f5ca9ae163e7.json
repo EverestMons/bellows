@@ -1,0 +1,8 @@
+{
+  "slug": "diagnostic-verdict-act-mechanization",
+  "content_hash": "f5ca9ae163e7f92854ba1983b540512490d00cca98cb2b54a155e879b04cb3ce",
+  "session_id": "c1f03a88-2349-4e40-a53d-4c2e5216ca63",
+  "armed_at": "2026-08-25T09:56:39.287062",
+  "watcher": "gate-watcher armed in depositing session",
+  "attestation_boundary": "This receipt proves the watcher was ARMED at write time. It does NOT prove the watcher stayed alive. Liveness of a session-local monitor is not externally verifiable."
+}
