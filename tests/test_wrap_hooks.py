@@ -381,3 +381,68 @@ class TestLockIntact:
         out = json.loads(result.stdout)
         assert out.get("decision") == "block"
         assert sentinel.exists(), "sentinel must not be removed on a block"
+
+
+# ---------- wrap_arm_hook.py — instruction content (plan 534) ----------
+
+class TestArmHookInstructionContent:
+
+    def test_armed_context_routes_to_wrap_skill(self, tmp_path):
+        payload = {"session_id": "test-id", "prompt": "/wrap"}
+        result = _run_hook("wrap_arm_hook.py", payload, env_overrides={
+            "ELUVIAN_WRAP_ROOT": str(tmp_path),
+            "ELUVIAN_HOOKS_LOG": str(tmp_path / "hooks.log"),
+        })
+        out = json.loads(result.stdout)
+        ctx = out["hookSpecificOutput"]["additionalContext"]
+        assert "invoke the /wrap skill" in ctx.lower()
+        assert "wrap_check.py" in ctx
+
+    def test_armed_context_contains_disarm_clause(self, tmp_path):
+        payload = {"session_id": "test-id", "prompt": "/wrap"}
+        result = _run_hook("wrap_arm_hook.py", payload, env_overrides={
+            "ELUVIAN_WRAP_ROOT": str(tmp_path),
+            "ELUVIAN_HOOKS_LOG": str(tmp_path / "hooks.log"),
+        })
+        out = json.loads(result.stdout)
+        ctx = out["hookSpecificOutput"]["additionalContext"]
+        sentinel = tmp_path / ".wrap-in-progress-test-id"
+        assert str(sentinel) in ctx
+        assert "disarm" in ctx.lower()
+
+
+# ---------- wrap_arm_hook.py — TRIGGER fence (plan 534) ----------
+
+class TestTriggerFence:
+
+    @pytest.mark.parametrize("prompt", [
+        "/wrap",
+        "session wrap",
+        "wrap up",
+        "wrap the session",
+        "wrap up the session",
+        "do the session wrap",
+        "do a session wrap",
+        "do session wrap",
+    ])
+    def test_arming_forms_arm(self, tmp_path, prompt):
+        payload = {"session_id": "test-id", "prompt": prompt}
+        result = _run_hook("wrap_arm_hook.py", payload, env_overrides={
+            "ELUVIAN_WRAP_ROOT": str(tmp_path),
+            "ELUVIAN_HOOKS_LOG": str(tmp_path / "hooks.log"),
+        })
+        out = json.loads(result.stdout)
+        assert "hookSpecificOutput" in out, f"'{prompt}' should arm but didn't"
+
+    @pytest.mark.parametrize("prompt", [
+        "when I say session wrap what happens",
+        "can you explain the wrap",
+    ])
+    def test_discussion_forms_do_not_arm(self, tmp_path, prompt):
+        payload = {"session_id": "test-id", "prompt": prompt}
+        result = _run_hook("wrap_arm_hook.py", payload, env_overrides={
+            "ELUVIAN_WRAP_ROOT": str(tmp_path),
+            "ELUVIAN_HOOKS_LOG": str(tmp_path / "hooks.log"),
+        })
+        out = json.loads(result.stdout)
+        assert out == {}, f"'{prompt}' should NOT arm but did"

@@ -105,10 +105,13 @@ def main():
                     "hookEventName": "UserPromptSubmit",
                     "additionalContext": (
                         "[wrap-lock ARMED] A session wrap was requested; the "
-                        "completion lock is engaged. Follow the /wrap ritual "
-                        "(eluvian-session-wrap-ritual memory); you cannot end a "
-                        "turn until wrap_check.py verifies all four repos. If this "
-                        f"was not a wrap request, remove {sentinel} to disarm."
+                        "completion lock is engaged. FIRST invoke the /wrap "
+                        "skill (Skill tool, skill \"wrap\") — it loads the "
+                        "canonical ritual; a phrase-triggered wrap follows "
+                        "the SAME ritual as /wrap, never memory. You cannot "
+                        "end a turn until wrap_check.py verifies all four "
+                        "repos. If this was not a wrap request, remove "
+                        f"{sentinel} to disarm."
                     ),
                 }
             }))
