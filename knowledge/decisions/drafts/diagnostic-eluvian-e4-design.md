@@ -36,11 +36,16 @@ Bypass (d): a `continue` verdict on a FAILED gate is structurally permitted — 
 ## Drafting Cycle
 **Tier:** T1 computed — T-7 fires twice over (consumes audit+rulings; feeds the executable). Read-only.
 **Walk register:** `governance/knowledge/research/walk-register-diagnostic-eluvian-e4-design.md`
-**Walks:** walk 0 pinned; walks 1–n OWED — five lenses each, sequential, v2.13 auto-advance, cycle_check branched after each walk. This line is rewritten at the close from the register's actual rows, never ahead of them.
-**Direction verdict (after walk 1):** owed.
-**Cold panel:** owed — decided at the freeze with reasoning (the E-family precedent puts the full panel on the EXECUTABLE, where it has earned 46- and 33-finding yields; this read-only design feeds it).
-**Conformance (§5):** owed per lens; recorded at the close from actual runs.
-**Closing:** owed. ⚠️ When the cycle closes, the deposit travels the lane WITH THE E3 RECEIPT RITUAL — `tools/deposit_receipt.py` against the DRAFT bytes BEFORE staging (the first receipt-bearing deposit) → ready- staging → depositor auto-clear (read-only) → claim.
+**Walks:** walk 0 pinned; **walks 1–2 complete** — five lenses each, sequential, v2.13 auto-advance, cycle_check branched after each walk; walk 1 folded 2, walk 2 dry across all lenses.
+**Direction verdict (after walk 1): PROCEED.** Tested, not judged: two instruction folds (the no-lifecycle-identity arm; the canary-construction constraint); no premise failed, fork 5 untouched, the two-step shape stands. None of the forcing classes fires.
+- Weak spots:          w1 1 folded — instruction 1 / record 0; w2 dry
+- Destruction:         w1 1 folded — instruction 1 / record 0; w2 dry
+- Vulnerabilities:     w1 dry; w2 dry
+- Integration-record:  w1 dry; w2 dry
+- ACID:                w1 dry; w2 dry — sweeps exit-gated
+**Cold panel: DEFERRED to the E4 executable, decided at this freeze with reasoning** — the third application of the E-family rule: the panel's yield lives on the BUILD (E2: 46; E3: 33, where the execution seat and capstone caught what readers could not); this read-only design is the executable's input and its panel's subject.
+**Conformance (§5):** recorded at the walk-2 close from actual runs: plan_lint exit 0 / 0 FAIL at the lintmirror deposit path; register CONFORMANT (STDERR channel, branched-on); cycle_check BAR_MET (verdict channel); fold_check N/A (hand-folded T1 cycle).
+**Closing:** **walk 2 met the bar — all five lenses dry.** Instruction series **2 → 0**. No restructuring fold. ⚠️ The cycle is CLOSED; the deposit travels the lane WITH THE E3 RECEIPT RITUAL — `tools/deposit_receipt.py` against the DRAFT bytes BEFORE staging (the first receipt-bearing deposit) → ready- staging → depositor auto-clear (read-only) → claim.
 
 ## Cycle Manifest
 tier: T1
@@ -49,9 +54,9 @@ class: read-only
 reads: /Users/marklehn/Developer/GitHub/bellows/bellows.py, /Users/marklehn/Developer/GitHub/bellows/verdict.py, /Users/marklehn/Developer/GitHub/bellows/gates.py, /Users/marklehn/Developer/GitHub/bellows/lifecycle.py, /Users/marklehn/Developer/GitHub/bellows/lifecycle.db, /Users/marklehn/Developer/GitHub/bellows/tests/test_consume_verdicts.py, /Users/marklehn/Developer/GitHub/governance/knowledge/research/eluvian-path-audit-2026-08-24.md, /Users/marklehn/Developer/GitHub/governance/knowledge/research/eluvian-path-rulings-2026-08-24.md
 writes: knowledge/research/e4-verdict-conditioning-design-2026-08-24.md
 open_forks: none authored here — fork 5 is ruled and the design implements it; anything needing a NEW ruling (above all the "plain verdict file" boundary for the override arm) lands in D-7
-walks: 0
-yields: none
-validation: pending
+walks: 2
+yields: 2, 0
+validation: cycle_check=BAR_MET, plan_lint=0_FAIL, fold_check=N/A
 coherence: N/A
 
 ## MUST-PRESERVE
