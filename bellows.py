@@ -2743,6 +2743,32 @@ class Bellows:
             _log("INFO", f"misplaced-verdict scan: pending_dir={pending_dir} — found={len(misplaced)}")
         for fname in misplaced:
             full_filepath = os.path.join(pending_dir, fname)
+            try:
+                consume_match = re.match(r"^verdict-(.+)-step-(\d+)\.md$", fname)
+                if consume_match:
+                    slug_raw = consume_match.group(1)
+                    step_n = consume_match.group(2)
+                    text = pathlib.Path(full_filepath).read_text()
+                    lines = text.strip().splitlines()
+                    if lines:
+                        first_line = lines[0].strip()
+                        if verdict.VERDICT_FIRST_LINE_RE.match(first_line):
+                            resolved = pathlib.Path(pending_dir).parent / "resolved"
+                            dest = resolved / fname
+                            if not dest.exists():
+                                normalized_slug = slug_raw
+                                for prefix in ("diagnostic-", "executable-"):
+                                    if normalized_slug.startswith(prefix):
+                                        normalized_slug = normalized_slug[len(prefix):]
+                                        break
+                                request_fname = f"verdict-request-{normalized_slug}-step-{step_n}.md"
+                                if (pathlib.Path(pending_dir) / request_fname).exists():
+                                    resolved.mkdir(parents=True, exist_ok=True)
+                                    os.rename(full_filepath, str(dest))
+                                    _log("EVENT", f"auto-moved well-formed verdict to resolved/: {fname}")
+                                    continue
+            except Exception:
+                pass
             _log("WARN", f"verdict file in wrong directory: {full_filepath} — expected location: verdicts/resolved/ — file will be silently ignored by verdict consumption until moved")
             dedup_key = (fname, "misplaced_directory")
             if dedup_key not in _NOTIFIED_MISPLACED:
@@ -2820,6 +2846,18 @@ class Bellows:
 
             verdict_result = verdict.check_verdict(plan_slug, step_number)
             if not verdict_result.get("found"):
+                expected_path = resolved_dir / fname
+                if expected_path.exists():
+                    try:
+                        _b3_text = expected_path.read_text()
+                        _b3_lines = _b3_text.strip().splitlines()
+                        if _b3_lines:
+                            _b3_first = _b3_lines[0].strip()
+                            _log("WARN", f"verdict file exists but does not parse as a verdict: {fname} — first line: {_b3_first!r}", slug=plan_slug)
+                        else:
+                            _log("WARN", f"verdict file exists but does not parse as a verdict: {fname}", slug=plan_slug)
+                    except Exception:
+                        _log("WARN", f"verdict file exists but does not parse as a verdict: {fname}", slug=plan_slug)
                 continue
 
             v = verdict_result["verdict"]

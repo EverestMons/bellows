@@ -13,6 +13,8 @@ import notifier
 BELLOWS_ROOT = Path(__file__).parent.resolve()
 VERDICTS_DIR = BELLOWS_ROOT / "verdicts"
 
+VERDICT_FIRST_LINE_RE = re.compile(r"^(?:verdict:\s*)?(continue|stop)$", re.IGNORECASE)
+
 VERDICT_PARSE_LOG_VERBOSE = False
 _NOTIFIED_MALFORMED: set[tuple[str, str]] = set()
 
@@ -298,7 +300,7 @@ def check_verdict(plan_slug, step_number):
         return {"found": False}
 
     first_line = lines[0].strip()
-    match = re.match(r"^(?:verdict:\s*)?(continue|stop)$", first_line, re.IGNORECASE)
+    match = VERDICT_FIRST_LINE_RE.match(first_line)
     if not match:
         _log_stderr("WARN", f"verdict file malformed: {filepath} — first line: {first_line!r} — expected pattern: 'continue', 'stop', 'verdict: continue', or 'verdict: stop' (case-insensitive)")
         _notify_malformed_verdict(filepath, first_line)

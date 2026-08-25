@@ -23,3 +23,6 @@ E4's law: the daemon re-checks the gate record when consuming a `continue` (fork
 
 ## keyed sweep line
 E5's 3b affirmation form: `Lessons-swept: <date> [sid: <first-8-of-session-id>] — <delta>`. The stop-hook lock passes only when the NEWEST such line carries the wrapping session's id; the debt hook stays date-keyed by design (opposite polarity — it asks whether SOME session swept, not this one).
+
+## verdict act
+The Planner's continue/stop adjudication of a paused step, written as `verdicts/resolved/verdict-<id>-step-<N>.md`; since 2026-08-25 performed via `tools/issue_verdict.py` (location and grammar correct by construction — the bare-handed form is retired).
