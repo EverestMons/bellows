@@ -1,0 +1,8 @@
+{
+  "slug": "diagnostic-no-receipt-admission-hold",
+  "content_hash": "5891547183b1b187c957a3060c473b52e6d90f46f45710438f7192e660abc892",
+  "session_id": "c1f03a88-2349-4e40-a53d-4c2e5216ca63",
+  "armed_at": "2026-08-25T14:03:35.868228",
+  "watcher": "gate-watcher armed in depositing session",
+  "attestation_boundary": "This receipt proves the watcher was ARMED at write time. It does NOT prove the watcher stayed alive. Liveness of a session-local monitor is not externally verifiable."
+}
