@@ -1,0 +1,8 @@
+{
+  "slug": "executable-issue-verdict-tool",
+  "content_hash": "43eb0af86578a71bbc79a401f37739a050a88ee008ddddb1983647c208856eca",
+  "session_id": "c1f03a88-2349-4e40-a53d-4c2e5216ca63",
+  "armed_at": "2026-08-25T12:27:28.278398",
+  "watcher": "gate-watcher armed in depositing session",
+  "attestation_boundary": "This receipt proves the watcher was ARMED at write time. It does NOT prove the watcher stayed alive. Liveness of a session-local monitor is not externally verifiable."
+}
