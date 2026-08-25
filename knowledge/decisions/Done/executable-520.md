@@ -1,0 +1,136 @@
+# bellows — E5: session-id-keyed 3b + domain-sweep ritual — the keyed predicate, the caller plumbing, the wrap.md law
+
+**Date:** 2026-08-25 | **Project:** bellows | **Tier:** Medium | **Dispatch Mode:** bellows | **cycle_tier:** T2 | **Test Scope:** full suite (bellows) | **Execution:** Step 1 (DEV) → Step 2 (QA) | **qa_steps:** 2 | **known_failures:** 0 | **Priority:** 1
+
+**auto_close:** false
+**pause_for_verdict:** always
+
+**Depends on:** `knowledge/research/e5-wrap-keying-glossary-design-2026-08-25.md` — sha256 `6b476c676e2c750bb259aeb3908e360c65376bc03fdb0b3e19afc2e3b29fc90b` — **the DESIGN (diagnostic-519), consumed T-7: this plan BINDS its 8 in-scope gap rows; where a build-time correction and the design differ, the correction governs.** Audit §E5 + bypass (e); the LESSONS date-key entry. Precedent: the fourth build of the E-family shape (513, 516, 518); every prior build's full cold panel earned its cost, so this freeze convenes it.
+
+## Build-time corrections (panel seat 1, author-verified — these govern where they and the design differ; later corrections govern earlier ones)
+
+- **C-1 — the wrap.md law needs its LIVE channel (S1-1, verified: the live `~/.claude/commands/wrap.md` is a 2472-byte Aug-20 STALE copy that differs from the vendored file — this very session's `/wrap` served it).** The `/wrap` command reads `~/.claude/commands/wrap.md`, not the vendored `hooks/commands/wrap.md` this plan edits — rows 6–7 would ship as a dead letter. Correction (execution timing moved to A2-post-green by S2-2, which governs): after editing the vendored copy, DEV SYNCS it to `~/.claude/commands/wrap.md` **via Bash `cp`** (the E1 structural precedent: worktree agents cannot Write `~/.claude` but Bash works, Planner-verified on 510); QA verifies byte-equality of the two copies. The DURABLE fix (symlinking the live path to the vendored file) is a machine-config ruling — surfaced as an open fork, not done here.
+- **C-2 — the hunk census completes (S1-2):** `import re` (absent today, mandated by the sid regex) and the two helper DEFINITIONS join Q2's exhaustive wrap_check hunk list AND the What-this-plan-does-NOT-do byte-identity clause — the unsatisfiable-gate class at two sites.
+- **C-3 — the arm list is the DESIGN'S, not an invention (S1-3):** the six arms are keyed-pass / keyed-fail-foreign / historical-format-fail / no-sid date-fallback / debt-caller date-fallback / **newest-None (no sweep line at all) FAIL with the action message**; the v0's "unparseable-baton degrade" arm is STRUCK (the word appears nowhere in the design; the helpers are total functions on str with no raise path — the FAIL-OPEN fence needs no mock-to-raise test, and that unconstructible test is struck with it).
+- **C-4 — the date-fallback form is ANY-LINE, declared (S1-4):** the design's prose and pseudocode disagree (any() vs newest-only); bound here as a correction: arms 4/5 keep the OLD predicate's whole-baton `any()` form verbatim (plus the blockquote fix) — newest-only semantics apply ONLY to the keyed arm. This preserves current debt-hook behavior exactly and survives cross-machine block interleaving (a today line below a foreign non-today newest still discharges the debt arm, as it does today).
+- **C-5 — D-2's chosen form restored (S1-5):** the line token is `[sid: <first-8-of-session-id>]` (prefix-8, the design's legibility choice — not full id); the keyed comparison is `startswith(token) and len(token) >= 8` (S3-1 executed); design test 13 restored to row 8's suite.
+- **C-6 — the line-initial-quote hazard (S1-6):** wrap.md's 3b instruction adds the law: never START a baton line with a bare `Lessons-swept:` except the affirmation itself — format examples in prose are backticked (the baton's line-165 precedent is what saved the current predicate); row 8 gains the fixture (a backticked example line does NOT match; an unbackticked line-initial one DOES — documenting the hazard both ways).
+
+## Why this exists
+
+Bypass (e), measured live: same-day wraps inherit each other's `Lessons-swept:` lines — the most-skipped step's lock does not discriminate on multi-session days, which are now every day. The design settles the fix on E3's plumbing: the NEWEST sweep line must carry THIS session's id (stop-hook arm), with the debt hook's opposite polarity ruled as law, plus the domain-sweep ritual step and the `[sid:]` line format. Design bonus inherited: the current predicate MISSES blockquote-prefixed sweep lines entirely (SESSION 63's line, measured) — the new predicate fixes it in both arms.
+
+## What this plan does NOT do
+
+- **It does not scaffold glossary files.** D-3 ruled scaffold-on-first-use at wrap time; the wrap.md instruction carries the template. Glossary breadth is D-7's CEO fork, not this dispatch's.
+- **It does not touch the baton.** The 21 historical date-only lines are data; the first keyed wrap writes the first `[sid:]` line and the check transitions (design arm 3: a historical-format newest line FAILS a keyed stop-hook check — the transition is one honest sweep away, this session's own wrap).
+- **It does not edit ELUVIAN_PATH.md.** Gap row 9 stays routed to the follow-up doc plan (now carrying three lines: E3's two + E5's).
+- **It does not change the [2r/receipts] group, the portability overrides, or any other wrap_check group** — the shared file's other tenants are byte-identical outside the 3b block, the signature/argv sites, the `import re` line, and the two helper definitions (C-2).
+
+## Numbers discipline
+
+⚠️ **Measured 2026-08-25 against bellows main post-519; RE-DERIVE each — yours supersede and you say so.**
+
+| id | pin | value | probe |
+|---|---|---|---|
+| X1 | design doc sha256 | `6b476c676e2c750bb259aeb3908e360c65376bc03fdb0b3e19afc2e3b29fc90b` | HALT on mismatch |
+| X2 | target blob SHA-1s BEFORE | wrap_check.py `4ac15bfbea14…`, wrap_stop_hook.py `52589ac268fa…`, wrap_debt_hook.py `091bf588c7b1…`, hooks/commands/wrap.md `3b23291183f4…` | `git hash-object` in YOUR worktree; HALT on mismatch — wrap_check is triple-shared substrate |
+| X3 | **`T`** — tests collected BEFORE | measure at A0 from the bellows cwd (was 1339 at 518's QA; 519 added none) | `python3 -m pytest tests/ --collect-only -q` FROM THE BELLOWS REPO ROOT (wrong cwd → false-error signal, measured) |
+| X4 | failability proofs | `tests/test_wrap_3b_keyed.py` **absent**; `_find_newest_sweep_line` **absent** from wrap_check.py (`grep -cF` = 0) | positive control: `[2r/receipts]` present in wrap_check.py |
+| X5 | the 3b block + signature + argv sites | wrap_check.py :136-151 (predicate), :90 (`check(session_id)`), :325-326 (argv parse); stop hook ~:207; debt hook ~:87 | anchored by shapes; relocate by context |
+| X6 | the historical-line surface | 21 real sweep lines in the baton (22 grep matches minus 1 prose); 1 blockquote-prefixed (SESSION 63) | the design's G4 supersession — the new predicate must strip `>` before matching |
+| X7 | wrap test floor | 20 + 28 + 26 + 11 = **85** | must pass unchanged; E5 only adds |
+
+## Drafting Cycle
+**Tier:** T2 computed — the wrap lock is live Tier-3 enforcement and the hook half of this change activates AT MERGE (the E3 precedent: the next wrap on this machine runs the new predicate — including THE WRAP THAT CLOSES THIS SESSION, whose newest sweep line is historical-format until that wrap writes its own keyed line). **Cold panel: MANDATED at the freeze (full form, four seats).**
+**Walk register:** `governance/knowledge/research/walk-register-executable-eluvian-e5.md`
+**Walks:** walk 0 pinned; **walks 1–3 complete** — warm walks 1–2 (two folds, then dry), the FULL COLD PANEL at the freeze, walk 3 = the post-panel sweep walk, all lenses dry, exit-gated.
+**Cold panel: CONVENED AT THE FREEZE (full form, four seats) — COMPLETE.** Scout 7 / discovery 6 / execution 4 / capstone 3 = 20 findings (3 HIGH), non-decaying broken for the first time on the arc's fourth pass; every finding author-verified before folding; the execution seat ran a 30/30 arm matrix and an 85/85 casualty sweep; the capstone's NOT-READY discharged by its folds + walk 3.
+**Direction verdict (after walk 1): PROCEED — re-tested after the panel and stands.**
+- Weak spots:          w1 dry; w2 dry; w3 dry
+- Destruction:         w1 dry; w2 dry; w3 dry
+- Vulnerabilities:     w1 2 folded — instruction 2 / record 0; w2 dry; w3 dry
+- Integration-record:  w1 dry; w2 dry; w3 dry
+- ACID:                w1 dry; w2 dry; w3 dry — sweeps exit-gated
+**Conformance (§5):** recorded at the walk-3 close from actual runs: plan_lint exit 0 / 0 FAIL at the lintmirror deposit path; register CONFORMANT (STDERR channel, branched-on); cycle_check BAR_MET (verdict channel); fold_check N/A (hand-folded cycle).
+**Closing:** **walk 3 met the bar.** Warm series 2 → 0; panel 7 → 6 → 4 → 3. ⚠️ The cycle is CLOSED; the deposit travels the lane with the receipt ritual → expected HOLD `class:shop-infra` → the CEO's `--release-class-hold` act → claim.
+
+## Cycle Manifest
+tier: T2
+target: hooks/eluvian/wrap_check.py
+class: shop-infra
+reads: /Users/marklehn/Developer/GitHub/bellows/knowledge/research/e5-wrap-keying-glossary-design-2026-08-25.md, /Users/marklehn/Developer/GitHub/shop_next_session.md, /Users/marklehn/Developer/GitHub/governance/knowledge/research/eluvian-path-rulings-2026-08-24.md
+writes: hooks/eluvian/wrap_check.py, hooks/eluvian/wrap_stop_hook.py, hooks/eluvian/wrap_debt_hook.py, hooks/commands/wrap.md, tests/test_wrap_3b_keyed.py, knowledge/research/e5-qa-2026-08-25.md, knowledge/research/pytest_full.txt
+open_forks: (1) D-7's glossary-breadth CEO fork (active-only recommended) — the wrap.md instruction ships with the recommendation and the fork stays open; (2) D-7's degrade-arm posture (date-fallback recommended and built; hard-fail is the alternative ruling); (3) gap row 9 (ELUVIAN_PATH.md lines) rides the follow-up doc plan; (4) ⚠️ CEO-SURFACED: the live `~/.claude/commands/wrap.md` is an unowned manual copy on BOTH machines (shop copy measured stale since Aug 20; the MINI's recurs independently and its hooks will enforce the keyed arm after its next bellows pull while its /wrap template stays pre-E5 — S2-3, the mini baton's own coordinate-with-E5 item) — a per-machine symlink to the vendored file is the durable fix, machine-config, needs a ruling
+walks: 3
+yields: 2, 0, 0
+validation: cycle_check=BAR_MET, plan_lint=0_FAIL, fold_check=N/A
+coherence: N/A
+
+## MUST-PRESERVE
+
+- ⚠️⚠️ **ACTIVATION AT MERGE, and the FIRST subject is THIS SESSION'S OWN WRAP.** The stop-hook keyed arm will find a historical-format newest line and FAIL 3b until this session performs its own sweep and writes the first `[sid:]` line — that is the check WORKING, not a trap; the failure message must therefore be the actionable one from design arm 2/3, and the QA report states this first-wrap behavior explicitly so the wrap operator is not surprised.
+- ⚠️⚠️ **The debt hook's arm is DATE-FALLBACK by design (arm 5)** — a current-sid-keyed debt check would fail every fresh session start; the asymmetry (stop keyed, debt date) is the intended law and is tested as such.
+- ⚠️ **The blockquote-prefix fix applies to BOTH arms** — strip a leading `>` (and surrounding whitespace) before the `lessons-swept:` match; SESSION 63's line is the regression fixture.
+- ⚠️ **FAIL-OPEN discipline unchanged (as corrected by C-3):** the helpers are TOTAL functions on str — no raise path, no degrade arm; an unreadable or absent baton reads as empty text and the keyed arm returns newest-None FAIL (failing toward sweeping, never toward skipping); main()'s outer catch remains the only FAIL-OPEN and nothing new leans on it.
+- ⚠️ **The shared file's other tenants are untouched:** the `[2r/receipts]` group, the env-override constants, every other group's message literals — byte-identical, proven by targeted diff in QA.
+- ⚠️ **Historical lines are DATA:** no baton writes, no retro-keying.
+- ⚠️ **EVERY DATE IS A FIXED LITERAL.** **`grep` is ugrep: `-F`; `--` before dash-leading literals.**
+- ⚠️ **DEV targeted tests only; the full suite belongs to QA (bellows cwd).**
+
+## STEP 1 — DEV: the keyed predicate, the caller plumbing, the ritual law
+
+**Role:** DEV. `<id>` from your plan filename.
+
+**A0 — preconditions.** Assert X1–X7 (X1/X2 HALT; X5 relocates by context; X3 measured and reported). Three-way start: pins as stated → proceed; substrate already present (`_find_newest_sweep_line` + `caller` param + test file) → ALREADY APPLIED no-op success; else partial → STOP with inventory.
+
+**A1 — implement the design's gap rows 1–7, the design governing:**
+- **Rows 1–3** — `hooks/eluvian/wrap_check.py`: `_find_newest_sweep_line(baton_text)` (first match top-to-bottom — the baton PREPENDS, measured; strip leading `>` + whitespace before the `lessons-swept:` startswith) and `_extract_sid(line)` (the design's `\[sid:\s*([A-Za-z0-9-]+)\]` form); `check(session_id=None, caller="stop")`; `main()` parses argv[2] as caller (default "stop"); the 3b block replaced with the SIX ARMS per C-3, **dispatched in this ORDER (S2-6): caller=="debt" OR no sid → the any()-date arm decides alone (newest-None never fires there); otherwise the keyed arm: newest-None → FAIL, historical-format → FAIL, foreign-sid → FAIL, own-sid → PASS** — keyed pass / keyed fail (foreign sid, the actionable message) / historical-format fail (same message) / no-sid date-fallback / caller="debt" date-fallback / newest-None (no sweep line) FAIL with the action message. **The date-fallback arms keep the whole-baton `any()` form verbatim plus the blockquote fix (C-4); newest-only semantics apply ONLY to the keyed arm. The sid token is `[sid: <first-8>]` and the keyed comparison is `session_id.startswith(token) and len(token) >= 8` (C-5 as executed by seat 3 — plain [:8] equality false-foreigns an over-compliant full-uuid token; startswith accepts prefix-8 and longer). `import re` joins the file's imports (C-2).** Every other group byte-identical.
+- **Rows 4–5** — the two hooks append their caller literal as argv[2] (`"stop"` / `"debt"`); the debt hook's existing sid normalization is untouched.
+- **Rows 6–7** — `hooks/commands/wrap.md`: 3b's mandated line format gains `[sid: <first-8-of-session-id>]` (C-5 — prefix-8; the check compares `session_id.startswith(token) and len(token) >= 8` (S3-1)) with the where-to-find-your-id pointer (the receipts README precedent) — **and the stale parenthetical two lines down ("the lock verifies this line exists with today's date") is REWRITTEN to describe the keyed predicate (S2-4)**; **the C-6 law lands HERE too: never start a baton line with a bare `Lessons-swept:` except the affirmation itself — prose examples backticked (S4-3: the fixture half alone leaves wrap.md lawless while every test stays green)**; the new domain-sweep step (3d) with the design's question, the scaffold-on-first-use instruction, and the glossary template (DEFINITION / RUNBOOK / TRAP→CODE discriminator) inline or referenced; the mini-machine arms (3c fallback, cacheinfo gitlink) survive verbatim. **The C-1 LIVE-CHANNEL SYNC runs in A2, AFTER the tests are green (S2-2 — an A1-time cp leaves the live copy diverged if the plan later fails): first back up the current live copy to `~/.claude/commands/wrap.md.pre-e5`, then `cp` the edited vendored file over it via Bash (the E1 precedent), report both byte counts; the A2-failure disposition includes restoring the backup; a QA-STOP-stranded sync is measured BENIGN (S3-4: the old predicate passes new-format `[sid:]` lines — forward-compatible), so a stop needs no emergency restore.**
+- **Row 8** — `tests/test_wrap_3b_keyed.py`: the design's 13 arms — keyed pass; foreign-sid fail; historical-format fail; no-sid date-fallback (hit and miss); debt-caller date-fallback (hit and miss); blockquote-prefixed line FOUND (the SESSION 63 fixture VERBATIM for the found-test; a RE-DATED-to-run-day twin for the old-vs-new regression comparison — S3-2 executed: the verbatim line's stale date makes the old predicate miss it for the date alone); prose-line non-match (the G4 false-count fixture); prepend-ordering (newest wins over an older same-day keyed line); newest-None fail; empty baton; missing baton file; **the prefix-semantics probe (design test 13, C-5); the line-initial-quote pair (backticked example inert, unbackticked line-initial matches — C-6)**. All tmp-path batons; no real baton reads.
+
+**A2 — verify before committing:** new tests green (paste raw); **then the C-1/S2-2 live-channel sync (backup to .pre-e5, cp, both byte counts)**; the X7 floor green targeted (`python3 -m pytest tests/test_wrap_hooks.py tests/test_wrap_sentinel.py tests/test_wrap_receipts.py tests/test_deposit_receipt.py -q`); `py_compile` the three hook files; the X4 absences now present (grep both, `--` for dash literals).
+
+**A3 — commit** (worktree): `git add hooks/eluvian/wrap_check.py hooks/eluvian/wrap_stop_hook.py hooks/eluvian/wrap_debt_hook.py hooks/commands/wrap.md tests/test_wrap_3b_keyed.py && git commit -m "[<id>] E5: session-id-keyed 3b (six arms, blockquote fix) + caller plumbing + domain-sweep ritual (ACTIVE AT MERGE for the next wrap)"`
+
+⚠️ **IF ANY A2 CHECK FAILS: no commit, no revert, no retry — leave the worktree as evidence, report, raise `### Flags for CEO`.**
+
+**Deposits:**
+- `/Users/marklehn/Developer/GitHub/bellows/hooks/eluvian/wrap_check.py`
+- `/Users/marklehn/Developer/GitHub/bellows/hooks/eluvian/wrap_stop_hook.py`
+- `/Users/marklehn/Developer/GitHub/bellows/hooks/eluvian/wrap_debt_hook.py`
+- `/Users/marklehn/Developer/GitHub/bellows/hooks/commands/wrap.md`
+- `/Users/marklehn/Developer/GitHub/bellows/tests/test_wrap_3b_keyed.py`
+
+**Scope:**
+- `/Users/marklehn/Developer/GitHub/bellows/hooks/eluvian/wrap_check.py`
+- `/Users/marklehn/Developer/GitHub/bellows/hooks/eluvian/wrap_stop_hook.py`
+- `/Users/marklehn/Developer/GitHub/bellows/hooks/eluvian/wrap_debt_hook.py`
+- `/Users/marklehn/Developer/GitHub/bellows/hooks/commands/wrap.md`
+- `/Users/marklehn/Developer/GitHub/bellows/tests/test_wrap_3b_keyed.py`
+
+## STEP 2 — QA
+
+**Role:** QA. ⚠️ Fresh agent: re-measure; the DEV report is not evidence.
+
+**Q1 — full suite.** `python3 -m pytest tests/ -q` **from the bellows repo root as cwd**; deposit RAW output as `pytest_full.txt`; **self-contained accounting (the DEV report is not evidence): report the total, the new file's own count (`pytest tests/test_wrap_3b_keyed.py --collect-only -q`), and their difference as the inherited baseline**; zero failures.
+**Q2 — change-set vs the gap table:** rows 1–8 present at their sites; row 9 verifiably ABSENT (no file outside the five declared; no ELUVIAN_PATH.md edit); the shared file's other tenants byte-identical — targeted diff shows the 3b block, the signature, the argv parse, the `import re` line, AND the two new helper definitions as the ONLY wrap_check hunks (C-2); the FIVE existing non-receipts group literals plus `[2r/receipts]` all survive (S2-5 — five is the measured count); the wrap.md mini-machine arms survive verbatim.
+**Q3 — behavioral spot-probes on tmp batons:** the six arms driven through `check()` directly (tmp baton files, both callers, sid present/absent); the SESSION 63 blockquote fixture found by the new predicate; the old-vs-new comparison on the RE-DATED twin (S3-2); the prepend-ordering probe.
+**Q4 — activation, stated honestly:** hook half LIVE AT MERGE — the next `/wrap` on this machine runs the keyed arm and WILL FAIL 3b until the wrap writes its first `[sid:]` line (the arm-2/3 actionable message is the operator's instruction); reproduce the first-wrap walkthrough (sweep → line with `[sid:]` → re-check passes) as the QA report's operator sheet; state the daemon is NOT involved (pure hook-side change; no restart needed); **name the mixed-window invariant (S3-3): hooks and check ship from one checkout in one commit — an OLD debt hook against a NEW check would default caller="stop" and false-inject debt at every session start; the single-commit shipping is the guard**; **verify the C-1 sync: `diff -q` the vendored wrap.md against `~/.claude/commands/wrap.md` → IDENTICAL, pasted; state the MINI's un-synced status plainly (S2-3 — its next session syncs or symlinks before wrapping)**.
+
+> **QA SELF-CHECK — Rule 20.** Post the block from `/Users/marklehn/Developer/GitHub/RULE_20_SELF_CHECK_BLOCK.md` verbatim, under the banner **`Rule 20 — QA Self-Check Results`**, and close with **`PASSED — SELF-CHECK PASSED`** only if every check genuinely passed. ⚠️ Both literals are matched by `plan_lint` check (c) and neither may be paraphrased. Rule 20 block + Q1–Q4 results in the `.md`; raw suite output in `pytest_full.txt` — the two QA gates scan DIFFERENT extensions.
+
+**Deposits:**
+- `/Users/marklehn/Developer/GitHub/bellows/knowledge/research/e5-qa-2026-08-25.md`
+- `/Users/marklehn/Developer/GitHub/bellows/knowledge/research/pytest_full.txt`
+
+**Scope:**
+- `/Users/marklehn/Developer/GitHub/bellows/knowledge/research/e5-qa-2026-08-25.md`
+- `/Users/marklehn/Developer/GitHub/bellows/knowledge/research/pytest_full.txt`
+
+**Commit:** `git add knowledge/research/e5-qa-2026-08-25.md knowledge/research/pytest_full.txt && git commit -m "[<id>] qa: E5 keyed 3b — full suite + evidence"`
+
+## Deposit ritual
+
+The E3 contract: receipt against the DRAFT bytes first, then stage as `ready-executable-eluvian-e5-keying.md`. **Expected: HOLD `class:shop-infra`; release = the CEO's `--release-class-hold` act.** The depositing session arms a slug-keyed watcher before the receipt.
