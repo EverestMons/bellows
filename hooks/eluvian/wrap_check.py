@@ -117,6 +117,11 @@ def check(session_id: str | None = None, caller: str = "stop") -> list[str]:
                 f"[1/project] {repo.name}: {len(dirty)} uncommitted file(s) in "
                 f"{rel}/ — commit completed plan files."
             )
+        n = unpushed_count(repo)
+        if n is not None and n > 0:
+            fails.append(
+                f"[1/project] {repo.name}: {n} commit(s) not pushed — push {repo.name}."
+            )
 
     # --- Step 2: bellows — verdicts committed AND pushed -----------------------
     v_dirty = porcelain(BELLOWS, "verdicts/resolved")

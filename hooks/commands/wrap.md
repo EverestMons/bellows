@@ -37,7 +37,8 @@ done-on-another-machine-and-not-pulled (measured 2026-08-24).
 
 1. **Project repos** — in each project touched this session, commit completed plan
    files sitting untracked in `knowledge/decisions/Done/`. Leave unrelated
-   pre-existing untracked files alone.
+   pre-existing untracked files alone. Then push each touched project repo —
+   the push-each law covers ALL FOUR repo classes, not just bellows/root/memory.
 2. **bellows submodule** — commit this session's consumed
    `verdicts/resolved/processed-verdict-<id>-step-N.md` files
    (`chore(bellows): session wrap <date> …`), then push.
@@ -46,7 +47,9 @@ done-on-another-machine-and-not-pulled (measured 2026-08-24).
    want?" This is DISTINCT from the arc/baton narrative — recording the project arc
    is NOT a lessons sweep. Transferable shop-level lessons → `LESSONS.md`
    (house format; not while a lessons-forge cycle plan sits un-run; verify the
-   prior last entry intact after append). Planner working-pattern lessons → the
+   prior last entry intact after append; classes-not-narratives — record the
+   transferable CLASS, never the session's story; never duplicate an
+   already-recorded class). Planner working-pattern lessons → the
    memory repo. **Then add a line to `shop_next_session.md`:**
    `Lessons-swept: <today's date> [sid: <first-8-of-session-id>] — <one-line delta, or 'none'>`
    (the stop-hook lock verifies the NEWEST such line carries THIS session's id;

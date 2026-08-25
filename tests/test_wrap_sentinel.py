@@ -326,3 +326,96 @@ class TestModuleImport:
         mod = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(mod)
         assert hasattr(mod, "main")
+
+
+# === [1/project] push arm (plan 535) ===
+
+WRAP_CHECK = HOOKS_DIR / "wrap_check.py"
+WRAP_MD = HOOKS_DIR.parent / "commands" / "wrap.md"
+
+
+def _init_project_repo(root, name, *, ahead=0, no_upstream=False):
+    project = root / name
+    project.mkdir()
+    done = project / "knowledge" / "decisions" / "Done"
+    done.mkdir(parents=True)
+    subprocess.run(["git", "init", str(project)], capture_output=True, check=True)
+    subprocess.run(
+        ["git", "-C", str(project), "config", "user.email", "t@t"],
+        capture_output=True,
+    )
+    subprocess.run(
+        ["git", "-C", str(project), "config", "user.name", "T"],
+        capture_output=True,
+    )
+    (done / ".gitkeep").touch()
+    subprocess.run(
+        ["git", "-C", str(project), "add", "."],
+        capture_output=True, check=True,
+    )
+    subprocess.run(
+        ["git", "-C", str(project), "commit", "-m", "init"],
+        capture_output=True, check=True,
+    )
+    if not no_upstream:
+        bare = root / f"{name}-bare.git"
+        subprocess.run(
+            ["git", "init", "--bare", str(bare)],
+            capture_output=True, check=True,
+        )
+        subprocess.run(
+            ["git", "-C", str(project), "remote", "add", "origin", str(bare)],
+            capture_output=True, check=True,
+        )
+        subprocess.run(
+            ["git", "-C", str(project), "push", "-u", "origin", "HEAD"],
+            capture_output=True, check=True,
+        )
+        for i in range(ahead):
+            (project / f"file-{i}.txt").write_text(f"content {i}")
+            subprocess.run(
+                ["git", "-C", str(project), "add", "."],
+                capture_output=True, check=True,
+            )
+            subprocess.run(
+                ["git", "-C", str(project), "commit", "-m", f"local-{i}"],
+                capture_output=True, check=True,
+            )
+    return project
+
+
+def _run_wrap_check(root, session_id="test-session"):
+    env = {**os.environ}
+    env["ELUVIAN_WRAP_ROOT"] = str(root)
+    env["ELUVIAN_WRAP_MEMORY"] = str(root / "_memory")
+    return subprocess.run(
+        [sys.executable, str(WRAP_CHECK), session_id, "stop"],
+        capture_output=True, text=True, timeout=30, env=env,
+    )
+
+
+class TestProjectPushArm:
+    def test_unpushed_project_fails(self, tmp_path):
+        _init_project_repo(tmp_path, "myproj", ahead=2)
+        result = _run_wrap_check(tmp_path)
+        assert "[1/project] myproj: 2 commit(s) not pushed — push myproj." in result.stdout
+
+    def test_no_upstream_skipped(self, tmp_path):
+        _init_project_repo(tmp_path, "myproj", no_upstream=True)
+        result = _run_wrap_check(tmp_path)
+        assert "not pushed — push myproj" not in result.stdout
+
+    def test_clean_pushed_passes(self, tmp_path):
+        _init_project_repo(tmp_path, "myproj", ahead=0)
+        result = _run_wrap_check(tmp_path)
+        assert "[1/project] myproj:" not in result.stdout
+
+
+class TestWrapMdClauses:
+    def test_push_clause_present(self):
+        content = WRAP_MD.read_text()
+        assert "push each touched project repo" in content
+
+    def test_classes_clause_present(self):
+        content = WRAP_MD.read_text()
+        assert "classes-not-narratives" in content
