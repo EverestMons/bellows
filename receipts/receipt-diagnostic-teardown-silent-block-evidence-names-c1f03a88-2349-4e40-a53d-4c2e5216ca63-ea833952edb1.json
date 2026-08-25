@@ -1,0 +1,8 @@
+{
+  "slug": "diagnostic-teardown-silent-block-evidence-names",
+  "content_hash": "ea833952edb1ba36b7c1b59bbb279a4838f6a998d1a51d8a24de2ac55292cbfe",
+  "session_id": "c1f03a88-2349-4e40-a53d-4c2e5216ca63",
+  "armed_at": "2026-08-25T09:20:41.049015",
+  "watcher": "gate-watcher armed in depositing session",
+  "attestation_boundary": "This receipt proves the watcher was ARMED at write time. It does NOT prove the watcher stayed alive. Liveness of a session-local monitor is not externally verifiable."
+}
