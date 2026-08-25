@@ -1,0 +1,8 @@
+{
+  "slug": "executable-teardown-recording-precheck-evidence",
+  "content_hash": "7737c3ef33a1798f5d2a30d6747bd1048d650ead728e3a0fc73010dbcca13ee6",
+  "session_id": "c1f03a88-2349-4e40-a53d-4c2e5216ca63",
+  "armed_at": "2026-08-25T11:13:09.616512",
+  "watcher": "gate-watcher armed in depositing session",
+  "attestation_boundary": "This receipt proves the watcher was ARMED at write time. It does NOT prove the watcher stayed alive. Liveness of a session-local monitor is not externally verifiable."
+}
