@@ -1,0 +1,8 @@
+{
+  "slug": "executable-eluvian-e4-conditioning",
+  "content_hash": "bf771aabce09df34b1b79c8bdefcfb035058743007925933b60daa45c56a2213",
+  "session_id": "d79bad0b-acb1-469f-b916-200cf124fefc",
+  "armed_at": "2026-08-24T21:37:15.608698",
+  "watcher": "gate-watcher armed in depositing session",
+  "attestation_boundary": "This receipt proves the watcher was ARMED at write time. It does NOT prove the watcher stayed alive. Liveness of a session-local monitor is not externally verifiable."
+}
