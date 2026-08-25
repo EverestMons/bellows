@@ -1,0 +1,5 @@
+continue
+
+All gates PASS including rule_20 (banner byte-exact, verified count 1). Rule 22(b): the QA evidence re-runs the full M-table on a fresh connection with raw output (M1 inversion through M13, all sections present), the forge suite reads 63 passed / 0 failed, and the report's rendering is accounted: the 32 new proposals (ids 379-410) across their six entry dates plus the 25-proposal backlog — 57 surfaceable proposals total, the backlog untouched and explicitly surfaced for Gate 1. The Planner's own step-1 and step-2 verifications already confirmed every DB post-condition and the five destruction-guard shas independently.
+
+Terminal step of 3 — plan closes. THE CLASSIFICATION CYCLE IS DONE: every corpus entry is classified (the inversion holds corpus-wide), nothing is routed, and Gate 1's queue is 57 proposals awaiting a NON-AUTHOR by standing law — the Planner cannot run it, having authored the register entries and, for four of them, the very practices they argue for. Plan C is the cycle's next act, for a cold session or the CEO directly, with reports/lessons-report-2026-08-25.md as its working document.
