@@ -1,0 +1,8 @@
+{
+  "slug": "executable-no-receipt-admission-hold",
+  "content_hash": "efa7dbd224578850f36cdb276e3b3e32b631041deeb2dbe2a07c1eb63f0b4d5b",
+  "session_id": "c1f03a88-2349-4e40-a53d-4c2e5216ca63",
+  "armed_at": "2026-08-25T15:03:30.439542",
+  "watcher": "gate-watcher armed in depositing session",
+  "attestation_boundary": "This receipt proves the watcher was ARMED at write time. It does NOT prove the watcher stayed alive. Liveness of a session-local monitor is not externally verifiable."
+}
