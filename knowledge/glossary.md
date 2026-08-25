@@ -29,3 +29,6 @@ The Planner's continue/stop adjudication of a paused step, written as `verdicts/
 
 ## dirty-tree precheck (intersection form)
 The teardown-time guard (since exec-523) that refuses a worktree merge only when the live main tree's dirty paths INTERSECT the branch's changed files — commit-gated (skipped when the branch has no commits), quotepath-normalized, `-z -uall` porcelain-parsed. Lifecycle dirt a plan does not touch never blocks; dirt on a file the plan ships blocks with the exact filename and stash-first recovery. Its failures carry the `worktree_teardown_dirty_tree:` marker that keys the Gap-1c one-verdict retry.
+
+## no_receipt hold
+The depositor's stage-12 admission hold (since exec-527, live at the 2026-08-25 15:24 restart): a `ready-` deposit with no ACTIVE receipt matching its slug AND content hash is held before class assignment — a clearance is unreachable without an attested receipt. Released by writing the receipt (the tool strips `hold-` since 527) and running `clear_plan`, which re-enters the full depositor evaluation. Fail-closed: an unreadable receipts directory holds.
