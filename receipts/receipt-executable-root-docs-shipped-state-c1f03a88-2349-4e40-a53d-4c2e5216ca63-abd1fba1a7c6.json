@@ -1,0 +1,8 @@
+{
+  "slug": "executable-root-docs-shipped-state",
+  "content_hash": "abd1fba1a7c67e9c1477c52520e8b0fd762b48f5db364ea8531bdaa34b5dd13e",
+  "session_id": "c1f03a88-2349-4e40-a53d-4c2e5216ca63",
+  "armed_at": "2026-08-25T13:48:13.401465",
+  "watcher": "gate-watcher armed in depositing session",
+  "attestation_boundary": "This receipt proves the watcher was ARMED at write time. It does NOT prove the watcher stayed alive. Liveness of a session-local monitor is not externally verifiable."
+}
