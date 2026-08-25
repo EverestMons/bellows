@@ -1,0 +1,8 @@
+{
+  "slug": "executable-wrap-phrase-equivalence",
+  "content_hash": "42a655b80e93976b829c6247e62d3609053d8975966fab695f26d9816d94bdda",
+  "session_id": "c1f03a88-2349-4e40-a53d-4c2e5216ca63",
+  "armed_at": "2026-08-25T17:04:16.785029",
+  "watcher": "gate-watcher armed in depositing session",
+  "attestation_boundary": "This receipt proves the watcher was ARMED at write time. It does NOT prove the watcher stayed alive. Liveness of a session-local monitor is not externally verifiable."
+}
