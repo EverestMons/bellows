@@ -1,0 +1,8 @@
+{
+  "slug": "executable-rule22c-parser-fix",
+  "content_hash": "fa4676f1fc1774eecf64209dbdb29e8563a68e4a7efddd75426420718dbb0293",
+  "session_id": "c1f03a88-2349-4e40-a53d-4c2e5216ca63",
+  "armed_at": "2026-08-25T16:25:12.400581",
+  "watcher": "gate-watcher armed in depositing session",
+  "attestation_boundary": "This receipt proves the watcher was ARMED at write time. It does NOT prove the watcher stayed alive. Liveness of a session-local monitor is not externally verifiable."
+}
