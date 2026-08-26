@@ -1,0 +1,83 @@
+== Item 2 — Behavior proof on scratch copy ==
+Scratch DB: /private/tmp/lifecycle_566_scratch.db (copied from /Users/marklehn/Developer/GitHub/bellows/lifecycle.db)
+Copy size: 3047424 bytes
+Live DB: NEVER an operand (weakest-instrument law)
+
+== Item 2a — Closed plan reconcile (plan 565) ==
+
+$ python3 tools/reconcile_plan.py 565 closed --outcome stop --summary "QA scratch test" --db /private/tmp/lifecycle_566_scratch.db
+
+=== Plan row ===
+  id: 565
+  type: executable
+  target_project: /Users/marklehn/Developer/GitHub/bellows
+  title: bellows — executable: the (r) check learns fences — its first measured false-positive class excluded (v2)
+  dispatch_mode: bellows
+  tier: Small
+  lifecycle_state: closed
+  total_steps: 2
+  deposit_placeholder_name: executable-plan-lint-fence-exclusion.md
+  created_at: 2026-08-26T15:15:55.786270
+  closed_at: 2026-08-26T15:24:04.845127
+  plan_doc_ref: knowledge/decisions/Done/executable-565.md
+
+=== NULL-outcome verdict rows (0) ===
+
+=== Pending verdict-request files (0) ===
+
+=== Transaction complete ===
+  plans row updated: lifecycle_state=closed, closed_at=2026-08-26T20:33:08Z
+  verdicts rows updated (NULL-outcome): 0
+
+=== Remaining human acts (NOT performed by this tool) ===
+  git mv knowledge/decisions/executable-565.md knowledge/decisions/Done/executable-565.md
+  git commit -m "chore: 565 closed"
+EXIT: 0
+
+== Verification: read-only query matches ==
+
+$ sqlite3 /private/tmp/lifecycle_566_scratch.db "SELECT id, type, target_project, title, dispatch_mode, tier, lifecycle_state, total_steps, deposit_placeholder_name, created_at, closed_at, plan_doc_ref FROM plans WHERE id=565;"
+565|executable|/Users/marklehn/Developer/GitHub/bellows|bellows — executable: the (r) check learns fences — its first measured false-positive class excluded (v2)|bellows|Small|closed|2|executable-plan-lint-fence-exclusion.md|2026-08-26T15:15:55.786270|2026-08-26T20:33:08Z|knowledge/decisions/Done/executable-565.md
+
+$ sqlite3 /private/tmp/lifecycle_566_scratch.db "SELECT * FROM verdicts WHERE plan_id=565 AND outcome IS NULL;"
+(no rows — 0 NULL-outcome verdicts, matches tool output)
+
+== Item 2b — Refusal proof (in_progress without --killed-verified) ==
+
+Flipped plan 565 to in_progress:
+$ sqlite3 /private/tmp/lifecycle_566_scratch.db "UPDATE plans SET lifecycle_state='in_progress' WHERE id=565;"
+
+Table dumps taken BEFORE tool run (post-flip baseline).
+
+$ python3 tools/reconcile_plan.py 565 closed --outcome stop --summary "QA refusal test" --db /private/tmp/lifecycle_566_scratch.db
+
+REFUSED (exit 3): lifecycle_state is 'in_progress' and --killed-verified was not passed.
+A worker can survive ENOSPC and wedge (~70 min measured) — verify with `ps -o etime,%cpu -p <pid>`, kill it, then re-run with --killed-verified.
+=== Plan row ===
+  id: 565
+  type: executable
+  target_project: /Users/marklehn/Developer/GitHub/bellows
+  title: bellows — executable: the (r) check learns fences — its first measured false-positive class excluded (v2)
+  dispatch_mode: bellows
+  tier: Small
+  lifecycle_state: in_progress
+  total_steps: 2
+  deposit_placeholder_name: executable-plan-lint-fence-exclusion.md
+  created_at: 2026-08-26T15:15:55.786270
+  closed_at: 2026-08-26T20:33:08Z
+  plan_doc_ref: knowledge/decisions/Done/executable-565.md
+
+=== NULL-outcome verdict rows (0) ===
+
+=== Pending verdict-request files (0) ===
+EXIT: 3
+
+== Byte-unchanged verification ==
+
+$ diff plans_after_flip.sql plans_after_refusal.sql
+PLANS: IDENTICAL
+
+$ diff verdicts_after_flip.sql verdicts_after_refusal.sql
+VERDICTS: IDENTICAL
+
+Both tables byte-identical after refusal — the tool wrote nothing on exit 3.
