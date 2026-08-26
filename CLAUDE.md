@@ -32,3 +32,24 @@ To upgrade manually:
 
 Recommended cadence: at session-wrap or weekly.
 Rationale: BACKLOG entry "Set DISABLE_AUTOUPDATER=1 in the Bellows daemon environment".
+
+## Multi-machine id ranges (CEO ruling 2026-08-26 — option b)
+
+Every machine mints plan ids from ITS OWN `lifecycle.db` `id_sequence`, and
+every post-claim artifact (verdict files, `Done/executable-<id>.md`, step
+logs) is keyed by that id in SHARED git namespaces. Two machines minting
+from overlapping ranges WILL collide — measured 2026-08-26: the mini's ids
+1/2 overwrote the shop's historic `processed-verdict-1/2` files.
+
+**The law:** each machine's `id_sequence` is seeded ONCE into a disjoint
+100000-block. Shop machine: 1–99999 (historical, continues in place).
+Mac mini: 100000–199999 (seed: `UPDATE id_sequence SET next_id = 100000;`
+on ITS database, daemon stopped or between claims). Each next machine takes
+the next block; allocation is recorded in the tuyere machine registry once
+it ships. NEVER re-seed a machine that has already minted in its block, and
+never seed into another machine's block — the seeding is one-time, per
+machine, on that machine.
+
+The claim rename and all downstream naming are UNCHANGED by this law —
+disjoint ranges make collisions arithmetically impossible without touching
+code. Definition: the central `GLOSSARY.md` `id-range partitioning` entry.
