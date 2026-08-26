@@ -1,0 +1,8 @@
+{
+  "slug": "diagnostic-tuyere-federation-claim",
+  "content_hash": "c9a36f4ccfdb7c6f4cd04b72a1173756ca2e836a744917fade13f736a43f152e",
+  "session_id": "6ce52052-f6b4-48f4-ac9d-bad3f4f6349d",
+  "armed_at": "2026-08-26T13:27:06.593457",
+  "watcher": "gate-watcher armed in depositing session",
+  "attestation_boundary": "This receipt proves the watcher was ARMED at write time. It does NOT prove the watcher stayed alive. Liveness of a session-local monitor is not externally verifiable."
+}
