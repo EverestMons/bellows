@@ -1,0 +1,3 @@
+continue
+
+All five gate failures are one event's symptoms: the daemon's process group was SIGTERM-reaped by the hosting session at 19:59:59 (claude -p exit 143 = killed, not failed). receipt_status Blocked is the runner's exception-path marker, not an E3 receipt defect; the deposit is missing because the agent died ~3m into the step with 0 files changed (file_change_audit). Re-dispatch is the plan's designed path: A0 classifies the clean NOT-YET-APPLIED state and proceeds. Daemon now owned by the CEO's dashboard terminal. Planner checks (b): no deposited content yet to judge — this verdict authorizes the re-run, not the close.

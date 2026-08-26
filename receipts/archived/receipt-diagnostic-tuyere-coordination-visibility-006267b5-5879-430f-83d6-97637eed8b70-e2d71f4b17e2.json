@@ -1,0 +1,8 @@
+{
+  "slug": "diagnostic-tuyere-coordination-visibility",
+  "content_hash": "e2d71f4b17e2d0e7a580fb85164941f9cc9dbceeb2079cebfb15229bcfd81470",
+  "session_id": "006267b5-5879-430f-83d6-97637eed8b70",
+  "armed_at": "2026-08-25T20:47:00.550224",
+  "watcher": "gate-watcher armed in depositing session",
+  "attestation_boundary": "This receipt proves the watcher was ARMED at write time. It does NOT prove the watcher stayed alive. Liveness of a session-local monitor is not externally verifiable."
+}
