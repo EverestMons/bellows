@@ -1,0 +1,8 @@
+{
+  "slug": "executable-plan-lint-fence-exclusion",
+  "content_hash": "ee5566b246f10858a74afaf5f3693463e52a493578945c1be919d3c9bd18b029",
+  "session_id": "b52c5d10-80b5-4aed-a816-be44e8e646ec",
+  "armed_at": "2026-08-26T15:15:45.783584",
+  "watcher": "gate-watcher armed in depositing session",
+  "attestation_boundary": "This receipt proves the watcher was ARMED at write time. It does NOT prove the watcher stayed alive. Liveness of a session-local monitor is not externally verifiable."
+}
