@@ -88,8 +88,8 @@ def issue_verdict(plan_id_or_slug, step, outcome, reason, force=False,
                 print(f"  {r}", file=sys.stderr)
         else:
             print("No pending request files found.", file=sys.stderr)
-        print("\nIf the request was already consumed, see the reconciliation runbook "
-              "in CLAUDE.md for manual orphan-recovery.", file=sys.stderr)
+        print("\nIf the request was already consumed, run tools/reconcile_plan.py "
+              "<plan-id> ... (see its --help) for orphan-recovery.", file=sys.stderr)
         sys.exit(1)
 
     if len(matches) > 1:
