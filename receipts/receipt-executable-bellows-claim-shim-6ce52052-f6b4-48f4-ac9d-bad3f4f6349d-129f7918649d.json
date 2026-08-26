@@ -1,0 +1,8 @@
+{
+  "slug": "executable-bellows-claim-shim",
+  "content_hash": "129f7918649d13a971b755a45ff49a299d570ee7fb989c55db7ddfbf940a3127",
+  "session_id": "6ce52052-f6b4-48f4-ac9d-bad3f4f6349d",
+  "armed_at": "2026-08-26T17:48:55.768356",
+  "watcher": "gate-watcher armed in depositing session",
+  "attestation_boundary": "This receipt proves the watcher was ARMED at write time. It does NOT prove the watcher stayed alive. Liveness of a session-local monitor is not externally verifiable."
+}
