@@ -175,6 +175,39 @@ def _check_pins(plan_text, project_repo, root_repo):
     return telemetry, warns
 
 
+_BARE_CONSTANT_RE = re.compile(r"(==|>=|<=)\s*\*{0,2}\d+\*{0,2}")
+_CLAUSE_MARKERS = ("supersede", "re-derive", "rederive", "yours ", "recorded",
+                   "record", "measured", "measure and")
+
+
+def _check_bare_constants(plan_text):
+    """(r) WARN-FIRST: a probe constant (== / >= / <= N) inside a STEP block
+    with no supersede-class clause on the line or within 2 lines either side.
+    The global Numbers-discipline banner deliberately does NOT satisfy this
+    check: the gap being closed is the ad-hoc probe line outside the banner's
+    reach (the 554 case). Advisory only — never a FAIL; the verdict on
+    whether a constant is genuinely load-bearing stays with the reader."""
+    lines = plan_text.splitlines()
+    in_step = False
+    warns = []
+    for i, line in enumerate(lines):
+        if line.startswith("## STEP "):
+            in_step = True
+        elif line.startswith("## ") and not line.startswith("## STEP "):
+            in_step = False
+        if not in_step or not _BARE_CONSTANT_RE.search(line):
+            continue
+        window = " ".join(lines[max(0, i - 2):i + 3]).lower()
+        if not any(m in window for m in _CLAUSE_MARKERS):
+            warns.append(i + 1)
+    for n in warns:
+        print(f"(r) WARN: line {n} probe constant without a supersede-class "
+              f"clause within 2 lines — a wrong authored number here HARD-FAILS "
+              f"a correct state (the 554 class); add measure-record-supersede "
+              f"language or verify the constant is structural")
+    return len(warns)
+
+
 def lint(plan_path):
     plan_text = Path(plan_path).read_text(encoding="utf-8")
     results = []
@@ -768,6 +801,8 @@ def lint(plan_path):
             print(w)
     except Exception as e:
         print(f"(q) WARN: check errored ({e})")
+
+    _check_bare_constants(plan_text)
 
     for status, check, detail in results:
         print(f"{status}: {check} — {detail}")
