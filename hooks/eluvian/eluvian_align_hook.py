@@ -116,10 +116,28 @@ def _daemon_status():
         return "unknown"
 
 
+# The baton is append-only with newest blocks at the top; counting the whole
+# file counts every parked marker ever written (measured inflating 44→47 in
+# two days — tuyere thread 3). "The head" = the newest two session blocks:
+# scan up to the third top-level block header, capped at 200 lines.
+_BLOCK_RE = re.compile(r"^> ## ")
+
+
 def _parked_count():
     try:
-        text = _BATON.read_text(encoding="utf-8")
-        return sum(1 for line in text.splitlines() if _PARKED_RE.search(line))
+        lines = _BATON.read_text(encoding="utf-8").splitlines()
+        blocks = 0
+        count = 0
+        for i, line in enumerate(lines):
+            if _BLOCK_RE.match(line):
+                blocks += 1
+                if blocks >= 3:
+                    break
+            if i >= 200:
+                break
+            if _PARKED_RE.search(line):
+                count += 1
+        return count
     except Exception:
         return 0
 
