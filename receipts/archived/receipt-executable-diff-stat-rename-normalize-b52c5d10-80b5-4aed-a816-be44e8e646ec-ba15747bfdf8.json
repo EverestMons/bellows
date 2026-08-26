@@ -1,0 +1,8 @@
+{
+  "slug": "executable-diff-stat-rename-normalize",
+  "content_hash": "ba15747bfdf88f131e2f432f22ca90e7c5ad7d13773fb9fcffb6c6f6f6f5cdbf",
+  "session_id": "b52c5d10-80b5-4aed-a816-be44e8e646ec",
+  "armed_at": "2026-08-26T15:38:15.606437",
+  "watcher": "gate-watcher armed in depositing session",
+  "attestation_boundary": "This receipt proves the watcher was ARMED at write time. It does NOT prove the watcher stayed alive. Liveness of a session-local monitor is not externally verifiable."
+}
