@@ -31,3 +31,17 @@
 | — | 1 | ACID | — | — | DRY — one pathspec-limited commit, toplevel-first; counts carry supersede clauses | — | no fold |
 
 **Walk 1 total: 1 finding (instruction 1 / record 0), folded; fold_check CLEAN (12 signals held); fold text grep-verified (`--db-path` present ×4, the superseded monkeypatch/live-checkout hedge verified 0).**
+
+---
+
+## Walk 2 — five-lens sequential walk (real)
+
+| id | walk | lens | sub_question | origin | finding | pre_fold_text | resolution |
+|---|---|---|---|---|---|---|---|
+| — | 2 | Weak spots | — | — | DRY — first-poll always logs (prev=UNSET → None-prev judge); repeated db-unreadable lines are bounded (≤480 over the 120m cap), log-only, and honest (silence-is-not-success); QA 2.1's expected in_progress is this plan's own live state during its QA step | — | no fold |
+| — | 2 | Destruction | — | — | DRY — `--status` path skips makedirs; tests never enter the poll loop; spawned watchers are per-deposit bounded ro-readers | — | no fold |
+| w2-1 | 2 | Vulnerabilities | does QA 2.3 check the dir the probe actually wrote? | fold-introduced (w1 era phrasing) | `<bellows-root>/receipts/` is ambiguous — Task E's probe writes the WORKTREE's receipts dir (`_BELLOWS_ROOT` derives from the tool's own path), so an agent checking the live root would earn a vacuous 0 (the a-check trap: a check that cannot fail) | `ls <bellows-root>/receipts/ \| /usr/bin/grep -cF dup_probe_569; true` | folded: pinned to the worktree receipts dir with the vacuous-alternative named, plus a `git status --porcelain -- receipts/` cleanliness assert |
+| — | 2 | Integration-record | — | — | DRY — retirement list ×7 consistent across title/does-NOT-do/register; manifest reads/writes complete | — | no fold |
+| — | 2 | ACID | — | — | DRY | — | no fold |
+
+**Walk 2 total: 1 finding (instruction 1 / record 0), folded; fold_check CLEAN (12 signals held); fold grep-verified 1, superseded text 0. Bar NOT met — a further confirming walk required.**

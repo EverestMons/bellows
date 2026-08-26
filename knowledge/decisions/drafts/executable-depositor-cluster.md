@@ -251,7 +251,7 @@ Seven memory entries carry deposit discipline the system now enforces or can enf
 > **Item 2 — live behavior (three runs, full tails pasted):**
 > 1. `python3 tools/gate_watcher.py --status executable-depositor-cluster.md --db-path /Users/marklehn/Developer/GitHub/bellows/lifecycle.db` → a `WATCH:` line naming the LIVE phase of THIS plan with its minted id (in_progress at QA time — the worktree-committed tool reading the live DB via the split-path law; capture `$?` = 0).
 > 2. `python3 tools/gate_watcher.py --status no-such-plan.md --db-path /Users/marklehn/Developer/GitHub/bellows/lifecycle.db` → `WATCH: pre-claim`, exit 0 (the honest not-yet-claimed answer).
-> 3. The Task-E duplicate probe's cleanup re-verified: `ls <bellows-root>/receipts/ | /usr/bin/grep -cF dup_probe_569; true` → 0.
+> 3. The Task-E duplicate probe's cleanup re-verified IN THE WORKTREE's receipts dir (the dir the probe actually wrote — checking the live root instead would pass vacuously): `cd "$(git rev-parse --show-toplevel)" && ls receipts/ | /usr/bin/grep -cF dup_probe_569; true` → 0, and `git status --porcelain -- receipts/` → empty.
 > **Item 3 — hygiene + receipt** `knowledge/qa/evidence/depositor-cluster-2026-08-26/qa-receipt.md`: numstat 4 files; toplevel; reflog `-n 4` → 0 amends; per-item table, then the Rule 20 block INSIDE a "Verification"-headed section (the 556 placement law).
 >
 > ⚠️ **Gate note:** pytest summary named above — the gate parses; no benign override pre-declared.
