@@ -281,7 +281,16 @@ PASSED — SELF-CHECK PASSED — all evidence files present, no hedging keywords
 
 **Walk register:** `bellows/knowledge/research/walk-register-depositor-cluster-2026-08-26.md`
 
-**Walks:** walk 0 pinned; walks 1+ run post-draft as genuine sequential five-lens passes — see the register.
+**Walks:** walk 0 pinned; **walks 1–3 complete**, genuine sequential five-lens passes — see the register.
+**Direction verdict (after walk 1): PROCEED** — the build-one-verify-four shape held; no direction-class finding.
+- Weak spots:          w1 1 folded (instruction 1 / record 0) — the worktree-DB reachability hole (--db-path); w2 dry; w3 dry
+- Destruction:         w1 dry; w2 dry; w3 dry
+- Vulnerabilities:     w1 dry; w2 1 folded (instruction 1 / record 0) — QA 2.3's vacuous-dir ambiguity pinned; w3 dry
+- Integration-record:  w1 dry; w2 dry; w3 dry
+- ACID:                w1 dry; w2 dry; w3 dry
+**Cold panel: NOT convened, decided with reasoning** — T1 additive tooling (one read-only reporter + an additive receipt edit); no money path, no destructive step; the E-family/563 precedent.
+**Conformance (§5):** recorded at the freeze from actual runs — see the register's conformance block (run_check cycle/lint/register, all branched-on).
+**Closing:** **walk 3 met the bar — all five lenses dry, instruction 0 / record 0, no restructuring fold.** Instruction series **1 → 1 → 0**. Close is MANUAL (CEO-lane verdicts; auto_close false).
 
 ## Cycle Manifest
 tier: T1
@@ -290,7 +299,7 @@ class: shop-infra
 reads: /Users/marklehn/Developer/GitHub/bellows/depositor.py, /Users/marklehn/Developer/GitHub/bellows/lifecycle.py, /Users/marklehn/Developer/GitHub/bellows/bellows.py, /Users/marklehn/Developer/GitHub/bellows/tools/deposit_receipt.py, /Users/marklehn/Developer/GitHub/bellows/tests/test_deposit_receipt.py, /Users/marklehn/Developer/GitHub/bellows/tests/test_lifecycle.py
 writes: tools/gate_watcher.py, tools/deposit_receipt.py, tests/test_gate_watcher.py, knowledge/dev-logs/depositor-cluster-dev-2026-08-26.md, knowledge/qa/evidence/depositor-cluster-2026-08-26/pytest_full.txt, knowledge/qa/evidence/depositor-cluster-2026-08-26/probes-raw.txt, knowledge/qa/evidence/depositor-cluster-2026-08-26/qa-receipt.md
 open_forks: the seven memory retirements = the Planner's close-time act (sandbox split, stated); the plan_lint cluster (batch item 3) carries R-3/R-5's routed residues; whether the daemon should ALSO spawn a watcher at claim (belt-and-braces) — not decided here
-walks: pending
-yields: pending
-validation: pending
+walks: 3
+yields: 1, 1, 0
+validation: cycle_check=BAR_MET, plan_lint=0_FAIL, fold_check=CLEAN_x2
 coherence: N/A

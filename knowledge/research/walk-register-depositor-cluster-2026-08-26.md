@@ -24,7 +24,7 @@
 
 | id | walk | lens | sub_question | origin | finding | pre_fold_text | resolution |
 |---|---|---|---|---|---|---|---|
-| w1-1 | 1 | Weak spots | can QA Item 2 actually run from the worktree? | pre-existing | the worktree carries no `lifecycle.db` (untracked), so the worktree tool's default `_DB` resolves to a missing file and `--status` prints db-unreadable; `read_state`'s `db_path` parameter was unreachable from the CLI, and the QA instruction hedged with a convoluted live-checkout fallback | `run the COMMITTED tool from the worktree; its _DB resolves relative to the tool's own path, so invoke it as python3 <live-checkout>/tools/gate_watcher.py --status … ONLY if the worktree copy cannot see a lifecycle.db; state which you ran` | folded: `--db-path` CLI argument added (both modes thread it to read_state); QA Items 2.1/2.2 rewritten to pass the live checkout's DB path explicitly; test 8 passes `--db-path` instead of monkeypatching `_DB` |
+| w1-1 | 1 | Weak spots | can QA Item 2 actually run from the worktree? | pre-existing | the worktree carries no `lifecycle.db` (untracked), so the worktree tool's default `_DB` resolves to a missing file and `--status` prints db-unreadable; `read_state`'s `db_path` parameter was unreachable from the CLI, and the QA instruction hedged with a convoluted live-checkout fallback | `run the COMMITTED tool from the worktree; its _DB resolves relative to the tool's own path, so invoke it as python3 <live-checkout>/tools/gate_watcher.py --status … ONLY if the worktree copy cannot see a lifecycle.db; state which you ran` | folded: `--db-path` CLI argument added (both modes thread it to read_state); QA Items 2.1/2.2 rewritten to pass the live checkout's DB path explicitly; test 8 passes `--db-path` instead of monkeypatching `_DB` (the `…` in the quoted text is the plan's own character — verbatim-ellipsis) |
 | — | 1 | Destruction | — | — | DRY — watcher bounded (terminal-exit + 120m timeout), read-only URI, log dir untracked; the duplicate-probe receipt is inert (no matching ready- plan), explicitly cleaned, and re-verified at QA; spawn fail-open never blocks the receipt | — | no fold |
 | — | 1 | Vulnerabilities | — | — | DRY — the D3 grep enumerates and classifies every hit (the writer line is its own positive control); tests build their own tmp DB via init_lifecycle_db; the override-honored arm (test 4) pins the overridden=0 filter | — | no fold |
 | — | 1 | Integration-record | — | — | DRY — the seven retirements named in-plan with the sandbox split; deposit blocks name every file incl. tests; the QA .txt named for the qa_test_result gate | — | no fold |
@@ -45,3 +45,27 @@
 | — | 2 | ACID | — | — | DRY | — | no fold |
 
 **Walk 2 total: 1 finding (instruction 1 / record 0), folded; fold_check CLEAN (12 signals held); fold grep-verified 1, superseded text 0. Bar NOT met — a further confirming walk required.**
+
+---
+
+## Walk 3 — five-lens sequential walk (confirming pass, real)
+
+| id | walk | lens | sub_question | origin | finding | pre_fold_text | resolution |
+|---|---|---|---|---|---|---|---|
+| — | 3 | Weak spots | — | — | DRY — every Task C anchor asserted-unique before edit (`receipt = {` ×1, `"watcher":` key ×1); `db_path` threads through both CLI modes to read_state | — | no fold |
+| — | 3 | Destruction | — | — | DRY | — | no fold |
+| — | 3 | Vulnerabilities | — | — | DRY — the D3 grep's tests/ hits (tmp-DB seeds) fall under the classify-every-hit instruction; no absence claim without its control | — | no fold |
+| — | 3 | Integration-record | — | — | DRY — manifest finalization declared as the close act; retirement ×7 consistent | — | no fold |
+| — | 3 | ACID | — | — | DRY | — | no fold |
+
+**Walk 3 total: 0 findings — all five lenses dry (instruction 0 / record 0). Confirming pass with no restructuring fold. BAR MET; T1, no panel (small additive tooling; the warm series 1 → 1 → 0 fell to dry).**
+
+---
+
+## Conformance (§5, recorded from actual runs at the freeze, 2026-08-26)
+
+- `run_check cycle` (STRICT) → `BAR_MET`, exit 0 — branched-on.
+- `run_check lint` at the deposit-resolution path (`knowledge/decisions/lintmirror-executable-depositor-cluster.md`) → PASS, exit 0 (checks a-d all PASS incl. the (c) banner pair and both steps' deposits/scope) — branched-on; mirror proven non-claimable (`bellows.is_runnable_plan` → False) and removed. `grep -c '^## STEP '` → 2 (the pre-deposit header assert).
+- `run_check register` (this file) → CONFORMANT, 0 UNCONFORMANT — branched-on. (An earlier run WARNed on w1-1's `…`, which is the plan's own quoted character; annotated verbatim-ellipsis per the lint's sanctioned marker, re-run PASS.)
+- `fold_check` → CLEAN after each walk's folds (12 signals held, twice); the CLOSE act's intended drift (the same four advisory WARNs as every close: Closing line, lens lines, manifest validation entries now present) re-baselined WITH this note.
+- `propagation_check` → N/A by design: the plan's counts are single-declaration pins in the Numbers table.
