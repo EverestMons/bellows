@@ -17,3 +17,18 @@
 5. **id prediction:** 568.
 
 ⚠️ Walk 0 carries no fold rows. Walks 1–2 appended AFTER the draft exists, from real passes.
+
+---
+
+## Walk 1 — five-lens sequential walk (post-draft, real)
+
+| id | walk | lens | sub_question | origin | finding | pre_fold_text | resolution |
+|---|---|---|---|---|---|---|---|
+| w1-1 | 1 | Weak spots | can the agent reconstruct the R-5 fixtures exactly? | pre-existing | the `#`-comment-prefix fixture encoding destroys the H1 title (prefix collides with the heading marker) — an agent stripping prefixes builds a DIFFERENT fixture and the measurement diverges; the companion worry (the body fixture's `**qa_steps:** 2` line poisoning the plan's own header) was REFUTED by code: `gates._parse_plan_header` terminates the header block at the first non-bold non-blank line | `# fixture A (qa_steps declared)` (commented paste) | folded: fixtures given as a construction SPEC (title text, header line, two H3 sections; B byte-identical minus the qa_steps field) |
+| w1-2 | 1 | Vulnerabilities | can the agent read `~/.claude` at all? | pre-existing | R-4 required an absolute read of the memory file, but daemon agents are sandboxed away from `~/.claude` (the same constraint that forces Planner-side retirement) — the mapping table would fail on a permission error | `absolute-path read of /Users/marklehn/.claude/...` | folded: the ritual's step list INLINED into R-4 (Planner-transcribed); the path dropped from the manifest reads |
+| w1-3 | 1 | Vulnerabilities | is the R-7 positive control earnable? | pre-existing | the planted disagreement ("three" vs "4") was the Planner's GUESS at the detector's representation — if the detector matches digits/specific shapes only, the control fails and the row is wrongly marked instrument-unproven | `state a count as "three" in one place and "4" in another` | folded: agent reads the detectors FIRST and derives the plant from the tool's own patterns (probe-must-match-representation, mechanurgy stated in-plan) |
+| — | 1 | Destruction | — | — | DRY — read-only by construction; fixtures + baselines confined to /tmp; pytest suites named are tmp_path-isolated | — | no fold |
+| — | 1 | Integration-record | — | — | DRY — license table covers all eight memories incl. the deferred R-5 row; forks named; retirement discipline stated with the 562 gate | — | no fold |
+| — | 1 | ACID | — | — | DRY — one pathspec-limited commit; counts carry supersede clauses | — | no fold |
+
+**Walk 1 total: 3 findings (instruction-class 3 / record 0), all folded; fold_check CLEAN post-fold (5 signals held); each fold's own text grep-verified 1/1/1 and the dropped read verified 0.**
