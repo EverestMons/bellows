@@ -1,0 +1,29 @@
+=== 560 REPLAY ===
+>>> from gates import _resolve_deposit_path
+>>> result = _resolve_deposit_path(
+...     '/Users/marklehn/Developer/bellows/hooks/eluvian/wrap_check.py',
+...     '/Users/marklehn/Developer/GitHub/bellows',
+...     None
+... )
+560 REPLAY result: /Users/marklehn/Developer/GitHub/bellows/hooks/eluvian/wrap_check.py
+560 REPLAY: NON-None — the measured incident replayed to green
+
+=== Extraction Probes (git show HEAD:gates.py) ===
+
+Probe 1: Strategy 4 (cross-machine re-root) count
+$ git show HEAD:gates.py | grep -cF 'Strategy 4 (cross-machine re-root)'
+1
+
+Probe 2: rfind(marker) count
+$ git show HEAD:gates.py | grep -cF 'rfind(marker)'
+1
+
+Probe 3: function ends return None (fail-closed unchanged)
+$ git show HEAD:gates.py | grep -nF 'return None' | tail -3
+379:    return None
+(line 379 is the final return None of _resolve_deposit_path — fail-closed)
+
+=== cmp: git show vs live (0 = identical) ===
+diff <(git show HEAD:gates.py) gates.py → exit 0
+diff <(git show HEAD:tests/test_gates_cross_machine_paths.py) tests/test_gates_cross_machine_paths.py → exit 0
+diff <(git show HEAD:knowledge/dev-logs/gates-cross-machine-paths-dev-2026-08-26.md) knowledge/dev-logs/gates-cross-machine-paths-dev-2026-08-26.md → exit 0
