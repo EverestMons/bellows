@@ -61,6 +61,49 @@ def emit(context):
     sys.exit(0)
 
 
+_SYNC_TIMEOUT = 5
+
+
+def _sync_repos():
+    """Core repos to freshness-check, by existence (machine-portable)."""
+    repos = [("root", _GOV_ROOT),
+             ("bellows", _STATUS_PY.parent),
+             ("lessons-forge", _GOV_ROOT / "lessons-forge")]
+    mem = os.environ.get("ELUVIAN_WRAP_MEMORY")
+    if mem:
+        repos.append(("memory", Path(mem)))
+    return [(l, p) for l, p in repos if (p / ".git").exists()]
+
+
+def _repo_sync(label, path):
+    """Bounded fetch + upstream compare. REPORT ONLY — never mutates the tree.
+    Returns (label, state); state: current | ahead N (unpushed) | BEHIND N |
+    DIVERGED (ahead A, behind B) | no upstream | fetch FAILED[...]."""
+    def _git(*args):
+        return subprocess.run(
+            ["git", "-C", str(path), *args],
+            capture_output=True, text=True, timeout=_SYNC_TIMEOUT,
+            env={**os.environ, "GIT_TERMINAL_PROMPT": "0"},
+        )
+    try:
+        fetch_failed = _git("fetch", "origin", "--quiet").returncode != 0
+        r = _git("rev-list", "--count", "--left-right", "HEAD...@{u}")
+        if r.returncode != 0:
+            return (label, "fetch FAILED" if fetch_failed else "no upstream")
+        ahead, behind = (int(x) for x in r.stdout.split())
+        if fetch_failed:
+            return (label, f"fetch FAILED (stale view: ahead {ahead}, behind {behind})")
+        if ahead and behind:
+            return (label, f"DIVERGED (ahead {ahead}, behind {behind})")
+        if behind:
+            return (label, f"BEHIND {behind}")
+        if ahead:
+            return (label, f"ahead {ahead} (unpushed)")
+        return (label, "current")
+    except Exception:
+        return (label, "fetch FAILED")
+
+
 def _daemon_status():
     try:
         res = subprocess.run(
@@ -96,9 +139,19 @@ def main():
     ]
     if parked:
         parts.append(f"Parked arcs: {parked}")
+    sync = [_repo_sync(l, p) for l, p in _sync_repos()]
+    problems = [(l, s) for l, s in sync
+                if s != "current" and not s.startswith("ahead")]
+    if problems:
+        parts.append("⚠️ Sync: " + "; ".join(f"{l} {s}" for l, s in problems)
+                     + " — run /eluvian to pull (ff-only) or resolve deliberately")
+    else:
+        unpushed = [f"{l} {s}" for l, s in sync if s.startswith("ahead")]
+        parts.append("Sync: core repos current"
+                     + (f" ({'; '.join(unpushed)})" if unpushed else "."))
     parts.append("Type /eluvian for the full alignment pass.")
 
-    hooklog("SessionStart-align", f"parked={parked}")
+    hooklog("SessionStart-align", f"parked={parked} sync={sync}")
     emit("\n".join(parts))
 
 
