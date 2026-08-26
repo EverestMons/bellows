@@ -22,7 +22,15 @@ machine: `~/Developer/GitHub`; Mac mini: `~/Developer/eluvian-governance`) and
 the memory repo is `$ELUVIAN_WRAP_MEMORY` — both set in `~/.claude/settings.json`
 per machine, same names the hooks read.
 
-## Step 0 — ARM THE LOCK, then FETCH (before anything else)
+## Step 0 — QUEUE CHECK, then ARM THE LOCK, then FETCH
+
+**The wrap's FIRST action is a queue check, not the sentinel touch** (SESSION 59's
+measured lesson; mid-flight collisions measured again 2026-08-24): run
+`python3 <bellows>/status.py` and read IN-FLIGHT / AWAITING VERDICT. If any plan
+is mid-flight or verdict-pending on THIS machine, do not append to any artifact
+that plan is editing (baton, LESSONS.md, its project's files) — drive the plan
+to its pause or close first, or coordinate, and only then arm. A quiet queue →
+arm immediately:
 
 ```bash
 touch "${ELUVIAN_WRAP_ROOT:-/Users/marklehn/Developer/GitHub}/.wrap-in-progress"
