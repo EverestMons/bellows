@@ -1,0 +1,8 @@
+{
+  "slug": "executable-bellows-r2-wiring",
+  "content_hash": "74890f49f0d71735d57b80d56aa9a31feb7baa9bcc54a16c5dfd3b3a572db7e3",
+  "session_id": "006267b5-5879-430f-83d6-97637eed8b70",
+  "armed_at": "2026-08-26T12:27:23.158221",
+  "watcher": "gate-watcher armed in depositing session",
+  "attestation_boundary": "This receipt proves the watcher was ARMED at write time. It does NOT prove the watcher stayed alive. Liveness of a session-local monitor is not externally verifiable."
+}
