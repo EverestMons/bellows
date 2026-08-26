@@ -32,3 +32,17 @@
 | — | 1 | ACID | — | — | DRY — one pathspec-limited commit; counts carry supersede clauses | — | no fold |
 
 **Walk 1 total: 3 findings (instruction-class 3 / record 0), all folded; fold_check CLEAN post-fold (5 signals held); each fold's own text grep-verified 1/1/1 and the dropped read verified 0.**
+
+---
+
+## Walk 2 — five-lens sequential walk (real)
+
+| id | walk | lens | sub_question | origin | finding | pre_fold_text | resolution |
+|---|---|---|---|---|---|---|---|
+| w2-1 | 2 | Weak spots | is the fixture-B spec byte-unambiguous? | fold-introduced (w1-1's spec) | the spec said omit the qa_steps field "and its trailing pipe" — the ` \| ` separator PRECEDES the field (it is last on the line); an agent following the wrong-direction instruction leaves a dangling separator and fixture B diverges | `(and its trailing pipe)` | folded: separator direction corrected; B's header end-state stated (`ends at **Project:** bellows`) |
+| w2-2 | 2 | Vulnerabilities | did w1-2's class get swept across every site? | pre-existing (missed by w1's fold — the sweep-the-class duty) | R-2 still instructed the agent to "cite" the MECHANIZED header inside two `~/.claude` memory files — the identical sandbox-denial class folded at R-4, standing at a SECOND site | `Note both memory files already carry a "MECHANIZED by DC v2.13" header — cite it.` | folded: Planner-attested fact, agent forbidden from attempting the read, citation re-aimed at the DC changelog 2.13 line (in the agent's reach) |
+| — | 2 | Destruction | — | — | DRY — /tmp confinement re-verified incl. R-3's baseline dotfile landing beside the /tmp copy | — | no fold |
+| — | 2 | Integration-record | — | — | DRY — license-table coverage instruction names all eight memories; manifest finalization is the close act | — | no fold |
+| — | 2 | ACID | — | — | DRY — toplevel-first pathspec-limited commit | — | no fold |
+
+**Walk 2 total: 2 findings (instruction-class 2 / record 0), both folded; fold_check CLEAN (5 signals held); folds grep-verified 1/1, superseded text verified 0. Bar NOT met — a further confirming walk required.**
