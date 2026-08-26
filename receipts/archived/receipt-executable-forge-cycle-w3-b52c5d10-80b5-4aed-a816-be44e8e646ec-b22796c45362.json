@@ -1,0 +1,8 @@
+{
+  "slug": "executable-forge-cycle-w3",
+  "content_hash": "b22796c453629bae94c77829f7efbb6dd50e1c762d24a9fddbe990454349ff78",
+  "session_id": "b52c5d10-80b5-4aed-a816-be44e8e646ec",
+  "armed_at": "2026-08-26T11:43:04.724215",
+  "watcher": "gate-watcher armed in depositing session",
+  "attestation_boundary": "This receipt proves the watcher was ARMED at write time. It does NOT prove the watcher stayed alive. Liveness of a session-local monitor is not externally verifiable."
+}
