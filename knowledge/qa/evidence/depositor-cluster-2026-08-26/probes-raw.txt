@@ -1,0 +1,15 @@
+=== PROBE 1: live --status for THIS plan ===
+$ python3 tools/gate_watcher.py --status executable-depositor-cluster.md --db-path /Users/marklehn/Developer/GitHub/bellows/lifecycle.db
+WATCH: in_progress id=569
+exit_code=0
+
+=== PROBE 2: --status for nonexistent plan ===
+$ python3 tools/gate_watcher.py --status no-such-plan.md --db-path /Users/marklehn/Developer/GitHub/bellows/lifecycle.db
+WATCH: pre-claim
+exit_code=0
+
+=== PROBE 3: dup_probe cleanup verification (worktree receipts dir) ===
+$ cd "$(git rev-parse --show-toplevel)" && ls receipts/ | /usr/bin/grep -cF dup_probe_569; true
+0
+$ git status --porcelain -- receipts/
+(empty — clean)
