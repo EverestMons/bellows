@@ -11,6 +11,7 @@ precede attestation.
 
 import argparse
 import hashlib
+import subprocess
 import json
 import os
 import re
@@ -51,7 +52,21 @@ def _is_in_watched_tree(plan_path, watched_dirs):
     return False
 
 
-def write_receipt(plan_path, session_id):
+def _spawn_watcher(claimable_name):
+    """Spawn the session-independent gate watcher, detached. Returns pid or None."""
+    watcher = os.path.join(_HERE, "gate_watcher.py")
+    try:
+        p = subprocess.Popen(
+            [sys.executable, watcher, claimable_name],
+            stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
+            start_new_session=True,
+        )
+        return p.pid
+    except Exception:
+        return None
+
+
+def write_receipt(plan_path, session_id, spawn_watcher=True):
     if not os.path.exists(plan_path):
         return _fail(f"plan file does not exist: {plan_path}")
 
@@ -99,12 +114,18 @@ def write_receipt(plan_path, session_id):
     receipt_name = f"receipt-{slug}-{session_id}-{hash12}.json"
     receipt_path = os.path.join(_RECEIPTS_DIR, receipt_name)
 
+    watcher_note = "gate-watcher armed in depositing session"
+    if spawn_watcher:
+        pid = _spawn_watcher(slug + ".md")
+        if pid is not None:
+            watcher_note = f"gate_watcher.py spawned detached (pid {pid}); log: logs/watch/{slug}.md.log"
+
     receipt = {
         "slug": slug,
         "content_hash": content_hash,
         "session_id": session_id,
         "armed_at": datetime.now().isoformat(),
-        "watcher": "gate-watcher armed in depositing session",
+        "watcher": watcher_note,
         "attestation_boundary": (
             "This receipt proves the watcher was ARMED at write time. "
             "It does NOT prove the watcher stayed alive. Liveness of a "
@@ -124,6 +145,9 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Write a deposit watcher receipt")
     parser.add_argument("plan_path", help="path to the plan file (draft or ready-)")
     parser.add_argument("session_id", help="depositing session's id ([A-Za-z0-9-]+)")
+    parser.add_argument("--no-spawn", action="store_true",
+                        help="skip spawning the detached gate watcher")
     args = parser.parse_args()
-    success = write_receipt(args.plan_path, args.session_id)
+    success = write_receipt(args.plan_path, args.session_id,
+                            spawn_watcher=not args.no_spawn)
     sys.exit(0 if success else 1)

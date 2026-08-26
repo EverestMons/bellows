@@ -17,6 +17,7 @@ def _patch_bellows_root(monkeypatch, tmp_path):
     import tools.deposit_receipt as dr
     monkeypatch.setattr(dr, "_BELLOWS_ROOT", str(tmp_path))
     monkeypatch.setattr(dr, "_RECEIPTS_DIR", str(tmp_path / "receipts"))
+    monkeypatch.setattr(dr, "_spawn_watcher", lambda name: None)
     yield
 
 
