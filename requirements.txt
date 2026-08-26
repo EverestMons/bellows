@@ -3,3 +3,4 @@ watchdog
 flask
 requests
 pyyaml
+pytest

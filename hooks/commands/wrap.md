@@ -96,6 +96,13 @@ done-on-another-machine-and-not-pulled (measured 2026-08-24).
    them + `MEMORY.md` and push. Skip if untouched. On the mini this points at
    the auto-memory dir, which is not a git repo — write memories there but the
    commit/push half is N/A.
+5. **Record the wrap (R2)** — from a tuyere checkout with DB access:
+   `.venv/bin/python -m tuyere.wraps record <full-session-uuid>` (the machine
+   defaults to this host). No tuyere checkout or unreachable DB → SKIP and say
+   so (fail-open ritual; the registry is information, never a gate). ⚠️ This
+   step is UNVERIFIED by the lock (deliberate — the stop path stays
+   subprocess-free), so the most-skipped-step class applies; a registry row
+   attests that THIS STEP RAN, never that the wrap verified complete.
 
 Use the current model's `Co-Authored-By:` trailer. Leave the Bellows daemon running.
 

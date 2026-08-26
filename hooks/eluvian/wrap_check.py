@@ -101,6 +101,57 @@ def _extract_sid(sweep_line):
     return m.group(1) if m else None
 
 
+def _tuyere_checkout() -> Path | None:
+    """Resolve the tuyere checkout path (fail-open: None if no candidate has a venv).
+
+    Resolution order: $ELUVIAN_WRAP_TUYERE, ~/Developer/tuyere, ROOT/tuyere.
+    First candidate whose .venv/bin/python exists wins.
+    """
+    candidates = []
+    env_override = os.environ.get("ELUVIAN_WRAP_TUYERE")
+    if env_override:
+        candidates.append(Path(env_override))
+    candidates.append(Path.home() / "Developer" / "tuyere")
+    candidates.append(ROOT / "tuyere")
+    for p in candidates:
+        if (p / ".venv" / "bin" / "python").exists():
+            return p
+    return None
+
+
+def _session_wraps_today(timeout_seconds=5):
+    """Read today's session wraps from the tuyere registry via CLI subprocess.
+
+    Returns list of matching lines (possibly empty), or None on ANY failure
+    (fail-open contract: missing checkout, missing venv, timeout, nonzero exit,
+    empty/unparseable output, any exception — all return None silently).
+    """
+    try:
+        checkout = _tuyere_checkout()
+        if checkout is None:
+            return None
+        venv_python = str(checkout / ".venv" / "bin" / "python")
+        result = subprocess.run(
+            [venv_python, "-m", "tuyere.wraps", "list", "--limit", "10"],
+            capture_output=True, text=True, timeout=timeout_seconds,
+            cwd=str(checkout),
+        )
+        if result.returncode != 0:
+            return None
+        today_local = datetime.date.today().isoformat()
+        today_utc = datetime.datetime.now(datetime.timezone.utc).date().isoformat()
+        rows = []
+        for line in result.stdout.splitlines():
+            if " wrapped at " not in line:
+                continue
+            _, timestamp_part = line.split(" wrapped at ", 1)
+            if timestamp_part.startswith(today_local) or timestamp_part.startswith(today_utc):
+                rows.append(line.strip())
+        return rows
+    except Exception:
+        return None
+
+
 def check(session_id: str | None = None, caller: str = "stop") -> list[str]:
     """Return a list of failure messages. Empty list == wrap complete."""
     fails: list[str] = []
@@ -213,6 +264,17 @@ def check(session_id: str | None = None, caller: str = "stop") -> list[str]:
 
     # --- Step 2r: deposit receipts — every own-session deposit attested --------
     _check_receipts(session_id, fails)
+
+    # --- R2 registry: informational line (fail-open, never suppressing) --------
+    if caller == "debt" and fails:
+        rows = _session_wraps_today()
+        if rows:
+            print("[R2/registry] wrap(s) recorded today per the shared registry:")
+            for row in rows:
+                print(f"  {row}")
+            print("— if this machine's tree is stale, fetch first: the debt "
+                  "reported BELOW may be another machine's already-satisfied "
+                  "state (scope law). Genuine local debt still stands.")
 
     return fails
 
