@@ -1,0 +1,19 @@
+# Walk register — `depositor-cluster-2026-08-26` (bellows)
+
+**schema_version:** `0.3`
+
+**Plan:** `bellows/knowledge/decisions/drafts/executable-depositor-cluster.md`
+**Tier:** T1 (Small — one new read-only tool + additive receipt wiring + tests; class shop-infra). **Panel: none.**
+**Opened:** 2026-08-26
+
+---
+
+## Walk 0 — context pin (REAL, measured 2026-08-26)
+
+1. **The batch-4 work order, item (2), CEO-approved:** one plan for the depositor cluster; the audit row L130 names the watcher shape ("deposit tooling could arm the watcher automatically").
+2. **The scout's central finding (all from code, this authoring):** FOUR of the five cluster features already shipped — duplicate-check at the receipt layer (slug+hash refusal), minting single-writer at `lifecycle.py:255` (grep-enumerated, one writer), checker re-runs at the deposit path (`_rerun_validation` at depositor.py:159: BAR_MET + non-benign-lint + manifest cross-check), shared-append DB mediation (bellows.py:1681-1722 + the ledger idempotency pair). Only the AUTO-ARMED watcher is unbuilt: today's receipt merely attests a session-local watcher.
+3. **Design:** `tools/gate_watcher.py` — pure `read_state`/`judge_transition` + a thin poll loop; read-only DB URI; keyed on `deposit_placeholder_name` (proven on row 568); logs to `logs/watch/` (untracked, split-path law); TERMINAL set exits. `deposit_receipt.py` spawns it detached, fail-open on the spawn (the receipt is never blocked by its reporter), `--no-spawn` opt-out.
+4. **Retirement discipline:** seven memories retire at close as the Planner's act (`class: stale`, the 562 gate); the deposit-once pointer carries the grep-first residue (different-slug duplicates stay Planner discipline).
+5. **id prediction:** 569.
+
+⚠️ Walk 0 carries no fold rows. Walks 1+ appended AFTER the draft exists, from real passes.
