@@ -1,0 +1,25 @@
+=== Post-probe 1: m_classless count ===
+6
+=== Post-probe 2: WARN (advisory) count ===
+2
+=== Post-probe 3: NEVER appended to fails count ===
+1
+=== def test_ count ===
+6
+=== cmp vs live ===
+cmp wrap_check: 0
+cmp test: 0
+=== live wrap_check (clean memory tree) ===
+(no [4/memory] lines — clean)
+No class-frontmatter FAIL, no orphan WARN — measured-0 baseline holds live.
+=== live wrap_check tail ===
+[2r/receipts] SKIPPED (blocking arm) — no session_id provided; receipt check requires session context.
+SESSION WRAP INCOMPLETE — the following steps are not verifiably done:
+
+  ✗ [1/project] bellows: 3 commit(s) not pushed — push bellows.
+  ✗ [2/bellows] 1 uncommitted file(s) under verdicts/resolved/ — commit consumed verdicts.
+  ✗ [2/bellows] 1 uncommitted file(s) under receipts/ — commit receipts.
+  ✗ [2/bellows] 3 commit(s) not pushed — push bellows.
+  ✗ [3/root] bellows gitlink is uncommitted — `git add bellows` and commit the bump.
+
+Complete these, then this lock clears automatically.
