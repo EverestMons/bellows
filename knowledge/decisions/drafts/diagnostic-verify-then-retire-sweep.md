@@ -74,7 +74,16 @@ Produce `knowledge/research/verify-then-retire-sweep-2026-08-26.md` (repo-relati
 
 **Walk register:** `bellows/knowledge/research/walk-register-verify-then-retire-sweep-2026-08-26.md`
 
-**Walks:** walk 0 pinned (the scout's measurements above); walks 1–2 run post-draft as genuine sequential five-lens passes — see the register.
+**Walks:** walk 0 pinned (the scout's measurements above); **walks 1–3 complete**, genuine sequential five-lens passes — see the register.
+**Direction verdict (after walk 1): PROCEED** — the sweep's shape (per-row honest verdicts, routes for residues) survived contact with all three walk-1 findings; none was direction-class.
+- Weak spots:          w1 1 folded (instruction 1 / record 0) — fixture encoding; w2 1 folded (instruction 1 / record 0) — pipe direction; w3 dry
+- Destruction:         w1 dry; w2 dry; w3 dry
+- Vulnerabilities:     w1 2 folded (instruction 2 / record 0) — sandbox read + positive-control representation; w2 1 folded (instruction 1 / record 0) — second sandbox-read site; w3 dry
+- Integration-record:  w1 dry; w2 dry; w3 dry
+- ACID:                w1 dry; w2 dry; w3 dry
+**Cold panel: NOT convened, decided with reasoning** — read-only single-deposit diagnostic; the E-family rule (515-528/531 precedent).
+**Conformance (§5):** recorded at the freeze from actual runs — see the register's conformance block: run_check cycle BAR_MET (branched-on), run_check lint at the lintmirror path (branched-on), run_check register CONFORMANT (branched-on), propagation N/A (single-declaration pins; the deposit doc is the agent's).
+**Closing:** **walk 3 met the bar — all five lenses dry, instruction 0 / record 0, no restructuring fold.** Instruction series **3 → 2 → 0** (falling). Close is MANUAL (CEO-lane verdicts; auto_close false).
 
 ## Cycle Manifest
 tier: T1
@@ -83,9 +92,9 @@ class: read-only
 reads: /Users/marklehn/Developer/GitHub/bellows/scripts/cycle_check.py, /Users/marklehn/Developer/GitHub/bellows/scripts/fold_check.py, /Users/marklehn/Developer/GitHub/bellows/scripts/plan_lint.py, /Users/marklehn/Developer/GitHub/bellows/scripts/propagation_check.py, /Users/marklehn/Developer/GitHub/bellows/hooks/eluvian/wrap_check.py, /Users/marklehn/Developer/GitHub/bellows/gates.py, /Users/marklehn/Developer/GitHub/DRAFTING_CYCLE.md, /Users/marklehn/Developer/GitHub/PLANNER_TEMPLATE.md, /Users/marklehn/Developer/GitHub/RULE_20_SELF_CHECK_BLOCK.md
 writes: knowledge/research/verify-then-retire-sweep-2026-08-26.md
 open_forks: R-3's route if fold_check is PARTIAL; R-5's (e) extension shape (feeds batch item 3); R-6's PT-edit singleton if Rule 60 is thin
-walks: pending
-yields: pending
-validation: pending
+walks: 3
+yields: 3, 2, 0
+validation: cycle_check=BAR_MET, plan_lint=0_FAIL, fold_check=CLEAN_x2
 coherence: N/A
 
 ## Rule 20 — QA Self-Check Block
