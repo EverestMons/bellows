@@ -1,0 +1,8 @@
+{
+  "slug": "executable-lessons-project-backfill",
+  "content_hash": "7640fadded92822d21e635f36506c0d58a044f58c9c2f99f187b75d67073b55c",
+  "session_id": "b52c5d10-80b5-4aed-a816-be44e8e646ec",
+  "armed_at": "2026-08-26T10:08:51.267337",
+  "watcher": "gate-watcher armed in depositing session",
+  "attestation_boundary": "This receipt proves the watcher was ARMED at write time. It does NOT prove the watcher stayed alive. Liveness of a session-local monitor is not externally verifiable."
+}

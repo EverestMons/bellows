@@ -1,0 +1,8 @@
+{
+  "slug": "executable-pt-record-errors",
+  "content_hash": "b551754f6cee6d52a3ed3beddce4f95b5b90724d07e55a224e7adbc3a3c18923",
+  "session_id": "b52c5d10-80b5-4aed-a816-be44e8e646ec",
+  "armed_at": "2026-08-26T10:00:16.915681",
+  "watcher": "gate-watcher armed in depositing session",
+  "attestation_boundary": "This receipt proves the watcher was ARMED at write time. It does NOT prove the watcher stayed alive. Liveness of a session-local monitor is not externally verifiable."
+}
