@@ -1,0 +1,8 @@
+{
+  "slug": "executable-wrap-check-memory-class-gate",
+  "content_hash": "d2223b4e0da83f32e984ff230fac161a05ce7942db34729e8df67d810aa27f35",
+  "session_id": "b52c5d10-80b5-4aed-a816-be44e8e646ec",
+  "armed_at": "2026-08-26T14:03:03.287140",
+  "watcher": "gate-watcher armed in depositing session",
+  "attestation_boundary": "This receipt proves the watcher was ARMED at write time. It does NOT prove the watcher stayed alive. Liveness of a session-local monitor is not externally verifiable."
+}

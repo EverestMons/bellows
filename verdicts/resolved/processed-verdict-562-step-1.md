@@ -1,0 +1,3 @@
+continue
+
+The teardown block is resolved: the live-tree dirt was the agent's arm-copy WITHOUT the rstrip fix (a strictly-worse duplicate of the branch content, verified by diff — sole delta was L60), discarded via checkout so the branch merge delivers the superset. The branch's one out-of-insert-scope edit (strip->rstrip in the git() helper) is a DECLARED, load-bearing fix with the failure evidence in the dev log: strip() ate the first porcelain line's leading space and the new parser mangled filenames — the arm cannot work without it. The dirty-tree marker keys the one-verdict teardown retry: proceed.
