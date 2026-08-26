@@ -1,0 +1,8 @@
+{
+  "slug": "executable-depositor-cluster",
+  "content_hash": "263ee42c3b2f783df30b1e9bccf035f6cb77c2b2e31ee1098897e69c30431693",
+  "session_id": "cb04065f-7154-4a28-ae14-faab3b9c7909",
+  "armed_at": "2026-08-26T16:40:28.278891",
+  "watcher": "gate-watcher armed in depositing session",
+  "attestation_boundary": "This receipt proves the watcher was ARMED at write time. It does NOT prove the watcher stayed alive. Liveness of a session-local monitor is not externally verifiable."
+}
