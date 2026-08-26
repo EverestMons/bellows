@@ -1,34 +1,9 @@
-# Glossary — bellows
+# Glossary — bellows (RETIRED → pointer)
 
-<!-- Discriminator: DEFINITION goes here; RUNBOOK goes in CLAUDE.md; TRAP goes into CODE. -->
-<!-- Entries below. Format: ## Term \n definition \n -->
-
-## clearance
-The depositor-written lifecycle.db row that makes a plan claimable under the admission flip (R1). Keyed by content hash (sha256 over raw bytes) + claimable basename; written by the depositor at auto-clear or by the clear tool at a human release; consumed inside the claim transaction. A plan with no unconsumed clearance auto-HOLDs — the filename carries no authority.
-
-## deposit receipt
-The Planner-written attestation that a gate-watcher was armed for a deposit. A JSON file at `receipts/receipt-<slug>-<session_id>-<hash12>.json`, written against the DRAFT bytes BEFORE any ready- name exists. It proves the watcher was ARMED at write time — never that it stayed alive. Archived to `receipts/archived/` when the plan closes.
-
-## class hold
-The depositor's HOLD of a `shop-infra`-classed plan (any write to bellows/forge/lessons-forge code or root doctrine). Never auto-clears; released only by a human running `clear_plan.py --release-class-hold`, which re-runs cycle_check + plan_lint (benign-filtered) and writes the clearance as `cleared_by='clear_tool'`.
-
-## release act
-The deliberate human invocation that frees a class-held plan (rulings fork 4: the human running the tool IS the review). Distinct from auto-clear (depositor, read-only/app-feature/register-writing classes on full-pass gates).
-
-## gate override
-The deliberate human act marking a specific gate failure as discharged: `clear_plan.py --override-gate <plan> <step> <gate> --ref "<justification>"` writes `overridden=1` + the reference onto the gate_events fail rows. E4's consumption re-check advances a continue only when every reported failure is overridden — the benign-failure workflow under enforcement.
-
-## verdict conditioning
-E4's law: the daemon re-checks the gate record when consuming a `continue` (fork 5 — the enforcing party is the acting party). The request file is the per-pause truth of what failed; gate_events is the override-annotation layer; an absent or JSON-less request refuses as unverifiable; verdict files stay plain.
-
-## keyed sweep line
-E5's 3b affirmation form: `Lessons-swept: <date> [sid: <first-8-of-session-id>] — <delta>`. The stop-hook lock passes only when the NEWEST such line carries the wrapping session's id; the debt hook stays date-keyed by design (opposite polarity — it asks whether SOME session swept, not this one).
-
-## verdict act
-The Planner's continue/stop adjudication of a paused step, written as `verdicts/resolved/verdict-<id>-step-<N>.md`; since 2026-08-25 performed via `tools/issue_verdict.py` (location and grammar correct by construction — the bare-handed form is retired).
-
-## dirty-tree precheck (intersection form)
-The teardown-time guard (since exec-523) that refuses a worktree merge only when the live main tree's dirty paths INTERSECT the branch's changed files — commit-gated (skipped when the branch has no commits), quotepath-normalized, `-z -uall` porcelain-parsed. Lifecycle dirt a plan does not touch never blocks; dirt on a file the plan ships blocks with the exact filename and stash-first recovery. Its failures carry the `worktree_teardown_dirty_tree:` marker that keys the Gap-1c one-verdict retry.
-
-## no_receipt hold
-The depositor's stage-12 admission hold (since exec-527, live at the 2026-08-25 15:24 restart): a `ready-` deposit with no ACTIVE receipt matching its slug AND content hash is held before class assignment — a clearance is unreachable without an attested receipt. Released by writing the receipt (the tool strips `hold-` since 527) and running `clear_plan`, which re-enters the full depositor evaluation. Fail-closed: an unreadable receipts directory holds.
+**This file is retired.** All 10 entries migrated VERBATIM to the central
+glossary at `/Users/marklehn/Developer/GitHub/GLOSSARY.md` under
+`[project: bellows]` tags (proposals 378 + 389 — the CEO's one-central-glossary
+ruling; Gate 2 route-57 consolidation, plan 542, PT v4.93, 2026-08-26).
+Do not add entries here: new bellows domain definitions go to the central
+file, tagged `[project: bellows]`. The migration-completeness proof (all 10
+bodies matched at retirement) is in this plan's dev note.

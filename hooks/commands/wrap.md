@@ -58,13 +58,15 @@ done-on-another-machine-and-not-pulled (measured 2026-08-24).
    **Law:** never start a baton line with a bare `Lessons-swept:` except the
    affirmation itself — format examples in prose must be backticked.
 3d. **Domain-knowledge sweep.** Ask: "what domain knowledge did this session
-   surface that belongs in the project's glossary?" For each project touched
-   this session, review the session's work and deposit any DEFINITIONS (not
-   runbooks, not traps — per the glossary discriminator) into
-   `<project>/knowledge/glossary.md`. If the file does not exist, create it
-   with the scaffold: a `# Glossary — <project-name>` header, the discriminator
-   note (DEFINITION goes here; RUNBOOK goes in CLAUDE.md; TRAP goes into CODE),
-   and a `<!-- Entries below. Format: ## Term \n definition \n -->` comment.
+   surface that belongs in the glossary?" For each project touched this
+   session, review the session's work and deposit any DEFINITIONS (not
+   runbooks, not traps — per the glossary discriminator) into the CENTRAL
+   glossary at `/Users/marklehn/Developer/GitHub/GLOSSARY.md`, each entry as
+   `## <term> [project: <name>]` (comma-separate multiple project tags; the
+   file already exists — APPEND-ONLY, non-destructive-append and
+   class-not-narrative guards apply). ⚠️ NEVER write to — and never scaffold —
+   a per-repo `knowledge/glossary.md`: the per-repo files are RETIRED to
+   pointers (proposals 378 + 389, PT v4.93, plan 542, 2026-08-26).
    If nothing qualifies, move on — the step is complete when the question has
    been asked, not when an entry has been written.
 3. **Governance root** (`$ELUVIAN_WRAP_ROOT`) — refresh the baton
