@@ -1,0 +1,54 @@
+QA probes-raw — id-range-partitioning-doc-2026-08-26
+CAPTURE_COMMIT: 632561b
+
+=== Item 1 — probes on git show 632561b:CLAUDE.md ===
+
+--- Three Task-B probes ---
+Probe 1 (Multi-machine id ranges): 1
+Probe 2 (100000-block): 1
+Probe 3 (NEVER re-seed): 1
+
+--- Append purity ---
+Pre-existing tail ("Recommended cadence: at session-wrap or weekly."): 1
+Old (parent) line count (piped wc -l): 34
+New (committed) line count (piped wc -l): 55
+Section added lines (numstat): 21
+Line arithmetic: 34 + 21 = 55 == recorded wc -l (55) ✓
+
+Parent section headings (all preserved):
+  ## Start
+  ## Logs
+  ## Config
+  ## Status
+  ## Knowledge Base
+  ## Claude Code upgrade cadence (manual)
+
+Committed section headings (one added):
+  ## Start
+  ## Logs
+  ## Config
+  ## Status
+  ## Knowledge Base
+  ## Claude Code upgrade cadence (manual)
+  ## Multi-machine id ranges (CEO ruling 2026-08-26 — option b)
+
+--- cmp vs live ---
+diff exit: 0 (identical)
+
+=== Item 2 — cross-artifact coherence ===
+/usr/bin/grep -cF "id-range partitioning" GLOSSARY.md: 1
+/usr/bin/grep -cF "seed its" shop_next_session.md: 1
+Three homes agree: GLOSSARY.md (DEFINITION), CLAUDE.md (RUNBOOK), shop_next_session.md (ACT/baton).
+
+=== Item 3 — hygiene ===
+numstat (632561b^ → 632561b):
+  21	0	CLAUDE.md
+  20	0	knowledge/dev-logs/id-range-partitioning-doc-dev-2026-08-26.md
+Exactly 2 files; CLAUDE.md all-added.
+
+toplevel: /Users/marklehn/Developer/GitHub/bellows/.bellows-worktrees/555
+
+reflog -n 4:
+  632561b HEAD@{0}: reset: moving to HEAD
+  632561b HEAD@{1}: (commit)
+0 amends.
