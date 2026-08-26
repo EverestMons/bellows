@@ -57,7 +57,7 @@ def git(repo: Path, *args) -> str:
             ["git", "-C", str(repo), *args],
             capture_output=True, text=True, timeout=30,
         )
-        return out.stdout.strip()
+        return out.stdout.rstrip()
     except Exception:
         return ""
 
@@ -253,6 +253,54 @@ def check(session_id: str | None = None, caller: str = "stop") -> list[str]:
 
     # --- Step 4: memory repo — committed AND pushed (if touched) ---------------
     m_dirty = porcelain(MEMORY)
+    # [4/memory] class-frontmatter gate (audit item 1): every NEW/MODIFIED
+    # entry carries `class:`. Committed files are exempt until touched —
+    # gradual backfill by design; the first post-ship wrap must not detonate.
+    m_classless = []
+    for _ln in m_dirty:
+        _st, _rel = _ln[:2], _ln[3:].strip()
+        if " -> " in _rel:
+            _rel = _rel.split(" -> ", 1)[1]
+        if "D" in _st or not _rel.endswith(".md"):
+            continue
+        _name = _rel.split("/")[-1]
+        if _name == "MEMORY.md" or _name.startswith("section-"):
+            continue
+        try:
+            _head = (MEMORY / _rel).read_text(encoding="utf-8", errors="replace")[:600]
+        except OSError:
+            m_classless.append(_rel + " (unreadable)")
+            continue
+        if "class:" not in _head:
+            m_classless.append(_rel)
+    if m_classless:
+        fails.append(
+            f"[4/memory] {len(m_classless)} new/modified memory entr(ies) missing "
+            f"`class: mechanize|codify|keep|stale` in frontmatter (keep requires "
+            f"a stated impossibility): " + ", ".join(sorted(m_classless))
+        )
+    # WARN-first advisories (funnel law) — printed, NEVER appended to fails.
+    try:
+        _idx = (MEMORY / "MEMORY.md").read_text(encoding="utf-8", errors="replace")
+        for _p in sorted(MEMORY.glob("section-*.md")):
+            _idx += _p.read_text(encoding="utf-8", errors="replace")
+        _orphans = sorted(
+            _p.name for _p in MEMORY.glob("*.md")
+            if _p.name != "MEMORY.md" and not _p.name.startswith("section-")
+            and _p.name not in _idx
+        )
+        if _orphans:
+            print(f"[4/memory] WARN (advisory): {len(_orphans)} entr(ies) not "
+                  f"referenced from MEMORY.md or any section file: "
+                  + ", ".join(_orphans[:8]))
+        _own_lines = len((MEMORY / "MEMORY.md").read_text(
+            encoding="utf-8", errors="replace").splitlines())
+        if _own_lines > 140:
+            print(f"[4/memory] WARN (advisory): MEMORY.md at {_own_lines} lines "
+                  f"exceeds the 140 cap — move a SECTION to its own file (the "
+                  f"sections law); never trim entries silently.")
+    except OSError:
+        pass
     if m_dirty:
         fails.append(
             f"[4/memory] {len(m_dirty)} uncommitted change(s) in the memory repo — "
