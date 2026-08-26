@@ -1,0 +1,49 @@
+=== Item 1 — Committed Extractions Probes ===
+
+--- wrap.md probes ---
+"NEVER write to" count: 1
+"If the file does not exist, create it" count: 0
+"surface that belongs in the project's glossary?" count: 0
+"/Users/marklehn/Developer/GitHub/GLOSSARY.md" count: 1
+"3d." count: 1
+Case-insensitive "glossary" count: 4
+
+--- glossary.md probes ---
+"RETIRED" count: 1
+"^## " count (regex): 0
+"[project: bellows]" count: 2
+
+--- live-vs-committed cmp ---
+wrap.md cmp: IDENTICAL
+glossary.md cmp: IDENTICAL
+
+=== Item 2 — Completeness Proof Re-Run (CHECK-ONLY, parent commit bytes) ===
+
+Old glossary: 10 entries
+Central [project: bellows] entries: 10
+MATCH clearance
+MATCH deposit receipt
+MATCH class hold
+MATCH release act
+MATCH gate override
+MATCH verdict conditioning
+MATCH keyed sweep line
+MATCH verdict act
+MATCH dirty-tree precheck (intersection form)
+MATCH no_receipt hold
+
+All 10 terms matched — completeness proof re-confirmed from parent commit bytes.
+
+=== Item 3 — Commit Hygiene ===
+
+--- numstat ---
+9	7	hooks/commands/wrap.md
+42	0	knowledge/dev-logs/wrap-3d-central-glossary-dev-2026-08-26.md
+9	34	knowledge/glossary.md
+
+--- show-toplevel ---
+/Users/marklehn/Developer/GitHub/bellows/.bellows-worktrees/543
+
+--- reflog -n 4 ---
+1503249 HEAD@{0}: reset: moving to HEAD
+1503249 HEAD@{1}: commit: [543] wrap-3d-central-glossary: 3d -> central GLOSSARY.md; knowledge/glossary.md retired to pointer (completeness-proven)
