@@ -1,0 +1,23 @@
+=== git show extraction probes ===
+
+--- Probe: 'rename rendering' count in bellows.py ---
+1
+
+--- Probe: regex pattern '{[^{}]* => ' present ---
+1
+
+--- Probe: import re count ---
+1
+
+--- cmp: git show vs live bellows.py ---
+cmp: identical (exit 0)
+
+--- cmp: git show vs live tests/test_diff_stat_renames.py ---
+cmp: identical (exit 0)
+
+--- Live-repo replay results ---
+Cross-dir + bare rename: ['c/f.md', 'normal.py', 'renamed-top.md']
+Entries containing ' => ': 0
+Entries containing '{': 0
+lstrip guard case: ['sub/f.md'] — no braces
+All assertions passed.
