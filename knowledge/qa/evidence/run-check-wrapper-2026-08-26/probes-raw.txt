@@ -1,0 +1,49 @@
+=== LINT on Done/executable-561.md ===
+(o1) INFO: candidates=7 excluded=6 fired=0
+(o2) WARN: Deposits entry `scripts/plan_lint.py` is not project-prefixed or absolute
+(o2) WARN: Deposits entry `tests/test_plan_lint_bare_constants.py` is not project-prefixed or absolute
+(o2) WARN: Deposits entry `knowledge/dev-logs/plan-lint-bare-constants-dev-2026-08-26.md` is not project-prefixed or absolute
+(o2) WARN: Deposits entry `knowledge/qa/evidence/plan-lint-bare-constants-2026-08-26/pytest_full.txt` is not project-prefixed or absolute
+(o2) WARN: Deposits entry `knowledge/qa/evidence/plan-lint-bare-constants-2026-08-26/probes-raw.txt` is not project-prefixed or absolute
+(o2) WARN: Deposits entry `knowledge/qa/evidence/plan-lint-bare-constants-2026-08-26/qa-receipt.md` is not project-prefixed or absolute
+PASS: (a) header — parsed
+PASS: (a) dispatch_mode — bellows
+PASS: (a) pause_for_verdict — always
+PASS: (b) step 1 deposits — 3 path(s)
+PASS: (b) step 2 deposits — 3 path(s)
+PASS: (c) QA banner pair — both strings present
+PASS: (d) step 1 scope — 3 file(s), 0 prefix(es)
+PASS: (d) step 2 scope — 3 file(s), 0 prefix(es)
+RUN_CHECK: lint VERDICT=PASS — exit 0 (WARNs, if any, are advisory)
+EXIT=0
+
+=== CYCLE STRICT on Done/executable-561.md ===
+BAR_MET
+RUN_CHECK: cycle VERDICT=PASS — BAR_MET
+EXIT=0
+
+=== REGISTER on walk-register-plan-lint-bare-constants-2026-08-26.md ===
+walk-register-plan-lint-bare-constants-2026-08-26.md	CONFORMANT	shapes: | id | walk | lens | sub_question | origin | finding | pre_fold_text | resolution | ; | id | walk | lens | sub_question | origin | finding | pre_fold_text | resolution |
+file	line	table	row_status	file_status	columns	missing	note
+walk-register-plan-lint-bare-constants-2026-08-26.md	26	1	OK	CONFORMANT	| id | walk | lens | sub_question | origin | finding | pre_fold_text | resolution |	-	-
+walk-register-plan-lint-bare-constants-2026-08-26.md	36	2	OK	CONFORMANT	| id | walk | lens | sub_question | origin | finding | pre_fold_text | resolution |	-	-
+RUN_CHECK: register VERDICT=PASS — 1 file(s) CONFORMANT, 0 UNCONFORMANT
+EXIT=0
+
+=== CMP: tools/run_check.py vs git show ===
+cmp_run_check=0
+
+=== CMP: tests/test_run_check.py vs git show ===
+cmp_test_run_check=0
+
+=== NUMSTAT (3 files) ===
+95	0	knowledge/dev-logs/run-check-wrapper-dev-2026-08-26.md
+132	0	tests/test_run_check.py
+91	0	tools/run_check.py
+
+=== TOPLEVEL ===
+/Users/marklehn/Developer/GitHub/bellows/.bellows-worktrees/563
+
+=== REFLOG -n 4 ===
+01aa74e HEAD@{0}: reset: moving to HEAD
+01aa74e HEAD@{1}: commit
