@@ -359,6 +359,23 @@ def _resolve_deposit_path(path, project_path, wt_path=None):
     p3 = os.path.join(os.path.dirname(project_path), path)
     if os.path.isfile(p3) or os.path.isdir(p3):
         return os.path.abspath(p3)
+    # Strategy 4 (cross-machine re-root): an absolute path from ANOTHER
+    # machine's layout that still names this project — re-anchor the part
+    # after the LAST "/<project-name>/" segment onto the local roots
+    # (worktree first, where the agent just wrote). Measured need: exec-560,
+    # a mini-authored plan declared deposits at ~/Developer/bellows/... and
+    # five gate rows failed on layout literals while the work was exact.
+    if os.path.isabs(path):
+        marker = os.sep + os.path.basename(project_path) + os.sep
+        idx = path.rfind(marker)
+        if idx != -1:
+            rel = path[idx + len(marker):]
+            roots = ([wt_path] if wt_path and wt_path != project_path else [])
+            roots.append(project_path)
+            for _root in roots:
+                cand = os.path.join(_root, rel)
+                if os.path.isfile(cand) or os.path.isdir(cand):
+                    return os.path.abspath(cand)
     return None
 
 
