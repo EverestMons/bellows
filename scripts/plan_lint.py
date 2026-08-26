@@ -186,16 +186,25 @@ def _check_bare_constants(plan_text):
     The global Numbers-discipline banner deliberately does NOT satisfy this
     check: the gap being closed is the ad-hoc probe line outside the banner's
     reach (the 554 case). Advisory only — never a FAIL; the verdict on
-    whether a constant is genuinely load-bearing stays with the reader."""
+    whether a constant is genuinely load-bearing stays with the reader.
+    Fenced code is never scanned — the 563-measured false-positive class
+    (structural constants in code blocks)."""
     lines = plan_text.splitlines()
     in_step = False
+    in_fence = False
     warns = []
     for i, line in enumerate(lines):
+        stripped = line.lstrip()
+        while stripped.startswith(">"):
+            stripped = stripped[1:].lstrip()
+        if stripped.startswith("```"):
+            in_fence = not in_fence
+            continue
         if line.startswith("## STEP "):
             in_step = True
         elif line.startswith("## ") and not line.startswith("## STEP "):
             in_step = False
-        if not in_step or not _BARE_CONSTANT_RE.search(line):
+        if not in_step or in_fence or not _BARE_CONSTANT_RE.search(line):
             continue
         window = " ".join(lines[max(0, i - 2):i + 3]).lower()
         if not any(m in window for m in _CLAUSE_MARKERS):
