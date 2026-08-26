@@ -1,0 +1,41 @@
+=== BEHAVIOR PROBE: FIRING PLAN (governance/Done/executable-559.md) ===
+(o1) INFO: candidates=5 excluded=4 fired=0
+(o2) WARN: Deposits entry `PLANNER_TEMPLATE.md` is not project-prefixed or absolute
+PIN-CHECK: kind=prefix line=15 token=815ce5a4445a… result=ambiguous
+PIN-CHECK: kind=prefix line=23 token=815ce5a4445a… result=ambiguous
+(r) WARN: line 23 probe constant without a supersede-class clause within 2 lines — a wrong authored number here HARD-FAILS a correct state (the 554 class); add measure-record-supersede language or verify the constant is structural
+PASS: (a) header — parsed
+PASS: (a) dispatch_mode — bellows
+PASS: (a) pause_for_verdict — always
+PASS: (b) step 1 deposits — 3 path(s)
+PASS: (b) step 2 deposits — 2 path(s)
+PASS: (c) QA banner pair — both strings present
+PASS: (d) step 1 scope — 3 file(s), 0 prefix(es)
+PASS: (d) step 2 scope — 2 file(s), 0 prefix(es)
+EXIT_CODE=0
+
+=== BEHAVIOR PROBE: QUIET PLAN (bellows/Done/executable-560.md) ===
+(o1) INFO: candidates=11 excluded=6 fired=2
+(o1) WARN: missing path `knowledge/research/machine-registry-rulings-2026-08-26.md`
+(o1) WARN: missing path `/Users/marklehn/Developer/eluvian-governance/RULE_20_SELF_CHECK_BLOCK.md`
+PIN-CHECK: kind=prefix line=34 token=50b6958f65fb… result=ambiguous
+PIN-CHECK: kind=prefix line=34 token=67cd0b7c8493… result=ambiguous
+PASS: (a) header — parsed
+PASS: (a) dispatch_mode — bellows
+PASS: (a) pause_for_verdict — always
+PASS: (a) known_failures — 0
+PASS: (b) step 1 deposits — 4 path(s)
+PASS: (b) step 2 deposits — 2 path(s)
+PASS: (c) QA banner pair — both strings present
+PASS: (d) step 1 scope — 4 file(s), 0 prefix(es)
+PASS: (d) step 2 scope — 2 file(s), 0 prefix(es)
+EXIT_CODE=0
+
+Observation: firing plan shows (r) WARN line, quiet plan shows none. Both exit 0.
+Warn-first proven live: (r) WARN never moves the exit code.
+
+=== EXTRACTION PROBES ===
+(r) WARN count in plan_lint.py: 2 (>= 1 — PASS)
+def test_ count in test file: 5 (== 5 — PASS)
+cmp plan_lint.py committed vs live: exit=0 (PASS)
+cmp test_plan_lint_bare_constants.py committed vs live: exit=0 (PASS)
