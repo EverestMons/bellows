@@ -1,0 +1,8 @@
+{
+  "slug": "executable-plan-lint-bare-constants",
+  "content_hash": "3d2549322a93f6084a3817c391d7c58290463af4cbf1e052ee961d36d71b20d6",
+  "session_id": "b52c5d10-80b5-4aed-a816-be44e8e646ec",
+  "armed_at": "2026-08-26T13:51:33.699727",
+  "watcher": "gate-watcher armed in depositing session",
+  "attestation_boundary": "This receipt proves the watcher was ARMED at write time. It does NOT prove the watcher stayed alive. Liveness of a session-local monitor is not externally verifiable."
+}
