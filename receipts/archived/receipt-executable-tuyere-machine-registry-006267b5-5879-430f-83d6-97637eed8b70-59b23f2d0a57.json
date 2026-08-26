@@ -1,0 +1,8 @@
+{
+  "slug": "executable-tuyere-machine-registry",
+  "content_hash": "59b23f2d0a571958fd9ec5bf34ecd8bf8eb6c309892c6a1066591a8ec5656fbe",
+  "session_id": "006267b5-5879-430f-83d6-97637eed8b70",
+  "armed_at": "2026-08-26T10:28:21.900808",
+  "watcher": "gate-watcher armed in depositing session",
+  "attestation_boundary": "This receipt proves the watcher was ARMED at write time. It does NOT prove the watcher stayed alive. Liveness of a session-local monitor is not externally verifiable."
+}
