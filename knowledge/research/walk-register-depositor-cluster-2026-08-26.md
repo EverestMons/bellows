@@ -17,3 +17,17 @@
 5. **id prediction:** 569.
 
 ⚠️ Walk 0 carries no fold rows. Walks 1+ appended AFTER the draft exists, from real passes.
+
+---
+
+## Walk 1 — five-lens sequential walk (post-draft, real)
+
+| id | walk | lens | sub_question | origin | finding | pre_fold_text | resolution |
+|---|---|---|---|---|---|---|---|
+| w1-1 | 1 | Weak spots | can QA Item 2 actually run from the worktree? | pre-existing | the worktree carries no `lifecycle.db` (untracked), so the worktree tool's default `_DB` resolves to a missing file and `--status` prints db-unreadable; `read_state`'s `db_path` parameter was unreachable from the CLI, and the QA instruction hedged with a convoluted live-checkout fallback | `run the COMMITTED tool from the worktree; its _DB resolves relative to the tool's own path, so invoke it as python3 <live-checkout>/tools/gate_watcher.py --status … ONLY if the worktree copy cannot see a lifecycle.db; state which you ran` | folded: `--db-path` CLI argument added (both modes thread it to read_state); QA Items 2.1/2.2 rewritten to pass the live checkout's DB path explicitly; test 8 passes `--db-path` instead of monkeypatching `_DB` |
+| — | 1 | Destruction | — | — | DRY — watcher bounded (terminal-exit + 120m timeout), read-only URI, log dir untracked; the duplicate-probe receipt is inert (no matching ready- plan), explicitly cleaned, and re-verified at QA; spawn fail-open never blocks the receipt | — | no fold |
+| — | 1 | Vulnerabilities | — | — | DRY — the D3 grep enumerates and classifies every hit (the writer line is its own positive control); tests build their own tmp DB via init_lifecycle_db; the override-honored arm (test 4) pins the overridden=0 filter | — | no fold |
+| — | 1 | Integration-record | — | — | DRY — the seven retirements named in-plan with the sandbox split; deposit blocks name every file incl. tests; the QA .txt named for the qa_test_result gate | — | no fold |
+| — | 1 | ACID | — | — | DRY — one pathspec-limited commit, toplevel-first; counts carry supersede clauses | — | no fold |
+
+**Walk 1 total: 1 finding (instruction 1 / record 0), folded; fold_check CLEAN (12 signals held); fold text grep-verified (`--db-path` present ×4, the superseded monkeypatch/live-checkout hedge verified 0).**

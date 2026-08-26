@@ -138,13 +138,16 @@ Seven memory entries carry deposit discipline the system now enforces or can enf
 >     ap.add_argument("--timeout-min", type=int, default=120)
 >     ap.add_argument("--interval-sec", type=int, default=15)
 >     ap.add_argument("--status", action="store_true")
+>     ap.add_argument("--db-path", default=None,
+>                     help="lifecycle.db path (default: beside this tool's bellows root; "
+>                          "worktrees have no lifecycle.db — pass the live checkout's)")
 >     try:
 >         args = ap.parse_args(argv[1:])
 >     except SystemExit:
 >         return 2
 >
 >     if args.status:
->         cur = read_state(args.name)
+>         cur = read_state(args.name, db_path=args.db_path)
 >         line = judge_transition(None, cur) or "WATCH: (no state)"
 >         print(line)
 >         return 0
@@ -156,7 +159,7 @@ Seven memory entries carry deposit discipline the system now enforces or can enf
 >     deadline = time.monotonic() + args.timeout_min * 60
 >     prev = "UNSET"
 >     while time.monotonic() < deadline:
->         cur = read_state(args.name)
+>         cur = read_state(args.name, db_path=args.db_path)
 >         line = judge_transition(None if prev == "UNSET" else prev, cur)
 >         if line:
 >             _log_line(log_path, line)
@@ -217,7 +220,7 @@ Seven memory entries carry deposit discipline the system now enforces or can enf
 > 5. `read_state` on a nonexistent db path → None (fail-visible, not a crash).
 > 6. `judge_transition(None-prev, cur)` → a line; same-state → None; changed gate list → a line (three asserts, one test).
 > 7. `judge_transition(prev, None)` → the db-unreadable line (silence-is-not-success arm).
-> 8. `--status` one-shot via `main()` against the tmp DB — monkeypatch `_DB` — prints a WATCH line, exit 0.
+> 8. `--status` one-shot via `main()` against the tmp DB — passed with `--db-path <tmp db>` (no monkeypatching) — prints a WATCH line, exit 0.
 > 9. `deposit_receipt.write_receipt(..., spawn_watcher=False)` (tmp plan file, tmp receipts dir via monkeypatch) → receipt written with the attestation-only wording; and with `spawn_watcher=True` + `_spawn_watcher` monkeypatched to return 4242 → the wording carries `pid 4242`. (No real process spawned in tests.)
 >
 > Targeted run: `python3 -m pytest tests/test_gate_watcher.py -q 2>&1 | tail -2` → 0 failed (record counts; supersede with derivation).
@@ -246,8 +249,8 @@ Seven memory entries carry deposit discipline the system now enforces or can enf
 
 > **Item 1 — full suite.** `cd "$(git rev-parse --show-toplevel)"`; `python3 -m pytest tests/ --tb=short -q 2>&1 | cat | tee knowledge/qa/evidence/depositor-cluster-2026-08-26/pytest_full.txt` — 0 failed (record the count; derivation vs the pre-change baseline you measure first).
 > **Item 2 — live behavior (three runs, full tails pasted):**
-> 1. `python3 tools/gate_watcher.py --status <your own plan's claimable name, e.g. executable-depositor-cluster.md>` → a `WATCH:` line naming the LIVE phase of THIS plan (in_progress at QA time — the watcher reads the real DB; capture `$?` = 0). ⚠️ The live DB is at the CHECKOUT root, not your worktree — run the COMMITTED tool from the worktree; its `_DB` resolves relative to the tool's own path, so invoke it as `python3 <live-checkout>/tools/gate_watcher.py --status …` ONLY if the worktree copy cannot see a lifecycle.db; state which you ran.
-> 2. `python3 tools/gate_watcher.py --status no-such-plan.md` → `WATCH: pre-claim`, exit 0 (the honest not-yet-claimed answer).
+> 1. `python3 tools/gate_watcher.py --status executable-depositor-cluster.md --db-path /Users/marklehn/Developer/GitHub/bellows/lifecycle.db` → a `WATCH:` line naming the LIVE phase of THIS plan with its minted id (in_progress at QA time — the worktree-committed tool reading the live DB via the split-path law; capture `$?` = 0).
+> 2. `python3 tools/gate_watcher.py --status no-such-plan.md --db-path /Users/marklehn/Developer/GitHub/bellows/lifecycle.db` → `WATCH: pre-claim`, exit 0 (the honest not-yet-claimed answer).
 > 3. The Task-E duplicate probe's cleanup re-verified: `ls <bellows-root>/receipts/ | /usr/bin/grep -cF dup_probe_569; true` → 0.
 > **Item 3 — hygiene + receipt** `knowledge/qa/evidence/depositor-cluster-2026-08-26/qa-receipt.md`: numstat 4 files; toplevel; reflog `-n 4` → 0 amends; per-item table, then the Rule 20 block INSIDE a "Verification"-headed section (the 556 placement law).
 >
