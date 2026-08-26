@@ -1,0 +1,63 @@
+QA probes — eluvian-wiring-pull (2026-08-26)
+CAPTURE_COMMIT: e389a8c34cfd75f2ecf026d10be586e36339e0a8
+ROOT_COMMIT: 8d2267ddee9466a09857165288a42b6926bda500
+
+=== ITEM 1: BELLOWS EXTRACTION PROBES ===
+
+Source: git show e389a8c34cfd75f2ecf026d10be586e36339e0a8:hooks/commands/eluvian.md > /private/tmp/eluvian-extracted.md
+
+Probe 1 — grep -cF "Pull latest code": 1 (expected == 1)
+Probe 2 — grep -oF "ff-only" | wc -l: 2 (expected >= 2); grep -cF: 1 (line count; both on same line)
+Probe 3 — grep -cF "never merge, rebase, stash, or reset": 1 (expected == 1)
+Probe 4 — grep -cF "daemon restart needed": 1 (expected == 1)
+Probe 5 — grep -cF "Recite AND assert the system wiring": 1 (expected == 1)
+Probe 6 — grep -cF "ADVISORY: never refuse to proceed": 1 (expected == 1)
+
+wc -l: 26 (dev note recorded: 26)
+cmp extraction vs live: MATCH (exit 0)
+
+=== ITEM 2: ROOT EXTRACTION PROBES ===
+
+Source: git -C /Users/marklehn/Developer/GitHub show 8d2267ddee9466a09857165288a42b6926bda500:ELUVIAN_PATH.md > /private/tmp/eluvian-path-extracted.md
+
+Probe 1 — grep -cF "Domain knowledge deposited in the CENTRAL glossary": 1 (expected == 1)
+Probe 2 — grep -cF "scaffold-on-first-use": 0 (expected == 0)
+Probe 3 — grep -cF "R2 glossaries live since E5": 0 (expected == 0)
+cmp extraction vs live: MATCH (exit 0)
+
+=== ITEM 3: SAFETY-ENVELOPE NEGATIVE PROBES ===
+
+Source: /private/tmp/eluvian-extracted.md (same extraction as Item 1)
+
+Negative 1 — grep -cF "git merge": 0 (expected == 0)
+Negative 2 — grep -cF "git rebase": 0 (expected == 0)
+Negative 3 — grep -cF "git reset": 0 (expected == 0)
+Negative 4 — grep -cF "git stash": 0 (expected == 0)
+Positive control 1 — grep -cF "git pull --ff-only": 1 (expected >= 1)
+Positive control 2 — grep -cF "git fetch origin": 1 (expected >= 1)
+
+=== ITEM 4: COMMIT HYGIENE ===
+
+Bellows numstat (CAPTURE_COMMIT e389a8c):
+15	4	hooks/commands/eluvian.md
+27	0	knowledge/dev-logs/eluvian-wiring-pull-dev-2026-08-26.md
+File count: 2 (expected exactly 2)
+
+Root numstat (ROOT_COMMIT 8d2267d):
+1	1	ELUVIAN_PATH.md
+File count: 1 (expected exactly 1)
+
+Bellows toplevel: /Users/marklehn/Developer/GitHub/bellows/.bellows-worktrees/548
+Root toplevel: /Users/marklehn/Developer/GitHub
+
+Bellows reflog -n 4:
+e389a8c HEAD@{0}: reset: moving to HEAD
+e389a8c HEAD@{1}:
+Amend count: 0
+
+Root reflog -n 4:
+8d2267d HEAD@{0}: commit: docs: ELUVIAN_PATH wrap-artifacts line re-pointed at the central glossary (542 D-3 discharge)
+ba8099b HEAD@{1}: commit: chore: 547 closed
+9083f2e HEAD@{2}: commit: [547] glossary-migrate-invoice-pulse QA
+93ade46 HEAD@{3}: commit: [547] glossary-migrate-invoice-pulse DEV
+Amend count: 0
