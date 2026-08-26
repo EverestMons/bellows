@@ -1415,6 +1415,19 @@ def _parse_diff_stat(post_diff: str, pre_diff: str, project_path: Optional[str] 
             continue
         filename, _stat = line.split("|", 1)
         filename = filename.strip()
+        # Normalize git's rename rendering to the NEW path — a verbatim
+        # "{old => new}/f" or "old => new" literal can never match a Scope
+        # declaration or a real path, which both false-fails scope_check and
+        # silently drops the move from the audit (the scope-check-illusory-
+        # for-renames mechanism, root-caused 2026-08-26). The old path is
+        # deliberately not emitted: files_changed answers "what does the
+        # tree contain now"; the move's audit trail lives in git itself.
+        if " => " in filename:
+            if "{" in filename:
+                filename = re.sub(r"\{[^{}]* => ([^{}]*)\}", r"\1", filename)
+                filename = filename.replace("//", "/").lstrip("/")
+            else:
+                filename = filename.split(" => ", 1)[1].strip()
         if not filename:
             continue
         changed.append(filename)
