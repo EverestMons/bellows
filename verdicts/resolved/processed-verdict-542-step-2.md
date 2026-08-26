@@ -1,0 +1,3 @@
+continue
+
+Sole gate failure is qa_test_result no-parseable-pytest-summary — the pre-declared benign class for this probe-battery QA, now overridden with reference. All mechanical checks PASS incl. Rule 20 byte-exact and rule_22 clean. Planner-verified direct: probes-raw.txt has zero MISMATCH lines across the 38-probe battery; qa-receipt all six items green — byte-identity builder-replay (item 2), GLOSSARY==seed (2b), numstat 16/15 + 54/0 + 70/0 with 0 amends (3), gate-neutrality with positive controls 3/6 (4), fresh post-commit DB reads ACC=0/IMPL=311/408-line capture identical (5), baselines 410/402 unchanged (6). Close the plan.

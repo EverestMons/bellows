@@ -1,0 +1,8 @@
+{
+  "slug": "executable-ip-lessons-bin-retire",
+  "content_hash": "078588f88d4952b098dc7d19040e8ee7b2dc652f7e2e65d8e653c12e3d9422bc",
+  "session_id": "b52c5d10-80b5-4aed-a816-be44e8e646ec",
+  "armed_at": "2026-08-26T09:29:47.925857",
+  "watcher": "gate-watcher armed in depositing session",
+  "attestation_boundary": "This receipt proves the watcher was ARMED at write time. It does NOT prove the watcher stayed alive. Liveness of a session-local monitor is not externally verifiable."
+}

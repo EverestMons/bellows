@@ -1,0 +1,8 @@
+{
+  "slug": "executable-gate2-consolidation",
+  "content_hash": "82b768f24d474de93651a80012a321578113096eff878f2bfcb098b442dc200c",
+  "session_id": "b52c5d10-80b5-4aed-a816-be44e8e646ec",
+  "armed_at": "2026-08-26T00:45:38.198340",
+  "watcher": "gate-watcher armed in depositing session",
+  "attestation_boundary": "This receipt proves the watcher was ARMED at write time. It does NOT prove the watcher stayed alive. Liveness of a session-local monitor is not externally verifiable."
+}

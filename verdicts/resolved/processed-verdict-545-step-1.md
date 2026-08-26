@@ -1,0 +1,3 @@
+continue
+
+Gate clean. Planner-verified direct: central-mode verifier re-run against the ANVIL_COMMIT-parent extraction returns ALL MATCH — 11 sections (the completeness proof from pre-retirement bytes); grandfather flipped (GRANDFATHERED-anvil 0, MIGRATED-11-sections 1); legacy is the pointer (numstat 8/36 + CLAUDE.md 1/1 at the anvil commit); root commit f259af6. Census note: plan predicted 12, correct value is 13 — the MIGRATED replacement body itself carries one inline [project: anvil] mention the plan's arithmetic missed; the agent measured, diagnosed, and correctly applied the plan's measured-supersedes law, recorded in the dev note. QA Item 2's ==12 expectation inherits the same authoring error — 13 is the pass there too. Proceed to QA.

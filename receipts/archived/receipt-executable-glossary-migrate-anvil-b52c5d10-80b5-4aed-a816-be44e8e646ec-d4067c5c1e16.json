@@ -1,0 +1,8 @@
+{
+  "slug": "executable-glossary-migrate-anvil",
+  "content_hash": "d4067c5c1e164d375345ef5562a5010309cb455b1da3e4b4d4099563d0587096",
+  "session_id": "b52c5d10-80b5-4aed-a816-be44e8e646ec",
+  "armed_at": "2026-08-26T08:23:34.655769",
+  "watcher": "gate-watcher armed in depositing session",
+  "attestation_boundary": "This receipt proves the watcher was ARMED at write time. It does NOT prove the watcher stayed alive. Liveness of a session-local monitor is not externally verifiable."
+}

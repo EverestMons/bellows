@@ -1,0 +1,8 @@
+{
+  "slug": "executable-wrap-3d-central-glossary",
+  "content_hash": "6debcf6e24de5cfef78f2a20d79640d661d0ff59a7eb6c3a3704d3290a1cdc35",
+  "session_id": "b52c5d10-80b5-4aed-a816-be44e8e646ec",
+  "armed_at": "2026-08-26T07:11:51.323225",
+  "watcher": "gate-watcher armed in depositing session",
+  "attestation_boundary": "This receipt proves the watcher was ARMED at write time. It does NOT prove the watcher stayed alive. Liveness of a session-local monitor is not externally verifiable."
+}

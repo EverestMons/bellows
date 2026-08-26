@@ -1,0 +1,8 @@
+{
+  "slug": "executable-gate1-route-57",
+  "content_hash": "4a4b011bf2e554806735447f590a80fa5fe26f589aab84950e0006654a73b885",
+  "session_id": "b52c5d10-80b5-4aed-a816-be44e8e646ec",
+  "armed_at": "2026-08-25T17:52:29.264211",
+  "watcher": "gate-watcher armed in depositing session",
+  "attestation_boundary": "This receipt proves the watcher was ARMED at write time. It does NOT prove the watcher stayed alive. Liveness of a session-local monitor is not externally verifiable."
+}

@@ -1,0 +1,8 @@
+{
+  "slug": "executable-forge-project-marker-strip",
+  "content_hash": "1b8d90cda8bdea6f5ddd87faf11192e8717b9b432a0c4c4c6bccadca2b529b61",
+  "session_id": "b52c5d10-80b5-4aed-a816-be44e8e646ec",
+  "armed_at": "2026-08-26T09:09:43.616128",
+  "watcher": "gate-watcher armed in depositing session",
+  "attestation_boundary": "This receipt proves the watcher was ARMED at write time. It does NOT prove the watcher stayed alive. Liveness of a session-local monitor is not externally verifiable."
+}

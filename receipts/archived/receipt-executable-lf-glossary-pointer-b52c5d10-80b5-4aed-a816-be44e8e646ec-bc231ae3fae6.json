@@ -1,0 +1,8 @@
+{
+  "slug": "executable-lf-glossary-pointer",
+  "content_hash": "bc231ae3fae67a85946ee41575dc7c5718ce669a7aec6db56f4b7d68692c3760",
+  "session_id": "b52c5d10-80b5-4aed-a816-be44e8e646ec",
+  "armed_at": "2026-08-26T07:24:52.995210",
+  "watcher": "gate-watcher armed in depositing session",
+  "attestation_boundary": "This receipt proves the watcher was ARMED at write time. It does NOT prove the watcher stayed alive. Liveness of a session-local monitor is not externally verifiable."
+}
