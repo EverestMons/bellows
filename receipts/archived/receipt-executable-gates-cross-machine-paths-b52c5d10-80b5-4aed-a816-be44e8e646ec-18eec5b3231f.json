@@ -1,0 +1,8 @@
+{
+  "slug": "executable-gates-cross-machine-paths",
+  "content_hash": "18eec5b3231f6b75ea0aebf743a5a0406ac38dd7817961dc4abc86e5a23bb2d2",
+  "session_id": "b52c5d10-80b5-4aed-a816-be44e8e646ec",
+  "armed_at": "2026-08-26T15:03:14.755172",
+  "watcher": "gate-watcher armed in depositing session",
+  "attestation_boundary": "This receipt proves the watcher was ARMED at write time. It does NOT prove the watcher stayed alive. Liveness of a session-local monitor is not externally verifiable."
+}
