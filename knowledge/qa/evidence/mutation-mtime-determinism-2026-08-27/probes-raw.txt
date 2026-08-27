@@ -1,0 +1,26 @@
+Item 2 — Five-run determinism proof (primary path)
+Path: /Users/marklehn/Developer/GitHub/bellows/.bellows-worktrees/579
+
+--- run 1 ---
+MUTATION: 2 killed, 0 survived, 0 error
+--- run 2 ---
+MUTATION: 2 killed, 0 survived, 0 error
+--- run 3 ---
+MUTATION: 2 killed, 0 survived, 0 error
+--- run 4 ---
+MUTATION: 2 killed, 0 survived, 0 error
+--- run 5 ---
+MUTATION: 2 killed, 0 survived, 0 error
+
+All five runs identical: 2 killed, 0 survived, 0 error.
+
+Item 3 — Second-path proof
+Path: /var/folders/vf/8nw0z7hj1m34w6z48l5dp54w0000gn/T/tmp.WNgICfguLi/alt
+
+MUTATION: 2 killed, 0 survived, 0 error
+
+Second path agrees with primary: 2 killed, 0 survived, 0 error.
+
+Item 5 — gate_watcher consumer
+MUTATION: 2 killed, 0 survived, 0 error
+exit=0
