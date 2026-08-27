@@ -1,0 +1,8 @@
+{
+  "slug": "executable-gate-watcher-pause-detection",
+  "content_hash": "98940542c995033aa5b399c534f2b4a0895f8bb44a5600eea619a49363a11d5c",
+  "session_id": "cb04065f-7154-4a28-ae14-faab3b9c7909",
+  "armed_at": "2026-08-26T23:32:40.362499",
+  "watcher": "gate_watcher.py spawned detached (pid 58776); log: logs/watch/executable-gate-watcher-pause-detection.md.log",
+  "attestation_boundary": "This receipt proves the watcher was ARMED at write time. It does NOT prove the watcher stayed alive. Liveness of a session-local monitor is not externally verifiable."
+}
