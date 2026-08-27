@@ -1,0 +1,19 @@
+{
+    "target": "tools/gate_watcher.py",
+    "mutants": [
+        {
+            "name": "suppress-all-pending",
+            "why": "reproduces the exec-572 failure MODE: a genuine unresolved pause suppressed. If this survives, the state-space suite does not actually discriminate the defect 572 shipped.",
+            "anchor": "                live = [h for h in hits if\n                        _step_of(h) is None or\n                        not _verdict_issued(res, plan_id, _step_of(h))]",
+            "replacement": "                live = []",
+            "expect_fail": "tests/test_gate_watcher.py::TestPauseStateSpace"
+        },
+        {
+            "name": "phantom-arm-detection",
+            "why": "reproduces the exec-571 defect: pause detection keyed on plans.lifecycle_state's phantom 'awaiting_verdict' arm, which no writer ever sets, so a pause is never seen.",
+            "anchor": "        if state not in TERMINAL:",
+            "replacement": "        if state == \"awaiting_verdict\":",
+            "expect_fail": "tests/test_gate_watcher.py::TestPauseStateSpace"
+        }
+    ]
+}
