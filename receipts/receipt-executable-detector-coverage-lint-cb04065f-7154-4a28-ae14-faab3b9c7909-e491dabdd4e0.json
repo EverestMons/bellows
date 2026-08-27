@@ -1,0 +1,8 @@
+{
+  "slug": "executable-detector-coverage-lint",
+  "content_hash": "e491dabdd4e028fe2d59e07ef76ebedf721772d3fbb84c0dc6ac12c55fa22e4b",
+  "session_id": "cb04065f-7154-4a28-ae14-faab3b9c7909",
+  "armed_at": "2026-08-27T10:45:07.201832",
+  "watcher": "gate_watcher.py spawned detached (pid 82429); log: logs/watch/executable-detector-coverage-lint.md.log",
+  "attestation_boundary": "This receipt proves the watcher was ARMED at write time. It does NOT prove the watcher stayed alive. Liveness of a session-local monitor is not externally verifiable."
+}
