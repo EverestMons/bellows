@@ -1,6 +1,6 @@
 # QA Evidence — fork-1 claim shim (executable-570, Step 2)
 
-**Date:** 2026-08-27 | **Commit under test:** `2a25d97` (`[570] fork-1 claim shim: mode-gated claim_gate in the claim block (decline authoritative, advisory/required error polarity), R4a completion-release at all seven release sites, CLAUDE.md runbook`) | **Dispatching machine:** Mac mini
+**Date:** 2026-08-27 | **Commit under test:** `2a25d97` (`[570] fork-1 claim shim: mode-gated claim_gate in the claim block (decline authoritative, advisory/required error polarity), R4a completion-release at all seven release sites, CLAUDE.md runbook`) | **Dispatching machine:** ~~Mac mini~~ **Marks-MacBook-Air-2 (the shop machine)** — struck and corrected by the Planner at the step-2 verdict, 2026-08-27; see the Planner correction at the end of this file.
 
 ## Full Suite Results
 
@@ -114,7 +114,7 @@ ROOT/tuyere: /Users/marklehn/Developer/GitHub/tuyere — .venv/bin/python exists
 RESOLVED: ~/Developer/tuyere => /Users/marklehn/Developer/tuyere
 ```
 
-The second candidate (`~/Developer/tuyere`) resolves on this Mac mini. `$ELUVIAN_WRAP_TUYERE` is not set. The shim resolves to `/Users/marklehn/Developer/tuyere` — the seam is LIVE on this machine (not in its error arm).
+The second candidate (`~/Developer/tuyere`) resolves on ~~this Mac mini~~ **this machine, Marks-MacBook-Air-2 (the shop)** — see the Planner correction below. `$ELUVIAN_WRAP_TUYERE` is not set. The shim resolves to `/Users/marklehn/Developer/tuyere` — the seam is LIVE on this machine (not in its error arm).
 
 ## Post-conditions Verification
 
@@ -146,3 +146,30 @@ PASSED — SELF-CHECK PASSED — all evidence files present, no hedging keywords
 Evidence folder: /Users/marklehn/Developer/GitHub/bellows/.bellows-worktrees/570/knowledge/research/
 Files verified: 2
 ```
+
+
+---
+
+## ⚠️ Planner correction (2026-08-27, at the step-2 verdict) — machine identity
+
+**Struck, not tidied** (the register discipline: an adjudicated record is corrected in place with its
+original text visible, never silently rewritten).
+
+This QA step ran on **Marks-MacBook-Air-2** (the shop machine), NOT the Mac mini. The evidence
+originally asserted "Mac mini" in the header and in the Z6 section. Verified at verdict time by the
+Planner: `hostname` -> `Marks-MacBook-Air-2.local`; `scutil --get LocalHostName` -> `Marks-MacBook-Air-2`;
+this session's R2 wrap record was written `on Marks-MacBook-Air-2.local`. The plan was AUTHORED on the
+mini and deposited cross-machine; the executing agent inherited the authoring machine's framing.
+
+**The measured Z6 fact is CORRECT and stands** — `~/Developer/tuyere` -> `/Users/marklehn/Developer/tuyere`
+does resolve, `.venv/bin/python` present (re-verified independently by the Planner at verdict time).
+Only the machine ATTRIBUTION was wrong.
+
+**Why the attribution matters (the 560 S1-5 visibility law):** the purpose of the Z6 statement is to tell
+the CEO WHICH machine carries a live seam. Mislabeled, it reads as "the mini's seam is live" when what was
+actually measured is "the Air's seam is live." **The Mac mini's own Z6 resolution remains UNMEASURED from
+here and must be established on that machine before any activation act there.**
+
+This is a third instance of the cross-machine identity class recorded in `LESSONS.md` (2026-08-26, the
+exec-560 path-literals entry): an agent executing a plan authored elsewhere adopts the authoring machine's
+self-description. The executing machine must be derived from the host at run time, never from the plan text.
