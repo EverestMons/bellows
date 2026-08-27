@@ -152,3 +152,81 @@ def test_receipt_watcher_wording(tmp_path, monkeypatch):
     files = sorted((tmp_path / "receipts").glob("receipt-*.json"))
     data2 = json.loads(files[-1].read_text())
     assert "pid 4242" in data2["watcher"]
+
+
+# --- TestPauseDetection — constructed-state tests for the verdict-request pause branch ---
+
+class TestPauseDetection:
+    def test_paused_plan_reports_awaiting_verdict(self, tmp_path):
+        db_path = _init_db(tmp_path)
+        _insert_plan(db_path, 50, "paused-plan.md", state="in_progress")
+        pend = tmp_path / "pending"
+        pend.mkdir()
+        (pend / "verdict-request-50-step-2.md").write_text("")
+        result = read_state("paused-plan.md", db_path=db_path, pending_dir=str(pend))
+        assert result["phase"] == "awaiting-verdict"
+        assert result["pending"] == ["verdict-request-50-step-2.md"]
+
+    def test_foreign_plan_request_is_invisible(self, tmp_path):
+        db_path = _init_db(tmp_path)
+        _insert_plan(db_path, 50, "my-plan.md", state="in_progress")
+        pend = tmp_path / "pending"
+        pend.mkdir()
+        (pend / "verdict-request-51-step-1.md").write_text("")
+        result = read_state("my-plan.md", db_path=db_path, pending_dir=str(pend))
+        assert result["phase"] == "in_progress"
+        assert "pending" not in result
+
+    def test_terminal_state_ignores_stray_request(self, tmp_path):
+        db_path = _init_db(tmp_path)
+        _insert_plan(db_path, 60, "done-plan.md", state="closed")
+        pend = tmp_path / "pending"
+        pend.mkdir()
+        (pend / "verdict-request-60-step-1.md").write_text("")
+        result = read_state("done-plan.md", db_path=db_path, pending_dir=str(pend))
+        assert result["phase"] == "closed"
+        assert "pending" not in result
+
+    def test_empty_pending_dir_reports_in_progress(self, tmp_path):
+        db_path = _init_db(tmp_path)
+        _insert_plan(db_path, 50, "running-plan.md", state="in_progress")
+        pend = tmp_path / "pending"
+        pend.mkdir()
+        result = read_state("running-plan.md", db_path=db_path, pending_dir=str(pend))
+        assert result["phase"] == "in_progress"
+        assert "pending" not in result
+
+    def test_pending_dir_derived_from_db_path(self, tmp_path):
+        sub = tmp_path / "x"
+        sub.mkdir()
+        db_path = str(sub / "lifecycle.db")
+        lifecycle.init_lifecycle_db(db_path)
+        _insert_plan(db_path, 70, "derived-plan.md", state="in_progress")
+        pend = sub / "verdicts" / "pending"
+        pend.mkdir(parents=True)
+        (pend / "verdict-request-70-step-1.md").write_text("")
+        result = read_state("derived-plan.md", db_path=db_path)
+        assert result["phase"] == "awaiting-verdict"
+        assert "verdict-request-70-step-1.md" in result["pending"]
+
+    def test_transition_line_carries_pending_names(self):
+        state = {
+            "phase": "awaiting-verdict",
+            "plan_id": 50,
+            "gate_failures": [],
+            "pending": ["verdict-request-50-step-2.md"],
+        }
+        line = judge_transition(None, state)
+        assert "awaiting-verdict" in line
+        assert "pending=verdict-request-50-step-2.md" in line
+
+    def test_resume_transition_logged(self):
+        prev = {
+            "phase": "awaiting-verdict",
+            "plan_id": 50,
+            "gate_failures": [],
+            "pending": ["verdict-request-50-step-1.md"],
+        }
+        cur = {"phase": "in_progress", "plan_id": 50, "gate_failures": []}
+        line = judge_transition(prev, cur)
+        assert line is not None

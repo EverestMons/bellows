@@ -12,12 +12,19 @@ log is the watcher's own output file: every line records a direct DB read
 (the async-notifications-are-claims law, mechanized — the log IS the
 stable state query).
 
+Pause detection reads verdicts/pending/, not the DB: plans.lifecycle_state
+never takes 'awaiting_verdict' (the daemon writes that to steps.status only,
+and only on gate failure — measured 2026-08-26), so the verdict-request file
+IS the pause signal. The DB stays authoritative for identity, terminal
+states, and gate failures.
+
 usage: gate_watcher.py <claimable-name.md> [--timeout-min N] [--interval-sec N]
        gate_watcher.py --status <claimable-name.md>
 
 exit: 0 terminal state reached (or --status printed); 2 usage; 3 timeout.
 """
 import argparse
+import glob
 import os
 import sqlite3
 import sys
@@ -32,9 +39,10 @@ _WATCH_DIR = os.path.join(_ROOT, "logs", "watch")
 TERMINAL = {"closed", "halted", "abandoned"}
 
 
-def read_state(name, db_path=None):
+def read_state(name, db_path=None, pending_dir=None):
     """One read-only DB query -> state dict, or None if the DB is unreadable."""
     path = db_path or _DB
+    pend = pending_dir or os.path.join(os.path.dirname(os.path.abspath(path)), "verdicts", "pending")
     try:
         conn = sqlite3.connect(f"file:{path}?mode=ro", uri=True, timeout=5)
     except sqlite3.Error:
@@ -54,11 +62,25 @@ def read_state(name, db_path=None):
             "WHERE s.plan_id = ? AND g.result = 'fail' AND g.overridden = 0",
             (plan_id,),
         ).fetchall()
-        return {
+        gate_failures = sorted(f[0] for f in fails)
+        base = {
             "phase": state,
             "plan_id": plan_id,
-            "gate_failures": sorted(f[0] for f in fails),
+            "gate_failures": gate_failures,
         }
+        if state not in TERMINAL:
+            hits = sorted(
+                os.path.basename(p)
+                for p in glob.glob(os.path.join(pend, f"verdict-request-{plan_id}-step-*.md"))
+            )
+            if hits:
+                return {
+                    "phase": "awaiting-verdict",
+                    "plan_id": plan_id,
+                    "gate_failures": gate_failures,
+                    "pending": hits,
+                }
+        return base
     except sqlite3.Error:
         return None
     finally:
@@ -78,7 +100,8 @@ def judge_transition(prev, cur):
     gf = cur.get("gate_failures") or []
     tail = " gate_failures=" + ",".join(gf) if gf else ""
     pid_part = f" id={cur['plan_id']}" if "plan_id" in cur else ""
-    return f"WATCH: {cur['phase']}{pid_part}{tail}"
+    pend_part = " pending=" + ",".join(cur["pending"]) if cur.get("pending") else ""
+    return f"WATCH: {cur['phase']}{pid_part}{tail}{pend_part}"
 
 
 def _log_line(log_path, line):
@@ -96,13 +119,16 @@ def main(argv):
     ap.add_argument("--db-path", default=None,
                     help="lifecycle.db path (default: beside this tool's bellows root; "
                          "worktrees have no lifecycle.db — pass the live checkout's)")
+    ap.add_argument("--pending-dir", default=None,
+                    help="verdicts/pending dir (default: derived from --db-path's parent, "
+                         "else this tool's bellows root)")
     try:
         args = ap.parse_args(argv[1:])
     except SystemExit:
         return 2
 
     if args.status:
-        cur = read_state(args.name, db_path=args.db_path)
+        cur = read_state(args.name, db_path=args.db_path, pending_dir=args.pending_dir)
         line = judge_transition(None, cur) or "WATCH: (no state)"
         print(line)
         return 0
@@ -114,7 +140,7 @@ def main(argv):
     deadline = time.monotonic() + args.timeout_min * 60
     prev = "UNSET"
     while time.monotonic() < deadline:
-        cur = read_state(args.name, db_path=args.db_path)
+        cur = read_state(args.name, db_path=args.db_path, pending_dir=args.pending_dir)
         line = judge_transition(None if prev == "UNSET" else prev, cur)
         if line:
             _log_line(log_path, line)
