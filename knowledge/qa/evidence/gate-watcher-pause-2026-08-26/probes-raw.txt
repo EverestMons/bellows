@@ -1,0 +1,16 @@
+SCRATCH=/var/folders/vf/8nw0z7hj1m34w6z48l5dp54w0000gn/T/tmp.qr743Z35xs
+
+=== PROBE 1: Ordinary state (negative control) ===
+WATCH: in_progress id=571
+exit=0
+
+=== PROBE 2: Discriminating state (pause file present) ===
+WATCH: awaiting-verdict id=571 pending=verdict-request-571-step-1.md
+exit=0
+
+=== PROBE 3: Isolation (foreign plan ID) ===
+WATCH: in_progress id=571
+exit=0
+
+=== CLEANUP ===
+done
