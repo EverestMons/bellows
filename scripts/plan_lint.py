@@ -587,7 +587,10 @@ def lint(plan_path):
                       " — ‘would the suite catch this?’ has no"
                       " mechanical answer; see tools/mutation_check.py (exec-575)")
             else:
-                mut_on_disk = Path(mut_val).exists()
+                try:
+                    mut_on_disk = Path(mut_val).exists()
+                except OSError:
+                    mut_on_disk = False
                 mut_in_deposits = False
                 if not mut_on_disk:
                     for dep_m in re.finditer(r'\*\*Deposits:\*\*', plan_text):

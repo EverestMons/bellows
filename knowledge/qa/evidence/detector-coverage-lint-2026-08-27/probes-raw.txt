@@ -1,0 +1,30 @@
+=== PROBE 2.1: (t) on closed detector plan (exec-573) ===
+$ python3 scripts/plan_lint.py knowledge/decisions/Done/executable-573.md 2>&1 | /usr/bin/grep -F "(t) WARN"
+(t) WARN: target basename looks like a detector but target_class is not declared — declare 'target_class: detector' (and then state_space + mutants), or leave it undeclared deliberately; this heuristic is advisory and cannot decide the question
+
+=== PROBE 2.2: (t) silent on non-detector (exec-514 target: test_bellows.py) ===
+$ python3 scripts/plan_lint.py knowledge/decisions/Done/executable-514.md 2>&1 | /usr/bin/grep -cF "(t) WARN"
+0
+
+=== PROBE 2.3: exit code unaffected ===
+DEV commit: f7d8fd2939943efd866f9d30879d2ef2e335d4f2
+$ PYTHONPATH="$(git rev-parse --show-toplevel)" python3 "$TMPDIR/plan_lint_prev.py" knowledge/decisions/Done/executable-573.md >/dev/null 2>&1; echo "exit_before=$?"
+exit_before=0
+$ python3 scripts/plan_lint.py knowledge/decisions/Done/executable-573.md >/dev/null 2>&1; echo "exit_after=$?"
+exit_after=0
+
+=== PROBE 2.4: (s) end-to-end on constructed plan ===
+$ python3 scripts/plan_lint.py "$TMPDIR/probe_s_plan.md" 2>&1 | /usr/bin/grep -F "(s) WARN"
+(s) WARN: target_class=detector but no state_space field — a detector's tests must enumerate its state space from SYSTEM artifacts (SELECT DISTINCT, real filenames, the actual writer), not the author's model; see exec-573 TestPauseStateSpace
+(s) WARN: target_class=detector but mutants names no manifest that exists or is promised in Deposits — 'would the suite catch this?' has no mechanical answer; see tools/mutation_check.py (exec-575)
+exit=0
+
+=== PROBE 2.5: (s) firing on THIS PLAN (in-progress-executable-576.md) ===
+resolved: /Users/marklehn/Developer/GitHub/bellows/knowledge/decisions/in-progress-executable-576.md
+$ python3 scripts/plan_lint.py "/Users/marklehn/Developer/GitHub/bellows/knowledge/decisions/in-progress-executable-576.md" 2>&1 | /usr/bin/grep -F "(s) WARN"
+(s) WARN: target_class=detector but mutants names no manifest that exists or is promised in Deposits — 'would the suite catch this?' has no mechanical answer; see tools/mutation_check.py (exec-575)
+NOTE: initial run crashed with OSError (File name too long) on Path(mut_val).exists() because the stanza parser folds the long mutants continuation text into a single string. Fixed by wrapping in try/except OSError. Fix included in this QA commit.
+
+=== PROBE 2.6: state_space clause does NOT warn for this plan ===
+$ python3 scripts/plan_lint.py "/Users/marklehn/Developer/GitHub/bellows/knowledge/decisions/in-progress-executable-576.md" 2>&1 | /usr/bin/grep -F "state_space"
+(no output — state_space clause silent; this plan declares state_space, proving (s) discriminates between its two clauses)
