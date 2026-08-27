@@ -1,0 +1,9 @@
+HEAD: 2f4e37ca7d842d880733314ed15ee606376599ed
+TARGET: tools/gate_watcher.py sha256=e8a8e0b628dc
+
+MUTANT suppress-all-pending: KILLED — suite caught the defect
+MUTANT phantom-arm-detection: KILLED — suite caught the defect
+
+LIVE-TREE UNCHANGED: e8a8e0b628dc
+
+MUTATION: 2 killed, 0 survived, 0 error
