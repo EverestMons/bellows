@@ -198,6 +198,14 @@ def main():
 
             exit_code = _run_pytest(selector, sandbox, args.timeout)
 
+            # Scoring: only the exit-1 arm is KILLED; the non-1 arms below
+            # are defence in depth. The exit-5 arm specifically is unreachable
+            # in practice: the baseline control at :177-186 rejects any
+            # selector that collects nothing, and a selector that collects
+            # tests at baseline also collects them when mutated — so exit 5
+            # cannot reach this block past a green baseline. A mutant on the
+            # exit-5 clause therefore SURVIVES by design and must not be read
+            # as a coverage gap.
             if exit_code == 1:
                 print(f"MUTANT {name}: KILLED — suite caught the defect")
                 killed += 1

@@ -1,0 +1,26 @@
+{
+    "target": "tools/mutation_check.py",
+    "mutants": [
+        {
+            "name": "score-any-nonzero-as-killed",
+            "why": "the scoring arm's core claim — only exit 1 is KILLED. If this survives, any non-zero exit (timeouts, collection errors) could be miscounted as kills.",
+            "anchor": "            if exit_code == 1:",
+            "replacement": "            if exit_code != 0:",
+            "expect_fail": "tests/test_mutation_check.py::test_timeout_is_error_not_killed"
+        },
+        {
+            "name": "drop-baseline-control",
+            "why": "the green-baseline positive control — a red baseline means the test was already failing, so a 'kill' is meaningless. If this survives, the suite does not actually require the baseline gate.",
+            "anchor": "            if baseline_exit != 0:",
+            "replacement": "            if False:",
+            "expect_fail": "tests/test_mutation_check.py::test_baseline_failure_is_error_not_killed"
+        },
+        {
+            "name": "drop-bytecode-isolation",
+            "why": "reproduces the exec-574 bytecache defect: a same-byte-length mutation leaves the cached .pyc valid and the mutant run executes baseline code, making the mutant invisibly survive. If this survives, the isolation guard is decorative.",
+            "anchor": "    env[\"PYTHONDONTWRITEBYTECODE\"] = \"1\"",
+            "replacement": "    env.pop(\"PYTHONDONTWRITEBYTECODE\", None)",
+            "expect_fail": "tests/test_mutation_check.py::test_same_byte_length_mutation_is_killed"
+        }
+    ]
+}
