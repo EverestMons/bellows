@@ -1,0 +1,8 @@
+{
+  "slug": "executable-mutation-self-application",
+  "content_hash": "070c5f2591a3e25661c7f6e0e1a318ab86b0b4b761016c653773114341abb62a",
+  "session_id": "cb04065f-7154-4a28-ae14-faab3b9c7909",
+  "armed_at": "2026-08-27T11:51:26.620911",
+  "watcher": "gate_watcher.py spawned detached (pid 3750); log: logs/watch/executable-mutation-self-application.md.log",
+  "attestation_boundary": "This receipt proves the watcher was ARMED at write time. It does NOT prove the watcher stayed alive. Liveness of a session-local monitor is not externally verifiable."
+}
