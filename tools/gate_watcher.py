@@ -110,6 +110,30 @@ def _log_line(log_path, line):
         f.write(stamped)
 
 
+def judge_watch_line(prev, cur, arm_pending):
+    """Loop-only framing: (line, new_arm_pending).
+
+    A pause whose pending set is exactly the one present when this watcher
+    armed is PRE-EXISTING — already resolved and awaiting daemon cleanup —
+    so it is reported as armed-over, never as a freshly observed pause.
+    The snapshot clears as soon as the pending set empties, so the NEXT
+    genuine pause reports normally.
+    """
+    if cur is None:
+        return (judge_transition(prev, cur), arm_pending)
+    if "pending" not in cur:
+        return (judge_transition(prev, cur), None)
+    if arm_pending is not None and set(cur["pending"]) == arm_pending:
+        if prev is None:
+            line = (f"WATCH: armed over pre-existing verdict-request: "
+                    f"{','.join(cur['pending'])} "
+                    f"(already resolved or awaiting daemon cleanup; not a new pause)")
+        else:
+            line = None
+        return (line, arm_pending)
+    return (judge_transition(prev, cur), arm_pending)
+
+
 def main(argv):
     ap = argparse.ArgumentParser()
     ap.add_argument("name")
@@ -139,9 +163,15 @@ def main(argv):
                         f"(timeout {args.timeout_min}m, interval {args.interval_sec}s)")
     deadline = time.monotonic() + args.timeout_min * 60
     prev = "UNSET"
+    armed = False
+    arm_pending = None
     while time.monotonic() < deadline:
         cur = read_state(args.name, db_path=args.db_path, pending_dir=args.pending_dir)
-        line = judge_transition(None if prev == "UNSET" else prev, cur)
+        if not armed and cur is not None:
+            arm_pending = set(cur["pending"]) if cur.get("pending") else None
+            armed = True
+        line, arm_pending = judge_watch_line(
+            None if prev == "UNSET" else prev, cur, arm_pending)
         if line:
             _log_line(log_path, line)
         if cur is not None:

@@ -10,7 +10,7 @@ TOOLS_DIR = Path(__file__).resolve().parent.parent / "tools"
 sys.path.insert(0, str(TOOLS_DIR.parent))
 
 import lifecycle
-from tools.gate_watcher import read_state, judge_transition, main
+from tools.gate_watcher import read_state, judge_transition, judge_watch_line, main
 
 
 def _init_db(tmp_path):
@@ -230,3 +230,88 @@ class TestPauseDetection:
         cur = {"phase": "in_progress", "plan_id": 50, "gate_failures": []}
         line = judge_transition(prev, cur)
         assert line is not None
+
+
+class TestArmTimeSnapshot:
+
+    def test_pre_existing_pause_reported_as_armed_over(self):
+        cur = {
+            "phase": "awaiting-verdict",
+            "plan_id": 50,
+            "gate_failures": [],
+            "pending": ["verdict-request-50-step-1.md"],
+        }
+        line, new_snap = judge_watch_line(None, cur, {"verdict-request-50-step-1.md"})
+        assert "armed over pre-existing" in line
+        assert "awaiting-verdict" not in line
+
+    def test_pre_existing_pause_silent_on_later_polls(self):
+        cur = {
+            "phase": "awaiting-verdict",
+            "plan_id": 50,
+            "gate_failures": [],
+            "pending": ["verdict-request-50-step-1.md"],
+        }
+        line, new_snap = judge_watch_line(cur, cur, {"verdict-request-50-step-1.md"})
+        assert line is None
+
+    def test_new_pause_after_snapshot_cleared_reports_normally(self):
+        cur = {
+            "phase": "awaiting-verdict",
+            "plan_id": 50,
+            "gate_failures": [],
+            "pending": ["verdict-request-50-step-2.md"],
+        }
+        line, new_snap = judge_watch_line(None, cur, None)
+        assert "awaiting-verdict" in line
+        assert "pending=verdict-request-50-step-2.md" in line
+
+    def test_snapshot_cleared_when_pending_empties(self):
+        cur = {"phase": "in_progress", "plan_id": 50, "gate_failures": []}
+        line, new_snap = judge_watch_line(None, cur, {"verdict-request-50-step-1.md"})
+        assert new_snap is None
+
+    def test_different_pending_set_is_a_new_pause(self):
+        cur = {
+            "phase": "awaiting-verdict",
+            "plan_id": 50,
+            "gate_failures": [],
+            "pending": ["verdict-request-50-step-2.md"],
+        }
+        line, new_snap = judge_watch_line(None, cur, {"verdict-request-50-step-1.md"})
+        assert "awaiting-verdict" in line
+        assert "pending=verdict-request-50-step-2.md" in line
+
+    def test_arm_pending_none_is_transparent(self):
+        cur_running = {"phase": "in_progress", "plan_id": 50, "gate_failures": []}
+        cur_terminal = {"phase": "closed", "plan_id": 50, "gate_failures": []}
+        for cur in (cur_running, cur_terminal):
+            line, new_snap = judge_watch_line(None, cur, None)
+            expected = judge_transition(None, cur)
+            assert line == expected
+
+    def test_db_unreadable_preserves_snapshot(self):
+        snap = {"verdict-request-50-step-1.md"}
+        line, new_snap = judge_watch_line(None, None, snap)
+        assert "db-unreadable" in line
+        assert new_snap == snap
+        next_cur = {
+            "phase": "awaiting-verdict",
+            "plan_id": 50,
+            "gate_failures": [],
+            "pending": ["verdict-request-50-step-1.md"],
+        }
+        line2, new_snap2 = judge_watch_line(None, next_cur, new_snap)
+        assert "armed over pre-existing" in line2
+
+    def test_status_mode_unchanged_for_pause(self, tmp_path, capsys):
+        db_path = _init_db(tmp_path)
+        _insert_plan(db_path, 80, "status-pause.md", state="in_progress")
+        pend = tmp_path / "pending"
+        pend.mkdir()
+        (pend / "verdict-request-80-step-1.md").write_text("")
+        rc = main(["gate_watcher.py", "status-pause.md", "--status",
+                    "--db-path", db_path, "--pending-dir", str(pend)])
+        assert rc == 0
+        captured = capsys.readouterr()
+        assert "WATCH: awaiting-verdict id=80 pending=verdict-request-80-step-1.md" in captured.out
