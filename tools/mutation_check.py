@@ -189,6 +189,16 @@ def main():
             with open(sandbox_target, "w") as f:
                 f.write(mutated)
 
+            # Force bytecode invalidation by the mechanism CPython actually
+            # uses: it validates a cached .pyc by (source mtime, source size).
+            # A same-byte-length mutation written inside the same mtime second
+            # leaves the baseline's .pyc valid, so the mutant run would execute
+            # BASELINE code and score a false SURVIVED. Measured flaky 4-of-5
+            # before this bump (exec-577). PYTHONDONTWRITEBYTECODE remains set
+            # as defence in depth; this line is what makes it deterministic.
+            _st = os.stat(sandbox_target)
+            os.utime(sandbox_target, (_st.st_atime, _st.st_mtime + 1))
+
             with open(sandbox_target, "r") as f:
                 written = f.read()
             if replacement not in written:

@@ -1,5 +1,6 @@
 {
     "target": "tools/mutation_check.py",
+    "_removed_note": "drop-bytecode-isolation and drop-mtime-bump both SURVIVE individually because the two invalidation guards (PYTHONDONTWRITEBYTECODE env var + os.utime mtime bump) are jointly sufficient and individually redundant. Removing either alone leaves the other covering, so neither single-anchor mutant can kill. Both-at-once is not expressible under the single-anchor-per-mutant schema. Pending the expect:survived control-mutant feature.",
     "mutants": [
         {
             "name": "score-any-nonzero-as-killed",
@@ -14,13 +15,6 @@
             "anchor": "            if baseline_exit != 0:",
             "replacement": "            if False:",
             "expect_fail": "tests/test_mutation_check.py::test_baseline_failure_is_error_not_killed"
-        },
-        {
-            "name": "drop-bytecode-isolation",
-            "why": "reproduces the exec-574 bytecache defect: a same-byte-length mutation leaves the cached .pyc valid and the mutant run executes baseline code, making the mutant invisibly survive. If this survives, the isolation guard is decorative.",
-            "anchor": "    env[\"PYTHONDONTWRITEBYTECODE\"] = \"1\"",
-            "replacement": "    env.pop(\"PYTHONDONTWRITEBYTECODE\", None)",
-            "expect_fail": "tests/test_mutation_check.py::test_same_byte_length_mutation_is_killed"
         }
     ]
 }
