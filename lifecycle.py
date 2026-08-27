@@ -226,6 +226,29 @@ def has_clearance(content_hash, plan_path, db_path=None):
     return row is not None
 
 
+def active_clearance_class(content_hash, plan_path, db_path=None):
+    path = db_path or LIFECYCLE_DB_PATH
+    conn = sqlite3.connect(f"file:{path}?mode=ro", uri=True)
+    row = conn.execute(
+        "SELECT assigned_class FROM clearances "
+        "WHERE content_hash = ? AND plan_path = ? AND consumed_at IS NULL",
+        (content_hash, plan_path),
+    ).fetchone()
+    conn.close()
+    return row[0] if row else None
+
+
+def deposit_placeholder(plan_id, db_path=None):
+    path = db_path or LIFECYCLE_DB_PATH
+    conn = sqlite3.connect(f"file:{path}?mode=ro", uri=True)
+    row = conn.execute(
+        "SELECT deposit_placeholder_name FROM plans WHERE id = ?",
+        (plan_id,),
+    ).fetchone()
+    conn.close()
+    return row[0] if row else None
+
+
 def consume_clearance(content_hash, plan_path, db_path=None):
     path = db_path or LIFECYCLE_DB_PATH
     conn = sqlite3.connect(path)

@@ -19,6 +19,8 @@ from datetime import datetime
 from pathlib import Path
 from typing import Optional
 
+import plan_claim
+
 # Prevent Claude Code auto-updater from shifting agent behavior mid-plan.
 # setdefault respects explicit operator overrides.  (executable-disable-autoupdater-2026-05-27)
 os.environ.setdefault("DISABLE_AUTOUPDATER", "1")
@@ -736,6 +738,7 @@ def _maybe_park_session_limit(
     bellows_ref, db_path: str, project_path: str,
     wt_path: str, app_key: str, user_key: str, plan_id: Optional[int],
     plan_baseline_sha: Optional[str] = None,
+    config: Optional[dict] = None,
 ) -> bool:
     """Check for session-limit in parsed result; if found, park the plan and return True.
 
@@ -780,6 +783,7 @@ def _maybe_park_session_limit(
         _delete_shadow(base_filename)
         lifecycle.mark_plan_state(plan_id, "halted", closed_at=datetime.now().isoformat(), plan_doc_ref=os.path.relpath(halted_path, project_path)) if plan_id else None
         _retire_receipts(plan_id)
+        plan_claim.release_for_plan(plan_id, "halt: teardown-failed park", config, _log)
         record_run(db_path, halted_path, project_path,
                    parsed.get("session_id", ""), current_step, "Halted",
                    parsed.get("cost_usd", 0.0), plan_slug)
@@ -929,6 +933,10 @@ def run_plan(plan_path: str, config: dict, response_server: server.ResponseServe
                 if bellows is not None:
                     bellows._seen.discard(verdict.slug_from_path(plan_path))
                 return
+            if not plan_claim.claim_gate(base_filename, content_hash, config, _log):
+                if bellows is not None:
+                    bellows._seen.discard(verdict.slug_from_path(plan_path))
+                return
             # Mint id + write plans row atomically
             dispatch_mode = header.get("dispatch_mode", header.get("Dispatch Mode", ""))
             tier = header.get("tier", header.get("Tier", ""))
@@ -944,6 +952,7 @@ def run_plan(plan_path: str, config: dict, response_server: server.ResponseServe
                 clearance_plan_path=base_filename,
             )
             if not _disk_preflight(config):
+                plan_claim.release_for_plan(plan_id, "abort: disk preflight", config, _log)
                 if bellows is not None:
                     bellows._seen.discard(verdict.slug_from_path(plan_path))
                 return
@@ -988,6 +997,7 @@ def run_plan(plan_path: str, config: dict, response_server: server.ResponseServe
             notifier.notify_plan_skipped(plan_name)
             shutil.move(plan_path, os.path.join(plan_dir, "Done", base_filename))
             _delete_shadow(plan_filename)
+            plan_claim.release_for_plan(plan_id, "completion: zero-step skip", config, _log)
             return
         _log("INFO", f"plan has {total_steps} steps", slug=slug_for(plan_name))
         if total_steps > 1 and "pause_for_verdict" not in header:
@@ -1048,6 +1058,7 @@ def run_plan(plan_path: str, config: dict, response_server: server.ResponseServe
             base_filename, plan_dir, bellows, db_path, project_path,
             wt_path, app_key, user_key, plan_id,
             plan_baseline_sha=pre_diff,
+            config=config,
         ):
             return
 
@@ -1183,6 +1194,7 @@ def run_plan(plan_path: str, config: dict, response_server: server.ResponseServe
                 base_filename, plan_dir, bellows, db_path, project_path,
                 wt_path, app_key, user_key, plan_id,
                 plan_baseline_sha=pre_diff,
+                config=config,
             ):
                 return
 
@@ -1330,6 +1342,7 @@ def run_plan(plan_path: str, config: dict, response_server: server.ResponseServe
             _done_doc_ref = os.path.relpath(done_path, project_path)
             lifecycle.mark_plan_state(plan_id, "closed", closed_at=datetime.now().isoformat(), plan_doc_ref=_done_doc_ref) if plan_id else None
             _retire_receipts(plan_id)
+            plan_claim.release_for_plan(plan_id, "completion: auto-close", config, _log)
             notifier.notify_plan_complete(plan_name, total_cost)
             _log("EVENT", f"✅ AUTO-CLOSED", slug=slug_for(plan_name))
             return
@@ -2939,6 +2952,7 @@ class Bellows:
                                 _halt_doc_ref = os.path.relpath(halted_path, _halt_project_root)
                                 lifecycle.mark_plan_state(_lc_plan_id, "halted", closed_at=datetime.now().isoformat(), plan_doc_ref=_halt_doc_ref) if _lc_plan_id else None
                                 _retire_receipts(_lc_plan_id)
+                                plan_claim.release_for_plan(_lc_plan_id, "halt: rejected verdict", self.config, _log)
                                 notifier.notify_plan_halted(original_name)
                                 break
                             is_diag = original_name.startswith("diagnostic-")
@@ -2973,6 +2987,7 @@ class Bellows:
                                 _done_doc_ref = os.path.relpath(done_path, _done_project_root)
                                 lifecycle.mark_plan_state(_lc_plan_id, "closed", closed_at=datetime.now().isoformat(), plan_doc_ref=_done_doc_ref) if _lc_plan_id else None
                                 _retire_receipts(_lc_plan_id)
+                                plan_claim.release_for_plan(_lc_plan_id, "completion: continue-to-done", self.config, _log)
                                 notifier.notify_plan_complete(original_name, 0.0)
                                 _log("EVENT", f"verdict continue-to-done", slug=slug_for(original_name))
                             else:
@@ -3003,6 +3018,7 @@ class Bellows:
                             _stop_doc_ref = os.path.relpath(halted_path, _stop_project_root)
                             lifecycle.mark_plan_state(_lc_plan_id, "halted", closed_at=datetime.now().isoformat(), plan_doc_ref=_stop_doc_ref) if _lc_plan_id else None
                             _retire_receipts(_lc_plan_id)
+                            plan_claim.release_for_plan(_lc_plan_id, "halt: stop verdict", self.config, _log)
                             _log("EVENT", f"verdict stop — halting", slug=slug_for(original_name))
                             notifier.notify_plan_halted(original_name)
                         break  # only one match per verdict

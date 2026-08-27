@@ -53,3 +53,54 @@ machine, on that machine.
 The claim rename and all downstream naming are UNCHANGED by this law —
 disjoint ranges make collisions arithmetically impossible without touching
 code. Definition: the central `GLOSSARY.md` `id-range partitioning` entry.
+
+## Cross-machine claim lock (fork 1)
+
+The `plan_claim_lock` key in `config.json` controls the global claim shim.
+Values: `off` (default), `advisory`, `required`. An absent or `off` key
+produces BYTE-IDENTICAL claim-path behavior — no subprocess, partition
+safety governs. An unrecognized value is treated as `required` with a
+warning (fail toward safety).
+
+| mode | claim seam | error handling | decline handling |
+|------|-----------|----------------|------------------|
+| `off` | no subprocess | n/a | n/a |
+| `advisory` | subprocess runs | proceed with loud ADVISORY-ERROR | AUTHORITATIVE — stop, never proceed |
+| `required` | subprocess runs | blocked — stop | AUTHORITATIVE — stop, never proceed |
+
+**Activation runbook (order is load-bearing):**
+1. Populate `eligible_classes` in the machine's tuyere `config.json` from the
+   class universe `{read-only, shop-infra, register-writing, app-feature}`.
+   An omitted class means that machine declines every plan of that class.
+2. ONLY THEN set `plan_claim_lock` to `advisory` (stages 1-2) or `required`
+   (stage 3+) in this machine's bellows `config.json`.
+   Misorder symptom: mode-before-classes makes every deposit on that machine
+   decline exit 4 and nothing dispatches.
+
+**Seam path resolution** (named twin of `wrap_check._tuyere_checkout`):
+resolution order is `$ELUVIAN_WRAP_TUYERE`, `~/Developer/tuyere`,
+`ROOT/tuyere` where ROOT = `$ELUVIAN_WRAP_ROOT` else the literal
+`/Users/marklehn/Developer/GitHub`. First candidate whose
+`.venv/bin/python` exists wins.
+
+**R4a claim lifecycle:** claim (in the claim block, after clearance re-check,
+before mint) -> run -> completion-release (at every terminal transition).
+Down-sweep and manual release are failure lanes. Park keeps the claim (it
+auto-resumes). The outer `except` in `run_plan` deliberately holds — an
+exception is not a clean disposition and the claim stays for manual
+recovery.
+
+**Self-strand recovery:** a claim stranded on an UP machine (crash inside the
+claim-mint-rename window, seam timeout after the CLI committed, or
+`run_plan`'s outer exception which holds by design) declines as held on
+retry. Recovery: `tuyere.claims release <slug> --reason self-strand`.
+Every exit-3 decline log carries this hint. Auto-self-heal is deliberately
+deferred. R4a's down-only narrowing supersedes the census's stale-release
+assumption for this window.
+
+**Stage-3 widen gate:** before ANY `watched_projects` widening, EVERY machine
+watching the shared directory must be `required`. The unsafe matrix cells
+are all mixed-topology — an off- or advisory-errored machine beside a
+shared directory is the double-dispatch channel.
+
+Rulings: `tuyere/knowledge/research/fork1-claim-lock-rulings-2026-08-26.md`.
