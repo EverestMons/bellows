@@ -1,0 +1,8 @@
+{
+  "slug": "executable-breadcrumb-pro",
+  "content_hash": "586d023bec9de3812d7c566eb3eef80369a62051f2a4d5e3679a721da2d946bf",
+  "session_id": "eba1779f-d98c-4c9c-b931-a630739160fa",
+  "armed_at": "2026-08-27T16:04:42.625579",
+  "watcher": "gate_watcher.py spawned detached (pid 49086); log: logs/watch/executable-breadcrumb-pro.md.log",
+  "attestation_boundary": "This receipt proves the watcher was ARMED at write time. It does NOT prove the watcher stayed alive. Liveness of a session-local monitor is not externally verifiable."
+}

@@ -1,0 +1,8 @@
+{
+  "slug": "executable-weight-filter-binding-mismatch",
+  "content_hash": "b873676157cfc38a144645eef2572ac3b66c14ecbb46c5bd69aebafb68b076db",
+  "session_id": "eba1779f-d98c-4c9c-b931-a630739160fa",
+  "armed_at": "2026-08-27T14:40:38.207864",
+  "watcher": "gate_watcher.py spawned detached (pid 35231); log: logs/watch/executable-weight-filter-binding-mismatch.md.log",
+  "attestation_boundary": "This receipt proves the watcher was ARMED at write time. It does NOT prove the watcher stayed alive. Liveness of a session-local monitor is not externally verifiable."
+}
