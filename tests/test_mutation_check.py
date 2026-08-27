@@ -1,6 +1,7 @@
 """Tests for tools/mutation_check.py — the mutation runner's own tests."""
 import hashlib
 import json
+import os
 import subprocess
 import sys
 import textwrap
@@ -277,3 +278,100 @@ def test_timeout_is_error_not_killed(tmp_path):
     assert "MUTANT slow-mutant: ERROR" in out
     assert "timeout" in out.lower()
     assert code != 0
+
+
+def test_same_byte_length_mutation_is_killed(tmp_path):
+    repo = _make_repo(tmp_path, {
+        "target.py": "def add(a, b):\n    return a + b\n",
+        "tests/test_target.py": textwrap.dedent("""\
+            import sys, os
+            sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
+            from target import add
+            def test_add():
+                assert add(1, 2) == 3
+        """),
+    })
+    anchor = "return a + b"
+    replacement = "return a - b"
+    assert len(anchor) == len(replacement), "test precondition: same byte length"
+    manifest = {
+        "target": "target.py",
+        "mutants": [{
+            "name": "same-len-flip",
+            "why": "regression: same-byte-length mutant must not survive via stale bytecache",
+            "anchor": anchor,
+            "replacement": replacement,
+            "expect_fail": "tests/test_target.py::test_add",
+        }],
+    }
+    code, out = _run_checker(tmp_path, repo, manifest)
+    assert "MUTANT same-len-flip: KILLED" in out
+    assert code == 0
+
+
+def test_bytecode_isolation_env_is_set():
+    source = Path(os.path.join(
+        os.path.dirname(__file__), "..", "tools", "mutation_check.py"
+    )).resolve().read_text()
+    assert "PYTHONDONTWRITEBYTECODE" in source
+    lines = source.splitlines()
+    in_run_pytest = False
+    found_env_arg = False
+    for line in lines:
+        if "def _run_pytest" in line:
+            in_run_pytest = True
+        elif in_run_pytest and line and not line[0].isspace():
+            break
+        if in_run_pytest and "env=" in line:
+            found_env_arg = True
+    assert found_env_arg, "_run_pytest must pass env= to subprocess.run"
+
+
+def test_consecutive_same_length_mutants_are_both_killed(tmp_path):
+    repo = _make_repo(tmp_path, {
+        "target.py": textwrap.dedent("""\
+            def add(a, b):
+                return a + b
+
+            def mul(a, b):
+                return a * b
+        """),
+        "tests/test_target.py": textwrap.dedent("""\
+            import sys, os
+            sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
+            from target import add, mul
+            def test_add():
+                assert add(1, 2) == 3
+            def test_mul():
+                assert mul(3, 4) == 12
+        """),
+    })
+    anchor1 = "return a + b"
+    replace1 = "return a - b"
+    anchor2 = "return a * b"
+    replace2 = "return a / b"
+    assert len(anchor1) == len(replace1), "test precondition: same byte length (mutant 1)"
+    assert len(anchor2) == len(replace2), "test precondition: same byte length (mutant 2)"
+    manifest = {
+        "target": "target.py",
+        "mutants": [
+            {
+                "name": "flip-add",
+                "why": "consecutive same-length regression (1 of 2)",
+                "anchor": anchor1,
+                "replacement": replace1,
+                "expect_fail": "tests/test_target.py::test_add",
+            },
+            {
+                "name": "flip-mul",
+                "why": "consecutive same-length regression (2 of 2)",
+                "anchor": anchor2,
+                "replacement": replace2,
+                "expect_fail": "tests/test_target.py::test_mul",
+            },
+        ],
+    }
+    code, out = _run_checker(tmp_path, repo, manifest)
+    assert "MUTANT flip-add: KILLED" in out
+    assert "MUTANT flip-mul: KILLED" in out
+    assert code == 0

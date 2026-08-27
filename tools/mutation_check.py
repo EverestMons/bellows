@@ -40,6 +40,13 @@ def _sha256(path):
 
 
 def _run_pytest(selector, cwd, timeout):
+    # Bytecode is invalidated by (mtime, size) — a same-byte-length mutation
+    # written within the same mtime second leaves the cached .pyc valid and
+    # the mutant run executes baseline code. The cache location is environment-
+    # dependent (sys.pycache_prefix redirects it out of the tree on macOS), so
+    # clearing __pycache__ is not a portable substitute.
+    env = dict(os.environ)
+    env["PYTHONDONTWRITEBYTECODE"] = "1"
     try:
         result = subprocess.run(
             [sys.executable, "-m", "pytest", selector, "-q"],
@@ -47,6 +54,7 @@ def _run_pytest(selector, cwd, timeout):
             timeout=timeout,
             capture_output=True,
             text=True,
+            env=env,
         )
         return result.returncode
     except subprocess.TimeoutExpired:
