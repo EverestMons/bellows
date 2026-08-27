@@ -26,6 +26,7 @@ exit: 0 terminal state reached (or --status printed); 2 usage; 3 timeout.
 import argparse
 import glob
 import os
+import re
 import sqlite3
 import sys
 import time
@@ -39,10 +40,24 @@ _WATCH_DIR = os.path.join(_ROOT, "logs", "watch")
 TERMINAL = {"closed", "halted", "abandoned"}
 
 
-def read_state(name, db_path=None, pending_dir=None):
+def _verdict_issued(resolved_dir, plan_id, step):
+    """True iff a verdict for this plan+step already exists on disk.
+
+    BOTH forms count: verdict-<id>-step-<N>.md is written by issue_verdict
+    at the moment the Planner rules; the daemon later renames it to
+    processed-verdict-<id>-step-<N>.md. A pending request with either form
+    present is awaiting DAEMON CLEANUP, not awaiting a verdict.
+    """
+    issued = os.path.join(resolved_dir, f"verdict-{plan_id}-step-{step}.md")
+    processed = os.path.join(resolved_dir, f"processed-verdict-{plan_id}-step-{step}.md")
+    return os.path.exists(issued) or os.path.exists(processed)
+
+
+def read_state(name, db_path=None, pending_dir=None, resolved_dir=None):
     """One read-only DB query -> state dict, or None if the DB is unreadable."""
     path = db_path or _DB
     pend = pending_dir or os.path.join(os.path.dirname(os.path.abspath(path)), "verdicts", "pending")
+    res = resolved_dir or os.path.join(os.path.dirname(os.path.abspath(pend)), "resolved")
     try:
         conn = sqlite3.connect(f"file:{path}?mode=ro", uri=True, timeout=5)
     except sqlite3.Error:
@@ -74,12 +89,20 @@ def read_state(name, db_path=None, pending_dir=None):
                 for p in glob.glob(os.path.join(pend, f"verdict-request-{plan_id}-step-*.md"))
             )
             if hits:
-                return {
-                    "phase": "awaiting-verdict",
-                    "plan_id": plan_id,
-                    "gate_failures": gate_failures,
-                    "pending": hits,
-                }
+                def _step_of(name):
+                    m = re.match(r"^verdict-request-\d+-step-(\d+)\.md$", name)
+                    return int(m.group(1)) if m else None
+
+                live = [h for h in hits if
+                        _step_of(h) is None or
+                        not _verdict_issued(res, plan_id, _step_of(h))]
+                if live:
+                    return {
+                        "phase": "awaiting-verdict",
+                        "plan_id": plan_id,
+                        "gate_failures": gate_failures,
+                        "pending": live,
+                    }
         return base
     except sqlite3.Error:
         return None
@@ -110,30 +133,6 @@ def _log_line(log_path, line):
         f.write(stamped)
 
 
-def judge_watch_line(prev, cur, arm_pending):
-    """Loop-only framing: (line, new_arm_pending).
-
-    A pause whose pending set is exactly the one present when this watcher
-    armed is PRE-EXISTING — already resolved and awaiting daemon cleanup —
-    so it is reported as armed-over, never as a freshly observed pause.
-    The snapshot clears as soon as the pending set empties, so the NEXT
-    genuine pause reports normally.
-    """
-    if cur is None:
-        return (judge_transition(prev, cur), arm_pending)
-    if "pending" not in cur:
-        return (judge_transition(prev, cur), None)
-    if arm_pending is not None and set(cur["pending"]) == arm_pending:
-        if prev is None:
-            line = (f"WATCH: armed over pre-existing verdict-request: "
-                    f"{','.join(cur['pending'])} "
-                    f"(already resolved or awaiting daemon cleanup; not a new pause)")
-        else:
-            line = None
-        return (line, arm_pending)
-    return (judge_transition(prev, cur), arm_pending)
-
-
 def main(argv):
     ap = argparse.ArgumentParser()
     ap.add_argument("name")
@@ -146,13 +145,17 @@ def main(argv):
     ap.add_argument("--pending-dir", default=None,
                     help="verdicts/pending dir (default: derived from --db-path's parent, "
                          "else this tool's bellows root)")
+    ap.add_argument("--resolved-dir", default=None,
+                    help="verdicts/resolved dir (default: derived from --pending-dir's parent, "
+                         "else beside --db-path)")
     try:
         args = ap.parse_args(argv[1:])
     except SystemExit:
         return 2
 
     if args.status:
-        cur = read_state(args.name, db_path=args.db_path, pending_dir=args.pending_dir)
+        cur = read_state(args.name, db_path=args.db_path, pending_dir=args.pending_dir,
+                         resolved_dir=args.resolved_dir)
         line = judge_transition(None, cur) or "WATCH: (no state)"
         print(line)
         return 0
@@ -163,15 +166,10 @@ def main(argv):
                         f"(timeout {args.timeout_min}m, interval {args.interval_sec}s)")
     deadline = time.monotonic() + args.timeout_min * 60
     prev = "UNSET"
-    armed = False
-    arm_pending = None
     while time.monotonic() < deadline:
-        cur = read_state(args.name, db_path=args.db_path, pending_dir=args.pending_dir)
-        if not armed and cur is not None:
-            arm_pending = set(cur["pending"]) if cur.get("pending") else None
-            armed = True
-        line, arm_pending = judge_watch_line(
-            None if prev == "UNSET" else prev, cur, arm_pending)
+        cur = read_state(args.name, db_path=args.db_path, pending_dir=args.pending_dir,
+                         resolved_dir=args.resolved_dir)
+        line = judge_transition(None if prev == "UNSET" else prev, cur)
         if line:
             _log_line(log_path, line)
         if cur is not None:

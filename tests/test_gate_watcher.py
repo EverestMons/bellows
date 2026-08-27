@@ -1,4 +1,5 @@
 """Tests for tools/gate_watcher.py — session-independent gate watcher."""
+import itertools
 import json
 import os
 import sys
@@ -10,7 +11,7 @@ TOOLS_DIR = Path(__file__).resolve().parent.parent / "tools"
 sys.path.insert(0, str(TOOLS_DIR.parent))
 
 import lifecycle
-from tools.gate_watcher import read_state, judge_transition, judge_watch_line, main
+from tools.gate_watcher import read_state, judge_transition, main
 
 
 def _init_db(tmp_path):
@@ -232,86 +233,154 @@ class TestPauseDetection:
         assert line is not None
 
 
-class TestArmTimeSnapshot:
+class TestPauseStateSpace:
+    # verdict.py:187 — the daemon's writer
+    PENDING = ("absent", "present")
+    # B1: the two real filename forms plus absence
+    VERDICT = ("none", "issued", "processed")
+    # B3: SELECT DISTINCT lifecycle_state FROM plans — the REACHABLE set
+    STATE = ("in_progress", "closed", "halted", "abandoned")
 
-    def test_pre_existing_pause_reported_as_armed_over(self):
-        cur = {
-            "phase": "awaiting-verdict",
-            "plan_id": 50,
-            "gate_failures": [],
-            "pending": ["verdict-request-50-step-1.md"],
-        }
-        line, new_snap = judge_watch_line(None, cur, {"verdict-request-50-step-1.md"})
-        assert "armed over pre-existing" in line
-        assert "awaiting-verdict" not in line
+    CLASSIFICATION = {
+        # pending absent → NO_PAUSE regardless
+        ("absent", "none", "in_progress"): "NO_PAUSE",
+        ("absent", "none", "closed"): "NO_PAUSE",
+        ("absent", "none", "halted"): "NO_PAUSE",
+        ("absent", "none", "abandoned"): "NO_PAUSE",
+        ("absent", "issued", "in_progress"): "NO_PAUSE",
+        ("absent", "issued", "closed"): "NO_PAUSE",
+        ("absent", "issued", "halted"): "NO_PAUSE",
+        ("absent", "issued", "abandoned"): "NO_PAUSE",
+        ("absent", "processed", "in_progress"): "NO_PAUSE",
+        ("absent", "processed", "closed"): "NO_PAUSE",
+        ("absent", "processed", "halted"): "NO_PAUSE",
+        ("absent", "processed", "abandoned"): "NO_PAUSE",
+        # terminal state → NO_PAUSE (terminal wins over pending — the stray-file law)
+        ("present", "none", "closed"): "NO_PAUSE",
+        ("present", "none", "halted"): "NO_PAUSE",
+        ("present", "none", "abandoned"): "NO_PAUSE",
+        ("present", "issued", "closed"): "NO_PAUSE",
+        ("present", "issued", "halted"): "NO_PAUSE",
+        ("present", "issued", "abandoned"): "NO_PAUSE",
+        ("present", "processed", "closed"): "NO_PAUSE",
+        ("present", "processed", "halted"): "NO_PAUSE",
+        ("present", "processed", "abandoned"): "NO_PAUSE",
+        # pending present + verdict none + non-terminal → REPORT_PAUSE (the cell 572 got wrong)
+        ("present", "none", "in_progress"): "REPORT_PAUSE",
+        # pending present + verdict issued/processed + non-terminal → NO_PAUSE
+        ("present", "issued", "in_progress"): "NO_PAUSE",
+        ("present", "processed", "in_progress"): "NO_PAUSE",
+    }
 
-    def test_pre_existing_pause_silent_on_later_polls(self):
-        cur = {
-            "phase": "awaiting-verdict",
-            "plan_id": 50,
-            "gate_failures": [],
-            "pending": ["verdict-request-50-step-1.md"],
-        }
-        line, new_snap = judge_watch_line(cur, cur, {"verdict-request-50-step-1.md"})
-        assert line is None
+    _PLAN_ID = 500
+    _PLAN_NAME = "state-space-plan.md"
 
-    def test_new_pause_after_snapshot_cleared_reports_normally(self):
-        cur = {
-            "phase": "awaiting-verdict",
-            "plan_id": 50,
-            "gate_failures": [],
-            "pending": ["verdict-request-50-step-2.md"],
-        }
-        line, new_snap = judge_watch_line(None, cur, None)
-        assert "awaiting-verdict" in line
-        assert "pending=verdict-request-50-step-2.md" in line
+    def test_state_space_is_completely_classified(self):
+        assert len(self.CLASSIFICATION) == 2 * 3 * 4
+        assert set(self.CLASSIFICATION.keys()) == set(
+            itertools.product(self.PENDING, self.VERDICT, self.STATE)
+        )
 
-    def test_snapshot_cleared_when_pending_empties(self):
-        cur = {"phase": "in_progress", "plan_id": 50, "gate_failures": []}
-        line, new_snap = judge_watch_line(None, cur, {"verdict-request-50-step-1.md"})
-        assert new_snap is None
-
-    def test_different_pending_set_is_a_new_pause(self):
-        cur = {
-            "phase": "awaiting-verdict",
-            "plan_id": 50,
-            "gate_failures": [],
-            "pending": ["verdict-request-50-step-2.md"],
-        }
-        line, new_snap = judge_watch_line(None, cur, {"verdict-request-50-step-1.md"})
-        assert "awaiting-verdict" in line
-        assert "pending=verdict-request-50-step-2.md" in line
-
-    def test_arm_pending_none_is_transparent(self):
-        cur_running = {"phase": "in_progress", "plan_id": 50, "gate_failures": []}
-        cur_terminal = {"phase": "closed", "plan_id": 50, "gate_failures": []}
-        for cur in (cur_running, cur_terminal):
-            line, new_snap = judge_watch_line(None, cur, None)
-            expected = judge_transition(None, cur)
-            assert line == expected
-
-    def test_db_unreadable_preserves_snapshot(self):
-        snap = {"verdict-request-50-step-1.md"}
-        line, new_snap = judge_watch_line(None, None, snap)
-        assert "db-unreadable" in line
-        assert new_snap == snap
-        next_cur = {
-            "phase": "awaiting-verdict",
-            "plan_id": 50,
-            "gate_failures": [],
-            "pending": ["verdict-request-50-step-1.md"],
-        }
-        line2, new_snap2 = judge_watch_line(None, next_cur, new_snap)
-        assert "armed over pre-existing" in line2
-
-    def test_status_mode_unchanged_for_pause(self, tmp_path, capsys):
+    @pytest.mark.parametrize("cell,expected", list(CLASSIFICATION.items()),
+                             ids=[f"{p}-{v}-{s}" for (p, v, s) in CLASSIFICATION])
+    def test_every_cell_behaves_as_classified(self, tmp_path, cell, expected):
+        pending_dim, verdict_dim, state_dim = cell
         db_path = _init_db(tmp_path)
-        _insert_plan(db_path, 80, "status-pause.md", state="in_progress")
+        _insert_plan(db_path, self._PLAN_ID, self._PLAN_NAME, state=state_dim)
+
         pend = tmp_path / "pending"
         pend.mkdir()
-        (pend / "verdict-request-80-step-1.md").write_text("")
-        rc = main(["gate_watcher.py", "status-pause.md", "--status",
-                    "--db-path", db_path, "--pending-dir", str(pend)])
-        assert rc == 0
-        captured = capsys.readouterr()
-        assert "WATCH: awaiting-verdict id=80 pending=verdict-request-80-step-1.md" in captured.out
+        resolved = tmp_path / "resolved"
+        resolved.mkdir()
+
+        if pending_dim == "present":
+            (pend / f"verdict-request-{self._PLAN_ID}-step-1.md").write_text("")
+        if verdict_dim == "issued":
+            (resolved / f"verdict-{self._PLAN_ID}-step-1.md").write_text("")
+        elif verdict_dim == "processed":
+            (resolved / f"processed-verdict-{self._PLAN_ID}-step-1.md").write_text("")
+
+        result = read_state(self._PLAN_NAME, db_path=db_path,
+                            pending_dir=str(pend), resolved_dir=str(resolved))
+
+        if expected == "REPORT_PAUSE":
+            assert result["phase"] == "awaiting-verdict"
+        else:
+            assert result["phase"] != "awaiting-verdict"
+
+    def test_reachable_states_match_the_classification_dimension(self):
+        import sqlite3
+        db_path = os.environ.get("GATE_WATCHER_LIVE_DB")
+        if db_path is None:
+            from tools.gate_watcher import _DB
+            db_path = _DB
+        if not os.path.exists(db_path):
+            pytest.skip(f"no lifecycle.db at {db_path}")
+        conn = sqlite3.connect(f"file:{db_path}?mode=ro", uri=True, timeout=5)
+        try:
+            rows = conn.execute("SELECT DISTINCT lifecycle_state FROM plans").fetchall()
+        finally:
+            conn.close()
+        observed = {r[0] for r in rows}
+        for s in observed:
+            assert s in self.STATE, f"reachable state {s!r} not in STATE dimension"
+
+    def test_no_arming_position_state_survives(self):
+        import ast
+        src_path = TOOLS_DIR / "gate_watcher.py"
+        source = src_path.read_text()
+        tree = ast.parse(source)
+        names = set()
+        for node in ast.walk(tree):
+            if isinstance(node, ast.Name):
+                names.add(node.id)
+            elif isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
+                names.add(node.name)
+            elif isinstance(node, ast.arg):
+                names.add(node.arg)
+        for token in ("arm_pending", "armed", "judge_watch_line"):
+            assert token not in names, f"{token!r} used as identifier in gate_watcher.py"
+
+    def test_position_cannot_change_the_phase(self):
+        cur = {
+            "phase": "awaiting-verdict",
+            "plan_id": 50,
+            "gate_failures": [],
+            "pending": ["verdict-request-50-step-1.md"],
+        }
+        different_prev = {"phase": "in_progress", "plan_id": 50, "gate_failures": []}
+        line_from_none = judge_transition(None, cur)
+        line_from_prev = judge_transition(different_prev, cur)
+        assert line_from_none is not None
+        assert line_from_prev is not None
+        assert "awaiting-verdict" in line_from_none
+        assert "awaiting-verdict" in line_from_prev
+
+    def test_unparseable_request_name_is_reported_live(self, tmp_path):
+        db_path = _init_db(tmp_path)
+        _insert_plan(db_path, 90, "unparse-plan.md", state="in_progress")
+        pend = tmp_path / "pending"
+        pend.mkdir()
+        resolved = tmp_path / "resolved"
+        resolved.mkdir()
+        (pend / "verdict-request-90-step-weird.md").write_text("")
+        result = read_state("unparse-plan.md", db_path=db_path,
+                            pending_dir=str(pend), resolved_dir=str(resolved))
+        assert result["phase"] == "awaiting-verdict"
+
+    def test_mixed_steps_report_only_the_unresolved_one(self, tmp_path):
+        db_path = _init_db(tmp_path)
+        _insert_plan(db_path, 100, "mixed-plan.md", state="in_progress")
+        pend = tmp_path / "pending"
+        pend.mkdir()
+        resolved = tmp_path / "resolved"
+        resolved.mkdir()
+        (pend / "verdict-request-100-step-1.md").write_text("")
+        (pend / "verdict-request-100-step-2.md").write_text("")
+        (resolved / "processed-verdict-100-step-1.md").write_text("")
+        result = read_state("mixed-plan.md", db_path=db_path,
+                            pending_dir=str(pend), resolved_dir=str(resolved))
+        assert result["phase"] == "awaiting-verdict"
+        assert result["pending"] == ["verdict-request-100-step-2.md"]
+
+
