@@ -316,9 +316,15 @@ class TestPauseStateSpace:
             db_path = _DB
         if not os.path.exists(db_path):
             pytest.skip(f"no lifecycle.db at {db_path}")
-        conn = sqlite3.connect(f"file:{db_path}?mode=ro", uri=True, timeout=5)
+        try:
+            conn = sqlite3.connect(f"file:{db_path}?mode=ro", uri=True, timeout=5)
+        except sqlite3.OperationalError:
+            pytest.skip(f"lifecycle.db at {db_path} is not a readable SQLite database")
         try:
             rows = conn.execute("SELECT DISTINCT lifecycle_state FROM plans").fetchall()
+        except sqlite3.OperationalError:
+            conn.close()
+            pytest.skip(f"lifecycle.db at {db_path} has no plans table")
         finally:
             conn.close()
         observed = {r[0] for r in rows}

@@ -1,0 +1,48 @@
+=== SCRATCH=/var/folders/vf/8nw0z7hj1m34w6z48l5dp54w0000gn/T/tmp.4R61yOLSTV ===
+=== PID=573 ===
+
+=== PROBE 1 — Baseline (unresolved pending, resolved dir EMPTY) ===
+NOTE: This is NOT a discriminating probe — 572's guard lived in the poll loop (judge_watch_line), never in read_state, so --status was never affected by it.
+WATCH: awaiting-verdict id=573 pending=verdict-request-573-step-1.md
+exit=0
+
+=== PROBE 1b — THE 572 REGRESSION — loop at arm time, unresolved pause ===
+Running loop for 1 minute with pending present, resolved dir EMPTY...
+loop exit=3
+
+--- Full log contents ---
+2026-08-27T09:30:40.540715 WATCH: armed for executable-gate-watcher-arm-snapshot.md (timeout 1m, interval 5s)
+2026-08-27T09:30:40.542588 WATCH: awaiting-verdict id=573 pending=verdict-request-573-step-1.md
+2026-08-27T09:31:40.682816 WATCH: timeout; exiting
+
+--- Pause-line count (expect >=1) ---
+1
+
+--- Armed-over count (expect 0) ---
+0
+
+=== PROBE 2 — Stale, verdict- form (expect NOT awaiting-verdict) ===
+WATCH: in_progress id=573
+exit=0
+
+=== PROBE 3 — Stale, processed-verdict- form (expect NOT awaiting-verdict) ===
+WATCH: in_progress id=573
+exit=0
+
+=== PROBE 4 — Mixed: step-1 resolved, step-2 pending (expect awaiting-verdict only step-2) ===
+WATCH: awaiting-verdict id=573 pending=verdict-request-573-step-2.md
+exit=0
+
+=== PROBE 5 — Cleanup ===
+SCRATCH cleaned: 0
+
+=== PROBE 6 — Drift guard with GATE_WATCHER_LIVE_DB (expect 1 passed, 0 skipped) ===
+.                                                                        [100%]
+=============================== warnings summary ===============================
+tests/test_gate_watcher.py::TestPauseStateSpace::test_reachable_states_match_the_classification_dimension
+  /Users/marklehn/Library/Python/3.9/lib/python/site-packages/urllib3/__init__.py:35: NotOpenSSLWarning: urllib3 v2 only supports OpenSSL 1.1.1+, currently the 'ssl' module is compiled with 'LibreSSL 2.8.3'. See: https://github.com/urllib3/urllib3/issues/3020
+    warnings.warn(
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+1 passed, 45 deselected, 1 warning in 0.10s
+
