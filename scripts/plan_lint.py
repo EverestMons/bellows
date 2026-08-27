@@ -568,6 +568,54 @@ def lint(plan_path):
             if "plan_lint=" not in validation_val:
                 print("(f) WARN: Cycle Manifest validation missing plan_lint= entry")
 
+        # (s) Detector consequences: target_class=detector mechanizes state_space
+        # and mutants as required follow-through. The declaration itself is authored
+        # — only its consequences are mechanized.
+        tc_val = stanza_fields.get("target_class", "").strip()
+        if tc_val == "detector":
+            ss_val = stanza_fields.get("state_space", "").strip()
+            if not ss_val:
+                print("(s) WARN: target_class=detector but no state_space field"
+                      " — a detector’s tests must enumerate its state space"
+                      " from SYSTEM artifacts (SELECT DISTINCT, real filenames,"
+                      " the actual writer), not the author’s model;"
+                      " see exec-573 TestPauseStateSpace")
+            mut_val = stanza_fields.get("mutants", "").strip()
+            if not mut_val:
+                print("(s) WARN: target_class=detector but mutants names no"
+                      " manifest that exists or is promised in Deposits"
+                      " — ‘would the suite catch this?’ has no"
+                      " mechanical answer; see tools/mutation_check.py (exec-575)")
+            else:
+                mut_on_disk = Path(mut_val).exists()
+                mut_in_deposits = False
+                if not mut_on_disk:
+                    for dep_m in re.finditer(r'\*\*Deposits:\*\*', plan_text):
+                        dep_start = dep_m.end()
+                        dep_block = plan_text[dep_start:dep_start + 500]
+                        if mut_val in dep_block:
+                            mut_in_deposits = True
+                            break
+                if not mut_on_disk and not mut_in_deposits:
+                    print("(s) WARN: target_class=detector but mutants names no"
+                          " manifest that exists or is promised in Deposits"
+                          " — ‘would the suite catch this?’ has no"
+                          " mechanical answer; see tools/mutation_check.py (exec-575)")
+
+        # (t) Detector name nudge — advisory heuristic.
+        # A name heuristic is invisible when incomplete and must NEVER become a
+        # FAIL basis — it exists to make the omission visible, not to decide it.
+        if not tc_val:
+            tgt_val = stanza_fields.get("target", "").strip()
+            if tgt_val.endswith(".py"):
+                tgt_base = Path(tgt_val).name
+                if re.search(r'(check|guard|watch|filter|dedup|stale|detect|valid|lint|verif)', tgt_base, re.IGNORECASE):
+                    print("(t) WARN: target basename looks like a detector but"
+                          " target_class is not declared — declare"
+                          " ‘target_class: detector’ (and then state_space"
+                          " + mutants), or leave it undeclared deliberately;"
+                          " this heuristic is advisory and cannot decide the question")
+
     # (i) qa_and_terminal ↔ qa_steps coupling: under this mode a mis-declared QA step
     # advances mechanically — the lint is the authoring-time guard.
     if header and header.get("pause_for_verdict") == "qa_and_terminal":
