@@ -1,0 +1,8 @@
+{
+  "slug": "diagnostic-stanza-presence-gate-gap",
+  "content_hash": "2578aa724632a4d345ea5fd3be89c0092a2441e759db1fc7020ff7c752ee1461",
+  "session_id": "e698c971-6d3e-4df1-9cfe-a04f65f9c1df",
+  "armed_at": "2026-08-27T22:56:12.427628",
+  "watcher": "gate_watcher.py spawned detached (pid 96191); log: logs/watch/diagnostic-stanza-presence-gate-gap.md.log",
+  "attestation_boundary": "This receipt proves the watcher was ARMED at write time. It does NOT prove the watcher stayed alive. Liveness of a session-local monitor is not externally verifiable."
+}
