@@ -42,7 +42,38 @@ from pathlib import Path
 # ~/Developer/eluvian-governance). Same override names as the arm/stop hooks.
 ROOT = Path(os.environ.get("ELUVIAN_WRAP_ROOT")
             or "/Users/marklehn/Developer/GitHub")
-BELLOWS = ROOT / "bellows"
+
+
+def _resolve_bellows(root: Path) -> Path:
+    """Locate the bellows CHECKOUT, which is not in the same place on every machine.
+
+    Shop machine: a populated submodule at <root>/bellows.
+    Mac mini:     a sibling checkout at <root>/../bellows, while <root>/bellows
+                  is an UNINITIALIZED (empty) submodule directory.
+
+    The empty-submodule case is why this cannot just be `root / "bellows"`:
+    the directory EXISTS, so a bare path check passes, and `git -C` inside it
+    resolves up to the ROOT repo. Every [2/bellows] check then silently runs
+    against governance instead of bellows -- reporting the root's unpushed
+    count under a bellows label, and finding no verdicts/ or receipts/ to
+    check because the root has none. A check pointed at the wrong repo is
+    indistinguishable, in its output, from a check that passed.
+
+    Resolution order: explicit env override, then whichever candidate actually
+    contains a checkout (status.py is the marker the /eluvian contract already
+    uses), then the historical default so behaviour is unchanged where neither
+    exists.
+    """
+    env = os.environ.get("ELUVIAN_WRAP_BELLOWS")
+    if env:
+        return Path(env)
+    for candidate in (root / "bellows", root.parent / "bellows"):
+        if (candidate / "status.py").is_file():
+            return candidate
+    return root / "bellows"
+
+
+BELLOWS = _resolve_bellows(ROOT)
 RECEIPTS = BELLOWS / "receipts"
 LIFECYCLE_DB = BELLOWS / "lifecycle.db"
 MEMORY = Path(os.environ.get("ELUVIAN_WRAP_MEMORY")

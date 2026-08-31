@@ -9,6 +9,7 @@ __pycache__/
 config.secrets.json
 .env
 verdicts/ledger.jsonl
+hooks/eluvian/hooks.log
 .bellows-cache/
 .bellows-worktrees/
 config.json
