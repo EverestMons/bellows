@@ -1,0 +1,8 @@
+{
+  "slug": "executable-tuyere-plan-lane-project-scope",
+  "content_hash": "d36239986e5dfcb61ac235dac49ad5da78e69aa477a177d39b7b21734f522199",
+  "session_id": "e62dc27b-0a73-4b4d-a621-6bd19a957154",
+  "armed_at": "2026-08-30T08:52:58.342376",
+  "watcher": "gate_watcher.py spawned detached (pid 78833); log: logs/watch/executable-tuyere-plan-lane-project-scope.md.log",
+  "attestation_boundary": "This receipt proves the watcher was ARMED at write time. It does NOT prove the watcher stayed alive. Liveness of a session-local monitor is not externally verifiable."
+}

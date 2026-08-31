@@ -1,0 +1,3 @@
+continue
+
+Step 2 verified: all 11 gates PASS incl. byte-exact Rule 20. Production migration independently re-read by the Planner against the live DB and matches the agent's report exactly — plan_claims gained one text/nullable 'project' column at position 8, row count unchanged at 8, and 0 rows carry a non-null project (the no-backfill prohibition, probed directly since row count is blind to an UPDATE). Production config carries no project_lock, so the live claim path stays decision-identical and the substrate ships inert as designed. Suite 65 passed unpiped; Item 5 census used claims._project_key with shop values correctly recorded as unmeasured.
