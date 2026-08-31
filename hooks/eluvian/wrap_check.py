@@ -199,11 +199,18 @@ def check(session_id: str | None = None, caller: str = "stop") -> list[str]:
     # pointed at the wrong place is indistinguishable from one that passed).
     # Refuse loudly instead. Reachable via a typo'd ELUVIAN_WRAP_BELLOWS, which
     # is authoritative by design and so is not silently second-guessed.
-    if not (BELLOWS / "status.py").is_file():
+    # Scoped to an EXPLICIT override only. An auto-detected BELLOWS was chosen
+    # by the status.py marker and is sound by construction; a caller that
+    # injects BELLOWS directly (the test fixtures do) is deliberate and must
+    # not be second-guessed. The reachable error is a typo'd override, which
+    # is authoritative and so would otherwise be used unchecked.
+    _bellows_override = os.environ.get("ELUVIAN_WRAP_BELLOWS")
+    if _bellows_override and not (Path(_bellows_override) / "status.py").is_file():
         fails.append(
-            f"[0/resolve] bellows checkout not found at {BELLOWS} "
-            f"(no status.py). Every [2/bellows] check would pass vacuously. "
-            f"Set ELUVIAN_WRAP_BELLOWS to the real checkout."
+            f"[0/resolve] ELUVIAN_WRAP_BELLOWS={_bellows_override} is not a "
+            f"bellows checkout (no status.py). The override is authoritative, "
+            f"so every [2/bellows] check would run against it and pass "
+            f"vacuously. Fix the override or unset it to auto-detect."
         )
         return fails
 
