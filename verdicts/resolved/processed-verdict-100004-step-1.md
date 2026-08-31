@@ -1,0 +1,3 @@
+continue
+
+Step 1 verified: all 11 gates PASS. Every A6 measurement matches the Planner's independent dry run of the same step (pins 65/five shas/0/18, builder 10/10 with every anchor count=1, suite 70, earnability 4/2/green, mutants 1/9-cascade/1, 5 files changed). STRONGEST CHECK: applying the builder to a clean HEAD~1 worktree produces all five source files BYTE-IDENTICAL to the commit, and --check on the live tree reports ALREADY-APPLIED — so the 3b hand-applied restore (the builder correctly refused with exit 5 on a partial tree) did not perturb the final state. Live suite green at 70. Gap noted for a later revision, not a blocker: A6.3b does not say HOW to put the built file back; the agent improvised where a saved copy was intended.
