@@ -64,15 +64,62 @@ def emit(context):
 _SYNC_TIMEOUT = 5
 
 
+def _resolve_sibling(env_var, *candidates):
+    """First candidate that is a real checkout (has .git). None if none is.
+
+    A repo is not in the same place, or under the same NAME, on every machine:
+    lessons-forge is `<root>/lessons-forge` (populated submodule) on the shop
+    machine and `~/Developer/forge_lessons` on the mini. And an UNINITIALIZED
+    submodule dir is present-but-empty, so an existence test on the root-
+    relative path passes while the real checkout goes unexamined.
+    """
+    env = os.environ.get(env_var)
+    if env:
+        # An explicit override is AUTHORITATIVE — never fall back past it.
+        # Falling through on a typo'd override would silently resolve to a
+        # different repo than the operator named, which is the same
+        # wrong-target failure this resolver exists to prevent. Matches
+        # wrap_check._resolve_bellows.
+        return Path(env) if (Path(env) / ".git").exists() else None
+    for c in candidates:
+        if (Path(c) / ".git").exists():
+            return Path(c)
+    return None
+
+
 def _sync_repos():
-    """Core repos to freshness-check, by existence (machine-portable)."""
-    repos = [("root", _GOV_ROOT),
-             ("bellows", _STATUS_PY.parent),
-             ("lessons-forge", _GOV_ROOT / "lessons-forge")]
+    """Core repos to freshness-check.
+
+    Returns (resolved, unresolved): resolved is [(label, path)]; unresolved is
+    [label] for repos that could not be located on this machine.
+
+    ⚠️ Unresolved repos are RETURNED, not dropped. The previous form filtered
+    on `(p / ".git").exists()` and silently omitted anything whose path was
+    wrong for this layout — which made "this repo is not checked here" look
+    identical to "this repo is current". Measured on the mini: lessons-forge
+    resolved to an empty uninitialized submodule dir, was dropped, and sat
+    101 commits behind while the report named only root and bellows.
+    """
+    home_dev = Path.home() / "Developer"
+    repos = [
+        ("root", _GOV_ROOT),
+        ("bellows", _STATUS_PY.parent),
+        ("lessons-forge", _resolve_sibling(
+            "ELUVIAN_WRAP_LESSONS_FORGE",
+            _GOV_ROOT / "lessons-forge",
+            home_dev / "lessons-forge",
+            home_dev / "forge_lessons")),
+    ]
     mem = os.environ.get("ELUVIAN_WRAP_MEMORY")
     if mem:
-        repos.append(("memory", Path(mem)))
-    return [(l, p) for l, p in repos if (p / ".git").exists()]
+        # The mini deliberately points this at a NON-git auto-memory dir;
+        # absent .git there is by design, not a resolution failure.
+        mem_p = Path(mem)
+        if (mem_p / ".git").exists():
+            repos.append(("memory", mem_p))
+    resolved = [(l, p) for l, p in repos if p and (Path(p) / ".git").exists()]
+    unresolved = [l for l, p in repos if not (p and (Path(p) / ".git").exists())]
+    return resolved, unresolved
 
 
 def _repo_sync(label, path):
@@ -157,9 +204,12 @@ def main():
     ]
     if parked:
         parts.append(f"Parked arcs: {parked}")
-    sync = [_repo_sync(l, p) for l, p in _sync_repos()]
+    _resolved, _unresolved = _sync_repos()
+    sync = [_repo_sync(l, p) for l, p in _resolved]
     problems = [(l, s) for l, s in sync
                 if s != "current" and not s.startswith("ahead")]
+    problems += [(l, "NOT RESOLVED on this machine — not freshness-checked")
+                 for l in _unresolved]
     if problems:
         parts.append("⚠️ Sync: " + "; ".join(f"{l} {s}" for l, s in problems)
                      + " — run /eluvian to pull (ff-only) or resolve deliberately")

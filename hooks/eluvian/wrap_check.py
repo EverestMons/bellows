@@ -138,10 +138,14 @@ def _tuyere_checkout() -> Path | None:
     Resolution order: $ELUVIAN_WRAP_TUYERE, ~/Developer/tuyere, ROOT/tuyere.
     First candidate whose .venv/bin/python exists wins.
     """
-    candidates = []
     env_override = os.environ.get("ELUVIAN_WRAP_TUYERE")
     if env_override:
-        candidates.append(Path(env_override))
+        # AUTHORITATIVE — never fall back past an explicit override, or a
+        # typo'd one silently resolves to a different checkout than named.
+        # Consistent with _resolve_bellows and align's _resolve_sibling.
+        p = Path(env_override)
+        return p if (p / ".venv" / "bin" / "python").exists() else None
+    candidates = []
     candidates.append(Path.home() / "Developer" / "tuyere")
     candidates.append(ROOT / "tuyere")
     for p in candidates:
@@ -187,6 +191,21 @@ def check(session_id: str | None = None, caller: str = "stop") -> list[str]:
     """Return a list of failure messages. Empty list == wrap complete."""
     fails: list[str] = []
     today = datetime.date.today().isoformat()
+
+    # --- Step 0: the gate must know WHERE bellows is, or refuse -----------------
+    # Every [2/bellows] arm below is scoped to BELLOWS. If that path is not a
+    # real checkout, `porcelain()` finds nothing to report and each arm passes
+    # VACUOUSLY -- the exact failure this resolver was added to fix (a check
+    # pointed at the wrong place is indistinguishable from one that passed).
+    # Refuse loudly instead. Reachable via a typo'd ELUVIAN_WRAP_BELLOWS, which
+    # is authoritative by design and so is not silently second-guessed.
+    if not (BELLOWS / "status.py").is_file():
+        fails.append(
+            f"[0/resolve] bellows checkout not found at {BELLOWS} "
+            f"(no status.py). Every [2/bellows] check would pass vacuously. "
+            f"Set ELUVIAN_WRAP_BELLOWS to the real checkout."
+        )
+        return fails
 
     # --- Step 1: project repos — no UNTRACKED completed plans in Done/ ----------
     for done in project_done_dirs():
