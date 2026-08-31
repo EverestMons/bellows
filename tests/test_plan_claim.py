@@ -561,3 +561,90 @@ class TestLifecycleHelpers:
         db_path = str(tmp_path / "lifecycle.db")
         lifecycle.init_lifecycle_db(db_path)
         assert lifecycle.deposit_placeholder(99999, db_path) is None
+
+
+class TestProjectProducer:
+    """Part A: the project reaches the seam, and absence stays tolerated."""
+
+    def _cfg(self):
+        return {"plan_claim_lock": "advisory"}
+
+    def test_project_appended_to_cmd_when_supplied(self, monkeypatch, tmp_path):
+        seen = {}
+
+        def _fake_run(cmd, **kw):
+            seen["cmd"] = cmd
+            return MagicMock(returncode=0, stdout="claimed x seq=0", stderr="")
+
+        monkeypatch.setattr(plan_claim.subprocess, "run", _fake_run)
+        monkeypatch.setattr(plan_claim.lifecycle, "active_clearance_class",
+                            lambda *a, **k: "shop-infra")
+        monkeypatch.setattr(plan_claim, "_tuyere_checkout", lambda: tmp_path)
+        plan_claim.claim_for_deposit("p.md", "h", self._cfg(), "tuyere")
+        assert "--project" in seen["cmd"]
+        assert seen["cmd"][seen["cmd"].index("--project") + 1] == "tuyere"
+
+    def test_absent_project_omits_the_flag(self, monkeypatch, tmp_path):
+        """Part A is TOLERANT: no project means no flag, not an error. A strict
+        CLI ahead of its producers would disable the claim path everywhere."""
+        seen = {}
+
+        def _fake_run(cmd, **kw):
+            seen["cmd"] = cmd
+            return MagicMock(returncode=0, stdout="claimed x seq=0", stderr="")
+
+        monkeypatch.setattr(plan_claim.subprocess, "run", _fake_run)
+        monkeypatch.setattr(plan_claim.lifecycle, "active_clearance_class",
+                            lambda *a, **k: "shop-infra")
+        monkeypatch.setattr(plan_claim, "_tuyere_checkout", lambda: tmp_path)
+        plan_claim.claim_for_deposit("p.md", "h", self._cfg())
+        assert "--project" not in seen["cmd"]
+
+    def test_claim_gate_threads_project_through(self, monkeypatch):
+        seen = {}
+
+        def _fake(base, h, cfg, project=None):
+            seen["project"] = project
+            return ("proceed", "ok")
+
+        monkeypatch.setattr(plan_claim, "claim_for_deposit", _fake)
+        plan_claim.claim_gate("p.md", "h", self._cfg(), _make_log(), "anvil")
+        assert seen["project"] == "anvil"
+
+    def test_self_strand_hint_suppressed_on_a_PROJECT_decline(self):
+        """⚠️ The load-bearing cell. exit 3 now has two causes. On a PROJECT
+        decline this machine holds no claim on that slug, so following the hint
+        would release ANOTHER machine's claim."""
+        plan_claim._outcome_memo.clear()
+        msgs = []
+
+        def _fake(base, h, cfg, project=None):
+            return ("declined", "exit 3: held: project 'tuyere' claimed by other-machine (slug s)")
+
+        orig = plan_claim.claim_for_deposit
+        plan_claim.claim_for_deposit = _fake
+        try:
+            plan_claim.claim_gate("p.md", "h", {"plan_claim_lock": "advisory"},
+                                  lambda lvl, m, **k: msgs.append(m))
+        finally:
+            plan_claim.claim_for_deposit = orig
+        assert msgs, "no decline logged"
+        assert "self-strand" not in msgs[0], f"hint fired on a PROJECT decline: {msgs[0]}"
+
+    def test_self_strand_hint_still_fires_on_a_SLUG_decline(self):
+        """The positive arm — without it the suppression above cannot be
+        distinguished from the hint never firing at all."""
+        plan_claim._outcome_memo.clear()
+        msgs = []
+
+        def _fake(base, h, cfg, project=None):
+            return ("declined", "exit 3: held: 'p' claimed by this-machine (live)")
+
+        orig = plan_claim.claim_for_deposit
+        plan_claim.claim_for_deposit = _fake
+        try:
+            plan_claim.claim_gate("p.md", "h", {"plan_claim_lock": "advisory"},
+                                  lambda lvl, m, **k: msgs.append(m))
+        finally:
+            plan_claim.claim_for_deposit = orig
+        assert msgs and "self-strand" in msgs[0], f"hint missing on a SLUG decline: {msgs}"

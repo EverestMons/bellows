@@ -2,7 +2,7 @@
 
 Rulings: knowledge/research/fork1-claim-lock-rulings-2026-08-26.md (tuyere repo).
 Seam contract (exec-100001): python -m tuyere.claims claim <slug> --plan-class <c>
-  exit 0 = claimed, 3 = held, 4 = class-ineligible, other = error;
+  exit 0 = claimed, 3 = held, 4 = ineligible (class OR project), other = error;
   release <slug> --reason <r>: 0 = released, 3 = no-active-claim.
 R4a mandate: completion-release at every terminal transition.
 """
@@ -54,7 +54,7 @@ def _mode(config):
     return "required"
 
 
-def claim_for_deposit(base_filename, content_hash, config):
+def claim_for_deposit(base_filename, content_hash, config, project=None):
     """Returns (outcome, detail) where outcome in {proceed, declined, blocked}."""
     mode = _mode(config)
     if mode == "off":
@@ -80,6 +80,12 @@ def claim_for_deposit(base_filename, content_hash, config):
         "-m", "tuyere.claims", "claim", slug,
         "--plan-class", cls,
     ]
+    # PART A IS TOLERANT BY DESIGN. An un-updated machine omits --project and
+    # the CLI records NULL; a strict CLI shipped ahead of its producers would
+    # disable the claim path everywhere. The tolerance is DELETED, not relaxed,
+    # by part B — and only once every machine produces.
+    if project:
+        cmd += ["--project", project]
     try:
         result = subprocess.run(
             cmd, cwd=str(checkout), timeout=10,
@@ -104,9 +110,9 @@ def claim_for_deposit(base_filename, content_hash, config):
     return ("blocked", detail)
 
 
-def claim_gate(base_filename, content_hash, config, log):
+def claim_gate(base_filename, content_hash, config, log, project=None):
     """Wire API: returns True to proceed, False to stop."""
-    outcome, detail = claim_for_deposit(base_filename, content_hash, config)
+    outcome, detail = claim_for_deposit(base_filename, content_hash, config, project)
     slug = base_filename[:-3]
 
     if outcome == "proceed":
@@ -121,7 +127,14 @@ def claim_gate(base_filename, content_hash, config, log):
 
     if outcome == "declined":
         hint = ""
-        if detail.startswith("exit 3:"):
+        # Branch on the decline's stated CAUSE, not the bare exit code.
+        # exit 3 now means EITHER a slug already claimed by this machine (a
+        # genuine self-strand, recoverable by releasing that slug) OR a PROJECT
+        # held by another machine — where this machine holds no claim on that
+        # slug at all, and following the hint would release someone else's
+        # claim. tuyere prints "held: project '<key>'" for the project arm and
+        # "held: '<slug>'" for the slug arm.
+        if detail.startswith("exit 3:") and "held: project " not in detail:
             hint = (f" — if the holder is this machine this is a stranded claim"
                     f" — recover: tuyere.claims release {slug} --reason self-strand")
         log("WARN", f"claim declined for {slug}: {detail}{hint}", slug=slug)

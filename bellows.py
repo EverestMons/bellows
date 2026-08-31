@@ -933,7 +933,8 @@ def run_plan(plan_path: str, config: dict, response_server: server.ResponseServe
                 if bellows is not None:
                     bellows._seen.discard(verdict.slug_from_path(plan_path))
                 return
-            if not plan_claim.claim_gate(base_filename, content_hash, config, _log):
+            if not plan_claim.claim_gate(base_filename, content_hash, config, _log,
+                                          os.path.basename(project_path)):
                 if bellows is not None:
                     bellows._seen.discard(verdict.slug_from_path(plan_path))
                 return
