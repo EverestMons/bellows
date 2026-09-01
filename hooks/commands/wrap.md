@@ -57,8 +57,16 @@ done-on-another-machine-and-not-pulled (measured 2026-08-24).
    (house format; not while a lessons-forge cycle plan sits un-run; verify the
    prior last entry intact after append; classes-not-narratives — record the
    transferable CLASS, never the session's story; never duplicate an
-   already-recorded class). Planner working-pattern lessons → the
-   memory repo. **Then add a line to `shop_next_session.md`:**
+   already-recorded class). **Marker on a new entry: `[status: pending]` — and
+   ONLY that.** Since 2026-09-01 the `[status:]` marker is a projection of the
+   forge DB's `lesson_proposals.status` (implemented / proposed / accepted /
+   reference / rejected / superseded); `pending` is the one file-side value and
+   means "no DB row yet — not ingested". Never write `learned`/`codified`, and
+   never set a DB value by hand: after the next forge ingest, run
+   `python3 lessons-forge/scripts/project_status_markers.py --db <live db>
+   --lessons LESSONS.md --apply` (on the machine that holds the live DB; use
+   `--snapshot <dump.sql>` elsewhere) and let it stamp the DB's status. Planner
+   working-pattern lessons → the memory repo. **Then add a line to `shop_next_session.md`:**
    `Lessons-swept: <today's date> [sid: <first-8-of-session-id>] — <one-line delta, or 'none'>`
    (the stop-hook lock verifies the NEWEST such line carries THIS session's id;
    the debt hook checks for today's date. Your session prefix is the first 8
