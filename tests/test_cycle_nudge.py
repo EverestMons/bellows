@@ -225,3 +225,47 @@ def test_absent_config_disabled(tmp_path):
     b = bellows.Bellows(config)
     b._cycle_nudge_last_eval = 0.0
     b._evaluate_cycle_nudge()
+
+
+# (g) a machine that is not the DB's home: no WARN, no notify, one INFO per process
+def test_absent_lessons_db_is_quiet_not_a_warning(tmp_path):
+    db_path = str(tmp_path / "lifecycle.db")
+    lifecycle.init_lifecycle_db(db_path)
+    for i in range(12):
+        _insert_closed_plan(db_path, f"2026-07-{i+1:02d}T00:00:00")
+    config = {
+        "cycle_nudge": {"enabled": True, "interval_hours": 24, "plans_closed_threshold": 10},
+        "notifications": {"enabled": True, "events": {"cycle_nudge": True}},
+        "callback_port": 19997,
+        "watched_projects": [],
+        "pushover": {"app_key": "test", "user_key": "test"},
+    }
+    b = bellows.Bellows(config)
+    b._cycle_nudge_last_eval = 0.0
+    with patch.object(bellows, "LESSONS_FORGE_DB", str(tmp_path / "absent.db")), \
+         patch.object(bellows, "_LESSONS_DB_ABSENCE_LOGGED", False), \
+         patch.object(lifecycle, "LIFECYCLE_DB_PATH", db_path), \
+         patch.object(bellows, "_log") as mock_log, \
+         patch.object(notifier, "_enqueue_deferred") as mock_enqueue:
+        b._evaluate_cycle_nudge()
+        b._cycle_nudge_last_eval = 0.0
+        b._evaluate_cycle_nudge()
+    mock_enqueue.assert_not_called()
+    levels = [c.args[0] for c in mock_log.call_args_list]
+    assert "WARN" not in levels, levels
+    assert levels.count("INFO") == 1, levels
+    assert "nudge inactive" in mock_log.call_args_list[0].args[1]
+
+
+def test_resolver_returns_none_when_no_candidate_holds_a_db(tmp_path, monkeypatch):
+    monkeypatch.delenv("LESSONS_FORGE_DB", raising=False)
+    monkeypatch.setenv("ELUVIAN_WRAP_LESSONS_FORGE", str(tmp_path / "nowhere"))
+    monkeypatch.setenv("ELUVIAN_WRAP_ROOT", str(tmp_path))
+    monkeypatch.setattr(bellows.Path, "home", staticmethod(lambda: tmp_path))
+    assert bellows._resolve_lessons_forge_db() is None
+    decoy = tmp_path / "nowhere" / "lessons-forge.db"
+    decoy.parent.mkdir(parents=True)
+    decoy.write_bytes(b"")
+    assert bellows._resolve_lessons_forge_db() is None      # 0 bytes = decoy
+    decoy.write_bytes(b"x")
+    assert bellows._resolve_lessons_forge_db() == str(decoy)

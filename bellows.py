@@ -41,8 +41,10 @@ def _resolve_lessons_forge_db() -> str:
     `forge_lessons` under ~/Developer on the mini, so the candidates mirror
     hooks/eluvian's _resolve_sibling. Env overrides win: LESSONS_FORGE_DB (the
     file) or ELUVIAN_WRAP_LESSONS_FORGE (the checkout). A 0-byte file is a
-    decoy, never a database. When no candidate holds a real DB the first
-    candidate is returned so the cycle-nudge WARN names a concrete path.
+    decoy, never a database. Returns None when no candidate holds a real DB —
+    this machine is then NOT the DB's home, and the cycle-nudge (whose only
+    purpose is to prompt an ingest where the DB lives) is inapplicable here:
+    it says so once at INFO and never WARNs about a file that cannot exist.
     """
     env_file = os.environ.get("LESSONS_FORGE_DB")
     if env_file:
@@ -61,10 +63,29 @@ def _resolve_lessons_forge_db() -> str:
                 return str(c)
         except OSError:
             continue
-    return str(candidates[0])
+    return None
 
 
-LESSONS_FORGE_DB = _resolve_lessons_forge_db()
+LESSONS_FORGE_DB: Optional[str] = _resolve_lessons_forge_db()
+_LESSONS_DB_ABSENCE_LOGGED = False
+
+
+def _lessons_forge_db_present(lessons_db_path: Optional[str] = None) -> bool:
+    """True iff a non-empty lessons-forge DB exists at the resolved (or given) path.
+
+    Logs the absence ONCE per process at INFO — absence is the correct state on
+    every machine but the DB's home, not a fault.
+    """
+    global _LESSONS_DB_ABSENCE_LOGGED
+    db_path = lessons_db_path or LESSONS_FORGE_DB
+    try:
+        present = bool(db_path) and Path(db_path).is_file() and Path(db_path).stat().st_size > 0
+    except OSError:
+        present = False
+    if not present and not _LESSONS_DB_ABSENCE_LOGGED:
+        _LESSONS_DB_ABSENCE_LOGGED = True
+        _log("INFO", "cycle-nudge: no lessons-forge DB on this machine (its home is the Mac mini since 2026-09-01) — nudge inactive here")
+    return present
 
 # --- Misplaced verdict scan ---
 _NOTIFIED_MISPLACED: set[tuple[str, str]] = set()
@@ -2466,6 +2487,8 @@ class PlanHandler(FileSystemEventHandler):
 
 
 def _get_last_ingestion_ts(lessons_db_path: Optional[str] = None) -> Optional[str]:
+    if not _lessons_forge_db_present(lessons_db_path):
+        return None
     db_path = lessons_db_path or LESSONS_FORGE_DB
     uri = f"file:{db_path}?mode=ro"
     try:
@@ -2630,6 +2653,8 @@ class Bellows:
         if now - self._cycle_nudge_last_eval < interval_secs:
             return
         self._cycle_nudge_last_eval = now
+        if not _lessons_forge_db_present():
+            return  # not the DB's home machine — nothing to nudge (logged once at INFO)
         try:
             last_ingestion = _get_last_ingestion_ts()
             if self._cycle_nudge_suppressed_ts is not None:
