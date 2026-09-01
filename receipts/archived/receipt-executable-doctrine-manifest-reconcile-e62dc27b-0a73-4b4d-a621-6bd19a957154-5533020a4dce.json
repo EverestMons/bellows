@@ -1,0 +1,8 @@
+{
+  "slug": "executable-doctrine-manifest-reconcile",
+  "content_hash": "5533020a4dced41e4b8e70cc77ba1677f53830e56407a8025a7432e3d3452031",
+  "session_id": "e62dc27b-0a73-4b4d-a621-6bd19a957154",
+  "armed_at": "2026-09-01T08:58:24.562223",
+  "watcher": "gate_watcher.py spawned detached (pid 51938); log: logs/watch/executable-doctrine-manifest-reconcile.md.log",
+  "attestation_boundary": "This receipt proves the watcher was ARMED at write time. It does NOT prove the watcher stayed alive. Liveness of a session-local monitor is not externally verifiable."
+}
