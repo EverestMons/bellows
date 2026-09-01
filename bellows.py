@@ -29,7 +29,42 @@ BELLOWS_ROOT = Path(__file__).parent.resolve()
 DB_PATH = str(BELLOWS_ROOT / "bellows.db")
 SHADOW_CACHE_DIR = BELLOWS_ROOT / ".bellows-cache"
 MODULE_FINGERPRINT_HEARTBEAT_INTERVAL = 10
-LESSONS_FORGE_DB = "/Users/marklehn/Developer/GitHub/lessons-forge/lessons-forge.db"
+
+
+def _resolve_lessons_forge_db() -> str:
+    """The lessons-forge DB on THIS machine — resolved, never a layout literal.
+
+    Since 2026-09-01 the one live copy lives on the Mac mini at
+    `~/Developer/forge_lessons/lessons-forge.db` (CEO decision; see
+    forge_lessons/CLAUDE.md "Database Files"). The checkout is named
+    `lessons-forge` under the governance root on the shop layout and
+    `forge_lessons` under ~/Developer on the mini, so the candidates mirror
+    hooks/eluvian's _resolve_sibling. Env overrides win: LESSONS_FORGE_DB (the
+    file) or ELUVIAN_WRAP_LESSONS_FORGE (the checkout). A 0-byte file is a
+    decoy, never a database. When no candidate holds a real DB the first
+    candidate is returned so the cycle-nudge WARN names a concrete path.
+    """
+    env_file = os.environ.get("LESSONS_FORGE_DB")
+    if env_file:
+        return env_file
+    home_dev = Path.home() / "Developer"
+    root = Path(os.environ.get("ELUVIAN_WRAP_ROOT") or "/Users/marklehn/Developer/GitHub")
+    checkouts = []
+    env_co = os.environ.get("ELUVIAN_WRAP_LESSONS_FORGE")
+    if env_co:
+        checkouts.append(Path(env_co))
+    checkouts += [home_dev / "forge_lessons", root / "lessons-forge", home_dev / "lessons-forge"]
+    candidates = [c / "lessons-forge.db" for c in checkouts]
+    for c in candidates:
+        try:
+            if c.is_file() and c.stat().st_size > 0:
+                return str(c)
+        except OSError:
+            continue
+    return str(candidates[0])
+
+
+LESSONS_FORGE_DB = _resolve_lessons_forge_db()
 
 # --- Misplaced verdict scan ---
 _NOTIFIED_MISPLACED: set[tuple[str, str]] = set()
