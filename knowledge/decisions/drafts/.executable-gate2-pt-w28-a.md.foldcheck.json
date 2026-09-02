@@ -1,0 +1,18 @@
+{
+  "plan_lint": {
+    "exit": 0,
+    "signals": [
+      "(o1) WARN: missing path `/Users/marklehn/Developer/eluvian-governance/governance/knowledge/research/walk-register-gate2-pt-w28-a-N-N-N.md`",
+      "(o2) WARN: Deposits entry `knowledge/development/dev-log-gate2-pt-w28-a-N-N-N.md` is not project-prefixed or absolute",
+      "(o2) WARN: Deposits entry `knowledge/qa/evidence/gate2-pt-w28-a-N-N-N/flip-capture.txt` is not project-prefixed or absolute",
+      "(o2) WARN: Deposits entry `knowledge/qa/evidence/gate2-pt-w28-a-N-N-N/full-suite-gate2-pt-w28-a.txt` is not project-prefixed or absolute",
+      "(o2) WARN: Deposits entry `knowledge/qa/evidence/gate2-pt-w28-a-N-N-N/probes-raw.txt` is not project-prefixed or absolute",
+      "(o2) WARN: Deposits entry `knowledge/qa/evidence/gate2-pt-w28-a-N-N-N/qa-receipt.md` is not project-prefixed or absolute",
+      "PIN-CHECK: kind=prefix line=N token=96a63397b082\u2026 result=ambiguous",
+      "PIN-CHECK: kind=prefix line=N token=c471d3afee3f\u2026 result=ambiguous",
+      "WARN: Drafting Cycle block has no **Closing:** line (DRAFTING_CYCLE.md \u00a73)",
+      "WARN: Drafting Cycle closing indicates fold as last event, not a dry lens pass (DRAFTING_CYCLE.md \u00a72)",
+      "WARN: step 1 mentions tests but declares no test scope"
+    ]
+  }
+}
