@@ -1,0 +1,65 @@
+check_id,file,what_it_tests,units_enforced,units_named,agreement
+lint(a)-dispatch_mode,scripts/plan_lint.py,plan header dispatch_mode field is valid,rule-35,rule-35,named=enforced
+lint(a)-pause_for_verdict,scripts/plan_lint.py,plan header pause_for_verdict is recognized token,,,neither
+lint(a)-known_failures,scripts/plan_lint.py,plan header known_failures is an integer,,,neither
+lint(b),scripts/plan_lint.py,steps mentioning deposits have parseable Deposits block,rule-26,,enforces-more
+lint(c),scripts/plan_lint.py,QA plans contain Rule 20 banner pair,rule-20,rule-20,named=enforced
+lint(d),scripts/plan_lint.py,Scope block present but parseable to at least one path,,,neither
+lint(e),scripts/plan_lint.py,step headings use uppercase STEP N format when qa_steps declared,,,neither
+lint(f)-dc-block,scripts/plan_lint.py,T1+ plan has Drafting Cycle block with all 5 lenses and Closing,,,neither
+lint(f)-manifest,scripts/plan_lint.py,"Cycle Manifest stanza has required fields, valid class, coherent validation",,,neither
+lint(g),scripts/plan_lint.py,DC ledger constraint entries are strictly ascending,,,neither
+lint(h),scripts/plan_lint.py,DC Closing does not claim no-lens when lens results are recorded,,,neither
+lint(i),scripts/plan_lint.py,qa_and_terminal mode requires parseable qa_steps; on_failure requires qa_steps,,,neither
+lint(j),scripts/plan_lint.py,flags [INHERITED FROM N — NOT RE-EXECUTED] markers outside fenced code,,,neither
+lint(k),scripts/plan_lint.py,clone-framed plan names its newest same-class comparison,,,neither
+lint(l),scripts/plan_lint.py,clone-framed plan firing T-2 declared below T2 is warned,dc-T-2,dc-T-2,named=enforced
+lint(n),scripts/plan_lint.py,inline backtick grep on literal pattern uses -F flag,,,neither
+lint(o1),scripts/plan_lint.py,backtick path candidates exist on disk,,,neither
+lint(o2),scripts/plan_lint.py,Deposits entries are project-prefixed or absolute (Rule 26 form),rule-26,,enforces-more
+lint(p),scripts/plan_lint.py,DC ledger C-entries carry backtick-quoted command or check: token,,,neither
+lint(q),scripts/plan_lint.py,sha256 and git pins in plan text verify against actual files and repos,,,neither
+lint(r),scripts/plan_lint.py,probe constants (== >= <= N) in step blocks have supersede-class clause,,,neither
+lint(s),scripts/plan_lint.py,target_class=detector plans declare state_space and mutants fields,,,neither
+lint(t),scripts/plan_lint.py,advisory: detector-named targets declare target_class,,,neither
+lint(u),scripts/plan_lint.py,QA step Deposits: first .md is QA report (not other .md); .txt evidence present,rule-20,,enforces-more
+gate-receipt_status,gates.py,agent Output Receipt status is Complete,,,neither
+gate-ceo_flags,gates.py,no CEO-flagged blockers in Output Receipt,,,neither
+gate-no_errors,gates.py,agent run produced no error,,,neither
+gate-no_permission_denials,gates.py,no blocking permission denials (read-class and git-lock cleanup exempt),,,neither
+gate-deposit_exists,gates.py,all agent-declared AND plan-required deposits exist on disk; uncommitted deposits flagged,rule-22;rule-26,rule-26,enforces-more
+gate-rule_20_self_check,gates.py,QA report contains Rule 20 banner 'Rule 20 — QA Self-Check Results' and PASSED line,rule-20,rule-20,named=enforced
+gate-rule_22_verification,gates.py,"QA report verification table: no ❌ rows, rows have positive status; no hedging in positive-status cells",rule-22;rule-19,rule-22,enforces-more
+gate-qa_test_result,gates.py,QA .txt evidence has parseable pytest summary; failures <= known_failures,rule-21,,enforces-more
+gate-scope_check,gates.py,files changed by agent are within the step's declared Scope block,,,neither
+wrap[0/resolve],hooks/eluvian/wrap_check.py,ELUVIAN_WRAP_BELLOWS override (if set) points to a real bellows checkout,,,neither
+wrap[1/project],hooks/eluvian/wrap_check.py,project Done/ files committed; project repo pushed,,wrap-1,names-more
+wrap[2/bellows],hooks/eluvian/wrap_check.py,verdicts/resolved and receipts/ committed; bellows repo pushed,,wrap-2,names-more
+wrap[3/root],hooks/eluvian/wrap_check.py,shop_next_session.md baton committed; bellows gitlink committed; root pushed,wrap-8,wrap-3,names-more
+wrap[3b/lessons],hooks/eluvian/wrap_check.py,today's Lessons-swept: line with session-id present in baton,wrap-7,,enforces-more
+wrap[4/memory],hooks/eluvian/wrap_check.py,memory repo entries have class: frontmatter; memory committed and pushed,,wrap-4,names-more
+wrap[2r/receipts],hooks/eluvian/wrap_check.py,own-session deposit receipts each match a clearance or hold sidecar,,,neither
+depositor-empty_writes,depositor.py,plan has non-empty writes set (manifest or Deposits block),rule-26,,enforces-more
+depositor-class_mismatch,depositor.py,declared manifest class matches the assigned class from path analysis,,,neither
+depositor-validation_mismatch,depositor.py,manifest validation field's cycle_check= value matches actual cycle_check verdict,,,neither
+depositor-receipt_check,depositor.py,a matching active deposit receipt exists (slug + content_hash),,,neither
+depositor-cycle_check_rerun,depositor.py,deposited plan has cycle_check=BAR_MET at deposit time,,,neither
+depositor-plan_lint_rerun,depositor.py,deposited plan has no non-benign plan_lint FAIL at deposit time,,,neither
+cycle_check-assert1,scripts/cycle_check.py,DC class-split internal arithmetic: instruction+record == total_folds per walk,,,neither
+cycle_check-assert2,scripts/cycle_check.py,walk register file referenced in DC block exists on disk,,,neither
+cycle_check-assert3,scripts/cycle_check.py,fold_check baseline exists when git context shows folds occurred,dc-2.7-b1,,enforces-more
+cycle_check-BAR_MET,scripts/cycle_check.py,"current walk is dry (instruction_count=0), no unparseable lines, asserts OK",,,neither
+cycle_check-ESCALATE_yield_rising,scripts/cycle_check.py,yield is rising between walks (unmet bar signal),,,neither
+fold_check,scripts/fold_check.py,fold does not change artifact's machine-readable state (plan_lint signals) relative to pre-fold baseline,dc-2.7-b1,,enforces-more
+propagation_check-restated,scripts/propagation_check.py,declared numeric values are not restated unqualified in instruction prose,dc-2.7-b8;dc-2.7-b6,,enforces-more
+propagation_check-ordering,scripts/propagation_check.py,task sequences expressed with → arrows are consistent (one canonical order),dc-2.7-b9,,enforces-more
+propagation_check-arithmetic,scripts/propagation_check.py,expressions over same symbol operands have identical constants,,,neither
+walk_register_lint,scripts/walk_register_lint.py,"walk register files conform to schema v0.3: required columns, no duplicate rows, no truncated pre_fold_text",,,neither
+hook-align,hooks/eluvian/eluvian_align_hook.py,session-start alignment hook (read-only; not a unit enforcer),,,neither
+hook-wrap_arm,hooks/eluvian/wrap_arm_hook.py,arms the wrap-check stop hook for the session,,,neither
+hook-wrap_stop,hooks/eluvian/wrap_stop_hook.py,stop hook: runs wrap_check.check(); blocks turn if wrap incomplete,wrap-7;wrap-8,,enforces-more
+hook-wrap_debt,hooks/eluvian/wrap_debt_hook.py,session-start debt hook: runs wrap_check.check(caller='debt') and reports leftover wrap debt,wrap-7;wrap-8,,enforces-more
+mutation_check,tools/mutation_check.py,sandboxed mutant manifest runner: KILLED=suite caught defect; SURVIVED=suite blind to it; baseline control prevents false confidence,,,neither
+check_backlog_freshness,scripts/check_backlog_freshness.py,backlog entries that have been halted match staleness criteria via internal rules 1-4 (not PT rules),,rule-1;rule-2;rule-3;rule-4;rule-22,names-more
+verdict-gate_display,verdict.py,gate result display and pause decision; rule_22_verification gate recognized by name,rule-26;rule-22,rule-22;rule-26,named=enforced
+RULE_20_SELF_CHECK_BLOCK,RULE_20_SELF_CHECK_BLOCK.md (governance root),canonical Python block that QA agents run and append to QA reports; produces the banner and PASSED line,rule-20,rule-20,named=enforced

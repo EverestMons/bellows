@@ -1,0 +1,229 @@
+id,home,kind,num,title,line,enforcers,n_enforcers,section_cited,corpus_cites,enforced_by_reading,q3_class,q3_artifact,q4_weight,q5_home
+rule-1,PLANNER_TEMPLATE,rule,1,Every step must be agent-routed,491,scripts/check_backlog_freshness.py,1,,0,,MECHANIZABLE,plan header fields; check_backlog_freshness.py cites its own Rule 1-4 (false positive in citation); plan_lint (a) could extend,0,STANDARD
+rule-2,PLANNER_TEMPLATE,rule,2,"Every step must specify reads, deposits, and dependencies",494,scripts/check_backlog_freshness.py,1,,0,,MECHANIZABLE,plan header fields; check_backlog_freshness.py cites its own Rule 1-4 (false positive in citation); plan_lint (a) could extend,0,STANDARD
+rule-3,PLANNER_TEMPLATE,rule,3,Plans follow the org handoff chain,501,scripts/check_backlog_freshness.py,1,,0,,MECHANIZABLE,plan header fields; check_backlog_freshness.py cites its own Rule 1-4 (false positive in citation); plan_lint (a) could extend,0,STANDARD
+rule-4,PLANNER_TEMPLATE,rule,4,Plans must identify parallel lanes,508,scripts/check_backlog_freshness.py,1,,0,,MECHANIZABLE,plan header fields; check_backlog_freshness.py cites its own Rule 1-4 (false positive in citation); plan_lint (a) could extend,0,STANDARD
+rule-5,PLANNER_TEMPLATE,rule,5,"Dense prompts, no narrative",511,,0,,0,,CONVERSATIONAL,,0,ROLE
+rule-6,PLANNER_TEMPLATE,rule,6,Plans deposit to `knowledge/decisions/` with type prefix,514,,0,,0,,MECHANIZABLE,plan text artifact; plan_lint structural extension,0,STANDARD
+rule-7,PLANNER_TEMPLATE,rule,7,No generalist steps,517,,0,,0,,MECHANIZABLE,plan text artifact; plan_lint structural extension,0,STANDARD
+rule-8,PLANNER_TEMPLATE,rule,8,Final step moves plan to Done and emits PROJECT_STATUS milestone via channel,520,,0,,0,,MECHANIZABLE,plan text artifact; plan_lint structural extension,0,EXECUTION-MODEL
+rule-9,PLANNER_TEMPLATE,rule,9,Live DB schema verification for database changes,531,,0,,0,,CONVERSATIONAL,,0,ROLE
+rule-10,PLANNER_TEMPLATE,rule,10,Separate investigation from implementation in prompts,534,,0,,0,,CONVERSATIONAL,,0,ROLE
+rule-11,PLANNER_TEMPLATE,rule,11,Scale prompt detail inversely to blueprint completeness,537,,0,,0,,CONVERSATIONAL,,0,ROLE
+rule-12,PLANNER_TEMPLATE,rule,12,Phrase uncertain fixes as verify-first,540,,0,,0,,CONVERSATIONAL,,0,ROLE
+rule-13,PLANNER_TEMPLATE,rule,13,Anchor prompts with concrete reference points,543,,0,,0,,CONVERSATIONAL,,0,ROLE
+rule-14,PLANNER_TEMPLATE,rule,14,Enumerate complete scope with per-item status tracking,546,,0,,0,,MECHANIZABLE,plan text artifact; plan_lint structural extension,0,STANDARD
+rule-15,PLANNER_TEMPLATE,rule,15,Every step after Step 1 verifies the prior step's Output Receipt,549,,0,,1,,MECHANIZABLE,plan text step structure; plan_lint new check per step N>=2 for Output Receipt verification language,1,STANDARD
+rule-16,PLANNER_TEMPLATE,rule,16,Skip specialist file and glossary reads for mechanical tasks,559,,0,,0,,CONVERSATIONAL,,0,ROLE
+rule-17,PLANNER_TEMPLATE,rule,17,Post-execution deliverable verification,562,,0,,1,,UNRESOLVED,agent output receipt content — gate could read receipt but deliverable verification text is free-form,1,UNRESOLVED
+rule-18,PLANNER_TEMPLATE,rule,18,QA evidence file requirement,565,,0,,0,,CONVERSATIONAL,,0,ROLE
+rule-19,PLANNER_TEMPLATE,rule,19,Hedging keywords auto-invalidate,568,,0,,4,gate-rule_22_verification,ENFORCED,,4,STANDARD
+rule-20,PLANNER_TEMPLATE,rule,20,Mandatory QA self-check Python block,571,gates.py;scripts/plan_lint.py,2,,47,gate-rule_20_self_check;lint(c);lint(u);RULE_20_SELF_CHECK_BLOCK,ENFORCED,,47,STANDARD
+rule-21,PLANNER_TEMPLATE,rule,21,Test scope must be declared in the plan header,612,,0,,6,gate-qa_test_result,ENFORCED,,6,STANDARD
+rule-22,PLANNER_TEMPLATE,rule,22,Planner verification of deposited files (BOTH diagnostic AND executable plans),669,gates.py;scripts/check_backlog_freshness.py;verdict.py,3,,20,gate-rule_22_verification;gate-deposit_exists;verdict-gate_display,ENFORCED,,20,STANDARD
+rule-23,PLANNER_TEMPLATE,rule,23,"End-of-plan housekeeping must use anchored edits, enumerated sub-steps, and the order: commit (feedback is dae",697,,0,,3,,MECHANIZABLE,plan step text; plan_lint could check end-of-plan step for anchored-edit patterns and enumerated sub-steps,3,STANDARD
+rule-24,PLANNER_TEMPLATE,rule,24,Atomic plan deposit to Bellows-watched directories,711,,0,,0,,CONVERSATIONAL,,0,ROLE
+rule-25,PLANNER_TEMPLATE,rule,25,Planner polling of Bellows verdict requests,737,,0,,8,,CONVERSATIONAL,,8,ROLE
+rule-26,PLANNER_TEMPLATE,rule,26,Deposits field convention,804,gates.py;verdict.py,2,,6,gate-deposit_exists;lint(b);lint(o2);depositor-empty_writes;verdict-gate_display,ENFORCED,,6,STANDARD
+rule-27,PLANNER_TEMPLATE,rule,27,"Diagnostic-derived plans cite findings, never supplement with source reads",834,,0,,1,,MECHANIZABLE,plan text; plan_lint check: diagnostic plans must cite known-good artifact id or finding id in each step,1,STANDARD
+rule-28,PLANNER_TEMPLATE,rule,28,Pre-cutover unknowns diagnostic before destructive cross-cutting work,862,,0,,0,,CONVERSATIONAL,,0,ROLE
+rule-29,PLANNER_TEMPLATE,rule,29,Split destructive cross-cutting plans at the natural verification point with a verdict gate,868,,0,,0,,CONVERSATIONAL,,0,ROLE
+rule-30,PLANNER_TEMPLATE,rule,30,"`Filesystem:write_file` for `/Users/marklehn/` paths, never `create_file`",874,,0,,0,,MECHANIZABLE,plan text artifact; plan_lint structural extension,0,STANDARD
+rule-31,PLANNER_TEMPLATE,rule,31,Submodule pointer bump immediately after submodule commit-push,880,,0,,0,,CONVERSATIONAL,,0,ROLE
+rule-32,PLANNER_TEMPLATE,rule,32,"Walk git-internal intermediate state; ""safe and non-destructive"" is not an agent judgment call",884,,0,,0,,CONVERSATIONAL,,0,ROLE
+rule-33,PLANNER_TEMPLATE,rule,33,Phase 1.5 enforcement — happens FIRST regardless of task size,888,,0,,1,,CONVERSATIONAL,,1,ROLE
+rule-34,PLANNER_TEMPLATE,rule,34,"Three-item verdict-file mechanical check, executed out loud",892,,0,,0,,CONVERSATIONAL,,0,ROLE
+rule-35,PLANNER_TEMPLATE,rule,35,Distinguish manual-bootstrap vs Bellows-dispatch execution modes,896,bellows.py;validators.py,2,,10,lint(a)-dispatch_mode,ENFORCED,,10,STANDARD
+rule-36,PLANNER_TEMPLATE,rule,36,Negative grep during dormancy is not architectural evidence,912,,0,,2,,MECHANIZABLE,"plan text; plan_lint can grep for ""no [Xx]"" grep patterns in dormancy steps",2,STANDARD
+rule-37,PLANNER_TEMPLATE,rule,37,`**Deposits:**` blocks must contain resolvable paths only,918,,0,,1,,MECHANIZABLE,plan Deposits block; plan_lint (o1) already checks path existence — extend to validate Deposits paths only,1,STANDARD
+rule-38,PLANNER_TEMPLATE,rule,38,Audit all gate function call sites when shipping shared-function fix,924,,0,,0,,CONVERSATIONAL,,0,ROLE
+rule-39,PLANNER_TEMPLATE,rule,39,Pre-edit verification of SA-derived claims in acting steps,928,,0,,2,,CONVERSATIONAL,,2,ROLE
+rule-40,PLANNER_TEMPLATE,rule,40,"Verify today's date via shell call at session start, before authoring any dated filename",960,,0,,0,,CONVERSATIONAL,,0,ROLE
+rule-41,PLANNER_TEMPLATE,rule,41,SA dispatch shape for Bellows-watched directories — distributed early-output anchors mandatory for content loa,964,,0,,1,,CONVERSATIONAL,,1,ROLE
+rule-42,PLANNER_TEMPLATE,rule,42,FORWARD register session-wrap reconciliation (canonical rule),993,,0,,0,,CONVERSATIONAL,,0,ROLE
+rule-43,PLANNER_TEMPLATE,rule,43,"Baton ""On the horizon"" cross-check against PROJECT_STATUS Completed",1008,,0,,0,,CONVERSATIONAL,,0,ROLE
+rule-44,PLANNER_TEMPLATE,rule,44,FORWARD entry framing — deduplicate before filing,1012,,0,,0,,CONVERSATIONAL,,0,ROLE
+rule-45,PLANNER_TEMPLATE,rule,45,SA blueprints must verify downstream consumers when adding to recognized-sets,1016,,0,,0,,CONVERSATIONAL,,0,ROLE
+rule-46,PLANNER_TEMPLATE,rule,46,Lessons Forge Gate 1 — reject daemon-bug workaround proposals,1022,,0,,0,,CONVERSATIONAL,,0,ROLE
+rule-47,PLANNER_TEMPLATE,rule,47,Derive Lessons Forge classification work list from the stale-aware DB helper,1028,,0,,0,,CONVERSATIONAL,,0,ROLE
+rule-48,PLANNER_TEMPLATE,rule,48,Gate-enforced QA actions require a mandatory top-of-step callout,1036,,0,,0,,MECHANIZABLE,plan text artifact; plan_lint structural extension,0,STANDARD
+rule-49,PLANNER_TEMPLATE,rule,49,Delegated verdict authority on clean Bellows runs (CEO policy 2026-07-02),1042,,0,,0,,CONVERSATIONAL,,0,ROLE
+rule-50,PLANNER_TEMPLATE,rule,50,"Derive step scope from SA enumeration, not hand-typed lists",1054,,0,,1,,CONVERSATIONAL,,1,ROLE
+rule-51,PLANNER_TEMPLATE,rule,51,"Corrections at verdict time go into plan text, not verdict disposition prose",1065,,0,,0,,CONVERSATIONAL,,0,ROLE
+rule-52,PLANNER_TEMPLATE,rule,52,Re-verify inherited claims before dispositions and routing decisions,1071,,0,,0,,CONVERSATIONAL,,0,ROLE
+rule-53,PLANNER_TEMPLATE,rule,53,Region-scoped metrics must be computed with scope applied end to end,1085,,0,,0,,MECHANIZABLE,plan text artifact; plan_lint structural extension,0,STANDARD
+rule-54,PLANNER_TEMPLATE,rule,54,"Every requirement needs a structural home — a numbered row, a named test, or a gate condition",1091,,0,,0,,CONVERSATIONAL,,0,ROLE
+rule-55,PLANNER_TEMPLATE,rule,55,Assert a positive signal from the source that holds the state — empty output is not verification,1097,,0,,1,,CONVERSATIONAL,,1,ROLE
+rule-56,PLANNER_TEMPLATE,rule,56,Resume machinery is justified only when the interrupted work is not reproducible,1109,,0,,4,,CONVERSATIONAL,,4,ROLE
+rule-57,PLANNER_TEMPLATE,rule,57,"Generalizing a guard: keep the mechanism generic, require the caller to pin the specifics",1119,,0,,0,,CONVERSATIONAL,,0,ROLE
+rule-58,PLANNER_TEMPLATE,rule,58,Pre-stated conclusions require verification anchors and equal evidence burden,1125,,0,,0,,CONVERSATIONAL,,0,ROLE
+rule-59,PLANNER_TEMPLATE,rule,59,Read the cited rule before citing it,1131,,0,,0,,CONVERSATIONAL,,0,ROLE
+rule-60,PLANNER_TEMPLATE,rule,60,Rule 20 self-check form selected by plan class,1139,,0,,0,,CONVERSATIONAL,,0,ROLE
+rule-61,PLANNER_TEMPLATE,rule,61,"Pin run-time-copied artifacts by content hash, and name which job the pin does",1149,,0,,0,,CONVERSATIONAL,,0,ROLE
+rule-62,PLANNER_TEMPLATE,rule,62,Establish that a recovered-from state is reachable before authoring recovery machinery,1161,,0,,0,,CONVERSATIONAL,,0,ROLE
+rule-63,PLANNER_TEMPLATE,rule,63,Read the DELIVERY code before theorising about non-arrival,1175,,0,,0,,CONVERSATIONAL,,0,ROLE
+rule-64,PLANNER_TEMPLATE,rule,64,A pipe-bearing command never goes in a markdown table cell,1179,,0,,0,,CONVERSATIONAL,,0,ROLE
+rule-65,PLANNER_TEMPLATE,rule,65,"Verify a mandated block in the SECTION the parser reads, not merely present in the deposit",1183,,0,,0,,MECHANIZABLE,plan text artifact; plan_lint structural extension,0,STANDARD
+rule-66,PLANNER_TEMPLATE,rule,66,A mandated requirement lives in the step that must comply,1189,,0,,0,,MECHANIZABLE,plan text artifact; plan_lint structural extension,0,STANDARD
+rule-67,PLANNER_TEMPLATE,rule,67,"Before authoring verification for a delivery channel, read the delivering code and state which artifact it con",1195,,0,,0,,CONVERSATIONAL,,0,ROLE
+rule-68,PLANNER_TEMPLATE,rule,68,"Channel items are single physical lines; downstream of a splitter, compare content, not counts",1201,,0,,0,,CONVERSATIONAL,,0,ROLE
+rule-69,PLANNER_TEMPLATE,rule,69,"A parser-terminator fix belongs to the class, not the instance",1207,,0,,0,,CONVERSATIONAL,,0,ROLE
+rule-70,PLANNER_TEMPLATE,rule,70,A declared-outputs block lists only what the step produces on EVERY path,1213,,0,,0,,MECHANIZABLE,plan text artifact; plan_lint structural extension,0,STANDARD
+rule-71,PLANNER_TEMPLATE,rule,71,Audit every new verification referent for true independence,1219,,0,,0,,CONVERSATIONAL,,0,ROLE
+rule-72,PLANNER_TEMPLATE,rule,72,Declare polarity for every two-direction number in a diagnostic,1227,,0,,0,,MECHANIZABLE,plan text artifact; plan_lint structural extension,0,STANDARD
+rule-73,PLANNER_TEMPLATE,rule,73,Record a constraint and its violation-catching check in the same edit,1233,,0,,0,,CONVERSATIONAL,,0,ROLE
+rule-74,PLANNER_TEMPLATE,rule,74,"A directional insert anchors on a COMPLETE line, and a mechanism fix sweeps for its mirror",1241,,0,,0,,CONVERSATIONAL,,0,ROLE
+rule-75,PLANNER_TEMPLATE,rule,75,"Path-scope the COMMIT, not just the add, and assert the commit's contents",1247,,0,,0,,MECHANIZABLE,plan text artifact; plan_lint structural extension,0,STANDARD
+rule-76,PLANNER_TEMPLATE,rule,76,"Before editing a doc, grep the codebase for line-number citations of it",1253,,0,,0,,CONVERSATIONAL,,0,ROLE
+rule-77,PLANNER_TEMPLATE,rule,77,Sweep the source deposit's closing sections for directives addressed to a future plan,1259,,0,,0,,CONVERSATIONAL,,0,ROLE
+rule-78,PLANNER_TEMPLATE,rule,78,Construct the mid-band cases for every threshold or quantifier clause before shipping,1265,,0,,0,,CONVERSATIONAL,,0,ROLE
+rule-79,PLANNER_TEMPLATE,rule,79,A halt that offers options banners the inferred choice at the next gate,1271,,0,,0,,CONVERSATIONAL,,0,ROLE
+rule-80,PLANNER_TEMPLATE,rule,80,An authoring-time id is a prediction; the verify-at-deposit clause names every site,1277,,0,,0,,CONVERSATIONAL,,0,ROLE
+rule-81,PLANNER_TEMPLATE,rule,81,Census every copy of an enum before adding a value,1283,,0,,0,,CONVERSATIONAL,,0,ROLE
+rule-82,PLANNER_TEMPLATE,rule,82,Price a change at its IN-population rate and argue against the strongest counterexample,1291,,0,,0,,CONVERSATIONAL,,0,ROLE
+rule-83,PLANNER_TEMPLATE,rule,83,State the exact enforcement tier when correcting enforcement claims,1297,,0,,0,,CONVERSATIONAL,,0,ROLE
+rule-84,PLANNER_TEMPLATE,rule,84,Run the current implementation on every degenerate fixture before asserting its expected outcome,1303,,0,,0,,CONVERSATIONAL,,0,ROLE
+rule-85,PLANNER_TEMPLATE,rule,85,Repo-touching compounds — commits AND state-changing ops actions — open with cd-absolute and close with assert,1311,,0,,2,,CONVERSATIONAL,,2,ROLE
+rule-86,PLANNER_TEMPLATE,rule,86,Never promise a verdict the grammar lacks,1319,,0,,0,,CONVERSATIONAL,,0,ROLE
+rule-87,PLANNER_TEMPLATE,rule,87,A severity or reversibility label is a CLAIM with a probe,1325,,0,,0,,MECHANIZABLE,plan text artifact; plan_lint structural extension,0,STANDARD
+rule-88,PLANNER_TEMPLATE,rule,88,Prefer derived expectations over constants in QA assertions,1331,,0,,0,,CONVERSATIONAL,,0,ROLE
+rule-89,PLANNER_TEMPLATE,rule,89,A census over a corrected corpus states which half it measures,1337,,0,,0,,CONVERSATIONAL,,0,ROLE
+rule-90,PLANNER_TEMPLATE,rule,90,"At every verdict gate, compare the steps table against commits and deposits",1343,,0,,0,,MECHANIZABLE,plan text artifact; plan_lint structural extension,0,STANDARD
+rule-91,PLANNER_TEMPLATE,rule,91,"When an independence guard is missing, assess the bias direction before voiding the result",1349,,0,,0,,CONVERSATIONAL,,0,ROLE
+rule-92,PLANNER_TEMPLATE,rule,92,Confirm the known positives are inside a census's population before scanning,1355,,0,,0,,CONVERSATIONAL,,0,ROLE
+rule-93,PLANNER_TEMPLATE,rule,93,Each mandate names its QA observer inline,1361,,0,,1,,MECHANIZABLE,plan text; plan_lint could check mandate-named steps for inline QA observer reference,1,STANDARD
+rule-94,PLANNER_TEMPLATE,rule,94,Author every task as ordered sub-items from the first draft,1369,,0,,0,,CONVERSATIONAL,,0,ROLE
+rule-95,PLANNER_TEMPLATE,rule,95,A step body has exactly ONE reader,1375,,0,,0,,MECHANIZABLE,plan text artifact; plan_lint structural extension,0,STANDARD
+rule-96,PLANNER_TEMPLATE,rule,96,Spot-check transcribed paired values against their cited sources,1381,,0,,1,,CONVERSATIONAL,,1,ROLE
+rule-97,PLANNER_TEMPLATE,rule,97,"Path-identity guards test by inode, never by string equality of resolved paths",1387,,0,,0,,MECHANIZABLE,plan text artifact; plan_lint structural extension,0,STANDARD
+rule-98,PLANNER_TEMPLATE,rule,98,"Clone derivation is section-by-section diffing, and the probe battery is rebuilt from the NEW mechanism",1391,,0,,0,,CONVERSATIONAL,,0,ROLE
+rule-99,PLANNER_TEMPLATE,rule,99,A function called from an un-guarded loop owns its own exception guard,1395,,0,,0,,CONVERSATIONAL,,0,ROLE
+rule-100,PLANNER_TEMPLATE,rule,100,An instruction-source migration requires a SUPERSET PROOF,1401,,0,,0,,CONVERSATIONAL,,0,ROLE
+rule-101,PLANNER_TEMPLATE,rule,101,A shipped mechanism does not update the doctrine that DESCRIBED its predecessor — sweep for descriptions,1407,,0,,0,,CONVERSATIONAL,,0,ROLE
+rule-102,PLANNER_TEMPLATE,rule,102,"Observed record errors are ROUTED, never patched unrouted — and the enumeration IS the fix plan's scope",1413,,0,,0,,MECHANIZABLE,plan text artifact; plan_lint structural extension,0,STANDARD
+rule-103,PLANNER_TEMPLATE,rule,103,Move the test ORACLE outside the author's model — every detector gets a tier-2 state-space suite,1419,,0,,0,,MECHANIZABLE,"plan Cycle Manifest detector fields (state_space, mutants); lint(s) already enforces 103/104/105/106 subjects partially",0,STANDARD
+rule-104,PLANNER_TEMPLATE,rule,104,"A detector's fire count is a RATIO — report fired / evaluated / skipped, and never retire a check on an unmeas",1427,,0,,0,,MECHANIZABLE,"plan Cycle Manifest detector fields (state_space, mutants); lint(s) already enforces 103/104/105/106 subjects partially",0,STANDARD
+rule-105,PLANNER_TEMPLATE,rule,105,"An environment variable is a property of a PROCESS TREE, not of a machine — test the dispatch environment, nev",1435,,0,,0,,MECHANIZABLE,"plan Cycle Manifest detector fields (state_space, mutants); lint(s) already enforces 103/104/105/106 subjects partially",0,STANDARD
+rule-106,PLANNER_TEMPLATE,rule,106,"Earnability is not discrimination — enumerate the plausible WRONG fixes, construct each, and report the kill m",1443,,0,,0,,MECHANIZABLE,"plan Cycle Manifest detector fields (state_space, mutants); lint(s) already enforces 103/104/105/106 subjects partially",0,STANDARD
+checklist-1,PLANNER_TEMPLATE,checklist,1,Deposits blocks use canonical multi-line bullet form,1471,,0,,0,,MECHANIZABLE,plan Deposits block form; plan_lint (b) extension,0,STANDARD
+checklist-2,PLANNER_TEMPLATE,checklist,2,Agent deposits use Rule 26 Deposits block format,1477,,0,,1,,MECHANIZABLE,plan Deposits block; plan_lint (o2) already partially covers,1,STANDARD
+checklist-3,PLANNER_TEMPLATE,checklist,3,No reliance on STOP-prose in Bellows-dispatched plans,1483,,0,,5,,CONVERSATIONAL,,5,ROLE
+checklist-4,PLANNER_TEMPLATE,checklist,4,QA step includes exact canonical Rule 20 self-check reference,1489,,0,,0,,MECHANIZABLE,plan step text; plan_lint (c) already enforces for qa_steps,0,STANDARD
+checklist-5,PLANNER_TEMPLATE,checklist,5,Frontend-to-backend DEV steps specify exact field names,1495,,0,,0,,CONVERSATIONAL,,0,ROLE
+checklist-6,PLANNER_TEMPLATE,checklist,6,QA-step Deposits blocks declare only the QA report,1501,,0,,0,,MECHANIZABLE,plan step Deposits block; plan_lint (u) advisory covers,0,STANDARD
+checklist-7,PLANNER_TEMPLATE,checklist,7,Follow-up plans from gate failures match files against full paths,1507,,0,,1,,CONVERSATIONAL,,1,ROLE
+checklist-8,PLANNER_TEMPLATE,checklist,8,Filename-pattern fixes enumerate all lifecycle stages,1513,,0,,0,,CONVERSATIONAL,,0,ROLE
+checklist-9,PLANNER_TEMPLATE,checklist,9,Multi-step diagnostics use pause_for_verdict: always,1519,,0,,0,,MECHANIZABLE,plan header pause_for_verdict; plan_lint (a) could add multi-step diagnostic check,0,STANDARD
+checklist-10,PLANNER_TEMPLATE,checklist,10,Data-source mechanization plans include governance edit,1525,,0,,0,,CONVERSATIONAL,,0,ROLE
+checklist-11,PLANNER_TEMPLATE,checklist,11,Contract-changing plans grep test files before declaring targeted scope,1531,,0,,0,,CONVERSATIONAL,,0,ROLE
+checklist-12,PLANNER_TEMPLATE,checklist,12,Schema migration plans include init_db and PRAGMA verification,1537,,0,,0,,CONVERSATIONAL,,0,ROLE
+checklist-13,PLANNER_TEMPLATE,checklist,13,Verify plan header against current parser before deposit,1543,,0,,0,,MECHANIZABLE,plan header; plan_lint (a) extension,0,STANDARD
+checklist-14,PLANNER_TEMPLATE,checklist,14,Name all target file paths literally in step bodies,1549,,0,,0,,CONVERSATIONAL,,0,ROLE
+checklist-15,PLANNER_TEMPLATE,checklist,15,No specific values from session memory in plan assertions,1555,,0,,1,,CONVERSATIONAL,,1,ROLE
+checklist-16,PLANNER_TEMPLATE,checklist,16,Copy strict convention strings from known-good artifacts,1561,,0,,0,,CONVERSATIONAL,,0,ROLE
+checklist-17,PLANNER_TEMPLATE,checklist,17,Mechanize dispatch-mode validation,1569,,0,,0,,MECHANIZABLE,plan header dispatch_mode; plan_lint (a) extension,0,STANDARD
+checklist-18,PLANNER_TEMPLATE,checklist,18,Use strictly monotonic integer STEP header labels,1575,,0,,0,,MECHANIZABLE,plan STEP headers; plan_lint (e) partially covers,0,STANDARD
+checklist-19,PLANNER_TEMPLATE,checklist,19,Deposited filename is the draft placeholder,1581,,0,,0,,MECHANIZABLE,plan Deposits filename; plan_lint (o2) extension,0,STANDARD
+checklist-20,PLANNER_TEMPLATE,checklist,20,Derivations citation present and integer,1587,,0,,1,,CONVERSATIONAL,,1,ROLE
+checklist-21,PLANNER_TEMPLATE,checklist,21,Scope enumerations include implied test-infrastructure files,1593,,0,,0,,CONVERSATIONAL,,0,ROLE
+checklist-22,PLANNER_TEMPLATE,checklist,22,Never re-enumerate artifact-authoritative specifics inline,1599,,0,,0,,CONVERSATIONAL,,0,ROLE
+checklist-23,PLANNER_TEMPLATE,checklist,23,Declared `**Scope:**` block in every step,1605,,0,,1,,MECHANIZABLE,plan step text; plan_lint (d) partially covers,1,STANDARD
+checklist-24,PLANNER_TEMPLATE,checklist,24,Pre-deposit lint is mandatory,1611,,0,,0,,CONVERSATIONAL,,0,ROLE
+checklist-25,PLANNER_TEMPLATE,checklist,25,Regression gates identify time-dependent inputs,1617,,0,,0,,CONVERSATIONAL,,0,ROLE
+checklist-26,PLANNER_TEMPLATE,checklist,26,"After fixing an anti-pattern instance, sweep the whole artifact for siblings",1623,,0,,1,,CONVERSATIONAL,,1,ROLE
+checklist-27,PLANNER_TEMPLATE,checklist,27,Step composition passes the Position A check,1633,,0,,0,,CONVERSATIONAL,,0,ROLE
+checklist-28,PLANNER_TEMPLATE,checklist,28,QA steps for DB-out-of-git projects carry an evidence-source contract,1639,,0,,0,,CONVERSATIONAL,,0,ROLE
+checklist-29,PLANNER_TEMPLATE,checklist,29,Pair every predicted number with a verify-and-explain clause,1645,,0,,1,,CONVERSATIONAL,,1,ROLE
+checklist-30,PLANNER_TEMPLATE,checklist,30,Schema/migration QA rows name the absolute canonical path and show pre- and post-version,1653,,0,,0,,CONVERSATIONAL,,0,ROLE
+checklist-31,PLANNER_TEMPLATE,checklist,31,Schema-version bumps enumerate and classify all version-pinned assertions,1659,,0,,0,,CONVERSATIONAL,,0,ROLE
+checklist-32,PLANNER_TEMPLATE,checklist,32,Verification of a wired call must observe a behaviour change through the real entry point,1665,,0,,1,,CONVERSATIONAL,,1,ROLE
+checklist-33,PLANNER_TEMPLATE,checklist,33,"Reference the canonical cross-repo audit/archival contracts, do not re-derive inline",1671,,0,,0,,CONVERSATIONAL,,0,ROLE
+wrap-1,PLANNER_TEMPLATE,wrap-step,1,Update PROJECT_STATUS.md,2054,hooks/eluvian/wrap_check.py,1,,12,,CONVERSATIONAL,,12,EXECUTION-MODEL
+wrap-2,PLANNER_TEMPLATE,wrap-step,2,Update KNOWLEDGE_INDEX.md,2055,hooks/eluvian/wrap_check.py,1,,11,,CONVERSATIONAL,,11,EXECUTION-MODEL
+wrap-3,PLANNER_TEMPLATE,wrap-step,3,Batched glossary update,2056,hooks/eluvian/wrap_check.py,1,,8,,CONVERSATIONAL,,8,EXECUTION-MODEL
+wrap-4,PLANNER_TEMPLATE,wrap-step,4,Synthesize prompt feedback patterns,2057,hooks/eluvian/wrap_check.py,1,,0,,CONVERSATIONAL,,0,EXECUTION-MODEL
+wrap-5,PLANNER_TEMPLATE,wrap-step,5,Session-end cumulative suite state (Rule 21),2058,,0,,0,,MECHANIZABLE,test run output; gate-qa_test_result already checks test results; wrap_check could add suite-state check,0,EXECUTION-MODEL
+wrap-6,PLANNER_TEMPLATE,wrap-step,6,Surface pending items,2059,,0,,0,,CONVERSATIONAL,,0,EXECUTION-MODEL
+wrap-7,PLANNER_TEMPLATE,wrap-step,7,Lessons sweep,2060,,0,,0,wrap[3b/lessons];hook-wrap_stop;hook-wrap_debt,ENFORCED,,0,STANDARD
+wrap-8,PLANNER_TEMPLATE,wrap-step,8,Session-handoff baton maintenance,2061,,0,,0,wrap[3/root];hook-wrap_stop;hook-wrap_debt,ENFORCED,,0,STANDARD
+dc-T-1,DRAFTING_CYCLE,trigger,T-1,Blast radius,17,,0,,0,,MECHANIZABLE,write set from manifest; depositor.py could classify blast-radius from path analysis,0,STANDARD
+dc-T-2,DRAFTING_CYCLE,trigger,T-2,Production-data mutation,18,scripts/plan_lint.py,1,,0,lint(l),ENFORCED,,0,STANDARD
+dc-T-3,DRAFTING_CYCLE,trigger,T-3,CEO-run tool / cross-machine / new execution environment,19,,0,,0,,MECHANIZABLE,plan header dispatch_mode; plan_lint could check when cross-machine context present,0,STANDARD
+dc-T-4,DRAFTING_CYCLE,trigger,T-4,Money-affecting path,20,,0,,0,,CONVERSATIONAL,,0,ROLE
+dc-T-5,DRAFTING_CYCLE,trigger,T-5,Irreversible or destructive,21,,0,,0,,MECHANIZABLE,plan Deposits block; depositor.py could flag destructive-named operations,0,STANDARD
+dc-T-6,DRAFTING_CYCLE,trigger,T-6,Governance surface,22,,0,,3,,MECHANIZABLE,"write set; depositor or plan_lint: when writes touch governance/ paths, T-6 should appear in tier declaration",3,STANDARD
+dc-T-7,DRAFTING_CYCLE,trigger,T-7,Authored-from diagnostic,23,,0,,0,,MECHANIZABLE,plan header and DC block; plan_lint (k) already checks clone-framed plans; T-7 detectable when plan cites a diagnostic id,0,STANDARD
+dc-T-8,DRAFTING_CYCLE,trigger,T-8,Novel pattern,24,,0,,0,,CONVERSATIONAL,,0,ROLE
+dc-q1.1,DRAFTING_CYCLE,lens-subquestion,1.1,does each step do what its prose claims? (1.2) are the pre/post-conditions real and check,79,,0,,0,,CONVERSATIONAL,,0,ROLE
+dc-q1.2,DRAFTING_CYCLE,lens-subquestion,1.2,are the pre/post-conditions real and checkable? (1.3) does any step rest on an unstated a,79,,0,,0,,CONVERSATIONAL,,0,ROLE
+dc-q1.3,DRAFTING_CYCLE,lens-subquestion,1.3,"does any step rest on an unstated assumption? (1.4) **for a diagnostic**, aim weak-spots",79,,0,,0,,CONVERSATIONAL,,0,ROLE
+dc-q1.4,DRAFTING_CYCLE,lens-subquestion,1.4,"**for a diagnostic**, aim weak-spots at the QUESTIONS themselves — is each answerable, an",79,,0,,1,,CONVERSATIONAL,,1,ROLE
+dc-q2.1,DRAFTING_CYCLE,lens-subquestion,2.1,"what breaks if this ships? (2.2) does any step relax an existing guard, threshold, or ass",85,,0,,2,,CONVERSATIONAL,,2,ROLE
+dc-q2.2,DRAFTING_CYCLE,lens-subquestion,2.2,"does any step relax an existing guard, threshold, or assertion? (2.3) is any destructive",85,,0,,3,,CONVERSATIONAL,,3,ROLE
+dc-q2.3,DRAFTING_CYCLE,lens-subquestion,2.3,is any destructive operation's blast radius bounded and proven *ours* before it runs? (2.,85,,0,,0,,CONVERSATIONAL,,0,ROLE
+dc-q2.4,DRAFTING_CYCLE,lens-subquestion,2.4,"**for a diagnostic** (read-only, non-mutating): aim Destruction at the downstream plans t",85,,0,,0,,CONVERSATIONAL,,0,ROLE
+dc-q3.1,DRAFTING_CYCLE,lens-subquestion,3.1,"**what differs on the TARGET execution environment?** — encoding (cp1252 vs UTF-8), path",91,,0,,0,,CONVERSATIONAL,,0,ROLE
+dc-q3.2,DRAFTING_CYCLE,lens-subquestion,3.2,"does a test or guard **observe the effect**, or only that the call exists and doesn't thr",91,,0,,0,,CONVERSATIONAL,,0,ROLE
+dc-q3.3,DRAFTING_CYCLE,lens-subquestion,3.3,"is an assumed fixture/isolation actually covering **this** path, or does an import style",91,,0,,0,,CONVERSATIONAL,,0,ROLE
+dc-q3.4,DRAFTING_CYCLE,lens-subquestion,3.4,"degenerate inputs — empty, duplicate, malformed, boundary.",91,,0,,0,,CONVERSATIONAL,,0,ROLE
+dc-q4.1,DRAFTING_CYCLE,lens-subquestion,4.1,"scan the draft against LESSONS.md, `Done/`, `knowledge/research/`, and the actual code fo",97,,0,,0,,CONVERSATIONAL,,0,ROLE
+dc-q4.2,DRAFTING_CYCLE,lens-subquestion,4.2,is a stated consequence of a prior decision being re-tripped? (4.3) is this *actually* tr,97,,0,,0,,CONVERSATIONAL,,0,ROLE
+dc-q4.3,DRAFTING_CYCLE,lens-subquestion,4.3,"is this *actually* trivial, or does it only look trivial? (4.4) does a domain premise the",97,,0,,0,,CONVERSATIONAL,,0,ROLE
+dc-q4.4,DRAFTING_CYCLE,lens-subquestion,4.4,"does a domain premise the plan rests on still hold, or has the CEO / record corrected it?",97,,0,,0,,CONVERSATIONAL,,0,ROLE
+dc-q5.1,DRAFTING_CYCLE,lens-subquestion,5.1,**Atomicity** — the state set if this half-completes; is every member acceptable? (5.2) *,103,,0,,0,,CONVERSATIONAL,,0,ROLE
+dc-q5.2,DRAFTING_CYCLE,lens-subquestion,5.2,"**Consistency** — which invariant closes each gap, and is it stated or accidental? (5.3)",103,,0,,0,,CONVERSATIONAL,,0,ROLE
+dc-q5.3,DRAFTING_CYCLE,lens-subquestion,5.3,**Isolation** — for a multi-step schedule (steps separated by verdict gates of arbitrary,103,,0,,1,,CONVERSATIONAL,,1,ROLE
+dc-q5.4,DRAFTING_CYCLE,lens-subquestion,5.4,"**Durability** — what survives a crash, and is the surviving record enough to reconstruct",103,,0,,0,,CONVERSATIONAL,,0,ROLE
+dc-q5.5,DRAFTING_CYCLE,lens-subquestion,5.5,"**for a diagnostic** (single-step, read-only): Isolation (5.3) is structurally empty (no",103,,0,,0,,CONVERSATIONAL,,0,ROLE
+dc-2.7-b1,DRAFTING_CYCLE,2.7-bullet,1, THE FOLD IS THE UNIT THAT CARRIES THE POST-CONDITION — not the culmination. Six rules in this section govern ,148,,0,scripts/propagation_check.py;scripts/propagation_check.py,0,fold_check;cycle_check-assert3,ENFORCED,,0,STANDARD
+dc-2.7-b2,DRAFTING_CYCLE,2.7-bullet,2,"After a walk's folds land, re-read the walk's fold SET as a set — composition and sibling-site coverage. Once ",149,,0,scripts/propagation_check.py;scripts/propagation_check.py,0,,CONVERSATIONAL,,0,ROLE
+dc-2.7-b3,DRAFTING_CYCLE,2.7-bullet,3,Re-run the finding lens on its own fix. Treat a fold as a new draft; an accommodation for one edge case often ,150,,0,scripts/propagation_check.py;scripts/propagation_check.py,0,,CONVERSATIONAL,,0,ROLE
+dc-2.7-b4,DRAFTING_CYCLE,2.7-bullet,4," A fold that RECLASSIFIES, REORDERS, MERGES or DELETES a branch is a control-flow change, not a wording change",151,,0,scripts/propagation_check.py;scripts/propagation_check.py,0,,CONVERSATIONAL,,0,ROLE
+dc-2.7-b5,DRAFTING_CYCLE,2.7-bullet,5,"A DECISION fold is a fold ROUND, not a wording change. When a CEO ruling — or any decision — closes an open fo",152,,0,scripts/propagation_check.py;scripts/propagation_check.py,0,,CONVERSATIONAL,,0,ROLE
+dc-2.7-b6,DRAFTING_CYCLE,2.7-bullet,6,"After any fold, re-verify every factual claim in the fold's OWN text against the post-fold artifact — counts, ",153,,0,scripts/propagation_check.py;scripts/propagation_check.py,0,propagation_check-restated,ENFORCED,,0,STANDARD
+dc-2.7-b7,DRAFTING_CYCLE,2.7-bullet,7,"When a walk DISPROVES a claim, ask the consequent question: if the assumed property is false, what TRUE requir",154,,0,scripts/propagation_check.py;scripts/propagation_check.py,0,,CONVERSATIONAL,,0,ROLE
+dc-2.7-b8,DRAFTING_CYCLE,2.7-bullet,8," A COUNT IN PROSE THAT NO ASSERTION READS WILL GO STALE. Declare a set ONCE — a table, a list — and have every",158,,0,scripts/propagation_check.py;scripts/propagation_check.py,0,propagation_check-restated,ENFORCED,,0,STANDARD
+dc-2.7-b9,DRAFTING_CYCLE,2.7-bullet,9,"Any phase that completes a tracked structure sweeps the record lines that track it, in the SAME culmination. A",159,,0,scripts/propagation_check.py;scripts/propagation_check.py,0,propagation_check-ordering,ENFORCED,,0,STANDARD
+dc-2.7-b10,DRAFTING_CYCLE,2.7-bullet,10,"Enumerate every applicable site BEFORE applying a fix anywhere, with sweep weight highest on material written ",160,,0,scripts/propagation_check.py;scripts/propagation_check.py,0,,CONVERSATIONAL,,0,ROLE
+dc-2.7-b11,DRAFTING_CYCLE,2.7-bullet,11,A consumer sweep probes for the CLAIM in any phrasing — enumerate the sections that could plausibly hold it; n,161,,0,scripts/propagation_check.py;scripts/propagation_check.py,0,,CONVERSATIONAL,,0,ROLE
+dc-2.7-b12,DRAFTING_CYCLE,2.7-bullet,12,"Any population a measurement depends on is enumerated MECHANICALLY (`git log --follow` by path, `SELECT` by ke",162,,0,scripts/propagation_check.py;scripts/propagation_check.py,0,,MECHANIZABLE,SELECT DISTINCT counts from data artifact; propagation_check-restated partially covers,0,STANDARD
+dc-2.7-b13,DRAFTING_CYCLE,2.7-bullet,13,"For any sweep of a phrase whose fixes cite the original, verify by CLASSIFICATION — list every hit and mark ea",163,,0,scripts/propagation_check.py;scripts/propagation_check.py,0,,CONVERSATIONAL,,0,ROLE
+dc-2.7-b14,DRAFTING_CYCLE,2.7-bullet,14,"When any premise is corrected, grep the artifact for every guard resting on it and re-justify or remove each o",164,,0,scripts/propagation_check.py;scripts/propagation_check.py,0,,CONVERSATIONAL,,0,ROLE
+dc-2.7-b15,DRAFTING_CYCLE,2.7-bullet,15,"Subtractive-trim verification. Before removing a check on the premise that another check covers it, verify the",168,,0,scripts/propagation_check.py;scripts/propagation_check.py,0,,MECHANIZABLE,plan text guards; plan_lint could check for removed-check patterns,0,STANDARD
+dc-2.7-b16,DRAFTING_CYCLE,2.7-bullet,16,"Price what a guard is FOR before folding it in. Before incorporating machinery into a plan, measure what it pr",169,,0,scripts/propagation_check.py;scripts/propagation_check.py,0,,CONVERSATIONAL,,0,ROLE
+dc-2.7-b17,DRAFTING_CYCLE,2.7-bullet,17,"Verify a deletion by the absence of the construct's CONTENT (its assertion text, its query), never by the abse",170,,0,scripts/propagation_check.py;scripts/propagation_check.py,0,,CONVERSATIONAL,,0,ROLE
+dc-2.7-b18,DRAFTING_CYCLE,2.7-bullet,18,"Budget a cut as an EDIT that will generate findings, not as a subtraction that reduces them. After removing an",171,,0,scripts/propagation_check.py;scripts/propagation_check.py,0,,CONVERSATIONAL,,0,ROLE
+dc-2.7-b19,DRAFTING_CYCLE,2.7-bullet,19,"Execute against real data. Any executable check, computed gate, or repeatable procedure is validated ONLY by r",175,,0,scripts/propagation_check.py;scripts/propagation_check.py,0,,MECHANIZABLE,executable check output; propagation_check-restated partial; gates validate test output,0,STANDARD
+dc-2.7-b20,DRAFTING_CYCLE,2.7-bullet,20," DURABILITY IS PROVEN POST-COMMIT — in-transaction sentinels prove INTENT, never durability (companion to the ",176,,0,scripts/propagation_check.py;scripts/propagation_check.py,0,,CONVERSATIONAL,,0,ROLE
+dc-2.7-b21,DRAFTING_CYCLE,2.7-bullet,21,Never pipe a command whose exit code carries meaning (extends the command-output clause above): the shell repo,177,,0,scripts/propagation_check.py;scripts/propagation_check.py,0,,MECHANIZABLE,plan text pipe patterns; plan_lint (n) already flags some; could extend to exit-code-bearing pipes,0,STANDARD
+dc-2.7-b22,DRAFTING_CYCLE,2.7-bullet,22,"When a guard's safety depends on a claim about text, EXECUTE the guard's actual matcher — never reason about i",178,,0,scripts/propagation_check.py;scripts/propagation_check.py,0,,CONVERSATIONAL,,0,ROLE
+dc-2.7-b23,DRAFTING_CYCLE,2.7-bullet,23,Any probe over a plan that carries retractions must CLASSIFY each hit — instruction or retraction-of-instructi,179,,0,scripts/propagation_check.py;scripts/propagation_check.py,0,,CONVERSATIONAL,,0,ROLE
+dc-2.7-b24,DRAFTING_CYCLE,2.7-bullet,24,"Anchor every structural search line-anchored, and strip fenced blocks and blockquotes before matching any toke",180,,0,scripts/propagation_check.py;scripts/propagation_check.py,0,,MECHANIZABLE,plan text grep patterns; plan_lint (n) already checks -F flag; extend for line-anchored patterns,0,STANDARD
+dc-2.7-b25,DRAFTING_CYCLE,2.7-bullet,25,Three probe-integrity clauses from a four-for-four false-absence session: zsh does not word-split unquoted par,181,,0,scripts/propagation_check.py;scripts/propagation_check.py,0,,CONVERSATIONAL,,0,ROLE
+dc-2.7-b26,DRAFTING_CYCLE,2.7-bullet,26,"A conformance probe must match the artifact's REPRESENTATION (regex, table, computed form), not the spec's pro",182,,0,scripts/propagation_check.py;scripts/propagation_check.py,0,,CONVERSATIONAL,,0,ROLE
+dc-2.7-b27,DRAFTING_CYCLE,2.7-bullet,27,"A presence check for content that can duplicate INTRA-LINE uses the occurrence form (`grep -Fo | wc -l`), neve",183,,0,scripts/propagation_check.py;scripts/propagation_check.py,0,,CONVERSATIONAL,,0,ROLE
+dc-2.7-b28,DRAFTING_CYCLE,2.7-bullet,28,"Every constructed or variable pattern is passed via `-e ""$PAT""` (or after `--`) (companion to the grep -F clau",184,,0,scripts/propagation_check.py;scripts/propagation_check.py,0,,MECHANIZABLE,plan text grep patterns; plan_lint (n) already covers -e flag checks,0,STANDARD
+dc-2.7-b29,DRAFTING_CYCLE,2.7-bullet,29,"Before computing from a record, count its DIALECTS — sample the shape, not just the presence. Make 'unparseabl",185,,0,scripts/propagation_check.py;scripts/propagation_check.py,0,,CONVERSATIONAL,,0,ROLE
+dc-2.7-b30,DRAFTING_CYCLE,2.7-bullet,30,"For any absence claim, derive the probe FROM the target text — open the file and copy the string — never compo",186,,0,scripts/propagation_check.py;scripts/propagation_check.py,0,,CONVERSATIONAL,,0,ROLE
+dc-2.7-b31,DRAFTING_CYCLE,2.7-bullet,31,"A walk covers, it does not target. A walk is every lens over the WHOLE artifact; a pass aimed at selected regi",190,,0,scripts/propagation_check.py;scripts/propagation_check.py,0,,CONVERSATIONAL,,0,ROLE
+dc-2.7-b32,DRAFTING_CYCLE,2.7-bullet,32,Novel lens = provisional fold. A new lens reliably finds the right window and reliably ships a broken mechanis,191,,0,scripts/propagation_check.py;scripts/propagation_check.py,0,,CONVERSATIONAL,,0,ROLE
+dc-2.7-b33,DRAFTING_CYCLE,2.7-bullet,33,"Parallelism within a lens, never across. Concurrent readers feeding one fold is fine; concurrent lenses sever ",192,,0,scripts/propagation_check.py;scripts/propagation_check.py,0,,CONVERSATIONAL,,0,ROLE
+dc-2.7-b34,DRAFTING_CYCLE,2.7-bullet,34,"Sequential-fold rule (extends §2.7 ""Parallelism"" and §2.6 ""cumulation lives in the draft""). Run each lens agai",193,,0,scripts/propagation_check.py;scripts/propagation_check.py,0,,CONVERSATIONAL,,0,ROLE
+dc-2.7-b35,DRAFTING_CYCLE,2.7-bullet,35,"Per-phase commits — and within a walk, per-LENS. Commit the draft after every phase — each walk, each culminat",194,,0,scripts/propagation_check.py;scripts/propagation_check.py,0,,CONVERSATIONAL,,0,ROLE
+dc-2.7-b36,DRAFTING_CYCLE,2.7-bullet,36,A TARGETED pass is legitimate ONLY when declared not to be a walk — and it can never discharge the bar. The co,195,,0,scripts/propagation_check.py;scripts/propagation_check.py,0,,CONVERSATIONAL,,0,ROLE
+dc-2.7-b37,DRAFTING_CYCLE,2.7-bullet,37,"The SWEEP pass — a named, mechanical, non-bar-discharging pass fired by a signal. Trigger (mechanical, both ha",196,,0,scripts/propagation_check.py;scripts/propagation_check.py,0,,MECHANIZABLE,plan text; plan_lint: targeted pass must carry explicit not-a-walk declaration,0,STANDARD
+dc-2.7-b38,DRAFTING_CYCLE,2.7-bullet,38,"When ONE DEFECT CLASS fires on two or more CONSECUTIVE passes, the review has become SAMPLING — stop walking a",197,,0,scripts/propagation_check.py;scripts/propagation_check.py,0,,CONVERSATIONAL,,0,ROLE
+dc-2.7-b39,DRAFTING_CYCLE,2.7-bullet,39,Re-read the closing record after the close. A walk certifies everything except the paragraph that records it —,201,,0,scripts/propagation_check.py;scripts/propagation_check.py,0,,CONVERSATIONAL,,0,ROLE
+dc-2.7-b40,DRAFTING_CYCLE,2.7-bullet,40,Lens attestation integrity. A lens result is written only after the lens has actually run — never in the same ,202,,0,scripts/propagation_check.py;scripts/propagation_check.py,0,,CONVERSATIONAL,,0,ROLE
+dc-2.7-b41,DRAFTING_CYCLE,2.7-bullet,41,Any marker whose practical meaning is 'I did not run this' gets the INHERITED cost test regardless of its spel,203,,0,scripts/propagation_check.py;scripts/propagation_check.py,0,,CONVERSATIONAL,,0,ROLE
+dc-2.7-b42,DRAFTING_CYCLE,2.7-bullet,42,"Closing-line ordering: walk → culminate → final ACID → then close, with every count stated AS OF a named compl",204,,0,scripts/propagation_check.py;scripts/propagation_check.py,0,,CONVERSATIONAL,,0,ROLE
+dc-2.7-b43,DRAFTING_CYCLE,2.7-bullet,43,"Any claim that a governed text CHANGED — tightened, loosened, added, removed — is established by `git show <ol",205,,0,scripts/propagation_check.py;scripts/propagation_check.py,0,,MECHANIZABLE,git log output; plan_lint (q) already checks pins; extend to claim-about-change requiring git diff,0,STANDARD
+dc-2.7-b44,DRAFTING_CYCLE,2.7-bullet,44," A CONSTRAINT THAT SPANS STEPS is named as a constraint WITH ITS SITES, never as prose inside one step — other",209,,0,scripts/propagation_check.py;scripts/propagation_check.py,0,,MECHANIZABLE,plan text constraint declarations; plan_lint could check for named constraints in multi-step plans,0,STANDARD
+dc-2.7-b45,DRAFTING_CYCLE,2.7-bullet,45," PROVE EVERY POST-CONDITION CAN FAIL, BEFORE THE EDIT. Run each new assertion's literal against the pre-edit s",210,,0,scripts/propagation_check.py;scripts/propagation_check.py,0,,CONVERSATIONAL,,0,ROLE
+dc-2.7-b46,DRAFTING_CYCLE,2.7-bullet,46,A post-condition built on a HAND-ENUMERATED list is only as complete as its author — when a guard's correctnes,211,,0,scripts/propagation_check.py;scripts/propagation_check.py,0,,CONVERSATIONAL,,0,ROLE
+dc-2.7-b47,DRAFTING_CYCLE,2.7-bullet,47,"Extraction contract. Before splitting shared content, diff the regions and move only byte-identical clauses; s",212,,0,scripts/propagation_check.py;scripts/propagation_check.py,0,,CONVERSATIONAL,,0,ROLE
+dc-2.7-b48,DRAFTING_CYCLE,2.7-bullet,48,"Sketch one real block. Before deposit, draw the actual rows / cells a single item produces and confirm the man",213,,0,scripts/propagation_check.py;scripts/propagation_check.py,0,,CONVERSATIONAL,,0,ROLE
+dc-2.7-b49,DRAFTING_CYCLE,2.7-bullet,49,An EDIT ANCHOR is not a probe — assert it is THE occurrence you mean before rewriting anything. Before any edi,214,,0,scripts/propagation_check.py;scripts/propagation_check.py,0,,MECHANIZABLE,plan edit anchor; plan_lint (n/o1) extension — assert anchor is THE occurrence before rewrite,0,STANDARD
+dc-2.7-b50,DRAFTING_CYCLE,2.7-bullet,50,"A lossless reorder preserves TRUTH and destroys PROXIMITY — for any reorder of cross-referencing material, mea",215,,0,scripts/propagation_check.py;scripts/propagation_check.py,0,,CONVERSATIONAL,,0,ROLE
+dc-2.7-b51,DRAFTING_CYCLE,2.7-bullet,51,Ask whether convenient facts make your own argument work before trusting them: re-read populations from the up,216,,0,scripts/propagation_check.py;scripts/propagation_check.py,0,,CONVERSATIONAL,,0,ROLE
+dc-2.7-b52,DRAFTING_CYCLE,2.7-bullet,52,"For large classification batches, prefer manifest-pinned tranches over a single saturated step, and carry the ",217,,0,scripts/propagation_check.py;scripts/propagation_check.py,0,,CONVERSATIONAL,,0,ROLE

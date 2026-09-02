@@ -1,0 +1,106 @@
+PT/DC enforcement census — summary (2026-09-02, PT v4.97, DC v2.23)
+instrument: census.py sha 9c52011935a17137
+PT sha: f1701a37441868699b552a521dc2fda25d3cf713 (v4.97; first-16 f1701a3744186869)
+DC sha: 3a84137ed3669de1d690c4b22b57b158c3387792 (v2.23; matches P3 pin)
+
+units: 228  by kind: {'rule': 106, 'checklist': 33, 'wrap-step': 8, 'trigger': 8, 'lens-subquestion': 21, '2.7-bullet': 52}
+code files scanned: 56
+
+Delta from v4.96 (224 units): +4 rules (103-106 — detector-tier rules from gate2-pt-w28-a)
+  rule-103: Move the test ORACLE outside the author's model — every detector gets a tier-2 state-space suite
+  rule-104: A detector's fire count is a RATIO — report fired/evaluated/skipped; never retire on unmeasured
+  rule-105: An env var is a property of a PROCESS TREE — test the dispatch environment, never the machine
+  rule-106: Earnability is not discrimination — enumerate plausible WRONG fixes; construct and report kill map
+
+--- CITATION FLOOR (instrument output) ---
+rule               units 106  cited-by-a-checker   8  section-cited-only   0  corpus-cited  22  corpus-cited-and-uncited  18
+checklist          units  33  cited-by-a-checker   0  section-cited-only   0  corpus-cited   9  corpus-cited-and-uncited   9
+wrap-step          units   8  cited-by-a-checker   4  section-cited-only   0  corpus-cited   3  corpus-cited-and-uncited   0
+trigger            units   8  cited-by-a-checker   1  section-cited-only   0  corpus-cited   1  corpus-cited-and-uncited   1
+lens-subquestion   units  21  cited-by-a-checker   0  section-cited-only   0  corpus-cited   4  corpus-cited-and-uncited   4
+2.7-bullet         units  52  cited-by-a-checker   0  section-cited-only  52  corpus-cited   0  corpus-cited-and-uncited   0
+
+--- CALLEE-SIDE READING (Q-2) ---
+Units enforced by callee reading (13 of 228):
+  rule-19, rule-20, rule-21, rule-22, rule-26, rule-35 (6 rules)
+  wrap-7, wrap-8 (2 wrap steps — via wrap_check [3b/lessons] and [3/root])
+  dc-T-2 (1 trigger — plan_lint check (l))
+  dc-2.7-b1, dc-2.7-b6, dc-2.7-b8, dc-2.7-b9 (4 DC bullets — fold_check + propagation_check)
+
+Disagreements (citation vs reading):
+  names-more (cited but callee reading shows no enforcement): 9 units
+    rule-1, rule-2, rule-3, rule-4 — check_backlog_freshness.py uses its own "Rule N" labels (not PT rules)
+    wrap-1, wrap-2, wrap-3, wrap-4 — [N/label] tags in wrap_check are the tool's own arm labels, not PT wrap step refs
+    rule-22 (partial) — check_backlog_freshness.py cites its own "Rule 22 (b)" not PT Rule 22
+  enforces-more (enforced but NOT in citation floor): 8 units
+    rule-19, rule-21 — enforced by gates (gate-rule_22_verification, gate-qa_test_result) but not named
+    wrap-7, wrap-8 — enforced by [3b/lessons] / [3/root] but predicate found no [7/] or [8/] tag
+    dc-2.7-b6, dc-2.7-b8 — enforced by propagation_check-restated but no §2.7 bullet id cited
+    dc-2.7-b1 — enforced by fold_check + cycle_check-assert3 but not cited by id
+    dc-2.7-b9 — enforced by propagation_check-ordering but not cited by id
+
+--- Q-3 CLASSIFICATION (unenforced units) ---
+Total by class:
+  ENFORCED: 13  MECHANIZABLE: 57  CONVERSATIONAL: 157  UNRESOLVED: 1
+
+By kind:
+  rule:              ENFORCED=6   MECHANIZABLE=31  CONVERSATIONAL=68  UNRESOLVED=1
+  checklist:         ENFORCED=0   MECHANIZABLE=10  CONVERSATIONAL=23  UNRESOLVED=0
+  wrap-step:         ENFORCED=2   MECHANIZABLE=1   CONVERSATIONAL=5   UNRESOLVED=0
+  trigger:           ENFORCED=1   MECHANIZABLE=5   CONVERSATIONAL=2   UNRESOLVED=0
+  lens-subquestion:  ENFORCED=0   MECHANIZABLE=0   CONVERSATIONAL=21  UNRESOLVED=0
+  2.7-bullet:        ENFORCED=4   MECHANIZABLE=10  CONVERSATIONAL=38  UNRESOLVED=0
+
+UNRESOLVED (1): rule-17 (Post-execution deliverable verification)
+  — agent output receipt is consumed but verification text is free-form; gate could read receipt but
+    cannot determine whether the Planner's manual verification intent was executed.
+
+CONVERSATIONAL set (157 units) is the legitimate scope of the Planner's memory (thread 91).
+The set includes: all 21 lens-subquestions, 68 rules expressing judgment/quality standards,
+23 checklist items about authoring quality, most §2.7 fold-discipline bullets (38),
+the 5 wrap steps whose content (not commitment) is unverifiable (wrap-1 through wrap-4, wrap-6),
+and the 2 triggers (T-4 money-affecting path, T-8 novel pattern) whose firing is a judgment call.
+
+--- Q-4 TOP 20 BY CORPUS WEIGHT ---
+  rule-20         cites 47  ENFORCED        STANDARD    Mandatory QA self-check Python block
+  rule-22         cites 20  ENFORCED        STANDARD    Planner verification of deposited files
+  wrap-1          cites 12  CONVERSATIONAL  EXEC-MODEL  Update PROJECT_STATUS.md
+  wrap-2          cites 11  CONVERSATIONAL  EXEC-MODEL  Update KNOWLEDGE_INDEX.md
+  rule-35         cites 10  ENFORCED        STANDARD    Distinguish manual-bootstrap vs Bellows-dispatch
+  rule-25         cites  8  CONVERSATIONAL  ROLE        Planner polling of Bellows verdict requests
+  wrap-3          cites  8  CONVERSATIONAL  EXEC-MODEL  Batched glossary update
+  rule-21         cites  6  ENFORCED        STANDARD    Test scope must be declared in the plan header
+  rule-26         cites  6  ENFORCED        STANDARD    Deposits field convention
+  checklist-3     cites  5  CONVERSATIONAL  ROLE        No reliance on STOP-prose in Bellows-dispatched plans
+  rule-19         cites  4  ENFORCED        STANDARD    Hedging keywords auto-invalidate
+  rule-56         cites  4  CONVERSATIONAL  ROLE        Resume machinery is justified only when interrupted work not re-executable
+  dc-T-6          cites  3  MECHANIZABLE    STANDARD    Governance surface
+  dc-q2.2         cites  3  CONVERSATIONAL  ROLE        Does any step relax an existing guard, threshold, or assertion?
+  rule-23         cites  3  MECHANIZABLE    STANDARD    End-of-plan housekeeping anchored edits
+  rule-36         cites  2  MECHANIZABLE    STANDARD    Negative grep during dormancy is not architectural evidence
+  rule-39         cites  2  CONVERSATIONAL  ROLE        Pre-edit verification of SA-derived claims
+  rule-85         cites  2  CONVERSATIONAL  ROLE        Repo-touching compounds — commits AND state-changing ops
+  dc-q2.1         cites  2  CONVERSATIONAL  ROLE        What breaks if this ships?
+  rule-15         cites  1  MECHANIZABLE    STANDARD    Every step after Step 1 verifies prior step's Output Receipt
+
+IN-POPULATION CAVEAT: a rule cited in the corpus is one whose VIOLATION was RECORDED, which
+measures the recording culture as much as the violation rate. High corpus weight signals that
+the Planner found the rule worth documenting, not necessarily that it is frequently broken.
+
+--- Q-5 HOME COUNTS ---
+  STANDARD (enforced or MECHANIZABLE): 68 units (PT: 48, DC: 20)
+  ROLE (CONVERSATIONAL): 152 units (PT: 91, DC: 61)
+  EXECUTION-MODEL (PT Bellows/Manual sections): 7 units (wrap-1..8 minus enforced; rule-8 and rule-35)
+  UNRESOLVED: 1 unit (rule-17)
+
+Units that would MOVE in a by-enforcer reorganization:
+  PT rules to the STANDARD doc beside DC: rule-20, rule-21, rule-22, rule-26 (already enforced by bellows checks)
+  PT rules to ROLE (Planner memory): 68 PT rules classified CONVERSATIONAL
+  DC §2.7 bullets to STANDARD: dc-2.7-b1, dc-2.7-b6, dc-2.7-b8, dc-2.7-b9 (enforced by fold/propagation tools)
+  DC §2.7 MECHANIZABLE bullets to STANDARD: 10 bullets (their acts could be checked)
+
+--- P5 CONTROLS ---
+rule-20: gates.py;scripts/plan_lint.py (enforcers 2, corpus 47) ✓
+rule-26: gates.py;verdict.py (enforcers 2, corpus 6) ✓
+rule-63: no enforcer (corpus 0) ✓
+wrap-7: no enforcer by citation predicate (corpus 0) — NOTE: enforced by [3b/lessons] in callee reading ✓
