@@ -1,0 +1,13 @@
+{
+  "plan_lint": {
+    "exit": 0,
+    "signals": [
+      "(o2) WARN: Deposits entry `knowledge/development/dev-log-shop-server-invariant-sketch-N-N-N.md` is not project-prefixed or absolute",
+      "(o2) WARN: Deposits entry `knowledge/qa/evidence/shop-server-invariant-sketch-N-N-N/full-suite-shop-server-invariant-sketch.txt` is not project-prefixed or absolute",
+      "(o2) WARN: Deposits entry `knowledge/qa/evidence/shop-server-invariant-sketch-N-N-N/probes-raw.txt` is not project-prefixed or absolute",
+      "(o2) WARN: Deposits entry `knowledge/qa/evidence/shop-server-invariant-sketch-N-N-N/qa-receipt.md` is not project-prefixed or absolute",
+      "PIN-CHECK: kind=prefix line=N token=4508b20abb79\u2026 result=ambiguous",
+      "PIN-CHECK: kind=prefix line=N token=7883745e2346\u2026 result=ambiguous"
+    ]
+  }
+}
