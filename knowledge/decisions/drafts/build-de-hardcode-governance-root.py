@@ -10,17 +10,22 @@ Then twelve anchored edits across ten files (nine code files + CLAUDE.md's seam 
 re-rooting sentinel) with the resolver.
 
 Usage: build-de-hardcode-governance-root.py <bellows-root-in> <bellows-root-out>
-Copies the eight target files from <in> to <out>, applies every edit with a
+Copies the ten target files from <in> to <out>, applies every edit with a
 count-1 anchor assert, asserts every post-condition on the output text, and
 refuses to write into the live checkout (realpath + samefile + casefolded
 prefix + out != in). Scratch-only; the plan's DEV step runs it <live> ->
-<scratch>, then copies the eight outputs over the live files with cmp closure.
+<scratch>, then copies the eleven outputs over the live files with cmp closure.
 """
 import hashlib
 import os
 import sys
+from pathlib import Path
 
-LIVE_ROOT = "/Users/marklehn/Developer/bellows"
+# The checkout THIS builder sits in (…/knowledge/decisions/drafts/ -> root) — never a
+# layout literal (the Air scout: a builder removing layout literals carried one as its
+# own safety literal, so its live-root guard only knew the mini). A second guard below
+# refuses any <out> holding a config.json — the canonical checkout on every machine.
+LIVE_ROOT = str(Path(__file__).resolve().parents[3])
 TARGETS = [
     "bellows_root.py", "gates.py", "verdict.py", "planner.py", "decisions.py",
     "bellows.py", "plan_claim.py", "scripts/plan_lint.py",
@@ -323,8 +328,11 @@ class TestResolveGovernanceRoot:
 class TestConsumers:
     def test_qa_mandate_names_the_resolved_block(self):
         import gates
-        assert str(br.resolve_governance_root() / "RULE_20_SELF_CHECK_BLOCK.md") in gates.QA_MANDATE_SUFFIX
-        assert "/Users/marklehn/Developer/GitHub" not in gates.QA_MANDATE_SUFFIX
+        block = str(br.resolve_governance_root() / "RULE_20_SELF_CHECK_BLOCK.md")
+        assert gates.QA_MANDATE_SUFFIX.count(block) == 1
+        # On the shop the resolved root IS the old literal, so the mandate may carry it
+        # legitimately there; what must be gone is the literal in the SOURCE.
+        assert "/Users/marklehn/Developer/GitHub" not in Path(gates.__file__).read_text()
 
     def test_planner_template_path_exists(self):
         import planner
@@ -401,11 +409,14 @@ def main():
     _req(not rp.casefold().startswith((os.path.realpath(LIVE_ROOT) + os.sep).casefold()),
          "output is inside the live bellows checkout")
     _req(os.path.realpath(src_root) != rp, "output equals input")
+    _req(not os.path.exists(os.path.join(rp, "config.json")),
+         "output holds a config.json — a canonical bellows checkout on this machine")
     for t in TARGETS:
         s = os.path.join(src_root, t)
         _req(os.path.isfile(s), f"missing input {s}")
         d = os.path.join(dst_root, t)
-        _req(not (os.path.exists(d) and os.path.samefile(d, os.path.join(LIVE_ROOT, t))),
+        live_t = os.path.join(LIVE_ROOT, t)
+        _req(not (os.path.exists(d) and os.path.exists(live_t) and os.path.samefile(d, live_t)),
              f"output {d} is samefile with the live {t}")
     outs = {}
     for t in TARGETS:
@@ -445,5 +456,4 @@ def main():
 
 
 if __name__ == "__main__":
-    from pathlib import Path  # noqa: F401 — referenced by generated text only
     main()
