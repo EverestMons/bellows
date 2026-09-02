@@ -241,7 +241,7 @@ class TestPauseStateSpace:
     # B1: the two real filename forms plus absence
     VERDICT = ("none", "issued", "processed")
     # B3: SELECT DISTINCT lifecycle_state FROM plans — the REACHABLE set
-    STATE = ("in_progress", "closed", "halted", "abandoned")
+    STATE = ("in_progress", "awaiting_verdict", "closed", "halted", "abandoned")
 
     CLASSIFICATION = {
         # pending absent → NO_PAUSE regardless
@@ -272,13 +272,20 @@ class TestPauseStateSpace:
         # pending present + verdict issued/processed + non-terminal → NO_PAUSE
         ("present", "issued", "in_progress"): "NO_PAUSE",
         ("present", "processed", "in_progress"): "NO_PAUSE",
+        # row state awaiting_verdict → REPORT_PAUSE regardless of the file dimensions (100009's DB corroboration: the state IS the pause; tools/gate_watcher.py returns the awaiting-verdict phase on it after the file checks)
+        ("absent", "none", "awaiting_verdict"): "REPORT_PAUSE",
+        ("absent", "issued", "awaiting_verdict"): "REPORT_PAUSE",
+        ("absent", "processed", "awaiting_verdict"): "REPORT_PAUSE",
+        ("present", "none", "awaiting_verdict"): "REPORT_PAUSE",
+        ("present", "issued", "awaiting_verdict"): "REPORT_PAUSE",
+        ("present", "processed", "awaiting_verdict"): "REPORT_PAUSE",
     }
 
     _PLAN_ID = 500
     _PLAN_NAME = "state-space-plan.md"
 
     def test_state_space_is_completely_classified(self):
-        assert len(self.CLASSIFICATION) == 2 * 3 * 4
+        assert len(self.CLASSIFICATION) == 2 * 3 * 5
         assert set(self.CLASSIFICATION.keys()) == set(
             itertools.product(self.PENDING, self.VERDICT, self.STATE)
         )

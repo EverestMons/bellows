@@ -9,6 +9,7 @@ from unittest.mock import MagicMock
 
 import pytest
 
+import bellows_root
 import lifecycle
 import plan_claim
 
@@ -77,6 +78,7 @@ class TestOffModeNoOp:
         monkeypatch.delenv("ELUVIAN_WRAP_TUYERE", raising=False)
         monkeypatch.delenv("ELUVIAN_WRAP_ROOT", raising=False)
         monkeypatch.setattr(Path, "home", lambda: tmp_path / "nohome")
+        monkeypatch.setattr(bellows_root, "resolve_projects_parent", lambda _start=None: tmp_path / "noprojects")
         run_mock = MagicMock(side_effect=AssertionError("seam touched"))
         monkeypatch.setattr(subprocess, "run", run_mock)
 
@@ -215,6 +217,7 @@ class TestDecisionTable:
         monkeypatch.delenv("ELUVIAN_WRAP_TUYERE", raising=False)
         monkeypatch.delenv("ELUVIAN_WRAP_ROOT", raising=False)
         monkeypatch.setattr(Path, "home", lambda: tmp_path / "nohome")
+        monkeypatch.setattr(bellows_root, "resolve_projects_parent", lambda _start=None: tmp_path / "noprojects")
 
         log = _make_log()
         result = plan_claim.claim_gate("test-plan.md", "hash1", {"plan_claim_lock": "advisory"}, log)
@@ -230,6 +233,7 @@ class TestDecisionTable:
         monkeypatch.delenv("ELUVIAN_WRAP_TUYERE", raising=False)
         monkeypatch.delenv("ELUVIAN_WRAP_ROOT", raising=False)
         monkeypatch.setattr(Path, "home", lambda: tmp_path / "nohome")
+        monkeypatch.setattr(bellows_root, "resolve_projects_parent", lambda _start=None: tmp_path / "noprojects")
 
         log = _make_log()
         result = plan_claim.claim_gate("test-plan.md", "hash1", {"plan_claim_lock": "required"}, log)
@@ -315,6 +319,7 @@ class TestResolverTwin:
         (root / "tuyere" / ".venv" / "bin" / "python").touch()
         monkeypatch.setenv("ELUVIAN_WRAP_ROOT", str(root))
         monkeypatch.setattr(Path, "home", lambda: tmp_path / "nohome")
+        monkeypatch.setattr(bellows_root, "resolve_projects_parent", lambda _start=None: tmp_path / "noprojects")
 
         result_shim = plan_claim._tuyere_checkout()
         wc = self._import_wrap_check()
@@ -326,6 +331,7 @@ class TestResolverTwin:
         monkeypatch.delenv("ELUVIAN_WRAP_TUYERE", raising=False)
         monkeypatch.delenv("ELUVIAN_WRAP_ROOT", raising=False)
         monkeypatch.setattr(Path, "home", lambda: tmp_path / "nohome")
+        monkeypatch.setattr(bellows_root, "resolve_projects_parent", lambda _start=None: tmp_path / "noprojects")
 
         result_shim = plan_claim._tuyere_checkout()
         assert result_shim is None
@@ -335,6 +341,7 @@ class TestResolverTwin:
         monkeypatch.delenv("ELUVIAN_WRAP_TUYERE", raising=False)
         monkeypatch.delenv("ELUVIAN_WRAP_ROOT", raising=False)
         monkeypatch.setattr(Path, "home", lambda: tmp_path / "nohome")
+        monkeypatch.setattr(bellows_root, "resolve_projects_parent", lambda _start=None: tmp_path / "noprojects")
         assert plan_claim._tuyere_checkout() is None
 
         tuyere = tmp_path / "late_tuyere"
