@@ -29,10 +29,7 @@
       "PIN-CHECK: kind=prefix line=N token=a341bc4c5538\u2026 result=ambiguous",
       "PIN-CHECK: kind=prefix line=N token=c2cbb25b9f03\u2026 result=ambiguous",
       "PIN-CHECK: kind=prefix line=N token=ef54ed624237\u2026 result=ambiguous",
-      "PIN-CHECK: kind=prefix line=N token=ef6a0a5f5322\u2026 result=ambiguous",
-      "WARN: Drafting Cycle block has no **Closing:** line (DRAFTING_CYCLE.md \u00a73)",
-      "WARN: Drafting Cycle closing indicates fold as last event, not a dry lens pass (DRAFTING_CYCLE.md \u00a72)",
-      "WARN: T2 plan missing cold-panel line in Drafting Cycle block (DRAFTING_CYCLE.md \u00a73)"
+      "PIN-CHECK: kind=prefix line=N token=ef6a0a5f5322\u2026 result=ambiguous"
     ]
   }
 }
