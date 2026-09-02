@@ -193,7 +193,7 @@ PASSED — SELF-CHECK PASSED — all evidence files present, no hedging keywords
 - ACID:                w2 dry — instruction 0 / record 0 — unchanged requirement set since walk 1's pair walk
 - **Walk 2 total: 0 findings — instruction 0 / record 0, ALL FIVE LENSES DRY.** Instruction series **2 → 0**.
 
-**Conformance (§5):** first run at walk 0 (shape-stability) and re-run after each walk; LAST run (walk 2 close, re-run at the freeze): `plan_lint` exit 0 / 0 FAIL at the faithful mirror — expected WARN set (o2)×4 worktree-relative deposits, (r)×1 a probe constant; `propagation_check` CLEAN (exit 0); `cycle_check` BAR_MET; `fold_check` CLEAN.
+**Conformance (§5):** first run at walk 0 (shape-stability) and re-run after each walk; LAST run (walk 2 close, re-run at the freeze): `plan_lint` exit 0 / 0 FAIL at the faithful mirror — expected WARN set (o2)×4 worktree-relative deposits only (⚠️ the closing-record re-read corrected this from "(r)×1": the walk-1 qualifier fold removed the one (r) hit — measured (r)×0 at the close); `propagation_check` CLEAN (exit 0); `cycle_check` BAR_MET; `fold_check` CLEAN.
 
 **Closing:** ✅ **BAR MET — walk 2 dry (all five lenses) after walk 1's four folds; T1, no panel owed, none convened.** Substrate present (committed register at every phase, per-lens commits, `fold_check` baseline) — the close is AUTO-eligible; the manifest below is emitted by `cycle_check --emit-manifest`, never hand-typed.
 
@@ -211,5 +211,5 @@ writes: bellows.py, depositor.py, status.py, tools/gate_watcher.py, tools/reconc
 open_forks: none — the tuyere needs-review twin of this signal rides thread 80; the Pushover keys are the CEO's config act
 walks: 2
 yields: 2, 0
-validation: cycle_check=BAR_MET, plan_lint=0_FAIL, fold_check=N/A
-coherence: 1/2 walks have register rows
+validation: cycle_check=BAR_MET, plan_lint=0_FAIL, fold_check=PASS
+coherence: 2/2 walks have register rows
