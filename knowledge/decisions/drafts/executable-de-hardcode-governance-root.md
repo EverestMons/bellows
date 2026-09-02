@@ -198,5 +198,5 @@ writes: bellows_root.py, gates.py, verdict.py, planner.py, decisions.py, bellows
 open_forks: none
 walks: 2
 yields: 3, 0
-validation: cycle_check=BAR_MET, plan_lint=0_FAIL, fold_check=N/A
+validation: cycle_check=BAR_MET, plan_lint=0_FAIL, fold_check=PASS
 coherence: 2/2 walks have register rows
