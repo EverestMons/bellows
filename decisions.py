@@ -9,17 +9,14 @@ logger = logging.getLogger("bellows")
 
 
 def resolve_governance_root() -> Path:
-    """Walk up from this file to the nearest ancestor containing COMPANY.md (governance root)."""
-    current = Path(__file__).resolve().parent
-    while True:
-        if (current / "COMPANY.md").exists():
-            return current
-        parent = current.parent
-        if parent == current:
-            # Filesystem root reached — fall back to legacy two-parent assumption
-            logger.warning("decisions: COMPANY.md marker not found; falling back to __file__.parent.parent")
-            return Path(__file__).resolve().parent.parent
-        current = parent
+    """The governance root on THIS machine via the shared resolver (bellows_root);
+    the legacy two-parent fallback is kept, with its warning, for a tree with no marker."""
+    try:
+        from bellows_root import resolve_governance_root as _shared
+        return _shared()
+    except Exception:
+        logger.warning("decisions: COMPANY.md marker not found; falling back to __file__.parent.parent")
+        return Path(__file__).resolve().parent.parent
 
 
 GOVERNANCE_ROOT = resolve_governance_root()

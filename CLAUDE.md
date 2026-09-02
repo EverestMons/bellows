@@ -79,8 +79,9 @@ warning (fail toward safety).
 
 **Seam path resolution** (named twin of `wrap_check._tuyere_checkout`):
 resolution order is `$ELUVIAN_WRAP_TUYERE`, `~/Developer/tuyere`,
-`ROOT/tuyere` where ROOT = `$ELUVIAN_WRAP_ROOT` else the literal
-`/Users/marklehn/Developer/GitHub`. First candidate whose
+`ROOT/tuyere` where ROOT = `$ELUVIAN_WRAP_ROOT` else the resolved PROJECTS
+PARENT (`bellows_root.resolve_projects_parent()` — the bellows checkout's
+parent on every layout; plan de-hardcode-governance-root, 2026-09-01). First candidate whose
 `.venv/bin/python` exists wins.
 
 **R4a claim lifecycle:** claim (in the claim block, after clearance re-check,

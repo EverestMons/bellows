@@ -859,10 +859,20 @@ def _gate_is_qa_step(plan_text, step_number, plan_header=None):
     return False
 
 
+def _rule20_block_path():
+    """The canonical Rule 20 block on THIS machine — resolved, never a layout literal
+    (a QA agent told to read a nonexistent path is the 2026-08-31 mini defect)."""
+    try:
+        from bellows_root import resolve_governance_root
+        return str(resolve_governance_root() / "RULE_20_SELF_CHECK_BLOCK.md")
+    except Exception:
+        return "$ELUVIAN_WRAP_ROOT/RULE_20_SELF_CHECK_BLOCK.md (the governance root; resolve it first)"
+
+
 QA_MANDATE_SUFFIX = (
     " MANDATORY FOR THIS QA STEP (dispatcher-injected): after writing the QA report"
     " WITH its verification table and ALL required evidence files, run the Rule 20"
-    " canonical self-check block from /Users/marklehn/Developer/GitHub/RULE_20_SELF_CHECK_BLOCK.md"
+    " canonical self-check block from " + _rule20_block_path() +
     " (absolute path), then APPEND its stdout to the deposited report. The banner"
     " 'Rule 20 — QA Self-Check Results' and the 'PASSED — SELF-CHECK PASSED' line"
     " must appear byte-exact in the deposited report — this step's gate FAILS"

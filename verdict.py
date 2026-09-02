@@ -51,6 +51,19 @@ def _extract_step_text_from_plan(plan_text: str, step_number: int):
     return match.group(0) if match else None
 
 
+def _strip_projects_parent(path: str) -> str:
+    """An absolute path under THIS machine's projects parent becomes the
+    project-prefixed relative form (`<project>/<rel>`), which every deposit
+    consumer already normalizes. Any other path is returned unchanged.
+    Replaces a shop-layout-only sentinel split (the 2026-08 re-rooting)."""
+    try:
+        from bellows_root import resolve_projects_parent
+        parent = str(resolve_projects_parent()) + "/"
+    except Exception:
+        return path
+    return path[len(parent):] if path.startswith(parent) else path
+
+
 def extract_primary_deposit(step_text: str) -> Optional[str]:
     """Extract the primary deposit path from a plan step's text."""
     # Rule 26: prefer declared **Deposits:** block when present — block is authoritative,
@@ -60,10 +73,7 @@ def extract_primary_deposit(step_text: str) -> Optional[str]:
         for m in BLOCK_BULLET_RE.finditer(block_match.group(1)):
             path = m.group(1)
             if path.endswith('.md'):
-                if '/Developer/GitHub/' in path:
-                    parts = path.split('/Developer/GitHub/')
-                    if len(parts) == 2:
-                        path = parts[1]
+                path = _strip_projects_parent(path)
                 return path
         return None
 
@@ -74,10 +84,7 @@ def extract_primary_deposit(step_text: str) -> Optional[str]:
             match = pattern.search(line)
             if match:
                 path = match.group(1)
-                if '/Developer/GitHub/' in path:
-                    parts = path.split('/Developer/GitHub/')
-                    if len(parts) == 2:
-                        path = parts[1]
+                path = _strip_projects_parent(path)
                 return path
     return None
 

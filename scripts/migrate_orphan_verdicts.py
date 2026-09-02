@@ -15,7 +15,10 @@ from pathlib import Path
 
 # Use the main repo root (config.json and verdicts/ are gitignored, only in main repo)
 BELLOWS_ROOT = Path(__file__).parent.parent.resolve()
-MAIN_REPO = Path("/Users/marklehn/Developer/GitHub/bellows")
+import sys  # noqa: E402
+sys.path.insert(0, str(BELLOWS_ROOT))
+from bellows_root import resolve_bellows_root  # noqa: E402
+MAIN_REPO = resolve_bellows_root()
 CONFIG_PATH = MAIN_REPO / "config.json"
 RESOLVED_DIR = MAIN_REPO / "verdicts" / "resolved"
 

@@ -734,7 +734,11 @@ def lint(plan_path):
     # (o) Path checks — two sub-rules
     REPO_ROOTS = {'knowledge', 'scripts', 'tests', 'src', 'web', 'engines', 'agents', 'verdicts', 'logs', 'governance'}
     KNOWN_PROJECTS = {'anvil', 'bellows', 'governance', 'invoice-pulse', 'lessons-forge', 'forge'}
-    SHOP_ROOT = '/Users/marklehn/Developer/GitHub'
+    try:
+        from bellows_root import resolve_governance_root as _resolve_gov
+        SHOP_ROOT = str(_resolve_gov())  # the governance root on THIS machine (name kept for the (o1) read below)
+    except Exception:
+        SHOP_ROOT = str(Path.home() / 'Developer' / 'eluvian-governance')
 
     plan_path_resolved = str(Path(plan_path).resolve())
     project_root = None

@@ -50,7 +50,15 @@ def _resolve_lessons_forge_db() -> str:
     if env_file:
         return env_file
     home_dev = Path.home() / "Developer"
-    root = Path(os.environ.get("ELUVIAN_WRAP_ROOT") or "/Users/marklehn/Developer/GitHub")
+    # ROOT is the PROJECTS PARENT here (root / "tuyere", root / "lessons-forge"):
+    # the shop root doubled as both; on every other layout they differ. The env
+    # override keeps its documented precedence; only the shop literal is replaced.
+    try:
+        from bellows_root import resolve_projects_parent as _resolve_pp
+        _pp = _resolve_pp()
+    except Exception:
+        _pp = Path.home() / "Developer"
+    root = Path(os.environ.get("ELUVIAN_WRAP_ROOT") or _pp)
     checkouts = []
     env_co = os.environ.get("ELUVIAN_WRAP_LESSONS_FORGE")
     if env_co:

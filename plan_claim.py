@@ -38,7 +38,15 @@ def _tuyere_checkout():
     if env_override:
         candidates.append(Path(env_override))
     candidates.append(Path.home() / "Developer" / "tuyere")
-    root = Path(os.environ.get("ELUVIAN_WRAP_ROOT") or "/Users/marklehn/Developer/GitHub")
+    # ROOT is the PROJECTS PARENT here (root / "tuyere", root / "lessons-forge"):
+    # the shop root doubled as both; on every other layout they differ. The env
+    # override keeps its documented precedence; only the shop literal is replaced.
+    try:
+        from bellows_root import resolve_projects_parent as _resolve_pp
+        _pp = _resolve_pp()
+    except Exception:
+        _pp = Path.home() / "Developer"
+    root = Path(os.environ.get("ELUVIAN_WRAP_ROOT") or _pp)
     candidates.append(root / "tuyere")
     for p in candidates:
         if (p / ".venv" / "bin" / "python").exists():

@@ -10,7 +10,13 @@ from datetime import datetime
 
 BELLOWS_ROOT = pathlib.Path(__file__).parent.resolve()
 
-GOVERNANCE_ROOT = "/Users/marklehn/Developer/GitHub"
+try:
+    from bellows_root import resolve_governance_root as _resolve_gov
+    GOVERNANCE_ROOT = str(_resolve_gov())
+except Exception:
+    # Unresolvable here: keep a path that does not exist so build_system_prompt()
+    # raises FileNotFoundError at USE, loudly, instead of a silent wrong template.
+    GOVERNANCE_ROOT = str(pathlib.Path.home() / "Developer" / "eluvian-governance")
 PLANNER_TEMPLATE_PATH = f"{GOVERNANCE_ROOT}/PLANNER_TEMPLATE.md"
 COMPANY_MD_PATH = f"{GOVERNANCE_ROOT}/COMPANY.md"
 
