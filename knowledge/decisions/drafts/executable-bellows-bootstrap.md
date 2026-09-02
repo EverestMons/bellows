@@ -118,7 +118,7 @@ exec .venv/bin/python -m pytest tests -q -p no:cacheprovider
 > - **Item 3 — the bootstrap, by a second pair of hands (T-3):** A4 repeated in your OWN scratch copy (`/tmp/bb-qa-$(basename "$(git rev-parse --show-toplevel)")/bellows` — the basename `bellows` is load-bearing), twice: first run → `interpreter:` naming `/opt/homebrew/bin/python3.12`, `1676 passed, 1 skipped`, `exit=0`, `VENV_CREATED`; capture `stat -f %m` of `.venv/bin/python`, second run → `1676 passed, 1 skipped`, `exit=0`, the mtime EQUAL to the captured one. Then the adversarial variant: `PATH=/usr/bin:/bin bash "<a THIRD scratch copy>/scripts/bootstrap.sh"` (no Homebrew on PATH) → the `interpreter:` line names `/usr/bin/python3` (3.9.6), pip's "version 21.2.4 … consider upgrading" WARNING and urllib3's `NotOpenSSLWarning` on stderr (both expected under 3.9 — measured at walk 0, not failures), and the suite runs under the 3.9 venv's pytest 8.4.2 to `1676 passed, 1 skipped, 1 warning` with `exit=0` (measured at walk 0 by running this exact script under `PATH=/usr/bin:/bin`) — quote the lines.
 > - **Item 4 — the full-suite file:** `"$BPY" -m pytest tests -q -p no:cacheprovider > knowledge/qa/evidence/bellows-bootstrap-2026-09-02/full-suite-bellows-bootstrap.txt 2>&1; echo "exit=$?" >> knowledge/qa/evidence/bellows-bootstrap-2026-09-02/full-suite-bellows-bootstrap.txt` → `1676 passed, 1 skipped`, `exit=0` (the canonical venv, untouched by this plan; a worktree holds no `config.json`, so the canonical checkout's known failure does not occur here).
 >
-> **(C) The report** `qa-receipt.md`: the verification table, the operator-act note (the venv on the canonical checkouts is still the operator's act per machine — the mini's bootstrap run, the Air's pull + both bootstraps + dashboard restart under the venv; the Planner pushes governance), the Rule 20 stdout APPENDED. Commit: `git add knowledge/qa/evidence/bellows-bootstrap-2026-09-02/ && git commit -m "[<id>] QA: bellows bootstrap proven twice on scratch + no-Homebrew variant; MACHINE_SETUP v1.2 tokens" -- knowledge/qa/evidence/bellows-bootstrap-2026-09-02/`. STOP.
+> **(C) The report** `qa-receipt.md`: the verification table — status cells carry the glyph only, and the Expected/Evidence cells of the suite row name the FILE and `exit=0`, NEVER the summary line: its word `skipped` is on the Rule 20 hedging list (`hedging_keywords` in the canonical block) and a positive row carrying it FAILS the self-check (measured 2026-09-02 by plan C's execution seat) — the operator-act note (the venv on the canonical checkouts is still the operator's act per machine — the mini's bootstrap run, the Air's pull + both bootstraps + dashboard restart under the venv; the Planner pushes governance), the Rule 20 stdout APPENDED. Commit: `git add knowledge/qa/evidence/bellows-bootstrap-2026-09-02/ && git commit -m "[<id>] QA: bellows bootstrap proven twice on scratch + no-Homebrew variant; MACHINE_SETUP v1.2 tokens" -- knowledge/qa/evidence/bellows-bootstrap-2026-09-02/`. STOP.
 >
 > **Deposits:**
 > - `knowledge/qa/evidence/bellows-bootstrap-2026-09-02/qa-receipt.md`
@@ -195,10 +195,22 @@ PASSED — SELF-CHECK PASSED — all evidence files present, no hedging keywords
 - Integration-record:  w7 dry — instruction 0 / record 0 — the manifest re-emitted at the third freeze
 - ACID:                w7 dry — instruction 0 / record 0 — unchanged
 - **Walk 7 total: 0 findings — instruction 0 / record 0, ALL FIVE LENSES DRY.** Instruction series 5 → 1 → 0 → 1 → 0 → 1 → 0.
+- Weak spots:          w8 1 folded — instruction 1 / record 0 (a sibling seat's finding swept across the plan set: the suite summary line's word `skipped` is on the Rule 20 hedging list, and a QA receipt row quoting it beside a positive glyph fails the self-check — the report instruction now names the file and the exit, never the line)
+- Destruction:         w8 dry — instruction 0 / record 0 — unchanged
+- Vulnerabilities:     w8 dry — instruction 0 / record 0 — unchanged
+- Integration-record:  w8 dry — instruction 0 / record 0 — unchanged
+- ACID:                w8 dry — instruction 0 / record 0 — unchanged
+- **Walk 8 total: 1 finding, 1 folded — instruction 1 / record 0; 0 of 1 fold-introduced (origin: plan C's EXECUTION seat, X-2, swept here).**
+- Weak spots:          w9 dry — instruction 0 / record 0 — the edited sentence re-read; the QA step's other cells unchanged; the Cycle Log covered
+- Destruction:         w9 dry — instruction 0 / record 0 — unchanged
+- Vulnerabilities:     w9 dry — instruction 0 / record 0 — unchanged
+- Integration-record:  w9 dry — instruction 0 / record 0 — the manifest re-emitted at this freeze
+- ACID:                w9 dry — instruction 0 / record 0 — unchanged
+- **Walk 9 total: 0 findings — instruction 0 / record 0, ALL FIVE LENSES DRY.**
 
 **Conformance (§5):** first run at walk 0 (shape-stability, on v0) and re-run after each fold round and at the freeze: `plan_lint` exit 0 / 0 FAIL at the faithful mirror — expected WARN set (o2)×6 (project-relative deposits — the six worktree-relative entries; the absolute governance path is not one) and the two advisory "mentions tests but declares no test scope" lines (the Test Scope header names the suite; the heuristic keys on a phrase it does not find — advisory, left as is); `cycle_check` BAR_MET; `fold_check` baseline re-saved at each intended change with a note; `propagation_check` exit 0.
 
-**Closing:** ✅ **BAR MET — walk 7 dry (all five lenses) after walk 1's six folds, walk 2's one, walk 4's decision fold (the CEO's vocabulary ruling) and walk 6's one (a sibling seat's location finding, swept in after the second freeze); T1, no panel owed, none convened.** Substrate present (the register's rows entered at each phase from captured output, two of them marked late with their evidence, the file committed at the freeze — not per phase, and the record says so; `fold_check` baseline). The closing-record re-read (§2.7) ran against this block, the register and the emitted manifest at the freeze.
+**Closing:** ✅ **BAR MET — walk 9 dry (all five lenses) after walk 1's six folds, walk 2's one, walk 4's decision fold (the CEO's vocabulary ruling) and walk 6's one (a sibling seat's location finding, swept in after the second freeze); T1, no panel owed, none convened.** Substrate present (the register's rows entered at each phase from captured output, two of them marked late with their evidence, the file committed at the freeze — not per phase, and the record says so; `fold_check` baseline). The closing-record re-read (§2.7) ran against this block, the register and the emitted manifest at the freeze.
 
 **Fold-and-deposit exactly once.**
 
@@ -209,7 +221,7 @@ class: shop-infra
 reads: /Users/marklehn/Developer/bellows/requirements.txt, /Users/marklehn/Developer/bellows/.gitignore, /Users/marklehn/Developer/bellows/CLAUDE.md, /Users/marklehn/Developer/bellows/dashboard.py, /Users/marklehn/Developer/eluvian-governance/MACHINE_SETUP.md, /Users/marklehn/Developer/forge_lessons/knowledge/decisions/Done/executable-100016.md
 writes: scripts/bootstrap.sh, CLAUDE.md, /Users/marklehn/Developer/eluvian-governance/MACHINE_SETUP.md, knowledge/development/dev-log-bellows-bootstrap-2026-09-02.md, knowledge/qa/evidence/bellows-bootstrap-2026-09-02/qa-receipt.md, knowledge/qa/evidence/bellows-bootstrap-2026-09-02/probes-raw.txt, knowledge/qa/evidence/bellows-bootstrap-2026-09-02/full-suite-bellows-bootstrap.txt
 open_forks: an interpreter guard in dashboard.py (refuse or warn when not under the venv — a bellows code change, its own thread); the align hook's requirements-importable assert (the sketch's missing row — its own thread); whether the Air's dashboard restart under the venv should be a tuyere action rather than a keyboard act
-walks: 7
-yields: 5, 1, 0, 1, 0, 1, 0
+walks: 9
+yields: 5, 1, 0, 1, 0, 1, 0, 1, 0
 validation: cycle_check=BAR_MET, plan_lint=0_FAIL, fold_check=PASS
-coherence: 7/7 walks have register rows
+coherence: 9/9 walks have register rows
