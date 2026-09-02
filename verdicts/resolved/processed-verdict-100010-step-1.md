@@ -1,0 +1,3 @@
+continue
+
+Canary verified from outside the plan under the restarted daemon (pid 93535): plans.lifecycle_state = awaiting_verdict at a HEADER pause with gates 11/11 passed (steps.status complete, pause_reason header_pause — the exact case the pre-change daemon left in_progress); the receipt-spawned watcher logged awaiting-verdict at 21:17:32 and then its new delivery line 'push skipped (pushover keys empty)' 0.2 s later; status.py lists the plan in IN-FLIGHT (widened predicate) and AWAITING VERDICT; the deposit on main (1eac841) carries the four measured lines (HEAD fd40f92 with the change, 4 pause writes, the agent's own row in_progress while running). Continue — close; expect the row to read closed.

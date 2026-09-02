@@ -1,0 +1,8 @@
+{
+  "slug": "executable-verdict-signal-canary",
+  "content_hash": "069d5b7c88114e7b8d4a6256d3e934bf946242179390641d77386443440380bb",
+  "session_id": "1663ee38-f4e9-49ea-a4ef-9362de630993",
+  "armed_at": "2026-09-01T21:16:47.269411",
+  "watcher": "gate_watcher.py spawned detached (pid 94141); log: logs/watch/executable-verdict-signal-canary.md.log",
+  "attestation_boundary": "This receipt proves the watcher was ARMED at write time. It does NOT prove the watcher stayed alive. Liveness of a session-local monitor is not externally verifiable."
+}
