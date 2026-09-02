@@ -1,0 +1,418 @@
+=====================================================================
+checker-defects-2026-09-02 — QA Probes Raw Output
+Date: 2026-09-02  QA agent: bellows worktree 100022
+=====================================================================
+
+===== ITEM 1 — FAIL-BEFORE / PASS-AFTER =====
+
+--- Pre-edit SHAs (must match P1) ---
+HEAD~1:scripts/cycle_check.py:
+2efd4e2de1a3f9ea
+HEAD~1:scripts/cycle_yields.py:
+439f2a7f9393305b
+HEAD~1:scripts/plan_lint.py:
+fabbf1ac2d8ad95a
+
+--- 12 new tests AGAINST PRE-EDIT MODULES (via sys.modules injection) ---
+Note: 4 subprocess-based tests (test_c2_long_component_no_traceback, test_lint_weak_spots_hyphen_no_warn,
+      test_u_report_first_warns, test_u_no_txt_warns) call SCRIPTS/ directly in subprocess;
+      they are verified separately below.
+
+[pre-edit runner] cycle_check from: /tmp/cd-qa/cycle_check.py
+[pre-edit runner] cycle_yields from: /tmp/cd-qa/cycle_yields.py
+[pre-edit runner] plan_lint from: /tmp/cd-qa/plan_lint.py
+============================= test session starts ==============================
+platform darwin -- Python 3.12.14, pytest-9.1.1, pluggy-1.6.0 -- /Users/marklehn/Developer/bellows/.venv/bin/python
+rootdir: /Users/marklehn/Developer/bellows/.bellows-worktrees/100022
+plugins: anyio-4.14.2
+collecting ... collected 12 items
+
+tests/test_cycle_check.py::test_c1_plain_walk_lines_escalate FAILED      [  8%]
+tests/test_cycle_check.py::test_c2_commentary_ref_extracted_cleanly FAILED [ 16%]
+tests/test_cycle_check.py::test_c2_long_component_no_traceback PASSED    [ 25%]
+tests/test_cycle_check.py::test_c3_relative_ref_unresolvable_escalates FAILED [ 33%]
+tests/test_cycle_check.py::test_58_not_closed_returns_continue FAILED    [ 41%]
+tests/test_cycle_check.py::test_58_bare_heading_not_a_claim FAILED       [ 50%]
+tests/test_cycle_check.py::test_63_hyphenated_weakspots_lens_parsed FAILED [ 58%]
+tests/test_cycle_yields.py::test_63_hyphen_weakspots_not_none FAILED     [ 66%]
+tests/test_cycle_yields.py::test_63_hyphen_weakspots_is_dry FAILED       [ 75%]
+tests/test_plan_lint.py::test_lint_weak_spots_hyphen_no_warn PASSED      [ 83%]
+tests/test_plan_lint.py::test_u_report_first_warns PASSED                [ 91%]
+tests/test_plan_lint.py::test_u_no_txt_warns PASSED                      [100%]
+
+=================================== FAILURES ===================================
+______________________ test_c1_plain_walk_lines_escalate _______________________
+
+tmp_path = PosixPath('/private/var/folders/mw/px9gvxzx2qv582qhwbzv8m940000gn/T/pytest-of-marklehn/pytest-564/test_c1_plain_walk_lines_escal0')
+
+    def test_c1_plain_walk_lines_escalate(tmp_path):
+        """C-1: block with plain - Walk N: lines but no parseable lens → ESCALATE:unparseable."""
+        plan = _make_plan(tmp_path, "- Walk 1: 3 folds\n- Walk 2: 0 folds\n")
+        verdict, code = cycle_check.run_check(plan)
+>       assert verdict == "ESCALATE:unparseable"
+E       AssertionError: assert 'CONTINUE' == 'ESCALATE:unparseable'
+E         
+E         - ESCALATE:unparseable
+E         + CONTINUE
+
+tests/test_cycle_check.py:731: AssertionError
+___________________ test_c2_commentary_ref_extracted_cleanly ___________________
+
+tmp_path = PosixPath('/private/var/folders/mw/px9gvxzx2qv582qhwbzv8m940000gn/T/pytest-of-marklehn/pytest-564/test_c2_commentary_ref_extract0')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x107b3d640>
+
+    def test_c2_commentary_ref_extracted_cleanly(tmp_path, monkeypatch):
+        """C-2: trailing commentary after the .md path is ignored; only the token is used."""
+        reg = tmp_path / "register.md"
+        reg.write_text("rows", encoding="utf-8")
+        plan = _make_plan(tmp_path,
+            f"**Walk register:** {reg} (this is commentary that should be ignored)\n"
+            "- Weak spots: w1 2 folded — instruction 2 / record 0; w2 dry.\n"
+            "- Destruction: w1 dry; w2 dry.\n"
+        )
+        monkeypatch.setattr(cycle_check, "_find_git_root", lambda _: tmp_path)
+        verdict, code = cycle_check.run_check(plan)
+>       assert verdict == "BAR_MET"
+E       AssertionError: assert 'ESCALATE:assert-fail:2' == 'BAR_MET'
+E         
+E         - BAR_MET
+E         + ESCALATE:assert-fail:2
+
+tests/test_cycle_check.py:757: AssertionError
+_________________ test_c3_relative_ref_unresolvable_escalates __________________
+
+tmp_path = PosixPath('/private/var/folders/mw/px9gvxzx2qv582qhwbzv8m940000gn/T/pytest-of-marklehn/pytest-564/test_c3_relative_ref_unresolva0')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x107d70860>
+
+    def test_c3_relative_ref_unresolvable_escalates(tmp_path, monkeypatch):
+        """C-3: relative ref that exists under neither git_root nor governance root → ESCALATE:assert-fail:2."""
+        import bellows_root as _br
+        monkeypatch.setattr(_br, "resolve_governance_root", lambda: tmp_path / "_no_gov")
+        plan = _make_plan(tmp_path,
+            "**Walk register:** governance/knowledge/research/nonexistent.md\n"
+            "- Weak spots: w1 2 folded — instruction 2 / record 0; w2 dry.\n"
+            "- Destruction: w1 dry; w2 dry.\n"
+        )
+        monkeypatch.setattr(cycle_check, "_find_git_root", lambda _: tmp_path)
+        verdict, code = cycle_check.run_check(plan)
+>       assert verdict == "ESCALATE:assert-fail:2"
+E       AssertionError: assert 'BAR_MET' == 'ESCALATE:assert-fail:2'
+E         
+E         - ESCALATE:assert-fail:2
+E         + BAR_MET
+
+tests/test_cycle_check.py:803: AssertionError
+_____________________ test_58_not_closed_returns_continue ______________________
+
+tmp_path = PosixPath('/private/var/folders/mw/px9gvxzx2qv582qhwbzv8m940000gn/T/pytest-of-marklehn/pytest-564/test_58_not_closed_returns_con0')
+
+    def test_58_not_closed_returns_continue(tmp_path):
+        """58: **Closing:** NOT CLOSED → negation stripped → no claim → CONTINUE, not ESCALATE."""
+        plan = _make_plan(tmp_path,
+            "- Weak spots: w1 2 folded — instruction 2 / record 0; w2 1 folded — instruction 1 / record 0.\n"
+            "- Destruction: w1 dry; w2 dry.\n"
+            "**Closing:** NOT CLOSED at walk 2 — the bar is not met.\n"
+        )
+        verdict, code = cycle_check.run_check(plan)
+>       assert verdict == "CONTINUE"
+E       AssertionError: assert 'ESCALATE:claimed-close-unmet' == 'CONTINUE'
+E         
+E         - CONTINUE
+E         + ESCALATE:claimed-close-unmet
+
+tests/test_cycle_check.py:833: AssertionError
+_______________________ test_58_bare_heading_not_a_claim _______________________
+
+tmp_path = PosixPath('/private/var/folders/mw/px9gvxzx2qv582qhwbzv8m940000gn/T/pytest-of-marklehn/pytest-564/test_58_bare_heading_not_a_cla0')
+
+    def test_58_bare_heading_not_a_claim(tmp_path):
+        """58: bare **Closing:** heading alone is not a claim → CONTINUE when walk not dry."""
+        plan = _make_plan(tmp_path,
+            "- Weak spots: w1 2 folded — instruction 2 / record 0.\n"
+            "- Destruction: w1 dry.\n"
+            "**Closing:**\n"
+        )
+        verdict, code = cycle_check.run_check(plan)
+>       assert verdict == "CONTINUE"
+E       AssertionError: assert 'ESCALATE:claimed-close-unmet' == 'CONTINUE'
+E         
+E         - CONTINUE
+E         + ESCALATE:claimed-close-unmet
+
+tests/test_cycle_check.py:845: AssertionError
+___________________ test_63_hyphenated_weakspots_lens_parsed ___________________
+
+tmp_path = PosixPath('/private/var/folders/mw/px9gvxzx2qv582qhwbzv8m940000gn/T/pytest-of-marklehn/pytest-564/test_63_hyphenated_weakspots_l0')
+
+    def test_63_hyphenated_weakspots_lens_parsed(tmp_path):
+        """63: '- Weak-spots: w1 dry' must parse (not drop) the lens line."""
+        from cycle_yields import parse_lens_line
+        result = parse_lens_line("- Weak-spots: w1 dry")
+>       assert result is not None, "Hyphenated Weak-spots must not return None"
+E       AssertionError: Hyphenated Weak-spots must not return None
+E       assert None is not None
+
+tests/test_cycle_check.py:892: AssertionError
+______________________ test_63_hyphen_weakspots_not_none _______________________
+
+    def test_63_hyphen_weakspots_not_none():
+        """63: 'Weak-spots' must NOT return None (was the defect)."""
+>       assert parse_lens_line("- Weak-spots: w1 dry") is not None
+E       AssertionError: assert None is not None
+E        +  where None = parse_lens_line('- Weak-spots: w1 dry')
+
+tests/test_cycle_yields.py:452: AssertionError
+_______________________ test_63_hyphen_weakspots_is_dry ________________________
+
+    def test_63_hyphen_weakspots_is_dry():
+        """63: 'Weak-spots: w1 dry' must parse as a dry pass."""
+        result = parse_lens_line("- Weak-spots: w1 dry")
+>       assert result is not None
+E       assert None is not None
+
+tests/test_cycle_yields.py:458: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_cycle_check.py::test_c1_plain_walk_lines_escalate - Asserti...
+FAILED tests/test_cycle_check.py::test_c2_commentary_ref_extracted_cleanly - ...
+FAILED tests/test_cycle_check.py::test_c3_relative_ref_unresolvable_escalates
+FAILED tests/test_cycle_check.py::test_58_not_closed_returns_continue - Asser...
+FAILED tests/test_cycle_check.py::test_58_bare_heading_not_a_claim - Assertio...
+FAILED tests/test_cycle_check.py::test_63_hyphenated_weakspots_lens_parsed - ...
+FAILED tests/test_cycle_yields.py::test_63_hyphen_weakspots_not_none - Assert...
+FAILED tests/test_cycle_yields.py::test_63_hyphen_weakspots_is_dry - assert N...
+========================= 8 failed, 4 passed in 0.41s ==========================
+
+--- Subprocess-based fail-before verification (direct pre-edit script invocation) ---
+
+>> test_c2_long_component_no_traceback: run pre-edit cycle_check.py in real git repo with long commentary
+Pre-edit output (expect Traceback in stderr):
+Traceback (most recent call last):
+  File "/tmp/cd-qa/cycle_check.py", line 606, in <module>
+    main()
+  File "/tmp/cd-qa/cycle_check.py", line 598, in main
+    verdict, code = run_check(plan_path)
+                    ^^^^^^^^^^^^^^^^^^^^
+  File "/tmp/cd-qa/cycle_check.py", line 373, in run_check
+    a2_reg, a2_uncom, a2_git = check_assert_2(parsed, plan_path)
+                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/tmp/cd-qa/cycle_check.py", line 262, in check_assert_2
+    register_result = "PASS" if (git_root / ref).exists() else "FAIL"
+                                ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.12/3.12.14/Frameworks/Python.framework/Versions/3.12/lib/python3.12/pathlib.py", line 860, in exists
+    self.stat(follow_symlinks=follow_symlinks)
+  File "/opt/homebrew/Cellar/python@3.12/3.12.14/Frameworks/Python.framework/Versions/3.12/lib/python3.12/pathlib.py", line 840, in stat
+    return os.stat(self, follow_symlinks=follow_symlinks)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+OSError: [Errno 63] File name too long: '/private/var/folders/mw/px9gvxzx2qv582qhwbzv8m940000gn/T/tmp.X06O6GiEO0/scripts/register.md (commentary-commentary-commentary-commentary-commentary-commentary-commentary-commentary-commentary-commentary-commentary-commentary-commentary-commentary-commentary-commentary-commentary-commentary-commentary-commentary-commentary-commentary-commentary-commentary-commentary-commentary-commentary-commentary-commentary-commentary-'
+exit=1
+
+>> test_lint_weak_spots_hyphen_no_warn: run pre-edit plan_lint.py
+   Expect 'missing lens(es): Weak spots' in stdout
+WARN: Drafting Cycle block missing lens(es): Weak spots (DRAFTING_CYCLE.md §3)
+(o1) INFO: candidates=1 excluded=1 fired=0
+(o2) WARN: Deposits entry `knowledge/development/dev-log.md` is not project-prefixed or absolute
+PASS: (a) header — parsed
+PASS: (a) dispatch_mode — bellows
+PASS: (a) pause_for_verdict — always
+PASS: (b) step 1 deposits — 1 path(s)
+exit=0
+
+
+--- test_u_report_first_warns and test_u_no_txt_warns: pre-edit plan_lint ---
+   Expect NO '(u)' in stdout (pre-edit lacks the check)
+
+Pre-edit plan_lint against _QA_PLAN_REPORT_FIRST:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+(o1) INFO: candidates=4 excluded=4 fired=0
+(o2) WARN: Deposits entry `knowledge/development/dev-log.md` is not project-prefixed or absolute
+(o2) WARN: Deposits entry `knowledge/qa/evidence/my-plan/qa-report.md` is not project-prefixed or absolute
+(o2) WARN: Deposits entry `knowledge/qa/evidence/my-plan/qa-receipt.md` is not project-prefixed or absolute
+(o2) WARN: Deposits entry `knowledge/qa/evidence/my-plan/probes-raw.txt` is not project-prefixed or absolute
+PASS: (a) header — parsed
+PASS: (a) dispatch_mode — bellows
+PASS: (a) pause_for_verdict — always
+PASS: (b) step 1 deposits — 1 path(s)
+PASS: (b) step 2 deposits — 3 path(s)
+PASS: (c) QA banner pair — both strings present
+
+EXIT=0, '(u)' in stdout: False
+
+Pre-edit plan_lint against _QA_PLAN_NO_TXT:
+WARN: no cycle_tier declared (DRAFTING_CYCLE.md §1/§3)
+(o1) INFO: candidates=2 excluded=2 fired=0
+(o2) WARN: Deposits entry `knowledge/development/dev-log.md` is not project-prefixed or absolute
+(o2) WARN: Deposits entry `knowledge/qa/evidence/my-plan/qa-receipt.md` is not project-prefixed or absolute
+PASS: (a) header — parsed
+PASS: (a) dispatch_mode — bellows
+PASS: (a) pause_for_verdict — always
+PASS: (b) step 1 deposits — 1 path(s)
+PASS: (b) step 2 deposits — 1 path(s)
+PASS: (c) QA banner pair — both strings present
+
+EXIT=0, '(u)' in stdout: False
+
+--- 12 tests AGAINST POST-EDIT scripts (all must PASS) ---
+============================= test session starts ==============================
+platform darwin -- Python 3.12.14, pytest-9.1.1, pluggy-1.6.0 -- /Users/marklehn/Developer/bellows/.venv/bin/python
+rootdir: /Users/marklehn/Developer/bellows/.bellows-worktrees/100022
+plugins: anyio-4.14.2
+collecting ... collected 12 items
+
+tests/test_cycle_check.py::test_c1_plain_walk_lines_escalate PASSED      [  8%]
+tests/test_cycle_check.py::test_c2_commentary_ref_extracted_cleanly PASSED [ 16%]
+tests/test_cycle_check.py::test_c2_long_component_no_traceback PASSED    [ 25%]
+tests/test_cycle_check.py::test_c3_relative_ref_unresolvable_escalates PASSED [ 33%]
+tests/test_cycle_check.py::test_58_not_closed_returns_continue PASSED    [ 41%]
+tests/test_cycle_check.py::test_58_bare_heading_not_a_claim PASSED       [ 50%]
+tests/test_cycle_check.py::test_63_hyphenated_weakspots_lens_parsed PASSED [ 58%]
+tests/test_cycle_yields.py::test_63_hyphen_weakspots_not_none PASSED     [ 66%]
+tests/test_cycle_yields.py::test_63_hyphen_weakspots_is_dry PASSED       [ 75%]
+tests/test_plan_lint.py::test_lint_weak_spots_hyphen_no_warn PASSED      [ 83%]
+tests/test_plan_lint.py::test_u_report_first_warns PASSED                [ 91%]
+tests/test_plan_lint.py::test_u_no_txt_warns PASSED                      [100%]
+
+============================== 12 passed in 0.35s ==============================
+
+===== ITEM 2 — CORPUS CANARIES =====
+
+--- Five held drafts ---
+executable-bellows-bootstrap.md: BAR_MET
+executable-shop-server-invariant-sketch.md: BAR_MET
+executable-shop-server-invariant-company.md: BAR_MET
+executable-gate2-pt-w28-a.md: BAR_MET
+executable-forge-cycle-w29.md: BAR_MET
+
+--- bellows Done/ plans ---
+executable-100005.md: BAR_MET
+executable-100009.md: BAR_MET
+executable-100010.md: BAR_MET
+executable-100012.md: BAR_MET
+executable-100013.md: BAR_MET
+executable-100015.md: BAR_MET
+executable-100017.md: BAR_MET
+executable-100018.md: BAR_MET
+executable-100019.md: BAR_MET
+executable-100021.md: BAR_MET
+
+--- forge_lessons Done/ plans ---
+executable-100007.md: BAR_MET
+executable-100008.md: BAR_MET
+executable-100016.md: BAR_MET
+executable-100020.md: BAR_MET
+
+--- Five fixtures ---
+plainonly.md:
+ESCALATE:unparseable
+notclosed.md:
+CONTINUE
+hyphen.md:
+BAR_MET
+relref.md (governance-root fallback):
+BAR_MET
+
+parse_lens_line('- Weak-spots: w1 dry'):
+[('weak-spots', 'w1', '0', '-', '-', 'ABSENT')]
+
+relref nonexistent register variant:
+ESCALATE:assert-fail:2
+
+longref2.md staged inside worktree (lintmirror- copy):
+stdout: ESCALATE:assert-fail:2
+Traceback in stdout: 0
+0
+lintmirror count after delete: 0
+0
+
+===== ITEM 2.5 — KILL MAP (Rule 106) =====
+
+--- checker-defects-cycle_check.json ---
+HEAD: e088d0553e897c6717a09e94d57ac7036be35fe7
+TARGET: scripts/cycle_check.py sha256=2b66c914c6a4
+
+MUTANT M1-drop-walk-signal-guard: KILLED — suite caught the defect
+MUTANT M2-drop-negation-stripping: SURVIVED — suite does not discriminate this defect
+MUTANT M3-drop-oserror-guard: SURVIVED — suite does not discriminate this defect
+MUTANT M4-accept-unresolved-as-ok: KILLED — suite caught the defect
+
+LIVE-TREE UNCHANGED: 2b66c914c6a4
+
+MUTATION: 2 killed, 2 survived, 0 error
+SURVIVED means the suite does not discriminate this defect — the tests are decorative for it.
+
+--- checker-defects-cycle_yields.json ---
+HEAD: e088d0553e897c6717a09e94d57ac7036be35fe7
+TARGET: scripts/cycle_yields.py sha256=65e38a65d2cf
+
+MUTANT M5-revert-weakspots-prefix: KILLED — suite caught the defect
+
+LIVE-TREE UNCHANGED: 65e38a65d2cf
+
+MUTATION: 1 killed, 0 survived, 0 error
+
+--- checker-defects-plan_lint.json ---
+HEAD: e088d0553e897c6717a09e94d57ac7036be35fe7
+TARGET: scripts/plan_lint.py sha256=e19f3be6d624
+
+MUTANT M6-revert-lint-weakspots-pattern: KILLED — suite caught the defect
+MUTANT M7-invert-receipt-first-check: KILLED — suite caught the defect
+
+LIVE-TREE UNCHANGED: e19f3be6d624
+
+MUTATION: 2 killed, 0 survived, 0 error
+
+===== ITEM 3 — (u) CHECK =====
+
+--- Five held drafts (u) count ---
+executable-bellows-bootstrap.md: (u) warnings=0
+0
+executable-shop-server-invariant-sketch.md: (u) warnings=0
+0
+executable-shop-server-invariant-company.md: (u) warnings=0
+0
+executable-gate2-pt-w28-a.md: (u) warnings=0
+0
+executable-forge-cycle-w29.md: (u) warnings=0
+0
+
+--- forge_lessons/Done/executable-100007.md step 3 ---
+(u) WARN: step 3 Deposits: first .md is 'lessons-report-2026-09-01.md' — rule_20_self_check reads the first .md as the QA report (thread 77)
+
+--- Synthetic no-txt QA step (both (u) WARNs expected) ---
+(u) WARN: step 2 Deposits: first .md is 'qa-report.md' — rule_20_self_check reads the first .md as the QA report (thread 77)
+(u) WARN: step 2 Deposits: no .txt evidence entry (thread 70/77)
+WARN: T1 plan has no '## Drafting Cycle' block (DRAFTING_CYCLE.md §3)
+PASS: (a) header — parsed
+PASS: (a) dispatch_mode — bellows
+PASS: (a) pause_for_verdict — always
+PASS: (b) step 1 deposits — 1 path(s)
+PASS: (b) step 2 deposits — 2 path(s)
+FAIL: (c) QA banner pair — missing: banner, PASSED line
+
+
+--- Exit codes: 19 corpus files under new plan_lint ---
+executable-bellows-bootstrap.md: exit=0
+executable-shop-server-invariant-sketch.md: exit=0
+executable-shop-server-invariant-company.md: exit=0
+executable-gate2-pt-w28-a.md: exit=0
+executable-forge-cycle-w29.md: exit=0
+executable-100005.md: exit=0
+executable-100009.md: exit=0
+executable-100010.md: exit=0
+executable-100012.md: exit=0
+executable-100013.md: exit=0
+executable-100015.md: exit=0
+executable-100017.md: exit=0
+executable-100018.md: exit=0
+executable-100019.md: exit=0
+executable-100021.md: exit=0
+executable-100007.md: exit=0
+executable-100008.md: exit=0
+executable-100016.md: exit=0
+executable-100020.md: exit=0
+
+===== ITEM 4 — FULL SUITE =====
+See full-suite-checker-defects.txt
+Summary:
+.......................................................                  [100%]
+1782 passed, 1 skipped in 50.25s
+exit=0
