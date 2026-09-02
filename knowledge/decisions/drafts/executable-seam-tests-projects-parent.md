@@ -150,7 +150,7 @@ class: shop-infra
 reads: /Users/marklehn/Developer/bellows/tests/test_plan_claim.py, /Users/marklehn/Developer/bellows/tests/test_gate_watcher.py, /Users/marklehn/Developer/bellows/plan_claim.py, /Users/marklehn/Developer/bellows/tools/gate_watcher.py, /Users/marklehn/Developer/bellows/verdicts/resolved/processed-verdict-100011-step-1.md
 writes: tests/test_plan_claim.py, tests/test_gate_watcher.py, knowledge/development/dev-log-seam-tests-2026-09-01.md, knowledge/qa/evidence/seam-tests-2026-09-01/qa-receipt.md, knowledge/qa/evidence/seam-tests-2026-09-01/probes-raw.txt, knowledge/qa/evidence/seam-tests-2026-09-01/full-suite-seam-tests.txt
 open_forks: none
-walks: 0
-yields: 0
-validation: cycle_check=PENDING, plan_lint=PENDING, fold_check=PENDING
-coherence: 0/0 walks have register rows
+walks: 2
+yields: 1, 0
+validation: cycle_check=BAR_MET, plan_lint=0_FAIL, fold_check=PASS
+coherence: 2/2 walks have register rows
