@@ -1,0 +1,96 @@
+=== Item 1: Kill map for all 6 manifests ===
+
+--- knowledge/mutants/checker-defects-cycle_check.json ---
+HEAD: 386b06f6db0514309e15ff0fa8c27d0eeb48cc0e
+TARGET: scripts/cycle_check.py sha256=12c23a3345a8
+
+MUTANT M1-drop-walk-signal-guard: KILLED — suite caught the defect
+MUTANT M2-drop-negation-stripping: KILLED — suite caught the defect
+MUTANT M3-drop-oserror-guard: KILLED — suite caught the defect
+MUTANT M4-accept-unresolved-as-ok: KILLED — suite caught the defect
+
+LIVE-TREE UNCHANGED: 12c23a3345a8
+
+MUTATION: 4 killed, 0 survived, 0 error
+
+--- knowledge/mutants/checker-defects-cycle_yields.json ---
+HEAD: 386b06f6db0514309e15ff0fa8c27d0eeb48cc0e
+TARGET: scripts/cycle_yields.py sha256=65e38a65d2cf
+
+MUTANT M5-revert-weakspots-prefix: KILLED — suite caught the defect
+
+LIVE-TREE UNCHANGED: 65e38a65d2cf
+
+MUTATION: 1 killed, 0 survived, 0 error
+
+--- knowledge/mutants/checker-defects-plan_lint.json ---
+HEAD: 386b06f6db0514309e15ff0fa8c27d0eeb48cc0e
+TARGET: scripts/plan_lint.py sha256=e19f3be6d624
+
+MUTANT M6-revert-lint-weakspots-pattern: KILLED — suite caught the defect
+MUTANT M7-invert-receipt-first-check: KILLED — suite caught the defect
+
+LIVE-TREE UNCHANGED: e19f3be6d624
+
+MUTATION: 2 killed, 0 survived, 0 error
+
+--- knowledge/mutants/propagation-check-propagation_check.json ---
+HEAD: 386b06f6db0514309e15ff0fa8c27d0eeb48cc0e
+TARGET: scripts/propagation_check.py sha256=bfcc11e80f50
+
+MUTANT M1-hex-exclusion-removed: KILLED — suite caught the defect
+MUTANT M2-row-id-fallback-removed: KILLED — suite caught the defect
+
+LIVE-TREE UNCHANGED: bfcc11e80f50
+
+MUTATION: 2 killed, 0 survived, 0 error
+
+--- knowledge/mutants/propagation-check-run_check.json ---
+HEAD: 386b06f6db0514309e15ff0fa8c27d0eeb48cc0e
+TARGET: tools/run_check.py sha256=166a767105e4
+
+MUTANT M3-judge-propagation-rc2-as-pass: KILLED — suite caught the defect
+
+LIVE-TREE UNCHANGED: 166a767105e4
+
+MUTATION: 1 killed, 0 survived, 0 error
+
+--- knowledge/mutants/propagation-check-cycle_check.json ---
+HEAD: 386b06f6db0514309e15ff0fa8c27d0eeb48cc0e
+TARGET: scripts/cycle_check.py sha256=12c23a3345a8
+
+MUTANT M4-manifest-propagation-pair-dropped: KILLED — suite caught the defect
+
+LIVE-TREE UNCHANGED: 12c23a3345a8
+
+MUTATION: 1 killed, 0 survived, 0 error
+
+=== propagation-check.json absent in knowledge/mutants/ ===
+0
+0
+
+=== Item 2: git diff --name-only HEAD~1 HEAD ===
+knowledge/development/dev-log-checker-kill-gap-2026-09-02.md
+knowledge/mutants/checker-defects-cycle_check.json
+knowledge/mutants/propagation-check-cycle_check.json
+knowledge/mutants/propagation-check-propagation_check.json
+knowledge/mutants/propagation-check-run_check.json
+knowledge/mutants/propagation-check.json
+tests/test_cycle_check.py
+
+=== git diff --numstat HEAD~1 HEAD -- tests/test_cycle_check.py ===
+37	0	tests/test_cycle_check.py
+
+=== Checker script sha (scripts/cycle_check.py, must match dev log P1 = 12c23a3345a88e96) ===
+12c23a3345a88e96
+
+=== F3 multiset proof re-run against git show HEAD~1:propagation-check.json ===
+MULTISET PROOF: IDENTICAL (4 mutants in old, 4 in new three files)
+
+=== Item 3: Two new node IDs ===
+..                                                                       [100%]
+2 passed, 130 deselected in 0.15s
+
+=== Item 4: Full suite summary (see full-suite-checker-kill-gap.txt) ===
+1814 passed, 1 skipped in 52.15s
+exit=0
