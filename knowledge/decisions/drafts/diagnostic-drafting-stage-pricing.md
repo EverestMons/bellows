@@ -119,7 +119,7 @@ class: app-feature
 reads: /Users/marklehn/Developer/eluvian-governance/governance/knowledge/research/, /Users/marklehn/Developer/eluvian-governance/DRAFTING_CYCLE.md, /Users/marklehn/Developer/eluvian-governance/LESSONS.md, /Users/marklehn/Developer/bellows/knowledge/qa/evidence/drafting-stage-pricing-2026-09-02/matcher.py
 writes: knowledge/research/drafting-stage-pricing-2026-09-02.md, knowledge/qa/evidence/drafting-stage-pricing-2026-09-02/registers.csv, knowledge/qa/evidence/drafting-stage-pricing-2026-09-02/summary.txt
 open_forks: whether SKIPPED-BOTH or SKIPPED-in-register is the sketch's unit; whether Q-6's control population is large enough to compare (state its size before comparing)
-walks: 0
-yields: 0
-validation: cycle_check=PENDING, plan_lint=PENDING, fold_check=PENDING
-coherence: 0/0 walks have register rows
+walks: 2
+yields: 3, 0
+validation: cycle_check=BAR_MET, plan_lint=0_FAIL, fold_check=PASS
+coherence: 2/2 walks have register rows

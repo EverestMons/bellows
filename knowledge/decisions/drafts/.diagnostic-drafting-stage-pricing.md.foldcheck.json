@@ -1,0 +1,11 @@
+{
+  "plan_lint": {
+    "exit": 0,
+    "signals": [
+      "(o2) WARN: Deposits entry `knowledge/qa/evidence/drafting-stage-pricing-N-N-N/registers.csv` is not project-prefixed or absolute",
+      "(o2) WARN: Deposits entry `knowledge/qa/evidence/drafting-stage-pricing-N-N-N/summary.txt` is not project-prefixed or absolute",
+      "(o2) WARN: Deposits entry `knowledge/research/drafting-stage-pricing-N-N-N.md` is not project-prefixed or absolute",
+      "PIN-CHECK: kind=prefix line=N token=1930c3b8cc7a\u2026 result=ambiguous"
+    ]
+  }
+}
