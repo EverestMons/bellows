@@ -1,0 +1,982 @@
+# QA Probes Raw Output — propagation-check-pin-forms-2026-09-02
+# Step 2 (QA) — 2026-09-02
+# Plan: executable-100023.md
+
+============================================================
+ITEM 1 — FAIL-BEFORE / PASS-AFTER (second pair of hands)
+============================================================
+
+Pre-edit modules: git show HEAD~1:scripts/propagation_check.py, HEAD~1:tools/run_check.py, HEAD~1:scripts/cycle_check.py
+Verified shas match P1: propagation_check.py ab9aa01d50142b45, run_check.py 3ebd5aaa048cb768
+
+=== FAIL-BEFORE: test_propagation_check.py ===
+
+==================================== ERRORS ====================================
+___________________ ERROR collecting tests/test_run_check.py ___________________
+ImportError while importing test module '/Users/marklehn/Developer/bellows/.bellows-worktrees/100023/tests/test_run_check.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+/opt/homebrew/Cellar/python@3.12/3.12.14/Frameworks/Python.framework/Versions/3.12/lib/python3.12/importlib/__init__.py:90: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests/test_run_check.py:10: in <module>
+    from run_check import judge_cycle, judge_lint, judge_register, judge_propagation
+E   ImportError: cannot import name 'judge_propagation' from 'run_check' (/Users/marklehn/Developer/bellows/.bellows-worktrees/100023/tools/run_check.py)
+=========================== short test summary info ============================
+ERROR tests/test_run_check.py
+!!!!!!!!!!!!!!!!!!!! Interrupted: 1 error during collection !!!!!!!!!!!!!!!!!!!!
+1 error in 0.08s
+
+=== RESTORE POST-EDIT ===
+Restored.
+
+=== PASS-AFTER ===
+.......................................                                  [100%]
+39 passed in 0.54s
+
+============================================================
+ITEM 2 — CORPUS CANARY (12 files: 6 drafts + 6 Done)
+Plan expected 15; worktree has 6 Done/executable-100*.md,
+plans 100017-100022 not yet in Done/ — documented in Step 1 dev log.
+============================================================
+
+=== FILE: executable-bellows-bootstrap.md ===
+declared symbols: 3 (values: 6)
+  SUITE: ['1676']
+  INTERPRETERS: ['12', '12', '12', '14']
+  TOKENS: ['84']
+instruction region: 154 lines of 227
+
+(1) RESTATED VALUE — a declared value written as a bare numeral in prose
+  L9: `TOKENS` = 84 restated unqualified
+      **Depends on:** the CEO, 2026-09-02 ("Let's resolve 84 … The intention is also so that setting up a new machine will yield the same setup"; "Let's do 
+  L17: `SUITE` = 1676 restated unqualified
+      Measured 2026-09-02 on the mini (walk 0): `requirements.txt` declares six entries (`anthropic watchdog flask requests pyyaml pytest`), all importable 
+  L22: `INTERPRETERS` = 12 restated unqualified
+      - **F1 — NEW `scripts/bootstrap.sh`** (executable; the exact text below): creates `.venv` with `python3.12` where present else `python3`, prints the i
+  L22: `INTERPRETERS` = 12 restated unqualified
+      - **F1 — NEW `scripts/bootstrap.sh`** (executable; the exact text below): creates `.venv` with `python3.12` where present else `python3`, prints the i
+  L22: `INTERPRETERS` = 12 restated unqualified
+      - **F1 — NEW `scripts/bootstrap.sh`** (executable; the exact text below): creates `.venv` with `python3.12` where present else `python3`, prints the i
+  L37: `INTERPRETERS` = 12 restated unqualified
+      # Creates .venv with the newest python3.12 on PATH (else python3), installs requirements.txt,
+  L37: `INTERPRETERS` = 12 restated unqualified
+      # Creates .venv with the newest python3.12 on PATH (else python3), installs requirements.txt,
+  L37: `INTERPRETERS` = 12 restated unqualified
+      # Creates .venv with the newest python3.12 on PATH (else python3), installs requirements.txt,
+  L42: `INTERPRETERS` = 12 restated unqualified
+      PY="$(command -v python3.12 || command -v python3)"
+  L42: `INTERPRETERS` = 12 restated unqualified
+      PY="$(command -v python3.12 || command -v python3)"
+  L42: `INTERPRETERS` = 12 restated unqualified
+      PY="$(command -v python3.12 || command -v python3)"
+  L52: `SUITE` = 1676 restated unqualified
+      - **Does not create or rebuild the venv on any canonical checkout.** `.venv/` is per-machine (gitignored); the operator's act after close runs `script
+  L89: `INTERPRETERS` = 12 restated unqualified
+      > **A4 — prove the bootstrap on a SCRATCH copy** (never on the worktree, never on the canonical checkout; the copy's directory MUST be named `bellows`
+  L89: `INTERPRETERS` = 12 restated unqualified
+      > **A4 — prove the bootstrap on a SCRATCH copy** (never on the worktree, never on the canonical checkout; the copy's directory MUST be named `bellows`
+  L89: `INTERPRETERS` = 12 restated unqualified
+      > **A4 — prove the bootstrap on a SCRATCH copy** (never on the worktree, never on the canonical checkout; the copy's directory MUST be named `bellows`
+  L118: `INTERPRETERS` = 12 restated unqualified
+      > - **Item 3 — the bootstrap, by a second pair of hands (T-3):** A4 repeated in your OWN scratch copy (`/tmp/bb-qa-$(basename "$(git rev-parse --show-
+  L118: `INTERPRETERS` = 12 restated unqualified
+      > - **Item 3 — the bootstrap, by a second pair of hands (T-3):** A4 repeated in your OWN scratch copy (`/tmp/bb-qa-$(basename "$(git rev-parse --show-
+  L118: `INTERPRETERS` = 12 restated unqualified
+      > - **Item 3 — the bootstrap, by a second pair of hands (T-3):** A4 repeated in your OWN scratch copy (`/tmp/bb-qa-$(basename "$(git rev-parse --show-
+
+(2) ORDERING — distinct task sequences (>1 distinct = a claim stated two ways)
+  0 distinct sequence — consistent
+
+(3) ARITHMETIC — same operands, different constants
+  none
+
+DIVERGENCES: 18
+⚠️ Clean means no RESTATEMENT divergence. It is not a correctness result.
+EXIT=1
+
+=== FILE: executable-shop-server-invariant-sketch.md ===
+declared symbols: 3 (values: 5)
+  SKETCH_SHA: ['231', '347']
+  TOKENS: ['81', '82']
+  SUITE: ['1676']
+instruction region: 147 lines of 202
+
+(1) RESTATED VALUE — a declared value written as a bare numeral in prose
+  L37: `TOKENS` = 81 restated unqualified
+      ## What the invariant does to threads 81 and 82
+  L37: `TOKENS` = 82 restated unqualified
+      ## What the invariant does to threads 81 and 82
+
+(2) ORDERING — distinct task sequences (>1 distinct = a claim stated two ways)
+  0 distinct sequence — consistent
+
+(3) ARITHMETIC — same operands, different constants
+  none
+
+DIVERGENCES: 2
+⚠️ Clean means no RESTATEMENT divergence. It is not a correctness result.
+EXIT=1
+
+=== FILE: executable-shop-server-invariant-company.md ===
+declared symbols: 5 (values: 11)
+  COMPANY_SHA: ['350']
+  ANCHORS: ['59', '712', '16', '81']
+  BUILDER: ['16', '216']
+  DRY_RUN: ['350', '507', '509']
+  SUITE: ['1676']
+instruction region: 123 lines of 170
+
+(1) RESTATED VALUE — a declared value written as a bare numeral in prose
+  L15: `ANCHORS` = 59 restated unqualified
+      `COMPANY.md:59` defines the shop as the governance root ("The governance root is the shop — it contains the files … that define how all projects opera
+  L20: `ANCHORS` = 59 restated unqualified
+      - **E1** — after the sentence `Project repositories are workpieces the shop operates on.` (line 59, count 1), IN-LINE, the sentence: ` A MACHINE runs 
+  L24: `COMPANY_SHA` = 350 restated unqualified
+      The builder reads the file as bytes, refuses CRLF, asserts each anchor's count is 1, asserts the output tokens are absent in the input, applies the th
+  L24: `DRY_RUN` = 350 restated unqualified
+      The builder reads the file as bytes, refuses CRLF, asserts each anchor's count is 1, asserts the output tokens are absent in the input, applies the th
+  L24: `DRY_RUN` = 507 restated unqualified
+      The builder reads the file as bytes, refuses CRLF, asserts each anchor's count is 1, asserts the output tokens are absent in the input, applies the th
+  L24: `DRY_RUN` = 509 restated unqualified
+      The builder reads the file as bytes, refuses CRLF, asserts each anchor's count is 1, asserts the output tokens are absent in the input, applies the th
+  L74: `COMPANY_SHA` = 350 restated unqualified
+      > **A2 — dry-run, scratch→scratch (the scratch dir is the LITERAL `/tmp/ssic-scratch` in every compound — no `$S`; 100008's walk-1 fold made every pat
+  L74: `DRY_RUN` = 350 restated unqualified
+      > **A2 — dry-run, scratch→scratch (the scratch dir is the LITERAL `/tmp/ssic-scratch` in every compound — no `$S`; 100008's walk-1 fold made every pat
+  L76: `COMPANY_SHA` = 350 restated unqualified
+      > **A3 — apply and measure the LIVE file (Task C):** `cp /tmp/ssic-scratch/COMPANY-out.md "$GOV/COMPANY.md"`; then from the live file: P3's three toke
+  L76: `DRY_RUN` = 350 restated unqualified
+      > **A3 — apply and measure the LIVE file (Task C):** `cp /tmp/ssic-scratch/COMPANY-out.md "$GOV/COMPANY.md"`; then from the live file: P3's three toke
+  L99: `COMPANY_SHA` = 350 restated unqualified
+      > - **Item 1 — the governance commit and the live tokens:** `git -C "$GOV" log --oneline -1 -- COMPANY.md` (the `[<id>]` commit); P3's three tokens 1 
+  L99: `DRY_RUN` = 350 restated unqualified
+      > - **Item 1 — the governance commit and the live tokens:** `git -C "$GOV" log --oneline -1 -- COMPANY.md` (the `[<id>]` commit); P3's three tokens 1 
+  L100: `ANCHORS` = 16 restated unqualified
+      > - **Item 2 — the builder, by a second pair of hands (the parent's Item 2, C1 byte-identity):** one compound, literal paths: `rm -rf /tmp/ssic-qa; mk
+  L100: `BUILDER` = 16 restated unqualified
+      > - **Item 2 — the builder, by a second pair of hands (the parent's Item 2, C1 byte-identity):** one compound, literal paths: `rm -rf /tmp/ssic-qa; mk
+
+(2) ORDERING — distinct task sequences (>1 distinct = a claim stated two ways)
+  0 distinct sequence — consistent
+
+(3) ARITHMETIC — same operands, different constants
+  none
+
+DIVERGENCES: 14
+⚠️ Clean means no RESTATEMENT divergence. It is not a correctness result.
+EXIT=1
+
+=== FILE: executable-gate2-pt-w28-a.md ===
+declared symbols: 7 (values: 22)
+  PT_SHA: ['2390', '449584']
+  ANCHORS: ['96', '96']
+  TOKENS: ['103', '104', '105', '106', '97', '34', '34']
+  BUILDER: ['427', '29']
+  DRY_RUN: ['33', '9655', '18', '18', '35', '2423', '459239']
+  SUITE: ['1676']
+  W29_CLOSED: ['29']
+instruction region: 154 lines of 189
+
+(1) RESTATED VALUE — a declared value written as a bare numeral in prose
+  L1: `TOKENS` = 103 restated unqualified
+      # bellows — executable: DOCTRINE — Gate 2, cycle W=28 PT tranche one: proposals 418, 419, 430, 434 onto PLANNER_TEMPLATE.md v4.97 by a committed build
+  L1: `TOKENS` = 106 restated unqualified
+      # bellows — executable: DOCTRINE — Gate 2, cycle W=28 PT tranche one: proposals 418, 419, 430, 434 onto PLANNER_TEMPLATE.md v4.97 by a committed build
+  L1: `TOKENS` = 97 restated unqualified
+      # bellows — executable: DOCTRINE — Gate 2, cycle W=28 PT tranche one: proposals 418, 419, 430, 434 onto PLANNER_TEMPLATE.md v4.97 by a committed build
+  L11: `DRY_RUN` = 35 restated unqualified
+      **Tier computed, not judged (§1):** **T-6 fires** — `PLANNER_TEMPLATE.md` is the template → **T2**. T-2 fires (four canonical rows flip; caps at T1). 
+  L15: `ANCHORS` = 96 restated unqualified
+      Gate 1 (the Air's non-author packet, 2026-09-01) routed twelve of cycle W=28's proposals `codify` onto `PLANNER_TEMPLATE.md` — thread 76 carries them 
+  L15: `ANCHORS` = 96 restated unqualified
+      Gate 1 (the Air's non-author packet, 2026-09-01) routed twelve of cycle W=28's proposals `codify` onto `PLANNER_TEMPLATE.md` — thread 76 carries them 
+  L15: `TOKENS` = 103 restated unqualified
+      Gate 1 (the Air's non-author packet, 2026-09-01) routed twelve of cycle W=28's proposals `codify` onto `PLANNER_TEMPLATE.md` — thread 76 carries them 
+  L15: `TOKENS` = 106 restated unqualified
+      Gate 1 (the Air's non-author packet, 2026-09-01) routed twelve of cycle W=28's proposals `codify` onto `PLANNER_TEMPLATE.md` — thread 76 carries them 
+  L15: `TOKENS` = 34 restated unqualified
+      Gate 1 (the Air's non-author packet, 2026-09-01) routed twelve of cycle W=28's proposals `codify` onto `PLANNER_TEMPLATE.md` — thread 76 carries them 
+  L15: `TOKENS` = 34 restated unqualified
+      Gate 1 (the Air's non-author packet, 2026-09-01) routed twelve of cycle W=28's proposals `codify` onto `PLANNER_TEMPLATE.md` — thread 76 carries them 
+  L20: `TOKENS` = 103 restated unqualified
+      - **E1** — four new rule blocks (103, 104, 105, 106), each ending in its `*Source: …*` line and a `---`, inserted before the `## Lifecycle DB Read Pro
+  L20: `TOKENS` = 104 restated unqualified
+      - **E1** — four new rule blocks (103, 104, 105, 106), each ending in its `*Source: …*` line and a `---`, inserted before the `## Lifecycle DB Read Pro
+  L20: `TOKENS` = 105 restated unqualified
+      - **E1** — four new rule blocks (103, 104, 105, 106), each ending in its `*Source: …*` line and a `---`, inserted before the `## Lifecycle DB Read Pro
+  L20: `TOKENS` = 106 restated unqualified
+      - **E1** — four new rule blocks (103, 104, 105, 106), each ending in its `*Source: …*` line and a `---`, inserted before the `## Lifecycle DB Read Pro
+  L21: `ANCHORS` = 96 restated unqualified
+      - **E3** — `**Version:** 4.96` → `**Version:** 4.97`. **E4** — `**Last Updated:** 2026-08-26 (v4.96)` → `**Last Updated:** 2026-09-02 (v4.97)`. **E5**
+  L21: `ANCHORS` = 96 restated unqualified
+      - **E3** — `**Version:** 4.96` → `**Version:** 4.97`. **E4** — `**Last Updated:** 2026-08-26 (v4.96)` → `**Last Updated:** 2026-09-02 (v4.97)`. **E5**
+  L21: `ANCHORS` = 96 restated unqualified
+      - **E3** — `**Version:** 4.96` → `**Version:** 4.97`. **E4** — `**Last Updated:** 2026-08-26 (v4.96)` → `**Last Updated:** 2026-09-02 (v4.97)`. **E5**
+  L21: `ANCHORS` = 96 restated unqualified
+      - **E3** — `**Version:** 4.96` → `**Version:** 4.97`. **E4** — `**Last Updated:** 2026-08-26 (v4.96)` → `**Last Updated:** 2026-09-02 (v4.97)`. **E5**
+  L21: `TOKENS` = 97 restated unqualified
+      - **E3** — `**Version:** 4.96` → `**Version:** 4.97`. **E4** — `**Last Updated:** 2026-08-26 (v4.96)` → `**Last Updated:** 2026-09-02 (v4.97)`. **E5**
+  L21: `TOKENS` = 97 restated unqualified
+      - **E3** — `**Version:** 4.96` → `**Version:** 4.97`. **E4** — `**Last Updated:** 2026-08-26 (v4.96)` → `**Last Updated:** 2026-09-02 (v4.97)`. **E5**
+  L23: `ANCHORS` = 96 restated unqualified
+      The builder reads the file as bytes, refuses CRLF, refuses an already-built input, asserts each anchor's count is 1, applies the four edits, asserts e
+  L23: `ANCHORS` = 96 restated unqualified
+      The builder reads the file as bytes, refuses CRLF, refuses an already-built input, asserts each anchor's count is 1, applies the four edits, asserts e
+  L23: `TOKENS` = 97 restated unqualified
+      The builder reads the file as bytes, refuses CRLF, refuses an already-built input, asserts each anchor's count is 1, applies the four edits, asserts e
+  L23: `TOKENS` = 34 restated unqualified
+      The builder reads the file as bytes, refuses CRLF, refuses an already-built input, asserts each anchor's count is 1, applies the four edits, asserts e
+  L23: `TOKENS` = 34 restated unqualified
+      The builder reads the file as bytes, refuses CRLF, refuses an already-built input, asserts each anchor's count is 1, applies the four edits, asserts e
+  L23: `DRY_RUN` = 33 restated unqualified
+      The builder reads the file as bytes, refuses CRLF, refuses an already-built input, asserts each anchor's count is 1, applies the four edits, asserts e
+  L25: `BUILDER` = 29 restated unqualified
+      **In the lessons DB (`/Users/marklehn/Developer/forge_lessons/lessons-forge.db`, the mini's one live copy), AFTER the doctrine commit:** one scoped CA
+  L25: `BUILDER` = 29 restated unqualified
+      **In the lessons DB (`/Users/marklehn/Developer/forge_lessons/lessons-forge.db`, the mini's one live copy), AFTER the doctrine commit:** one scoped CA
+  L25: `W29_CLOSED` = 29 restated unqualified
+      **In the lessons DB (`/Users/marklehn/Developer/forge_lessons/lessons-forge.db`, the mini's one live copy), AFTER the doctrine commit:** one scoped CA
+  L25: `W29_CLOSED` = 29 restated unqualified
+      **In the lessons DB (`/Users/marklehn/Developer/forge_lessons/lessons-forge.db`, the mini's one live copy), AFTER the doctrine commit:** one scoped CA
+  L32: `BUILDER` = 29 restated unqualified
+      - ⚠️ **Runs AFTER `forge-cycle-w29` closes and BEFORE W=29's Gate 1 packet is applied** (W=29's M5 pins every pre-existing proposal's status, so this 
+  L32: `W29_CLOSED` = 29 restated unqualified
+      - ⚠️ **Runs AFTER `forge-cycle-w29` closes and BEFORE W=29's Gate 1 packet is applied** (W=29's M5 pins every pre-existing proposal's status, so this 
+  L38: `TOKENS` = 97 restated unqualified
+      - **Doctrine before DB (540's C6):** the flip runs only after the governance commit has landed; a HALT between leaves v4.97 committed-unpushed and the
+  L61: `TOKENS` = 103 restated unqualified
+      open_forks: tranche two (the eight remaining accepted, thread 76); the italic kinship opener on Rules 103 and 106 — deliberate (the packet asked 106 t
+  L74: `BUILDER` = 29 restated unqualified
+      > ⛔ **A0 — roots, the precondition, then the branch ladder (catch-all LAST):** `cd "$(git rev-parse --show-toplevel)" && [ -f bellows.py ] && [ -d tes
+  L74: `BUILDER` = 29 restated unqualified
+      > ⛔ **A0 — roots, the precondition, then the branch ladder (catch-all LAST):** `cd "$(git rev-parse --show-toplevel)" && [ -f bellows.py ] && [ -d tes
+  L74: `W29_CLOSED` = 29 restated unqualified
+      > ⛔ **A0 — roots, the precondition, then the branch ladder (catch-all LAST):** `cd "$(git rev-parse --show-toplevel)" && [ -f bellows.py ] && [ -d tes
+  L74: `W29_CLOSED` = 29 restated unqualified
+      > ⛔ **A0 — roots, the precondition, then the branch ladder (catch-all LAST):** `cd "$(git rev-parse --show-toplevel)" && [ -f bellows.py ] && [ -d tes
+  L76: `DRY_RUN` = 35 restated unqualified
+      > - **RE-ENTRY (doctrine landed, flip owed)** = (3) yes AND (4) all four still `accepted|codify` at that stamp → verify the COMMITTED state (the sixte
+  L76: `DRY_RUN` = 2423 restated unqualified
+      > - **RE-ENTRY (doctrine landed, flip owed)** = (3) yes AND (4) all four still `accepted|codify` at that stamp → verify the COMMITTED state (the sixte
+  L77: `DRY_RUN` = 35 restated unqualified
+      > - **RE-ENTRY (complete)** = (3) yes AND (4) all four `implemented|codify` with every stamp ≠ `2026-09-01T22:03:28Z` → verify the COMMITTED state (th
+  L78: `TOKENS` = 97 restated unqualified
+      > - **NONE-MATCH** = anything else → HALT quoting every measurement. The ONE recipe: (1) mismatch + (3) no + (4) all four `accepted|codify` at the sta
+  L82: `DRY_RUN` = 2423 restated unqualified
+      > **A2 — dry-run, scratch→scratch (LITERAL paths, no variables across compounds):** `rm -rf /tmp/g2ptw28a; mkdir -p /tmp/g2ptw28a; python3 "$B" "$GOV/
+  L82: `DRY_RUN` = 459239 restated unqualified
+      > **A2 — dry-run, scratch→scratch (LITERAL paths, no variables across compounds):** `rm -rf /tmp/g2ptw28a; mkdir -p /tmp/g2ptw28a; python3 "$B" "$GOV/
+  L84: `ANCHORS` = 96 restated unqualified
+      > **A3 — apply and measure the LIVE file (Task C), then commit:** `cp /tmp/g2ptw28a/PT-out.md "$GOV/PLANNER_TEMPLATE.md"`; then from the live file, co
+  L84: `ANCHORS` = 96 restated unqualified
+      > **A3 — apply and measure the LIVE file (Task C), then commit:** `cp /tmp/g2ptw28a/PT-out.md "$GOV/PLANNER_TEMPLATE.md"`; then from the live file, co
+  L84: `ANCHORS` = 96 restated unqualified
+      > **A3 — apply and measure the LIVE file (Task C), then commit:** `cp /tmp/g2ptw28a/PT-out.md "$GOV/PLANNER_TEMPLATE.md"`; then from the live file, co
+  L84: `ANCHORS` = 96 restated unqualified
+      > **A3 — apply and measure the LIVE file (Task C), then commit:** `cp /tmp/g2ptw28a/PT-out.md "$GOV/PLANNER_TEMPLATE.md"`; then from the live file, co
+  L84: `ANCHORS` = 96 restated unqualified
+      > **A3 — apply and measure the LIVE file (Task C), then commit:** `cp /tmp/g2ptw28a/PT-out.md "$GOV/PLANNER_TEMPLATE.md"`; then from the live file, co
+  L84: `ANCHORS` = 96 restated unqualified
+      > **A3 — apply and measure the LIVE file (Task C), then commit:** `cp /tmp/g2ptw28a/PT-out.md "$GOV/PLANNER_TEMPLATE.md"`; then from the live file, co
+  L84: `TOKENS` = 103 restated unqualified
+      > **A3 — apply and measure the LIVE file (Task C), then commit:** `cp /tmp/g2ptw28a/PT-out.md "$GOV/PLANNER_TEMPLATE.md"`; then from the live file, co
+  L84: `TOKENS` = 104 restated unqualified
+      > **A3 — apply and measure the LIVE file (Task C), then commit:** `cp /tmp/g2ptw28a/PT-out.md "$GOV/PLANNER_TEMPLATE.md"`; then from the live file, co
+  L84: `TOKENS` = 105 restated unqualified
+      > **A3 — apply and measure the LIVE file (Task C), then commit:** `cp /tmp/g2ptw28a/PT-out.md "$GOV/PLANNER_TEMPLATE.md"`; then from the live file, co
+  L84: `TOKENS` = 106 restated unqualified
+      > **A3 — apply and measure the LIVE file (Task C), then commit:** `cp /tmp/g2ptw28a/PT-out.md "$GOV/PLANNER_TEMPLATE.md"`; then from the live file, co
+  L84: `TOKENS` = 106 restated unqualified
+      > **A3 — apply and measure the LIVE file (Task C), then commit:** `cp /tmp/g2ptw28a/PT-out.md "$GOV/PLANNER_TEMPLATE.md"`; then from the live file, co
+  L84: `TOKENS` = 97 restated unqualified
+      > **A3 — apply and measure the LIVE file (Task C), then commit:** `cp /tmp/g2ptw28a/PT-out.md "$GOV/PLANNER_TEMPLATE.md"`; then from the live file, co
+  L84: `TOKENS` = 97 restated unqualified
+      > **A3 — apply and measure the LIVE file (Task C), then commit:** `cp /tmp/g2ptw28a/PT-out.md "$GOV/PLANNER_TEMPLATE.md"`; then from the live file, co
+  L84: `TOKENS` = 97 restated unqualified
+      > **A3 — apply and measure the LIVE file (Task C), then commit:** `cp /tmp/g2ptw28a/PT-out.md "$GOV/PLANNER_TEMPLATE.md"`; then from the live file, co
+  L84: `TOKENS` = 97 restated unqualified
+      > **A3 — apply and measure the LIVE file (Task C), then commit:** `cp /tmp/g2ptw28a/PT-out.md "$GOV/PLANNER_TEMPLATE.md"`; then from the live file, co
+  L84: `TOKENS` = 34 restated unqualified
+      > **A3 — apply and measure the LIVE file (Task C), then commit:** `cp /tmp/g2ptw28a/PT-out.md "$GOV/PLANNER_TEMPLATE.md"`; then from the live file, co
+  L84: `TOKENS` = 34 restated unqualified
+      > **A3 — apply and measure the LIVE file (Task C), then commit:** `cp /tmp/g2ptw28a/PT-out.md "$GOV/PLANNER_TEMPLATE.md"`; then from the live file, co
+  L84: `TOKENS` = 34 restated unqualified
+      > **A3 — apply and measure the LIVE file (Task C), then commit:** `cp /tmp/g2ptw28a/PT-out.md "$GOV/PLANNER_TEMPLATE.md"`; then from the live file, co
+  L84: `TOKENS` = 34 restated unqualified
+      > **A3 — apply and measure the LIVE file (Task C), then commit:** `cp /tmp/g2ptw28a/PT-out.md "$GOV/PLANNER_TEMPLATE.md"`; then from the live file, co
+  L84: `DRY_RUN` = 35 restated unqualified
+      > **A3 — apply and measure the LIVE file (Task C), then commit:** `cp /tmp/g2ptw28a/PT-out.md "$GOV/PLANNER_TEMPLATE.md"`; then from the live file, co
+  L84: `DRY_RUN` = 2423 restated unqualified
+      > **A3 — apply and measure the LIVE file (Task C), then commit:** `cp /tmp/g2ptw28a/PT-out.md "$GOV/PLANNER_TEMPLATE.md"`; then from the live file, co
+  L105: `TOKENS` = 97 restated unqualified
+      > **A5 — dev log + commit by explicit pathspec.** `knowledge/development/dev-log-gate2-pt-w28-a-2026-09-02.md`: the A0 determination, A1's pins, A2's 
+  L130: `DRY_RUN` = 2423 restated unqualified
+      > - **Item 1 — the live template:** `git -C "$GOV" log --oneline -1 -- PLANNER_TEMPLATE.md` (the `[<id>]` commit); every Task C count re-run (sixteen 
+  L135: `TOKENS` = 104 restated unqualified
+      > **(C) The report** `qa-receipt.md`: the verification table — status cells carry the glyph only, and NO positive row quotes a probe token or an outpu
+
+(2) ORDERING — distinct task sequences (>1 distinct = a claim stated two ways)
+  0 distinct sequence — consistent
+
+(3) ARITHMETIC — same operands, different constants
+  none
+
+DIVERGENCES: 68
+⚠️ Clean means no RESTATEMENT divergence. It is not a correctness result.
+EXIT=1
+
+=== FILE: executable-checker-defects.md ===
+declared symbols: 5 (values: 7)
+  TESTS: ['210']
+  FIXTURES: ['63']
+  CORPUS: ['28', '29', '1000']
+  LINT: ['100007']
+  SUITE: ['1676']
+instruction region: 161 lines of 204
+
+(1) RESTATED VALUE — a declared value written as a bare numeral in prose
+  L19: `FIXTURES` = 63 restated unqualified
+      - **63 — the hyphenated lens.** `plan_lint`'s required-lens pattern `weak\s*spots` and `cycle_yields`' lens prefix `^weak\s*spots\s*:` both miss the c
+  L20: `CORPUS` = 28 restated unqualified
+      - **77 — the Deposits order.** `rule_20_self_check` reads the FIRST `.md` in a QA step's Deposits block as the QA report; a cycle report listed first 
+  L43: `CORPUS` = 29 restated unqualified
+      - ⚠️ **Dispatch after the five earlier holds** (bootstrap, A, B, W=29, C): no write-set collision with any of them, but a checker change wants the dae
+  L91: `LINT` = 100007 restated unqualified
+      > **A4 — the regression canaries (P4 after):** the fourteen corpus files → `BAR_MET` fourteen of fourteen, each verdict line quoted; the five fixtures
+  L93: `FIXTURES` = 63 restated unqualified
+      > **A5 — full suite + dev log + commit.** `"$BPY" -m pytest tests -q -p no:cacheprovider` → `1676 + N passed, 1 skipped`, exit 0. `knowledge/developme
+  L139: `LINT` = 100007 restated unqualified
+      > - **Item 3 — the (u) check:** the five drafts → 0 `(u)` lines each; 100007 → 1 `(u)` line naming the report; a synthetic QA step with no `.txt` → th
+
+(2) ORDERING — distinct task sequences (>1 distinct = a claim stated two ways)
+  0 distinct sequence — consistent
+
+(3) ARITHMETIC — same operands, different constants
+  none
+
+DIVERGENCES: 6
+⚠️ Clean means no RESTATEMENT divergence. It is not a correctness result.
+EXIT=1
+
+=== FILE: executable-forge-cycle-w29.md ===
+declared symbols: 11 (values: 22)
+  M2: ['25']
+  M3: ['441', '12', '322', '34', '41', '29']
+  M5: ['441']
+  M6: ['433', '433', '458']
+  M7: ['20']
+  M8: ['401', '256']
+  M9: ['25']
+  M11: ['433']
+  M14: ['80', '71']
+  M15: ['25']
+  M16: ['25', '434', '458']
+instruction region: 156 lines of 186
+
+(1) RESTATED VALUE — a declared value written as a bare numeral in prose
+  L1: `M2` = 25 restated unqualified
+      # forge_lessons — executable: cycle W=29 — ingest + classify the 25 pending corpus entries (five of 2026-09-01, twenty of 2026-09-02), the second forg
+  L1: `M3` = 29 restated unqualified
+      # forge_lessons — executable: cycle W=29 — ingest + classify the 25 pending corpus entries (five of 2026-09-01, twenty of 2026-09-02), the second forg
+  L1: `M9` = 25 restated unqualified
+      # forge_lessons — executable: cycle W=29 — ingest + classify the 25 pending corpus entries (five of 2026-09-01, twenty of 2026-09-02), the second forg
+  L1: `M15` = 25 restated unqualified
+      # forge_lessons — executable: cycle W=29 — ingest + classify the 25 pending corpus entries (five of 2026-09-01, twenty of 2026-09-02), the second forg
+  L1: `M16` = 25 restated unqualified
+      # forge_lessons — executable: cycle W=29 — ingest + classify the 25 pending corpus entries (five of 2026-09-01, twenty of 2026-09-02), the second forg
+  L3: `M14` = 80 restated unqualified
+      **Date:** 2026-09-02 | **Project:** forge_lessons | **Tier:** Small | **Dispatch Mode:** bellows | **cycle_tier:** T1 | **Test Scope:** targeted (the 
+  L9: `M2` = 25 restated unqualified
+      **Depends on:** the CEO's "Proceed as recommended" (2026-09-02: apply the lesson items — the 25 pending entries first, mechanically); `Done/executable
+  L9: `M9` = 25 restated unqualified
+      **Depends on:** the CEO's "Proceed as recommended" (2026-09-02: apply the lesson items — the 25 pending entries first, mechanically); `Done/executable
+  L9: `M15` = 25 restated unqualified
+      **Depends on:** the CEO's "Proceed as recommended" (2026-09-02: apply the lesson items — the 25 pending entries first, mechanically); `Done/executable
+  L9: `M16` = 25 restated unqualified
+      **Depends on:** the CEO's "Proceed as recommended" (2026-09-02: apply the lesson items — the 25 pending entries first, mechanically); `Done/executable
+  L15: `M3` = 12 restated unqualified
+      ⚠️ **The DB holds 12 LIVE `accepted` proposals (415, 417, 418, 419, 421, 422, 425, 430, 431, 434, 435, 437 — Gate 2 owed, thread 76).** W=28's DB was 
+  L15: `M3` = 12 restated unqualified
+      ⚠️ **The DB holds 12 LIVE `accepted` proposals (415, 417, 418, 419, 421, 422, 425, 430, 431, 434, 435, 437 — Gate 2 owed, thread 76).** W=28's DB was 
+  L17: `M2` = 25 restated unqualified
+      ⚠️ **Nothing updates at ingest this time.** Rehearsed 2026-09-02 with the real functions on a scratch copy of the live DB: `{inserted: 25, updated: 0,
+  L17: `M9` = 25 restated unqualified
+      ⚠️ **Nothing updates at ingest this time.** Rehearsed 2026-09-02 with the real functions on a scratch copy of the live DB: `{inserted: 25, updated: 0,
+  L17: `M15` = 25 restated unqualified
+      ⚠️ **Nothing updates at ingest this time.** Rehearsed 2026-09-02 with the real functions on a scratch copy of the live DB: `{inserted: 25, updated: 0,
+  L17: `M16` = 25 restated unqualified
+      ⚠️ **Nothing updates at ingest this time.** Rehearsed 2026-09-02 with the real functions on a scratch copy of the live DB: `{inserted: 25, updated: 0,
+  L31: `M2` = 25 restated unqualified
+      | M1 | ingest result | — | EXACTLY `{inserted: 25, updated: 0, unchanged: 376, stale_proposals_marked: 0}` with `terminal_proposals_flagged` EMPTY | t
+  L31: `M9` = 25 restated unqualified
+      | M1 | ingest result | — | EXACTLY `{inserted: 25, updated: 0, unchanged: 376, stale_proposals_marked: 0}` with `terminal_proposals_flagged` EMPTY | t
+  L31: `M15` = 25 restated unqualified
+      | M1 | ingest result | — | EXACTLY `{inserted: 25, updated: 0, unchanged: 376, stale_proposals_marked: 0}` with `terminal_proposals_flagged` EMPTY | t
+  L31: `M16` = 25 restated unqualified
+      | M1 | ingest result | — | EXACTLY `{inserted: 25, updated: 0, unchanged: 376, stale_proposals_marked: 0}` with `terminal_proposals_flagged` EMPTY | t
+  L34: `M3` = 441 restated unqualified
+      | M4 | new-proposal band | — | route NULL AND status `proposed`, every one | `SELECT COUNT(*) FROM lesson_proposals WHERE id > :MAXP AND (route IS NOT
+  L34: `M5` = 441 restated unqualified
+      | M4 | new-proposal band | — | route NULL AND status `proposed`, every one | `SELECT COUNT(*) FROM lesson_proposals WHERE id > :MAXP AND (route IS NOT
+  L46: `M2` = 25 restated unqualified
+      | M17 | new-proposal ↔ entry pairing | — | every new proposal's `entry_id` ∈ 434–458, and NO entry in the band carries more than one new proposal | `S
+  L46: `M6` = 458 restated unqualified
+      | M17 | new-proposal ↔ entry pairing | — | every new proposal's `entry_id` ∈ 434–458, and NO entry in the band carries more than one new proposal | `S
+  L46: `M9` = 25 restated unqualified
+      | M17 | new-proposal ↔ entry pairing | — | every new proposal's `entry_id` ∈ 434–458, and NO entry in the band carries more than one new proposal | `S
+  L46: `M15` = 25 restated unqualified
+      | M17 | new-proposal ↔ entry pairing | — | every new proposal's `entry_id` ∈ 434–458, and NO entry in the band carries more than one new proposal | `S
+  L46: `M16` = 25 restated unqualified
+      | M17 | new-proposal ↔ entry pairing | — | every new proposal's `entry_id` ∈ 434–458, and NO entry in the band carries more than one new proposal | `S
+  L46: `M16` = 434 restated unqualified
+      | M17 | new-proposal ↔ entry pairing | — | every new proposal's `entry_id` ∈ 434–458, and NO entry in the band carries more than one new proposal | `S
+  L46: `M16` = 458 restated unqualified
+      | M17 | new-proposal ↔ entry pairing | — | every new proposal's `entry_id` ∈ 434–458, and NO entry in the band carries more than one new proposal | `S
+  L62: `M3` = 441 restated unqualified
+      > **Task A — worktree discipline + dispatch state + pre-flight.** `cd "$(git rev-parse --show-toplevel)" && [ -f src/lessons_forge.py ] && echo TREE_O
+  L62: `M3` = 12 restated unqualified
+      > **Task A — worktree discipline + dispatch state + pre-flight.** `cd "$(git rev-parse --show-toplevel)" && [ -f src/lessons_forge.py ] && echo TREE_O
+  L62: `M5` = 441 restated unqualified
+      > **Task A — worktree discipline + dispatch state + pre-flight.** `cd "$(git rev-parse --show-toplevel)" && [ -f src/lessons_forge.py ] && echo TREE_O
+  L62: `M6` = 433 restated unqualified
+      > **Task A — worktree discipline + dispatch state + pre-flight.** `cd "$(git rev-parse --show-toplevel)" && [ -f src/lessons_forge.py ] && echo TREE_O
+  L62: `M6` = 433 restated unqualified
+      > **Task A — worktree discipline + dispatch state + pre-flight.** `cd "$(git rev-parse --show-toplevel)" && [ -f src/lessons_forge.py ] && echo TREE_O
+  L62: `M6` = 433 restated unqualified
+      > **Task A — worktree discipline + dispatch state + pre-flight.** `cd "$(git rev-parse --show-toplevel)" && [ -f src/lessons_forge.py ] && echo TREE_O
+  L62: `M6` = 433 restated unqualified
+      > **Task A — worktree discipline + dispatch state + pre-flight.** `cd "$(git rev-parse --show-toplevel)" && [ -f src/lessons_forge.py ] && echo TREE_O
+  L62: `M6` = 458 restated unqualified
+      > **Task A — worktree discipline + dispatch state + pre-flight.** `cd "$(git rev-parse --show-toplevel)" && [ -f src/lessons_forge.py ] && echo TREE_O
+  L62: `M6` = 458 restated unqualified
+      > **Task A — worktree discipline + dispatch state + pre-flight.** `cd "$(git rev-parse --show-toplevel)" && [ -f src/lessons_forge.py ] && echo TREE_O
+  L62: `M8` = 401 restated unqualified
+      > **Task A — worktree discipline + dispatch state + pre-flight.** `cd "$(git rev-parse --show-toplevel)" && [ -f src/lessons_forge.py ] && echo TREE_O
+  L62: `M11` = 433 restated unqualified
+      > **Task A — worktree discipline + dispatch state + pre-flight.** `cd "$(git rev-parse --show-toplevel)" && [ -f src/lessons_forge.py ] && echo TREE_O
+  L62: `M11` = 433 restated unqualified
+      > **Task A — worktree discipline + dispatch state + pre-flight.** `cd "$(git rev-parse --show-toplevel)" && [ -f src/lessons_forge.py ] && echo TREE_O
+  L62: `M16` = 458 restated unqualified
+      > **Task A — worktree discipline + dispatch state + pre-flight.** `cd "$(git rev-parse --show-toplevel)" && [ -f src/lessons_forge.py ] && echo TREE_O
+  L62: `M16` = 458 restated unqualified
+      > **Task A — worktree discipline + dispatch state + pre-flight.** `cd "$(git rev-parse --show-toplevel)" && [ -f src/lessons_forge.py ] && echo TREE_O
+  L66: `M2` = 25 restated unqualified
+      > **Task C — ONE python script (writing connection; NO commit until the dict matches).** `sys.path.insert(0, os.getcwd())` at the worktree toplevel; `
+  L66: `M2` = 25 restated unqualified
+      > **Task C — ONE python script (writing connection; NO commit until the dict matches).** `sys.path.insert(0, os.getcwd())` at the worktree toplevel; `
+  L66: `M3` = 441 restated unqualified
+      > **Task C — ONE python script (writing connection; NO commit until the dict matches).** `sys.path.insert(0, os.getcwd())` at the worktree toplevel; `
+  L66: `M3` = 12 restated unqualified
+      > **Task C — ONE python script (writing connection; NO commit until the dict matches).** `sys.path.insert(0, os.getcwd())` at the worktree toplevel; `
+  L66: `M5` = 441 restated unqualified
+      > **Task C — ONE python script (writing connection; NO commit until the dict matches).** `sys.path.insert(0, os.getcwd())` at the worktree toplevel; `
+  L66: `M6` = 458 restated unqualified
+      > **Task C — ONE python script (writing connection; NO commit until the dict matches).** `sys.path.insert(0, os.getcwd())` at the worktree toplevel; `
+  L66: `M6` = 458 restated unqualified
+      > **Task C — ONE python script (writing connection; NO commit until the dict matches).** `sys.path.insert(0, os.getcwd())` at the worktree toplevel; `
+  L66: `M8` = 401 restated unqualified
+      > **Task C — ONE python script (writing connection; NO commit until the dict matches).** `sys.path.insert(0, os.getcwd())` at the worktree toplevel; `
+  L66: `M9` = 25 restated unqualified
+      > **Task C — ONE python script (writing connection; NO commit until the dict matches).** `sys.path.insert(0, os.getcwd())` at the worktree toplevel; `
+  L66: `M9` = 25 restated unqualified
+      > **Task C — ONE python script (writing connection; NO commit until the dict matches).** `sys.path.insert(0, os.getcwd())` at the worktree toplevel; `
+  L66: `M15` = 25 restated unqualified
+      > **Task C — ONE python script (writing connection; NO commit until the dict matches).** `sys.path.insert(0, os.getcwd())` at the worktree toplevel; `
+  L66: `M15` = 25 restated unqualified
+      > **Task C — ONE python script (writing connection; NO commit until the dict matches).** `sys.path.insert(0, os.getcwd())` at the worktree toplevel; `
+  L66: `M16` = 25 restated unqualified
+      > **Task C — ONE python script (writing connection; NO commit until the dict matches).** `sys.path.insert(0, os.getcwd())` at the worktree toplevel; `
+  L66: `M16` = 25 restated unqualified
+      > **Task C — ONE python script (writing connection; NO commit until the dict matches).** `sys.path.insert(0, os.getcwd())` at the worktree toplevel; `
+  L66: `M16` = 434 restated unqualified
+      > **Task C — ONE python script (writing connection; NO commit until the dict matches).** `sys.path.insert(0, os.getcwd())` at the worktree toplevel; `
+  L66: `M16` = 458 restated unqualified
+      > **Task C — ONE python script (writing connection; NO commit until the dict matches).** `sys.path.insert(0, os.getcwd())` at the worktree toplevel; `
+  L66: `M16` = 458 restated unqualified
+      > **Task C — ONE python script (writing connection; NO commit until the dict matches).** `sys.path.insert(0, os.getcwd())` at the worktree toplevel; `
+  L68: `M2` = 25 restated unqualified
+      > **Task D — dev log + commit.** `knowledge/development/dev-log-ingest-w29-2026-09-02.md`: the dispatch-state determination, the pre-flight raws (M5 a
+  L68: `M2` = 25 restated unqualified
+      > **Task D — dev log + commit.** `knowledge/development/dev-log-ingest-w29-2026-09-02.md`: the dispatch-state determination, the pre-flight raws (M5 a
+  L68: `M3` = 441 restated unqualified
+      > **Task D — dev log + commit.** `knowledge/development/dev-log-ingest-w29-2026-09-02.md`: the dispatch-state determination, the pre-flight raws (M5 a
+  L68: `M3` = 12 restated unqualified
+      > **Task D — dev log + commit.** `knowledge/development/dev-log-ingest-w29-2026-09-02.md`: the dispatch-state determination, the pre-flight raws (M5 a
+  L68: `M5` = 441 restated unqualified
+      > **Task D — dev log + commit.** `knowledge/development/dev-log-ingest-w29-2026-09-02.md`: the dispatch-state determination, the pre-flight raws (M5 a
+  L68: `M6` = 433 restated unqualified
+      > **Task D — dev log + commit.** `knowledge/development/dev-log-ingest-w29-2026-09-02.md`: the dispatch-state determination, the pre-flight raws (M5 a
+  L68: `M6` = 433 restated unqualified
+      > **Task D — dev log + commit.** `knowledge/development/dev-log-ingest-w29-2026-09-02.md`: the dispatch-state determination, the pre-flight raws (M5 a
+  L68: `M6` = 458 restated unqualified
+      > **Task D — dev log + commit.** `knowledge/development/dev-log-ingest-w29-2026-09-02.md`: the dispatch-state determination, the pre-flight raws (M5 a
+  L68: `M9` = 25 restated unqualified
+      > **Task D — dev log + commit.** `knowledge/development/dev-log-ingest-w29-2026-09-02.md`: the dispatch-state determination, the pre-flight raws (M5 a
+  L68: `M9` = 25 restated unqualified
+      > **Task D — dev log + commit.** `knowledge/development/dev-log-ingest-w29-2026-09-02.md`: the dispatch-state determination, the pre-flight raws (M5 a
+  L68: `M11` = 433 restated unqualified
+      > **Task D — dev log + commit.** `knowledge/development/dev-log-ingest-w29-2026-09-02.md`: the dispatch-state determination, the pre-flight raws (M5 a
+  L68: `M15` = 25 restated unqualified
+      > **Task D — dev log + commit.** `knowledge/development/dev-log-ingest-w29-2026-09-02.md`: the dispatch-state determination, the pre-flight raws (M5 a
+  L68: `M15` = 25 restated unqualified
+      > **Task D — dev log + commit.** `knowledge/development/dev-log-ingest-w29-2026-09-02.md`: the dispatch-state determination, the pre-flight raws (M5 a
+  L68: `M16` = 25 restated unqualified
+      > **Task D — dev log + commit.** `knowledge/development/dev-log-ingest-w29-2026-09-02.md`: the dispatch-state determination, the pre-flight raws (M5 a
+  L68: `M16` = 25 restated unqualified
+      > **Task D — dev log + commit.** `knowledge/development/dev-log-ingest-w29-2026-09-02.md`: the dispatch-state determination, the pre-flight raws (M5 a
+  L68: `M16` = 458 restated unqualified
+      > **Task D — dev log + commit.** `knowledge/development/dev-log-ingest-w29-2026-09-02.md`: the dispatch-state determination, the pre-flight raws (M5 a
+  L76: `M2` = 25 restated unqualified
+      ## STEP 2 — Lessons Agent: classify the 25 (no report, no routing)
+  L76: `M9` = 25 restated unqualified
+      ## STEP 2 — Lessons Agent: classify the 25 (no report, no routing)
+  L76: `M15` = 25 restated unqualified
+      ## STEP 2 — Lessons Agent: classify the 25 (no report, no routing)
+  L76: `M16` = 25 restated unqualified
+      ## STEP 2 — Lessons Agent: classify the 25 (no report, no routing)
+  L84: `M2` = 25 restated unqualified
+      > **Dispatch-state probe** on this step's dev-log path (three-place, positive control against `knowledge/FORWARD.md`). RESUME semantics (single-commit
+  L84: `M2` = 25 restated unqualified
+      > **Dispatch-state probe** on this step's dev-log path (three-place, positive control against `knowledge/FORWARD.md`). RESUME semantics (single-commit
+  L84: `M9` = 25 restated unqualified
+      > **Dispatch-state probe** on this step's dev-log path (three-place, positive control against `knowledge/FORWARD.md`). RESUME semantics (single-commit
+  L84: `M9` = 25 restated unqualified
+      > **Dispatch-state probe** on this step's dev-log path (three-place, positive control against `knowledge/FORWARD.md`). RESUME semantics (single-commit
+  L84: `M15` = 25 restated unqualified
+      > **Dispatch-state probe** on this step's dev-log path (three-place, positive control against `knowledge/FORWARD.md`). RESUME semantics (single-commit
+  L84: `M15` = 25 restated unqualified
+      > **Dispatch-state probe** on this step's dev-log path (three-place, positive control against `knowledge/FORWARD.md`). RESUME semantics (single-commit
+  L84: `M16` = 25 restated unqualified
+      > **Dispatch-state probe** on this step's dev-log path (three-place, positive control against `knowledge/FORWARD.md`). RESUME semantics (single-commit
+  L84: `M16` = 25 restated unqualified
+      > **Dispatch-state probe** on this step's dev-log path (three-place, positive control against `knowledge/FORWARD.md`). RESUME semantics (single-commit
+  L86: `M2` = 25 restated unqualified
+      > **Pre-flight (read-only, raw output for each):** `get_unclassified_entries(conn)` == exactly ids 434–458 (25, contiguous) · `SELECT COUNT(*) FROM le
+  L86: `M2` = 25 restated unqualified
+      > **Pre-flight (read-only, raw output for each):** `get_unclassified_entries(conn)` == exactly ids 434–458 (25, contiguous) · `SELECT COUNT(*) FROM le
+  L86: `M3` = 441 restated unqualified
+      > **Pre-flight (read-only, raw output for each):** `get_unclassified_entries(conn)` == exactly ids 434–458 (25, contiguous) · `SELECT COUNT(*) FROM le
+  L86: `M3` = 441 restated unqualified
+      > **Pre-flight (read-only, raw output for each):** `get_unclassified_entries(conn)` == exactly ids 434–458 (25, contiguous) · `SELECT COUNT(*) FROM le
+  L86: `M3` = 12 restated unqualified
+      > **Pre-flight (read-only, raw output for each):** `get_unclassified_entries(conn)` == exactly ids 434–458 (25, contiguous) · `SELECT COUNT(*) FROM le
+  L86: `M5` = 441 restated unqualified
+      > **Pre-flight (read-only, raw output for each):** `get_unclassified_entries(conn)` == exactly ids 434–458 (25, contiguous) · `SELECT COUNT(*) FROM le
+  L86: `M5` = 441 restated unqualified
+      > **Pre-flight (read-only, raw output for each):** `get_unclassified_entries(conn)` == exactly ids 434–458 (25, contiguous) · `SELECT COUNT(*) FROM le
+  L86: `M6` = 458 restated unqualified
+      > **Pre-flight (read-only, raw output for each):** `get_unclassified_entries(conn)` == exactly ids 434–458 (25, contiguous) · `SELECT COUNT(*) FROM le
+  L86: `M6` = 458 restated unqualified
+      > **Pre-flight (read-only, raw output for each):** `get_unclassified_entries(conn)` == exactly ids 434–458 (25, contiguous) · `SELECT COUNT(*) FROM le
+  L86: `M9` = 25 restated unqualified
+      > **Pre-flight (read-only, raw output for each):** `get_unclassified_entries(conn)` == exactly ids 434–458 (25, contiguous) · `SELECT COUNT(*) FROM le
+  L86: `M9` = 25 restated unqualified
+      > **Pre-flight (read-only, raw output for each):** `get_unclassified_entries(conn)` == exactly ids 434–458 (25, contiguous) · `SELECT COUNT(*) FROM le
+  L86: `M15` = 25 restated unqualified
+      > **Pre-flight (read-only, raw output for each):** `get_unclassified_entries(conn)` == exactly ids 434–458 (25, contiguous) · `SELECT COUNT(*) FROM le
+  L86: `M15` = 25 restated unqualified
+      > **Pre-flight (read-only, raw output for each):** `get_unclassified_entries(conn)` == exactly ids 434–458 (25, contiguous) · `SELECT COUNT(*) FROM le
+  L86: `M16` = 25 restated unqualified
+      > **Pre-flight (read-only, raw output for each):** `get_unclassified_entries(conn)` == exactly ids 434–458 (25, contiguous) · `SELECT COUNT(*) FROM le
+  L86: `M16` = 25 restated unqualified
+      > **Pre-flight (read-only, raw output for each):** `get_unclassified_entries(conn)` == exactly ids 434–458 (25, contiguous) · `SELECT COUNT(*) FROM le
+  L86: `M16` = 434 restated unqualified
+      > **Pre-flight (read-only, raw output for each):** `get_unclassified_entries(conn)` == exactly ids 434–458 (25, contiguous) · `SELECT COUNT(*) FROM le
+  L86: `M16` = 458 restated unqualified
+      > **Pre-flight (read-only, raw output for each):** `get_unclassified_entries(conn)` == exactly ids 434–458 (25, contiguous) · `SELECT COUNT(*) FROM le
+  L86: `M16` = 458 restated unqualified
+      > **Pre-flight (read-only, raw output for each):** `get_unclassified_entries(conn)` == exactly ids 434–458 (25, contiguous) · `SELECT COUNT(*) FROM le
+  L88: `M2` = 25 restated unqualified
+      > **Classify.** For each of the 25: parameter-bound `SELECT id, source_heading, raw_content, tags, entry_date FROM lesson_entries WHERE id = ?`; apply
+  L88: `M9` = 25 restated unqualified
+      > **Classify.** For each of the 25: parameter-bound `SELECT id, source_heading, raw_content, tags, entry_date FROM lesson_entries WHERE id = ?`; apply
+  L88: `M15` = 25 restated unqualified
+      > **Classify.** For each of the 25: parameter-bound `SELECT id, source_heading, raw_content, tags, entry_date FROM lesson_entries WHERE id = ?`; apply
+  L88: `M16` = 25 restated unqualified
+      > **Classify.** For each of the 25: parameter-bound `SELECT id, source_heading, raw_content, tags, entry_date FROM lesson_entries WHERE id = ?`; apply
+  L92: `M2` = 25 restated unqualified
+      > `markers: NONE` is legitimate and expected for the five 2026-09-01 entries. Post-condition M15: exactly 25 such lines in the dev log.
+  L92: `M9` = 25 restated unqualified
+      > `markers: NONE` is legitimate and expected for the five 2026-09-01 entries. Post-condition M15: exactly 25 such lines in the dev log.
+  L92: `M15` = 25 restated unqualified
+      > `markers: NONE` is legitimate and expected for the five 2026-09-01 entries. Post-condition M15: exactly 25 such lines in the dev log.
+  L92: `M16` = 25 restated unqualified
+      > `markers: NONE` is legitimate and expected for the five 2026-09-01 entries. Post-condition M15: exactly 25 such lines in the dev log.
+  L94: `M2` = 25 restated unqualified
+      > **THE COMMIT.** ⚠️⚠️ `insert_proposal` DOES NOT COMMIT. Issue exactly ONE `conn.commit()` after all 25 inserts.
+  L94: `M9` = 25 restated unqualified
+      > **THE COMMIT.** ⚠️⚠️ `insert_proposal` DOES NOT COMMIT. Issue exactly ONE `conn.commit()` after all 25 inserts.
+  L94: `M15` = 25 restated unqualified
+      > **THE COMMIT.** ⚠️⚠️ `insert_proposal` DOES NOT COMMIT. Issue exactly ONE `conn.commit()` after all 25 inserts.
+  L94: `M16` = 25 restated unqualified
+      > **THE COMMIT.** ⚠️⚠️ `insert_proposal` DOES NOT COMMIT. Issue exactly ONE `conn.commit()` after all 25 inserts.
+  L96: `M3` = 441 restated unqualified
+      > **Post-conditions — ON A FRESH READ-ONLY CONNECTION:** M2 (the inversion — `[]`), M3 after (441 + K, record K; accepted still 12), M4 (0), M17 (0 ro
+  L96: `M3` = 12 restated unqualified
+      > **Post-conditions — ON A FRESH READ-ONLY CONNECTION:** M2 (the inversion — `[]`), M3 after (441 + K, record K; accepted still 12), M4 (0), M17 (0 ro
+  L96: `M5` = 441 restated unqualified
+      > **Post-conditions — ON A FRESH READ-ONLY CONNECTION:** M2 (the inversion — `[]`), M3 after (441 + K, record K; accepted still 12), M4 (0), M17 (0 ro
+  L96: `M6` = 458 restated unqualified
+      > **Post-conditions — ON A FRESH READ-ONLY CONNECTION:** M2 (the inversion — `[]`), M3 after (441 + K, record K; accepted still 12), M4 (0), M17 (0 ro
+  L96: `M7` = 20 restated unqualified
+      > **Post-conditions — ON A FRESH READ-ONLY CONNECTION:** M2 (the inversion — `[]`), M3 after (441 + K, record K; accepted still 12), M4 (0), M17 (0 ro
+  L96: `M7` = 20 restated unqualified
+      > **Post-conditions — ON A FRESH READ-ONLY CONNECTION:** M2 (the inversion — `[]`), M3 after (441 + K, record K; accepted still 12), M4 (0), M17 (0 ro
+  L96: `M16` = 458 restated unqualified
+      > **Post-conditions — ON A FRESH READ-ONLY CONNECTION:** M2 (the inversion — `[]`), M3 after (441 + K, record K; accepted still 12), M4 (0), M17 (0 ro
+  L98: `M2` = 25 restated unqualified
+      > **Deposits.** `knowledge/development/dev-log-classify-w29-2026-09-02.md` (the pre-flight raws, the 25 DISPOSITION lines, the post raws) and `knowled
+  L98: `M2` = 25 restated unqualified
+      > **Deposits.** `knowledge/development/dev-log-classify-w29-2026-09-02.md` (the pre-flight raws, the 25 DISPOSITION lines, the post raws) and `knowled
+  L98: `M3` = 441 restated unqualified
+      > **Deposits.** `knowledge/development/dev-log-classify-w29-2026-09-02.md` (the pre-flight raws, the 25 DISPOSITION lines, the post raws) and `knowled
+  L98: `M5` = 441 restated unqualified
+      > **Deposits.** `knowledge/development/dev-log-classify-w29-2026-09-02.md` (the pre-flight raws, the 25 DISPOSITION lines, the post raws) and `knowled
+  L98: `M7` = 20 restated unqualified
+      > **Deposits.** `knowledge/development/dev-log-classify-w29-2026-09-02.md` (the pre-flight raws, the 25 DISPOSITION lines, the post raws) and `knowled
+  L98: `M9` = 25 restated unqualified
+      > **Deposits.** `knowledge/development/dev-log-classify-w29-2026-09-02.md` (the pre-flight raws, the 25 DISPOSITION lines, the post raws) and `knowled
+  L98: `M9` = 25 restated unqualified
+      > **Deposits.** `knowledge/development/dev-log-classify-w29-2026-09-02.md` (the pre-flight raws, the 25 DISPOSITION lines, the post raws) and `knowled
+  L98: `M15` = 25 restated unqualified
+      > **Deposits.** `knowledge/development/dev-log-classify-w29-2026-09-02.md` (the pre-flight raws, the 25 DISPOSITION lines, the post raws) and `knowled
+  L98: `M15` = 25 restated unqualified
+      > **Deposits.** `knowledge/development/dev-log-classify-w29-2026-09-02.md` (the pre-flight raws, the 25 DISPOSITION lines, the post raws) and `knowled
+  L98: `M16` = 25 restated unqualified
+      > **Deposits.** `knowledge/development/dev-log-classify-w29-2026-09-02.md` (the pre-flight raws, the 25 DISPOSITION lines, the post raws) and `knowled
+  L98: `M16` = 25 restated unqualified
+      > **Deposits.** `knowledge/development/dev-log-classify-w29-2026-09-02.md` (the pre-flight raws, the 25 DISPOSITION lines, the post raws) and `knowled
+  L112: `M7` = 20 restated unqualified
+      > **MANDATORY — the Rule 20 self-check is gate-enforced** (`rule_20_self_check` greps the QA receipt for the byte-exact banner `Rule 20 — QA Self-Chec
+  L112: `M7` = 20 restated unqualified
+      > **MANDATORY — the Rule 20 self-check is gate-enforced** (`rule_20_self_check` greps the QA receipt for the byte-exact banner `Rule 20 — QA Self-Chec
+  L112: `M7` = 20 restated unqualified
+      > **MANDATORY — the Rule 20 self-check is gate-enforced** (`rule_20_self_check` greps the QA receipt for the byte-exact banner `Rule 20 — QA Self-Chec
+  L118: `M2` = 25 restated unqualified
+      > **Item 1 — the report.** `cd "$(git rev-parse --show-toplevel)"`; python (package import): `generate_lessons_report(conn, "2026-09-02", output_dir=o
+  L118: `M2` = 25 restated unqualified
+      > **Item 1 — the report.** `cd "$(git rev-parse --show-toplevel)"`; python (package import): `generate_lessons_report(conn, "2026-09-02", output_dir=o
+  L118: `M9` = 25 restated unqualified
+      > **Item 1 — the report.** `cd "$(git rev-parse --show-toplevel)"`; python (package import): `generate_lessons_report(conn, "2026-09-02", output_dir=o
+  L118: `M9` = 25 restated unqualified
+      > **Item 1 — the report.** `cd "$(git rev-parse --show-toplevel)"`; python (package import): `generate_lessons_report(conn, "2026-09-02", output_dir=o
+  L118: `M15` = 25 restated unqualified
+      > **Item 1 — the report.** `cd "$(git rev-parse --show-toplevel)"`; python (package import): `generate_lessons_report(conn, "2026-09-02", output_dir=o
+  L118: `M15` = 25 restated unqualified
+      > **Item 1 — the report.** `cd "$(git rev-parse --show-toplevel)"`; python (package import): `generate_lessons_report(conn, "2026-09-02", output_dir=o
+  L118: `M16` = 25 restated unqualified
+      > **Item 1 — the report.** `cd "$(git rev-parse --show-toplevel)"`; python (package import): `generate_lessons_report(conn, "2026-09-02", output_dir=o
+  L118: `M16` = 25 restated unqualified
+      > **Item 1 — the report.** `cd "$(git rev-parse --show-toplevel)"`; python (package import): `generate_lessons_report(conn, "2026-09-02", output_dir=o
+  L119: `M3` = 12 restated unqualified
+      > **Item 2 — DB probes on a FRESH read-only connection**, raw into `knowledge/qa/evidence/forge-cycle-w29-2026-09-02/probes-raw.txt`: M2, M3 (accepted
+  L121: `M7` = 20 restated unqualified
+      > **Item 4 — hygiene + receipt** `knowledge/qa/evidence/forge-cycle-w29-2026-09-02/qa-receipt.md`: numstats (Step 1 commit 1 file; Step 2 commit 2 fil
+  L149: `M7` = 20 restated unqualified
+      Rule 20 banner (byte-exact, produced by RUNNING the canonical block — never hand-authored):
+  L153: `M7` = 20 restated unqualified
+      Rule 20 — QA Self-Check Results
+
+(2) ORDERING — distinct task sequences (>1 distinct = a claim stated two ways)
+  0 distinct sequence — consistent
+
+(3) ARITHMETIC — same operands, different constants
+  none
+
+DIVERGENCES: 151
+⚠️ Clean means no RESTATEMENT divergence. It is not a correctness result.
+EXIT=1
+
+=== FILE: executable-100005.md ===
+declared symbols: 1 (values: 1)
+  P1: ['44']
+instruction region: 172 lines of 203
+
+(1) RESTATED VALUE — a declared value written as a bare numeral in prose
+  L91: `P1` = 44 restated unqualified
+      > 2. Claim tests → **49 passed, 0 failed** expected (44 + 5). ⚠️ A PREDICTION the run supersedes; **the HALT condition is a non-zero FAILURE count, ne
+
+(2) ORDERING — distinct task sequences (>1 distinct = a claim stated two ways)
+  0 distinct sequence — consistent
+
+(3) ARITHMETIC — same operands, different constants
+  none
+
+DIVERGENCES: 1
+⚠️ Clean means no RESTATEMENT divergence. It is not a correctness result.
+EXIT=1
+
+=== FILE: executable-100009.md ===
+declared symbols: 9 (values: 16)
+  B5: ['2725']
+  B6: ['3031', '3049', '3080']
+  D1: ['412']
+  S1: ['220']
+  R1: ['89']
+  L1: ['167', '195']
+  MPS_CALLS_POST: ['12']
+  SUITE_PASSED_BASELINE: ['10', '1629', '56']
+  P5: ['23', '24', '95']
+instruction region: 181 lines of 215
+
+(1) RESTATED VALUE — a declared value written as a bare numeral in prose
+  L3: `SUITE_PASSED_BASELINE` = 10 restated unqualified
+      **Date:** 2026-09-01 | **Project:** bellows | **Tier:** Small | **Dispatch Mode:** bellows | **cycle_tier:** T1 | **Test Scope:** targeted (`tests/tes
+  L9: `P5` = 24 restated unqualified
+      **Depends on:** the CEO's "Let's do this work now as it affects automaticity of plan queuing" (2026-09-01, session `1663ee38`, after the diagnosis of 
+  L19: `P5` = 24 restated unqualified
+      3. **The plan row never says it is paused.** `plans.lifecycle_state` stays `in_progress` across every pause; the daemon writes `awaiting_verdict` only
+  L52: `SUITE_PASSED_BASELINE` = 10 restated unqualified
+      - ⚠️ **`known_failures: 10` is a NAMED set, not a count.** The full-suite comparison passes only if the failing set EQUALS the baseline set by test id
+
+(2) ORDERING — distinct task sequences (>1 distinct = a claim stated two ways)
+  0 distinct sequence — consistent
+
+(3) ARITHMETIC — same operands, different constants
+  none
+
+DIVERGENCES: 4
+⚠️ Clean means no RESTATEMENT divergence. It is not a correctness result.
+EXIT=1
+
+=== FILE: executable-100010.md ===
+declared symbols: 0 (values: 0)
+
+ERROR: no symbol declarations parsed — detector (1) cannot run.
+  Expected a row of the form:
+    | Pn | **`SYM`** | 1234 |          (plain numeral)
+    | Pn | **`SYM`** | `1234` |         (plain-backtick numeral)
+    | Pn | **`SYM`** | — | **1234** |  (legacy bold numeral)
+    | Pn | row-id    | 1234 |          (row-id as symbol)
+  This is EXIT 2 (could not run), never a clean result.
+EXIT=2
+
+=== FILE: executable-100012.md ===
+declared symbols: 3 (values: 5)
+  WATCHER_TESTS: ['24', '30']
+  SUITE_PRE: ['1658', '100011']
+  SUITE_POST: ['1663']
+instruction region: 126 lines of 156
+
+(1) RESTATED VALUE — a declared value written as a bare numeral in prose
+  L1: `SUITE_PRE` = 100011 restated unqualified
+      # bellows — executable: A PROBE'S LOCATION IS PART OF ITS ENVIRONMENT — six seam tests learn to hide the projects parent, the watcher's test STATE dim
+  L9: `SUITE_PRE` = 100011 restated unqualified
+      **Depends on:** plan 100011 (`halted-executable-100011.md`, STOP at Step 1 on 2026-09-01 — its DEV commit `6b892a3` is on main and STAYS; the verdict'
+  L9: `SUITE_PRE` = 100011 restated unqualified
+      **Depends on:** plan 100011 (`halted-executable-100011.md`, STOP at Step 1 on 2026-09-01 — its DEV commit `6b892a3` is on main and STAYS; the verdict'
+  L9: `SUITE_PRE` = 100011 restated unqualified
+      **Depends on:** plan 100011 (`halted-executable-100011.md`, STOP at Step 1 on 2026-09-01 — its DEV commit `6b892a3` is on main and STAYS; the verdict'
+  L9: `SUITE_PRE` = 100011 restated unqualified
+      **Depends on:** plan 100011 (`halted-executable-100011.md`, STOP at Step 1 on 2026-09-01 — its DEV commit `6b892a3` is on main and STAYS; the verdict'
+  L9: `SUITE_PRE` = 100011 restated unqualified
+      **Depends on:** plan 100011 (`halted-executable-100011.md`, STOP at Step 1 on 2026-09-01 — its DEV commit `6b892a3` is on main and STAYS; the verdict'
+  L11: `SUITE_PRE` = 100011 restated unqualified
+      **Tier computed, not judged (§1):** **T-1 fires** (two test files in one subsystem — more than one localized change). **T-8 fires** (a clone by kind o
+  L15: `SUITE_PRE` = 100011 restated unqualified
+      Plan 100011 replaced the seam's third candidate root (`ROOT/tuyere`) — the shop literal — with `bellows_root.resolve_projects_parent()`. On this machi
+  L17: `SUITE_PRE` = 100011 restated unqualified
+      Separately, `tests/test_gate_watcher.py::TestPauseStateSpace::test_reachable_states_match_the_classification_dimension` reads the LIVE `lifecycle.db` 
+  L17: `SUITE_PRE` = 100011 restated unqualified
+      Separately, `tests/test_gate_watcher.py::TestPauseStateSpace::test_reachable_states_match_the_classification_dimension` reads the LIVE `lifecycle.db` 
+  L19: `SUITE_PRE` = 100011 restated unqualified
+      Why no proof caught the seam tests: every scratch proof of 100011 — its walk-0 clone, both scouts' clones, the EXECUTION seat's worktree replica, the 
+  L26: `SUITE_PRE` = 100011 restated unqualified
+      - Nothing else. No code file changes; the resolver, the seam and the watcher stay as 100011 left them.
+  L30: `SUITE_PRE` = 100011 restated unqualified
+      - Does not touch `plan_claim.py`, `bellows_root.py`, `tools/gate_watcher.py` or any 100011 target; does not revisit 100011's QA mutants (three cold se
+  L30: `SUITE_PRE` = 100011 restated unqualified
+      - Does not touch `plan_claim.py`, `bellows_root.py`, `tools/gate_watcher.py` or any 100011 target; does not revisit 100011's QA mutants (three cold se
+  L31: `SUITE_PRE` = 100011 restated unqualified
+      - Does not close the seven-site `hooks-de-hardcode` follow-up or the `MACHINE_SETUP` lines 100011 named — they stay named there.
+  L37: `SUITE_PRE` = 100011 restated unqualified
+      - **`known_failures: 0` and the gate's count semantics** (100011's MUST-PRESERVE, unchanged): the gate compares a COUNT with ≤; the NAMED-set property
+  L37: `SUITE_PRE` = 100011 restated unqualified
+      - **`known_failures: 0` and the gate's count semantics** (100011's MUST-PRESERVE, unchanged): the gate compares a COUNT with ≤; the NAMED-set property
+  L80: `SUITE_PRE` = 100011 restated unqualified
+      > **(A) Rule 20 self-check** — the canonical block from **`"$("$PY" -c "import bellows_root as b; print(b.resolve_governance_root())")/RULE_20_SELF_CH
+  L90: `SUITE_PRE` = 100011 restated unqualified
+      > - **Item 4 — 100011's proof re-affirmed on main (three lines, both ways):** `env -u ELUVIAN_WRAP_ROOT "$PY" -c "import bellows_root as b, plan_claim
+  L91: `SUITE_PRE` = 100011 restated unqualified
+      > - **Item 5 — residual-literal sweep on main (100011's Item 5, options before `--`):** `/usr/bin/grep -rlF --include='*.py' --exclude-dir=.venv --exc
+  L120: `SUITE_PRE` = 100011 restated unqualified
+      reads: /Users/marklehn/Developer/bellows/tests/test_plan_claim.py, /Users/marklehn/Developer/bellows/tests/test_gate_watcher.py, /Users/marklehn/Devel
+
+(2) ORDERING — distinct task sequences (>1 distinct = a claim stated two ways)
+  0 distinct sequence — consistent
+
+(3) ARITHMETIC — same operands, different constants
+  none
+
+DIVERGENCES: 21
+⚠️ Clean means no RESTATEMENT divergence. It is not a correctness result.
+EXIT=1
+
+=== FILE: executable-100013.md ===
+declared symbols: 0 (values: 0)
+
+ERROR: no symbol declarations parsed — detector (1) cannot run.
+  Expected a row of the form:
+    | Pn | **`SYM`** | 1234 |          (plain numeral)
+    | Pn | **`SYM`** | `1234` |         (plain-backtick numeral)
+    | Pn | **`SYM`** | — | **1234** |  (legacy bold numeral)
+    | Pn | row-id    | 1234 |          (row-id as symbol)
+  This is EXIT 2 (could not run), never a clean result.
+EXIT=2
+
+=== FILE: executable-100015.md ===
+declared symbols: 2 (values: 4)
+  HOOK_SUITE_PRE: ['134']
+  SUITE_POST: ['1669', '100012', '1669']
+instruction region: 156 lines of 186
+
+(1) RESTATED VALUE — a declared value written as a bare numeral in prose
+  L9: `SUITE_POST` = 100012 restated unqualified
+      **Depends on:** the CEO's "All three" (2026-09-02 00:0x — the overnight list, this plan second); plan 100011's severance (its does-NOT section named t
+  L9: `SUITE_POST` = 100012 restated unqualified
+      **Depends on:** the CEO's "All three" (2026-09-02 00:0x — the overnight list, this plan second); plan 100011's severance (its does-NOT section named t
+  L11: `HOOK_SUITE_PRE` = 134 restated unqualified
+      **Tier computed, not judged (§1):** **T-1 fires** (five files in one subsystem — the four hooks and the command text). **T-3 fires** — the hooks run u
+  L50: `HOOK_SUITE_PRE` = 134 restated unqualified
+      - Does not change what happens when the variable IS set (every existing hook test sets it; all 134 must still pass unchanged).
+  L58: `SUITE_POST` = 100012 restated unqualified
+      - **`known_failures: 0`** with the gate's count semantics (100011's MUST-PRESERVE); the worktree set is EMPTY since 100012; the flake protocol applies
+
+(2) ORDERING — distinct task sequences (>1 distinct = a claim stated two ways)
+  0 distinct sequence — consistent
+
+(3) ARITHMETIC — same operands, different constants
+  none
+
+DIVERGENCES: 5
+⚠️ Clean means no RESTATEMENT divergence. It is not a correctness result.
+EXIT=1
+
+
+============================================================
+ITEM 2 (cont.) — LEGACY-FORM POSITIVE CONTROL
+============================================================
+=== Legacy form: | N1 | **`BATCH`** | — | **25** | ===
+declared symbols: 1 (values: 1)
+  BATCH: ['25']
+instruction region: 8 lines of 10
+
+(1) RESTATED VALUE — a declared value written as a bare numeral in prose
+  none
+
+(2) ORDERING — distinct task sequences (>1 distinct = a claim stated two ways)
+  0 distinct sequence — consistent
+
+(3) ARITHMETIC — same operands, different constants
+  none
+
+CLEAN — no divergence found
+⚠️ Clean means no RESTATEMENT divergence. It is not a correctness result.
+EXIT=0
+
+============================================================
+ITEM 2 (cont.) — EXIT-2 PATH (no numerals in pin rows)
+============================================================
+declared symbols: 0 (values: 0)
+
+ERROR: no symbol declarations parsed — detector (1) cannot run.
+  Expected a row of the form:
+    | Pn | **`SYM`** | 1234 |          (plain numeral)
+    | Pn | **`SYM`** | `1234` |         (plain-backtick numeral)
+    | Pn | **`SYM`** | — | **1234** |  (legacy bold numeral)
+    | Pn | row-id    | 1234 |          (row-id as symbol)
+  This is EXIT 2 (could not run), never a clean result.
+EXIT=2
+
+============================================================
+ITEM 2.5 — KILL MAP (Rule 106) — M1-M4
+Note: propagation-check.json uses per-mutant targets (multi-target format).
+      mutation_check.py requires single-target manifests.
+      Run as 3 per-target manifests: M1+M2 (propagation_check.py),
+      M3 (run_check.py), M4 (cycle_check.py).
+============================================================
+
+=== M1+M2 — scripts/propagation_check.py ===
+HEAD: 2bbdd09e06ce0014c653ce57379ac560baf531f4
+TARGET: scripts/propagation_check.py sha256=bfcc11e80f50
+
+MUTANT M1-hex-exclusion-removed: KILLED — suite caught the defect
+MUTANT M2-row-id-fallback-removed: KILLED — suite caught the defect
+
+LIVE-TREE UNCHANGED: bfcc11e80f50
+
+MUTATION: 2 killed, 0 survived, 0 error
+
+=== M3 — tools/run_check.py ===
+HEAD: 2bbdd09e06ce0014c653ce57379ac560baf531f4
+TARGET: tools/run_check.py sha256=166a767105e4
+
+MUTANT M3-judge-propagation-rc2-as-pass: KILLED — suite caught the defect
+
+LIVE-TREE UNCHANGED: 166a767105e4
+
+MUTATION: 1 killed, 0 survived, 0 error
+
+=== M4 — scripts/cycle_check.py ===
+HEAD: 2bbdd09e06ce0014c653ce57379ac560baf531f4
+TARGET: scripts/cycle_check.py sha256=12c23a3345a8
+
+MUTANT M4-manifest-propagation-pair-dropped: KILLED — suite caught the defect
+
+LIVE-TREE UNCHANGED: 12c23a3345a8
+
+MUTATION: 1 killed, 0 survived, 0 error
+
+============================================================
+ITEM 3 — LOUD CHANNEL
+============================================================
+=== run_check.py propagation mode ===
+declared symbols: 4 (values: 9)
+  POPULATION: ['51', '34', '17', '32', '11']
+  CORPUS_BEFORE: ['28', '29']
+  DEPOSITOR: ['516']
+  SUITE: ['1676']
+instruction region: 142 lines of 173
+
+(1) RESTATED VALUE — a declared value written as a bare numeral in prose
+  L15: `POPULATION` = 51 restated unqualified
+      `propagation_check.py`'s `declared_values` parses a pin row only when the row carries a bold-backticked symbol AND a bold numeral (`**`SYM`**` … `**NN
+  L15: `POPULATION` = 34 restated unqualified
+      `propagation_check.py`'s `declared_values` parses a pin row only when the row carries a bold-backticked symbol AND a bold numeral (`**`SYM`**` … `**NN
+  L15: `POPULATION` = 17 restated unqualified
+      `propagation_check.py`'s `declared_values` parses a pin row only when the row carries a bold-backticked symbol AND a bold numeral (`**`SYM`**` … `**NN
+  L15: `POPULATION` = 32 restated unqualified
+      `propagation_check.py`'s `declared_values` parses a pin row only when the row carries a bold-backticked symbol AND a bold numeral (`**`SYM`**` … `**NN
+  L15: `POPULATION` = 11 restated unqualified
+      `propagation_check.py`'s `declared_values` parses a pin row only when the row carries a bold-backticked symbol AND a bold numeral (`**`SYM`**` … `**NN
+  L28: `POPULATION` = 51 restated unqualified
+      **F4 — tests:** NEW `tests/test_propagation_check.py` — the tier-2 suite: symbol form {bold-backtick, row-id only} × value form {plain-backtick, plain
+  L30: `CORPUS_BEFORE` = 29 restated unqualified
+      **F5 —** the corpus canary: the six 2026-09-02 drafts (five in bellows, W=29 in forge_lessons) and the nine `Done/executable-1000*.md` — after F1 ever
+  L120: `DEPOSITOR` = 516 restated unqualified
+      > - **Item 3 — the loud channel:** `"$BPY" tools/run_check.py propagation <a scratch copy of THIS plan under a lintmirror- name in /tmp>` → `RUN_CHECK
+
+(2) ORDERING — distinct task sequences (>1 distinct = a claim stated two ways)
+  0 distinct sequence — consistent
+
+(3) ARITHMETIC — same operands, different constants
+  none
+
+DIVERGENCES: 8
+⚠️ Clean means no RESTATEMENT divergence. It is not a correctness result.
+RUN_CHECK: propagation VERDICT=FAIL — 8 divergence(s)
+
+=== cycle_check --emit-manifest validation: line ===
+validation: cycle_check=BAR_MET, plan_lint=0_FAIL, fold_check=N/A, propagation_check=DIVERGENT:8
+
+=== depositor.py:516 — comparison line (cycle_check= only) ===
+        if manifest:
+            val = manifest.get("validation", "")
+            if "cycle_check=" in val:
+                expected = val.split("cycle_check=")[1].split(",")[0].strip()
+                if expected and expected != str(verdict):
+                    result["hold"] = True
+                    result["reason"] = (
+                        f"validation_mismatch:cycle_check "
+                        f"expected={expected} got={verdict}"
