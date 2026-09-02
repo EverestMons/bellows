@@ -1,0 +1,22 @@
+{
+  "plan_lint": {
+    "exit": 0,
+    "signals": [
+      "(o2) WARN: Deposits entry `knowledge/development/dev-log-propagation-check-pin-forms-N-N-N.md` is not project-prefixed or absolute",
+      "(o2) WARN: Deposits entry `knowledge/mutants/propagation-check.json` is not project-prefixed or absolute",
+      "(o2) WARN: Deposits entry `knowledge/qa/evidence/propagation-check-pin-forms-N-N-N/full-suite-propagation-check-pin-forms.txt` is not project-prefixed or absolute",
+      "(o2) WARN: Deposits entry `knowledge/qa/evidence/propagation-check-pin-forms-N-N-N/probes-raw.txt` is not project-prefixed or absolute",
+      "(o2) WARN: Deposits entry `knowledge/qa/evidence/propagation-check-pin-forms-N-N-N/qa-receipt.md` is not project-prefixed or absolute",
+      "(o2) WARN: Deposits entry `scripts/cycle_check.py` is not project-prefixed or absolute",
+      "(o2) WARN: Deposits entry `scripts/propagation_check.py` is not project-prefixed or absolute",
+      "(o2) WARN: Deposits entry `tests/test_cycle_check.py` is not project-prefixed or absolute",
+      "(o2) WARN: Deposits entry `tests/test_propagation_check.py` is not project-prefixed or absolute",
+      "(o2) WARN: Deposits entry `tests/test_run_check.py` is not project-prefixed or absolute",
+      "(o2) WARN: Deposits entry `tools/run_check.py` is not project-prefixed or absolute",
+      "PIN-CHECK: kind=prefix line=N token=2efd4e2de1a3\u2026 result=ambiguous",
+      "PIN-CHECK: kind=prefix line=N token=3ebd5aaa048c\u2026 result=ambiguous",
+      "PIN-CHECK: kind=prefix line=N token=ab9aa01d5014\u2026 result=ambiguous",
+      "WARN: step 2 mentions tests but declares no test scope"
+    ]
+  }
+}
