@@ -1,6 +1,6 @@
 # bellows — executable: PROVISIONING — bellows gets its bootstrap (thread 84), the Start runbook names the venv interpreter, and MACHINE_SETUP.md §2 becomes one rule for every machine (v1.2)
 
-**Date:** 2026-09-02 | **Project:** bellows | **Tier:** Small | **Dispatch Mode:** bellows | **cycle_tier:** T1 | **Test Scope:** full (the bellows suite `tests` under the canonical venv from the worktree — the one named known failure — and under the NEW venv in scratch copies of the tree, twice, plus the no-Homebrew variant) | **Execution:** Step 1 (DEV) → Step 2 (QA) | **qa_steps:** 2 | **pause_for_verdict:** always | **known_failures:** 1 | **Priority:** 2
+**Date:** 2026-09-02 | **Project:** bellows | **Tier:** Small | **Dispatch Mode:** bellows | **cycle_tier:** T1 | **Test Scope:** full (the bellows suite `tests` under the canonical venv from the worktree — `1676 passed, 1 skipped`: a worktree holds no `config.json`, so the canonical checkout's CWD-`config.json` failure does not occur there — and under the NEW venv in scratch copies of the tree, twice, plus the no-Homebrew variant) | **Execution:** Step 1 (DEV) → Step 2 (QA) | **qa_steps:** 2 | **pause_for_verdict:** always | **known_failures:** 0 | **Priority:** 2
 
 **auto_close:** false
 
@@ -14,7 +14,7 @@
 
 The Air's bellows divergence has one cause, and it is a line in `CLAUDE.md`: `## Start` says `python dashboard.py`, the dashboard spawns the daemon with `sys.executable` (`dashboard.py:417`), so the daemon runs under WHATEVER interpreter started the dashboard. On the mini that was the venv's python (measured 2026-09-02: pid 82768 loads `bellows/.venv/lib/python3.12/site-packages`); on the Air it was the system `python3` 3.9, so no venv was ever built there (the Air's cold seat for plan 100011, 2026-09-01) and plan 100011's A0 halted on it. `MACHINE_SETUP.md` §2 records this as an exception ("the mini's fact"). The multi-machine sketch's third leg names the gap plainly: *bellows has NO provisioning at all — no bootstrap, nothing in `CLAUDE.md`, only a `requirements.txt` that nothing installs.* forge_lessons closed its half last night (plan 100016, `scripts/bootstrap.sh`); this plan is the bellows twin, and it turns §2's bellows bullet from a description of two machines into ONE rule a new machine follows.
 
-Measured 2026-09-02 on the mini (walk 0): `requirements.txt` declares six entries (`anthropic watchdog flask requests pyyaml pytest`), all importable from the live venv; the live suite from the canonical checkout is `1 failed, 1676 passed`, the failure `tests/test_gates_cross_machine_paths.py::TestCrossMachineReRoot::test_relative_path_unchanged` (a CWD-`config.json` property — the baton's carried item, not this plan's); a fresh 3.12 venv from `requirements.txt` builds in ~7s (pytest 9.1.1, anthropic 1.3.0) and a fresh 3.9 venv from the same file builds in ~11s with pip's "version 21.2.4 … consider upgrading" WARNING and urllib3's `NotOpenSSLWarning` on stderr (pytest 8.4.2, anthropic 0.125.0) — both import all six. ⚠️ The suite's `TestDbPath` asserts the word `bellows` appears in the resolved bellows root, so a scratch copy MUST live in a directory whose basename is `bellows` (a copy named otherwise fails exactly that one test — measured, both interpreters).
+Measured 2026-09-02 on the mini (walk 0): `requirements.txt` declares six entries (`anthropic watchdog flask requests pyyaml pytest`), all importable from the live venv; the live suite from the canonical checkout is `1 failed, 1676 passed`, the failure `tests/test_gates_cross_machine_paths.py::TestCrossMachineReRoot::test_relative_path_unchanged` (a CWD-`config.json` property — the baton's carried item, not this plan's; from a worktree or any tree without `config.json` the suite is `1676 passed, 1 skipped`, measured three ways today); a fresh 3.12 venv from `requirements.txt` builds in ~7s (pytest 9.1.1, anthropic 1.3.0) and a fresh 3.9 venv from the same file builds in ~11s with pip's "version 21.2.4 … consider upgrading" WARNING and urllib3's `NotOpenSSLWarning` on stderr (pytest 8.4.2, anthropic 0.125.0) — both import all six. ⚠️ The suite's `TestDbPath` asserts the word `bellows` appears in the resolved bellows root, so a scratch copy MUST live in a directory whose basename is `bellows` (a copy named otherwise fails exactly that one test — measured, both interpreters).
 
 ## What this plan does
 
@@ -60,7 +60,7 @@ exec .venv/bin/python -m pytest tests -q -p no:cacheprovider
 - **The bootstrap is idempotent and exits nonzero on any failure** (`set -euo pipefail`; the suite's exit is the script's exit via `exec`).
 - **Scratch copies live in a directory whose basename is `bellows`** (the `TestDbPath` property, measured) — never in the worktree, never on the canonical checkout.
 - **The bootstrap needs PyPI reachable** (`pip install` from `requirements.txt`; measured reachable on this machine at walk 0, ~7s under 3.12). Offline, `set -e` ends the script at the install with pip's error on stderr and a nonzero exit — a HALT with its cause visible, never a silent half-venv.
-- **`known_failures: 1`, named:** `tests/test_gates_cross_machine_paths.py::TestCrossMachineReRoot::test_relative_path_unchanged` from the worktree under the canonical venv. Any OTHER failure, anywhere, is a HALT/Critical.
+- **`known_failures: 0`.** From the worktree under the canonical venv the suite is `1676 passed, 1 skipped`: a worktree holds no `config.json`, and the canonical checkout's one failure (`tests/test_gates_cross_machine_paths.py::TestCrossMachineReRoot::test_relative_path_unchanged`) is a CWD-`config.json` property that does not occur there — measured 2026-09-02 in a real worktree's QA evidence (`hooks-de-hardcode`) and twice in scratch. Any failure, anywhere, is a HALT/Critical.
 
 ## Numbers discipline — the pins DEV re-derives (measured 2026-09-02 by the Planner)
 
@@ -70,7 +70,7 @@ exec .venv/bin/python -m pytest tests -q -p no:cacheprovider
 | P2 | **`CLAUDE_SHA`** — bellows `CLAUDE.md` | `ecd39219110fa814` | same, in the worktree |
 | P3 | **`REQ`** — `requirements.txt` sha and entries | `d3bb0209d85b16a7`; six lines: `anthropic watchdog flask requests pyyaml pytest`; `.venv/` in `.gitignore` line 8 | `shasum`; `cat requirements.txt`; `grep -n venv .gitignore` |
 | P4 | **`ANCHORS`** — F2a, F2b, F2c, G1, G2, G3 | **6**, each count 1 | `/usr/bin/grep -cF -- '<anchor>' <file>` |
-| P5 | **`SUITE`** — from the worktree under the canonical venv | `1 failed, 1676 passed`; the one failure named above | `BPY -m pytest tests -q -p no:cacheprovider` |
+| P5 | **`SUITE`** — from the worktree under the canonical venv | `1676 passed, 1 skipped`, exit 0 | `BPY -m pytest tests -q -p no:cacheprovider` |
 | P6 | **`INTERPRETERS`** | `python3` → `/usr/bin/python3`, `Python 3.9.6`; `python3.12` → `/opt/homebrew/bin/python3.12`, `Python 3.12.14` | `command -v python3 python3.12; python3 --version; python3.12 --version` |
 | P7 | **`TOKENS`** post-edit | in `CLAUDE.md`: `.venv/bin/python dashboard.py` 1 · `.venv/bin/python bellows.py` 1 · `.venv/bin/python status.py` 1 · `scripts/bootstrap.sh` 1 · `python dashboard.py          # primary` 0; in `MACHINE_SETUP.md`: `**Version:** 1.2 (2026-09-02).` 1 · `- **1.2 (2026-09-02):**` 1 · `thread 84; plan bellows-bootstrap` 1 · `demands that venv HALTs on the shop` 0 · `python3 -m venv .venv && .venv/bin/pip install` 0 | `/usr/bin/grep -cF` |
 
@@ -80,7 +80,7 @@ exec .venv/bin/python -m pytest tests -q -p no:cacheprovider
 >
 > ⛔ **A0 — resolve BOTH roots in one compound and state both in the dev log:** `cd "$(git rev-parse --show-toplevel)" && [ -f bellows.py ] && [ -f requirements.txt ] && [ -d tests ] && echo TREE_OK` — HALT unless TREE_OK; `GOV=/Users/marklehn/Developer/eluvian-governance; [ -f "$GOV/MACHINE_SETUP.md" ] && [ -f "$GOV/COMPANY.md" ] && echo GOV_OK` — HALT unless GOV_OK. Re-derive `GOV` in every compound. `BPY=/Users/marklehn/Developer/bellows/.venv/bin/python` (the canonical venv; re-derive per compound).
 >
-> ⛔ **A1 — re-derive P1–P6; state each; a mismatch is a HALT quoting both.** P5 is a full suite run from the worktree under `$BPY` (about a minute): the summary line and the one named failure; a second failure or a different name is a HALT. Then `git -C "$GOV" status --porcelain -- MACHINE_SETUP.md` → EMPTY (else HALT: someone is editing it).
+> ⛔ **A1 — re-derive P1–P6; state each; a mismatch is a HALT quoting both.** P5 is a full suite run from the worktree under `$BPY` (about a minute): `1676 passed, 1 skipped`, exit 0; any `failed` is a HALT. Then `git -C "$GOV" status --porcelain -- MACHINE_SETUP.md` → EMPTY (else HALT: someone is editing it).
 >
 > **A2 — F1:** write `scripts/bootstrap.sh` EXACTLY as given (heredoc with a quoted delimiter so nothing expands), `chmod +x scripts/bootstrap.sh`, `bash -n scripts/bootstrap.sh` → exit 0. **F2:** the three `CLAUDE.md` edits by one script that asserts each anchor's count (1) before applying; then the five `CLAUDE.md` tokens of P7.
 >
@@ -116,7 +116,7 @@ exec .venv/bin/python -m pytest tests -q -p no:cacheprovider
 > - **Item 1 — the bellows commit is what the plan says:** `git show --stat HEAD --format=` lists exactly the three bellows paths; `test -x scripts/bootstrap.sh && echo EXEC_BIT`; `bash -n scripts/bootstrap.sh; echo "syntax=$?"` → 0; the five `CLAUDE.md` tokens of P7 with their counts.
 > - **Item 2 — the governance commit and tokens (P7):** `git -C "$GOV" log --oneline -1 -- MACHINE_SETUP.md` (the `[<id>]` commit); the five `MACHINE_SETUP.md` greps of P7, each with its count; `git -C "$GOV" status --porcelain -- MACHINE_SETUP.md` → EMPTY.
 > - **Item 3 — the bootstrap, by a second pair of hands (T-3):** A4 repeated in your OWN scratch copy (`/tmp/bb-qa-$(basename "$(git rev-parse --show-toplevel)")/bellows` — the basename `bellows` is load-bearing), twice: first run → `interpreter:` naming `/opt/homebrew/bin/python3.12`, `1676 passed, 1 skipped`, `exit=0`, `VENV_CREATED`; capture `stat -f %m` of `.venv/bin/python`, second run → `1676 passed, 1 skipped`, `exit=0`, the mtime EQUAL to the captured one. Then the adversarial variant: `PATH=/usr/bin:/bin bash "<a THIRD scratch copy>/scripts/bootstrap.sh"` (no Homebrew on PATH) → the `interpreter:` line names `/usr/bin/python3` (3.9.6), pip's "version 21.2.4 … consider upgrading" WARNING and urllib3's `NotOpenSSLWarning` on stderr (both expected under 3.9 — measured at walk 0, not failures), and the suite runs under the 3.9 venv's pytest 8.4.2 to `1676 passed, 1 skipped, 1 warning` with `exit=0` (measured at walk 0 by running this exact script under `PATH=/usr/bin:/bin`) — quote the lines.
-> - **Item 4 — the full-suite file:** `"$BPY" -m pytest tests -q -p no:cacheprovider > knowledge/qa/evidence/bellows-bootstrap-2026-09-02/full-suite-bellows-bootstrap.txt 2>&1; echo "exit=$?" >> knowledge/qa/evidence/bellows-bootstrap-2026-09-02/full-suite-bellows-bootstrap.txt` → `1 failed, 1676 passed`, the one named known failure, `exit=1` (the canonical venv, untouched by this plan; the failure is the baton's carried item).
+> - **Item 4 — the full-suite file:** `"$BPY" -m pytest tests -q -p no:cacheprovider > knowledge/qa/evidence/bellows-bootstrap-2026-09-02/full-suite-bellows-bootstrap.txt 2>&1; echo "exit=$?" >> knowledge/qa/evidence/bellows-bootstrap-2026-09-02/full-suite-bellows-bootstrap.txt` → `1676 passed, 1 skipped`, `exit=0` (the canonical venv, untouched by this plan; a worktree holds no `config.json`, so the canonical checkout's known failure does not occur here).
 >
 > **(C) The report** `qa-receipt.md`: the verification table, the operator-act note (the venv on the canonical checkouts is still the operator's act per machine — the mini's bootstrap run, the Air's pull + both bootstraps + dashboard restart under the venv; the Planner pushes governance), the Rule 20 stdout APPENDED. Commit: `git add knowledge/qa/evidence/bellows-bootstrap-2026-09-02/ && git commit -m "[<id>] QA: bellows bootstrap proven twice on scratch + no-Homebrew variant; MACHINE_SETUP v1.2 tokens" -- knowledge/qa/evidence/bellows-bootstrap-2026-09-02/`. STOP.
 >
@@ -183,10 +183,22 @@ PASSED — SELF-CHECK PASSED — all evidence files present, no hedging keywords
 - Integration-record:  w5 dry — instruction 0 / record 0 — the manifest re-emitted at the second freeze
 - ACID:                w5 dry — instruction 0 / record 0 — unchanged
 - **Walk 5 total: 0 findings — instruction 0 / record 0, ALL FIVE LENSES DRY.** Instruction series 5 → 1 → 0 → 1 → 0.
+- Weak spots:          w6 1 folded — instruction 1 / record 0 (a sibling seat's finding swept across the plan set: the suite pin was measured in the CANONICAL checkout and carried to the WORKTREE — a worktree holds no `config.json`, so the one failure never occurs there and `known_failures: 1` was a pre-declared override; measured in a real worktree's QA evidence today and twice in scratch; the header, P5, A1, the MUST-PRESERVE bullet and QA Item 4 re-authored to `1676 passed, 1 skipped`, exit 0, `known_failures: 0`)
+- Destruction:         w6 dry — instruction 0 / record 0 — unchanged
+- Vulnerabilities:     w6 dry — instruction 0 / record 0 — unchanged
+- Integration-record:  w6 dry — instruction 0 / record 0 — the operator note about the CANONICAL run (exit 1 with the named failure) stays true and is the location where it is true
+- ACID:                w6 dry — instruction 0 / record 0 — unchanged
+- **Walk 6 total: 1 finding, 1 folded — instruction 1 / record 0; 0 of 1 fold-introduced (origin: plan B's EXECUTION seat, X-4, swept here).**
+- Weak spots:          w7 dry — instruction 0 / record 0 — the six edited sites re-read; every remaining `1 failed` in the plan names the canonical checkout, none the worktree; the Cycle Log covered
+- Destruction:         w7 dry — instruction 0 / record 0 — unchanged
+- Vulnerabilities:     w7 dry — instruction 0 / record 0 — unchanged
+- Integration-record:  w7 dry — instruction 0 / record 0 — the manifest re-emitted at the third freeze
+- ACID:                w7 dry — instruction 0 / record 0 — unchanged
+- **Walk 7 total: 0 findings — instruction 0 / record 0, ALL FIVE LENSES DRY.** Instruction series 5 → 1 → 0 → 1 → 0 → 1 → 0.
 
 **Conformance (§5):** first run at walk 0 (shape-stability, on v0) and re-run after each fold round and at the freeze: `plan_lint` exit 0 / 0 FAIL at the faithful mirror — expected WARN set (o2)×6 (project-relative deposits — the six worktree-relative entries; the absolute governance path is not one) and the two advisory "mentions tests but declares no test scope" lines (the Test Scope header names the suite; the heuristic keys on a phrase it does not find — advisory, left as is); `cycle_check` BAR_MET; `fold_check` baseline re-saved at each intended change with a note; `propagation_check` exit 0.
 
-**Closing:** ✅ **BAR MET — walk 5 dry (all five lenses) after walk 1's six folds, walk 2's one, and walk 4's decision fold (the CEO's vocabulary ruling, applied after the first freeze and re-frozen); T1, no panel owed, none convened.** Substrate present (the register's rows entered at each phase from captured output, two of them marked late with their evidence, the file committed at the freeze — not per phase, and the record says so; `fold_check` baseline). The closing-record re-read (§2.7) ran against this block, the register and the emitted manifest at the freeze.
+**Closing:** ✅ **BAR MET — walk 7 dry (all five lenses) after walk 1's six folds, walk 2's one, walk 4's decision fold (the CEO's vocabulary ruling) and walk 6's one (a sibling seat's location finding, swept in after the second freeze); T1, no panel owed, none convened.** Substrate present (the register's rows entered at each phase from captured output, two of them marked late with their evidence, the file committed at the freeze — not per phase, and the record says so; `fold_check` baseline). The closing-record re-read (§2.7) ran against this block, the register and the emitted manifest at the freeze.
 
 **Fold-and-deposit exactly once.**
 
@@ -197,7 +209,7 @@ class: shop-infra
 reads: /Users/marklehn/Developer/bellows/requirements.txt, /Users/marklehn/Developer/bellows/.gitignore, /Users/marklehn/Developer/bellows/CLAUDE.md, /Users/marklehn/Developer/bellows/dashboard.py, /Users/marklehn/Developer/eluvian-governance/MACHINE_SETUP.md, /Users/marklehn/Developer/forge_lessons/knowledge/decisions/Done/executable-100016.md
 writes: scripts/bootstrap.sh, CLAUDE.md, /Users/marklehn/Developer/eluvian-governance/MACHINE_SETUP.md, knowledge/development/dev-log-bellows-bootstrap-2026-09-02.md, knowledge/qa/evidence/bellows-bootstrap-2026-09-02/qa-receipt.md, knowledge/qa/evidence/bellows-bootstrap-2026-09-02/probes-raw.txt, knowledge/qa/evidence/bellows-bootstrap-2026-09-02/full-suite-bellows-bootstrap.txt
 open_forks: an interpreter guard in dashboard.py (refuse or warn when not under the venv — a bellows code change, its own thread); the align hook's requirements-importable assert (the sketch's missing row — its own thread); whether the Air's dashboard restart under the venv should be a tuyere action rather than a keyboard act
-walks: 5
-yields: 5, 1, 0, 1, 0
+walks: 7
+yields: 5, 1, 0, 1, 0, 1, 0
 validation: cycle_check=BAR_MET, plan_lint=0_FAIL, fold_check=PASS
-coherence: 5/5 walks have register rows
+coherence: 7/7 walks have register rows
