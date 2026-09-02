@@ -1,0 +1,8 @@
+{
+  "slug": "diagnostic-drafting-stage-pricing",
+  "content_hash": "f1ff9f1c7ca1c527b82537e67957fdfb48cd426b819136365b3e7230978feec3",
+  "session_id": "1663ee38-f4e9-49ea-a4ef-9362de630993",
+  "armed_at": "2026-09-02T00:15:13.204184",
+  "watcher": "gate_watcher.py spawned detached (pid 4514); log: logs/watch/diagnostic-drafting-stage-pricing.md.log",
+  "attestation_boundary": "This receipt proves the watcher was ARMED at write time. It does NOT prove the watcher stayed alive. Liveness of a session-local monitor is not externally verifiable."
+}
