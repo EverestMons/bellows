@@ -1,0 +1,8 @@
+{
+  "slug": "executable-verdict-signal",
+  "content_hash": "c4416bdd6560bdb5e7a3fd1a5992155748cbb9fc5290d786c7f20dda64d33a6f",
+  "session_id": "1663ee38-f4e9-49ea-a4ef-9362de630993",
+  "armed_at": "2026-09-01T20:33:22.687182",
+  "watcher": "gate_watcher.py spawned detached (pid 78651); log: logs/watch/executable-verdict-signal.md.log",
+  "attestation_boundary": "This receipt proves the watcher was ARMED at write time. It does NOT prove the watcher stayed alive. Liveness of a session-local monitor is not externally verifiable."
+}
