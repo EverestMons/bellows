@@ -1,0 +1,23 @@
+{
+  "plan_lint": {
+    "exit": 0,
+    "signals": [
+      "(o1) WARN: missing path `/Users/marklehn/Developer/GitHub`",
+      "(o2) WARN: Deposits entry `hooks/commands/wrap.md` is not project-prefixed or absolute",
+      "(o2) WARN: Deposits entry `hooks/eluvian/eluvian_align_hook.py` is not project-prefixed or absolute",
+      "(o2) WARN: Deposits entry `hooks/eluvian/wrap_arm_hook.py` is not project-prefixed or absolute",
+      "(o2) WARN: Deposits entry `hooks/eluvian/wrap_check.py` is not project-prefixed or absolute",
+      "(o2) WARN: Deposits entry `hooks/eluvian/wrap_stop_hook.py` is not project-prefixed or absolute",
+      "(o2) WARN: Deposits entry `knowledge/development/dev-log-hooks-de-hardcode-N-N-N.md` is not project-prefixed or absolute",
+      "(o2) WARN: Deposits entry `knowledge/qa/evidence/hooks-de-hardcode-N-N-N/full-suite-hooks-de-hardcode.txt` is not project-prefixed or absolute",
+      "(o2) WARN: Deposits entry `knowledge/qa/evidence/hooks-de-hardcode-N-N-N/probes-raw.txt` is not project-prefixed or absolute",
+      "(o2) WARN: Deposits entry `knowledge/qa/evidence/hooks-de-hardcode-N-N-N/qa-receipt.md` is not project-prefixed or absolute",
+      "(o2) WARN: Deposits entry `tests/test_hook_default_root.py` is not project-prefixed or absolute",
+      "PIN-CHECK: kind=prefix line=N token=11a0af73cc11\u2026 result=ambiguous",
+      "PIN-CHECK: kind=prefix line=N token=37c0f8af28df\u2026 result=ambiguous",
+      "PIN-CHECK: kind=prefix line=N token=571b2552ab34\u2026 result=ambiguous",
+      "PIN-CHECK: kind=prefix line=N token=61e64c61a8f5\u2026 result=ambiguous",
+      "PIN-CHECK: kind=prefix line=N token=c840bbfae2ad\u2026 result=ambiguous"
+    ]
+  }
+}

@@ -180,7 +180,7 @@ class: shop-infra
 reads: /Users/marklehn/Developer/bellows/hooks/README.md, /Users/marklehn/Developer/bellows/plan_claim.py, /Users/marklehn/Developer/bellows/bellows_root.py, /Users/marklehn/Developer/bellows/tests/test_plan_claim.py, /Users/marklehn/.claude/settings.json
 writes: hooks/eluvian/wrap_arm_hook.py, hooks/eluvian/wrap_stop_hook.py, hooks/eluvian/wrap_check.py, hooks/eluvian/eluvian_align_hook.py, hooks/commands/wrap.md, tests/test_hook_default_root.py, knowledge/development/dev-log-hooks-de-hardcode-2026-09-02.md, knowledge/qa/evidence/hooks-de-hardcode-2026-09-02/qa-receipt.md, knowledge/qa/evidence/hooks-de-hardcode-2026-09-02/probes-raw.txt, knowledge/qa/evidence/hooks-de-hardcode-2026-09-02/full-suite-hooks-de-hardcode.txt
 open_forks: none
-walks: 0
-yields: 0
-validation: cycle_check=PENDING, plan_lint=PENDING, fold_check=PENDING
-coherence: 0/0 walks have register rows
+walks: 2
+yields: 1, 0
+validation: cycle_check=BAR_MET, plan_lint=0_FAIL, fold_check=PASS
+coherence: 2/2 walks have register rows
