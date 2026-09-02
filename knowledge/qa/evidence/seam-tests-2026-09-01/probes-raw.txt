@@ -1,0 +1,61 @@
+=== Item 1 — Edit verification probes ===
+Date: Tue Sep  1 23:36:32 CDT 2026
+
+--- 1a: monkeypatch resolve_projects_parent count in test_plan_claim.py ---
+6
+
+--- 1b: import bellows_root count in test_plan_claim.py ---
+1
+
+--- 1c: awaiting_verdict count in test_gate_watcher.py ---
+9
+
+--- 1d: 2 * 3 * 5 count in test_gate_watcher.py ---
+1
+
+--- 1e: six awaiting_verdict cells in pytest (behaves_as_classified and awaiting_verdict) ---
+......                                                                   [100%]
+6 passed, 51 deselected in 0.99s
+
+--- 1f: git show --stat HEAD (must list exactly the three declared paths) ---
+ .../development/dev-log-seam-tests-2026-09-01.md   | 87 ++++++++++++++++++++++
+ tests/test_gate_watcher.py                         | 11 ++-
+ tests/test_plan_claim.py                           |  7 ++
+ 3 files changed, 103 insertions(+), 2 deletions(-)
+
+=== Item 1 done ===
+
+=== Item 2 — Seam is really hidden, not merely passing ===
+--- 2a: resolve_projects_parent output ---
+/Users/marklehn/Developer
+
+--- 2b: four seam ids under the failing condition ---
+....                                                                     [100%]
+4 passed, 45 deselected in 0.95s
+
+=== Item 2 done ===
+
+=== Item 4 — 100011 proof re-affirmed on main (both ways) ===
+--- 4a: without ELUVIAN_WRAP_ROOT ---
+/Users/marklehn/Developer/eluvian-governance
+/Users/marklehn/Developer
+/Users/marklehn/Developer/tuyere
+False
+
+--- 4b: with ELUVIAN_WRAP_ROOT=/Users/marklehn/Developer ---
+/Users/marklehn/Developer/eluvian-governance
+/Users/marklehn/Developer
+/Users/marklehn/Developer/tuyere
+False
+
+=== Item 4 done ===
+
+=== Item 5 — Residual-literal sweep ===
+--- 5a: grep sweep for /Users/marklehn/Developer/GitHub in *.py (excluding dirs) ---
+exit=1
+
+--- 5b: liveness pair (Developer/GitHub count in bellows_root.py) ---
+1
+
+=== Item 5 done ===
+=== probes-raw.txt complete ===
