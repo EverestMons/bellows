@@ -7,7 +7,6 @@
       "(o2) WARN: Deposits entry `knowledge/qa/evidence/verdict-signal-N-N-N/full-suite-verdict-signal.txt` is not project-prefixed or absolute",
       "(o2) WARN: Deposits entry `knowledge/qa/evidence/verdict-signal-N-N-N/probes-raw.txt` is not project-prefixed or absolute",
       "(o2) WARN: Deposits entry `knowledge/qa/evidence/verdict-signal-N-N-N/qa-receipt.md` is not project-prefixed or absolute",
-      "(r) WARN: line=N probe constant without a supersede-class clause within 2 lines \u2014 a wrong authored number here HARD-FAILS a correct state (the N class); add measure-record-supersede language or verify the constant is structural",
       "PIN-CHECK: kind=prefix line=N token=09b2b93b7aad\u2026 result=ambiguous",
       "PIN-CHECK: kind=prefix line=N token=412abd155d50\u2026 result=ambiguous",
       "PIN-CHECK: kind=prefix line=N token=965df839d6e9\u2026 result=ambiguous",
@@ -15,7 +14,7 @@
       "PIN-CHECK: kind=prefix line=N token=cc0ddb050020\u2026 result=ambiguous",
       "PIN-CHECK: kind=prefix line=N token=e8a8e0b628dc\u2026 result=ambiguous",
       "WARN: Drafting Cycle block has no **Closing:** line (DRAFTING_CYCLE.md \u00a73)",
-      "WARN: Drafting Cycle block missing lens(es): Weak spots, Destruction, Vulnerabilities, Integration, ACID (DRAFTING_CYCLE.md \u00a73)"
+      "WARN: Drafting Cycle closing indicates fold as last event, not a dry lens pass (DRAFTING_CYCLE.md \u00a72)"
     ]
   }
 }
