@@ -1,0 +1,3 @@
+continue
+
+CONTINUE: gates 11/11 PASS; forge commit 4df69c4 lists exactly the three declared forge paths; governance commit 18d3559 [100016] on MACHINE_SETUP.md with the six v1.1 tokens present (Version 1.1, History 1.1, scripts/bootstrap.sh, NO bellows venv, does not carry it, the Hooks act) and the v1.0 sentence gone, porcelain empty; scripts/bootstrap.sh executable with clean syntax; CLAUDE.md gained the Interpreter section; dev-log: pins matched, the bootstrap on a scratch copy → interpreter /opt/homebrew/bin/python3.12 (3.12.14), 80 passed, exit=0, VENV_CREATED, idempotent second run 80 passed; the fallback interpreter still 80 passed. Governance pushed by the Planner.
