@@ -1,4 +1,4 @@
-"""Tests for tools/run_check.py — six pure judge tests + two live smokes."""
+"""Tests for tools/run_check.py — pure judge tests + live smokes."""
 import subprocess
 import sys
 from pathlib import Path
@@ -7,7 +7,7 @@ import pytest
 
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT / "tools"))
-from run_check import judge_cycle, judge_lint, judge_register
+from run_check import judge_cycle, judge_lint, judge_register, judge_propagation
 
 
 # ---------------------------------------------------------------------------
@@ -93,6 +93,71 @@ class TestJudgeRegister:
         verdict, reason = judge_register("", "", 0)
         assert verdict == "FAIL"
         assert "positive control" in reason
+
+
+# ---------------------------------------------------------------------------
+# judge_propagation — four cases from real checker output (M3 kill target)
+# ---------------------------------------------------------------------------
+
+# propagation_check exit 0 — CLEAN run (after F1 the tool parses the plan)
+PROP_CLEAN_STDOUT = (
+    "declared symbols: 3 (values: 5)\n"
+    "  SUITE: ['1782']\n"
+    "  POPULATION: ['51', '34', '17']\n"
+    "  CORPUS: ['15']\n"
+    "instruction region: 45 lines of 120\n\n"
+    "(1) RESTATED VALUE — a declared value written as a bare numeral in prose\n"
+    "  none\n\n"
+    "(2) ORDERING — distinct task sequences (>1 distinct = a claim stated two ways)\n"
+    "  0 distinct sequence — consistent\n\n"
+    "(3) ARITHMETIC — same operands, different constants\n"
+    "  none\n\n"
+    "CLEAN — no divergence found\n"
+)
+
+# propagation_check exit 1 — divergences reported
+PROP_DIVERGENT_STDOUT = (
+    "declared symbols: 2 (values: 3)\n"
+    "instruction region: 30 lines of 80\n\n"
+    "(1) RESTATED VALUE\n"
+    "  L12: `SUITE` = 1782 restated unqualified\n"
+    "      Run all 1782 tests.\n"
+    "  L25: `POPULATION` = 51 restated unqualified\n"
+    "      Covers all 51 rows.\n\n"
+    "DIVERGENCES: 2\n"
+)
+
+# propagation_check exit 2 — no declarations parsed
+PROP_NOTRUN_STDOUT = (
+    "declared symbols: 0 (values: 0)\n\n"
+    "ERROR: no symbol declarations parsed — detector (1) cannot run.\n"
+    "  Expected a Numbers-discipline row of the form: ...\n"
+    "  This is EXIT 2 (could not run), never a clean result.\n"
+)
+
+
+class TestJudgePropagation:
+    def test_clean_pass(self):
+        verdict, reason = judge_propagation(PROP_CLEAN_STDOUT, "", 0)
+        assert verdict == "PASS"
+        assert "CLEAN" in reason
+        assert "3" in reason  # N symbols
+
+    def test_divergent_fail(self):
+        verdict, reason = judge_propagation(PROP_DIVERGENT_STDOUT, "", 1)
+        assert verdict == "FAIL"
+        assert "2" in reason  # N divergences
+
+    def test_not_run_fail(self):
+        """M3 kill: rc 2 must be FAIL, never PASS."""
+        verdict, reason = judge_propagation(PROP_NOTRUN_STDOUT, "", 2)
+        assert verdict == "FAIL"
+        assert "NOT RUN" in reason
+
+    def test_crash_fail(self):
+        verdict, reason = judge_propagation("", "", 99)
+        assert verdict == "FAIL"
+        assert "crashed" in reason.lower() or "99" in reason
 
 
 # ---------------------------------------------------------------------------

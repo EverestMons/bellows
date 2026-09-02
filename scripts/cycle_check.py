@@ -589,8 +589,29 @@ def emit_manifest(plan_path):
         else:
             fold_verdict = "N/A"
 
+        try:
+            pc_r = subprocess.run(
+                [sys.executable,
+                 str(Path(__file__).resolve().parent / "propagation_check.py"),
+                 str(plan_path)],
+                capture_output=True, text=True, timeout=30,
+            )
+            if pc_r.returncode == 0:
+                pc_val = "CLEAN"
+            elif pc_r.returncode == 1:
+                import re as _re
+                pm = _re.search(r'DIVERGENCES:\s*(\d+)', pc_r.stdout)
+                pc_val = f"DIVERGENT:{pm.group(1)}" if pm else "DIVERGENT:?"
+            elif pc_r.returncode == 2:
+                pc_val = "NOT_RUN"
+            else:
+                pc_val = "N/A"
+        except Exception:
+            pc_val = "N/A"
+
         validation_str = (
-            f"cycle_check={verdict}, plan_lint={lint_val}, fold_check={fold_verdict}"
+            f"cycle_check={verdict}, plan_lint={lint_val}, "
+            f"fold_check={fold_verdict}, propagation_check={pc_val}"
         )
         coherence_str = _compute_coherence(parsed, plan_path)
     else:

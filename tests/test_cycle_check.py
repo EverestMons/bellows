@@ -603,6 +603,25 @@ def test_emit_manifest_coherence_no_register(tmp_path):
     assert "coherence: N/A (no register declared)" in r.stdout
 
 
+def test_emit_manifest_propagation_field(tmp_path):
+    """M4 kill: --emit-manifest validation: line carries propagation_check=."""
+    plan = _make_plan(tmp_path, (
+        "**Tier:** T1\n"
+        "- Weak spots: w1 1 folded — instruction 1 / record 0; w2 dry.\n"
+        "- Destruction: w1 dry; w2 dry.\n"
+        "- Vulnerabilities: w1 dry; w2 dry.\n"
+        "- Integration-record: w1 dry; w2 dry.\n"
+        "- ACID: w1 dry; w2 dry.\n"
+        "**Closing:** walk 2 dry; cycle CLOSED.\n"
+    ))
+    r = subprocess.run(
+        [sys.executable, str(SCRIPTS / "cycle_check.py"), "--emit-manifest", str(plan)],
+        capture_output=True, text=True, timeout=30,
+    )
+    assert r.returncode == 0
+    assert "propagation_check=" in r.stdout
+
+
 # ========== Tier-2 state-space suite (Rule 103, threads 52/58/63) ==========
 #
 # Three dimensions from the SYSTEM:
