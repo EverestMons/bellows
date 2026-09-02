@@ -1,0 +1,8 @@
+{
+  "slug": "executable-hooks-de-hardcode",
+  "content_hash": "224a5be0909f753a2d0b7b4bfecf0426a495c746208c2815d5c7a854993f4fd1",
+  "session_id": "1663ee38-f4e9-49ea-a4ef-9362de630993",
+  "armed_at": "2026-09-02T00:30:59.674545",
+  "watcher": "gate_watcher.py spawned detached (pid 8911); log: logs/watch/executable-hooks-de-hardcode.md.log",
+  "attestation_boundary": "This receipt proves the watcher was ARMED at write time. It does NOT prove the watcher stayed alive. Liveness of a session-local monitor is not externally verifiable."
+}
