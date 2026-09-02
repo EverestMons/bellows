@@ -2,7 +2,6 @@
   "plan_lint": {
     "exit": 0,
     "signals": [
-      "(o1) WARN: missing path `/Users/marklehn/Developer/eluvian-governance/governance/knowledge/research/walk-register-gate2-pt-w28-a-N-N-N.md`",
       "(o2) WARN: Deposits entry `knowledge/development/dev-log-gate2-pt-w28-a-N-N-N.md` is not project-prefixed or absolute",
       "(o2) WARN: Deposits entry `knowledge/qa/evidence/gate2-pt-w28-a-N-N-N/flip-capture.txt` is not project-prefixed or absolute",
       "(o2) WARN: Deposits entry `knowledge/qa/evidence/gate2-pt-w28-a-N-N-N/full-suite-gate2-pt-w28-a.txt` is not project-prefixed or absolute",
