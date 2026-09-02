@@ -805,6 +805,30 @@ def test_c2_long_component_no_traceback(tmp_path):
     assert r.returncode == 1
 
 
+def test_c2_oversized_backticked_ref_escalates_no_traceback(tmp_path):
+    # thread 92, M3-drop-oserror-guard
+    """C-2: backticked ref with >255-byte component in git root with scripts/ → ESCALATE:assert-fail:2 in-process."""
+    import subprocess as _sp
+    git_dir = tmp_path / "repo"
+    git_dir.mkdir()
+    _sp.run(["git", "-C", str(git_dir), "init"], capture_output=True, check=True)
+    (git_dir / "scripts").mkdir()
+    ref = "scripts/" + "x" * 300 + ".md"
+    plan = git_dir / "plan.md"
+    plan.write_text(
+        "# Plan\n\n## Drafting Cycle\n"
+        f"**Walk register:** `{ref}`\n"
+        "- Weak spots: w1 2 folded — instruction 2 / record 0; w2 1 folded — instruction 1 / record 0.\n"
+        "- Destruction: w1 dry; w2 dry.\n"
+        "**Closing:** NOT CLOSED at walk 2.\n"
+        "## End\n",
+        encoding="utf-8",
+    )
+    verdict, code = cycle_check.run_check(plan)
+    assert verdict == "ESCALATE:assert-fail:2"
+    assert code == 1
+
+
 # ---------- C-3: governance-root fallback & UNRESOLVED ----------
 
 
@@ -896,6 +920,19 @@ def test_58_negation_unmet_not_a_claim(tmp_path):
         "- Destruction: w1 dry.\n"
         "**Closing:** bar not met at walk 1.\n"
     )
+    verdict, code = cycle_check.run_check(plan)
+    assert verdict == "CONTINUE"
+    assert code == 0
+
+
+def test_58_negated_claim_phrase_stripped_continue(tmp_path):
+    # thread 92, M2-drop-negation-stripping
+    """58: 'has not met the bar' strips → no claim token survives → CONTINUE."""
+    plan = _make_plan(tmp_path, (
+        "- Weak spots: w1 2 folded — instruction 2 / record 0; w2 1 folded — instruction 1 / record 0.\n"
+        "- Destruction: w1 dry; w2 dry.\n"
+        "**Closing:** has not met the bar at walk 2 — one lens still folding.\n"
+    ))
     verdict, code = cycle_check.run_check(plan)
     assert verdict == "CONTINUE"
     assert code == 0

@@ -1,0 +1,12 @@
+{
+    "target": "tools/run_check.py",
+    "mutants": [
+        {
+            "name": "M3-judge-propagation-rc2-as-pass",
+            "why": "F2 fix: exit 2 from propagation_check means 'could not run' \u2014 no declarations parsed. Scoring it as PASS manufactures the false confidence this tool exists to prevent.",
+            "anchor": "        return \"FAIL\", \"NOT RUN (exit 2: no declarations parsed)\"",
+            "replacement": "        return \"PASS\", \"NOT RUN (exit 2: no declarations parsed)\"",
+            "expect_fail": "tests/test_run_check.py::TestJudgePropagation::test_not_run_fail"
+        }
+    ]
+}

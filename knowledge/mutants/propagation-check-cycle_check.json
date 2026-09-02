@@ -1,0 +1,12 @@
+{
+    "target": "scripts/cycle_check.py",
+    "mutants": [
+        {
+            "name": "M4-manifest-propagation-pair-dropped",
+            "why": "F3 fix: the emitter's validation: field must carry propagation_check= so the manifest is honest about the tool's state. Dropping the pair makes a NOT_RUN or DIVERGENT plan look like a three-pair manifest when it is actually four.",
+            "anchor": "            f\"fold_check={fold_verdict}, propagation_check={pc_val}\"",
+            "replacement": "            f\"fold_check={fold_verdict}\"",
+            "expect_fail": "tests/test_cycle_check.py::test_emit_manifest_propagation_field"
+        }
+    ]
+}

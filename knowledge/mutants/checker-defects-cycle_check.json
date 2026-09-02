@@ -10,17 +10,17 @@
         },
         {
             "name": "M2-drop-negation-stripping",
-            "why": "Thread 58: NOT CLOSED must be stripped before searching for claim tokens so that 'NOT CLOSED' does not match as a positive claim. Removing stripping causes NOT CLOSED plans to escalate as claimed-close-unmet.",
+            "why": "Thread 58: NOT CLOSED must be stripped before searching for claim tokens so that 'NOT CLOSED' does not match as a positive claim. Removing stripping causes NOT CLOSED plans to escalate as claimed-close-unmet. The earlier selector (test_58_not_closed_returns_continue) was non-discriminating because its closing text contains no claim token even unstripped; the discriminating form is 'has not met the bar', where negation-stripping of 'not' turns 'not met' into ' met', matching _CLAIM_RE only in the mutant.",
             "anchor": "    stripped = _NEGATION_RE.sub(\"\", block_text)",
             "replacement": "    stripped = block_text",
-            "expect_fail": "tests/test_cycle_check.py::test_58_not_closed_returns_continue"
+            "expect_fail": "tests/test_cycle_check.py::test_58_negated_claim_phrase_stripped_continue"
         },
         {
             "name": "M3-drop-oserror-guard",
-            "why": "C-2 fix: oversized path component from commentary text in the walk register line triggers OSError ENAMETOOLONG on macOS (thread 52). Removing the guard crashes the checker.",
+            "why": "C-2 fix: oversized path component from commentary text in the walk register line triggers OSError ENAMETOOLONG on macOS (thread 52). Removing the guard crashes the checker. The earlier selector (test_c2_long_component_no_traceback) was non-discriminating because its commentary tail is stripped before exists() runs; the discriminating form backticks the oversized component directly in the reference so it reaches the git_root/ref probe.",
             "anchor": "                except OSError:  # C-2: oversized path component (thread 52)",
             "replacement": "                except ValueError:  # C-2: oversized path component (thread 52)",
-            "expect_fail": "tests/test_cycle_check.py::test_c2_long_component_no_traceback"
+            "expect_fail": "tests/test_cycle_check.py::test_c2_oversized_backticked_ref_escalates_no_traceback"
         },
         {
             "name": "M4-accept-unresolved-as-ok",
