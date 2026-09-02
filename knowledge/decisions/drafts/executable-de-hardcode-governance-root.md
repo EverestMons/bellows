@@ -1,0 +1,188 @@
+# bellows — executable: NO MACHINE IS THE SHOP — one resolver for the governance root and the projects parent, and every shop-path literal in bellows code (the QA-mandate gate first) replaced by it, through a committed builder
+
+**Date:** 2026-09-01 | **Project:** bellows | **Tier:** Small | **Dispatch Mode:** bellows | **cycle_tier:** T2 | **Test Scope:** targeted (`tests/test_governance_root.py` NEW — emitted by the builder, twelve tests; `tests/test_decisions.py`, `tests/test_planner.py`, `tests/test_phase4_planner_retry.py`, `tests/test_qa_mandate.py`, `tests/test_bellows_root.py`, `tests/test_gates_cross_machine_paths.py`, `tests/test_plan_lint.py`) + a full-suite CONTROL COMPARISON against the NAMED post-fix set (one test) | **Execution:** Step 1 (DEV) → Step 2 (QA) | **qa_steps:** 2 | **pause_for_verdict:** always | **known_failures:** 1 | **Priority:** 1
+
+**auto_close:** false
+
+**Slug:** `de-hardcode-governance-root-2026-09-01`
+
+**Depends on:** the CEO, 2026-09-01 (session `1663ee38`, the mini): *"I want to minimize the notion of a 'shop machine' … Bellows is the local machine's enforcer for verification … Let's fix the gate hardcoding issue"* — **the citable authorization for this plan and, once the cycle closes clean and the depositor's gates pass, for the release of its shop-infra hold** (the standing sentence: *"If gates have all passed you have permission to run it"*); `knowledge/decisions/Done/executable-100009.md` (the parent — the mini's newest bellows code plan, Done 2026-09-01 21:13: interpreter resolver, pins re-derived by DEV, targeted tests + full-suite control comparison, a NAMED failure set); the committed builder `knowledge/decisions/drafts/build-de-hardcode-governance-root.py` (bellows `e4c5394`, its third commit — the register's walk 0 records the two defects the first two carried); `bellows_root.py`'s `resolve_bellows_root` (the two-sentinel walk this plan extends); `MACHINE_SETUP.md` §1 (the two layouts the resolver must serve). Walk register: `/Users/marklehn/Developer/eluvian-governance/governance/knowledge/research/walk-register-de-hardcode-2026-09-01.md`.
+
+**Tier computed, not judged (§1):** **T-6 fires** — `gates.py` is edited, and the trigger's own words are *"Edits doctrine, the template, gates, or specialist contracts"*; the edit is one string (the QA mandate the dispatcher injects into every QA prompt), and §1's rule is *"If unsure whether a trigger fires, it fires."* **T-1 fires** (ten files in one subsystem — more than a single localized change; the every-row clause does not apply). **T-3 fires by the same if-unsure rule** — the shop-shape branch of the resolver (governance root as an ANCESTOR of bellows) is exercised here only by a synthetic layout in a test; the shop machine will run this code after its next pull. **T-8 fires** — a clone BY KIND of 100009, not shape for shape. T-2 no (no production data; `lifecycle.db` untouched). T-5 no (every edit is a replacement whose anchor the builder count-asserts; `git revert` restores it). Highest demand → **T2.** **Split-on-tier, priced (§1):** the T-6 carrier is one of the ten literal sites, not a separable artifact — splitting it out would leave the QA-mandate literal (the defect the CEO named) as a T2 plan of its own beside a T1 remainder: two cycles and the same panel, against one cycle and one panel. No split. **Small form licensed by the magnitude proxy (§2.6), measured at walk 0:** (i) structure-clone — parent `100009`, Done 2026-09-01, both clone-diffs ran (register walk 0); (ii) mechanized edits — every mutation of the ten targets flows through the committed builder, twelve anchors count-asserted by execution (one deliberately count-2, stated), and the new test file is builder-emitted: no hand edits; (iii) scripted probes — every post-condition token measured on the pre-edit tree and the builder run on a pristine clone (register walk 0; the clone's full suite named there, its clone-location failure named). **Panel: walk-0 scout + EXECUTION + CAPSTONE**, meter row against the five-seat baselines.
+
+## Why this exists — measured 2026-09-01 on the mini
+
+Bellows runs on two machines with two layouts (`MACHINE_SETUP.md` §1): the shop's `~/Developer/GitHub/{COMPANY.md, bellows/, tuyere/, lessons-forge/, …}` — governance root ABOVE bellows, and the same directory is the PROJECTS PARENT — and the mini's `~/Developer/{eluvian-governance/, bellows/, tuyere/, forge_lessons/, …}` — governance root BESIDE bellows, projects parent one level up. On the shop those two roots are one directory; the code never distinguished them. Nine sites in bellows code and one sentence in `CLAUDE.md` name the shop's directory as a literal and therefore do the wrong thing on every other machine:
+
+- **`gates.py:865` — the gate.** `QA_MANDATE_SUFFIX` tells every QA agent to run the Rule 20 block *"from /Users/marklehn/Developer/GitHub/RULE_20_SELF_CHECK_BLOCK.md (absolute path)"*. On the mini that path does not exist (measured). Every QA agent dispatched here since 2026-08-31 has been handed a mandate it cannot obey; the mini's QA-bearing plans work around it with a per-plan "⚠️ this machine's path" note (100009's Step 2 (A) is the quoted instance; 100008's Step 2 likewise). That note is the defect, moved into every plan.
+- **`planner.py:13`** `GOVERNANCE_ROOT` literal → `PLANNER_TEMPLATE_PATH`/`COMPANY_MD_PATH` do not exist here (cause of 5 named suite failures: `test_planner` ×3, `test_phase4_planner_retry` ×2).
+- **`decisions.py:11-25`** walks ANCESTORS for `COMPANY.md` — the shop shape only; on the mini it reaches `/` and falls back to a wrong directory with a warning (cause of 4 named failures: `test_decisions` ×4).
+- **`verdict.py:63-64, 77-78`** re-root a `**Deposit:**` path by splitting on the substring `/Developer/GitHub/` — silently inert on any path that lacks it.
+- **`bellows.py:53`** (the lessons-forge DB locator: `root / "lessons-forge"`) and **`plan_claim.py:41`** (the tuyere seam's third candidate: `root / "tuyere"`) — `$ELUVIAN_WRAP_ROOT` or the literal, **used as the PROJECTS PARENT**. ⚠️ Two facts: (a) **the daemon's environment does not carry the variable** (pid 93535, `ps eww` → 0 occurrences, measured — sessions get it from `~/.claude/settings.json`; the daemon, launched from the dashboard, does not), so the literal is the branch the daemon takes; (b) even WITH the variable, on the mini it names `eluvian-governance`, which holds no `tuyere/` — the wrong root for these two sites. Both only work here because an earlier candidate (`~/Developer/tuyere`, `~/Developer/forge_lessons`) is tried first.
+- **`scripts/plan_lint.py:737`** `SHOP_ROOT`, read at `:802` for the (o1) path check; **`scripts/migrate_orphan_verdicts.py:18`** `MAIN_REPO`; **`CLAUDE.md:82-83`** documents the seam's ROOT as *"`$ELUVIAN_WRAP_ROOT` else the literal"* — the doc of the defect.
+
+The CEO's direction (2026-09-01): *"minimize the notion of a 'shop machine'"* — bellows is *"the local machine's enforcer for verification"*, on whichever machine pulls the work. A local enforcer may not carry another machine's filesystem in its strings.
+
+## What this plan does
+
+1. **`bellows_root.py` gains two functions beside `resolve_bellows_root` (pathlib-only, no bellows import — the module's import-cycle rule kept):** `resolve_governance_root(_start=None, _env=None)` — first hit wins, every hit verified by the marker `COMPANY.md`: (1) `$ELUVIAN_WRAP_ROOT` **as an override, never a requirement**; (2) an ancestor of the bellows root (shop shape); (3) the bellows root's siblings `<parent>/eluvian-governance`, `<parent>` (mini shape and any sibling-checkout layout); (4) the two known homes `~/Developer/eluvian-governance`, `~/Developer/GitHub`, tried LAST and only by marker; otherwise **`ValueError`** — a loud failure, never a guessed path. `resolve_projects_parent()` = the bellows root's parent (the shop's `<root>`, the mini's `~/Developer`).
+2. **Ten anchored replacements, through the builder:** `gates.py` — the mandate names `_rule20_block_path()` (resolved at import; on an unresolvable tree the text names `$ELUVIAN_WRAP_ROOT/RULE_20_SELF_CHECK_BLOCK.md` and says to resolve it first — a QA agent then reads an instruction, not a dead path); `verdict.py` — both re-root sites call a new `_strip_projects_parent(path)` (a path under THIS machine's projects parent becomes `<project>/<rel>`; anything else is returned unchanged); `planner.py` — `GOVERNANCE_ROOT` resolved (fallback: a path that does not exist, so `build_system_prompt` still raises `FileNotFoundError` AT USE, loudly); `decisions.py` — the local walk-up delegates to the shared resolver, keeping its warning fallback; **`bellows.py:53` and `plan_claim.py:41` — `$ELUVIAN_WRAP_ROOT` keeps its documented precedence, and the LITERAL behind it becomes `resolve_projects_parent()`** (their `root` is the projects parent; `~/Developer` if the resolver cannot run) — the existing contract test `tests/test_plan_claim.py::TestResolverTwin::test_root_env_tuyere` holds unchanged; `scripts/plan_lint.py` — `SHOP_ROOT` (name kept for the (o1) read) becomes the resolved governance root; `scripts/migrate_orphan_verdicts.py` — `MAIN_REPO = resolve_bellows_root()`; `CLAUDE.md` — the seam sentence names the resolver.
+3. **`tests/test_governance_root.py` (builder-emitted, twelve tests):** shop layout by ancestor; mini layout by sibling; env override honoured when it holds the marker and IGNORED when it does not; no marker anywhere → `ValueError` (home monkeypatched away); this machine resolves with the variable deleted; projects parent; the QA mandate names the resolved block and carries no shop literal; the planner template path and the phrases file exist; verdict re-rooting under a monkeypatched projects parent, with a foreign absolute path and a relative path unchanged; the tuyere seam's third candidate is `<projects parent>/tuyere` (home and both env overrides removed).
+
+## What this plan does NOT do
+
+- Does not touch `hooks/` (they live outside this repo — `ls hooks/wrap_*_hook.py` → no such file, measured), `tests/test_plan_lint.py`'s 8 fixture literals (plan TEXT under test, not code paths), or the frozen matchers under `knowledge/qa/evidence/` (evidence, not code). The one remaining `Developer/GitHub` in the ten targets after the build is the resolver's docstring naming a known-home CANDIDATE — the candidate list is the feature.
+- Does not change `config.json` semantics (`watched_projects` stays machine-local by design, `MACHINE_SETUP.md` §0), `resolve_bellows_root`, the seam's first two candidates (`$ELUVIAN_WRAP_TUYERE`, `~/Developer/tuyere` — unchanged, and the second still wins on both machines), forge's own layout resolver in `forge_lessons/src/paths.py` (already both-layout), or any doctrine.
+- Does not restart the daemon. ⚠️ **Restart Discipline (PLANNER_TEMPLATE):** the running daemon (pid 93535, from `7bf0092`) keeps injecting the OLD mandate into this plan's own QA prompt — Step 2 is told so below. After close, the CEO restarts via the dashboard (`r`, `y`); the proof of the live half is the first QA step dispatched afterwards, whose agent is told to quote the Rule 20 path it received.
+
+## MUST-PRESERVE — clauses whose only carrier is prose
+
+- **The resolver never returns an unverified path.** Every candidate is admitted by `COMPANY.md` presence; the env var is an override that loses when it points at a markerless directory (test 4). A resolver that "defaults to the mini" would be the shop defect with the sign flipped.
+- **Two roots, two functions.** The governance root (doctrine files) and the projects parent (sibling checkouts) coincide on the shop and nowhere else; a consumer that wants `tuyere/` or `lessons-forge/` calls `resolve_projects_parent()`, never the governance root (the first draft of the builder got this wrong at both sites — caught at walk 0 by reading what `root` is joined with). **At those two sites `$ELUVIAN_WRAP_ROOT` stays FIRST** — the seam's documented contract (`CLAUDE.md`, the resolver-twin test); the second builder draft dropped it and the clone's full suite caught the regression by name.
+- **`bellows_root.py` stays pathlib-only, no bellows import** (its own docstring: the bellows↔runner import cycle). The `import os` in the new function is local.
+- **Consumers import the resolver INSIDE a try** (gates, planner, decisions, bellows, plan_claim, plan_lint) so that a tree where `bellows_root` is unimportable degrades to the stated fallback text/path, never an import-time crash of the daemon.
+- **`tests/test_qa_mandate.py`'s equality** (`result == gates.QA_MANDATE_SUFFIX`) holds because the suffix is computed once at import and the consumer reads the same name.
+- **The builder is scratch-only:** it refuses `<out>` equal to or inside the live checkout, `<out> == <in>`, CRLF input, any anchor count ≠ 1 (the verdict re-root anchor: exactly 2 at its moment, then 0), the test file already present, and any post-condition miss. DEV runs it `<worktree> → /tmp/…`, then copies the eleven outputs over with `cmp` closure.
+- **`known_failures: 1` is a NAMED set** — `tests/test_gates_cross_machine_paths.py::TestCrossMachineReRoot::test_relative_path_unchanged` (a CWD-`config.json` property of Strategy 4, thread 56's second half; NOT a GitHub literal — its fixture builds a `GitHub/bellows` tree under `tmp_path`). Post-fix the suite's failing set must EQUAL that one id; nine of the pre-edit ten are the fix's own proof and must be GONE.
+
+## Numbers discipline — the pins DEV re-derives (measured 2026-09-01 by the Planner at bellows `e4c5394`, targets unchanged since `81a4889`; re-derive, yours supersede and you say so)
+
+| pin | what | value | how |
+|---|---|---|---|
+| P1 | **`TARGET_SHAS`** — sha256 first 16, the ten targets | `bellows_root.py` `23a3d6657ea97d48` · `gates.py` `8c1f6dbf70e692d3` · `verdict.py` `679097ca744ce8e2` · `planner.py` `2c411d406f6ba8eb` · `decisions.py` `6895797bf3da86e3` · `bellows.py` `ef6a0a5f532203d8` · `plan_claim.py` `a341bc4c5538fad0` · `scripts/plan_lint.py` `167b219160ff6358` · `scripts/migrate_orphan_verdicts.py` `463bde66b2732b33` · `CLAUDE.md` `9cf263c9c16d05b5` | `shasum -a 256 <f> \| cut -c1-16` |
+| P2 | **`BUILDER_SHA`** — the committed builder | `612d09b93b31facd` (bellows `e4c5394`) | same |
+| P3 | **`ANCHORS`** — edits the builder applies | **12** (one per target for nine of them; `verdict.py` three: the helper insertion count 1, then the re-root anchor count **2** → both replaced) | the builder asserts every count at execution; a mismatch is its `REFUSED/FAILED` exit 1 |
+| P4 | **`COMBINED_SHA`** — the builder's printed combined sha of the ten outputs on the pristine input | `ef54ed624237da4b` | the builder's `OK —` line; a different value means your input differs from P1 — HALT |
+| P5 | **`SUITE_BASELINE`** — pre-edit full suite, by NAME (the mini, bellows venv, env var present or absent — identical) | `10 failed, 1642 passed`: `test_decisions.py::TestLoadPhrases::{test_loads_phrases_from_file, test_includes_known_phrases, test_splits_slash_alternatives}`, `test_decisions.py::TestExtractDecisionBlocks::test_s_class_blocks_from_ground_truth`, `test_gates_cross_machine_paths.py::TestCrossMachineReRoot::test_relative_path_unchanged`, `test_phase4_planner_retry.py::{test_planner_retries_on_auth_failure, test_planner_falls_back_to_continue_on_persistent_failure}`, `test_planner.py::{test_build_consult_file, test_consult_bad_json, test_consult_timeout}` | `"$PY" -m pytest tests -q -p no:cacheprovider` |
+| P6 | **`SUITE_POST`** — post-edit full suite, by NAME | failing set == {`test_gates_cross_machine_paths.py::TestCrossMachineReRoot::test_relative_path_unchanged`}; passed ≥ **1663** (1651 + the twelve new). Scratch-clone measurement (walk 0, register): one extra failure there, `test_lifecycle.py::TestDbPath::test_lifecycle_db_resolves_under_bellows_root`, asserts the word `bellows` in the clone's PATH and fails on the pristine clone too — a clone-location property, absent on this tree; the clone's one skip is likewise clone-only | same |
+| P7 | **`NEW_TESTS`** — the builder-emitted file | **12** tests, all passing with and without the env var | `"$PY" -m pytest -q -p no:cacheprovider tests/test_governance_root.py` |
+| P8 | **`DAEMON_ENV`** — the running daemon's environment | `ELUVIAN_WRAP_ROOT` occurrences: **0** (pid 93535) | `ps eww -p 93535 -o command= \| tr ' ' '\n' \| grep -c '^ELUVIAN_WRAP_ROOT='` |
+| P9 | **`LITERAL_PRE`** — `/Users/marklehn/Developer/GitHub` lines in the ten targets, pre-edit | **8** (`gates.py` 1, `planner.py` 1, `bellows.py` 1, `plan_claim.py` 1, `scripts/plan_lint.py` 1, `scripts/migrate_orphan_verdicts.py` 1, `CLAUDE.md` 1; `bellows_root.py`, `verdict.py`, `decisions.py` 0) → post **0 in all ten** (the resolver's docstring names the known-home candidate in the SHORT form `~/Developer/GitHub` — `grep -cF 'Developer/GitHub' bellows_root.py` → 1, the liveness pair for the empty sweep); `verdict.py` uses the substring `/Developer/GitHub/`: 4 lines pre, 0 post; the new test file carries the full literal once, as a negative assertion | `/usr/bin/grep -cF -- '<literal>' <f>` per file |
+
+## STEP 1 — DEV
+
+> **FIRST — post a short visible chat message (1–2 sentences).** Do NOT rename this file. You are the Bellows Developer.
+>
+> ⛔ **A0 — pre-flight. RESOLVE THE INTERPRETER FIRST — a worktree has no `.venv`.**
+> ```
+> cd "$(git rev-parse --show-toplevel)" && [ -f bellows.py ] && [ -f bellows_root.py ] && [ -f knowledge/decisions/drafts/build-de-hardcode-governance-root.py ] && echo TREE_OK   # HALT unless TREE_OK
+> MAIN=$(cd "$(git rev-parse --git-common-dir)/.." && pwd); PY="$MAIN/.venv/bin/python"; [ -x "$PY" ] && echo VENV_OK || echo NO_VENV   # HALT unless VENV_OK
+> ```
+> ⚠️ Shell state does not persist between compounds: re-derive `PY` in every compound that uses it (`PY="$(cd "$(git rev-parse --git-common-dir)/.." && pwd)/.venv/bin/python"`). `python3` on this machine has no pytest. **Never `cd` into another repo — use `git -C` / absolute paths.** ⚠️ This shell is zsh: iterate file lists with an explicit array (`T=(a b c); for t in "${T[@]}"`), never an unquoted `$VAR` (zsh does not word-split it — measured at walk 0: a loop over `$T` ran once, on the whole string).
+>
+> ⛔ **A1 — re-derive the pins in your tree; state each measured value; a mismatch is a HALT quoting both values.** P1 (ten shas), P2 (the builder's sha), P9 (the literal counts per file, pre-edit), P5 (the full suite BEFORE the edit — the ten names, verbatim from the `FAILED` lines).
+>
+> **A2 — run the builder, scratch-only.** `S="/tmp/dhgr-scratch-$(basename "$(pwd)")"; rm -rf "$S"; mkdir -p "$S"; "$PY" knowledge/decisions/drafts/build-de-hardcode-governance-root.py "$(pwd)" "$S"` (the name is derived from your worktree's directory name, so every later compound re-derives the SAME `$S` with the same expression — `$$` would differ per shell) — expected stdout (P3, P4, measured at walk 0): `OK — 10 files edited + tests/test_governance_root.py written, 12 edits; combined sha ef54ed624237da4b…`. Any `REFUSED/FAILED:` line or exit ≠ 0 → HALT quoting it. A3 re-derives `$S` with the same expression.
+>
+> **A3 — copy the eleven outputs into the worktree, with closure.** `S="/tmp/dhgr-scratch-$(basename "$(pwd)")"; T=(bellows_root.py gates.py verdict.py planner.py decisions.py bellows.py plan_claim.py scripts/plan_lint.py scripts/migrate_orphan_verdicts.py CLAUDE.md tests/test_governance_root.py); for t in "${T[@]}"; do cp "$S/$t" "$t" && cmp -s "$S/$t" "$t" && echo "SAME $t" || echo "MISMATCH $t"; done` — eleven `SAME` lines, no `MISMATCH`. Then `"$PY" -m py_compile` over the nine `.py` targets → exit 0.
+>
+> **A4 — probes (each a `/usr/bin/grep -cF --` line, stated with its expected count):** `def resolve_governance_root(` in `bellows_root.py` → 1; `def resolve_projects_parent(` → 1; `_rule20_block_path()` in `gates.py` → 2; `_strip_projects_parent(path)` in `verdict.py` → 2; `from bellows_root import resolve_governance_root` in `planner.py`, `decisions.py`, `scripts/plan_lint.py` → 1 each; `from bellows_root import resolve_projects_parent` in `bellows.py`, `plan_claim.py` → 1 each; `resolve_bellows_root()` in `scripts/migrate_orphan_verdicts.py` → 1; `resolve_projects_parent()` in `CLAUDE.md` → 1; P9 post — `/Users/marklehn/Developer/GitHub` → 0 in every one of the ten targets, paired with `Developer/GitHub` in `bellows_root.py` → 1 (the docstring's short-form candidate — the proof the grep is alive); `/Developer/GitHub/` in `verdict.py` → 0.
+>
+> **A5 — tests.** (a) P7: the new file, twice — `env -u ELUVIAN_WRAP_ROOT "$PY" -m pytest -q -p no:cacheprovider tests/test_governance_root.py` and the same with the variable present → both summary lines read `12 passed` (measured at walk 0). (b) Targeted: `"$PY" -m pytest -q -p no:cacheprovider tests/test_governance_root.py tests/test_decisions.py tests/test_planner.py tests/test_phase4_planner_retry.py tests/test_qa_mandate.py tests/test_bellows_root.py tests/test_gates_cross_machine_paths.py tests/test_plan_lint.py` → the only `FAILED` line is P6's one id; record the counts. (c) **The three resolutions from your tree, both ways:** `env -u ELUVIAN_WRAP_ROOT "$PY" -c "import bellows_root as b, plan_claim; print(b.resolve_governance_root()); print(b.resolve_projects_parent()); print(plan_claim._tuyere_checkout())"` and the same WITH the variable → identical three lines: the first ending `/eluvian-governance`, the second its parent, the third `<parent>/tuyere`; and `ls "<first>/RULE_20_SELF_CHECK_BLOCK.md"` exists. (d) `"$PY" -c "import gates; print(gates.QA_MANDATE_SUFFIX)"` → the printed mandate names `<governance root>/RULE_20_SELF_CHECK_BLOCK.md` and contains no `Developer/GitHub`.
+>
+> **A6 — dev-log + commit by explicit pathspec.** Write `knowledge/development/dev-log-de-hardcode-2026-09-01.md`: the A1 pins as measured (state "supersede" where a value differed and whether you HALTED), the A2 `OK` line verbatim, the A3 eleven `SAME` lines, the A4 probe lines with counts, the A5 outputs (raw summary lines), the P8 note copied from this plan (you cannot measure the daemon from a worktree — say so). Then, with the same array: `git add "${T[@]}" knowledge/development/dev-log-de-hardcode-2026-09-01.md && git commit -m "[<id from your plan filename>] de-hardcode the governance root and projects parent: shared resolver in bellows_root, ten sites through the committed builder, twelve tests" -- "${T[@]}" knowledge/development/dev-log-de-hardcode-2026-09-01.md`. `git status --short` → empty. STOP.
+>
+> **Deposits:**
+> - `knowledge/development/dev-log-de-hardcode-2026-09-01.md`
+> - `bellows_root.py`
+> - `gates.py`
+> - `verdict.py`
+> - `planner.py`
+> - `decisions.py`
+> - `bellows.py`
+> - `plan_claim.py`
+> - `scripts/plan_lint.py`
+> - `scripts/migrate_orphan_verdicts.py`
+> - `CLAUDE.md`
+> - `tests/test_governance_root.py`
+>
+> **Scope:**
+> - `knowledge/development/dev-log-de-hardcode-2026-09-01.md`
+> - `bellows_root.py`
+> - `gates.py`
+> - `verdict.py`
+> - `planner.py`
+> - `decisions.py`
+> - `bellows.py`
+> - `plan_claim.py`
+> - `scripts/plan_lint.py`
+> - `scripts/migrate_orphan_verdicts.py`
+> - `CLAUDE.md`
+> - `tests/test_governance_root.py`
+
+## STEP 2 — QA
+
+> **Step 1's Receipt status must be `Status: Complete`.** Anything else → HALT. **FIRST — post a short visible chat message.** You are the Bellows QA agent. `cd "$(git rev-parse --show-toplevel)"`; re-derive `PY` as in A0; in every compound that uses it, re-declare the array `T=(bellows_root.py gates.py verdict.py planner.py decisions.py bellows.py plan_claim.py scripts/plan_lint.py scripts/migrate_orphan_verdicts.py CLAUDE.md tests/test_governance_root.py)` (shell state does not persist).
+>
+> **(A) Rule 20 self-check** — the canonical block from **`"$("$PY" -c "import bellows_root as b; print(b.resolve_governance_root())")/RULE_20_SELF_CHECK_BLOCK.md`** — ⚠️ the dispatcher's injected mandate (this daemon runs the pre-fix code, P8/Restart Discipline) names the SHOP's path; this plan's own change is what makes the resolved path the right one. Quote in your report the path the mandate GAVE you and the path you USED. Run with:
+> - `plan_slug`: `de-hardcode-governance-root-2026-09-01`
+> - `qa_report_path`: `knowledge/qa/evidence/de-hardcode-governance-root-2026-09-01/qa-receipt.md`
+> - `evidence_dir`: `"$(pwd)/knowledge/qa/evidence/de-hardcode-governance-root-2026-09-01"` (your OWN worktree)
+> - `required_evidence_files`: `["probes-raw.txt", "full-suite-de-hardcode.txt"]`
+>
+> **(B) Items — every command's raw output appended to `probes-raw.txt` (`mkdir -p` the evidence dir first):**
+> - **Item 1 — the dev-log exists and its A2 line carries P4:** `/usr/bin/grep -cF -- 'ef54ed624237da4b' knowledge/development/dev-log-de-hardcode-2026-09-01.md` → ≥ 1.
+> - **Item 2 — builder mutants are STOPs (run against a scratch COPY of your tree, never the tree):** `M=/tmp/dhgr-qa-$$; mkdir -p "$M/src" "$M/out"; git archive HEAD | tar -x -C "$M/src"`. (M1 — re-application) your tree is POST-edit, so every anchor is gone and the builder must refuse it outright: `"$PY" knowledge/decisions/drafts/build-de-hardcode-governance-root.py "$M/src" "$M/out"; echo "exit=$?"` → a `REFUSED/FAILED:` line naming an anchor count 0 AND `exit=1` (a builder that re-applies to an already-built tree is the defect; refusal is the pass); `ls "$M/out"` → empty. (M2) `"$PY" knowledge/decisions/drafts/build-de-hardcode-governance-root.py "$M/src" "$(cd "$(git rev-parse --git-common-dir)/.." && pwd)"; echo "exit=$?"` → `REFUSED/FAILED: output is the live bellows checkout`, `exit=1`. Any `OK —` line from either → Critical.
+> - **Item 3 — the full suite with the CONTROL COMPARISON (P5 → P6):** `"$PY" -m pytest tests -q -p no:cacheprovider > knowledge/qa/evidence/de-hardcode-governance-root-2026-09-01/full-suite-de-hardcode.txt 2>&1; echo "exit=$?" >> knowledge/qa/evidence/de-hardcode-governance-root-2026-09-01/full-suite-de-hardcode.txt`; extract the `FAILED` ids and compare AS A SET to P6's one name: equal → PASS; any addition → Critical (a regression); any of P5's other nine still present → Critical (the fix did not land). The summary line must read `1 failed, N passed` with N at or above P6's floor; state N.
+> - **Item 4 — the three resolutions both ways from YOUR tree (A5c repeated by a second pair of hands):** the two `env -u` / with-env invocations → identical output; `test -f "<governance root>/RULE_20_SELF_CHECK_BLOCK.md" && echo BLOCK_PRESENT`; `test -x "<seam>/.venv/bin/python" && echo SEAM_PRESENT`.
+> - **Item 5 — residual-literal sweep, code and the standing rules:** `/usr/bin/grep -rlF --include='*.py' -- '/Users/marklehn/Developer/GitHub' . --exclude-dir=.venv --exclude-dir=.git --exclude-dir=knowledge --exclude-dir=tests; echo "exit=$?"` → NO files and `exit=1` (an empty result needs its liveness pair: `/usr/bin/grep -cF -- 'Developer/GitHub' bellows_root.py` → 1, the short-form docstring candidate — the same grep binary, the same tree, a hit); `/usr/bin/grep -cF -- '/Users/marklehn/Developer/GitHub' CLAUDE.md` → 0. Any file listed → Major, named.
+> - **Item 6 — the mandate as the NEXT daemon will inject it:** `"$PY" -c "import gates; print(gates.QA_MANDATE_SUFFIX)" > "$M/mandate.txt"; /usr/bin/grep -cF -- 'Developer/GitHub' "$M/mandate.txt"` → 0; quote the path segment from `$M/mandate.txt`.
+> - **Item 7 — no database in the DEV commit:** `git show --stat HEAD --format= | /usr/bin/grep -cF -- '.db'` → 0 (the DEV commit is `HEAD` while you run these items — you have not committed yet; this plan writes no row, and a `.db` in that commit would be a Critical).
+> - **Item 8 — the plan's declared deposits exist and were committed by Step 1:** `git show --stat HEAD --format= -- "${T[@]}" knowledge/development/dev-log-de-hardcode-2026-09-01.md` lists all twelve.
+>
+> **(C) The report** `qa-receipt.md`: a verification table (Item, command, expected, measured, PASS/FAIL), the Restart Discipline note (this daemon = pre-fix code; the CEO's dashboard restart is the live half; the first QA step after it quotes its received mandate path), then the Rule 20 stdout APPENDED. Commit by explicit pathspec: `git add knowledge/qa/evidence/de-hardcode-governance-root-2026-09-01/ && git commit -m "[<id>] QA: de-hardcode governance root — control comparison, mutants, three resolutions both ways" -- knowledge/qa/evidence/de-hardcode-governance-root-2026-09-01/`. STOP.
+>
+> **Deposits:**
+> - `knowledge/qa/evidence/de-hardcode-governance-root-2026-09-01/qa-receipt.md`
+> - `knowledge/qa/evidence/de-hardcode-governance-root-2026-09-01/probes-raw.txt`
+> - `knowledge/qa/evidence/de-hardcode-governance-root-2026-09-01/full-suite-de-hardcode.txt`
+>
+> **Scope:**
+> - `knowledge/qa/evidence/de-hardcode-governance-root-2026-09-01/qa-receipt.md`
+> - `knowledge/qa/evidence/de-hardcode-governance-root-2026-09-01/probes-raw.txt`
+> - `knowledge/qa/evidence/de-hardcode-governance-root-2026-09-01/full-suite-de-hardcode.txt`
+
+Rule 20 banner (byte-exact, produced by RUNNING the canonical block — never hand-authored):
+
+```
+============================================================
+Rule 20 — QA Self-Check Results
+============================================================
+PASSED — SELF-CHECK PASSED — all evidence files present, no hedging keywords found.
+```
+
+---
+
+## Drafting Cycle
+
+**Tier:** T2 — T-6 (gates), T-1, T-3 and T-8 fire; T-6 sets it. Small form by the magnitude proxy (all three legs measured at walk 0): walk-0 scout + EXECUTION + CAPSTONE.
+
+**Walk register:** /Users/marklehn/Developer/eluvian-governance/governance/knowledge/research/walk-register-de-hardcode-2026-09-01.md
+
+**Walk 0 (context pin, measured):** target shas P1 at bellows `81a4889`/`b5f27fe`; every anchor counted by the builder on a pristine clone (P3, the verdict pair count 2 stated); the builder run clone→scratch, outputs applied to the clone with `cmp` closure, the targeted files and the full suite run there (register walk 0 — the clone-location failure named), the daemon's environment read (P8); mutants M1 (re-application on the built tree), M2 (out = live), M2b (out inside live) each refused. The builder's first draft resolved the GOVERNANCE root at the two projects-parent sites — caught at walk 0 by reading what each `root` is joined with, fixed in the builder's second commit; the second draft dropped the env override's precedence there — caught by the clone's full suite (one named regression), fixed in the third commit; the semantics recorded under MUST-PRESERVE. Clone-diff vs `100009` (three passes) and the two further diffs (standing rules; the parent's register) — on the register's walk-0 lines. Consumer dry-run (§2.0 v2.23): `plan_lint` at a faithful mirror, `cycle_check`, the class assigner (`shop-infra`, ran), the deposit extractor (ran: step 1 twelve paths, step 2 three, the receipt first and the `full-suite` `.txt` present) — results on the register's walk-0 line.
+
+**Direction verdict (after walk 1): PROCEED.** Tested: nothing invalidates the clone origin (100009), the mechanism (a committed builder, twelve count-asserted anchors, one emitted test file, run on a pristine clone with its suites), or a scope premise (the population of shop-path literals in bellows code, enumerated by grep at `81a4889` and re-enumerated after each builder commit; the two roots that coincide only on the shop). Walk 0's own findings CHANGED the mechanism twice (projects parent; env precedence) and both changes were re-proven by the clone's full suite before this verdict.
+
+**Walks:**
+- Weak spots:          w1 2 folded — instruction 2 / record 0 (Item 7 diffed two gitignored files — a check that cannot fail — now the DEV commit's `--stat` grepped for `.db`; QA's Item 8 expanded an array only DEV declared — now declared in Step 2's preamble, re-declared per compound)
+- Destruction:         w1 dry — every consumer imports the resolver inside a `try` (an import-time failure degrades to the stated fallback, never a daemon crash); on the shop the ancestor branch returns the directory the literal named, so the mandate string, the planner paths and verdict re-rooting are byte-identical there (a `read`, not a `ran` — the reason T-3 fires); the only `rm -rf` targets a name this plan derives; nothing relaxed — `decisions.py` keeps its fallback and warning, `plan_lint`'s (o1) gains a root that EXISTS on this machine
+- Vulnerabilities:     w1 1 folded — instruction 1 / record 0 (`$$` in the scratch name differs per compound and "list `/tmp/dhgr-scratch-*`" would pick a stale directory — now keyed on the worktree's directory name and re-derived by the same expression; zsh arrays wherever a list is iterated, walk 0's own false pass being this class; `/usr/bin/grep -F` for every literal; `git archive` for QA's mutants — no second checkout, no `cd`)
+- Integration-record:  w1 2 folded — instruction 0 / record 2 (a claim that the T0 canary 100010 carried the mandate workaround was unverified — it has no QA step — struck to the two instances read; the register's own prose carried a bare cross glyph while asserting the plan has none — reworded; P9, A4 and Item 5 agree on "0 in all ten targets + the short-form liveness pair"; `propagation_check` exit 0, 0 divergences)
+- ACID:                w1 dry — one DEV commit of twelve paths by explicit pathspec, one QA commit of the evidence directory; a HALT mid-A3 leaves partial copies only in a worktree torn down at the pause; the builder is already on main (`e4c5394`) and A0 asserts its presence before anything runs
+- **Walk 1 total: 5 findings, 5 folded — instruction 3 / record 2; 1 of 5 fold-introduced (the register glyph).**
+
+**Conformance (§5):** first run at walk 0 (shape-stability: the banner-pair FAIL folded there) and re-run after walk 1: `plan_lint` exit 0 / 0 FAIL at the faithful mirror — expected WARN set (o2)×15 (worktree-relative deposits, the parent's convention), (o1)×1 (the shop literal the Why section names, absent here by definition), plus the panel-line and Closing-line WARNs that the panel and the freeze fill; `cycle_check` re-run after this block was written in its grammar; `fold_check` baseline re-saved after each fold set; the register lint CONFORMANT (13 rows).
+
+**Cycle log:** on the register (walks, seats, folds, closing re-read, freeze, deposit chain).
+
+## Cycle Manifest
+tier: T2
+target: bellows_root.py, gates.py, verdict.py, planner.py, decisions.py, bellows.py, plan_claim.py, scripts/plan_lint.py, scripts/migrate_orphan_verdicts.py, CLAUDE.md, tests/test_governance_root.py
+class: shop-infra
+reads: /Users/marklehn/Developer/bellows/bellows_root.py, /Users/marklehn/Developer/bellows/gates.py, /Users/marklehn/Developer/bellows/verdict.py, /Users/marklehn/Developer/bellows/planner.py, /Users/marklehn/Developer/bellows/decisions.py, /Users/marklehn/Developer/bellows/bellows.py, /Users/marklehn/Developer/bellows/plan_claim.py, /Users/marklehn/Developer/bellows/scripts/plan_lint.py, /Users/marklehn/Developer/bellows/scripts/migrate_orphan_verdicts.py, /Users/marklehn/Developer/bellows/CLAUDE.md, /Users/marklehn/Developer/bellows/tests/test_qa_mandate.py, /Users/marklehn/Developer/bellows/tests/test_bellows_root.py, /Users/marklehn/Developer/eluvian-governance/MACHINE_SETUP.md
+writes: bellows_root.py, gates.py, verdict.py, planner.py, decisions.py, bellows.py, plan_claim.py, scripts/plan_lint.py, scripts/migrate_orphan_verdicts.py, CLAUDE.md, tests/test_governance_root.py, knowledge/development/dev-log-de-hardcode-2026-09-01.md, knowledge/qa/evidence/de-hardcode-governance-root-2026-09-01/qa-receipt.md, knowledge/qa/evidence/de-hardcode-governance-root-2026-09-01/probes-raw.txt, knowledge/qa/evidence/de-hardcode-governance-root-2026-09-01/full-suite-de-hardcode.txt
+open_forks: none
+walks: 1
+yields: 0
+validation: cycle_check=PENDING, plan_lint=PENDING, fold_check=PENDING
+coherence: 1/1 walks have register rows

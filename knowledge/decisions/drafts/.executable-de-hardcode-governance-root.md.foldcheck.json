@@ -1,0 +1,38 @@
+{
+  "plan_lint": {
+    "exit": 0,
+    "signals": [
+      "(o1) WARN: missing path `/Users/marklehn/Developer/GitHub`",
+      "(o2) WARN: Deposits entry `CLAUDE.md` is not project-prefixed or absolute",
+      "(o2) WARN: Deposits entry `bellows.py` is not project-prefixed or absolute",
+      "(o2) WARN: Deposits entry `bellows_root.py` is not project-prefixed or absolute",
+      "(o2) WARN: Deposits entry `decisions.py` is not project-prefixed or absolute",
+      "(o2) WARN: Deposits entry `gates.py` is not project-prefixed or absolute",
+      "(o2) WARN: Deposits entry `knowledge/development/dev-log-de-hardcode-N-N-N.md` is not project-prefixed or absolute",
+      "(o2) WARN: Deposits entry `knowledge/qa/evidence/de-hardcode-governance-root-N-N-N/full-suite-de-hardcode.txt` is not project-prefixed or absolute",
+      "(o2) WARN: Deposits entry `knowledge/qa/evidence/de-hardcode-governance-root-N-N-N/probes-raw.txt` is not project-prefixed or absolute",
+      "(o2) WARN: Deposits entry `knowledge/qa/evidence/de-hardcode-governance-root-N-N-N/qa-receipt.md` is not project-prefixed or absolute",
+      "(o2) WARN: Deposits entry `plan_claim.py` is not project-prefixed or absolute",
+      "(o2) WARN: Deposits entry `planner.py` is not project-prefixed or absolute",
+      "(o2) WARN: Deposits entry `scripts/migrate_orphan_verdicts.py` is not project-prefixed or absolute",
+      "(o2) WARN: Deposits entry `scripts/plan_lint.py` is not project-prefixed or absolute",
+      "(o2) WARN: Deposits entry `tests/test_governance_root.py` is not project-prefixed or absolute",
+      "(o2) WARN: Deposits entry `verdict.py` is not project-prefixed or absolute",
+      "PIN-CHECK: kind=prefix line=N token=167b219160ff\u2026 result=ambiguous",
+      "PIN-CHECK: kind=prefix line=N token=23a3d6657ea9\u2026 result=ambiguous",
+      "PIN-CHECK: kind=prefix line=N token=2c411d406f6b\u2026 result=ambiguous",
+      "PIN-CHECK: kind=prefix line=N token=463bde66b273\u2026 result=ambiguous",
+      "PIN-CHECK: kind=prefix line=N token=612d09b93b31\u2026 result=ambiguous",
+      "PIN-CHECK: kind=prefix line=N token=679097ca744c\u2026 result=ambiguous",
+      "PIN-CHECK: kind=prefix line=N token=6895797bf3da\u2026 result=ambiguous",
+      "PIN-CHECK: kind=prefix line=N token=8c1f6dbf70e6\u2026 result=ambiguous",
+      "PIN-CHECK: kind=prefix line=N token=9cf263c9c16d\u2026 result=ambiguous",
+      "PIN-CHECK: kind=prefix line=N token=a341bc4c5538\u2026 result=ambiguous",
+      "PIN-CHECK: kind=prefix line=N token=ef54ed624237\u2026 result=ambiguous",
+      "PIN-CHECK: kind=prefix line=N token=ef6a0a5f5322\u2026 result=ambiguous",
+      "WARN: Drafting Cycle block has no **Closing:** line (DRAFTING_CYCLE.md \u00a73)",
+      "WARN: Drafting Cycle closing indicates fold as last event, not a dry lens pass (DRAFTING_CYCLE.md \u00a72)",
+      "WARN: T2 plan missing cold-panel line in Drafting Cycle block (DRAFTING_CYCLE.md \u00a73)"
+    ]
+  }
+}
