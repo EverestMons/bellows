@@ -467,13 +467,19 @@ def _check_receipts(session_id: str | None, fails: list[str]) -> None:
 
     # --- Hold sidecars: slug set from all watched project trees ---
     hold_slugs = set()
+    # The projects live under ROOT on the shop layout and under the bellows
+    # checkout's PARENT on the mini layout (ROOT is a sibling there) — search
+    # both, or a mini wrap reads every live hold as a stale receipt
+    # (measured 2026-09-02: five "matchless" receipts, two of them live holds).
+    hold_roots = {ROOT, BELLOWS.parent}
     try:
-        for sidecar in ROOT.glob("*/knowledge/decisions/*.hold.json"):
-            name = sidecar.name
-            if name.startswith("hold-") and name.endswith(".hold.json"):
-                hold_slug = name[len("hold-"):-len(".hold.json")]
-                if hold_slug:
-                    hold_slugs.add(hold_slug)
+        for hold_root in hold_roots:
+            for sidecar in hold_root.glob("*/knowledge/decisions/*.hold.json"):
+                name = sidecar.name
+                if name.startswith("hold-") and name.endswith(".hold.json"):
+                    hold_slug = name[len("hold-"):-len(".hold.json")]
+                    if hold_slug:
+                        hold_slugs.add(hold_slug)
     except OSError:
         pass
 

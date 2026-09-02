@@ -1,8 +1,0 @@
-{
-  "slug": "executable-bellows-bootstrap",
-  "content_hash": "1f942a73c00eb5e478d539238f1ba397f1838eefd3bce7fb74093ef81e3a767c",
-  "session_id": "a9cd0af4-3dda-4331-a1eb-a795afc08ef9",
-  "armed_at": "2026-09-02T10:12:48.992030",
-  "watcher": "gate_watcher.py spawned detached (pid 23596); log: logs/watch/executable-bellows-bootstrap.md.log",
-  "attestation_boundary": "This receipt proves the watcher was ARMED at write time. It does NOT prove the watcher stayed alive. Liveness of a session-local monitor is not externally verifiable."
-}
