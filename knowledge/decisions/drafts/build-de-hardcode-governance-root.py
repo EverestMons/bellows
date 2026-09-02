@@ -210,12 +210,14 @@ D_NEW = (
 B_ANCHOR = '    root = Path(os.environ.get("ELUVIAN_WRAP_ROOT") or "/Users/marklehn/Developer/GitHub")\n'
 B_NEW = (
     '    # ROOT is the PROJECTS PARENT here (root / "tuyere", root / "lessons-forge"):\n'
-    '    # the shop root doubled as both; on every other layout they differ.\n'
+    '    # the shop root doubled as both; on every other layout they differ. The env\n'
+    '    # override keeps its documented precedence; only the shop literal is replaced.\n'
     '    try:\n'
     '        from bellows_root import resolve_projects_parent as _resolve_pp\n'
-    '        root = _resolve_pp()\n'
+    '        _pp = _resolve_pp()\n'
     '    except Exception:\n'
-    '        root = Path(os.environ.get("ELUVIAN_WRAP_ROOT") or (Path.home() / "Developer"))\n'
+    '        _pp = Path.home() / "Developer"\n'
+    '    root = Path(os.environ.get("ELUVIAN_WRAP_ROOT") or _pp)\n'
 )
 
 # CLAUDE.md — the documented seam resolution names the resolver, not a literal
@@ -224,10 +226,9 @@ C_ANCHOR = (
     '`/Users/marklehn/Developer/GitHub`. First candidate whose\n'
 )
 C_NEW = (
-    '`ROOT/tuyere` where ROOT = the resolved PROJECTS PARENT\n'
-    '(`bellows_root.resolve_projects_parent()` — the bellows checkout\'s parent on\n'
-    'every layout; `$ELUVIAN_WRAP_ROOT` only as the fallback when the resolver\n'
-    'cannot run — plan de-hardcode-governance-root, 2026-09-01). First candidate whose\n'
+    '`ROOT/tuyere` where ROOT = `$ELUVIAN_WRAP_ROOT` else the resolved PROJECTS\n'
+    'PARENT (`bellows_root.resolve_projects_parent()` — the bellows checkout\'s\n'
+    'parent on every layout; plan de-hardcode-governance-root, 2026-09-01). First candidate whose\n'
 )
 
 # scripts/plan_lint.py — (o1)'s second root is the resolved governance root
