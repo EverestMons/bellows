@@ -177,7 +177,15 @@ PASSED — SELF-CHECK PASSED — all evidence files present, no hedging keywords
 
 **Walk 0 (context pin, measured):** target shas P1 at bellows `bdcb5d6`; every anchor counted (P2 — one pair deliberately count 2, stated); the six `mark_plan_state` call sites and the six pause/resume sites read at source, each named by line; the recovery scan's abandon path read and left untouched (L1); the full-suite baseline measured as a NAMED set (P4); blame — the four pause sites written by one commit (`4667e0b3`, the lifecycle-boundaries plan), the re-pend by `[518]`, the resume by the initial import; no target line owned by a halted or in-flight plan. Clone-diff vs `100005` (three passes): FACTS — its interpreter resolver, pin table, targeted-plus-control test form and "mutant is a STOP" rule re-derived for this plan; ARTEFACTS — the `--git-common-dir` venv resolver, `TREE_OK`, pins re-derived by DEV, explicit-pathspec commits, the full-suite control comparison, the Rule 20 four values, worktree-relative deposits: each counted 1 here; STRUCTURE — DEV → QA unchanged; the `known_failures` set is NAMED here where 100005 refused to pin a number (P4 of 100005) — a declared strengthening, because the ten are stable and thread 56 names their cause. Consumer dry-run (DC §2.0, v2.23): `plan_lint` at a faithful mirror, `cycle_check`, the class assigner (`shop-infra` — a bellows code write), the deposit extractor (step 1 one `.md`; step 2 receipt first + a `full-suite` `.txt`) — results on the register's walk-0 line.
 
-**Walks:** *(lens lines written as each lens runs)*
+**Direction verdict (after walk 1): PROCEED.** Tested: nothing invalidates the clone origin (100005), the mechanism (anchored additive edits + the widened predicates, each anchor counted), or a scope premise (the seven-consumer enumeration is complete by grep; L1's non-edit is reasoned at source).
+
+**Walks:**
+- Weak spots:          w1 2 folded — instruction 2 / record 0 (`logger` is a local of `run_plan` — the B5/B6 handlers would have raised NameError inside `except`; the watcher imports no bellows module, so "mirror that import" pointed at nothing — `_ROOT` insert + lazy import)
+- Destruction:         w1 dry — a death mid-DEV leaves one uncommitted worktree (A5 is the single commit; teardown lands nothing partial); the daemon runs old code throughout, so no half-written state reaches production during this plan
+- Vulnerabilities:     w1 dry — the count-2 anchor is guarded by the source-text test (4 + 1 writes); every HALT names its measurement; the push fires on the transition only and never raises (MUST-PRESERVE, tested)
+- Integration-record:  w1 2 folded — instruction 0 / record 2 (a doctrine-plan phrase "History-facing note" with no referent here; the two restated `12`s gained their measured qualifier — `propagation_check` 2 → 0)
+- ACID:                w1 dry — the requirement set as a system: D1 ⇔ B1–B5 (paired, asserted by one test), L1 ⇔ B1–B5 (paused plans exit the stranded scan only if the scan is NOT widened), the daemon's own pause reading the old shape ⇔ the canary being the NEXT plan — no pair conflicts
+- **Walk 1 total: 4 findings, 4 folded — instruction 2 / record 2; 0 of 4 fold-introduced.**
 
 **Conformance (§5):** *(recorded at the freeze from the last run)*
 
@@ -190,7 +198,7 @@ class: shop-infra
 reads: /Users/marklehn/Developer/bellows/bellows.py, /Users/marklehn/Developer/bellows/depositor.py, /Users/marklehn/Developer/bellows/status.py, /Users/marklehn/Developer/bellows/lifecycle.py, /Users/marklehn/Developer/bellows/tools/gate_watcher.py, /Users/marklehn/Developer/bellows/tools/reconcile_plan.py, /Users/marklehn/Developer/bellows/notifier.py, /Users/marklehn/Developer/bellows/knowledge/decisions/Done/executable-100005.md, /Users/marklehn/Developer/eluvian-governance/RULE_20_SELF_CHECK_BLOCK.md
 writes: bellows.py, depositor.py, status.py, tools/gate_watcher.py, tools/reconcile_plan.py, tests/test_verdict_signal.py, tests/test_gate_watcher.py, tests/test_status.py, tests/test_depositor.py, tests/test_reconcile_plan.py, knowledge/development/dev-log-verdict-signal-2026-09-01.md, knowledge/qa/evidence/verdict-signal-2026-09-01/qa-receipt.md, knowledge/qa/evidence/verdict-signal-2026-09-01/probes-raw.txt, knowledge/qa/evidence/verdict-signal-2026-09-01/full-suite-verdict-signal.txt
 open_forks: none — the tuyere needs-review twin of this signal rides thread 80; the Pushover keys are the CEO's config act
-walks: 0
-yields: N/A
+walks: 1
+yields: 4
 validation: <declare>
 coherence: N/A
