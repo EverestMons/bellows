@@ -1,0 +1,83 @@
+=== QA probes — gate2-pt-w28-a-2026-09-02 ===
+Date: 2026-09-02
+
+--- ITEM 1: git log for PLANNER_TEMPLATE.md ---
+db6d665e [100021] gate2-pt-w28-a: PLANNER_TEMPLATE v4.97 — Rules 103–106 (418, 430, 434, 419)
+
+--- ITEM 1: Task C counts (16 probes) ---
+### 103. Move the test ORACLE outside the author's model count: 1
+### 104. A detector's fire count is a RATIO count: 1
+### 105. An environment variable is a property of a PROCESS TREE count: 1
+### 106. Earnability is not discrimination count: 1
+### 34.  count: 1
+Report the kill map, not the pass count count: 1
+fired-slash-evaluated-slash-skipped count: 3
+codified 2026-09-02 (Gate 2, cycle W=28 PT tranche one) count: 4
+Extends Rule 14's enumeration-as-code clause count: 1
+Kin of Rule 55's positive-control clause count: 1
+**Version:** 4.97 count: 1
+**Version:** 4.96 count: 0
+**Last Updated:** 2026-09-02 (v4.97) count: 1
+**Last Updated:** 2026-08-26 (v4.96) count: 0
+| 2026-09-02 | v4.97: Gate 2, cycle W=28 PT tranche one count: 1
+| 2026-08-26 | v4.96: Gate 2, cycle W=3 count: 1
+
+--- ITEM 1: wc -l ---
+    2423 /Users/marklehn/Developer/eluvian-governance/PLANNER_TEMPLATE.md
+
+--- ITEM 1: git status porcelain (EMPTY = clean) ---
+(empty — both files clean)
+
+--- ITEM 2: builder byte-identity ---
+Pre-edit commit: db6d665e89f05199e72ba4c2bd3265c65ba29416
+BUILT: /tmp/g2ptw28a-qa2/PT-out.md edits=4 blocks=4 lines+33 bytes+9655 post=18/18
+builder_exit=0
+BYTE_IDENTICAL
+
+--- ITEM 2: P4 builder digest (on-disk vs committed blob) ---
+on-disk:   f03d62cd4f435ba7
+builder commit: 427f29c3a7bf36eca778490c5f23b3082f416d64
+committed blob: f03d62cd4f435ba7
+
+--- ITEM 2: three refusals ---
+BUILDER REFUSED: out == in
+refusal_exit=1
+BUILDER REFUSED: out is under the governance root /Users/marklehn/Developer/eluvian-governance
+refusal_exit=1
+BUILDER REFUSED: output tokens already present in input — already built?
+refusal_exit=1
+
+--- ITEM 3: four rows 418/419/430/434 (fresh read-only connection) ---
+418|implemented|codify|ceo|2026-09-02T20:38:47Z
+419|implemented|codify|ceo|2026-09-02T20:38:47Z
+430|implemented|codify|ceo|2026-09-02T20:38:47Z
+434|implemented|codify|ceo|2026-09-02T20:38:47Z
+
+--- ITEM 3: accepted count ---
+8
+
+--- ITEM 3: eight remaining accepted by id ---
+415|accepted|codify|planner|2026-09-01T22:03:28Z
+417|accepted|codify|planner|2026-09-01T22:03:28Z
+421|accepted|codify|planner|2026-09-01T22:03:28Z
+422|accepted|codify|planner|2026-09-01T22:03:28Z
+425|accepted|codify|planner|2026-09-01T22:03:28Z
+431|accepted|codify|planner|2026-09-01T22:03:28Z
+435|accepted|codify|planner|2026-09-01T22:03:28Z
+437|accepted|codify|planner|2026-09-01T22:03:28Z
+
+--- ITEM 3: implemented count ---
+326
+
+--- ITEM 3: flip-capture.txt line count ---
+     441 .../knowledge/qa/evidence/gate2-pt-w28-a-2026-09-02/flip-capture.txt
+
+--- ITEM 3: capture rows for 418/419/430/434 (pre-flip state) ---
+418|accepted|codify|governance_rule|planner|2026-09-01T22:03:28Z
+419|accepted|codify|instrumentation|planner|2026-09-01T22:03:28Z
+430|accepted|codify|governance_rule|planner|2026-09-01T22:03:28Z
+434|accepted|codify|governance_rule|planner|2026-09-01T22:03:28Z
+
+--- ITEM 4: full suite tail ---
+1676 passed, 1 skipped in 50.56s
+exit=0
