@@ -1,0 +1,18 @@
+{
+  "plan_lint": {
+    "exit": 0,
+    "signals": [
+      "(o2) WARN: Deposits entry `CLAUDE.md` is not project-prefixed or absolute",
+      "(o2) WARN: Deposits entry `knowledge/development/dev-log-bellows-bootstrap-N-N-N.md` is not project-prefixed or absolute",
+      "(o2) WARN: Deposits entry `knowledge/qa/evidence/bellows-bootstrap-N-N-N/full-suite-bellows-bootstrap.txt` is not project-prefixed or absolute",
+      "(o2) WARN: Deposits entry `knowledge/qa/evidence/bellows-bootstrap-N-N-N/probes-raw.txt` is not project-prefixed or absolute",
+      "(o2) WARN: Deposits entry `knowledge/qa/evidence/bellows-bootstrap-N-N-N/qa-receipt.md` is not project-prefixed or absolute",
+      "(o2) WARN: Deposits entry `scripts/bootstrap.sh` is not project-prefixed or absolute",
+      "PIN-CHECK: kind=prefix line=N token=6861ab745885\u2026 result=ambiguous",
+      "PIN-CHECK: kind=prefix line=N token=d3bb0209d85b\u2026 result=ambiguous",
+      "PIN-CHECK: kind=prefix line=N token=ecd39219110f\u2026 result=ambiguous",
+      "WARN: step 1 mentions tests but declares no test scope",
+      "WARN: step 2 mentions tests but declares no test scope"
+    ]
+  }
+}
