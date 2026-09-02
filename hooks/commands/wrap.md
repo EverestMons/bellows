@@ -33,7 +33,7 @@ to its pause or close first, or coordinate, and only then arm. A quiet queue →
 arm immediately:
 
 ```bash
-touch "${ELUVIAN_WRAP_ROOT:-/Users/marklehn/Developer/GitHub}/.wrap-in-progress"
+touch "${ELUVIAN_WRAP_ROOT:?ELUVIAN_WRAP_ROOT is unset — the harness sets it; see MACHINE_SETUP.md §1}/.wrap-in-progress"
 ```
 
 Then `git fetch` in the governance root and every project repo touched this
@@ -77,7 +77,7 @@ done-on-another-machine-and-not-pulled (measured 2026-08-24).
    surface that belongs in the glossary?" For each project touched this
    session, review the session's work and deposit any DEFINITIONS (not
    runbooks, not traps — per the glossary discriminator) into the CENTRAL
-   glossary at `/Users/marklehn/Developer/GitHub/GLOSSARY.md`, each entry as
+   glossary at `$ELUVIAN_WRAP_ROOT/GLOSSARY.md`, each entry as
    `## <term> [project: <name>]` (comma-separate multiple project tags; the
    file already exists — APPEND-ONLY, non-destructive-append and
    class-not-narrative guards apply). ⚠️ NEVER write to — and never scaffold —

@@ -40,8 +40,21 @@ from pathlib import Path
 
 # Machine layouts differ (shop machine: ~/Developer/GitHub; Mac mini:
 # ~/Developer/eluvian-governance). Same override names as the arm/stop hooks.
-ROOT = Path(os.environ.get("ELUVIAN_WRAP_ROOT")
-            or "/Users/marklehn/Developer/GitHub")
+def _default_root() -> Path:
+    """The governance root when $ELUVIAN_WRAP_ROOT is unset: the two known homes,
+    admitted only by their COMPANY.md marker; the first if neither holds it — a
+    hook must never crash a session. Duplicated verbatim in the four hooks by
+    design: they are standalone files copied into ~/.claude/eluvian/, and a
+    shared module would be one more file to install (test_hook_default_root
+    asserts the four bodies stay identical). Plan hooks-de-hardcode, 2026-09-02."""
+    for cand in (Path.home() / "Developer" / "eluvian-governance",
+                 Path.home() / "Developer" / "GitHub"):
+        if (cand / "COMPANY.md").is_file():
+            return cand
+    return Path.home() / "Developer" / "eluvian-governance"
+
+
+ROOT = Path(os.environ.get("ELUVIAN_WRAP_ROOT") or _default_root())
 
 
 def _resolve_bellows(root: Path) -> Path:
@@ -147,7 +160,7 @@ def _tuyere_checkout() -> Path | None:
         return p if (p / ".venv" / "bin" / "python").exists() else None
     candidates = []
     candidates.append(Path.home() / "Developer" / "tuyere")
-    candidates.append(ROOT / "tuyere")
+    candidates.append(_resolve_bellows(ROOT).parent / "tuyere")  # the PROJECTS PARENT — plan_claim's twin since 100011
     for p in candidates:
         if (p / ".venv" / "bin" / "python").exists():
             return p

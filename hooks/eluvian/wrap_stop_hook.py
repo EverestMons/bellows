@@ -31,7 +31,21 @@ import sys
 import time
 from pathlib import Path
 
-_DEFAULT_ROOT = Path("/Users/marklehn/Developer/GitHub")
+def _default_root() -> Path:
+    """The governance root when $ELUVIAN_WRAP_ROOT is unset: the two known homes,
+    admitted only by their COMPANY.md marker; the first if neither holds it — a
+    hook must never crash a session. Duplicated verbatim in the four hooks by
+    design: they are standalone files copied into ~/.claude/eluvian/, and a
+    shared module would be one more file to install (test_hook_default_root
+    asserts the four bodies stay identical). Plan hooks-de-hardcode, 2026-09-02."""
+    for cand in (Path.home() / "Developer" / "eluvian-governance",
+                 Path.home() / "Developer" / "GitHub"):
+        if (cand / "COMPANY.md").is_file():
+            return cand
+    return Path.home() / "Developer" / "eluvian-governance"
+
+
+_DEFAULT_ROOT = _default_root()
 CHECK = Path(__file__).with_name("wrap_check.py")
 _DEFAULT_LOG = Path("/Users/marklehn/.claude/eluvian/hooks.log")
 
