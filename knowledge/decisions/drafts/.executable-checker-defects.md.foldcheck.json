@@ -1,0 +1,29 @@
+{
+  "plan_lint": {
+    "exit": 0,
+    "signals": [
+      "(o2) WARN: Deposits entry `knowledge/development/dev-log-checker-defects-N-N-N.md` is not project-prefixed or absolute",
+      "(o2) WARN: Deposits entry `knowledge/mutants/checker-defects-cycle_check.json` is not project-prefixed or absolute",
+      "(o2) WARN: Deposits entry `knowledge/mutants/checker-defects-cycle_yields.json` is not project-prefixed or absolute",
+      "(o2) WARN: Deposits entry `knowledge/mutants/checker-defects-plan_lint.json` is not project-prefixed or absolute",
+      "(o2) WARN: Deposits entry `knowledge/qa/evidence/checker-defects-N-N-N/full-suite-checker-defects.txt` is not project-prefixed or absolute",
+      "(o2) WARN: Deposits entry `knowledge/qa/evidence/checker-defects-N-N-N/probes-raw.txt` is not project-prefixed or absolute",
+      "(o2) WARN: Deposits entry `knowledge/qa/evidence/checker-defects-N-N-N/qa-receipt.md` is not project-prefixed or absolute",
+      "(o2) WARN: Deposits entry `scripts/cycle_check.py` is not project-prefixed or absolute",
+      "(o2) WARN: Deposits entry `scripts/cycle_yields.py` is not project-prefixed or absolute",
+      "(o2) WARN: Deposits entry `scripts/plan_lint.py` is not project-prefixed or absolute",
+      "(o2) WARN: Deposits entry `tests/fixtures/checker-defects/hyphen.md` is not project-prefixed or absolute",
+      "(o2) WARN: Deposits entry `tests/fixtures/checker-defects/longref2.md` is not project-prefixed or absolute",
+      "(o2) WARN: Deposits entry `tests/fixtures/checker-defects/notclosed.md` is not project-prefixed or absolute",
+      "(o2) WARN: Deposits entry `tests/fixtures/checker-defects/plainonly.md` is not project-prefixed or absolute",
+      "(o2) WARN: Deposits entry `tests/fixtures/checker-defects/relref.md` is not project-prefixed or absolute",
+      "(o2) WARN: Deposits entry `tests/test_cycle_check.py` is not project-prefixed or absolute",
+      "(o2) WARN: Deposits entry `tests/test_cycle_yields.py` is not project-prefixed or absolute",
+      "(o2) WARN: Deposits entry `tests/test_plan_lint.py` is not project-prefixed or absolute",
+      "PIN-CHECK: kind=prefix line=N token=2efd4e2de1a3\u2026 result=ambiguous",
+      "PIN-CHECK: kind=prefix line=N token=439f2a7f9393\u2026 result=ambiguous",
+      "PIN-CHECK: kind=prefix line=N token=fabbf1ac2d8a\u2026 result=ambiguous",
+      "WARN: step 2 mentions tests but declares no test scope"
+    ]
+  }
+}
