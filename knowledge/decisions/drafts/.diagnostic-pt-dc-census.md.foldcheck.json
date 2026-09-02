@@ -1,0 +1,14 @@
+{
+  "plan_lint": {
+    "exit": 0,
+    "signals": [
+      "(o2) WARN: Deposits entry `knowledge/qa/evidence/pt-dc-census-N-N-N/enforcers.csv` is not project-prefixed or absolute",
+      "(o2) WARN: Deposits entry `knowledge/qa/evidence/pt-dc-census-N-N-N/summary.txt` is not project-prefixed or absolute",
+      "(o2) WARN: Deposits entry `knowledge/qa/evidence/pt-dc-census-N-N-N/units.csv` is not project-prefixed or absolute",
+      "(o2) WARN: Deposits entry `knowledge/research/pt-dc-census-N-N-N.md` is not project-prefixed or absolute",
+      "PIN-CHECK: kind=prefix line=N token=3a84137ed366\u2026 result=ambiguous",
+      "PIN-CHECK: kind=prefix line=N token=9c52011935a1\u2026 result=ambiguous",
+      "PIN-CHECK: kind=prefix line=N token=c471d3afee3f\u2026 result=ambiguous"
+    ]
+  }
+}
