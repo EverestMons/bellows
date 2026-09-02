@@ -1,0 +1,6 @@
+registers: 143  (filename-dated 99, git-dated 44, undated 0)
+plan_lint            mandate 2026-07-23 (born 2026-07-02): in-population 143 | RECORDED  52 | MENTIONED-UNMEASURED  24 | SKIPPED  67 | LATE(first walk>=1)  46 | pre-mandate mentions 0
+cycle_check          mandate 2026-08-19 (born 2026-08-19): in-population  74 | RECORDED  19 | MENTIONED-UNMEASURED   9 | SKIPPED  46 | LATE(first walk>=1)  20 | pre-mandate mentions 0
+fold_check           mandate 2026-08-14 (born 2026-08-14): in-population 106 | RECORDED  15 | MENTIONED-UNMEASURED  16 | SKIPPED  75 | LATE(first walk>=1)  16 | pre-mandate mentions 0
+propagation_check    mandate 2026-08-21 (born 2026-08-18): in-population  69 | RECORDED  10 | MENTIONED-UNMEASURED   5 | SKIPPED  54 | LATE(first walk>=1)  10 | pre-mandate mentions 1
+walk_register_lint   mandate 2026-08-12 (born 2026-08-10): in-population 129 | RECORDED   4 | MENTIONED-UNMEASURED  14 | SKIPPED 111 | LATE(first walk>=1)  11 | pre-mandate mentions 2
