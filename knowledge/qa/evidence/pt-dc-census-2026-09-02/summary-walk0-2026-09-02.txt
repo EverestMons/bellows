@@ -1,0 +1,24 @@
+units: 224  by kind: {'rule': 102, 'checklist': 33, 'wrap-step': 8, 'trigger': 8, 'lens-subquestion': 21, '2.7-bullet': 52}
+code files scanned: 56
+rule               units 102  cited-by-a-checker   8  section-cited-only   0  corpus-cited  22  corpus-cited-and-uncited  18
+checklist          units  33  cited-by-a-checker   0  section-cited-only   0  corpus-cited   9  corpus-cited-and-uncited   9
+wrap-step          units   8  cited-by-a-checker   4  section-cited-only   0  corpus-cited   3  corpus-cited-and-uncited   0
+trigger            units   8  cited-by-a-checker   1  section-cited-only   0  corpus-cited   1  corpus-cited-and-uncited   1
+lens-subquestion   units  21  cited-by-a-checker   0  section-cited-only   0  corpus-cited   4  corpus-cited-and-uncited   4
+2.7-bullet         units  52  cited-by-a-checker   0  section-cited-only  52  corpus-cited   0  corpus-cited-and-uncited   0
+top UNCITED-by-any-checker units by corpus weight (citation is the mechanical floor; ENFORCEMENT is the reading the diagnostic owes):
+  rule-25        cites  8  Planner polling of Bellows verdict requests
+  rule-21        cites  6  Test scope must be declared in the plan header
+  checklist-3    cites  5  No reliance on STOP-prose in Bellows-dispatched plans
+  rule-19        cites  4  Hedging keywords auto-invalidate
+  rule-56        cites  4  Resume machinery is justified only when the interrupted work is not re
+  rule-23        cites  3  End-of-plan housekeeping must use anchored edits, enumerated sub-steps
+  dc-T-6         cites  3  Governance surface
+  dc-q2.2        cites  3  does any step relax an existing guard, threshold, or assertion? (2.3) 
+  rule-36        cites  2  Negative grep during dormancy is not architectural evidence
+  rule-39        cites  2  Pre-edit verification of SA-derived claims in acting steps
+  rule-85        cites  2  Repo-touching compounds — commits AND state-changing ops actions — ope
+  dc-q2.1        cites  2  what breaks if this ships? (2.2) does any step relax an existing guard
+  rule-15        cites  1  Every step after Step 1 verifies the prior step's Output Receipt
+  rule-17        cites  1  Post-execution deliverable verification
+  rule-27        cites  1  Diagnostic-derived plans cite findings, never supplement with source r
