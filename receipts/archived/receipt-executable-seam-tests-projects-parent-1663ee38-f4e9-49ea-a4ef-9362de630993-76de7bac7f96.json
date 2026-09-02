@@ -1,0 +1,8 @@
+{
+  "slug": "executable-seam-tests-projects-parent",
+  "content_hash": "76de7bac7f96fe0730e718d9fce7ac551177d02fe93942b1b9cc41603d07fe29",
+  "session_id": "1663ee38-f4e9-49ea-a4ef-9362de630993",
+  "armed_at": "2026-09-01T23:27:53.012659",
+  "watcher": "gate_watcher.py spawned detached (pid 84086); log: logs/watch/executable-seam-tests-projects-parent.md.log",
+  "attestation_boundary": "This receipt proves the watcher was ARMED at write time. It does NOT prove the watcher stayed alive. Liveness of a session-local monitor is not externally verifiable."
+}

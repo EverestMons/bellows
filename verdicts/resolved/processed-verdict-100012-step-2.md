@@ -1,0 +1,3 @@
+continue
+
+CONTINUE (final step): gates 11/11 PASS; QA commit 890fdcb on main lists exactly the three evidence paths; receipt table Items 1a-1f, 2a-2b, 3, 4a-4b, 5a-5b all PASS with raw output in probes-raw.txt (resolve_projects_parent() in the QA worktree = /Users/marklehn/Developer — the failing condition; the four seam ids 4 passed under it; full suite 1669 passed, 1 skipped, exit=0, no FAILED line; 100011's three resolutions identical with and without the env var; residual sweep empty exit=1 with the liveness pair 1); Rule 20 banner byte-exact, produced by the block run from the resolved governance root while the pre-fix daemon's mandate named the shop path (both quoted in the receipt). Close to Done.

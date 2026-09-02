@@ -1,0 +1,8 @@
+{
+  "slug": "executable-de-hardcode-governance-root",
+  "content_hash": "91e8830d243a30b123e416123e8d8f761669c52902f1ea91bbc309873a1196b8",
+  "session_id": "1663ee38-f4e9-49ea-a4ef-9362de630993",
+  "armed_at": "2026-09-01T23:10:22.160830",
+  "watcher": "gate_watcher.py spawned detached (pid 69613); log: logs/watch/executable-de-hardcode-governance-root.md.log",
+  "attestation_boundary": "This receipt proves the watcher was ARMED at write time. It does NOT prove the watcher stayed alive. Liveness of a session-local monitor is not externally verifiable."
+}

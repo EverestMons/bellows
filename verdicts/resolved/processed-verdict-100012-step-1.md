@@ -1,0 +1,3 @@
+continue
+
+CONTINUE: gates 11/11 PASS; DEV commit e02c20e on main lists exactly the three declared paths; edits verified on main (resolve_projects_parent monkeypatch x6, import bellows_root x1, awaiting_verdict x9, 2*3*5 x1); the worktree resolved /Users/marklehn/Developer (the failing condition) and P4 read 4 failed/45 passed pre-edit; post-edit worktree suite 1669 passed, 1 skipped, no FAILED line (P6); the Planner's canonical-shape run WHILE THIS PLAN IS PAUSED: 1 failed (the CWD survivor test_relative_path_unchanged only), 1669 passed (P7) — the STATE test passes with a plan in awaiting_verdict and the six new cells pass against the live tool.
