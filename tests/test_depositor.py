@@ -654,3 +654,36 @@ class TestClearDeletesHoldJson:
         dep.evaluate(path)
 
         assert not os.path.exists(hold_json_path), "stale .hold.json should be deleted"
+
+
+# ---------------------------------------------------------------------------
+# D1: _resolve_in_flight_writes returns awaiting_verdict rows (verdict-signal-2026-09-01)
+# ---------------------------------------------------------------------------
+
+class TestResolveInFlightAwaitingVerdict:
+    def test_awaiting_verdict_row_returned(self, tmp_path, lifecycle_db):
+        """D1: _resolve_in_flight_writes must include awaiting_verdict plans."""
+        import sqlite3
+        conn = sqlite3.connect(lifecycle_db)
+        conn.execute(
+            "INSERT INTO plans (id, type, target_project, lifecycle_state,"
+            " deposit_placeholder_name, plan_doc_ref, created_at)"
+            " VALUES (77, 'executable', 'bellows', 'awaiting_verdict',"
+            " 'in-progress-executable-77.md', 'in-progress-executable-77.md', '2026-09-01')"
+        )
+        conn.commit()
+        conn.close()
+
+        decisions_dir = str(tmp_path / "decisions")
+        os.makedirs(decisions_dir, exist_ok=True)
+
+        plan_file = os.path.join(decisions_dir, "in-progress-executable-77.md")
+        with open(plan_file, "w") as f:
+            f.write("# Plan 77\n\n**Deposits:**\n- `knowledge/research/foo.md`\n")
+
+        dep = _make_depositor(decisions_dir, lifecycle_db)
+
+        rows = dep._resolve_in_flight_writes()
+        assert rows is not None, "awaiting_verdict plan must not return None from _resolve_in_flight_writes"
+        labels = [r["label"] for r in rows]
+        assert "in-flight:#77" in labels, "awaiting_verdict plan must appear in _resolve_in_flight_writes results"

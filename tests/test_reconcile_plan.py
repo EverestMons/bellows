@@ -91,7 +91,8 @@ class TestReconcilePlan:
 
         conn.close()
 
-        result = _run(["42", "halted", "--outcome", "stop", "--summary", "orphan recovery"], db_path)
+        result = _run(["42", "halted", "--outcome", "stop", "--summary", "orphan recovery",
+                        "--killed-verified"], db_path)
         assert result.returncode == 0
 
         check_conn = sqlite3.connect(db_path)
@@ -159,7 +160,8 @@ class TestReconcilePlan:
         conn.commit()
         conn.close()
 
-        result = _run(["20", "closed", "--outcome", "continue", "--summary", "clean"], db_path)
+        result = _run(["20", "closed", "--outcome", "continue", "--summary", "clean",
+                        "--killed-verified"], db_path)
         assert result.returncode == 0
         assert "verdicts rows updated (NULL-outcome): 0" in result.stdout
 
@@ -177,7 +179,8 @@ class TestReconcilePlan:
         conn.commit()
         conn.close()
 
-        result = _run(["30", "closed", "--outcome", "stop", "--summary", "reconcile"], db_path)
+        result = _run(["30", "closed", "--outcome", "stop", "--summary", "reconcile",
+                        "--killed-verified"], db_path)
         assert result.returncode == 0
 
         check_conn = sqlite3.connect(db_path)
@@ -202,3 +205,40 @@ class TestReconcilePlan:
 
         result = _run(["99", "bogus", "--outcome", "stop", "--summary", "x"], db_path)
         assert result.returncode == 2
+
+    def test_awaiting_verdict_refused_without_flag(self, tmp_path):
+        """R1: awaiting_verdict WITHOUT --killed-verified -> exit 3, DB unchanged."""
+        db_path, conn, pending, archived = _make_env(str(tmp_path))
+        conn.execute(
+            "INSERT INTO plans (id, type, target_project, lifecycle_state, created_at) "
+            "VALUES (50, 'executable', 'bellows', 'awaiting_verdict', '2026-09-01T00:00:00Z')")
+        conn.execute(
+            "INSERT INTO verdicts (plan_id, step_number, outcome) VALUES (50, 1, NULL)")
+        conn.commit()
+        conn.close()
+
+        plans_before = _dump_table(db_path, "plans")
+        result = _run(["50", "closed", "--outcome", "stop", "--summary", "test"], db_path)
+        assert result.returncode == 3
+        plans_after = _dump_table(db_path, "plans")
+        assert plans_before == plans_after
+
+    def test_awaiting_verdict_with_killed_verified(self, tmp_path):
+        """R1: awaiting_verdict WITH --killed-verified -> proceeds."""
+        db_path, conn, pending, archived = _make_env(str(tmp_path))
+        conn.execute(
+            "INSERT INTO plans (id, type, target_project, lifecycle_state, created_at) "
+            "VALUES (51, 'executable', 'bellows', 'awaiting_verdict', '2026-09-01T00:00:00Z')")
+        conn.execute(
+            "INSERT INTO verdicts (plan_id, step_number, outcome) VALUES (51, 1, NULL)")
+        conn.commit()
+        conn.close()
+
+        result = _run(["51", "abandoned", "--outcome", "stop", "--summary", "killed",
+                        "--killed-verified"], db_path)
+        assert result.returncode == 0
+
+        check_conn = sqlite3.connect(db_path)
+        plan = check_conn.execute("SELECT lifecycle_state FROM plans WHERE id = 51").fetchone()
+        assert plan[0] == "abandoned"
+        check_conn.close()

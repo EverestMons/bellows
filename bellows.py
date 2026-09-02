@@ -1089,6 +1089,10 @@ def run_plan(plan_path: str, config: dict, response_server: server.ResponseServe
                                          pause_reason="gate_failure", total_steps=total_steps, step_text=plan_text,
                                          precondition_failure=True)
             lifecycle.record_verdict_request(plan_id, 1, pause_reason_code="gate_failure", verdict_file_ref=_vr_path)
+            try:
+                lifecycle.mark_plan_state(plan_id, "awaiting_verdict")
+            except Exception:
+                logging.getLogger("bellows").warning(f"lifecycle: failed to write awaiting_verdict for plan {plan_id}")
             _log("PAUSE", f"⏸️ worktree creation failed, awaiting CEO verdict", slug=slug_for(plan_name))
             return
 
@@ -1211,6 +1215,10 @@ def run_plan(plan_path: str, config: dict, response_server: server.ResponseServe
                     shutil.move(inprogress_path, verdict_pending_path)
                 _vr_path = verdict.post_verdict_request(plan_path, project_path, current_step, log_path, gate_result, pause_reason=_pause_reason, total_steps=total_steps, step_text=plan_text, intermediate_decisions=parsed.get("intermediate_decisions", []))
                 lifecycle.record_verdict_request(plan_id, current_step, pause_reason_code=_pause_reason, verdict_file_ref=_vr_path)
+                try:
+                    lifecycle.mark_plan_state(plan_id, "awaiting_verdict")
+                except Exception:
+                    logging.getLogger("bellows").warning(f"lifecycle: failed to write awaiting_verdict for plan {plan_id}")
                 notifier.notify_verdict_request(
                     app_key, user_key, plan_name, current_step, gate_result["failures"]
                 )
@@ -1342,6 +1350,10 @@ def run_plan(plan_path: str, config: dict, response_server: server.ResponseServe
                 shutil.move(inprogress_path, verdict_pending_path)
             _vr_path = verdict.post_verdict_request(plan_path, project_path, current_step, log_path, gate_result, pause_reason=_pause_reason, total_steps=total_steps, step_text=plan_text, intermediate_decisions=parsed.get("intermediate_decisions", []))
             lifecycle.record_verdict_request(plan_id, current_step, pause_reason_code=_pause_reason, verdict_file_ref=_vr_path)
+            try:
+                lifecycle.mark_plan_state(plan_id, "awaiting_verdict")
+            except Exception:
+                logging.getLogger("bellows").warning(f"lifecycle: failed to write awaiting_verdict for plan {plan_id}")
             notifier.notify_verdict_request(
                 app_key, user_key, plan_name, current_step, gate_result["failures"]
             )
@@ -1378,6 +1390,10 @@ def run_plan(plan_path: str, config: dict, response_server: server.ResponseServe
                 _vr_path = verdict.post_verdict_request(plan_path, project_path, current_step, log_path, gate_result,
                                              pause_reason="gate_failure", total_steps=total_steps, step_text=plan_text, intermediate_decisions=parsed.get("intermediate_decisions", []))
                 lifecycle.record_verdict_request(plan_id, current_step, pause_reason_code="gate_failure", verdict_file_ref=_vr_path)
+                try:
+                    lifecycle.mark_plan_state(plan_id, "awaiting_verdict")
+                except Exception:
+                    logging.getLogger("bellows").warning(f"lifecycle: failed to write awaiting_verdict for plan {plan_id}")
                 _log("PAUSE", f"⏸️ worktree teardown failed, awaiting CEO verdict", slug=slug_for(plan_name))
                 return
             verdict.log_to_ledger(plan_path, current_step, gate_result, "auto-close",
@@ -2723,6 +2739,10 @@ class Bellows:
             _lc_plan_id, step_number, "continue-rejected",
             decided_by="gate_recheck", disposition_summary=summary)
         lifecycle.record_verdict_request(_lc_plan_id, step_number)
+        try:
+            lifecycle.mark_plan_state(_lc_plan_id, "awaiting_verdict")
+        except Exception:
+            logging.getLogger("bellows").warning(f"lifecycle: failed to write awaiting_verdict for plan {_lc_plan_id}")
         verdict.log_to_ledger(
             full_plan_path, step_number, gate_result,
             "continue-rejected",
@@ -3065,6 +3085,10 @@ class Bellows:
                                 else:
                                     next_step = step_number + 1
                                     _log("EVENT", f"verdict continue — resuming", slug=slug_for(original_name))
+                                try:
+                                    lifecycle.mark_plan_state(_lc_plan_id, "in_progress")
+                                except Exception:
+                                    logging.getLogger("bellows").warning(f"lifecycle: failed to restore in_progress for plan {_lc_plan_id}")
                                 self.handle_new_plan(inprogress_path, resume_step=next_step)
                         else:
                             verdict.log_to_ledger(full_plan_path, step_number, gate_result, v, reason,

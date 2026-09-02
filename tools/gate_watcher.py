@@ -12,11 +12,14 @@ log is the watcher's own output file: every line records a direct DB read
 (the async-notifications-are-claims law, mechanized — the log IS the
 stable state query).
 
-Pause detection reads verdicts/pending/, not the DB: plans.lifecycle_state
-never takes 'awaiting_verdict' (the daemon writes that to steps.status only,
-and only on gate failure — measured 2026-08-26), so the verdict-request file
-IS the pause signal. The DB stays authoritative for identity, terminal
-states, and gate failures.
+Pause detection reads verdicts/pending/ FIRST (the request file is the pause
+signal every daemon build emits) and, since verdict-signal-2026-09-01,
+corroborates it with plans.lifecycle_state == 'awaiting_verdict' (written at
+every pause by daemons at or after that change; older daemons leave the row
+in_progress, which is why the file stays primary). Before that change
+plans.lifecycle_state never took 'awaiting_verdict' (measured 2026-08-26 and
+again on plan 100008, 2026-09-01). The DB stays authoritative for identity,
+terminal states, and gate failures.
 
 usage: gate_watcher.py <claimable-name.md> [--timeout-min N] [--interval-sec N]
        gate_watcher.py --status <claimable-name.md>
@@ -103,6 +106,8 @@ def read_state(name, db_path=None, pending_dir=None, resolved_dir=None):
                         "gate_failures": gate_failures,
                         "pending": live,
                     }
+        if state == "awaiting_verdict":
+            return {"phase": "awaiting-verdict", "plan_id": plan_id, "gate_failures": gate_failures}
         return base
     except sqlite3.Error:
         return None
@@ -131,6 +136,48 @@ def _log_line(log_path, line):
     stamped = f"{datetime.now().isoformat()} {line}\n"
     with open(log_path, "a") as f:
         f.write(stamped)
+
+
+def _push_pause(name, cur, db_path=None):
+    """Deliver a Pushover push for a plan entering awaiting-verdict.
+
+    Returns a log line string; never raises.
+    """
+    try:
+        import json
+        resolved_db = os.path.abspath(db_path or _DB)
+        cfg_path = os.path.join(os.path.dirname(resolved_db), "config.json")
+        with open(cfg_path) as fh:
+            cfg = json.load(fh)
+    except Exception:
+        return "WATCH: push skipped (no config.json beside the DB)"
+    try:
+        sys.path.insert(0, _ROOT)
+        import notifier
+        notifier.init_notifications(cfg)
+        if not cfg.get("notifications", {}).get("enabled", True):
+            return "WATCH: push skipped (notifications disabled)"
+        app_key = cfg.get("pushover", {}).get("app_key", "")
+        user_key = cfg.get("pushover", {}).get("user_key", "")
+        if not app_key or not user_key:
+            return "WATCH: push skipped (pushover keys empty)"
+        pending = cur.get("pending") or []
+        step = 0
+        for p in pending:
+            m = re.match(r"^verdict-request-\d+-step-(\d+)\.md$", p)
+            if m:
+                step = int(m.group(1))
+                break
+        try:
+            ok = notifier.notify_verdict_request(
+                app_key, user_key, name, step,
+                [{"gate": g} for g in (cur.get("gate_failures") or [])]
+            )
+        except Exception as e:
+            return "WATCH: push skipped (" + type(e).__name__ + ")"
+        return "WATCH: push sent" if ok else "WATCH: push skipped (pushover returned false)"
+    except Exception as e:
+        return "WATCH: push skipped (" + type(e).__name__ + ")"
 
 
 def main(argv):
@@ -172,6 +219,12 @@ def main(argv):
         line = judge_transition(None if prev == "UNSET" else prev, cur)
         if line:
             _log_line(log_path, line)
+            if (cur is not None and cur.get("phase") == "awaiting-verdict"
+                    and (prev == "UNSET" or prev is None or prev.get("phase") != "awaiting-verdict")):
+                try:
+                    _log_line(log_path, _push_pause(args.name, cur, db_path=args.db_path))
+                except Exception as e:
+                    _log_line(log_path, "WATCH: push skipped (" + type(e).__name__ + ")")
         if cur is not None:
             prev = cur
             if cur.get("phase") in TERMINAL:

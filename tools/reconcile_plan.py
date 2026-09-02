@@ -86,8 +86,8 @@ def main(argv=None):
     for f in pending_files:
         print(f"  {f}")
 
-    if plan_row["lifecycle_state"] == "in_progress" and not args.killed_verified:
-        print("\nREFUSED (exit 3): lifecycle_state is 'in_progress' and "
+    if plan_row["lifecycle_state"] in ("in_progress", "awaiting_verdict") and not args.killed_verified:
+        print("\nREFUSED (exit 3): lifecycle_state is 'in_progress' or 'awaiting_verdict' and "
               "--killed-verified was not passed.", file=sys.stderr)
         print("A worker can survive ENOSPC and wedge (~70 min measured) — "
               "verify with `ps -o etime,%cpu -p <pid>`, kill it, then "

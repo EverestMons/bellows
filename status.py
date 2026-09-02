@@ -217,7 +217,7 @@ def query_in_flight(db_path):
             SELECT MAX(s2.step_number) FROM steps s2
             WHERE s2.plan_id = p.id AND s2.status IN ('running', 'awaiting_verdict')
           )
-        WHERE p.lifecycle_state IN ('in_progress', 'claimed')
+        WHERE p.lifecycle_state IN ('in_progress', 'claimed', 'awaiting_verdict')
         ORDER BY p.id
     """).fetchall()
     conn.close()

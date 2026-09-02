@@ -116,6 +116,15 @@ class TestInFlightRendering:
         assert "Test Plan Alpha" in output
 
 
+class TestAwaitingVerdictInFlight:
+    """An awaiting_verdict plan row appears in query_in_flight (S1 widening)."""
+
+    def test_awaiting_verdict_plan_in_in_flight(self, status_db):
+        rows = status.query_in_flight(status_db)
+        ids = [r["id"] for r in rows]
+        assert 11 in ids, "plan 11 (awaiting_verdict) must appear in query_in_flight after S1"
+
+
 class TestAwaitingVerdictRendering:
     """AWAITING VERDICT section renders pending verdicts with filename."""
 

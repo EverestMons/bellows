@@ -409,7 +409,7 @@ class Depositor:
             conn.row_factory = sqlite3.Row
             rows = conn.execute(
                 "SELECT id, type, target_project, deposit_placeholder_name, plan_doc_ref "
-                "FROM plans WHERE lifecycle_state IN ('in_progress', 'claimed')"
+                "FROM plans WHERE lifecycle_state IN ('in_progress', 'claimed', 'awaiting_verdict')"
             ).fetchall()
             conn.close()
         except Exception:

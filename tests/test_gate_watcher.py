@@ -3,6 +3,7 @@ import itertools
 import json
 import os
 import sys
+import time
 from pathlib import Path
 
 import pytest
@@ -11,6 +12,7 @@ TOOLS_DIR = Path(__file__).resolve().parent.parent / "tools"
 sys.path.insert(0, str(TOOLS_DIR.parent))
 
 import lifecycle
+import tools.gate_watcher as gw
 from tools.gate_watcher import read_state, judge_transition, main
 
 
@@ -390,3 +392,154 @@ class TestPauseStateSpace:
         assert result["pending"] == ["verdict-request-100-step-2.md"]
 
 
+# ---------------------------------------------------------------------------
+# TestDbCorroboration: awaiting_verdict DB state recognized without pending file (W2)
+# ---------------------------------------------------------------------------
+
+class TestDbCorroboration:
+    def test_awaiting_verdict_db_state_without_pending_file(self, tmp_path):
+        db_path = _init_db(tmp_path)
+        _insert_plan(db_path, 200, "db-corroborate.md", state="awaiting_verdict")
+        pend = tmp_path / "pending"
+        pend.mkdir()
+        result = read_state("db-corroborate.md", db_path=db_path, pending_dir=str(pend))
+        assert result["phase"] == "awaiting-verdict", (
+            "W2: awaiting_verdict DB state must yield phase 'awaiting-verdict' even with no pending file"
+        )
+
+
+# ---------------------------------------------------------------------------
+# TestPushPause: push hook fires on transition, not on repeated poll or --status (W1)
+# ---------------------------------------------------------------------------
+
+_AWAITING_STATE = {
+    "phase": "awaiting-verdict",
+    "plan_id": 1,
+    "gate_failures": [],
+    "pending": ["verdict-request-1-step-1.md"],
+}
+_IN_PROGRESS_STATE = {"phase": "in_progress", "plan_id": 1, "gate_failures": []}
+_CLOSED_STATE = {"phase": "closed", "plan_id": 1, "gate_failures": []}
+
+
+def _run_main_with_states(states, plan_name, tmp_path, monkeypatch):
+    """Drive main() through a fixed state sequence, return (push_calls, log_lines)."""
+    push_calls = []
+
+    def mock_push(name, cur, db_path=None):
+        push_calls.append((name, dict(cur)))
+        return "WATCH: push sent"
+
+    monkeypatch.setattr(gw, "_push_pause", mock_push)
+
+    state_iter = iter(states)
+
+    def mock_read_state(*args, **kwargs):
+        return next(state_iter, _CLOSED_STATE)
+
+    monkeypatch.setattr(gw, "read_state", mock_read_state)
+    monkeypatch.setattr(gw.time, "sleep", lambda n: None)
+
+    log_lines = []
+
+    def mock_log_line(path, line):
+        log_lines.append(line)
+
+    monkeypatch.setattr(gw, "_log_line", mock_log_line)
+
+    db_path = str(tmp_path / "lifecycle.db")
+    lifecycle.init_lifecycle_db(db_path)
+
+    rc = gw.main([
+        "gate_watcher.py", plan_name,
+        "--timeout-min", "60",
+        "--db-path", db_path,
+    ])
+    return push_calls, log_lines, rc
+
+
+class TestPushPause:
+    def test_push_fires_once_on_transition(self, tmp_path, monkeypatch):
+        states = [
+            _IN_PROGRESS_STATE,
+            _AWAITING_STATE,
+            _CLOSED_STATE,
+        ]
+        push_calls, log_lines, rc = _run_main_with_states(
+            states, "test-plan.md", tmp_path, monkeypatch
+        )
+        assert len(push_calls) == 1
+        assert push_calls[0][0] == "test-plan.md"
+        assert rc == 0
+
+    def test_push_does_not_fire_on_repeated_poll(self, tmp_path, monkeypatch):
+        states = [
+            _IN_PROGRESS_STATE,
+            _AWAITING_STATE,
+            _AWAITING_STATE,
+            _CLOSED_STATE,
+        ]
+        push_calls, log_lines, rc = _run_main_with_states(
+            states, "test-plan.md", tmp_path, monkeypatch
+        )
+        assert len(push_calls) == 1
+
+    def test_push_not_called_for_status(self, tmp_path, monkeypatch):
+        push_calls = []
+
+        def mock_push(name, cur, db_path=None):
+            push_calls.append(name)
+            return "WATCH: push sent"
+
+        monkeypatch.setattr(gw, "_push_pause", mock_push)
+
+        db_path = _init_db(tmp_path)
+        _insert_plan(db_path, 300, "status-check.md", state="awaiting_verdict")
+        pend = tmp_path / "pending"
+        pend.mkdir()
+        (pend / "verdict-request-300-step-1.md").write_text("")
+
+        rc = gw.main([
+            "gate_watcher.py", "status-check.md",
+            "--status",
+            "--db-path", db_path,
+            "--pending-dir", str(pend),
+        ])
+        assert rc == 0
+        assert len(push_calls) == 0
+
+    def test_raising_push_logged_loop_continues(self, tmp_path, monkeypatch):
+        states = [
+            _IN_PROGRESS_STATE,
+            _AWAITING_STATE,
+            _CLOSED_STATE,
+        ]
+
+        def raising_push(name, cur, db_path=None):
+            raise RuntimeError("network failure")
+
+        monkeypatch.setattr(gw, "_push_pause", raising_push)
+        monkeypatch.setattr(gw.time, "sleep", lambda n: None)
+
+        state_iter = iter(states)
+        monkeypatch.setattr(gw, "read_state", lambda *a, **kw: next(state_iter, _CLOSED_STATE))
+
+        log_lines = []
+
+        def mock_log_line(path, line):
+            log_lines.append(line)
+
+        monkeypatch.setattr(gw, "_log_line", mock_log_line)
+
+        db_path = str(tmp_path / "lifecycle.db")
+        lifecycle.init_lifecycle_db(db_path)
+
+        rc = gw.main([
+            "gate_watcher.py", "test-plan.md",
+            "--timeout-min", "60",
+            "--db-path", db_path,
+        ])
+        assert rc == 0
+        skip_lines = [l for l in log_lines if "push skipped" in l]
+        assert len(skip_lines) >= 1
+        assert any("RuntimeError" in l for l in skip_lines)
