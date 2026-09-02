@@ -1,0 +1,8 @@
+{
+  "slug": "executable-propagation-check-pin-forms",
+  "content_hash": "e896cabc7c58c859cd579de4072c5eb8cb270b69295d3b3149228b40a6d6d805",
+  "session_id": "a9cd0af4-3dda-4331-a1eb-a795afc08ef9",
+  "armed_at": "2026-09-02T13:57:50.701449",
+  "watcher": "gate_watcher.py spawned detached (pid 75769); log: logs/watch/executable-propagation-check-pin-forms.md.log",
+  "attestation_boundary": "This receipt proves the watcher was ARMED at write time. It does NOT prove the watcher stayed alive. Liveness of a session-local monitor is not externally verifiable."
+}

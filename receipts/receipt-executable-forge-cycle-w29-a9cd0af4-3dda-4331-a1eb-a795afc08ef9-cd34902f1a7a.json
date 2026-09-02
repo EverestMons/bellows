@@ -1,0 +1,8 @@
+{
+  "slug": "executable-forge-cycle-w29",
+  "content_hash": "cd34902f1a7ab4212e1fcfacb20d6e025ad5b1f3d79d34ce07352740e24f55d1",
+  "session_id": "a9cd0af4-3dda-4331-a1eb-a795afc08ef9",
+  "armed_at": "2026-09-02T13:02:23.065556",
+  "watcher": "gate_watcher.py spawned detached (pid 66487); log: logs/watch/executable-forge-cycle-w29.md.log",
+  "attestation_boundary": "This receipt proves the watcher was ARMED at write time. It does NOT prove the watcher stayed alive. Liveness of a session-local monitor is not externally verifiable."
+}

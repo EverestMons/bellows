@@ -1,8 +1,8 @@
 {
   "slug": "executable-shop-server-invariant-company",
-  "content_hash": "208aba9870b3703018bb617b701301de3a134bdc21a7f854ba51bc38a5f37513",
+  "content_hash": "e399d6d61b2b9646400f3c44ec226d1288d5c70d1d87fa74516e63c98c3575a4",
   "session_id": "a9cd0af4-3dda-4331-a1eb-a795afc08ef9",
-  "armed_at": "2026-09-02T11:46:06.134211",
-  "watcher": "gate_watcher.py spawned detached (pid 52526); log: logs/watch/executable-shop-server-invariant-company.md.log",
+  "armed_at": "2026-09-02T12:46:10.307007",
+  "watcher": "gate_watcher.py spawned detached (pid 63615); log: logs/watch/executable-shop-server-invariant-company.md.log",
   "attestation_boundary": "This receipt proves the watcher was ARMED at write time. It does NOT prove the watcher stayed alive. Liveness of a session-local monitor is not externally verifiable."
 }

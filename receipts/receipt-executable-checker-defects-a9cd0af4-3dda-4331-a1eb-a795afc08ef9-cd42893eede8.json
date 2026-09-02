@@ -1,0 +1,8 @@
+{
+  "slug": "executable-checker-defects",
+  "content_hash": "cd42893eede8125b234b57d8732ad3f5cc9ceed016a0624e3d9d1618e6f26741",
+  "session_id": "a9cd0af4-3dda-4331-a1eb-a795afc08ef9",
+  "armed_at": "2026-09-02T13:48:02.519925",
+  "watcher": "gate_watcher.py spawned detached (pid 74045); log: logs/watch/executable-checker-defects.md.log",
+  "attestation_boundary": "This receipt proves the watcher was ARMED at write time. It does NOT prove the watcher stayed alive. Liveness of a session-local monitor is not externally verifiable."
+}
