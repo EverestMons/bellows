@@ -2,8 +2,9 @@
 Bellows is the autonomous execution engine for Eluvian. It runs plans deposited by the Planner via claude -p, feeds step output to the Planner API for judgment, and notifies the CEO via Pushover only on escalation or completion.
 
 ## Start
-python dashboard.py          # primary — full-screen TUI that owns the daemon
-python bellows.py             # headless daemon (no TUI)
+.venv/bin/python dashboard.py   # primary — full-screen TUI that owns the daemon; the daemon inherits THIS interpreter
+.venv/bin/python bellows.py     # headless daemon (no TUI)
+scripts/bootstrap.sh              # first, on a new machine: build .venv from requirements.txt and run the suite once (MACHINE_SETUP.md §2, thread 84)
 
 ## Logs
 Per-run JSON output lives in logs/. Run history in bellows.db.
@@ -12,7 +13,7 @@ Per-run JSON output lives in logs/. Run history in bellows.db.
 Edit config.json to add watched project paths and Pushover credentials.
 
 ## Status
-python status.py
+.venv/bin/python status.py
 
 ## Knowledge Base
 Plans for Bellows itself live in knowledge/decisions/.
