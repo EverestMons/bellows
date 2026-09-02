@@ -1,0 +1,85 @@
+=== QA PROBES — verdict-signal-2026-09-01 (plan 100009) ===
+Date: 2026-09-01
+Interpreter: /Users/marklehn/Developer/bellows/.venv/bin/python (Python 3.12.14)
+
+=== ITEM 1: SOURCE PROBES ===
+
+--- P3: lifecycle.mark_plan_state( count in bellows.py (expected 12) ---
+12
+
+--- "awaiting_verdict") count in bellows.py (expected 5) ---
+5
+
+--- D1: awaiting_verdict in depositor.py _resolve_in_flight_writes (expected 1) ---
+412:                "FROM plans WHERE lifecycle_state IN ('in_progress', 'claimed', 'awaiting_verdict')"
+
+--- S1: awaiting_verdict in status.py query_in_flight (expected 1) ---
+220:        WHERE p.lifecycle_state IN ('in_progress', 'claimed', 'awaiting_verdict')
+
+--- R1: awaiting_verdict in tools/reconcile_plan.py (expected 1 condition line) ---
+89:    if plan_row["lifecycle_state"] in ("in_progress", "awaiting_verdict") and not args.killed_verified:
+90:        print("\nREFUSED (exit 3): lifecycle_state is 'in_progress' or 'awaiting_verdict' and "
+
+--- _push_pause: defined once, called once in tools/gate_watcher.py ---
+141:def _push_pause(name, cur, db_path=None):
+225:                    _log_line(log_path, _push_pause(args.name, cur, db_path=args.db_path))
+
+--- P1: lifecycle.py sha (expected first 16: 412abd155d5099aa) ---
+412abd155d5099aaa43e0cc108e9695a61dfae31091bcf78ce781458f89edb8a  lifecycle.py
+
+--- DEV commit 2e74fc7 numstat (scope check) ---
+1	1	depositor.py
+1	1	status.py
+153	0	tests/test_gate_watcher.py
+2	2	tools/reconcile_plan.py
+24	0	bellows.py
+33	0	tests/test_depositor.py
+43	3	tests/test_reconcile_plan.py
+45	0	tests/test_verdict_signal.py
+58	5	tools/gate_watcher.py
+9	0	tests/test_status.py
+95	0	knowledge/development/dev-log-verdict-signal-2026-09-01.md
+
+=== ITEM 2: TARGETED SUITES (post-counts) ===
+
+--- test_verdict_signal.py ---
+....                                                                     [100%]
+4 passed in 0.18s
+--- test_gate_watcher.py ---
+.........................................s.........                      [100%]
+50 passed, 1 skipped in 1.17s
+--- test_status.py ---
+.......................                                                  [100%]
+23 passed in 0.17s
+--- test_depositor.py ---
+.........................                                                [100%]
+25 passed in 0.51s
+--- test_reconcile_plan.py ---
+........                                                                 [100%]
+8 passed in 0.37s
+--- test_lifecycle.py ---
+.......................                                                  [100%]
+95 passed in 0.81s
+
+=== ITEM 4: gate_watcher --status (no push line expected) ===
+WATCH: db-unreadable (will retry)
+
+--- Push transition test (4 tests matching 'push') ---
+platform darwin -- Python 3.12.14, pytest-9.1.1, pluggy-1.6.0
+rootdir: /Users/marklehn/Developer/bellows/.bellows-worktrees/100009
+plugins: anyio-4.14.2
+collected 51 items / 47 deselected / 4 selected
+
+tests/test_gate_watcher.py ....                                          [100%]
+
+======================= 4 passed, 47 deselected in 0.13s =======================
+
+=== ITEM 5: reconcile refusal on awaiting_verdict ===
+exit_code=3 (without --killed-verified) — confirmed above
+exit_code=0 (with --killed-verified) — confirmed above
+
+=== ITEM 6: Restart Discipline ===
+100009|in_progress|knowledge/decisions/in-progress-executable-100009.md
+
+Plan 100009 reads in_progress because the running daemon predates this fix.
+The canary is the NEXT plan's pause after the CEO restarts the daemon (dashboard 'r').

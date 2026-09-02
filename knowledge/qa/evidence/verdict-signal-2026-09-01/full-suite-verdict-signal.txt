@@ -1,0 +1,265 @@
+........................................................................ [  4%]
+........................................................................ [  8%]
+........................................................................ [ 13%]
+........................................................................ [ 17%]
+........................................................................ [ 21%]
+................................................FFF..F.................. [ 26%]
+........................................................................ [ 30%]
+........................................................................ [ 34%]
+...........................s............................................ [ 39%]
+........................................................................ [ 43%]
+........................................................................ [ 47%]
+........................................................................ [ 52%]
+........................................................................ [ 56%]
+........................................................................ [ 61%]
+........................FF.............................................. [ 65%]
+........................................................................ [ 69%]
+........................................................................ [ 74%]
+.........FFF............................................................ [ 78%]
+........................................................................ [ 82%]
+........................................................................ [ 87%]
+........................................................................ [ 91%]
+........................................................................ [ 95%]
+....................................................................     [100%]
+=================================== FAILURES ===================================
+_________________ TestLoadPhrases.test_loads_phrases_from_file _________________
+
+self = <test_decisions.TestLoadPhrases object at 0x1057719d0>
+
+    def test_loads_phrases_from_file(self):
+        phrases = decisions.load_phrases()
+>       assert len(phrases) > 0
+E       assert 0 > 0
+E        +  where 0 = len([])
+
+tests/test_decisions.py:28: AssertionError
+------------------------------ Captured log call -------------------------------
+WARNING  bellows:decisions.py:42 decisions: phrase file not found at /Users/marklehn/Developer/bellows/.bellows-worktrees/INTERMEDIATE_DECISION_PHRASES.md
+_________________ TestLoadPhrases.test_includes_known_phrases __________________
+
+self = <test_decisions.TestLoadPhrases object at 0x10576ec00>
+
+    def test_includes_known_phrases(self):
+        phrases = decisions.load_phrases()
+>       assert "had to" in phrases
+E       AssertionError: assert 'had to' in []
+
+tests/test_decisions.py:35: AssertionError
+------------------------------ Captured log call -------------------------------
+WARNING  bellows:decisions.py:42 decisions: phrase file not found at /Users/marklehn/Developer/bellows/.bellows-worktrees/INTERMEDIATE_DECISION_PHRASES.md
+________________ TestLoadPhrases.test_splits_slash_alternatives ________________
+
+self = <test_decisions.TestLoadPhrases object at 0x10576f770>
+
+    def test_splits_slash_alternatives(self):
+        phrases = decisions.load_phrases()
+        # "re-run / rerun" should produce two separate entries
+>       assert "re-run" in phrases
+E       AssertionError: assert 're-run' in []
+
+tests/test_decisions.py:44: AssertionError
+------------------------------ Captured log call -------------------------------
+WARNING  bellows:decisions.py:42 decisions: phrase file not found at /Users/marklehn/Developer/bellows/.bellows-worktrees/INTERMEDIATE_DECISION_PHRASES.md
+_______ TestExtractDecisionBlocks.test_s_class_blocks_from_ground_truth ________
+
+self = <test_decisions.TestExtractDecisionBlocks object at 0x10583d8b0>
+
+    def test_s_class_blocks_from_ground_truth(self):
+        """All 6 S-class blocks from the detection design ground truth must match."""
+        labeled_path = os.path.join(
+            os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+            "knowledge", "qa", "evidence",
+            "intermediate-decision-detection-2026-05-12",
+            "labeled-blocks.jsonl",
+        )
+        phrases = decisions.load_phrases()
+    
+        s_blocks = []
+        with open(labeled_path) as f:
+            for line in f:
+                entry = json.loads(line)
+                if entry["label"] == "S":
+                    s_blocks.append(entry)
+    
+        assert len(s_blocks) == 6, f"Expected 6 S-class blocks, got {len(s_blocks)}"
+    
+        for block in s_blocks:
+            event = _make_assistant_event(block["text"])
+            ndjson = _make_ndjson(event)
+            results = decisions.extract_decision_blocks(ndjson, phrases)
+>           assert len(results) > 0, (
+                f"S-class block not matched: plan={block['plan']}, "
+                f"step={block['step']}, block_idx={block['block_idx']}, "
+                f"text={block['text'][:80]}"
+            )
+E           AssertionError: S-class block not matched: plan=deposit-exists-prose-canary-2026-04-28, step=2, block_idx=7, text=The grep evidence file seems empty. Let me fix that — the working directory migh
+E           assert 0 > 0
+E            +  where 0 = len([])
+
+tests/test_decisions.py:89: AssertionError
+------------------------------ Captured log call -------------------------------
+WARNING  bellows:decisions.py:42 decisions: phrase file not found at /Users/marklehn/Developer/bellows/.bellows-worktrees/INTERMEDIATE_DECISION_PHRASES.md
+_____________________ test_planner_retries_on_auth_failure _____________________
+
+mock_run = <MagicMock name='run' id='4398618896'>
+mock_sleep = <MagicMock name='sleep' id='4387071776'>
+
+    @patch("planner.time.sleep")
+    @patch("planner.subprocess.run")
+    def test_planner_retries_on_auth_failure(mock_run, mock_sleep):
+        """First call returns 401 auth error, second call succeeds."""
+        mock_run.side_effect = [
+            MagicMock(stdout=AUTH_ERROR_STDOUT),
+            MagicMock(stdout=SUCCESS_STDOUT),
+        ]
+>       result = planner.consult(PARSED_FIXTURE, "plan text", 1, "claude-sonnet-4-6")
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_phase4_planner_retry.py:50: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+planner.py:116: in consult
+    consult_path = build_consult_file(parsed, plan_text, step_number, project_brief, project_status)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+planner.py:79: in build_consult_file
+    + build_system_prompt()
+      ^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def build_system_prompt() -> str:
+        template_path = pathlib.Path(PLANNER_TEMPLATE_PATH)
+        company_path = pathlib.Path(COMPANY_MD_PATH)
+    
+        if not template_path.exists():
+>           raise FileNotFoundError(f"PLANNER_TEMPLATE.md not found at {PLANNER_TEMPLATE_PATH}")
+E           FileNotFoundError: PLANNER_TEMPLATE.md not found at /Users/marklehn/Developer/GitHub/PLANNER_TEMPLATE.md
+
+planner.py:23: FileNotFoundError
+__________ test_planner_falls_back_to_continue_on_persistent_failure ___________
+
+mock_run = <MagicMock name='run' id='4398554944'>
+mock_sleep = <MagicMock name='sleep' id='4387712240'>
+
+    @patch("planner.time.sleep")
+    @patch("planner.subprocess.run")
+    def test_planner_falls_back_to_continue_on_persistent_failure(mock_run, mock_sleep):
+        """Both calls return 401 auth error — should fall back to continue."""
+        mock_run.side_effect = [
+            MagicMock(stdout=AUTH_ERROR_STDOUT),
+            MagicMock(stdout=AUTH_ERROR_STDOUT),
+        ]
+>       result = planner.consult(PARSED_FIXTURE, "plan text", 1, "claude-sonnet-4-6")
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_phase4_planner_retry.py:65: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+planner.py:116: in consult
+    consult_path = build_consult_file(parsed, plan_text, step_number, project_brief, project_status)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+planner.py:79: in build_consult_file
+    + build_system_prompt()
+      ^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def build_system_prompt() -> str:
+        template_path = pathlib.Path(PLANNER_TEMPLATE_PATH)
+        company_path = pathlib.Path(COMPANY_MD_PATH)
+    
+        if not template_path.exists():
+>           raise FileNotFoundError(f"PLANNER_TEMPLATE.md not found at {PLANNER_TEMPLATE_PATH}")
+E           FileNotFoundError: PLANNER_TEMPLATE.md not found at /Users/marklehn/Developer/GitHub/PLANNER_TEMPLATE.md
+
+planner.py:23: FileNotFoundError
+___________________________ test_build_consult_file ____________________________
+
+    def test_build_consult_file():
+>       path = planner.build_consult_file(PARSED_FIXTURE, "plan text", 1)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_planner.py:22: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+planner.py:79: in build_consult_file
+    + build_system_prompt()
+      ^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def build_system_prompt() -> str:
+        template_path = pathlib.Path(PLANNER_TEMPLATE_PATH)
+        company_path = pathlib.Path(COMPANY_MD_PATH)
+    
+        if not template_path.exists():
+>           raise FileNotFoundError(f"PLANNER_TEMPLATE.md not found at {PLANNER_TEMPLATE_PATH}")
+E           FileNotFoundError: PLANNER_TEMPLATE.md not found at /Users/marklehn/Developer/GitHub/PLANNER_TEMPLATE.md
+
+planner.py:23: FileNotFoundError
+____________________________ test_consult_bad_json _____________________________
+
+mock_run = <MagicMock name='run' id='4395082544'>
+
+    @patch("planner.subprocess.run")
+    def test_consult_bad_json(mock_run):
+        mock_run.return_value = MagicMock(
+            stdout='{"type":"result","subtype":"success","is_error":false,"result":"not json","stop_reason":"end_turn","session_id":"x","total_cost_usd":0.0,"permission_denials":[]}'
+        )
+>       result = planner.consult(PARSED_FIXTURE, "plan text", 1, "claude-sonnet-4-6")
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_planner.py:35: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+planner.py:116: in consult
+    consult_path = build_consult_file(parsed, plan_text, step_number, project_brief, project_status)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+planner.py:79: in build_consult_file
+    + build_system_prompt()
+      ^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def build_system_prompt() -> str:
+        template_path = pathlib.Path(PLANNER_TEMPLATE_PATH)
+        company_path = pathlib.Path(COMPANY_MD_PATH)
+    
+        if not template_path.exists():
+>           raise FileNotFoundError(f"PLANNER_TEMPLATE.md not found at {PLANNER_TEMPLATE_PATH}")
+E           FileNotFoundError: PLANNER_TEMPLATE.md not found at /Users/marklehn/Developer/GitHub/PLANNER_TEMPLATE.md
+
+planner.py:23: FileNotFoundError
+_____________________________ test_consult_timeout _____________________________
+
+mock_run = <MagicMock name='run' id='4395086816'>
+
+    @patch("planner.subprocess.run")
+    def test_consult_timeout(mock_run):
+        mock_run.side_effect = subprocess.TimeoutExpired("claude", 120)
+>       result = planner.consult(PARSED_FIXTURE, "plan text", 1, "claude-sonnet-4-6")
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_planner.py:43: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+planner.py:116: in consult
+    consult_path = build_consult_file(parsed, plan_text, step_number, project_brief, project_status)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+planner.py:79: in build_consult_file
+    + build_system_prompt()
+      ^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def build_system_prompt() -> str:
+        template_path = pathlib.Path(PLANNER_TEMPLATE_PATH)
+        company_path = pathlib.Path(COMPANY_MD_PATH)
+    
+        if not template_path.exists():
+>           raise FileNotFoundError(f"PLANNER_TEMPLATE.md not found at {PLANNER_TEMPLATE_PATH}")
+E           FileNotFoundError: PLANNER_TEMPLATE.md not found at /Users/marklehn/Developer/GitHub/PLANNER_TEMPLATE.md
+
+planner.py:23: FileNotFoundError
+=========================== short test summary info ============================
+FAILED tests/test_decisions.py::TestLoadPhrases::test_loads_phrases_from_file
+FAILED tests/test_decisions.py::TestLoadPhrases::test_includes_known_phrases
+FAILED tests/test_decisions.py::TestLoadPhrases::test_splits_slash_alternatives
+FAILED tests/test_decisions.py::TestExtractDecisionBlocks::test_s_class_blocks_from_ground_truth
+FAILED tests/test_phase4_planner_retry.py::test_planner_retries_on_auth_failure
+FAILED tests/test_phase4_planner_retry.py::test_planner_falls_back_to_continue_on_persistent_failure
+FAILED tests/test_planner.py::test_build_consult_file - FileNotFoundError: PL...
+FAILED tests/test_planner.py::test_consult_bad_json - FileNotFoundError: PLAN...
+FAILED tests/test_planner.py::test_consult_timeout - FileNotFoundError: PLANN...
+9 failed, 1642 passed, 1 skipped in 49.89s
+exit=1
