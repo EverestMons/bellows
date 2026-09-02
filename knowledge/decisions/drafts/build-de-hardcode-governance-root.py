@@ -411,6 +411,11 @@ def main():
     _req(os.path.realpath(src_root) != rp, "output equals input")
     _req(not os.path.exists(os.path.join(rp, "config.json")),
          "output holds a config.json — a canonical bellows checkout on this machine")
+    # <out> must be absent or an EMPTY directory: never a checkout of any kind, never a
+    # dir with stale files from an earlier run, never a half-state target (EXECUTION seat).
+    _req(not os.path.exists(rp) or (os.path.isdir(rp) and not os.listdir(rp)),
+         "output must be a nonexistent or empty directory")
+    _req(not os.path.exists(os.path.join(src_root, TEST_FILE)), f"{TEST_FILE} already exists in input")
     for t in TARGETS:
         s = os.path.join(src_root, t)
         _req(os.path.isfile(s), f"missing input {s}")
@@ -445,7 +450,6 @@ def main():
         os.makedirs(os.path.dirname(d), exist_ok=True)
         with open(d, "wb") as f:
             f.write(outs[t].encode("utf-8"))
-    _req(not os.path.exists(os.path.join(src_root, TEST_FILE)), f"{TEST_FILE} already exists in input")
     d = os.path.join(dst_root, TEST_FILE)
     os.makedirs(os.path.dirname(d), exist_ok=True)
     with open(d, "wb") as f:
