@@ -118,16 +118,9 @@ The builder reads the file as bytes, refuses CRLF, asserts each anchor's count i
 - ACID:                w1 dry — governance commit before the dev-log commit, each by pathspec; a HALT between leaves COMPANY.md v2.8 committed-unpushed, visible at the pause
 - **Walk 1 total: 2 findings, 2 folded — instruction 1 / record 1; 0 of 2 fold-introduced.**
 
-- Weak spots:          w2 (EXECUTION seat) 1 folded — instruction 1 / record 0 (X-4, pre-existing: the suite pin measured in the canonical checkout and carried to the worktree, where the failure never occurs — `known_failures: 0`, P7, the header, the MUST-PRESERVE bullet and QA Item 4 re-authored; swept to plans A and bootstrap)
-- Destruction:         w2 (EXECUTION seat) dry — instruction 0 / record 0 — A3 rehearsed on a governance clone: `1 file changed, 3 insertions(+), 3 deletions(-)`, `cmp` silent, the pathspec commit, the tracked pre-commit hook; nothing destructive reached
-- Vulnerabilities:     w2 (EXECUTION seat, execution brief) 2 folded — instruction 1 / record 1 (X-1: releasing B inside A's verdict windows would HALT A on its COMPANY.md pin — B runs after A CLOSES; X-2: the date check was shape-only — the builder now requires a real calendar date within [2026-09-02, tomorrow], re-committed and re-proven)
-- Integration-record:  w2 (EXECUTION seat) 2 folded — instruction 0 / record 2 (X-3: "three refusal lines" where A2 and QA carry four; X-5: the register's consumer line omitted the advisory test-scope WARN the block's text introduced)
-- ACID:                w2 (EXECUTION seat) dry — instruction 0 / record 0 — unchanged
-- **Walk 2 (panel-1) total: 5 findings, 5 folded — instruction 2 / record 3; 4 of 5 fold-introduced (SC-10, SC-2 ×2, the walk-1 block), 1 pre-existing.** 31 plan commands run, 29 matched, 2 mismatched (both folded).
+**Cold panel (SMALL form; meter opened at the scout's dispatch 10:58, before any seat):** SCOUT (lens 4, local, 138k tokens, 34 tool uses) — 10 findings, 0 HIGH, 0 DIRECTION, 9 folded / 1 recorded: 2 MED (a scratch variable not re-derived across compounds; a landing date baked into the builder) and 8 LOW · EXECUTION (lens 3 + the execution brief, local, 149k tokens, 47 tool uses; 60 commands logged, 31 plan commands run, 29 matched, 2 mismatched) — 5 findings, 0 HIGH, 0 DIRECTION, 5 folded, by lens: weak-spots 1 (X-4, pre-existing: the suite pin measured in the canonical checkout and carried to the worktree, where the failure never occurs — `known_failures: 0`, re-authored at five sites and swept to plans A and bootstrap), vulnerabilities 2 (X-1: releasing B inside A's verdict windows would HALT A on its COMPANY.md pin — B runs after A CLOSES; X-2: the date check was shape-only — the builder now requires a real calendar date within [2026-09-02, tomorrow], re-committed and re-proven), integration-record 2 (X-3: "three refusal lines" where the steps carry four; X-5: the register's consumer line omitted the advisory test-scope WARN); 4 of 5 fold-introduced (the scout round's SC-10 and SC-2, the walk-1 block), 1 pre-existing · CAPSTONE (integration-record + ACID + the system brief, on the FOLD SET): convened next — its closure read is the closing walk's licence.
 
-**Cold panel (SMALL form):** scout 10 findings (0 HIGH, 0 DIRECTION) · EXECUTION 5 (0 HIGH, 0 DIRECTION; 60 commands logged) · CAPSTONE: convened next, on the fold set.
-
-**Status (after the EXECUTION seat): the CAPSTONE seat not yet convened — the record above is as of the seat's fold round.**
+**Status (after the EXECUTION seat): the CAPSTONE seat not yet convened; walk 2 (the closing walk) runs after it — the record above is as of the seat's fold round.**
 
 Rule 20 banner (byte-exact, produced by RUNNING the canonical block — never hand-authored):
 
