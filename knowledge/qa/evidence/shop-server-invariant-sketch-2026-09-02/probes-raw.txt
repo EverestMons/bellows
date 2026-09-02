@@ -1,0 +1,60 @@
+=== QA PROBES — shop-server-invariant-sketch-2026-09-02 ===
+Date: 2026-09-02
+
+=== ITEM 1 — Governance commit and tokens ===
+--- git log (the [100018] commit) ---
+e5250a0 [100018] multi-machine sketch addendum 2026-09-02: the shop/server invariant — every machine is a shop, the server role is the only difference; threads 81/82 re-read under it
+
+--- P3 token counts (all must be 1) ---
+# Addendum 2026-09-02: 1
+every machine is a shop, and the server role is the only difference: 1
+## The invariant, stated: 1
+## What the invariant does to threads 81 and 82: 1
+## Where it lands next (bound, not deferred): 1
+
+P2 anchor count (must be 1): 1
+
+wc -l of SK (must be 256):      256 /Users/marklehn/Developer/eluvian-governance/governance/knowledge/architecture/multi-machine-project-status-2026-08-31.md
+
+git status of SK (must be EMPTY):
+(end status)
+
+=== ITEM 2 — Append-only (second pair of hands) ===
+Addendum commit hash: e5250a0a73b8dcd0b6a83569e8885c58e3d9bccf
+Parent of addendum commit: e5250a0a73b8dcd0b6a83569e8885c58e3d9bccf^
+
+--- diff parent..current (first 20 lines of output) ---
+231a232,256
+> 
+> # Addendum 2026-09-02 — the shop/server invariant: every machine is a shop, and the server role is the only difference
+> 
+> > **CEO, 2026-09-02:** *"the idea is that every machine becomes a shop to work on projects. We now have the mini housing our private db. We have to start thinking about this in terms of multi eluvian shop setups, each machine running the same. The mini is our server which should be the only difference."*
+> 
+> ## The invariant, stated
+> 
+> - **shop — a role, and `COMPANY.md`'s definition stands.** The governance root IS the shop: it holds the files that define how every project operates (`COMPANY.md`, "Shop-level vs Project-level"). A MACHINE runs the shop when it carries the repos, a bellows daemon, a tuyere watcher and the hooks — so every machine under the process is a shop, and "the shop" as the name of one machine (the Air; `~/Developer/GitHub/`; plan ids 1–99999) is retired usage. Say "the Air", "the mini"; say "a shop" for the role.
+> - **server — one extra role, held by the mini: the private stores.** Measured 2026-09-02: tuyere's Postgres at `localhost:5432` on the mini, reachable over the tailnet (`tuyere/docs/SERVER.md`, the always-on host decided 2026-08-24); `forge_lessons/lessons-forge.db` — one live copy, on the mini (CEO, 2026-09-01; addendum 3). Every other shop reaches shared state over the tailnet and holds no private store.
+> - **the only difference.** Two shops run the SAME code (git), under the SAME interpreter rule (`bellows/.venv/bin/python` for every bellows tool, test and the daemon — `MACHINE_SETUP.md` §2; the same for each repo's own venv), from the SAME package declarations (`requirements.txt`, installed by each repo's `scripts/bootstrap.sh`), with the SAME hook registration and the SAME checks. `MACHINE_SETUP.md` §0's per-machine axis (`config.json`, venvs, the id block, launchd agents, hook registration) is PROVISIONING of one shape, not a second shape. The pair "server / not server" is the one asymmetry the design accepts.
+> - **setup debt — what it means when two shops differ on anything else.** A difference in layout, interpreter, package source, config form or hook install is not a supported variant; it is debt, named with its closing act. Measured on the Air 2026-09-02 (by the Air's own session, read-only): no bellows or forge venv and a daemon on the Command Line Tools 3.9.6 with user-site packages → closed by plan `bellows-bootstrap-2026-09-02` + thread 84's operator act; no `python3.12` → install `python@3.12` before the bootstraps run, so both shops build the same venv; the `~/Developer/GitHub/` layout → an operator move of the Air's checkouts to the mini's shape, then the resolver trim (`bellows_root.resolve_governance_root` admits two shapes today) — a decision owed to the CEO, not taken here.
+> 
+> ## What the invariant does to threads 81 and 82
+> 
+> - **The seat-locality constraint dissolves.** Thread 81's sketch and the 2026-09-01 register held that EXECUTION and CAPSTONE seats must run where the DB, the venv and the daemon live. Under identical shops every machine has the venv and the daemon, and the store is reached over the tailnet; any idle shop can run any seat class, and addendum 4's cold-reader role becomes fully dynamic — whichever live shop holds no active claim.
+> - **Three of thread 82's open decisions are answered by the model, not by preference:** the seat report returns as a ROW on the server (coordination facts on the server, artifacts in git — the daemon stays push-free); lifecycle state moves to the server with each shop's `lifecycle.db` as a PROJECTION plus a local read cache (a shop stays sighted on its own in-flight work when the server is unreachable); the shared `id_sequence` falls out of that move and retires the id-block law.
+> - **Uniformity is a PRECONDITION of the shared drafting lane, not a nicety.** A lane watched by several daemons is exactly the double-dispatch channel the stage-3 gate exists for (`MACHINE_SETUP.md` §4; `bellows/CLAUDE.md`); stage 3 requires every shop to run the same lock mode with the same eligible classes. A shop that drifted in code, interpreter or config is a shop that can misjudge a draft every other shop trusts.
+> - **The sequence is unchanged; provisioning is its step 2.** Liveness that reflects the daemon → provisioning (`bellows-bootstrap`, thread 85's asserts) → stage 3 on every shop → the seat class → lifecycle to the server → materialization by sha → the drafting stage (thread 81). Diagnostic 100014 prices the last step honestly: a daemon-run battery removes the SKIP and MISREAD classes (8 of 14 recorded incidents) and cannot remove TOOL-DEFECT (5 of 14) — the checker fixes (threads 52, 58, 63) are a precondition of the drafting stage, not a side effect.
+> 
+
+Count of '<' lines in diff (must be 0): 0
+
+First two '>' lines in diff:
+> 
+> # Addendum 2026-09-02 — the shop/server invariant: every machine is a shop, and the server role is the only difference
+
+=== ITEM 3 — Nothing else moved ===
+COMPANY.md sha (must be 7883745e23467b4e): 7883745e23467b4e
+
+git status of SK and COMPANY.md (must be EMPTY):
+(end status)
+
+Full governance checkout dirty count (informational):        0
