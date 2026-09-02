@@ -186,8 +186,19 @@ PASSED — SELF-CHECK PASSED — all evidence files present, no hedging keywords
 - Integration-record:  w1 2 folded — instruction 0 / record 2 (a doctrine-plan phrase "History-facing note" with no referent here; the two restated `12`s gained their measured qualifier — `propagation_check` 2 → 0)
 - ACID:                w1 dry — the requirement set as a system: D1 ⇔ B1–B5 (paired, asserted by one test), L1 ⇔ B1–B5 (paused plans exit the stranded scan only if the scan is NOT widened), the daemon's own pause reading the old shape ⇔ the canary being the NEXT plan — no pair conflicts
 - **Walk 1 total: 4 findings, 4 folded — instruction 2 / record 2; 0 of 4 fold-introduced.**
+- Weak spots:          w2 dry — instruction 0 / record 0 — the six B-site blocks re-read as written; the count-2 anchor's two indentations stated
+- Destruction:         w2 dry — instruction 0 / record 0 — EXECUTED: the widened in-flight predicate runs read-only against the live `lifecycle.db` (0 rows in flight now); the stranded scan untouched by design
+- Vulnerabilities:     w2 dry — instruction 0 / record 0 — EXECUTED from `tools/`: `sys.path.insert(0, _ROOT)` + `import notifier` + `init_notifications` against the mini's real `config.json` → the plan's own branch `push skipped (pushover keys empty)` (the import chain prints one harmless marker line to stdout, not to the watcher's log)
+- Integration-record:  w2 dry — instruction 0 / record 0 — `propagation_check` CLEAN; every count in this block re-derived (walk 1: 4 = 2 + 2)
+- ACID:                w2 dry — instruction 0 / record 0 — unchanged requirement set since walk 1's pair walk
+- **Walk 2 total: 0 findings — instruction 0 / record 0, ALL FIVE LENSES DRY.** Instruction series **2 → 0**.
 
-**Conformance (§5):** *(recorded at the freeze from the last run)*
+**Conformance (§5):** first run at walk 0 (shape-stability) and re-run after each walk; LAST run (walk 2 close, re-run at the freeze): `plan_lint` exit 0 / 0 FAIL at the faithful mirror — expected WARN set (o2)×4 worktree-relative deposits, (r)×1 a probe constant; `propagation_check` CLEAN (exit 0); `cycle_check` BAR_MET; `fold_check` CLEAN.
+
+**Closing:** ✅ **BAR MET — walk 2 dry (all five lenses) after walk 1's four folds; T1, no panel owed, none convened.** Substrate present (committed register at every phase, per-lens commits, `fold_check` baseline) — the close is AUTO-eligible; the manifest below is emitted by `cycle_check --emit-manifest`, never hand-typed.
+
+**Fold-and-deposit exactly once.**
+
 
 **Cold panel:** not required at T1; none convened.
 
@@ -198,7 +209,7 @@ class: shop-infra
 reads: /Users/marklehn/Developer/bellows/bellows.py, /Users/marklehn/Developer/bellows/depositor.py, /Users/marklehn/Developer/bellows/status.py, /Users/marklehn/Developer/bellows/lifecycle.py, /Users/marklehn/Developer/bellows/tools/gate_watcher.py, /Users/marklehn/Developer/bellows/tools/reconcile_plan.py, /Users/marklehn/Developer/bellows/notifier.py, /Users/marklehn/Developer/bellows/knowledge/decisions/Done/executable-100005.md, /Users/marklehn/Developer/eluvian-governance/RULE_20_SELF_CHECK_BLOCK.md
 writes: bellows.py, depositor.py, status.py, tools/gate_watcher.py, tools/reconcile_plan.py, tests/test_verdict_signal.py, tests/test_gate_watcher.py, tests/test_status.py, tests/test_depositor.py, tests/test_reconcile_plan.py, knowledge/development/dev-log-verdict-signal-2026-09-01.md, knowledge/qa/evidence/verdict-signal-2026-09-01/qa-receipt.md, knowledge/qa/evidence/verdict-signal-2026-09-01/probes-raw.txt, knowledge/qa/evidence/verdict-signal-2026-09-01/full-suite-verdict-signal.txt
 open_forks: none — the tuyere needs-review twin of this signal rides thread 80; the Pushover keys are the CEO's config act
-walks: 1
-yields: 4
-validation: <declare>
-coherence: N/A
+walks: 2
+yields: 2, 0
+validation: cycle_check=BAR_MET, plan_lint=0_FAIL, fold_check=N/A
+coherence: 1/2 walks have register rows

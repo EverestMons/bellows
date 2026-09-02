@@ -2,7 +2,6 @@
   "plan_lint": {
     "exit": 0,
     "signals": [
-      "(f) WARN: Cycle Manifest stanza contains <declare> placeholder(s) \u2014 incomplete template",
       "(o2) WARN: Deposits entry `knowledge/development/dev-log-verdict-signal-N-N-N.md` is not project-prefixed or absolute",
       "(o2) WARN: Deposits entry `knowledge/qa/evidence/verdict-signal-N-N-N/full-suite-verdict-signal.txt` is not project-prefixed or absolute",
       "(o2) WARN: Deposits entry `knowledge/qa/evidence/verdict-signal-N-N-N/probes-raw.txt` is not project-prefixed or absolute",
@@ -12,9 +11,7 @@
       "PIN-CHECK: kind=prefix line=N token=965df839d6e9\u2026 result=ambiguous",
       "PIN-CHECK: kind=prefix line=N token=a3e3354012d6\u2026 result=ambiguous",
       "PIN-CHECK: kind=prefix line=N token=cc0ddb050020\u2026 result=ambiguous",
-      "PIN-CHECK: kind=prefix line=N token=e8a8e0b628dc\u2026 result=ambiguous",
-      "WARN: Drafting Cycle block has no **Closing:** line (DRAFTING_CYCLE.md \u00a73)",
-      "WARN: Drafting Cycle closing indicates fold as last event, not a dry lens pass (DRAFTING_CYCLE.md \u00a72)"
+      "PIN-CHECK: kind=prefix line=N token=e8a8e0b628dc\u2026 result=ambiguous"
     ]
   }
 }
