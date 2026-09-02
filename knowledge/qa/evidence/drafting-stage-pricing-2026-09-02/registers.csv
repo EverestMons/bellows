@@ -1,0 +1,144 @@
+register,date,date_src,schema,plan,tier,walk_headers,max_walk,seat_rows,finding_rows,integration_rows,plan_lint_first,plan_lint_mentions,plan_lint_proxy,cycle_check_first,cycle_check_mentions,cycle_check_proxy,fold_check_first,fold_check_mentions,fold_check_proxy,propagation_check_first,propagation_check_mentions,propagation_check_proxy,walk_register_lint_first,walk_register_lint_mentions,walk_register_lint_proxy
+walk-register-auto-confirm-on-agreement-2026-08-11.md,2026-08-11,filename,0.1,04-executable-auto-confirm-on-agreement-2026-08-11.md,,1,0,0,19,2,0,1,1,,0,0,,0,0,,0,0,,0,0
+walk-register-bellows-restart-lock-2026-08-15.md,2026-08-15,filename,0.3,,,1,0,0,8,2,0,1,1,,0,0,,0,0,,0,0,,0,0
+walk-register-bellows-restart-lock-fix-2026-08-15.md,2026-08-15,filename,0.3,,,1,0,0,9,1,,0,0,,0,0,0,1,0,,0,0,,0,0
+walk-register-classify-307-318-2026-08-11.md,2026-08-11,filename,0.1,,,1,0,0,9,2,,0,0,,0,0,,0,0,,0,0,,0,0
+walk-register-contract-entry-readability-2026-08-11.md,2026-08-11,filename,0.1,01-diagnostic-contract-entry-readability-2026-08-11.md,,1,0,0,28,5,pre,2,1,,0,0,,0,0,,0,0,,0,0
+walk-register-contract-version-toggle-2026-08-12.md,2026-08-12,filename,,,,4,2,0,12,0,2,1,0,,0,0,,0,0,,0,0,,0,0
+walk-register-cycle-classify-folddamage-2026-08-14.md,2026-08-14,filename,0.3,,,1,0,0,5,2,,0,0,,0,0,0,2,0,,0,0,,0,0
+walk-register-cycle-classify-residual-bucket-2026-08-15.md,2026-08-15,filename,0.3,,T1 — additive writes (one `insert_propos,4,3,0,26,11,0,2,0,,0,0,0,5,1,,0,0,pre,3,0
+walk-register-cycle-classify-s40sweep-2026-08-13.md,2026-08-13,filename,0.2,382 (,,0,,0,5,0,,0,0,,0,0,,0,0,,0,0,,0,0
+walk-register-cycle-classify-s42sweep-2026-08-13.md,2026-08-13,filename,0.3,,,3,2,0,6,2,,0,0,,0,0,,0,0,,0,0,,0,0
+walk-register-cycle-ingest-folddamage-2026-08-14.md,2026-08-14,filename,0.3,,,1,0,0,8,2,0,1,0,,0,0,,0,0,,0,0,,0,0
+walk-register-cycle-ingest-residual-bucket-2026-08-14.md,2026-08-14,filename,,,T1 — additive single-write ingest (T-2 f,11,10,0,0,0,2,4,2,,0,0,1,11,5,,0,0,6,2,0
+walk-register-cycle-ingest-s40sweep-2026-08-13.md,2026-08-13,filename,0.2,381 (,,0,,0,10,0,,0,0,,0,0,,0,0,,0,0,,0,0
+walk-register-cycle-ingest-s42sweep-2026-08-13.md,2026-08-13,filename,0.3,,,5,4,0,6,2,0,1,0,,0,0,,0,0,,0,0,,0,0
+walk-register-cycle-run-339-2026-08-10.md,2026-08-10,filename,0.1,,"T1 computed (T-2, T-8), self-escalated t",6,8,0,92,21,7,1,0,,0,0,,0,0,,0,0,,0,0
+walk-register-dc-coldfront-2026-08-13.md,2026-08-13,filename,0.2,,,0,,0,10,1,,0,0,,0,0,,0,0,,0,0,,0,0
+walk-register-dc-forkc-2026-08-13.md,2026-08-13,filename,0.2,,,4,2,0,25,10,0,5,1,,0,0,,0,0,,0,0,2,1,0
+walk-register-dc-gates-half-2026-09-01.md,2026-09-01,filename,0.3,executable-100007,T2 — T-6 fires (governance surface). Ful,5,3,1,30,13,0,5,1,,0,0,3,1,0,3,2,1,,0,0
+walk-register-de-hardcode-2026-09-01.md,2026-09-01,filename,0.3,bellows/knowledge/decisions/drafts/executable-de-hardcode-governance-root.md,T2 — T-6 (the QA-mandate string in `gate,5,2,4,23,12,pre,15,3,0,7,6,0,8,1,0,8,1,,0,0
+walk-register-delete-not-xml-2026-08-14.md,2026-08-14,filename,,,,3,2,0,0,0,,0,0,,0,0,,0,0,,0,0,,0,0
+walk-register-delete-not-xml-exec-2026-08-14.md,2026-08-14,filename,,,,3,2,0,0,0,,0,0,,0,0,,0,0,,0,0,,0,0
+walk-register-diagnostic-annotate-lessons.md,2026-08-22,git-add,0.3,lessons-forge/knowledge/decisions/drafts/diagnostic-annotate-lessons.md,T1 — T-7 (authored-from diagnostic) and,10,8,0,60,14,2,6,1,5,3,3,5,3,1,6,2,0,5,6,1
+walk-register-diagnostic-bare-entry-ruling.md,2026-08-23,git-add,0.3,lessons-forge/knowledge/decisions/drafts/diagnostic-bare-entry-ruling.md,T1 — T-7 (a companion executable applies,5,13,0,133,0,1,15,2,0,14,0,1,20,3,1,7,0,0,16,2
+walk-register-diagnostic-base-rate-class-break-alignment-2026-08-18.md,2026-08-18,filename,,,,0,,0,19,6,,0,0,,0,0,,0,0,,0,0,,0,0
+walk-register-diagnostic-base-rate-l5c-shift-corruption-2026-08-18.md,2026-08-18,filename,,,,0,,0,14,5,,0,0,,0,0,,0,0,,0,0,,0,0
+walk-register-diagnostic-bellows-root-fallback-stray-2026-08-19.md,2026-08-19,filename,0.3,diagnose resolve_bellows_root() fallback creating stray lifecycle.db (bellows),T1 (T-7 authored-from → fix executable;,6,5,0,11,3,5,1,1,,0,0,,0,0,,0,0,,0,0
+walk-register-diagnostic-eluvian-e2-design.md,2026-08-24,git-add,0.3,bellows/knowledge/decisions/drafts/diagnostic-eluvian-e2-design.md,T1 — T-7 fires twice over (consumes the,3,2,0,11,0,,0,0,1,1,0,,0,0,,0,0,,0,0
+walk-register-diagnostic-eluvian-e3-design.md,2026-08-24,git-add,0.3,bellows/knowledge/decisions/drafts/diagnostic-eluvian-e3-design.md,T1 — T-7 fires twice over (consumes the,4,3,0,17,0,,0,0,,0,0,,0,0,,0,0,,0,0
+walk-register-diagnostic-eluvian-e4-design.md,2026-08-24,git-add,0.3,bellows/knowledge/decisions/drafts/diagnostic-eluvian-e4-design.md,T1 — T-7 fires twice over (consumes the,3,2,0,10,0,,0,0,,0,0,,0,0,,0,0,,0,0
+walk-register-diagnostic-eluvian-e5-design.md,2026-08-25,git-add,0.3,bellows/knowledge/decisions/drafts/diagnostic-eluvian-e5-design.md,T1 — T-7 fires twice over (consumes audi,3,2,0,10,0,2,1,1,2,1,0,,0,0,,0,0,,0,0
+walk-register-diagnostic-eluvian-path-corrective.md,2026-08-24,git-add,0.3,governance/knowledge/decisions/drafts/diagnostic-eluvian-path-corrective.md,T1 — T-7 fires (E2's design consumes the,3,2,0,11,0,,0,0,0,1,0,,0,0,,0,0,,0,0
+walk-register-diagnostic-eluvian-path.md,2026-08-24,git-add,0.3,governance/knowledge/decisions/drafts/diagnostic-eluvian-path.md,T1 — T-7 fires (a family of follow-up ex,6,5,0,29,0,2,2,1,1,3,1,2,2,0,,0,0,2,1,0
+walk-register-diagnostic-forge-key-migration.md,2026-08-25,git-add,0.3,lessons-forge/knowledge/decisions/drafts/diagnostic-forge-heading-key-migration.md,T1 — read-only single-deposit diagnostic,3,2,0,10,0,,0,0,,0,0,,0,0,,0,0,,0,0
+walk-register-diagnostic-learned-promotion.md,2026-08-23,git-add,0.3,lessons-forge/knowledge/decisions/drafts/diagnostic-learned-promotion.md,T1 — **T-7** fires (a companion executab,6,5,0,23,5,0,8,2,0,4,2,5,2,0,0,11,2,,0,0
+walk-register-diagnostic-no-receipt-hold.md,2026-08-25,git-add,0.3,bellows/knowledge/decisions/drafts/diagnostic-no-receipt-admission-hold.md,T1 — read-only single-deposit diagnostic,3,2,0,10,0,,0,0,,0,0,,0,0,,0,0,,0,0
+walk-register-diagnostic-promotion-corrective.md,2026-08-23,git-add,0.3,lessons-forge/knowledge/decisions/drafts/diagnostic-promotion-corrective.md,T1 — T-7 (a companion executable consume,5,4,0,10,3,,0,0,,0,0,,0,0,,0,0,,0,0
+walk-register-diagnostic-rule22c.md,2026-08-25,git-add,0.3,bellows/knowledge/decisions/drafts/diagnostic-rule22c-parser-false-positives.md,T1 — read-only single-deposit diagnostic,3,2,0,10,0,,0,0,,0,0,,0,0,,0,0,,0,0
+walk-register-diagnostic-teardown-silent-block.md,2026-08-25,git-add,0.3,bellows/knowledge/decisions/drafts/diagnostic-teardown-silent-block-evidence-names.md,T1 — read-only single-deposit diagnostic,4,3,0,16,0,,0,0,,0,0,,0,0,,0,0,,0,0
+walk-register-diagnostic-tuyere-coordination-visibility.md,2026-08-25,git-add,0.3,governance/knowledge/decisions/drafts/diagnostic-tuyere-coordination-visibility.md,T1 — T-7 fires (the machine-registry exe,5,4,0,22,4,2,2,1,4,1,0,,0,0,2,1,1,,0,0
+walk-register-diagnostic-tuyere-engine-lifecycle.md,2026-08-27,git-add,0.3,governance/knowledge/decisions/drafts/diagnostic-tuyere-engine-lifecycle.md,T1 — T-7 fires (the on-demand executable,2,1,0,4,0,,0,0,,0,0,,0,0,,0,0,,0,0
+walk-register-diagnostic-tuyere-federation-claim.md,2026-08-26,git-add,0.3,governance/knowledge/decisions/drafts/diagnostic-tuyere-federation-claim.md,T1 — T-7 fires (the fork-1 executable co,5,4,0,24,4,2,1,1,,0,0,2,6,1,2,1,1,,0,0
+walk-register-diagnostic-verdict-act-mechanization.md,2026-08-25,git-add,0.3,bellows/knowledge/decisions/drafts/diagnostic-verdict-act-mechanization.md,T1 — read-only single-deposit diagnostic,4,3,0,15,0,,0,0,,0,0,,0,0,,0,0,,0,0
+walk-register-diagnostic-wrap-lock-portability.md,2026-08-24,git-add,0.3,governance/knowledge/decisions/drafts/diagnostic-wrap-lock-portability.md,T1 — T-7 fires (a downstream portability,4,3,0,19,0,,0,0,,0,0,,0,0,,0,0,,0,0
+walk-register-dispute-outcome-batch-runner-2026-08-21.md,2026-08-21,filename,,,,4,3,0,0,0,,0,0,,0,0,,0,0,,0,0,,0,0
+walk-register-dispute-outcome-reconciliation-2026-08-14.md,2026-08-14,filename,0.3,,,5,4,0,14,4,3,2,2,,0,0,,0,0,,0,0,,0,0
+walk-register-dispute-outcome-reconciliation-exec-2026-08-15.md,2026-08-15,filename,0.3,,,7,6,0,19,2,6,1,0,,0,0,6,2,1,,0,0,,0,0
+walk-register-dispute-outcome-sizing-2026-08-15.md,2026-08-15,filename,0.3,,,4,3,0,8,1,2,1,0,,0,0,,0,0,,0,0,,0,0
+walk-register-dispute-reconciliation-card-2026-08-21.md,2026-08-21,filename,,,,3,3,0,0,0,3,3,1,,0,0,,0,0,,0,0,,0,0
+walk-register-doctrine-manifest-reconcile-2026-08-31.md,2026-08-31,filename,,governance/knowledge/decisions/drafts/executable-doctrine-manifest-reconcile.md,computed T2 (T-6 fires: edits doctrine).,10,10,0,42,9,pre,34,2,pre,25,6,pre,16,2,,0,0,pre,1,0
+walk-register-drafting-stage-pricing-2026-09-02.md,2026-09-02,filename,0.3,bellows/knowledge/decisions/drafts/diagnostic-drafting-stage-pricing.md,T1 — T-7 (thread 81's design builds on t,2,1,0,5,2,pre,9,2,pre,7,2,pre,7,1,pre,7,0,pre,4,0
+walk-register-executable-annotate-lessons-md.md,2026-08-22,git-add,0.3,governance/knowledge/decisions/drafts/executable-annotate-lessons-md.md,"T2 — **T-6** (edits `LESSONS.md`, a gove",10,9,0,72,12,0,8,5,5,6,1,9,4,0,9,7,3,9,2,0
+walk-register-executable-bare-entry-annotate.md,2026-08-24,git-add,0.3,governance/knowledge/decisions/drafts/executable-bare-entry-annotate.md,T2 — T-2 fires (writes the live shop reg,2,1,0,0,0,,0,0,,0,0,,0,0,,0,0,,0,0
+walk-register-executable-bare-entry-heading-bytes.md,2026-08-24,git-add,0.3,lessons-forge/knowledge/decisions/drafts/executable-bare-entry-heading-bytes.md,T1 — T-2 fires (writes a deposited artif,7,5,0,16,0,1,4,1,,0,0,1,2,0,2,6,3,1,1,0
+walk-register-executable-bellows-claim-shim.md,2026-08-26,git-add,0.3,governance/knowledge/decisions/drafts/executable-bellows-claim-shim.md,T2 — T-6 (the claim block is the central,5,4,1,24,6,3,2,2,,0,0,0,3,0,,0,0,,0,0
+walk-register-executable-bellows-r2-wiring.md,2026-08-26,git-add,0.3,governance/knowledge/decisions/drafts/executable-bellows-r2-wiring.md,T2 — T-6 fires (wrap_check.py = live-gua,5,4,0,19,5,2,4,2,,0,0,,0,0,,0,0,,0,0
+walk-register-executable-bellows-root-sentinel-fix-2026-08-19.md,2026-08-19,filename,0.3,fix resolve_bellows_root() — bellows.py sentinel + raise (implements diag-455 Gap Assessment),"T1 (T-1 blast radius, T-7 from diag-455,",4,3,0,9,2,3,1,1,,0,0,,0,0,,0,0,,0,0
+walk-register-executable-eluvian-e1.md,2026-08-24,git-add,0.3,governance/knowledge/decisions/drafts/executable-eluvian-e1-doctrine-entry.md,T2 — T-6 fires (installs root doctrine +,3,2,0,11,0,1,1,0,,0,0,,0,0,,0,0,,0,0
+walk-register-executable-eluvian-e2-corrective-fixtures.md,2026-08-24,git-add,0.3,bellows/knowledge/decisions/drafts/executable-eluvian-e2-corrective-fixtures.md,T1 — tests-only corrective implementing,3,2,0,10,0,,0,0,,0,0,,0,0,,0,0,,0,0
+walk-register-executable-eluvian-e2.md,2026-08-24,git-add,0.3,bellows/knowledge/decisions/drafts/executable-eluvian-e2-admission-flip.md,T2 — daemon claim-path build (live-guard,4,3,0,15,0,2,3,1,,0,0,,0,0,,0,0,,0,0
+walk-register-executable-eluvian-e3.md,2026-08-24,git-add,0.3,bellows/knowledge/decisions/drafts/executable-eluvian-e3-receipts.md,"T2 — live-guard (wrap lock) code, T-7 (b",7,6,0,66,0,5,4,3,5,3,3,,0,0,,0,0,,0,0
+walk-register-executable-eluvian-e4.md,2026-08-24,git-add,0.3,bellows/knowledge/decisions/drafts/executable-eluvian-e4-conditioning.md,T2 — live-guard (verdict consumption) co,4,3,0,46,0,2,1,1,,0,0,,0,0,,0,0,,0,0
+walk-register-executable-eluvian-e5.md,2026-08-25,git-add,0.3,bellows/knowledge/decisions/drafts/executable-eluvian-e5-keying.md,T2 — the wrap lock is live Tier-3 enforc,4,3,0,36,0,2,3,1,2,1,0,,0,0,,0,0,,0,0
+walk-register-executable-forge-classify.md,2026-08-25,git-add,0.3,lessons-forge/knowledge/decisions/drafts/executable-forge-classify-32.md,T1 — T-8 clone of `Done/executable-459.m,3,2,0,10,0,1,1,0,,0,0,,0,0,,0,0,,0,0
+walk-register-executable-forge-ingest.md,2026-08-25,git-add,0.3,lessons-forge/knowledge/decisions/drafts/executable-forge-ingest-32.md,"T1 — one sentinel-gated library call, re",3,2,0,10,0,1,1,0,,0,0,,0,0,,0,0,,0,0
+walk-register-executable-fullsuite-templeak-qa-cert-2026-08-19.md,2026-08-19,filename,,invoice-pulse — Full-suite temp-leak fix: QA-only certification of HEAD,T1 (self-escalated by CEO direction from,4,3,0,0,0,1,5,4,,0,0,,0,0,,0,0,,0,0
+walk-register-executable-invoice-list-query-parts-characterization-2026-08-19.md,2026-08-19,filename,0.3,characterization tests for,"T1 (T-7 authored-from-diag-450, T-8 nove",9,8,0,19,3,5,2,2,,0,0,,0,0,,0,0,,0,0
+walk-register-executable-ip-lessons-backfill-2026-08-18.md,2026-08-18,filename,,,,1,1,0,11,0,,0,0,,0,0,,0,0,,0,0,,0,0
+walk-register-executable-issue-verdict.md,2026-08-25,git-add,0.3,bellows/knowledge/decisions/drafts/executable-issue-verdict-tool.md,T2 — daemon-code + new-tool build; full,3,2,0,43,0,2,1,1,,0,0,,0,0,,0,0,,0,0
+walk-register-executable-lessons-consolidation-register-2026-08-18.md,2026-08-18,filename,,,,11,11,2,44,0,5,9,9,,0,0,,0,0,8,4,0,,0,0
+walk-register-executable-link-commands.md,2026-08-25,git-add,0.3,bellows/knowledge/decisions/drafts/executable-link-live-commands-tool.md,"T1 — a new standalone stdlib tool, zero",3,2,0,10,0,,0,0,,0,0,,0,0,,0,0,,0,0
+walk-register-executable-no-receipt-hold.md,2026-08-25,git-add,0.3,bellows/knowledge/decisions/drafts/executable-no-receipt-admission-hold.md,T2 — daemon admission-path code (a defec,3,2,0,41,0,2,1,1,2,1,0,,0,0,,0,0,,0,0
+walk-register-executable-relabel-codified.md,2026-08-23,git-add,0.3,governance/knowledge/decisions/drafts/executable-relabel-codified.md,"T2 — T-6 (governance artifact), T-1 ever",6,5,0,48,16,0,8,2,3,12,5,5,8,2,1,11,0,5,2,0
+walk-register-executable-root-docs.md,2026-08-25,git-add,0.3,governance/knowledge/decisions/drafts/executable-root-docs-shipped-state.md,"T1 — doc-only; warm walks, panel not con",3,2,0,10,0,2,1,0,,0,0,,0,0,,0,0,,0,0
+walk-register-executable-rule22c-fix.md,2026-08-25,git-add,0.3,bellows/knowledge/decisions/drafts/executable-rule22c-parser-fix.md,T1 — three census-justified hunks in one,3,2,0,10,0,,0,0,,0,0,,0,0,,0,0,,0,0
+walk-register-executable-teardown-recording.md,2026-08-25,git-add,0.3,bellows/knowledge/decisions/drafts/executable-teardown-recording-precheck-evidence.md,T2 — daemon-code build; full cold panel,3,2,0,44,0,2,4,0,,0,0,,0,0,,0,0,,0,0
+walk-register-executable-tuyere-machine-registry.md,2026-08-26,git-add,0.3,governance/knowledge/decisions/drafts/executable-tuyere-machine-registry.md,"T2 — T-6 fires (GOVERNANCE.md edit, §9 s",7,6,0,34,6,4,2,1,4,1,0,,0,0,,0,0,,0,0
+walk-register-executable-tuyere-plan-claims.md,2026-08-26,git-add,0.3,governance/knowledge/decisions/drafts/executable-tuyere-plan-claims.md,"T2 — T-6 fires (GOVERNANCE.md, §9 CEO-ow",6,5,1,29,7,,0,0,,0,0,4,2,0,,0,0,,0,0
+walk-register-executable-tuyere-r4b-sweep-postdate.md,2026-08-27,git-add,0.3,governance/knowledge/decisions/drafts/executable-tuyere-r4b-sweep-postdate.md,T2 — T-6 fires (amends `GOVERNANCE.md` §,7,6,0,70,26,2,4,2,2,3,2,,0,0,2,2,1,2,2,2
+walk-register-executable-wrap-phrase.md,2026-08-25,git-add,0.3,bellows/knowledge/decisions/drafts/executable-wrap-phrase-equivalence.md,T1 — one string in one hook + tests; **p,3,2,0,10,0,,0,0,,0,0,,0,0,,0,0,,0,0
+walk-register-executable-wrap-superset.md,2026-08-25,git-add,0.3,bellows/knowledge/decisions/drafts/executable-wrap-ritual-superset.md,T1 — two prose clauses + one loop arm cl,3,2,0,10,0,,0,0,,0,0,,0,0,,0,0,,0,0
+walk-register-fix-fetch-test-reload-isolation-2026-08-12.md,2026-08-12,filename,0.1,invoice-pulse/knowledge/decisions/drafts/executable-fix-fetch-test-config-reload-isolation-2026-08-12.md,,4,2,0,2,0,2,1,1,,0,0,,0,0,,0,0,,0,0
+walk-register-flip-331-2026-08-13.md,2026-08-13,filename,0.2,,,0,,0,1,0,,0,0,,0,0,,0,0,,0,0,,0,0
+walk-register-forge-cycle-w28-2026-09-01.md,2026-09-01,filename,0.3,drafted at the session scratchpad as,T1 (Small — a 28-entry ingest+classify c,3,2,0,12,0,,0,0,,0,0,,0,0,,0,0,,0,0
+walk-register-forward-none-guard-2026-08-13.md,2026-08-13,filename,0.2,,,0,,0,4,0,,0,0,,0,0,,0,0,,0,0,,0,0
+walk-register-gate1-write-2026-08-11.md,2026-08-11,filename,0.1,,,1,0,0,7,1,,0,0,,0,0,,0,0,,0,0,,0,0
+walk-register-gate1-write-333-336-2026-08-13.md,2026-08-13,filename,0.2,384 (,,0,,0,8,0,,0,0,,0,0,,0,0,,0,0,,0,0
+walk-register-gate1-write-337-346-2026-08-13.md,2026-08-13,filename,0.3,,,3,2,0,1,0,,0,0,,0,0,,0,0,,0,0,,0,0
+walk-register-gate1-write-347-352-2026-08-14.md,2026-08-14,filename,0.3,,,1,0,0,4,1,0,1,0,,0,0,,0,0,,0,0,,0,0
+walk-register-gate1-write-353-2026-08-15.md,2026-08-15,filename,0.3,,T1 — T-2 fires (one production-DB row);,4,3,0,16,6,0,2,2,,0,0,3,1,0,,0,0,,0,0
+walk-register-gate2-341-2026-08-14.md,2026-08-14,filename,0.3,,,4,4,0,36,18,,0,0,,0,0,,0,0,,0,0,,0,0
+walk-register-gate2-342-2026-08-14.md,2026-08-14,filename,0.3,,,2,0,0,52,25,0,5,0,,0,0,,0,0,,0,0,,0,0
+walk-register-gate2-347-2026-08-14.md,2026-08-14,filename,0.3,,,1,0,0,3,1,,0,0,,0,0,0,1,0,,0,0,,0,0
+walk-register-gate2-347-flip-2026-08-14.md,2026-08-14,filename,0.3,,,1,0,0,2,0,,0,0,,0,0,0,1,0,,0,0,,0,0
+walk-register-gate2-348-2026-08-14.md,2026-08-14,filename,0.3,,,1,0,0,4,1,0,3,1,,0,0,pre,3,0,,0,0,0,1,0
+walk-register-gate2-coldpanel-2026-08-12.md,2026-08-12,filename,0.1,,,1,0,0,9,1,,0,0,,0,0,,0,0,,0,0,,0,0
+walk-register-gate2-consolidation-2026-08-26.md,2026-08-26,filename,0.3,governance/knowledge/decisions/drafts/executable-gate2-consolidation.md,T2 (T-6 — PT + a NEW root doctrine artif,3,2,0,38,0,,0,0,,0,0,,0,0,,0,0,,0,0
+walk-register-gate2-dc-batch-2026-08-11.md,2026-08-11,filename,0.1,,,1,0,0,0,0,,0,0,,0,0,,0,0,,0,0,,0,0
+walk-register-gate2-dc-route57-2026-08-25.md,2026-08-25,filename,0.3,governance/knowledge/decisions/drafts/executable-gate2-dc-route57.md,T2 (T-6 — DRAFTING_CYCLE.md is governanc,3,2,0,39,0,2,2,0,2,2,2,,0,0,,0,0,pre,1,0
+walk-register-gate2-dc-s40sweep-2026-08-13.md,2026-08-13,filename,0.2,"gate2-dc-s40sweep-2026-08-13 (id at deposit), governance, T2 (T-6 fires — both targets governance surface)",,1,0,0,32,9,0,1,0,,0,0,,0,0,,0,0,,0,0
+walk-register-gate2-dc-w28-2026-09-01.md,2026-09-01,filename,0.3,forge_lessons/knowledge/decisions/drafts/executable-gate2-dc-w28.md,T2 — T-6 fires (governance surface; the,8,4,7,36,12,0,12,8,0,18,11,0,6,0,0,9,2,,0,0
+walk-register-gate2-dc5-2026-08-11.md,2026-08-11,filename,0.1,,,1,0,0,15,2,,0,0,,0,0,,0,0,,0,0,,0,0
+walk-register-gate2-pt-a-2026-08-25.md,2026-08-25,filename,0.3,governance/knowledge/decisions/drafts/executable-gate2-pt-a.md,T2 (T-6 — PLANNER_TEMPLATE.md is governa,3,2,0,10,0,2,2,0,2,2,2,,0,0,,0,0,,0,0
+walk-register-gate2-pt-b-2026-08-25.md,2026-08-25,filename,0.3,governance/knowledge/decisions/drafts/executable-gate2-pt-b.md,T2 (T-6 — PLANNER_TEMPLATE.md is governa,3,2,0,10,0,2,3,0,2,3,3,,0,0,,0,0,,0,0
+walk-register-gate2-pt-c-2026-08-26.md,2026-08-26,filename,0.3,governance/knowledge/decisions/drafts/executable-gate2-pt-c.md,T2 (T-6). **Panel: Fork C** (proxy: (i),3,2,0,10,0,2,2,0,2,2,2,,0,0,,0,0,,0,0
+walk-register-gate2-pt-s40sweep-2026-08-13.md,2026-08-13,filename,0.2,"gate2-pt-s40sweep-2026-08-13 (id at deposit), governance, T2 (T-6 — PLANNER_TEMPLATE.md)",,1,0,0,18,8,,0,0,,0,0,,0,0,,0,0,,0,0
+walk-register-gate2-pt3-2026-08-12.md,2026-08-12,filename,0.1,,,1,0,0,9,2,,0,0,,0,0,,0,0,,0,0,,0,0
+walk-register-gate2-s3-register-2026-08-11.md,2026-08-11,filename,,,,0,,0,3,0,nohdr,2,0,,0,0,,0,0,,0,0,nohdr,1,0
+walk-register-gate2-template-batch-2026-08-11.md,2026-08-11,filename,0.1,,,1,0,0,0,0,,0,0,,0,0,,0,0,,0,0,,0,0
+walk-register-gate2-w3-2026-08-26.md,2026-08-26,filename,0.3,governance/knowledge/decisions/drafts/executable-gate2-w3.md,T1 (Small — three new PT rules + the ver,3,2,0,1,0,,0,0,,0,0,,0,0,,0,0,,0,0
+walk-register-glossary-migrate-anvil-2026-08-26.md,2026-08-26,filename,0.3,governance/knowledge/decisions/drafts/executable-glossary-migrate-anvil.md,T1 (Small — doc-only across two repos; c,3,2,0,8,0,,0,0,,0,0,,0,0,,0,0,,0,0
+walk-register-glossary-migrate-freight-kb-2026-08-26.md,2026-08-26,filename,0.3,governance/knowledge/decisions/drafts/executable-glossary-migrate-freight-kb.md,"T1 (Small — doc-only, two repos; committ",3,2,0,8,0,,0,0,,0,0,,0,0,,0,0,,0,0
+walk-register-glossary-migrate-invoice-pulse-2026-08-26.md,2026-08-26,filename,0.3,governance/knowledge/decisions/drafts/executable-glossary-migrate-invoice-pulse.md,"T1 (Small — doc-only, two repos; committ",3,2,0,6,0,,0,0,,0,0,,0,0,,0,0,,0,0
+walk-register-group4-rescope-2026-08-10.md,2026-08-10,filename,,,,26,4,0,0,0,1,9,2,,0,0,,0,0,,0,0,,0,0
+walk-register-heartbeat-only-2026-08-31.md,2026-08-31,filename,0.3,governance/knowledge/decisions/drafts/executable-tuyere-heartbeat-only.md,"T1 — T-3 (cross-machine), T-1 (5 files),",8,7,0,31,6,2,3,2,2,8,2,,0,0,,0,0,3,2,0
+walk-register-inapp-xml-fetch-2026-08-12.md,2026-08-12,filename,0.1,invoice-pulse/knowledge/decisions/drafts/04-executable-inapp-xml-fetch-2026-08-12.md,,11,5,0,18,0,5,4,2,,0,0,,0,0,,0,0,,0,0
+walk-register-ingest-needs-activity-2026-08-14.md,2026-08-14,filename,,,,3,2,0,0,0,,0,0,,0,0,,0,0,,0,0,,0,0
+walk-register-ingest-simplify-2026-08-14.md,2026-08-14,filename,,,,3,2,0,0,0,,0,0,,0,0,,0,0,,0,0,,0,0
+walk-register-ingest-simplify-strip-2026-08-14.md,2026-08-14,filename,,,,3,2,0,0,0,,0,0,,0,0,,0,0,,0,0,,0,0
+walk-register-invoice-pulse-lessons-backfill-2026-08-17.md,2026-08-17,filename,,,T1 — T-7 fires (authored-from diagnostic,14,13,0,0,0,1,20,6,,0,0,7,5,1,,0,0,,0,0
+walk-register-lessons-glossary-channels-v2-2026-08-14.md,2026-08-14,filename,,,,1,0,0,3,0,,0,0,,0,0,0,1,1,,0,0,,0,0
+walk-register-lessons-project-backfill-2026-08-26.md,2026-08-26,filename,0.3,governance/knowledge/decisions/drafts/executable-lessons-project-backfill.md,T1 (Small — one mechanical heading-tag p,3,2,0,0,0,,0,0,,0,0,,0,0,,0,0,,0,0
+walk-register-lint-class-recall-2026-08-10.md,2026-08-10,filename,,,,6,4,0,5,0,pre,2,1,,0,0,,0,0,,0,0,,0,0
+walk-register-log-hygiene-2026-08-13.md,2026-08-13,filename,0.2,,,0,,0,1,0,,0,0,,0,0,,0,0,,0,0,,0,0
+walk-register-per-project-lessons-glossary-2026-08-14.md,2026-08-14,filename,,,T1 proposed (T-7). **Scout:** at the Pla,1,0,0,12,0,,0,0,,0,0,0,1,1,,0,0,,0,0
+walk-register-pin-hook-lint-2026-08-13.md,2026-08-13,filename,0.2,,,0,,0,4,1,nohdr,1,0,,0,0,,0,0,,0,0,,0,0
+walk-register-plan-lane-project-scope-2026-08-27.md,2026-08-27,filename,0.3,governance/knowledge/decisions/drafts/executable-tuyere-plan-lane-project-scope.md,T2 (T-6 governance surface — GOVERNANCE,15,14,0,62,30,6,12,8,6,17,7,6,2,0,6,1,0,6,6,3
+walk-register-predicted-number-pin-census-2026-08-12.md,2026-08-12,filename,0.2,,,0,,0,21,2,nohdr,2,0,,0,0,,0,0,,0,0,,0,0
+walk-register-project-producer-2026-08-31.md,2026-08-31,filename,0.3,governance/knowledge/decisions/drafts/executable-bellows-project-producer.md,"T1 — T-3 (cross-machine), T-1 (3 files),",10,8,0,17,5,3,15,1,5,14,4,,0,0,,0,0,,0,0
+walk-register-pt-project-tag-2026-08-26.md,2026-08-26,filename,0.3,governance/knowledge/decisions/drafts/executable-pt-project-tag.md,T1 (Small — four anchored edits on PT; c,3,2,0,0,0,,0,0,,0,0,,0,0,,0,0,,0,0
+walk-register-pt-record-errors-2026-08-26.md,2026-08-26,filename,0.3,governance/knowledge/decisions/drafts/executable-pt-record-errors.md,T1 (Small — four anchored record correct,3,2,0,1,0,,0,0,,0,0,,0,0,,0,0,,0,0
+walk-register-pt489-2026-08-15.md,2026-08-15,filename,0.3,,T2 — T-6 (doctrine surface). **Builder l,4,3,0,27,10,0,4,3,,0,0,1,4,3,,0,0,1,2,0
+walk-register-qa-corrective-residual-bucket-2026-08-15.md,2026-08-15,filename,0.3,,"T1 — read-only verification, structure-c",4,3,0,24,7,0,3,1,,0,0,0,4,1,,0,0,,0,0
+walk-register-reporting-section-render-2026-08-20.md,2026-08-20,filename,0.3,scratchpad/draft-executable-reporting-section-render-2026-08-20.md,"T1 (five-lens, no cold panel) | **Cadenc",4,3,0,2,0,,0,0,,0,0,,0,0,,0,0,,0,0
+walk-register-s2-rewrite-2026-08-11.md,2026-08-11,filename,0.1,,,1,0,1,32,5,0,1,0,,0,0,,0,0,,0,0,,0,0
+walk-register-stanza-presence-2026-08-27.md,2026-08-27,filename,0.3,bellows/knowledge/decisions/lintmirror-diagnostic-stanza-presence-2026-08-27.md,T1 computed — triggers fired: T-7 (autho,3,2,0,16,4,pre,5,0,2,3,0,,0,0,,0,0,,0,0
+walk-register-stub-reframe-buffer-2026-08-13.md,2026-08-13,filename,,,,3,2,0,0,0,,0,0,,0,0,,0,0,,0,0,,0,0
+walk-register-stub-source-reframe-2026-08-13.md,2026-08-13,filename,,,,4,3,0,0,0,,0,0,,0,0,,0,0,,0,0,,0,0
+walk-register-validate-detail-enrich-2026-08-11.md,2026-08-11,filename,0.1,invoice-pulse/knowledge/decisions/drafts/03-executable-validate-detail-enrich-first-2026-08-11.md,,5,2,0,11,2,1,3,1,,0,0,,0,0,,0,0,,0,0
+walk-register-verdict-signal-2026-09-01.md,2026-09-01,filename,0.3,bellows/knowledge/decisions/drafts/executable-verdict-signal.md,"T1 — T-1 (six files, one subsystem), T-2",4,2,0,11,4,0,5,3,0,5,3,0,3,0,0,5,2,,0,0
+walk-register-walk-register-schema-2026-08-10.md,2026-08-10,filename,0.1,,,8,7,0,54,7,0,3,1,,0,0,,0,0,,0,0,1,1,0
+walk-register-wrl-guards-2026-08-13.md,2026-08-13,filename,0.2,,,4,2,0,11,6,,0,0,,0,0,,0,0,,0,0,0,1,0
+walk-register-xml-refetch-idempotency-2026-08-14.md,2026-08-14,filename,,,,3,2,0,0,0,,0,0,,0,0,,0,0,,0,0,,0,0
+walk-register-xml-refetch-idempotency-exec-2026-08-14.md,2026-08-14,filename,,,,3,2,0,0,0,,0,0,,0,0,,0,0,,0,0,,0,0
