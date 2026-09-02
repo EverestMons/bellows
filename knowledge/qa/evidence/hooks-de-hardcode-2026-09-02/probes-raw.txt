@@ -1,0 +1,59 @@
+=== ITEM 1: P3-post token counts and commit stat ===
+--- def _default_root counts (expect 1 each in four hooks) ---
+hooks/eluvian/wrap_arm_hook.py: 1
+hooks/eluvian/wrap_stop_hook.py: 1
+hooks/eluvian/wrap_check.py: 1
+hooks/eluvian/eluvian_align_hook.py: 1
+--- /Users/marklehn/Developer/GitHub counts (expect 0 in all five files) ---
+hooks/eluvian/wrap_arm_hook.py: 0
+hooks/eluvian/wrap_stop_hook.py: 0
+hooks/eluvian/wrap_check.py: 0
+hooks/eluvian/eluvian_align_hook.py: 0
+hooks/commands/wrap.md: 0
+--- _resolve_bellows(ROOT).parent / 'tuyere' count in wrap_check.py (expect 1) ---
+1
+--- ELUVIAN_WRAP_ROOT:? count in wrap.md (expect 1) ---
+1
+--- git show --stat HEAD ---
+ hooks/commands/wrap.md                             |   4 +-
+ hooks/eluvian/eluvian_align_hook.py                |  17 ++-
+ hooks/eluvian/wrap_arm_hook.py                     |  16 ++-
+ hooks/eluvian/wrap_check.py                        |  19 +++-
+ hooks/eluvian/wrap_stop_hook.py                    |  16 ++-
+ .../dev-log-hooks-de-hardcode-2026-09-02.md        | 113 +++++++++++++++++++
+ tests/test_hook_default_root.py                    | 123 +++++++++++++++++++++
+ 7 files changed, 299 insertions(+), 9 deletions(-)
+
+=== ITEM 2: Four _default_root bodies hash (expect four identical lines) ===
+wrap_arm_hook: eb8dc1a15a5265f6
+wrap_stop_hook: eb8dc1a15a5265f6
+wrap_check: eb8dc1a15a5265f6
+eluvian_align_hook: eb8dc1a15a5265f6
+
+=== ITEM 4: Harness interpreter T-3 — env unset (expect eluvian-governance) ===
+wrap_arm_hook /Users/marklehn/Developer/eluvian-governance
+wrap_stop_hook /Users/marklehn/Developer/eluvian-governance
+wrap_check /Users/marklehn/Developer/eluvian-governance
+eluvian_align_hook /Users/marklehn/Developer/eluvian-governance
+
+=== ITEM 4b: Harness interpreter — env set to /tmp/no-marker-here (expect env precedence) ===
+wrap_arm_hook /tmp/no-marker-here
+wrap_stop_hook /tmp/no-marker-here
+wrap_check /tmp/no-marker-here
+eluvian_align_hook /tmp/no-marker-here
+
+=== ITEM 5: Twin on this machine — wrap_check vs plan_claim (expect two identical lines: /Users/marklehn/Developer/tuyere) ===
+/Users/marklehn/Developer/tuyere
+/Users/marklehn/Developer/tuyere
+
+=== ITEM 6: Sweep for /Users/marklehn/Developer/GitHub in hooks tree (expect NO files, exit=1) ===
+exit=1
+
+=== ITEM 6 liveness pair: count of '"GitHub"' in wrap_check.py (expect 1) ===
+1
+
+=== ITEM 7: Installed copies (repo post-edit vs ~/.claude/eluvian/) — expect four DIFFERS ===
+SAME wrap_arm_hook
+SAME wrap_stop_hook
+SAME wrap_check
+SAME eluvian_align_hook
