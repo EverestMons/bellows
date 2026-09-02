@@ -1,6 +1,6 @@
 # bellows — executable: DOCTRINE RECORD — the shop/server invariant lands in the multi-machine sketch (addendum 2026-09-02): every machine is a shop, the server role is the only difference, and threads 81/82 re-read under it
 
-**Date:** 2026-09-02 | **Project:** bellows | **Tier:** Small | **Dispatch Mode:** bellows | **cycle_tier:** T1 | **Test Scope:** full (the bellows suite is UNCHANGED by this plan and is run once by QA so the test gate reads a real summary line — the one named known failure — never a pre-declared override) | **Execution:** Step 1 (DEV) → Step 2 (QA) | **qa_steps:** 2 | **pause_for_verdict:** always | **known_failures:** 1 | **Priority:** 2
+**Date:** 2026-09-02 | **Project:** bellows | **Tier:** Small | **Dispatch Mode:** bellows | **cycle_tier:** T1 | **Test Scope:** full (the bellows suite is UNCHANGED by this plan and is run once by QA so the test gate reads a real summary line — `1676 passed, 1 skipped` in a worktree, which holds no `config.json` — never a pre-declared override) | **Execution:** Step 1 (DEV) → Step 2 (QA) | **qa_steps:** 2 | **pause_for_verdict:** always | **known_failures:** 0 | **Priority:** 2
 
 **auto_close:** false
 
@@ -59,7 +59,7 @@ The sketch is where every ruling of this arc has landed first: the SPOF decision
 - ⚠️ **TWO REPOSITORIES, ONE STEP.** The governance edit happens in the LIVE governance checkout at `$GOV` by absolute path — `git -C "$GOV"` for every git act there, never `cd`. Before touching it: `git -C "$GOV" status --porcelain -- <the sketch path>` must be EMPTY and `shasum` of the file must equal P1's — a dirty or moved file is a HALT. Commit there by explicit pathspec; do not push.
 - **The anchor count-asserted BEFORE the append** (1), and the append proven by tokens that are 0 before and 1 after (P3), with a script — never a blind `cat >>`.
 - **Append only.** `git -C "$GOV" diff --stat` must show insertions only, 0 deletions; the pre-edit file's every line is still present (P4).
-- **`known_failures: 1`, named:** `tests/test_gates_cross_machine_paths.py::TestCrossMachineReRoot::test_relative_path_unchanged` from the worktree under the canonical venv. Any OTHER failure is a HALT/Critical.
+- **`known_failures: 0`.** From the worktree under the canonical venv the suite is `1676 passed, 1 skipped` (a worktree holds no `config.json`; the canonical checkout's one failure, `tests/test_gates_cross_machine_paths.py::TestCrossMachineReRoot::test_relative_path_unchanged`, is a CWD-`config.json` property that does not occur there — measured 2026-09-02 in a real worktree's QA evidence and twice in scratch). Any failure is a HALT/Critical.
 
 ## Numbers discipline — the pins DEV re-derives (measured 2026-09-02 by the Planner)
 
@@ -69,7 +69,7 @@ The sketch is where every ruling of this arc has landed first: the SPOF decision
 | P2 | **`ANCHOR`** — the final sentence | `it costs nothing the order does not already build.` count 1; the file ends in `0a` | `/usr/bin/grep -cF`; `tail -c 1 \| xxd` |
 | P3 | **`TOKENS`** — 0 before, 1 after | `# Addendum 2026-09-02` · `every machine is a shop, and the server role is the only difference` · `## The invariant, stated` · `## What the invariant does to threads 81 and 82` · `## Where it lands next (bound, not deferred)` | `/usr/bin/grep -cF` each |
 | P4 | **`APPEND_ONLY`** post-edit | `git -C "$GOV" diff --stat -- <path>` → insertions only, `0 deletions`; `git -C "$GOV" show HEAD:<path> \| diff - <path>` → only `>` lines | as stated |
-| P5 | **`SUITE`** — from the worktree under the canonical venv | `1 failed, 1676 passed`; the one failure named above | `BPY -m pytest tests -q -p no:cacheprovider` |
+| P5 | **`SUITE`** — from the worktree under the canonical venv | `1676 passed, 1 skipped`, exit 0 | `BPY -m pytest tests -q -p no:cacheprovider` |
 | P6 | **`COMPANY`** untouched | `COMPANY.md` sha `7883745e23467b4e` before and after | `shasum` |
 
 ## STEP 1 — DEV
@@ -108,7 +108,7 @@ The sketch is where every ruling of this arc has landed first: the SPOF decision
 > - **Item 1 — the governance commit and tokens:** `git -C "$GOV" log --oneline -1 -- "$SK"` (the `[<id>]` commit); P3's five tokens each count 1; P2's anchor count 1; `wc -l "$SK"` → 256 (231 + a blank line + the addendum's 24 lines — measured at walk 0); `git -C "$GOV" status --porcelain -- "$SK"` → EMPTY.
 > - **Item 2 — append-only, by a second pair of hands:** `C=$(git -C "$GOV" log -1 --format=%H -- governance/knowledge/architecture/multi-machine-project-status-2026-08-31.md); git -C "$GOV" show "$C^:governance/knowledge/architecture/multi-machine-project-status-2026-08-31.md" | diff - "$SK"` (the addendum commit's PARENT is the pre-edit state — never `HEAD~1`, which is whatever landed last in governance) → every line begins with `>` (count the `<` lines: 0); the first `>` line is blank and the second is the addendum heading — quote both.
 > - **Item 3 — nothing else moved:** `COMPANY.md` sha = P6; `git -C "$GOV" status --porcelain -- "$SK" COMPANY.md` → EMPTY (a dirty sketch or COMPANY.md is a HALT); then `git -C "$GOV" status --porcelain | wc -l` stated as a number, informational (other files in the governance checkout are the Planner's records, not this plan's).
-> - **Item 4 — the full-suite file:** `"$BPY" -m pytest tests -q -p no:cacheprovider > knowledge/qa/evidence/shop-server-invariant-sketch-2026-09-02/full-suite-shop-server-invariant-sketch.txt 2>&1; echo "exit=$?" >> knowledge/qa/evidence/shop-server-invariant-sketch-2026-09-02/full-suite-shop-server-invariant-sketch.txt` → `1 failed, 1676 passed`, the one named known failure, `exit=1` (the suite is unchanged by this plan).
+> - **Item 4 — the full-suite file:** `"$BPY" -m pytest tests -q -p no:cacheprovider > knowledge/qa/evidence/shop-server-invariant-sketch-2026-09-02/full-suite-shop-server-invariant-sketch.txt 2>&1; echo "exit=$?" >> knowledge/qa/evidence/shop-server-invariant-sketch-2026-09-02/full-suite-shop-server-invariant-sketch.txt` → `1676 passed, 1 skipped`, `exit=0` (the suite is unchanged by this plan; a worktree holds no `config.json`, so the canonical checkout's known failure does not occur here).
 >
 > **(C) The report** `qa-receipt.md`: the verification table, the bound follow-ups restated (plan B; MACHINE_SETUP v1.3; the glossary act; the Planner pushes governance), the Rule 20 stdout APPENDED. Commit: `git add knowledge/qa/evidence/shop-server-invariant-sketch-2026-09-02/ && git commit -m "[<id>] QA: sketch addendum 2026-09-02 verified append-only; tokens 5/5" -- knowledge/qa/evidence/shop-server-invariant-sketch-2026-09-02/`. STOP.
 >
@@ -148,10 +148,22 @@ The sketch is where every ruling of this arc has landed first: the SPOF decision
 - Integration-record:  w2 dry — instruction 0 / record 0 — `propagation_check` clean; release order noted in the register (the bootstrap plan first, so the addendum's `MACHINE_SETUP.md` §2 citation names the universal rule v1.2 lands)
 - ACID:                w2 dry — instruction 0 / record 0 — unchanged
 - **Walk 2 total: 0 findings — instruction 0 / record 0, ALL FIVE LENSES DRY.** Instruction series 3 → 0.
+- Weak spots:          w3 1 folded — instruction 1 / record 0 (a sibling seat's finding swept across the plan set: the suite pin was measured in the canonical checkout and carried to the worktree, where the one failure never occurs — `known_failures: 0`, P5, the MUST-PRESERVE bullet, the header and QA Item 4 re-authored to `1676 passed, 1 skipped`, exit 0)
+- Destruction:         w3 dry — instruction 0 / record 0 — unchanged
+- Vulnerabilities:     w3 dry — instruction 0 / record 0 — unchanged
+- Integration-record:  w3 dry — instruction 0 / record 0 — unchanged
+- ACID:                w3 dry — instruction 0 / record 0 — unchanged
+- **Walk 3 total: 1 finding, 1 folded — instruction 1 / record 0; 0 of 1 fold-introduced (origin: plan B's EXECUTION seat, X-4, swept here).**
+- Weak spots:          w4 dry — instruction 0 / record 0 — the five edited sites re-read; the Cycle Log covered
+- Destruction:         w4 dry — instruction 0 / record 0 — unchanged
+- Vulnerabilities:     w4 dry — instruction 0 / record 0 — unchanged
+- Integration-record:  w4 dry — instruction 0 / record 0 — the manifest re-emitted at the second freeze
+- ACID:                w4 dry — instruction 0 / record 0 — unchanged
+- **Walk 4 total: 0 findings — instruction 0 / record 0, ALL FIVE LENSES DRY.** Instruction series 3 → 0 → 1 → 0.
 
 **Conformance (§5):** first run at walk 0 (shape-stability, on v0) and re-run after walk 1's folds and at the freeze: `plan_lint` exit 0 / 0 FAIL at the faithful mirror — expected WARN set (o2)×4 (worktree-relative deposits); `cycle_check` BAR_MET; `fold_check` baseline re-saved at each intended change with a note; `propagation_check` exit 0.
 
-**Closing:** ✅ **BAR MET — walk 2 dry (all five lenses) after walk 1's three folds; T1, no panel owed, none convened.** Substrate present (the register's rows entered at each phase from captured output and committed at each phase; `fold_check` baseline). The closing-record re-read (§2.7) ran against this block, the register and the emitted manifest at the freeze.
+**Closing:** ✅ **BAR MET — walk 4 dry (all five lenses) after walk 1's three folds and walk 3's one (a sibling seat's location finding, swept in after the first freeze); T1, no panel owed, none convened.** Substrate present (the register's rows entered at each phase from captured output and committed at each phase; `fold_check` baseline). The closing-record re-read (§2.7) ran against this block, the register and the emitted manifest at the freeze.
 
 **Fold-and-deposit exactly once.**
 
@@ -162,10 +174,10 @@ class: shop-infra
 reads: /Users/marklehn/Developer/eluvian-governance/COMPANY.md, /Users/marklehn/Developer/eluvian-governance/MACHINE_SETUP.md, /Users/marklehn/Developer/eluvian-governance/governance/knowledge/research/bellows-drafting-stage-design-sketch-2026-09-01.md, /Users/marklehn/Developer/eluvian-governance/governance/knowledge/research/bellows-tuyere-dispatch-analysis-2026-09-01.md, /Users/marklehn/Developer/bellows/knowledge/research/drafting-stage-pricing-2026-09-02.md, /Users/marklehn/Developer/bellows/bellows_root.py, /Users/marklehn/Developer/tuyere/docs/SERVER.md
 writes: /Users/marklehn/Developer/eluvian-governance/governance/knowledge/architecture/multi-machine-project-status-2026-08-31.md, knowledge/development/dev-log-shop-server-invariant-sketch-2026-09-02.md, knowledge/qa/evidence/shop-server-invariant-sketch-2026-09-02/qa-receipt.md, knowledge/qa/evidence/shop-server-invariant-sketch-2026-09-02/probes-raw.txt, knowledge/qa/evidence/shop-server-invariant-sketch-2026-09-02/full-suite-shop-server-invariant-sketch.txt
 open_forks: the Air's repo layout (move to the mini's shape, then the resolver trim) — a CEO decision the addendum records as owed; whether the seat class under identical shops needs any machine affinity at all
-walks: 2
-yields: 3, 0
+walks: 4
+yields: 3, 0, 1, 0
 validation: cycle_check=BAR_MET, plan_lint=0_FAIL, fold_check=PASS
-coherence: 2/2 walks have register rows
+coherence: 4/4 walks have register rows
 
 
 Rule 20 banner (byte-exact, produced by RUNNING the canonical block — never hand-authored):
