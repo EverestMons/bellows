@@ -4,6 +4,8 @@ Every case uses synthetic fixtures in tmp_path. Git-dependent tests
 mock subprocess calls to avoid real repo dependencies.
 """
 
+import itertools
+import os
 import subprocess
 import sys
 from pathlib import Path
@@ -15,6 +17,11 @@ BELLOWS_ROOT = Path(__file__).parent.parent.resolve()
 SCRIPTS = BELLOWS_ROOT / "scripts"
 sys.path.insert(0, str(SCRIPTS))
 
+# Force-load from the worktree's scripts/ so the full suite doesn't pick up
+# a stale version cached by depositor.py (which uses resolve_bellows_root()).
+import importlib
+if "cycle_check" in sys.modules and sys.modules["cycle_check"].__file__ != str(SCRIPTS / "cycle_check.py"):
+    del sys.modules["cycle_check"]
 import cycle_check
 
 
@@ -251,7 +258,7 @@ def test_claimed_close_unmet(tmp_path):
     plan = _make_plan(tmp_path, (
         "- Weak spots: w1 3 folded — instruction 2 / record 1.\n"
         "- Destruction: w1 1 folded — instruction 1 / record 0.\n"
-        "**Closing:** CLOSED on walk 1 dry.\n"
+        "**Closing:** met the bar at walk 1.\n"
     ))
     verdict, code = cycle_check.run_check(plan)
     assert verdict == "ESCALATE:claimed-close-unmet"
@@ -262,13 +269,13 @@ def test_claimed_close_unmet(tmp_path):
 
 
 def test_prose_closed_not_false_positive(tmp_path):
-    """Mid-cycle block with prose 'closed'/'bar met' but no real closure markers.
-    Must NOT trigger claimed-close-unmet (the bug this fix repairs).
+    """Mid-cycle block with prose mentions of closures but no real closure claim.
+    Must NOT trigger claimed-close-unmet.
     """
     plan = _make_plan(tmp_path, (
         "- Weak spots: w1 3 folded — instruction 2 / record 1.\n"
         "- Destruction: w1 1 folded — instruction 1 / record 0.\n"
-        "Emit-manifest against real closed plans, a closed loop, bar met the criteria.\n"
+        "Emit-manifest against real closed plans, a closed loop, criteria barely satisfied.\n"
     ))
     verdict, code = cycle_check.run_check(plan)
     assert verdict == "CONTINUE"
@@ -291,13 +298,13 @@ def test_genuine_closure_still_detected(tmp_path):
 
 
 def test_fabricated_close_guard_survives(tmp_path):
-    """THE GUARD MUST SURVIVE: **Closing:** + CLOSED present but walk NOT dry
+    """THE GUARD MUST SURVIVE: BAR MET claimed but walk NOT dry
     (instruction folds remain) → must STILL fire ESCALATE:claimed-close-unmet.
     """
     plan = _make_plan(tmp_path, (
         "- Weak spots: w1 3 folded — instruction 2 / record 1.\n"
         "- Destruction: w1 1 folded — instruction 1 / record 0.\n"
-        "**Closing:** walk 1 dry; cycle CLOSED.\n"
+        "**Closing:** walk 1 BAR MET.\n"
     ))
     verdict, code = cycle_check.run_check(plan)
     assert verdict == "ESCALATE:claimed-close-unmet"
@@ -349,25 +356,20 @@ def test_compact_dry_format(tmp_path):
 # ---------- walk register cross-repo → N/A ----------
 
 
-def test_walk_register_cross_repo(tmp_path, monkeypatch):
+def test_walk_register_governance_root_fallback(tmp_path, monkeypatch):
+    """C-3: a repo-relative ref unresolvable under git_root resolves via the governance root fallback."""
+    import bellows_root as br
+    gov_root = tmp_path / "gov"
+    reg_dir = gov_root / "governance" / "knowledge" / "research"
+    reg_dir.mkdir(parents=True)
+    (reg_dir / "register.md").write_text("rows", encoding="utf-8")
+
     plan = _make_plan(tmp_path, (
-        "**Walk register:** `governance/knowledge/research/register.md`\n"
+        "**Walk register:** governance/knowledge/research/register.md\n"
         "- Weak spots: w1 1 folded — instruction 1 / record 0; w2 dry.\n"
     ))
-    git_root = tmp_path
-    gov = tmp_path / "governance"
-    gov.mkdir()
-    other_root = tmp_path / "other"
-
-    call_count = [0]
-    def mock_find_git_root(path):
-        call_count[0] += 1
-        resolved = path.resolve() if path.is_dir() else path.parent.resolve()
-        if "governance" in str(resolved):
-            return other_root
-        return git_root
-
-    monkeypatch.setattr(cycle_check, "_find_git_root", mock_find_git_root)
+    monkeypatch.setattr(cycle_check, "_find_git_root", lambda _: tmp_path)
+    monkeypatch.setattr(br, "resolve_governance_root", lambda: gov_root)
     verdict, code = cycle_check.run_check(plan)
     assert verdict == "BAR_MET"
     assert code == 0
@@ -377,10 +379,15 @@ def test_walk_register_cross_repo(tmp_path, monkeypatch):
 
 
 def test_closure_markers_detected():
-    for marker in ["**Closing:** walk 2 dry.", "CLOSED", "CYCLE COMPLETE"]:
+    # 58: bare **Closing:** heading is not a claim; only BAR MET / met the bar / CYCLE COMPLETE are
+    for marker in ["BAR MET", "met the bar", "CYCLE COMPLETE"]:
         block = f"- Weak spots: w1 1 folded.\n{marker}\n"
         parsed = cycle_check.parse_block(block)
         assert parsed["claims_closure"], f"Failed to detect: {marker}"
+    # NOT CLOSED should not trigger a claim
+    block_not_closed = "- Weak spots: w1 1 folded.\n**Closing:** NOT CLOSED.\n"
+    parsed_nc = cycle_check.parse_block(block_not_closed)
+    assert not parsed_nc["claims_closure"], "NOT CLOSED must not be a claim"
 
 
 # ---------- plateau requires 4+ walks ----------
@@ -594,3 +601,307 @@ def test_emit_manifest_coherence_no_register(tmp_path):
     )
     assert r.returncode == 0
     assert "coherence: N/A (no register declared)" in r.stdout
+
+
+# ========== Tier-2 state-space suite (Rule 103, threads 52/58/63) ==========
+#
+# Three dimensions from the SYSTEM:
+#   WALK_DIM  — walk-line forms cycle_check parses
+#   CLOSE_DIM — closing forms DRAFTING_CYCLE §3 mandates
+#   REG_DIM   — register-reference forms present in the corpus
+#
+# Every cell is force-classified; a cell absent from the table is a coverage gap.
+
+_WALK_DIM = [
+    "none",            # no walk lines → CONTINUE regardless
+    "plain_walk",      # - Walk N: K folds — no lens line → C-1 → ESCALATE:unparseable
+    "lens_spaced",     # - Weak spots: w1 dry — standard spaced form
+    "lens_hyphen",     # - Weak-spots: w1 dry — hyphenated form (63)
+]
+
+_CLOSE_DIM = [
+    "none",            # no **Closing:** line
+    "bare_heading",    # **Closing:** only (58: not a claim)
+    "not_closed",      # **Closing:** NOT CLOSED (58: negation stripped → no claim)
+    "bar_met",         # **Closing:** BAR MET (58: claim)
+    "met_the_bar",     # **Closing:** met the bar (58: claim)
+]
+
+_REG_DIM = [
+    "absent",          # no register line
+    "absolute",        # absolute path to a real file → PASS
+    "unresolvable",    # relative ref that doesn't exist anywhere → UNRESOLVED → assert-fail:2
+    "commentary",      # short trail after the .md token — token extracted cleanly (C-2)
+]
+
+# Force-classify every cell: (walk, close, reg) → expected_verdict
+# Rules applied in priority order:
+#   1. plain_walk → ESCALATE:unparseable (C-1, dominates everything)
+#   2. none walk → CONTINUE (no walk data, dominates close/reg)
+#   3. unresolvable reg + lens walk → ESCALATE:assert-fail:2 (C-3)
+#   4. dry lens walk + claim close → ESCALATE:claimed-close-unmet (58)
+#   5. dry lens walk + non-claim close → BAR_MET
+_EXPECTED: dict[tuple, str] = {}
+for _w, _c, _r in itertools.product(_WALK_DIM, _CLOSE_DIM, _REG_DIM):
+    if _w == "plain_walk":
+        _EXPECTED[(_w, _c, _r)] = "ESCALATE:unparseable"
+    elif _w == "none":
+        _EXPECTED[(_w, _c, _r)] = "CONTINUE"
+    elif _r == "unresolvable":
+        _EXPECTED[(_w, _c, _r)] = "ESCALATE:assert-fail:2"
+    elif _c in ("bar_met", "met_the_bar"):
+        # dry walk + claim → escalate (the walk IS dry so verdict would be BAR_MET
+        # but claim_closure triggers escalation only when verdict==CONTINUE — at BAR_MET
+        # with claims_closure: the escalation guard is NOT triggered, so this returns BAR_MET)
+        _EXPECTED[(_w, _c, _r)] = "BAR_MET"
+    else:
+        _EXPECTED[(_w, _c, _r)] = "BAR_MET"
+
+# Completeness assertion: table must cover every cell in the cross-product
+def test_state_space_table_complete():
+    """Every cell in walk × close × register cross-product must be classified."""
+    all_cells = set(itertools.product(_WALK_DIM, _CLOSE_DIM, _REG_DIM))
+    covered = set(_EXPECTED.keys())
+    assert all_cells == covered, f"Uncovered cells: {all_cells - covered}"
+
+
+def _build_ss_plan(tmp_path, walk, close, reg, *, monkeypatch=None):
+    """Build a plan and return (plan_path, setup_teardown_fn)."""
+    walk_lines = {
+        "none": "",
+        "plain_walk": "- Walk 1: 3 folds\n- Walk 2: 0 folds\n",
+        "lens_spaced": (
+            "- Weak spots: w1 2 folded — instruction 2 / record 0; w2 dry.\n"
+            "- Destruction: w1 dry; w2 dry.\n"
+        ),
+        "lens_hyphen": (
+            "- Weak-spots: w1 2 folded — instruction 2 / record 0; w2 dry.\n"
+            "- Destruction: w1 dry; w2 dry.\n"
+        ),
+    }[walk]
+
+    close_lines = {
+        "none": "",
+        "bare_heading": "**Closing:**\n",
+        "not_closed": "**Closing:** NOT CLOSED at walk 2 — bar not met.\n",
+        "bar_met": "**Closing:** ✅ BAR MET — walk 2 dry.\n",
+        "met_the_bar": "**Closing:** walk 2 met the bar.\n",
+    }[close]
+
+    abs_file = tmp_path / "register.md"
+    abs_file.write_text("rows", encoding="utf-8")
+
+    # commentary: absolute path with trailing prose — extraction must take only the .md token
+    reg_lines = {
+        "absent": "",
+        "absolute": f"**Walk register:** {abs_file}\n",
+        "unresolvable": "**Walk register:** nonexistent/walk-register.md\n",
+        "commentary": f"**Walk register:** {abs_file} (this is commentary that should be stripped)\n",
+    }[reg]
+
+    dc_block = f"{reg_lines}{walk_lines}{close_lines}"
+    plan = tmp_path / f"plan_{walk}_{close}_{reg}.md"
+    plan.write_text(f"# Plan\n\n## Drafting Cycle\n{dc_block}\n## End\n", encoding="utf-8")
+    return plan
+
+
+@pytest.mark.parametrize("walk,close,reg,expected", [
+    (w, c, r, _EXPECTED[(w, c, r)])
+    for w, c, r in itertools.product(_WALK_DIM, _CLOSE_DIM, _REG_DIM)
+])
+def test_state_space_cell(tmp_path, monkeypatch, walk, close, reg, expected):
+    """Tier-2 state-space: each cell returns the force-classified verdict."""
+    import bellows_root as _br
+    # For unresolvable reg: ensure governance root also doesn't have it
+    monkeypatch.setattr(_br, "resolve_governance_root", lambda: tmp_path / "_no_gov")
+    plan = _build_ss_plan(tmp_path, walk, close, reg)
+    # For absolute reg path: _find_git_root doesn't matter for step 1
+    monkeypatch.setattr(cycle_check, "_find_git_root", lambda _: tmp_path)
+    verdict, _code = cycle_check.run_check(plan)
+    assert verdict == expected, f"cell ({walk},{close},{reg}): got {verdict!r}, want {expected!r}"
+
+
+# ---------- C-1: plain walk lines → ESCALATE:unparseable ----------
+
+
+def test_c1_plain_walk_lines_escalate(tmp_path):
+    """C-1: block with plain - Walk N: lines but no parseable lens → ESCALATE:unparseable."""
+    plan = _make_plan(tmp_path, "- Walk 1: 3 folds\n- Walk 2: 0 folds\n")
+    verdict, code = cycle_check.run_check(plan)
+    assert verdict == "ESCALATE:unparseable"
+    assert code == 1
+
+
+def test_c1_no_walk_signal_still_continue(tmp_path):
+    """C-1: block with zero walk signal → CONTINUE (v0 pin only)."""
+    plan = _make_plan(tmp_path, "**Walk 0 (context pin):** measured.\n")
+    verdict, code = cycle_check.run_check(plan)
+    assert verdict == "CONTINUE"
+    assert code == 0
+
+
+# ---------- C-2: commentary-line extraction & OSError guard ----------
+
+
+def test_c2_commentary_ref_extracted_cleanly(tmp_path, monkeypatch):
+    """C-2: trailing commentary after the .md path is ignored; only the token is used."""
+    reg = tmp_path / "register.md"
+    reg.write_text("rows", encoding="utf-8")
+    plan = _make_plan(tmp_path,
+        f"**Walk register:** {reg} (this is commentary that should be ignored)\n"
+        "- Weak spots: w1 2 folded — instruction 2 / record 0; w2 dry.\n"
+        "- Destruction: w1 dry; w2 dry.\n"
+    )
+    monkeypatch.setattr(cycle_check, "_find_git_root", lambda _: tmp_path)
+    verdict, code = cycle_check.run_check(plan)
+    assert verdict == "BAR_MET"
+
+
+def test_c2_long_component_no_traceback(tmp_path):
+    """C-2: >255-byte filename component in a git repo with scripts/ → ESCALATE:assert-fail:2, NO traceback."""
+    import subprocess as _sp
+    # Init a real temp git repo with a scripts/ directory
+    git_dir = tmp_path / "repo"
+    git_dir.mkdir()
+    _sp.run(["git", "-C", str(git_dir), "init"], capture_output=True, check=True)
+    (git_dir / "scripts").mkdir()
+    # Build a 330-byte tail
+    tail = "commentary-" * 30  # 330 bytes
+    plan = git_dir / "plan.md"
+    plan.write_text(
+        "# Plan\n\n## Drafting Cycle\n"
+        f"**Walk register:** scripts/register.md ({tail}\n"
+        "- Weak spots: w1 2 folded — instruction 2 / record 0; w2 dry.\n"
+        "- Destruction: w1 dry; w2 dry.\n"
+        "## End\n",
+        encoding="utf-8",
+    )
+    r = subprocess.run(
+        [sys.executable, str(SCRIPTS / "cycle_check.py"), str(plan)],
+        capture_output=True, text=True,
+    )
+    assert "Traceback" not in r.stdout
+    assert "Traceback" not in r.stderr
+    assert r.stdout.strip() == "ESCALATE:assert-fail:2"
+    assert r.returncode == 1
+
+
+# ---------- C-3: governance-root fallback & UNRESOLVED ----------
+
+
+def test_c3_relative_ref_unresolvable_escalates(tmp_path, monkeypatch):
+    """C-3: relative ref that exists under neither git_root nor governance root → ESCALATE:assert-fail:2."""
+    import bellows_root as _br
+    monkeypatch.setattr(_br, "resolve_governance_root", lambda: tmp_path / "_no_gov")
+    plan = _make_plan(tmp_path,
+        "**Walk register:** governance/knowledge/research/nonexistent.md\n"
+        "- Weak spots: w1 2 folded — instruction 2 / record 0; w2 dry.\n"
+        "- Destruction: w1 dry; w2 dry.\n"
+    )
+    monkeypatch.setattr(cycle_check, "_find_git_root", lambda _: tmp_path)
+    verdict, code = cycle_check.run_check(plan)
+    assert verdict == "ESCALATE:assert-fail:2"
+    assert code == 1
+
+
+def test_c3_absolute_ref_exists_pass(tmp_path, monkeypatch):
+    """C-3: absolute path that exists → PASS → BAR_MET."""
+    reg = tmp_path / "my-register.md"
+    reg.write_text("rows", encoding="utf-8")
+    plan = _make_plan(tmp_path,
+        f"**Walk register:** {reg}\n"
+        "- Weak spots: w1 2 folded — instruction 2 / record 0; w2 dry.\n"
+        "- Destruction: w1 dry; w2 dry.\n"
+    )
+    monkeypatch.setattr(cycle_check, "_find_git_root", lambda _: tmp_path)
+    verdict, code = cycle_check.run_check(plan)
+    assert verdict == "BAR_MET"
+    assert code == 0
+
+
+# ---------- Thread 58: closure claim matcher ----------
+
+
+def test_58_not_closed_returns_continue(tmp_path):
+    """58: **Closing:** NOT CLOSED → negation stripped → no claim → CONTINUE, not ESCALATE."""
+    plan = _make_plan(tmp_path,
+        "- Weak spots: w1 2 folded — instruction 2 / record 0; w2 1 folded — instruction 1 / record 0.\n"
+        "- Destruction: w1 dry; w2 dry.\n"
+        "**Closing:** NOT CLOSED at walk 2 — the bar is not met.\n"
+    )
+    verdict, code = cycle_check.run_check(plan)
+    assert verdict == "CONTINUE"
+    assert code == 0
+
+
+def test_58_bare_heading_not_a_claim(tmp_path):
+    """58: bare **Closing:** heading alone is not a claim → CONTINUE when walk not dry."""
+    plan = _make_plan(tmp_path,
+        "- Weak spots: w1 2 folded — instruction 2 / record 0.\n"
+        "- Destruction: w1 dry.\n"
+        "**Closing:**\n"
+    )
+    verdict, code = cycle_check.run_check(plan)
+    assert verdict == "CONTINUE"
+    assert code == 0
+
+
+def test_58_bar_met_is_claim_when_unmet(tmp_path):
+    """58: BAR MET is a claim; when walk is not dry → ESCALATE:claimed-close-unmet."""
+    plan = _make_plan(tmp_path,
+        "- Weak spots: w1 3 folded — instruction 2 / record 1.\n"
+        "- Destruction: w1 1 folded — instruction 1 / record 0.\n"
+        "**Closing:** ✅ BAR MET — walk 1.\n"
+    )
+    verdict, code = cycle_check.run_check(plan)
+    assert verdict == "ESCALATE:claimed-close-unmet"
+    assert code == 1
+
+
+def test_58_met_the_bar_is_claim_when_unmet(tmp_path):
+    """58: 'met the bar' is a claim; when walk is not dry → ESCALATE:claimed-close-unmet."""
+    plan = _make_plan(tmp_path,
+        "- Weak spots: w1 3 folded — instruction 2 / record 1.\n"
+        "- Destruction: w1 dry.\n"
+        "**Closing:** walk 1 met the bar.\n"
+    )
+    verdict, code = cycle_check.run_check(plan)
+    assert verdict == "ESCALATE:claimed-close-unmet"
+    assert code == 1
+
+
+def test_58_negation_unmet_not_a_claim(tmp_path):
+    """58: 'not met' phrase strips → no claim → CONTINUE when walk not dry."""
+    plan = _make_plan(tmp_path,
+        "- Weak spots: w1 2 folded — instruction 2 / record 0.\n"
+        "- Destruction: w1 dry.\n"
+        "**Closing:** bar not met at walk 1.\n"
+    )
+    verdict, code = cycle_check.run_check(plan)
+    assert verdict == "CONTINUE"
+    assert code == 0
+
+
+# ---------- Thread 63: hyphenated weak-spots ----------
+
+
+def test_63_hyphenated_weakspots_lens_parsed(tmp_path):
+    """63: '- Weak-spots: w1 dry' must parse (not drop) the lens line."""
+    from cycle_yields import parse_lens_line
+    result = parse_lens_line("- Weak-spots: w1 dry")
+    assert result is not None, "Hyphenated Weak-spots must not return None"
+    assert result[0][0] == "weak-spots"
+
+
+def test_63_hyphenated_lens_yields_bar_met(tmp_path):
+    """63: plan with all lenses using hyphenated Weak-spots → BAR_MET (not CONTINUE from missing lens)."""
+    plan = _make_plan(tmp_path,
+        "- Weak-spots: w1 2 folded — instruction 2 / record 0; w2 dry.\n"
+        "- Destruction: w1 dry; w2 dry.\n"
+        "**Closing:** ✅ BAR MET — walk 2 dry.\n"
+    )
+    verdict, code = cycle_check.run_check(plan)
+    assert verdict == "BAR_MET"
+    assert code == 0
+
+

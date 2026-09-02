@@ -3249,3 +3249,129 @@ def test_lint_stanza_absent_no_warn():
     result = _run_lint(GOOD_PLAN)
     assert result.returncode == 0
     assert "Cycle Manifest" not in result.stdout
+
+
+# ---------- Thread 63: weak-spots hyphenated form → no WARN ----------
+
+
+def test_lint_weak_spots_hyphen_no_warn():
+    """63: Drafting Cycle block with 'Weak-spots' → no 'missing lens' WARN."""
+    plan = """\
+# Test Plan
+**Date:** 2026-09-02 | **Dispatch Mode:** bellows | **pause_for_verdict:** always | **cycle_tier:** T1
+
+## Drafting Cycle
+**Tier:** T1 — novel.
+- Weak-spots:     w1 dry.
+- Destruction:    w1 dry.
+- Vulnerabilities: w1 dry.
+- Integration-record: w1 dry.
+- ACID:           w1 dry.
+**Closing:** walk 1 dry; BAR MET.
+
+## STEP 1 — DEV
+
+> Do the work.
+>
+> **Deposits:**
+> - `knowledge/development/dev-log.md`
+"""
+    result = _run_lint(plan)
+    assert result.returncode == 0, f"Expected exit 0, got {result.returncode}\nstdout: {result.stdout}"
+    assert "missing lens" not in result.stdout.lower()
+    assert "Weak spots" not in result.stdout
+
+
+# ---------- Thread 77: (u) Deposits order check ----------
+
+
+_QA_PLAN_RECEIPT_FIRST = """\
+# Test Plan
+**Date:** 2026-09-02 | **Dispatch Mode:** bellows | **qa_steps:** 2 | **pause_for_verdict:** always
+
+## STEP 1 — DEV
+
+> Do the work.
+>
+> **Deposits:**
+> - `knowledge/development/dev-log.md`
+
+## STEP 2 — QA
+
+> Verify deliverables.
+>
+> Your QA report MUST include the byte-exact banner `Rule 20 — QA Self-Check Results` and a `PASSED — SELF-CHECK PASSED` line.
+>
+> **Deposits:**
+> - `knowledge/qa/evidence/my-plan/qa-receipt.md`
+> - `knowledge/qa/evidence/my-plan/probes-raw.txt`
+"""
+
+
+def test_u_receipt_first_no_warn():
+    """(u): QA step with qa-receipt.md first → NO (u) WARN (correct order)."""
+    result = _run_lint(_QA_PLAN_RECEIPT_FIRST)
+    assert result.returncode == 0, f"Exit {result.returncode}\nstdout: {result.stdout}"
+    assert "(u)" not in result.stdout
+
+
+_QA_PLAN_REPORT_FIRST = """\
+# Test Plan
+**Date:** 2026-09-02 | **Dispatch Mode:** bellows | **qa_steps:** 2 | **pause_for_verdict:** always
+
+## STEP 1 — DEV
+
+> Do the work.
+>
+> **Deposits:**
+> - `knowledge/development/dev-log.md`
+
+## STEP 2 — QA
+
+> Verify deliverables.
+>
+> Your QA report MUST include the byte-exact banner `Rule 20 — QA Self-Check Results` and a `PASSED — SELF-CHECK PASSED` line.
+>
+> **Deposits:**
+> - `knowledge/qa/evidence/my-plan/qa-report.md`
+> - `knowledge/qa/evidence/my-plan/qa-receipt.md`
+> - `knowledge/qa/evidence/my-plan/probes-raw.txt`
+"""
+
+
+def test_u_report_first_warns():
+    """(u): QA step with report.md first (no 'receipt' in name) → (u) WARN fires."""
+    result = _run_lint(_QA_PLAN_REPORT_FIRST)
+    assert result.returncode == 0, f"Expected exit 0 (WARN only), got {result.returncode}"
+    assert "(u)" in result.stdout
+    assert "thread 77" in result.stdout
+
+
+_QA_PLAN_NO_TXT = """\
+# Test Plan
+**Date:** 2026-09-02 | **Dispatch Mode:** bellows | **qa_steps:** 2 | **pause_for_verdict:** always
+
+## STEP 1 — DEV
+
+> Do the work.
+>
+> **Deposits:**
+> - `knowledge/development/dev-log.md`
+
+## STEP 2 — QA
+
+> Verify deliverables.
+>
+> Your QA report MUST include the byte-exact banner `Rule 20 — QA Self-Check Results` and a `PASSED — SELF-CHECK PASSED` line.
+>
+> **Deposits:**
+> - `knowledge/qa/evidence/my-plan/qa-receipt.md`
+"""
+
+
+def test_u_no_txt_warns():
+    """(u): QA step with no .txt evidence entry → (u) WARN fires."""
+    result = _run_lint(_QA_PLAN_NO_TXT)
+    assert result.returncode == 0, f"Expected exit 0 (WARN only), got {result.returncode}"
+    assert "(u)" in result.stdout
+    assert "no .txt" in result.stdout

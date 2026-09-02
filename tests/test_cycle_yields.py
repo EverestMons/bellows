@@ -9,8 +9,14 @@ from pathlib import Path
 import pytest
 
 BELLOWS_ROOT = Path(__file__).parent.parent.resolve()
-sys.path.insert(0, str(BELLOWS_ROOT / "scripts"))
+_SCRIPTS = BELLOWS_ROOT / "scripts"
+sys.path.insert(0, str(_SCRIPTS))
 
+# Force-load from the worktree's scripts/ so the full suite doesn't pick up
+# a stale version cached by depositor.py (which uses resolve_bellows_root()).
+import importlib
+if "cycle_yields" in sys.modules and sys.modules["cycle_yields"].__file__ != str(_SCRIPTS / "cycle_yields.py"):
+    del sys.modules["cycle_yields"]
 from cycle_yields import (
     COLUMNS,
     ORIGIN_ABSENT,
@@ -421,3 +427,36 @@ def test_pass_with_parenthetical_qualifier():
     assert "w1" in tokens
     assert "w2" in tokens
     assert "w3" in tokens
+
+
+# ---------- Thread 63: hyphenated lens prefix (all five lenses) ----------
+
+
+@pytest.mark.parametrize("line,expected_lens", [
+    ("- Weak-spots: w1 dry", "weak-spots"),
+    ("- Weak spots: w1 dry", "weak-spots"),
+    ("- Destruction: w1 dry", "destruction"),
+    ("- Vulnerabilities: w1 dry", "vulnerabilities"),
+    ("- Integration-record: w1 dry", "integration-record"),
+    ("- ACID: w1 dry", "acid"),
+])
+def test_63_all_lens_prefix_forms(line, expected_lens):
+    """63: all five lens prefixes (spaced and hyphenated where applicable) must parse."""
+    result = parse_lens_line(line)
+    assert result is not None, f"parse_lens_line({line!r}) returned None"
+    assert result[0][0] == expected_lens
+
+
+def test_63_hyphen_weakspots_not_none():
+    """63: 'Weak-spots' must NOT return None (was the defect)."""
+    assert parse_lens_line("- Weak-spots: w1 dry") is not None
+
+
+def test_63_hyphen_weakspots_is_dry():
+    """63: 'Weak-spots: w1 dry' must parse as a dry pass."""
+    result = parse_lens_line("- Weak-spots: w1 dry")
+    assert result is not None
+    lens, tok, fld, *_ = result[0]
+    assert lens == "weak-spots"
+    assert tok == "w1"
+    assert fld == "0"

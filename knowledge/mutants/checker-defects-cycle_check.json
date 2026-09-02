@@ -1,0 +1,33 @@
+{
+    "target": "scripts/cycle_check.py",
+    "mutants": [
+        {
+            "name": "M1-drop-walk-signal-guard",
+            "why": "C-1 fix: plain Walk N: lines with no lens data must escalate, not return vacuous CONTINUE (thread 52). Removing the guard allows the defect to silently pass.",
+            "anchor": "        r\"(?im)^\\s*-\\s*Walk\\s+[1-9]\\d*\\b|\\bw[1-9]\\d*\\s+(?:\\d+\\s+folded|dry)\\b\", block",
+            "replacement": "        r\"(?im)NOMATCH\", block",
+            "expect_fail": "tests/test_cycle_check.py::test_c1_plain_walk_lines_escalate"
+        },
+        {
+            "name": "M2-drop-negation-stripping",
+            "why": "Thread 58: NOT CLOSED must be stripped before searching for claim tokens so that 'NOT CLOSED' does not match as a positive claim. Removing stripping causes NOT CLOSED plans to escalate as claimed-close-unmet.",
+            "anchor": "    stripped = _NEGATION_RE.sub(\"\", block_text)",
+            "replacement": "    stripped = block_text",
+            "expect_fail": "tests/test_cycle_check.py::test_58_not_closed_returns_continue"
+        },
+        {
+            "name": "M3-drop-oserror-guard",
+            "why": "C-2 fix: oversized path component from commentary text in the walk register line triggers OSError ENAMETOOLONG on macOS (thread 52). Removing the guard crashes the checker.",
+            "anchor": "                except OSError:  # C-2: oversized path component (thread 52)",
+            "replacement": "                except ValueError:  # C-2: oversized path component (thread 52)",
+            "expect_fail": "tests/test_cycle_check.py::test_c2_long_component_no_traceback"
+        },
+        {
+            "name": "M4-accept-unresolved-as-ok",
+            "why": "C-3 fix: refs that resolve under neither git_root nor governance_root are UNRESOLVED and must escalate (thread 52). Accepting UNRESOLVED as ok allows a missing register to silently pass.",
+            "anchor": "    if a2_reg in (\"FAIL\", \"UNRESOLVED\"):  # C-3: UNRESOLVED routes same as FAIL (thread 52)",
+            "replacement": "    if a2_reg == \"FAIL\":",
+            "expect_fail": "tests/test_cycle_check.py::test_c3_relative_ref_unresolvable_escalates"
+        }
+    ]
+}

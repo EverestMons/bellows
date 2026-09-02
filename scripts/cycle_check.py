@@ -15,6 +15,9 @@ import subprocess
 import sys
 from pathlib import Path
 
+# C-3: bellows root on sys.path so bellows_root is importable from scripts/ (thread 52)
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+
 from cycle_yields import (
     extract_dc_blocks,
     parse_lens_line,
@@ -34,9 +37,13 @@ _DRY_RE = re.compile(r"(?:(?:^|[;.:)])\s*)(\w+)\s+(?:\([^)]*\)\s+)?(?:dry|DRY)\b
 RESTRUCTURING_RE = re.compile(
     r"\b(?:restructuring|restructure|reorder)\b", re.IGNORECASE
 )
-CLOSURE_RE = re.compile(
-    r"\*\*Closing:\*\*|\bCLOSED\b|\bCYCLE\s+COMPLETE\b"
-)
+_NEGATION_RE = re.compile(r"\bNOT\s+(?:CLOSED|MET)\b|\bnot\s+met\b|\bunmet\b", re.IGNORECASE)
+_CLAIM_RE = re.compile(r"\bBAR\s+MET\b|\bmet\s+the\s+bar\b|\bCYCLE\s+COMPLETE\b", re.IGNORECASE)
+
+def _has_closure_claim(block_text):
+    # 58: bare **Closing:** heading is not a claim; strip negated spans first
+    stripped = _NEGATION_RE.sub("", block_text)
+    return bool(_CLAIM_RE.search(stripped))
 MANIFEST_HEADING_RE = re.compile(r"^## Cycle Manifest\s*$", re.MULTILINE)
 
 
@@ -98,15 +105,22 @@ def parse_block(block_text):
     has_any_parsed = False
     has_class_split = False
     restructuring_walks = set()
-    claims_closure = bool(CLOSURE_RE.search(block_text))
+    claims_closure = _has_closure_claim(block_text)
     walk_register_ref = None
     current_walk_section = None
 
     for raw_line in block_text.splitlines():
         m = WALK_REGISTER_RE.search(raw_line)
         if m and walk_register_ref is None:
-            ref = m.group(1).strip().rstrip(".")
-            walk_register_ref = ref.strip("`") if ref else None
+            raw_ref = m.group(1).strip()
+            # C-2: take backtick span if present; else first whitespace-delimited .md token (thread 52)
+            bt_m = re.search(r'`([^`]+)`', raw_ref)
+            if bt_m:
+                walk_register_ref = bt_m.group(1).strip()
+            else:
+                tokens = raw_ref.split()
+                md_tok = next((t.rstrip('.') for t in tokens if t.rstrip('.').endswith('.md')), None)
+                walk_register_ref = md_tok if md_tok else None
 
         m = WALK_STATUS_RE.search(raw_line)
         if m:
@@ -250,18 +264,41 @@ def check_assert_2(parsed, plan_path):
 
     ref = parsed["walk_register_ref"]
     if ref:
-        git_root = _find_git_root(plan_path)
-        if git_root:
-            first_comp = ref.split("/")[0]
-            sub_path = git_root / first_comp
-            if sub_path.is_dir():
-                sub_root = _find_git_root(sub_path)
-                if sub_root and sub_root.resolve() != git_root.resolve():
-                    register_result = "N/A"
-                else:
-                    register_result = "PASS" if (git_root / ref).exists() else "FAIL"
-            else:
-                register_result = "N/A"
+        # C-3: three-step resolution order (thread 52)
+        resolved = False
+        # Step 1: absolute path
+        if Path(ref).is_absolute():
+            try:
+                resolved = Path(ref).exists()
+            except OSError:
+                resolved = False
+            register_result = "PASS" if resolved else "UNRESOLVED"
+        else:
+            git_root = _find_git_root(plan_path)
+            # Step 2: git_root / ref
+            if git_root:
+                try:
+                    resolved = (git_root / ref).exists()
+                except OSError:  # C-2: oversized path component (thread 52)
+                    resolved = False
+                if resolved:
+                    register_result = "PASS"
+            # Step 3: governance root fallback
+            if not resolved:
+                try:
+                    from bellows_root import resolve_governance_root
+                    gov_root = resolve_governance_root()
+                except ImportError:
+                    gov_root = None
+                if gov_root:
+                    try:
+                        resolved = (gov_root / ref).exists()
+                    except OSError:
+                        resolved = False
+                    if resolved:
+                        register_result = "PASS"
+            if not resolved:
+                register_result = "UNRESOLVED"
 
     walk_data = parsed["walk_data"]
     if walk_data:
@@ -362,6 +399,16 @@ def run_check(plan_path):
     if parsed["has_lens_lines"] and not parsed["has_any_parsed"]:
         return "ESCALATE:unparseable", 1
 
+    # C-1: plain walk lines with no parseable lens data → unparseable, not vacuous CONTINUE (thread 52)
+    # Walk 0 (context pin) is excluded; it carries no lens data and legitimately returns CONTINUE.
+    # **Walk N:** bold-heading prose (legacy format) is NOT a bullet-list signal; those plans return CONTINUE.
+    block = blocks[0]
+    has_walk_signal = bool(re.search(
+        r"(?im)^\s*-\s*Walk\s+[1-9]\d*\b|\bw[1-9]\d*\s+(?:\d+\s+folded|dry)\b", block
+    ))
+    if has_walk_signal and not walk_data:
+        return "ESCALATE:unparseable", 1
+
     if not walk_data:
         return "CONTINUE", 0
 
@@ -375,7 +422,7 @@ def run_check(plan_path):
 
     if a1 == "FAIL":
         return "ESCALATE:assert-fail:1", 1
-    if a2_reg == "FAIL":
+    if a2_reg in ("FAIL", "UNRESOLVED"):  # C-3: UNRESOLVED routes same as FAIL (thread 52)
         return "ESCALATE:assert-fail:2", 1
     if a3 == "FAIL":
         return "ESCALATE:assert-fail:3", 1

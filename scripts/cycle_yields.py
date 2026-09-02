@@ -33,7 +33,7 @@ DC_HEADING_RE = re.compile(r"^## Drafting Cycle\s*$", re.MULTILINE)
 NEXT_H2_RE = re.compile(r"^## ", re.MULTILINE)
 
 LENS_PREFIXES = [
-    (re.compile(r"^weak\s*spots\s*:", re.IGNORECASE), "weak-spots"),
+    (re.compile(r"^weak[\s-]*spots\s*:", re.IGNORECASE), "weak-spots"),  # 63: hyphenated spelling
     (re.compile(r"^destruction\s*:", re.IGNORECASE), "destruction"),
     (re.compile(r"^vulnerabilit\w*\s*:", re.IGNORECASE), "vulnerabilities"),
     (re.compile(r"^integration[\s-]*record\s*:", re.IGNORECASE), "integration-record"),

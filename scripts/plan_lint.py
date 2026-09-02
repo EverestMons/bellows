@@ -350,6 +350,26 @@ def lint(plan_path):
         for n in sorted(qa_steps_set - qa_labeled_steps):
             print(f"WARN: qa_steps lists step {n} but step {n} is not QA-labeled — it will be gated as QA (plan-133 trap)")
 
+    # (u) QA Deposits order (WARN-only, thread 77): rule_20_self_check reads the first .md as the report
+    qa_steps_set_u = _parse_qa_steps(qa_steps_raw) if qa_steps_raw else set()
+    for hl, sn_str in step_headers:
+        sn = int(sn_str)
+        step_text_u = gates._extract_step_text(plan_text, sn)
+        if not step_text_u:
+            continue
+        is_qa_step = sn in qa_steps_set_u or "Rule 20" in step_text_u
+        if not is_qa_step:
+            continue
+        deps_u = gates._extract_plan_required_deposits(step_text_u)
+        md_entries = [d for d in deps_u if d.rstrip('/').endswith('.md')]
+        if md_entries:
+            first_basename = Path(md_entries[0]).name
+            if 'receipt' not in first_basename:
+                print(f"(u) WARN: step {sn} Deposits: first .md is {first_basename!r}"
+                      f" — rule_20_self_check reads the first .md as the QA report (thread 77)")
+        if not any(d.endswith('.txt') for d in deps_u):
+            print(f"(u) WARN: step {sn} Deposits: no .txt evidence entry (thread 70/77)")
+
     dc_block = None
 
     # (f) Drafting Cycle self-check (DRAFTING_CYCLE.md §4, warn-first)
@@ -371,7 +391,7 @@ def lint(plan_path):
                 dc_block = plan_text[dc_start:dc_start + next_h2.start()] if next_h2 else plan_text[dc_start:]
 
                 required_lenses = [
-                    ("Weak spots", r'weak\s*spots'),
+                    ("Weak spots", r'weak[\s-]*spots'),  # 63: hyphenated spelling
                     ("Destruction", r'destruction'),
                     ("Vulnerabilities", r'vulnerabilit'),
                     ("Integration", r'integration'),

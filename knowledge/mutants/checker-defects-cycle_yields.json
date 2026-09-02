@@ -1,0 +1,12 @@
+{
+    "target": "scripts/cycle_yields.py",
+    "mutants": [
+        {
+            "name": "M5-revert-weakspots-prefix",
+            "why": "Thread 63: hyphenated 'Weak-spots:' lens prefix must match. Reverting the pattern to \\s* (no hyphen allowed) causes hyphenated lines to return None instead of the lens tuple.",
+            "anchor": "    (re.compile(r\"^weak[\\s-]*spots\\s*:\", re.IGNORECASE), \"weak-spots\"),  # 63: hyphenated spelling",
+            "replacement": "    (re.compile(r\"^weak\\s*spots\\s*:\", re.IGNORECASE), \"weak-spots\"),",
+            "expect_fail": "tests/test_cycle_yields.py::test_63_hyphen_weakspots_not_none"
+        }
+    ]
+}

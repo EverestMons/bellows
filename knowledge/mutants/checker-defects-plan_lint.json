@@ -1,0 +1,19 @@
+{
+    "target": "scripts/plan_lint.py",
+    "mutants": [
+        {
+            "name": "M6-revert-lint-weakspots-pattern",
+            "why": "Thread 63: plan_lint must also recognise hyphenated 'Weak-spots' as valid so that a correctly-spelled plan does not WARN. Reverting to \\s* causes hyphenated plans to trigger a spurious WARN.",
+            "anchor": "                    (\"Weak spots\", r'weak[\\s-]*spots'),  # 63: hyphenated spelling",
+            "replacement": "                    (\"Weak spots\", r'weak\\s*spots'),",
+            "expect_fail": "tests/test_plan_lint.py::test_lint_weak_spots_hyphen_no_warn"
+        },
+        {
+            "name": "M7-invert-receipt-first-check",
+            "why": "Thread 77: rule_20_self_check reads the FIRST .md in QA Deposits as the QA report. The (u) WARN fires when the first .md is NOT a receipt. Inverting the condition suppresses the WARN when it should fire and fires it when it should not.",
+            "anchor": "            if 'receipt' not in first_basename:",
+            "replacement": "            if 'receipt' in first_basename:",
+            "expect_fail": "tests/test_plan_lint.py::test_u_report_first_warns"
+        }
+    ]
+}
