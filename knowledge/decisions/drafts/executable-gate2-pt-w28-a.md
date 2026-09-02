@@ -97,7 +97,7 @@ open_forks: tranche two (the eight remaining accepted, thread 76); the italic ki
 walks: 2
 yields: 2, 0
 validation: cycle_check=BAR_MET, plan_lint=0_FAIL, fold_check=PASS
-coherence: 1/2 walks have register rows
+coherence: 2/2 walks have register rows
 
 
 ---
