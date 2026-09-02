@@ -1,0 +1,3 @@
+continue
+
+QA verified from the merged commits 323e4b4 and 69cb19a and the live DB: gates 11/11 PASS; Rule 20 banner byte-exact; the receipt's rows M2-M17 all green citing probes-raw.txt by path; full-suite-forge-cycle-w29.txt ends 80 passed and exit=0; the plan's four commits touch exactly seven files (two dev logs, the classify evidence, three QA evidence files, today's report) and the older reports are untouched (diff --stat over reports/ shows only the 190-line new file); the live DB after QA: proposals 466, entries 458, unclassified 0, accepted 12, and my own comparison of ids <= 441 against the pre-ingest backup gives 0 differing rows; today's report lists 25 governance_rule proposals with 20 AUTHOR-CONFLICT marks. Close.

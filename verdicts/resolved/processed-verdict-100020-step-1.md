@@ -1,0 +1,3 @@
+continue
+
+Verified against the live forge DB, the backup and the register, not the dev log: lesson_entries 458/max 458 (backup 433/433); 25 unclassified; lesson_proposals 441 with the histogram accepted 12 / implemented 322 / reference 34 / rejected 41 / stale 3 / superseded 29 and the twelve accepted ids as pinned; my own set comparison against the backup pre-ingest-2026-09-02-151357.db gives 0 differing (id, content_hash) rows for ids <= 433 and 0 differing lesson_proposals rows; the backup is 1,847,296 bytes; LESSONS.md sha ee0432aeb88a3dfed4e8 with 401 headings, byte-unchanged; the merged commit 5f058ca carries only the dev log (256 insertions); gates 11/11 PASS. Continue to Step 2 (classify).

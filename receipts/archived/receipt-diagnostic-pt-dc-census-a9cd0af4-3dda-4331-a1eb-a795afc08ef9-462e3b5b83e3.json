@@ -1,0 +1,8 @@
+{
+  "slug": "diagnostic-pt-dc-census",
+  "content_hash": "462e3b5b83e341659d46f9619ab4f3312a5d1069efb248ce5a070bf095de8423",
+  "session_id": "a9cd0af4-3dda-4331-a1eb-a795afc08ef9",
+  "armed_at": "2026-09-02T14:24:50.825659",
+  "watcher": "gate_watcher.py spawned detached (pid 80324); log: logs/watch/diagnostic-pt-dc-census.md.log",
+  "attestation_boundary": "This receipt proves the watcher was ARMED at write time. It does NOT prove the watcher stayed alive. Liveness of a session-local monitor is not externally verifiable."
+}

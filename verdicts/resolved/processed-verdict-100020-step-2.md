@@ -1,0 +1,3 @@
+continue
+
+Verified against the live forge DB, not the dev log: lesson_proposals 466/max 466, the 25 new rows ids 442-466 contiguous mapping entry_ids 434-458 one-to-one, all route NULL and status proposed, none with status_updated_at/by set; unclassified 0; the histogram unchanged for ids <= 441 (accepted 12, stale 3) and my own set comparison of ids <= 441 against the backup gives 0 differing rows, entries <= 433 0 differing rows; the AUTHOR-CONFLICT marker measured both directions by date: 20 of 20 2026-09-02 entries carry it, 0 of 5 2026-09-01 entries do; M15 DISPOSITION lines 25; LESSONS.md sha ee0432aeb88a3dfed4e8 unchanged; merged commit 76ad9b8 carries the dev log and evidence file only (328 insertions); gates 11/11 PASS. Continue to QA.

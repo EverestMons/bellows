@@ -1,0 +1,3 @@
+continue
+
+Verified from the merged commit 9d7b5c7 and the live governance checkout, not from the receipt: gates 8/8 PASS, files_changed = the three bellows paths; dev log pins P1-P6 all match the plan (G1 counted 1 only via /usr/bin/grep -cF, the plan's form, noted by the agent); governance commit 1c43326 on MACHINE_SETUP.md with the five P7 tokens 1/1/1/0/0 and porcelain empty; CLAUDE.md tokens 1/1/1/1/0; scripts/bootstrap.sh executable, bash -n clean, byte-identical to the plan's exact text; scratch proof run 1 and run 2 '1676 passed, 1 skipped' exit 0 with the venv mtime EQUAL (1788377784 both), plus the no-Homebrew 3.9 variant '1676 passed, 1 skipped, 1 warning' exit 0; P5 from the worktree unchanged. Continue to QA.

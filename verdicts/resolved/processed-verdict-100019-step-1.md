@@ -1,0 +1,3 @@
+continue
+
+Verified from the merged commit ecccd5b, the live governance checkout and my own rebuild: gates 11/11 PASS; the dev log's FRESH determination, pins P1-P4 and P6 all match (COMPANY.md 7883745e23467b4e/350, the three anchors 1, the three tokens 0, the builder 07374437b30be915 at af5b216, the addendum landed); the four refusals quoted; governance commit 9c99ff0 on COMPANY.md: Version 2.8, Last Updated 2026-09-02, the sentence present, v2.7 tokens 0, 350 lines, 3 insertions / 3 deletions, porcelain empty; the committed builder rebuilt the pre-edit blob with SSIC_DATE=2026-09-02 BYTE_IDENTICAL to the live file (the Planner's own run). Continue to QA.

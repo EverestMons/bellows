@@ -1,0 +1,8 @@
+{
+  "slug": "executable-checker-kill-gap",
+  "content_hash": "16a3f509d943d81e67d71fd68f1d00b1f2d73f059af627e588240c23b42f5894",
+  "session_id": "a9cd0af4-3dda-4331-a1eb-a795afc08ef9",
+  "armed_at": "2026-09-02T17:20:35.226350",
+  "watcher": "gate_watcher.py spawned detached (pid 79790); log: logs/watch/executable-checker-kill-gap.md.log",
+  "attestation_boundary": "This receipt proves the watcher was ARMED at write time. It does NOT prove the watcher stayed alive. Liveness of a session-local monitor is not externally verifiable."
+}

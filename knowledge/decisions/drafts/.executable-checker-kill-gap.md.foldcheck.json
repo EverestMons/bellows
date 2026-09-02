@@ -1,0 +1,19 @@
+{
+  "plan_lint": {
+    "exit": 0,
+    "signals": [
+      "(o2) WARN: Deposits entry `knowledge/development/dev-log-checker-kill-gap-N-N-N.md` is not project-prefixed or absolute",
+      "(o2) WARN: Deposits entry `knowledge/mutants/checker-defects-cycle_check.json` is not project-prefixed or absolute",
+      "(o2) WARN: Deposits entry `knowledge/mutants/propagation-check-cycle_check.json` is not project-prefixed or absolute",
+      "(o2) WARN: Deposits entry `knowledge/mutants/propagation-check-propagation_check.json` is not project-prefixed or absolute",
+      "(o2) WARN: Deposits entry `knowledge/mutants/propagation-check-run_check.json` is not project-prefixed or absolute",
+      "(o2) WARN: Deposits entry `knowledge/qa/evidence/checker-kill-gap-N-N-N/full-suite-checker-kill-gap.txt` is not project-prefixed or absolute",
+      "(o2) WARN: Deposits entry `knowledge/qa/evidence/checker-kill-gap-N-N-N/probes-raw.txt` is not project-prefixed or absolute",
+      "(o2) WARN: Deposits entry `knowledge/qa/evidence/checker-kill-gap-N-N-N/qa-receipt.md` is not project-prefixed or absolute",
+      "(o2) WARN: Deposits entry `tests/test_cycle_check.py` is not project-prefixed or absolute",
+      "PIN-CHECK: kind=prefix line=N token=12c9fc2940d8\u2026 result=ambiguous",
+      "PIN-CHECK: kind=prefix line=N token=2b66c914c6a4\u2026 result=ambiguous",
+      "PIN-CHECK: kind=prefix line=N token=479a73f7d898\u2026 result=ambiguous"
+    ]
+  }
+}
