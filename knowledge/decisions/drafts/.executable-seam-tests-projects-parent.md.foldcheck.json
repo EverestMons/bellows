@@ -1,0 +1,16 @@
+{
+  "plan_lint": {
+    "exit": 0,
+    "signals": [
+      "(o2) WARN: Deposits entry `knowledge/development/dev-log-seam-tests-N-N-N.md` is not project-prefixed or absolute",
+      "(o2) WARN: Deposits entry `knowledge/qa/evidence/seam-tests-N-N-N/full-suite-seam-tests.txt` is not project-prefixed or absolute",
+      "(o2) WARN: Deposits entry `knowledge/qa/evidence/seam-tests-N-N-N/probes-raw.txt` is not project-prefixed or absolute",
+      "(o2) WARN: Deposits entry `knowledge/qa/evidence/seam-tests-N-N-N/qa-receipt.md` is not project-prefixed or absolute",
+      "(o2) WARN: Deposits entry `tests/test_gate_watcher.py` is not project-prefixed or absolute",
+      "(o2) WARN: Deposits entry `tests/test_plan_claim.py` is not project-prefixed or absolute",
+      "(t) WARN: target basename looks like a detector but target_class is not declared \u2014 declare \u2018target_class: detector\u2019 (and then state_space + mutants), or leave it undeclared deliberately; this heuristic is advisory and cannot decide the question",
+      "PIN-CHECK: kind=prefix line=N token=4d5e7faac549\u2026 result=ambiguous",
+      "PIN-CHECK: kind=prefix line=N token=6f55a13f3b7a\u2026 result=ambiguous"
+    ]
+  }
+}
