@@ -1,0 +1,8 @@
+{
+  "slug": "executable-mandate-canary",
+  "content_hash": "9e227d3e1bd51856376a69dc236991fe1206cc8cabfe9280c923ea8f62d0e6a1",
+  "session_id": "1663ee38-f4e9-49ea-a4ef-9362de630993",
+  "armed_at": "2026-09-01T23:45:41.207719",
+  "watcher": "gate_watcher.py spawned detached (pid 98402); log: logs/watch/executable-mandate-canary.md.log",
+  "attestation_boundary": "This receipt proves the watcher was ARMED at write time. It does NOT prove the watcher stayed alive. Liveness of a session-local monitor is not externally verifiable."
+}
