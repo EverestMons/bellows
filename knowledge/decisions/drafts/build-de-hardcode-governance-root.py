@@ -5,7 +5,7 @@ One shared resolver in bellows_root.py (pathlib-only, no bellows import):
   resolve_governance_root()  — where COMPANY.md / PLANNER_TEMPLATE.md /
                                RULE_20_SELF_CHECK_BLOCK.md live
   resolve_projects_parent()  — the directory holding the project checkouts
-Then nine anchored edits across eight files replace every remaining
+Then twelve anchored edits across ten files (nine code files + CLAUDE.md's seam sentence) replace every remaining
 `/Users/marklehn/Developer/GitHub` literal (and the `/Developer/GitHub/`
 re-rooting sentinel) with the resolver.
 
@@ -24,7 +24,7 @@ LIVE_ROOT = "/Users/marklehn/Developer/bellows"
 TARGETS = [
     "bellows_root.py", "gates.py", "verdict.py", "planner.py", "decisions.py",
     "bellows.py", "plan_claim.py", "scripts/plan_lint.py",
-    "scripts/migrate_orphan_verdicts.py",
+    "scripts/migrate_orphan_verdicts.py", "CLAUDE.md",
 ]
 
 
@@ -209,11 +209,25 @@ D_NEW = (
 # bellows.py:53 and plan_claim.py:41 — the fallback literal becomes the resolver
 B_ANCHOR = '    root = Path(os.environ.get("ELUVIAN_WRAP_ROOT") or "/Users/marklehn/Developer/GitHub")\n'
 B_NEW = (
+    '    # ROOT is the PROJECTS PARENT here (root / "tuyere", root / "lessons-forge"):\n'
+    '    # the shop root doubled as both; on every other layout they differ.\n'
     '    try:\n'
-    '        from bellows_root import resolve_governance_root as _resolve_gov\n'
-    '        root = _resolve_gov()\n'
+    '        from bellows_root import resolve_projects_parent as _resolve_pp\n'
+    '        root = _resolve_pp()\n'
     '    except Exception:\n'
-    '        root = Path(os.environ.get("ELUVIAN_WRAP_ROOT") or (Path.home() / "Developer" / "eluvian-governance"))\n'
+    '        root = Path(os.environ.get("ELUVIAN_WRAP_ROOT") or (Path.home() / "Developer"))\n'
+)
+
+# CLAUDE.md — the documented seam resolution names the resolver, not a literal
+C_ANCHOR = (
+    '`ROOT/tuyere` where ROOT = `$ELUVIAN_WRAP_ROOT` else the literal\n'
+    '`/Users/marklehn/Developer/GitHub`. First candidate whose\n'
+)
+C_NEW = (
+    '`ROOT/tuyere` where ROOT = the resolved PROJECTS PARENT\n'
+    '(`bellows_root.resolve_projects_parent()` — the bellows checkout\'s parent on\n'
+    'every layout; `$ELUVIAN_WRAP_ROOT` only as the fallback when the resolver\n'
+    'cannot run — plan de-hardcode-governance-root, 2026-09-01). First candidate whose\n'
 )
 
 # scripts/plan_lint.py — (o1)'s second root is the resolved governance root
@@ -326,6 +340,17 @@ class TestConsumers:
         assert verdict._strip_projects_parent(under) == "forge/k/x.md"
         assert verdict._strip_projects_parent("/somewhere/else/x.md") == "/somewhere/else/x.md"
         assert verdict._strip_projects_parent("knowledge/x.md") == "knowledge/x.md"
+
+    def test_tuyere_seam_third_candidate_is_projects_parent(self, monkeypatch, tmp_path):
+        import plan_claim
+        monkeypatch.delenv("ELUVIAN_WRAP_TUYERE", raising=False)
+        monkeypatch.delenv("ELUVIAN_WRAP_ROOT", raising=False)
+        monkeypatch.setattr(Path, "home", classmethod(lambda cls: tmp_path / "nohome"))
+        pp = tmp_path / "Projects"
+        (pp / "tuyere" / ".venv" / "bin").mkdir(parents=True)
+        (pp / "tuyere" / ".venv" / "bin" / "python").write_text("")
+        monkeypatch.setattr(br, "resolve_projects_parent", lambda _start=None: pp)
+        assert plan_claim._tuyere_checkout() == pp / "tuyere"
 '''
 
 EDITS = {
@@ -338,6 +363,7 @@ EDITS = {
     "plan_claim.py": [(B_ANCHOR, B_NEW)],
     "scripts/plan_lint.py": [(L_ANCHOR, L_NEW)],
     "scripts/migrate_orphan_verdicts.py": [(M_ANCHOR, M_NEW)],
+    "CLAUDE.md": [(C_ANCHOR, C_NEW)],
 }
 # verdict.py's re-root anchor occurs TWICE by design (two extraction paths); the
 # edit list applies it twice, each application asserting the count AT THAT
@@ -354,8 +380,12 @@ POST = [
     ("planner.py", "resolve_governance_root", 1),
     ("planner.py", "/Users/marklehn/Developer/GitHub", 0),
     ("decisions.py", "from bellows_root import resolve_governance_root", 1),
+    ("bellows.py", "resolve_projects_parent", 1),
     ("bellows.py", "/Users/marklehn/Developer/GitHub", 0),
+    ("plan_claim.py", "resolve_projects_parent", 1),
     ("plan_claim.py", "/Users/marklehn/Developer/GitHub", 0),
+    ("CLAUDE.md", "resolve_projects_parent()", 1),
+    ("CLAUDE.md", "/Users/marklehn/Developer/GitHub", 0),
     ("scripts/plan_lint.py", "/Users/marklehn/Developer/GitHub", 0),
     ("scripts/migrate_orphan_verdicts.py", "/Users/marklehn/Developer/GitHub", 0),
 ]
@@ -408,7 +438,7 @@ def main():
     os.makedirs(os.path.dirname(d), exist_ok=True)
     with open(d, "wb") as f:
         f.write(TEST_SRC.encode("utf-8"))
-    _req(TEST_SRC.count("def test_") == 11, "test file must carry 11 tests")
+    _req(TEST_SRC.count("def test_") == 12, "test file must carry 12 tests")
     digest = hashlib.sha256(b"".join(outs[t].encode("utf-8") for t in TARGETS)).hexdigest()
     print(f"OK — {len(TARGETS)} files edited + {TEST_FILE} written, {sum(len(v) for v in EDITS.values())} edits; combined sha {digest[:16]}…")
 
