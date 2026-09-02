@@ -1,0 +1,17 @@
+=== 1. DATE ===
+2026-09-02T04:46:10Z
+
+=== 2. GIT HEAD ===
+afefaa7
+
+=== 3. RECEIVED (from mandate text in prompt) ===
+/Users/marklehn/Developer/eluvian-governance/RULE_20_SELF_CHECK_BLOCK.md
+
+=== 4. COMPUTED ===
+/Users/marklehn/Developer/eluvian-governance/RULE_20_SELF_CHECK_BLOCK.md
+
+=== 5. RECEIVED_EXISTS ===
+RECEIVED_EXISTS
+
+=== 6. GREP for Developer/GitHub in RECEIVED path ===
+grep count: 0 (expected 0 = pass)
