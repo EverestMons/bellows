@@ -6,11 +6,10 @@
       "(o2) WARN: Deposits entry `knowledge/qa/evidence/shop-server-invariant-company-N-N-N/full-suite-shop-server-invariant-company.txt` is not project-prefixed or absolute",
       "(o2) WARN: Deposits entry `knowledge/qa/evidence/shop-server-invariant-company-N-N-N/probes-raw.txt` is not project-prefixed or absolute",
       "(o2) WARN: Deposits entry `knowledge/qa/evidence/shop-server-invariant-company-N-N-N/qa-receipt.md` is not project-prefixed or absolute",
-      "PIN-CHECK: kind=prefix line=N token=1aa29fcfd5d5\u2026 result=ambiguous",
+      "PIN-CHECK: kind=prefix line=N token=07374437b30b\u2026 result=ambiguous",
       "PIN-CHECK: kind=prefix line=N token=7883745e2346\u2026 result=ambiguous",
       "WARN: Drafting Cycle block has no **Closing:** line (DRAFTING_CYCLE.md \u00a73)",
       "WARN: Drafting Cycle closing indicates fold as last event, not a dry lens pass (DRAFTING_CYCLE.md \u00a72)",
-      "WARN: T2 plan missing cold-panel line in Drafting Cycle block (DRAFTING_CYCLE.md \u00a73)",
       "WARN: step 2 mentions tests but declares no test scope"
     ]
   }
