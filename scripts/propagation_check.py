@@ -41,6 +41,13 @@ import sys
 
 _DECLARING_LINES: set[str] = set()
 
+# Exclusion patterns for _mask_exclusions
+_HEX_TOKEN_RE = re.compile(r'[0-9a-f]{12,}', re.IGNORECASE)
+_DATE_RE = re.compile(r'\d{4}-\d{2}-\d{2}')
+_TIME_RE = re.compile(r'\d{2}:\d{2}:\d{2}')
+_SHA256_CTX_RE = re.compile(r'(?:sha-|-a\s+)256\b', re.IGNORECASE)
+_NUMERAL2_RE = re.compile(r'(?<!\d)\d[\d,]*\d(?!\d)')
+
 QUALIFIERS = ("measured", "walk 0", "at walk", "until w", "until s", "read ",
               "was ", "were ", "earlier form", "before s1", "before w",
               "this line claimed", "capstone", "baseline", "instance")
@@ -66,21 +73,74 @@ def instruction_region(text, region_end):
     return text[:i] + text[j:]
 
 
-def declared_values(text):
-    """symbol -> value, from `X` ... **NN** on one line of the Numbers table.
+def _mask_exclusions(s):
+    """Blank excluded regions so numeral extraction skips them."""
+    chars = list(s)
 
-    Also returns the set of DECLARING lines, so detector (1) does not flag the
-    very row it parsed the declaration from — the self-referential false
-    positive that made a correct table look like four divergences.
+    def _blank(start, end):
+        for i in range(start, end):
+            chars[i] = '\x00'
+
+    for pat in (_HEX_TOKEN_RE, _DATE_RE, _TIME_RE):
+        for m in pat.finditer(s):
+            _blank(m.start(), m.end())
+    # Mask the "256" at the tail of sha-256 / -a 256 context
+    for m in _SHA256_CTX_RE.finditer(s):
+        if s[m.end() - 3:m.end()] == '256':
+            _blank(m.end() - 3, m.end())
+    return ''.join(chars)
+
+
+def _cell_numerals(cell_text):
+    """All 2+-digit numerals from a value cell, exclusions applied."""
+    masked = _mask_exclusions(cell_text)
+    return [m.group(0).replace(',', '') for m in _NUMERAL2_RE.finditer(masked)]
+
+
+def declared_values(text):
+    """symbol -> [values], from pin rows in the Numbers table.
+
+    SYMBOL: bold-backticked name if the row has one, else the row id from the
+    first cell (P3, M12). VALUES: all 2+-digit numerals in the third cell
+    (value column), excluding hex digests of 12+ chars, dates (YYYY-MM-DD),
+    times (HH:MM:SS), and the 256 in sha-256 / -a 256. The legacy bold-numeral
+    form (anywhere in the row) is also matched as the positive control.
+
+    Also populates _DECLARING_LINES so detector (1) does not flag the very row
+    it parsed the declaration from.
     """
     out = {}
     for line in text.splitlines():
         if not line.startswith("|"):
             continue
-        sym = re.search(r"\*\*`([A-Za-z_][A-Za-z_0-9]*)`", line)
-        val = re.search(r"\*\*(\d[\d,]*)\*\*", line)
-        if sym and val:
-            out[sym.group(1)] = val.group(1).replace(",", "")
+        parts = [p.strip() for p in line.split("|")]
+        cells = parts[1:-1]  # strip outer empty strings from leading/trailing |
+        if len(cells) < 3:
+            continue
+        if re.match(r'^[-:]+$', cells[0]):
+            continue  # separator row
+
+        # SYMBOL: bold-backtick name if present, else row id from first cell
+        sym_m = re.search(r"\*\*`([A-Za-z_][A-Za-z_0-9]*)`\*\*", line)
+        if sym_m:
+            symbol = sym_m.group(1)
+        else:
+            row_id_m = re.match(r'^([A-Za-z]\d+)$', cells[0])
+            if not row_id_m:
+                continue
+            symbol = row_id_m.group(1)
+
+        # New: numerals from the value cell (third column, index 2)
+        vals = _cell_numerals(cells[2])
+
+        # Legacy: bold numeral **NN** anywhere in the row (positive control)
+        for bm in re.finditer(r'\*\*(\d[\d,]*\d)\*\*', line):
+            v = bm.group(1).replace(',', '')
+            if v not in vals:
+                vals.append(v)
+
+        if vals:
+            out[symbol] = vals
             _DECLARING_LINES.add(line.strip())
     return out
 
@@ -91,14 +151,15 @@ def detect_restated(region, decls):
         if line.strip() in _DECLARING_LINES:
             continue          # the declaration itself is not a restatement
         low = line.lower()
-        for sym, val in decls.items():
-            if len(val) < 2:          # 1-digit values are too common to be signal
-                continue
-            for m in re.finditer(r"(?<![\d\w`])" + re.escape(val) + r"(?![\d\w])", line):
-                ctx = low[max(0, m.start() - 90): m.end() + 90]
-                if any(q in ctx for q in QUALIFIERS):
+        for sym, vals in decls.items():
+            for val in vals:
+                if len(val) < 2:      # 1-digit values are too common to be signal
                     continue
-                hits.append((n, sym, val, line.strip()[:150]))
+                for m in re.finditer(r"(?<![\d\w`])" + re.escape(val) + r"(?![\d\w])", line):
+                    ctx = low[max(0, m.start() - 90): m.end() + 90]
+                    if any(q in ctx for q in QUALIFIERS):
+                        continue
+                    hits.append((n, sym, val, line.strip()[:150]))
     return hits
 
 
@@ -200,16 +261,21 @@ def main(argv=None):
 
     region = instruction_region(text, args.region_end)
     decls = declared_values(text)
-    print(f"declared symbols: {decls or '(none found)'}")
+    total_vals = sum(len(v) for v in decls.values())
+    print(f"declared symbols: {len(decls)} (values: {total_vals})")
+    for sym, vals in decls.items():
+        print(f"  {sym}: {vals}")
     if not decls:
         # ⚠️ A clean report over ZERO parsed declarations is the failure mode this
-        # tool exists to prevent, not a pass. Measured 2026-08-19: a cycle plan
-        # declared its quantities as `| N1 | batch size | — | **25** |` — no
-        # backticked symbol — so declared_values() matched nothing and detector 1
-        # reported "none" over a plan it could not read. Same shape as the
-        # instruction_region bug: silent, total, and indistinguishable from success.
+        # tool exists to prevent, not a pass. The parser now reads plain-backtick,
+        # plain, and bold value forms, plus row-id symbols. Exit 2 means no rows
+        # with 2+-digit numerals were found — never a clean result.
         print("\nERROR: no symbol declarations parsed — detector (1) cannot run.")
-        print("  Expected a Numbers-discipline row of the form:  | Dn | **`SYM`** … | … | **VALUE** | …")
+        print("  Expected a row of the form:")
+        print("    | Pn | **`SYM`** | 1234 |          (plain numeral)")
+        print("    | Pn | **`SYM`** | `1234` |         (plain-backtick numeral)")
+        print("    | Pn | **`SYM`** | — | **1234** |  (legacy bold numeral)")
+        print("    | Pn | row-id    | 1234 |          (row-id as symbol)")
         print("  This is EXIT 2 (could not run), never a clean result.")
         return 2
     print(f"instruction region: {len(region.splitlines())} lines "
