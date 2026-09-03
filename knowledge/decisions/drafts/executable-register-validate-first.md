@@ -71,26 +71,41 @@ A register whose header declares `0.1` or `0.2` is exempted **whether or not its
 
 **Tier:** T1 — triggers fired: T-3 (the validator runs on every machine that deposits). T-8 not fired: corrective clone by kind of exec-100025. T-6 not claimed: a conformance instrument, not a step gate.
 **Walk register:** `/Users/marklehn/Developer/eluvian-governance/governance/knowledge/research/walk-register-register-validate-first-2026-09-03.md`
-**Walks:** 1 (walks 0 and 1 complete).
-- Weak spots:          w1 1 folded — instruction 1 / record 0 (a pre-declared override for a failure that cannot occur where the plan runs).
-- Destruction:         w1 1 folded — instruction 0 / record 1 (the deleted manifest leaves 100029's records describing a missing path; disclosed, not tidied).
-- Vulnerabilities:     w1 dry.
-- Integration-record:  w1 dry.
-- ACID:                w1 dry.
-**Walk 0 — context pin:** nine measurements, all in the register. The two load-bearing: CONFORMANT **106 → 91** and fold rows **2827 → 2412 (415 lost)**, both reproduced against the pre-change commit `7349c89`.
-**Walk 0 — consumer dry-run:** class `shop-infra` (holds by design); `plan_lint` on v0 → **0 FAIL first pass**, no `(n)`, no `(u)`.
-**Direction verdict — PROCEED.** None of the three forcers fired; the mechanism is narrow (move one short-circuit, split one manifest) and the premise is measured twice over.
-**Closing:** NOT CLOSED at walk 1 — one instruction-class finding. Phrased so it cannot match a closure claim until earned.
+**Walks:** 7 (walks 0–7 complete).
+- Weak spots:          w1 1 folded — instruction 1 / record 0; w2 dry; w3 1 folded — instruction 1 / record 0; w4 dry; w5 dry; w6 dry; w7 dry.
+- Destruction:         w1 1 folded — instruction 0 / record 1; w2 dry; w3 dry; w4 dry; w5 dry; w6 dry; w7 dry.
+- Vulnerabilities:     w1 dry; w2 dry; w3 dry; w4 1 folded — instruction 1 / record 0; w5 dry; w6 dry; w7 dry.
+- Integration-record:  w1 dry; w2 dry; w3 dry; w4 1 folded — instruction 1 / record 0; w5 dry; w6 dry; w7 dry.
+- ACID:                w1 dry; w2 1 folded — instruction 1 / record 0; w3 dry; w4 dry; w5 dry; w6 1 folded — instruction 1 / record 0; w7 dry.
+- Record sweep:        w5 1 folded — instruction 0 / record 1; w7 1 folded — instruction 0 / record 1.
+**Per-lens detail** (kept out of the machine-read lines above, which the emitter parses): w3 a self-confirming post-condition; w4 the oracle built inside the daemon's worktree dir, and an unmeasured empty-set claim; w2 absolute counts against a growing corpus; w6 step 1 failing its own scope gate; w5/w7 an incomplete fold and a count lag.
+**Per-walk yields:** w0 0 · w1 2 · w2 1 · w3 1 · w4 2 · w5 1 · w6 1 · w7 1. **Total 9 — instruction 6 / record 3; 5 of 9 fold-introduced.**
+**Walk 0 — context pin:** nine measurements. The two load-bearing: CONFORMANT **106 → 91** and fold rows **2827 → 2412 (415 lost)**, both reproduced against the pre-change commit `7349c89`.
+**⚠️ The two findings that were NOT this cycle's own fold damage are the two that would have cost most:** `known_failures: 1`, a recorded Planner failure recurring inside a plan whose own pin warns about it; and an unnamed file deletion that `_gate_scope_check` would have rejected, failing step 1's gate. **Both were caught by asking what a CONSUMER would do — the gate, the dispatch location — not by re-reading the prose.**
+**Auto-advance:** walks 2–7 ran self-driving per §2's cadence — substrate present, `cycle_check` CONTINUE at every walk, no direction-class finding.
+**Closing:** w7 met the bar — **instruction 0 / record 1**, the record fold being this cycle's own numstat lag from w6-1. Counts reconcile (7 tests declared and claimed; 8 pins defined and cited; Scope 7 entries against Item 7's 7-file claim) and every command the final fold set touched was re-run and executes. Walk 7 restructured nothing, so the convergence clock did not reset. The closing-record re-read was run and produced the record fold above. ⚠️ **`propagation_check=DIVERGENT:11` declared as emitted, all 11 rows classified before the close** — every one the numeral-in-string class: the harm figures this plan is ABOUT (415, 2827, 2412, 106, 91, 28) matched against the same numerals in the prose that explains them. Zero real restatement divergences; thread 96's rider, carried in `open_forks`. ⚠️ **A record fold worth naming:** expanding the lens lines' en-dash ranges for machine-legibility stripped the `— instruction N / record N` annotations the emitter reads, and `yields:` went to `N/A`. My first diagnosis blamed the en-dashes; reading `get_instruction_counts` showed it reads the annotations. Restored, and `yields` now derives to `1, 1, 1, 2, 0, 1, 0` — six instruction findings, matching the prose. ⚠️ **FROZEN, NOT DEPOSITED** pending the CEO's go.
 
 ## Cycle Manifest
-
-*(emitted at BAR_MET)*
+tier: T1
+target: scripts/walk_register_lint.py
+target_class: detector
+state_space: declared-version (absent / below / equal / above the validator's) x table-validity under pure v0.3 rules (conforms / fails / no table) x resulting status (CONFORMANT / LEGACY_SCHEMA / FUTURE_SCHEMA / UNCONFORMANT / NO_TABLE / PRE-SCHEMA) — every dimension read from SYSTEM artifacts over the 159 committed registers, never the author's model: the version axis from the corpus's own declarations (25 none, 12 declare 0.1, 8 declare 0.2), the validity axis from an INDEPENDENT oracle (the pre-branch validator at 7349c89, which has zero LEGACY_SCHEMA references), and the interaction measured as the 16-register disagreement set the fix must empty. Cells enumerated as tests 1-7 in STEP 1 Item 2, including the positive control (test 6, a conformant v0.3 register unchanged) and test 7 (rows never empty on the exemption path)
+mutants: knowledge/mutants/register-enforcement-wrl.json
+class: shop-infra
+reads: scripts/walk_register_lint.py, scripts/cycle_check.py, tools/run_check.py, gates.py, tests/test_walk_register_lint.py, tests/test_cycle_check.py, knowledge/mutants/register-enforcement.json, knowledge/decisions/halted-executable-100029.md
+writes: scripts/walk_register_lint.py, tests/test_walk_register_lint.py, knowledge/mutants/register-enforcement.json, knowledge/mutants/register-enforcement-wrl.json, knowledge/mutants/register-enforcement-cycle_check.json, knowledge/mutants/register-enforcement-run_check.json, knowledge/dev-logs/register-validate-first-dev-2026-09-03.md
+open_forks: promoting the register check from WARN to the pre-wired "FAIL" arm at cycle_check.py:424 — earned on a re-measured funnel, a later plan; thread 97, mutation_check's single-target-per-manifest limit, worked around here with three manifests rather than fixed; the 117 fold rows missing pre_fold_text, refused for back-fill and closable only going forward; (u)'s QA-step predicate wrong on 74 of 861 steps (thread 102); the propagation_check numeral-in-string class (thread 96) — the whole of this plan's DIVERGENT count
+walks: 7
+yields: 1, 1, 1, 2, 0, 1, 0
+validation: cycle_check=BAR_MET, plan_lint=0_FAIL, fold_check=PASS, propagation_check=DIVERGENT:11
+coherence: 7/7 walks have register rows
 
 ## STEP 1 — DEV (move the exemption after validation; split the manifests)
 
 > **Scope:**
 > - `scripts/walk_register_lint.py`
 > - `tests/test_walk_register_lint.py`
+> - `knowledge/mutants/register-enforcement.json` (DELETED — see Item 4)
 > - `knowledge/mutants/register-enforcement-wrl.json`
 > - `knowledge/mutants/register-enforcement-cycle_check.json`
 > - `knowledge/mutants/register-enforcement-run_check.json`
@@ -113,13 +128,19 @@ A register whose header declares `0.1` or `0.2` is exempted **whether or not its
 >
 > **Item 3 — move the exemption after validation.** Validate first; then, if the declared version differs from the validator's, adjust the STATUS only. A conformant register keeps `CONFORMANT`. A failing register with an older declaration becomes `LEGACY_SCHEMA`. A newer declaration becomes `FUTURE_SCHEMA`. **In every case the parsed `rows` are returned.** Keep the count-1 anchor of P2 as the edit site.
 >
-> **Item 4 — split the mutants manifest into three**, one `target` each: `walk_register_lint.py`, `cycle_check.py`, `run_check.py`. Carry 100029's M3/M4/M5 into the `cycle_check` manifest unchanged (all three KILLED and stay killed), re-home M1 and M2 to their real files, and add a sixth: **revert the exemption to a pre-validation short-circuit** → killed by test 1. Delete the old single manifest.
+> **Item 4 — split the mutants manifest into three**, one `target` each: `walk_register_lint.py`, `cycle_check.py`, `run_check.py`. Carry 100029's M3/M4/M5 into the `cycle_check` manifest unchanged (all three KILLED and stay killed), re-home M1 and M2 to their real files, and add a sixth: **revert the exemption to a pre-validation short-circuit** → killed by test 1. **Delete `knowledge/mutants/register-enforcement.json`** — named here in full deliberately: `_gate_scope_check` clears a changed file when its path or basename appears in the step text (`gates.py:932`), and a deletion the step never names is judged out-of-scope and FAILS the gate. Measured on an earlier revision of this plan: step 1's text contained neither the path nor the basename.
 >
-> **Item 5 — re-measure P3 and P4** and state the deltas. ⛔ **Post-conditions, mechanical: CONFORMANT ≥ 106 and stdout fold rows ≥ 2827.** A number below either means coverage is still lost — HALT rather than report it as a delta.
+> **Item 5 — re-measure P3 and P4 as a BEFORE/AFTER pair over the SAME corpus, in the same run.** ⛔ **Do not compare against the authoring pins** — the corpus grows as plans close, and these pins were measured while this very session was adding registers to it: 2412 → 2414 rows and 91 → 92 CONFORMANT drifted within minutes of being written. Absolute counts cannot survive to dispatch.
+>
+> The post-condition is therefore **invariant to corpus size**, and it is the discriminating property:
+> - ⛔ **ZERO registers whose fold table CONFORMS may be reported `LEGACY_SCHEMA` or `FUTURE_SCHEMA`** — and the check must use an INDEPENDENT oracle, not the code under test. After the fix, exempted-equals-failed holds *by construction*, so asking the new code whether its own exempted set genuinely fails is self-confirming and proves nothing. **Use the pre-change validator as the oracle.** ⚠️ **Extract it, do not create a worktree** — `walk_register_lint.py` has NO location dependency (no `__file__`, no `SCRIPTS_DIR`), so `git show 7349c89:scripts/walk_register_lint.py > "$TMPDIR/oracle.py"` and running that copy works standalone; **do NOT `git worktree add` under `.bellows-worktrees/`, which the daemon owns and reaps.** Run the oracle over the same directory, and require that **every register the new code exempts was `UNCONFORMANT` or `NO_TABLE` under the old code.** The old code had no version branch at all, so its verdict is a pure v0.3 judgement — exactly the second opinion this check needs. Any register the old code called `CONFORMANT` and the new code exempts is the short-circuit surviving.
+> - ⛔ **The post-condition, stated as a SET and measured today: that set currently holds 16 registers, and after the fix it must be EMPTY.** Measured 2026-09-03 over 159 registers — oracle 108 CONFORMANT / 25 PRE-SCHEMA / 23 UNCONFORMANT / 3 NO_TABLE against the shipped code's 92 / 28 LEGACY_SCHEMA / 25 / 13 / 1 — the difference is exactly **16 registers the oracle calls CONFORMANT that the new code exempts, all 16 into `LEGACY_SCHEMA`**, among them `walk-register-classify-307-318-2026-08-11.md`, `walk-register-cycle-classify-s40sweep-2026-08-13.md` and `walk-register-cycle-run-339-2026-08-10.md`. **This is the plan's only hard post-condition and it is invariant to corpus growth**: the set is defined by disagreement between two validators over the same files, not by any count.
+> - **CONFORMANT must RISE and fold rows must RISE**, measured before and after your own edit against the identical directory in the same run. State both numbers and the delta; the authoring figures (106→91, 2827→2412 = 415 lost) are context for the size of the harm, not a target to hit.
+> - A CONFORMANT count that does not rise, or rows that do not rise, means coverage is still lost — HALT.
 >
 > **Item 6 — run `mutation_check` on all three manifests.** ⛔ **0 ERROR is required, not just 0 survived.** An ERROR means a mutant never ran and verifies nothing — the failure mode that halted 100029.
 >
-> **Item 7 — commit** (message tagged with the plan id); record `numstat` — exactly 6 files (one deletion among them).
+> **Item 7 — commit** (message tagged with the plan id); record `numstat` — **exactly 7 files**: two modified (`walk_register_lint.py`, its test module), one DELETED (the old single manifest), and four added (three manifests + the dev log).
 >
 > **Deposits:**
 > - `knowledge/dev-logs/register-validate-first-dev-2026-09-03.md`
@@ -127,7 +148,7 @@ A register whose header declares `0.1` or `0.2` is exempted **whether or not its
 >
 > ⚠️ **On the QA gate:** this step is not a QA step.
 >
-> **Post-conditions:** all seven tests pass; CONFORMANT ≥ 106; fold rows ≥ 2827; three manifests, **6 killed / 0 survived / 0 ERROR**; the P7 test passes from a worktree, with `known_failures: 0` holding.
+> **Post-conditions:** all seven tests pass; **the oracle-disagreement set is EMPTY** (currently 16); CONFORMANT and fold rows both RISE against your own before-measurement; three manifests, **6 killed / 0 survived / 0 ERROR**; the P7 test passes from a worktree, with `known_failures: 0` holding.
 
 ## STEP 2 — QA (full suite + the corpus restored)
 
@@ -147,7 +168,7 @@ A register whose header declares `0.1` or `0.2` is exempted **whether or not its
 > Confirm with `pwd` that you are in a worktree and that no repo-root `config.json` is present. ⚠️ **P7's test must PASS here** — from a worktree the true line is `1834 passed, 1 skipped`, 0 failed, which is why `known_failures: 0` is declared. Any failure here is real — HALT.
 >
 > **Item 2 — the corpus restored**, raw tails to the evidence file:
-> 1. CONFORMANT count ≥ 106 and stdout fold rows ≥ 2827, each stated against 100029's 91 / 2412 and the pre-change 106 / 2827
+> 1. the BEFORE/AFTER pair over the same directory in the same run: CONFORMANT rises, fold rows rise, and **every** exempted register is enumerated and shown to genuinely fail validation. Report your absolute numbers; they supersede the authoring pins, which had already drifted by 2 rows and 1 register within the session that wrote them.
 > 2. the specific register `walk-register-classify-307-318-2026-08-11.md` — declares an old version, carries the v0.3 shape — is **CONFORMANT** and emits its rows
 > 3. a genuinely wrong-shaped legacy register still reports `LEGACY_SCHEMA`, so the exemption did not simply disappear
 > 4. ⚠️ **the negative control:** a conformant v0.3 register is unaffected — the change did not turn everything conformant
@@ -166,7 +187,7 @@ A register whose header declares `0.1` or `0.2` is exempted **whether or not its
 > - `knowledge/qa/evidence/register-validate-first-2026-09-03/probes-raw.txt`
 > - `knowledge/qa/evidence/register-validate-first-2026-09-03/qa-receipt.md`
 >
-> **Post-conditions:** suite green from a worktree with 0 failed; CONFORMANT ≥ 106; fold rows ≥ 2827; the named register conformant; a wrong-shaped legacy register still `LEGACY_SCHEMA`; three kill maps, 6/6, 0 ERROR.
+> **Post-conditions:** suite green from a worktree with 0 failed; **the oracle-disagreement set is EMPTY**; CONFORMANT and fold rows both rise against the same-run before-measurement; the named register conformant; a wrong-shaped legacy register still `LEGACY_SCHEMA`; three kill maps, 6/6, 0 ERROR.
 
 Rule 20 banner (byte-exact, inside the QA receipt's VERIFICATION section):
 
