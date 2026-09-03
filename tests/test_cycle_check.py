@@ -1013,21 +1013,42 @@ def test_assert2_valid_register_no_warn(tmp_path, monkeypatch):
 
 def test_contract_last_stdout_line_is_verdict(tmp_path):
     """Test 9 — contract test (P8): cycle_check's last stdout line is always the bare
-    verdict token after the register-enforcement change. Any register WARN must print
-    before the verdict or on stderr — not after it."""
+    verdict token, even when a register WARN is emitted on stdout before it.
+
+    Uses an absolute-path register reference (resolved via step 1 of check_assert_2)
+    so the WARN fires without requiring git-root resolution.  This ensures the test
+    can distinguish the mutant that prints the WARN *after* the verdict (which would
+    make the last line the WARN string, not the verdict token).
+    """
     import subprocess
-    plan = _make_plan(tmp_path, (
+    # Invalid (NO_TABLE) register at an absolute path — triggers the WARN signal.
+    reg = tmp_path / "walk-register-test.md"
+    reg.write_text(
+        "# Walk Register\n\n**schema_version:** `0.3`\n\nNo tables here.\n",
+        encoding="utf-8",
+    )
+    plan = tmp_path / "plan.md"
+    plan.write_text(
+        f"# Plan\n\n## Drafting Cycle\n"
+        f"**Walk register:** {reg}\n"
         "- Weak spots: w1 1 folded — instruction 1 / record 0; w2 dry.\n"
         "**Closing:** BAR MET\n"
-    ))
+        "## End\n",
+        encoding="utf-8",
+    )
     result = subprocess.run(
         [sys.executable, str(SCRIPTS / "cycle_check.py"), str(plan)],
         capture_output=True, text=True, timeout=30,
     )
-    assert result.stdout.strip(), "cycle_check must emit at least one stdout line"
-    last_line = result.stdout.strip().splitlines()[-1].strip()
+    lines = result.stdout.strip().splitlines()
+    assert lines, "cycle_check must emit at least one stdout line"
+    last_line = lines[-1].strip()
     assert last_line == "BAR_MET", (
-        f"last stdout line must be bare verdict token; got {last_line!r}"
+        f"last stdout line must be bare verdict token; got {last_line!r}\n"
+        f"full stdout:\n{result.stdout}"
+    )
+    assert any("WARN" in ln for ln in lines[:-1]), (
+        "a WARN must appear on stdout before the verdict for the NO_TABLE register"
     )
 
 

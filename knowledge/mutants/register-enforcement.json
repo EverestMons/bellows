@@ -34,10 +34,10 @@
         },
         {
             "name": "M5-run-check-returns-3-tuple",
-            "why": "CONTROL mutant: run_check() returning a 3-tuple raises ValueError at all 40 test_cycle_check.py call sites that unpack exactly 2 values — proving P15's arity guard is real, not assumed. Must be killed by the EXISTING suite, not a new test. A survivor means the arity is unprotected.",
+            "why": "CONTROL mutant: run_check() returning a 3-tuple raises ValueError at all 40 test_cycle_check.py call sites that unpack exactly 2 values — proving P15's arity guard is real, not assumed. Must be killed by the EXISTING suite, not a new test. A survivor means the arity is unprotected. Selector targets a BAR_MET plan (reaches the final return verdict, 0 path); early-exit tests like test_unparseable_no_block never reach that line and cannot kill this mutant.",
             "anchor": "    return verdict, 0",
             "replacement": "    return verdict, 0, None",
-            "expect_fail": "tests/test_cycle_check.py::test_unparseable_no_block"
+            "expect_fail": "tests/test_cycle_check.py::test_63_hyphenated_lens_yields_bar_met"
         }
     ]
 }
