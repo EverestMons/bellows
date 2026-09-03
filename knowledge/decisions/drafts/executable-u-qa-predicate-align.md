@@ -206,6 +206,9 @@ Cells are enumerated as tests 1–8 in STEP 1 Item 3, including the positive con
 > Run them and record the **failure** output before any implementation exists. ⚠️ **Tests 1, 4, 5 and 7 pass BEFORE the edit** — they are the non-regression half and must be recorded as already-green, with tests 2, 3, 6 and 8 recorded as the failing half. A test that fails to fail is not proving anything; say which is which.
 >
 > **Item 4 — make the edit. Two lines, both count-1 anchors.**
+>
+> ⛔ **THE ORDER IS LOAD-BEARING: swap L360 FIRST, delete L354 SECOND.** The two half-states are not equally safe. Swap-then-interrupt leaves a correct file carrying one unused local — harmless. **Delete-then-interrupt leaves `qa_steps_set_u` referenced at L360 and unbound: `plan_lint` raises `NameError` on every plan it is pointed at, and the depositor runs `plan_lint` on every deposit** (`depositor.py:489`), so the broken half-state is not confined to this plan. Run the lint on one real plan between the two edits and show exit 0.
+>
 > - At the P2 anchor (L360, inside (u)'s own loop), replace the local test with `gates._gate_is_qa_step(plan_text, sn, plan_header=header)` — **no `if header` guard** (MUST-PRESERVE).
 > - At the P3 anchor (L354), remove the now-dead `qa_steps_set_u` binding. ⚠️ **Assert the deletion with SCOPED probes, and the scope is load-bearing** — a deletion is invisible to a probe that greps only for new strings, and an unscoped probe here reports a false survivor:
 >   - `/usr/bin/grep -cF 'qa_steps_set_u' scripts/plan_lint.py` → **0** (was 2). ⛔ **Scope it to that one file.** A repo-wide `grep -rn` returns ~4.3 MB, because the token also lives in `scripts/__pycache__/plan_lint.cpython-312.pyc` and 3 `logs/*.json` dispatch transcripts — neither editable, neither in scope (P4).
@@ -263,11 +266,15 @@ Cells are enumerated as tests 1–8 in STEP 1 Item 3, including the positive con
 > 6. ⚠️ **the plan's own specimen closes:** lint `knowledge/decisions/Done/executable-100028.md` and show that its step 1's two (u) WARNs no longer fire, while its step 2 stays clean — the citation at `knowledge/qa/evidence/qa-predeclaration-2026-09-03/qa-receipt.md:97` names exactly this pair, and this is the one record whose citation the fix retires. Then lint **this very plan** and show the same pair gone from its own step 1. ⚠️ **Resolve this plan's own file by its id, never by a hardcoded name:** `find knowledge/decisions -name '*executable-<id>*.md'` — the claimed file is renamed through `in-progress-` and `verdict-pending-` as it runs.
 > 7. **exit code unaffected:** run the lint on a tripping plan and show `exit=0`. Establish "before" from the commit PRECEDING THIS PLAN'S OWN DEV COMMIT, resolved by its plan-id commit tag — never `HEAD`-relative, and never by `git stash`. Paste the resolved sha and both exit codes.
 >
-> **Item 3 — re-run `tools/mutation_check.py`** on the committed code and paste the kill map. 6 killed / 0 survived.
+> **Item 3 — the DEV→QA window, closed explicitly.** ⚠️ **Two shared stores sit between the steps and the gap is arbitrary wall-clock time.**
+> 1. `scripts/plan_lint.py` — assert `git log --oneline <DEV_SHA>..HEAD -- scripts/plan_lint.py` is **EMPTY**, resolving `<DEV_SHA>` from the plan-id commit tag (never `HEAD~1`). A non-empty result means another actor edited the target inside the window: **HALT and request a verdict**; do not re-measure on top of it. At authoring, `lifecycle.db` reported zero plans in `claimed`/`in_progress`/`awaiting_verdict` (P16), so the window was empty then — that is a measurement about authoring time, not a guarantee about yours.
+> 2. `knowledge/decisions/Done/` — the daemon writes into it as plans close, so the census population **grows between the steps by construction**. That is why Item 5's supersede rule reports a delta rather than asserting a frozen number, and why only a CLASS change halts. Re-run the census in THIS step rather than citing Step 1's.
 >
-> **Item 4 — hygiene + receipt** at `qa-receipt.md`: numstat vs the DEV commit; toplevel; reflog `-n 4` → 0 amends; a per-item table; the before/after census stated plainly; then the QA self-check block inside a Verification-headed section (the 556 placement law).
+> **Item 4 — re-run `tools/mutation_check.py`** on the committed code and paste the kill map. 6 killed / 0 survived.
 >
-> **Item 5 — commit the evidence** (message tagged with the plan id); verify exactly 3 files.
+> **Item 5 — hygiene + receipt** at `qa-receipt.md`: numstat vs the DEV commit; toplevel; reflog `-n 4` → 0 amends; a per-item table; the before/after census stated plainly; then the QA self-check block inside a Verification-headed section (the 556 placement law).
+>
+> **Item 6 — commit the evidence** (message tagged with the plan id); verify exactly 3 files.
 >
 > ⚠️ **On the QA gate:** **this plan has a real test scope.** Item 1 produces the pytest summary the gate parses, named in the deposits below; no override applies here and none should be copied from this step into a doc-only clone.
 >
@@ -276,7 +283,7 @@ Cells are enumerated as tests 1–8 in STEP 1 Item 3, including the positive con
 > - `knowledge/qa/evidence/u-predicate-align-2026-09-03/probes-raw.txt`
 > - `knowledge/qa/evidence/u-predicate-align-2026-09-03/pytest_full.txt`
 >
-> **Post-conditions:** suite green at the derived count; the false-positive specimen silent; the blind-spot specimen firing; both cited records still firing; census class unchanged; exit code unchanged; kill map 6/6.
+> **Post-conditions:** suite green at the derived count; the false-positive specimen silent; the blind-spot specimen firing; the retained specimen's WARN byte-identical before and after; the two out-of-repo citations firing, or their sandbox denial stated; `git log <DEV_SHA>..HEAD -- scripts/plan_lint.py` empty; census class unchanged; exit code unchanged; kill map 6/6.
 
 Rule 20 banner (byte-exact, inside the QA receipt's VERIFICATION section):
 
