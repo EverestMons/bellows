@@ -1,0 +1,8 @@
+{
+  "slug": "executable-qa-predeclaration-warn",
+  "content_hash": "269e202ddf4256d5250ef77bc476155dff10d8b94770f94d8fe5def132a434fe",
+  "session_id": "42ce7e32-298a-4354-9b4b-3caede79522e",
+  "armed_at": "2026-09-03T09:21:53.656564",
+  "watcher": "gate_watcher.py spawned detached (pid 52909); log: logs/watch/executable-qa-predeclaration-warn.md.log",
+  "attestation_boundary": "This receipt proves the watcher was ARMED at write time. It does NOT prove the watcher stayed alive. Liveness of a session-local monitor is not externally verifiable."
+}
