@@ -71,9 +71,9 @@ The builder reads the file as bytes, refuses CRLF, refuses an already-built inpu
 - Integration-record:  _pending_
 - ACID:                _pending_
 
-**Cold panel (SMALL form):** _not yet convened — the meter opens at the scout's dispatch._
+**Cold panel (SMALL form; meter opened at the scout's dispatch 19:15):** SCOUT-local (lens 4, subagent, 190k tokens, 43 tool uses) — 7 findings, 1 HIGH (the `HEAD`-scoped `git show` in both RE-ENTRY arms prints nothing on a correct state once a later commit lands — origin-carried from 100021, never exercised there), 2 MED (the ONE recipe's discriminator; the hedging enumeration short by one), 4 LOW; instruction 3 / record 4; 7 folded (the builder re-committed `df13d47c` — E5 names the kind prefix); origin: 2 origin-carried, 4 pre-existing-v0, 1 dropped-from-parent · SCOUT-Air (the same brief to the Air's session by cross-session message, the pair's second cold reader on the frozen v0 — report pending; its overlap with the local scout is the artifact's measured floor, its difference the reader's blind spot) · EXECUTION, CAPSTONE: not yet convened.
 
-**Conformance (§5):** _pending walk 0's run._
+**Conformance (§5):** first run at walk 0 (on v0) and re-run after the scout round: `plan_lint` exit 0 / 0 FAIL at a non-claimable `lintmirror-` copy (`is_runnable_plan` → False by execution; removed after) — WARN set (o2)×5 (worktree-relative deposits, the absolute governance paths excluded), (o1) INFO, PIN-CHECK `ambiguous` on the two sha prefixes; `cycle_check` ESCALATE:unparseable until walk 1's lens lines exist (the v0 state, expected); `fold_check` baselined at walk 0 and re-baselined once after the scout round (intended: the P4 digest pin moved); **`propagation_check` RAN — exit 1, 90 divergences, every one classified in the register before being believed: 69 numerals the checker read out of version strings, rule numbers and Source-line anchors (thread 96's false-positive family, its version/rule-number form), 21 pin values the steps restate as the agent's expected outputs by design; the class it can detect — a value declared once and restated WRONG — returned none.**
 
 **Closing:** _not closed._
 
