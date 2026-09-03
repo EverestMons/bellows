@@ -1,0 +1,122 @@
+=== ITEM 1: Full suite from worktree ===
+pwd: /Users/marklehn/Developer/bellows/.bellows-worktrees/100030
+config.json at root: NOT PRESENT (correct for worktree)
+Result: 1841 passed, 1 skipped, 0 failed
+
+(Full output in pytest_full.txt)
+
+=== ITEM 2.1: BEFORE/AFTER corpus pair ===
+
+ORACLE (pre-change, 7349c89) sweep:
+  CONFORMANT:   108
+  PRE-SCHEMA:    25
+  UNCONFORMANT:  23
+  NO_TABLE:       3
+  Total registers: 159
+  fold rows (stdout, excl. header): 2836
+
+HEAD (post-fix) sweep:
+  CONFORMANT:   108
+  PRE-SCHEMA:    25
+  UNCONFORMANT:  13
+  LEGACY_SCHEMA: 12
+  NO_TABLE:       1
+  Total registers: 159 (160 total includes draft- prefix file)
+  fold rows (stdout, excl. header): 2836
+
+Delta vs oracle: CONFORMANT SAME (108 = 108), fold rows SAME (2836 = 2836)
+Delta vs 100029 defect state (91 CONFORMANT, 2412 rows): +17 CONFORMANT, +424 rows RESTORED
+
+ORACLE-DISAGREEMENT SET (oracle=CONFORMANT, HEAD=LEGACY_SCHEMA or FUTURE_SCHEMA):
+  Count: 0 (EMPTY — post-condition MET)
+
+All 12 HEAD-LEGACY_SCHEMA registers mapped to oracle: UNCONFORMANT or NO_TABLE
+  walk-register-auto-confirm-on-agreement-2026-08-11.md          oracle: UNCONFORMANT
+  walk-register-contract-entry-readability-2026-08-11.md         oracle: UNCONFORMANT
+  walk-register-cycle-ingest-s40sweep-2026-08-13.md              oracle: UNCONFORMANT
+  walk-register-dc-coldfront-2026-08-13.md                       oracle: UNCONFORMANT
+  walk-register-fix-fetch-test-reload-isolation-2026-08-12.md    oracle: UNCONFORMANT
+  walk-register-gate2-dc-batch-2026-08-11.md                     oracle: NO_TABLE
+  walk-register-gate2-dc-s40sweep-2026-08-13.md                  oracle: UNCONFORMANT
+  walk-register-gate2-template-batch-2026-08-11.md               oracle: NO_TABLE
+  walk-register-inapp-xml-fetch-2026-08-12.md                    oracle: UNCONFORMANT
+  walk-register-predicted-number-pin-census-2026-08-12.md        oracle: UNCONFORMANT
+  walk-register-s2-rewrite-2026-08-11.md                         oracle: UNCONFORMANT
+  walk-register-validate-detail-enrich-2026-08-11.md             oracle: UNCONFORMANT
+
+=== ITEM 2.2: Named register (declares 0.1, has v0.3 shape) ===
+File: walk-register-classify-307-318-2026-08-11.md
+schema_version: **schema_version:** `0.1`
+Oracle status: CONFORMANT
+HEAD status:   CONFORMANT
+Fold rows emitted: 7
+RESULT: PASS — declares old version, v0.3 shape, now CONFORMANT and emits rows
+
+=== ITEM 2.3: Wrong-shaped legacy register still LEGACY_SCHEMA ===
+File: walk-register-auto-confirm-on-agreement-2026-08-11.md
+Oracle status: UNCONFORMANT (wrong shape — has 'class' column, not v0.3)
+HEAD status:   LEGACY_SCHEMA (declares old version AND fails validation)
+RESULT: PASS — exemption did not simply disappear; wrong-shaped legacy = LEGACY_SCHEMA
+
+=== ITEM 2.4: Negative control — conformant v0.3 register unaffected ===
+File: walk-register-bellows-bootstrap-2026-09-02.md
+schema_version: **schema_version:** `0.3`
+Oracle status: CONFORMANT
+HEAD status:   CONFORMANT
+Fold rows emitted: 14
+RESULT: PASS — v0.3 conformant register unchanged
+
+=== ITEM 2.5: run_check register over corpus ===
+Verdict line:
+RUN_CHECK: register VERDICT=FAIL — 14 NO_TABLE/UNCONFORMANT file(s): walk-register-bellows-restart-lock-2026-08-15.md; walk-register-bellows-restart-lock-fix-2026-08-15.md; walk-register-cycle-ingest-folddamage-2026-08-14.md; walk-register-diagnostic-bellows-root-fallback-stray-2026-08-19.md; walk-register-dispute-outcome-reconciliation-exec-2026-08-15.md; walk-register-executable-annotate-lessons-md.md; walk-register-executable-bellows-root-sentinel-fix-2026-08-19.md; walk-register-executable-invoice-list-query-parts-characterization-2026-08-19.md; walk-register-gate2-341-2026-08-14.md; walk-register-gate2-342-2026-08-14.md; walk-register-gate2-dc-route57-2026-08-25.md; walk-register-glossary-migrate-anvil-2026-08-26.md; walk-register-glossary-migrate-freight-kb-2026-08-26.md; walk-register-qa-predeclaration-2026-09-03.md
+Note: 14 pre-existing UNCONFORMANT/NO_TABLE registers; none are version-exempted (LEGACY_SCHEMA registers not counted as failures)
+
+=== ITEM 3: mutation_check — all three manifests ===
+
+--- register-enforcement-wrl.json ---
+HEAD: 24056aa578c650b8af1ff93fb655ea767a74efaf
+TARGET: scripts/walk_register_lint.py sha256=e50b63a1bd40
+MUTANT M1-drop-legacy-schema-branch: KILLED — suite caught the defect
+MUTANT M6-revert-to-pre-validation-short-circuit: KILLED — suite caught the defect
+LIVE-TREE UNCHANGED: e50b63a1bd40
+MUTATION: 2 killed, 0 survived, 0 error
+
+--- register-enforcement-cycle_check.json ---
+HEAD: 24056aa578c650b8af1ff93fb655ea767a74efaf
+TARGET: scripts/cycle_check.py sha256=e04881ecae12
+MUTANT M3-assign-fail-not-warn: KILLED — suite caught the defect
+MUTANT M4-warn-printed-after-verdict: KILLED — suite caught the defect
+MUTANT M5-run-check-returns-3-tuple: KILLED — suite caught the defect
+LIVE-TREE UNCHANGED: e04881ecae12
+MUTATION: 3 killed, 0 survived, 0 error
+
+--- register-enforcement-run_check.json ---
+HEAD: 24056aa578c650b8af1ff93fb655ea767a74efaf
+TARGET: tools/run_check.py sha256=31a01b4c6cd5
+MUTANT M2-pre-schema-counted-bad: KILLED — suite caught the defect
+LIVE-TREE UNCHANGED: 31a01b4c6cd5
+MUTATION: 1 killed, 0 survived, 0 error
+
+TOTAL: 6 killed, 0 survived, 0 error
+
+=== ITEM 4: Hygiene ===
+
+--- numstat (HEAD~2..HEAD, both DEV commits) ---
+119	0	knowledge/dev-logs/register-validate-first-dev-2026-09-03.md
+1	17	knowledge/mutants/{register-enforcement.json => register-enforcement-cycle_check.json}
+13	0	knowledge/mutants/register-enforcement-run_check.json
+20	0	knowledge/mutants/register-enforcement-wrl.json
+21	9	scripts/walk_register_lint.py
+124	0	tests/test_walk_register_lint.py
+6 files changed: 2 modified, 1 deleted, 4 added (NOTE: git shows rename-with-modification as 1 rename, not delete+add; actual files: 2 modified + 1 deleted + 4 added = 7 total, split across 2 commits)
+
+--- reflog -n 4 ---
+24056aa HEAD@{0}: reset: moving to HEAD
+24056aa HEAD@{1}: [commit: fix(register-enforcement): [100030] Step 1 follow-up]
+0 amends detected
+
+--- Commit log (last 4) ---
+24056aa fix(register-enforcement): [100030] Step 1 follow-up — force-reload walk_register_lint in test
+32053b9 fix(register-enforcement): [100030] Step 1 DEV — validate first, exempt second
+d577567 draft(register-validate-first): FROZEN at walk 7 — BAR_MET, corrective for 100029
+bbd24e1 draft(register-validate-first): v0 -> walk 1, direction verdict PROCEED — corrective for 100029
