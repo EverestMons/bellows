@@ -57,12 +57,12 @@ Plan 100029's agent wrote those keys in good faith — its dev log states the in
 
 **Tier:** T1 — T-3 fires (the runner runs on every machine that deposits). T-8 not fired: clone by kind of exec-579. T-6 not claimed: a conformance instrument, not a step gate.
 **Walk register:** `/Users/marklehn/Developer/eluvian-governance/governance/knowledge/research/walk-register-mutation-per-mutant-target-2026-09-03.md`
-**Walks:** 5 (walks 0–5 complete).
-- Weak spots:          w1 1 folded — instruction 0 / record 1; w2 dry; w3 dry; w4 dry; w5 dry.
-- Destruction:         w1 1 folded — instruction 1 / record 0; w2 dry; w3 dry; w4 dry; w5 1 folded — instruction 1 / record 0.
-- Vulnerabilities:     w1 dry; w2 dry; w3 dry; w4 1 folded — instruction 1 / record 0; w5 1 folded — instruction 1 / record 0.
-- Integration-record:  w1 dry; w2 dry; w3 1 folded — instruction 1 / record 0; w4 dry; w5 dry.
-- ACID:                w1 dry; w2 2 folded — instruction 2 / record 0; w3 dry; w4 dry; w5 dry.
+**Walks:** 6 (walks 0–6 complete).
+- Weak spots:          w1 1 folded — instruction 0 / record 1; w2 dry; w3 dry; w4 dry; w5 dry; w6 1 folded — instruction 1 / record 0.
+- Destruction:         w1 1 folded — instruction 1 / record 0; w2 dry; w3 dry; w4 dry; w5 1 folded — instruction 1 / record 0; w6 1 folded — instruction 1 / record 0.
+- Vulnerabilities:     w1 dry; w2 dry; w3 dry; w4 1 folded — instruction 1 / record 0; w5 1 folded — instruction 1 / record 0; w6 1 folded — instruction 1 / record 0.
+- Integration-record:  w1 dry; w2 dry; w3 1 folded — instruction 1 / record 0; w4 dry; w5 dry; w6 dry.
+- ACID:                w1 dry; w2 2 folded — instruction 2 / record 0; w3 dry; w4 dry; w5 dry; w6 dry.
 - Record sweep:        w5 1 folded — instruction 0 / record 1.
 **Walk 0 — context pin:** seven measurements. The load-bearing one: `main()` reads the manifest's `target` once at `:100` and a mutant's own **zero** times — the key is accepted by the format and consumed by nothing. ⚠️ Also measured, correcting my own first framing: the tool is NOT silent — it names each offending mutant and exits 2.
 **⚠️ Walk 2's two findings were caused EXTERNALLY, by a sibling plan closing underneath this one.** 100030's manifest split destroyed this plan's specimen mid-draft, and my walk-0 collision check had cleared it by comparing `writes ∩ writes` when the exposure was `reads ∩ writes` — half the vocabulary the depositor itself defines.
@@ -70,7 +70,8 @@ Plan 100029's agent wrote those keys in good faith — its dev log states the in
 **⚠️ The escalation, and why it resolved:** `cycle_check` returned `ESCALATE:yield-rising` at walk 2 (instruction 1 → 2) and the cadence paused for the CEO, correctly. The rise was EXTERNAL — 100030 closed underneath this draft and destroyed its specimen — and the CEO resumed. Walk 3 fell to 1. ⚠️ It escalated a second time only because this log still said `Walks: 2`: the record lagged the practice and cycle_check read a stale series. The clock is the log, and I ran a walk before writing its row.
 **⚠️ Walks 3–5 each found the PREVIOUS walk's fold incomplete or unexecutable.** Walk 4 found the plan's central post-condition unachievable by construction — `git archive HEAD` is hardcoded (`:132`) and M1's anchor was deleted from HEAD by 100030, so no run could ever report 5/5. Walk 5 found walk 4's own replacement unexecutable — `target` is repo-anchored three times, so scratch fixtures are impossible, and an absolute path escapes the sandbox and reports every mutant falsely SURVIVED. **The fixture was then BUILT AND RUN rather than specified:** measured `1 killed, 0 survived, 2 error` against the unfixed tool, with both the before and after results now pinned in step 1. Every one of these was caught by reading the consumer's path resolution, never by re-reading the prose.
 **Out of scope, filed not folded:** the absolute-`target` sandbox escape is a latent `mutation_check` defect beyond this plan's mechanism — its own thread, not a widening of this one.
-**Closing:** NOT CLOSED at walk 5 — three instruction-class findings, the convergence clock reset. Phrased so it cannot match a closure claim until earned.
+**⛔ Walk 6 — DIRECTION-CLASS FINDING, forcer (b).** Walk 1's PROCEED rested on "the mechanism is narrow: honour a key, exempt commentary, name a file." Walk 6 measured that false. Item 3 is **five** sites, two safety-critical: `pristine` is read once before the loop, so a naive edit writes file A's contents into file B; and `LIVE-TREE UNCHANGED` asserts over the top-level target alone, so honouring per-mutant targets would ship a WEAKER guard than the tool inherited — in the plan whose purpose is making the kill-map trustworthy. ⚠️ Walk 6's own fold then widened the plan past its clone origin by importing thread 105's path refusal; reverted after measuring that an absolute target collapses `live_target` and `sandbox_target` onto one file, so the in-scope guard extension DETECTS the escape. Detect here, refuse in 105.
+**Closing:** NOT CLOSED at walk 6 — three instruction-class findings, the yield rose 2 → 3. Phrased so it cannot match a closure claim until earned.
 
 ## Cycle Manifest
 
@@ -100,10 +101,19 @@ Plan 100029's agent wrote those keys in good faith — its dev log states the in
 > 5. ⛔ **an unrecognised per-mutant key → ERROR naming the key and the mutant**, not silence
 > 6. the anchor-mismatch message **names the file searched** — the message that would have made 100029's failure self-explaining
 > 7. scoring unchanged: a surviving mutant is still `SURVIVED`, a killed one still `KILLED`, and any ERROR still exits 2
+> 8. ⛔ **two mutants with DIFFERENT targets each mutate their own file** — the direct test for the per-target `pristine` cache. Assert file B never receives file A's contents.
+> 9. ⛔ **the `LIVE-TREE UNCHANGED` guard covers every distinct target** — mutate one non-top-level target and assert the guard would have caught a live-tree change to THAT file, not only to the top-level one
 >
 > Run them and record the FAILURE output before implementing.
 >
 > **Item 3 — honour the per-mutant `target`**, resolved inside the `git archive` sandbox, falling back to the manifest's top-level value. A manifest with no per-mutant targets takes the identical path it takes today.
+> ⛔ **This is FIVE sites, not one. A one-line edit to the lookup ships a silently broken tool.** Read the code before editing:
+> 1. ⛔ **`pristine` is read ONCE before the loop** (`:152`) from the single `sandbox_target`. Each mutant writes `pristine.replace(anchor, replacement, 1)` over that path, so pristine content is per-FILE by assumption. Keep one `pristine` and a mutant targeting file B will write **file A's contents into file B** — destroying B's sandbox copy and scoring nonsense, silently. Cache pristine **per target path**.
+> 2. `sandbox_target` (`:147`) and its in-archive existence check (`:148-150`) must be computed **per mutant**, not once — and the "target not in archive" refusal must name the mutant.
+> 3. ⛔ **the `LIVE-TREE UNCHANGED` guard covers ONE file** — `live_sha_before` at `:119` and `live_sha_after` at `:234` are both `_sha256(live_target)`, the top-level target alone. Honouring per-mutant targets makes the tool write to more files while the safety assertion still covers exactly one. ⚠️ **Shipping that narrows the tool's central safety property in the very plan meant to make its kill-map trustworthy.** Extend the guard to every DISTINCT target in the manifest, and report each.
+> 4. the uncommitted-changes warning (`git status --porcelain -- target`, `:112`) checks one path; run it for every distinct target.
+> 5. the `TARGET:` header (`:121`) prints one path; print one line per distinct target with its sha.
+> ⚠️ **Why site 3 is not optional, and why the path REFUSAL is deliberately NOT in this plan.** `os.path.join` discards the prefix on an absolute second argument, so an absolute `target` collapses `live_target` and `sandbox_target` onto the SAME real file — the tool mutates it outside the sandbox while pytest runs unchanged code, scoring every mutant a false `SURVIVED` (thread 105). Verified: both joins yield `/tmp/x.py`. Because they collapse onto one file, **a per-target live-sha guard OBSERVES the mutation and fires `LIVE TREE CHANGED`.** Extending the guard is therefore both in scope and sufficient to make the per-mutant path safe to ship. ⛔ **Do NOT add path validation here** — proactive refusal is thread 105's mechanism, and folding it in would widen this plan past its clone origin. Detect here; refuse there.
 >
 > **Item 4 — refuse unknown per-mutant keys**, naming the key and the mutant. The recognised set, read off the 12 shipped manifests rather than from this plan's prose: `name`, `why`, `anchor`, `replacement`, `expect_fail`, and now `target`.
 > - ⛔ **Underscore-prefixed keys are COMMENTARY and must be permitted, not refused.** The convention is live: `_note` appears in three manifests and `_removed_note` in a fourth — and three of those four were written today. `mutation_check` honours it by construction, reading only `target` and `mutants` and ignoring everything else. A strict refusal would contradict a convention the shop is actively using; exempt any key beginning with `_` at BOTH levels, and say so in the message so the exemption is discoverable.
@@ -122,7 +132,7 @@ Plan 100029's agent wrote those keys in good faith — its dev log states the in
 >
 > ⚠️ **On the QA gate:** this step is not a QA step.
 >
-> **Post-conditions:** all seven tests pass; the purpose-built fixture scores every mutant from ONE manifest with **0 ERROR**, and the SAME fixture ERRORs against the pre-change tool (proving it discriminates); every existing manifest byte-identical; the runner's own mutants all killed, 0 error. ⛔ **The historical specimen is evidence, not a post-condition** — M1's anchor is gone from HEAD and no run can restore it.
+> **Post-conditions:** all nine tests pass; the purpose-built fixture scores every mutant from ONE manifest with **0 ERROR**, and the SAME fixture ERRORs against the pre-change tool (proving it discriminates); every existing manifest byte-identical; the runner's own mutants all killed, 0 error. ⛔ **The historical specimen is evidence, not a post-condition** — M1's anchor is gone from HEAD and no run can restore it.
 >
 ## STEP 2 — QA (full suite + the defect closed on a discriminating fixture)
 
