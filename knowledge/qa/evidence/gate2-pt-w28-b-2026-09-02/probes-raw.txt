@@ -1,0 +1,118 @@
+QA Probes — gate2-pt-w28-b-2026-09-02 (plan 100026)
+Date: 2026-09-02 | Step: 2 (QA)
+
+=== Item 1 — Live template ===
+
+--- git log -1 PLANNER_TEMPLATE.md ---
+de662398 [100026] gate2-pt-w28-b: PLANNER_TEMPLATE v4.98 — Rules 107–109 (422, 425, 431) + five extensions (415, 417, 421, 435, 437)
+
+--- Task C: 19 counts (/usr/bin/grep -cF) ---
+### 107. A STOP arm keys on the claim that would make the work WORTHLESS → 1
+### 108. Before optimizing a system's LIFECYCLE, confirm what the system is FOR → 1
+### 109. An OPTIONAL datum's consumers silently disagree about absence → 1
+codified 2026-09-02 (Gate 2, cycle W=28 PT tranche two) → 3
+codified 2026-09-02 — Gate 2, cycle W=28 PT tranche two → 5
+**The DECLARATION side is read on the EXECUTING machine → 1
+**The amendment act OWNS the re-pin → 1
+**The OTHER direction — adding a CONSUMER to an existing label → 1
+**Arming a watcher over a directory is RETROACTIVE → 1
+**When a string is read by a COMPARATOR, the shipped corpus is the known-good artifact → 1
+**Version:** 4.98 → 1
+**Version:** 4.97 → 0
+**Last Updated:** 2026-09-02 (v4.98) → 1
+**Last Updated:** 2026-09-02 (v4.97) → 0
+| 2026-09-02 | v4.98: Gate 2, cycle W=28 PT tranche two → 1
+| 2026-09-02 | v4.97: Gate 2, cycle W=28 PT tranche one → 1
+## Lifecycle DB Read Protocol (Planner) → 1
+### 106.  → 1
+### 17.  → 2
+
+--- wc -l ---
+2458 /Users/marklehn/Developer/eluvian-governance/PLANNER_TEMPLATE.md
+
+--- porcelain (PLANNER_TEMPLATE.md + g2ptw28b-flip.sql) ---
+[EMPTY — no output]
+
+=== Item 2 — Builder byte-identity ===
+
+--- Pre-commit blob extraction ---
+Pre-commit commit: de6623983a0b0da8dab753a8650b98c0872c565c
+Pre-commit blob (parent): de6623983a0b0da8dab753a8650b98c0872c565c^:PLANNER_TEMPLATE.md
+Extracted to: /tmp/g2ptw28b-qa/PT-pre.md
+wc -l: 2423 /tmp/g2ptw28b-qa/PT-pre.md
+wc -c: 459239 /tmp/g2ptw28b-qa/PT-pre.md
+
+--- Builder run ---
+BUILT: /tmp/g2ptw28b-qa/PT-out.md edits=9 blocks=3 lines+35 bytes+17383 post=29/29
+builder_exit=0
+
+--- cmp ---
+BYTE_IDENTICAL
+
+--- P4 builder digest ---
+Builder commit: 917ad5c016151c27f8a1cacba0891a1c720becf9
+On-disk digest (shasum -a 256 | cut -c1-16): 5d032b8ce50e0faa
+Committed blob digest: 5d032b8ce50e0faa
+MATCH
+
+--- Refusals ---
+Refusal 1 (out==in):
+  BUILDER REFUSED: out == in
+  exit=1
+
+Refusal 2 (under forbidden root):
+  BUILDER REFUSED: out is under a forbidden root /Users/marklehn/Developer/eluvian-governance (the literal governance root, or the input's git toplevel)
+  exit=1
+
+Refusal 3 (already built):
+  BUILDER REFUSED: output tokens already present in input — already built?
+  exit=1
+
+=== Item 3 — Flip read-back (fresh read-only connection) ===
+
+--- Eight rows ---
+415|implemented|codify|ceo|2026-09-03T01:18:58Z
+417|implemented|codify|ceo|2026-09-03T01:18:58Z
+421|implemented|codify|ceo|2026-09-03T01:18:58Z
+422|implemented|codify|ceo|2026-09-03T01:18:58Z
+425|implemented|codify|ceo|2026-09-03T01:18:58Z
+431|implemented|codify|ceo|2026-09-03T01:18:58Z
+435|implemented|codify|ceo|2026-09-03T01:18:58Z
+437|implemented|codify|ceo|2026-09-03T01:18:58Z
+All stamps = 2026-09-03T01:18:58Z ≠ 2026-09-01T22:03:28Z (vintage)
+
+--- accepted COUNT ---
+23
+
+--- W=29 accepted count (stamp 2026-09-02T23:54:37Z) ---
+23
+
+--- implemented COUNT ---
+334
+
+--- flip-capture.txt wc -l ---
+466 knowledge/qa/evidence/gate2-pt-w28-b-2026-09-02/flip-capture.txt
+
+--- capture: rows with |accepted|codify| ---
+31
+
+--- capture: eight flipped rows (pre-flip state, grep -E) ---
+415|accepted|codify|governance_rule|planner|2026-09-01T22:03:28Z
+417|accepted|codify|governance_rule|planner|2026-09-01T22:03:28Z
+421|accepted|codify|governance_rule|planner|2026-09-01T22:03:28Z
+422|accepted|codify|governance_rule|planner|2026-09-01T22:03:28Z
+425|accepted|codify|governance_rule|planner|2026-09-01T22:03:28Z
+431|accepted|codify|governance_rule|planner|2026-09-01T22:03:28Z
+435|accepted|codify|governance_rule|planner|2026-09-01T22:03:28Z
+437|accepted|codify|governance_rule|planner|2026-09-01T22:03:28Z
+
+--- flip-capture.txt commit subject ---
+[100026] gate2-pt-w28-b: PT v4.98 + flip landed (dev log, flip capture)
+
+=== Item 4 — Full suite ===
+File: knowledge/qa/evidence/gate2-pt-w28-b-2026-09-02/full-suite-gate2-pt-w28-b.txt
+P7 baseline: 1814 passed, 1 skipped (measured at walk 0, bellows 7ed1884)
+Test drift check (git log --oneline 7ed1884..HEAD -- tests): [EMPTY — no drift]
+Tail of full-suite file:
+  1814 passed, 1 skipped in 52.14s
+  exit=0
