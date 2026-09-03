@@ -354,7 +354,7 @@ Cells are enumerated as tests 1–8 in STEP 1 Item 3, including the positive con
 >
 > **Item 3 — the DEV→QA window, closed explicitly.** ⚠️ **Two shared stores sit between the steps and the gap is arbitrary wall-clock time.**
 > 1. `scripts/plan_lint.py` — assert `git log --oneline <DEV_SHA>..HEAD -- scripts/plan_lint.py` is **EMPTY**, resolving `<DEV_SHA>` from the plan-id commit tag (never `HEAD~1`). A non-empty result means another actor edited the target inside the window: **HALT and request a verdict**; do not re-measure on top of it. At authoring, `lifecycle.db` reported zero plans in `claimed`/`in_progress`/`awaiting_verdict` (P16), so the window was empty then — that is a measurement about authoring time, not a guarantee about yours.
-> 2. `knowledge/decisions/Done/` — the daemon writes into it as plans close, so the census population **grows between the steps by construction**. That is why Item 5's supersede rule reports a delta rather than asserting a frozen number, and why only a CLASS change halts. Re-run the census in THIS step rather than citing Step 1's.
+> 2. `knowledge/decisions/Done/` — the daemon writes into it as plans close, so the census population **grows between the steps by construction**. That is why **Item 2 case 5's** supersede rule reports a delta rather than asserting a frozen number, and why only a CLASS change halts. ⛔ **Re-run the AFTER half in THIS step rather than citing STEP 1's after-numbers — and only the after half:** the WARN-line BEFORE set is STEP 1's and is read from the dev log, per Item 2's opening block. Re-deriving it here is impossible and attempting it is forbidden there.
 >
 > **Item 4 — re-run `tools/mutation_check.py`** on the committed code and paste the kill map. 6 killed / 0 survived.
 >
