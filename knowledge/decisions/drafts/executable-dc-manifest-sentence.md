@@ -106,7 +106,7 @@ writes: /Users/marklehn/Developer/eluvian-governance/DRAFTING_CYCLE.md, knowledg
 open_forks: threads 72 and 74 next (both target DC §2.7 — Item 1 HALTs if either lands between the steps); thread 68 (a tier floor for reconciliations — this ran at T2); the sentence's dangling `(Rule G holds)` reference, declared; the depositor's infra set names the Air's `lessons-forge/` and not the mini's `forge_lessons/` (thread 89's two-layout debt at the class gate — a rider); a pin taken from `git log -1` without a pathspec names whatever landed last (a lesson candidate for the wrap); the propagation_check numeral-in-string class (thread 96's rider)
 walks: 3
 yields: 1, 0, 0
-validation: cycle_check=BAR_MET, plan_lint=0_FAIL, fold_check=N/A, propagation_check=DIVERGENT:47
+validation: cycle_check=BAR_MET, plan_lint=0_FAIL, fold_check=PASS, propagation_check=DIVERGENT:48
 coherence: 3/3 walks have register rows
 
 
