@@ -65,20 +65,21 @@ The builder reads the file as bytes, refuses CRLF, refuses an already-built inpu
 
 **Walk register:** /Users/marklehn/Developer/eluvian-governance/governance/knowledge/research/walk-register-dc-manifest-sentence-2026-09-02.md
 
-**Walk 0 (context pin, measured):** _pending — entered from the register after the consumer dry-run and the scouts._
+**Walk 0 (context pin, measured):** the doctrine file's sha, lines and bytes; the anchors counted (the sentence's head and tail on line 253, the version line, the History head; at the scout round the example's two whole lines at 281 and 287); every new token 0 and the invariants at their pre-edit counts (`HARD-HOLD` 2 — the builder's own first refusal proved that guard fires); the code facts the sentence states read at their sites (the register's M3: `depositor.py` `:156`, `:166-170`, `:173-178`, `:184-199`, `:266-314`, `:353`, `:362`, `:471-518`; `plan_lint.py` `:552-556`, `:588-589`, `:594-603`, `:632`; `cycle_check.py` `:612-615`); the builder executed scratch-to-scratch at each round — the success line, the refusals (three, then four), the numstat, a byte-identical rebuild, the byte pin fired on a one-byte mutant of a constant; the gate baseline P6 measured on 100026's Done record; the clone-diff against 100026 and the 2.17 reconcile in three passes; the consumer dry-run — the class assigner (`shop-infra`, filing-dependent: thread 66) and the gates' extractor per step (the QA report first, `probes-raw.txt` present); `lint` (n) ×2 found and held for the fold round; the builder's digests `afdc93b59638ea12` (v0) → `e12135909645f27f` (the scout round).
 
-**Direction verdict (after walk 1):** _pending walk 1._
+**Direction verdict (after walk 1): PROCEED — with the walk-0 DIRECTION-candidate severed, not defended.** Tested: the premise (each clause of the sentence against the code as read, by the Planner and by two cold readers; the scope widened to the §3 example's two lines when both readers proved the one-sentence scope would re-create 2.17's self-disagreement), the mechanism (a committed builder whose five anchors, twenty post-conditions and pinned deltas execute), the scope (one §3 block, one History row; no rule changes).
 
 **Walks:**
-- Weak spots:          _pending_
-- Destruction:         _pending_
-- Vulnerabilities:     _pending_
-- Integration-record:  _pending_
-- ACID:                _pending_
+- Weak spots:          w1 3 folded — instruction 1 / record 2 (A4 told the agent to log three refusals where A2 has four; the Why restated the "read by nothing" overclaim the sentence no longer makes; the Depends-on named one cold read where there were two)
+- Destruction:         w1 dry — five edits by the builder, the live file replaced only by a proven scratch output; the ONE recipe discriminated by HEAD-numstat, porcelain and the `ten REQUIRED fields` token (E1's alone — the History row spells it without the noun); the example's new class is a real derivable value where the old one was a guaranteed hold
+- Vulnerabilities:     w1 dry — literal scratch paths; `git -C` never `cd`; every `grep` `-F` with `--`; the builder refuses a live, in-root, in-toplevel, already-built or missing input/output; no hedging keyword in any landed text
+- Integration-record:  w1 1 folded — instruction 0 / record 1 (the Cycle Log block stood unentered after walk 0's measurements and the scout round — entered here from the register)
+- ACID:                w1 dry — A2 dry-run → A3 apply + governance commit → A4 dev-log commit → the worktree merge at the pause → QA's pre-declared gate pause → the Planner's override → close; each death between them lands in one arm (the recipe, RE-ENTRY, or the merge)
+- **Walk 1 total: 4 findings, 4 folded — instruction 1 / record 3; 0 of 4 fold-introduced.**
 
-**Cold panel (SMALL form):** _not yet convened — the meter opens at the scouts' dispatch._
+**Cold panel (SMALL form; meter opened at the scouts' dispatch 21:04; convened at walk 0 — the scouts by §2.0, the seats after walk 1 as the parent's cadence, an EARLY-fired panel that closes only on a FULLY dry walk):** SCOUT-local (lens 4, subagent, 174k tokens, 43 tool uses) — 7 findings, 1 HIGH, 3 MED, 3 LOW; instruction 5 / record 2 · SCOUT-Air (lens 4, the Air's Remote Control session by message, ~95k tokens, ~26 tool calls; P6 unverifiable there) — 8 findings, 1 HIGH, 2 MED, 5 LOW; instruction 5 / record 3 · **the pair:** 11 distinct, intersection 4 — and both HIGHs the SAME finding, found independently: the reconciled sentence's new clause would have contradicted the §3 worked example's `class: governed-tooling` line (a DIRECTION-candidate under §2.0 (c)); severed by WIDENING to the example (its class and validation lines), never by defending the one-sentence premise — recorded in the register; 10 folded, 1 declared (`(Rule G holds)`, a dangling reference carried unchanged); the builder re-committed `95dd9d56` · EXECUTION, CAPSTONE: not yet convened.
 
-**Conformance (§5):** _pending walk 0's run._
+**Conformance (§5):** first run at walk 0 (on v0) and re-run after the scout round and walk 1: `plan_lint` exit 0 / 0 FAIL at a non-claimable `lintmirror-` copy (`is_runnable_plan` → False by execution; removed after) — WARN set (o2)×3 (worktree-relative deposits), (o1) INFO, PIN-CHECK `ambiguous` ×3 (the sha prefixes), and since the gate note an advisory "step 2 mentions tests but declares no test scope" line (earned: the note names `pytest` to say there is none); the two (n) WARNs of v0 gone at the scout round; `cycle_check` ESCALATE:unparseable until walk 1's lines exist; `fold_check` baselined at walk 0 and re-baselined at the scout round (intended: the (n) signals vanished, the pins moved); `propagation_check` exit 1 / 49 divergences at v0, all the numeral-in-string class (`23`/`24`/`17`/`253`/`100026`) plus step literals — restated-WRONG none.
 
 **Closing:** _not closed._
 
