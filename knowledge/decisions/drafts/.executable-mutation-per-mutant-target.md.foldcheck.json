@@ -18,8 +18,7 @@
       "(o2) WARN: Deposits entry `knowledge/qa/evidence/mutation-per-mutant-target-N-N-N/probes-raw.txt` is not project-prefixed or absolute",
       "(o2) WARN: Deposits entry `knowledge/qa/evidence/mutation-per-mutant-target-N-N-N/pytest_full.txt` is not project-prefixed or absolute",
       "(o2) WARN: Deposits entry `knowledge/qa/evidence/mutation-per-mutant-target-N-N-N/qa-receipt.md` is not project-prefixed or absolute",
-      "PIN-CHECK: kind=prefix line=N token=f7037a1359f1\u2026 result=ambiguous",
-      "WARN: Drafting Cycle closing indicates fold as last event, not a dry lens pass (DRAFTING_CYCLE.md \u00a72)"
+      "PIN-CHECK: kind=prefix line=N token=f7037a1359f1\u2026 result=ambiguous"
     ]
   }
 }
