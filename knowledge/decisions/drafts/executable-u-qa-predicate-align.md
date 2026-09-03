@@ -156,7 +156,7 @@ Cells are enumerated as tests 1–8 in STEP 1 Item 3, including the positive con
 > - `knowledge/mutants/u-predicate-plan_lint.json`
 > - `knowledge/dev-logs/u-predicate-align-dev-2026-09-03.md`
 >
-> **Item 1 — re-derive the load-bearing pins (P1, P2, P3, P4, P5, P7, P8, P9, P10) and record measured-vs-expected for each.** ⚠️ **P7, P8 and P9 are deliberately NOT halt conditions on their numbers** — `Done/` grows, so 545/865/75/560/443 are authoring-time values. **Only a delta that changes the CLASS of the result is a HALT:** a false positive attributable to the `qa_steps` arm, or a disappearing WARN line on a step the gate DOES gate as QA.
+> **Item 1 — re-derive the load-bearing pins and record measured-vs-expected for each.** Re-derive **P1, P2, P3, P4, P5, P7, P9, P10 and P19 in full**, and **P8's BEFORE half only** — P8 is a before/after delta and its after half is unmeasurable until Item 4 has landed, so its second half belongs to Item 6. ⚠️ **P7, P8 and P9 are deliberately NOT halt conditions on their numbers** — `Done/` grows, so 545/865/75/560/443 are authoring-time values. **Only a delta that changes the CLASS of the result is a HALT:** a false positive attributable to the `qa_steps` arm, or a disappearing WARN line on a step the gate DOES gate as QA.
 >
 > ⚠️ **The worktree has no `.venv`** — it is gitignored, so a relative `.venv/bin/python` is dead on arrival from the dispatch cwd. Bind the canonical interpreter by ABSOLUTE path first:
 >
@@ -164,7 +164,12 @@ Cells are enumerated as tests 1–8 in STEP 1 Item 3, including the positive con
 > BPY=/Users/marklehn/Developer/bellows/.venv/bin/python
 > ```
 >
-> Run the census with BOTH predicates over the same step population, importing `gates._gate_is_qa_step` rather than re-implementing it, and emit the two WARN-line sets for a set difference. Record: plan count, headings raw and header-only, disagreements split into false positives and blind spots, WARN lines before and after, and the arm attribution of every false positive.
+> **The census has TWO halves and they use DIFFERENT instruments. Keep them apart.**
+>
+> 1. **The PREDICATE census** — a scratch script that, for every `Done/*.md`, evaluates both QA-step tests over the same step population and reports: plan count; `## STEP` headings raw and header-only; disagreements split into false positives and blind spots; the arm attribution of every false positive; distinct-plan counts beside the step counts. ⚠️ **Import `gates._gate_is_qa_step` and `plan_lint._parse_qa_steps` — never re-implement either.** This half answers P7, P9 and P10.
+> 2. ⛔ **The WARN-LINE census — run the REAL `plan_lint.py` as a subprocess over every `Done/*.md` and collect its `(u) WARN:` lines.** Do **not** reconstruct (u)'s two arms in a script: a hand-rolled emitter is exactly the proxy this plan's whole subject is about, and a before/after diff between two different instruments proves nothing. Save the BEFORE set to the dev log verbatim, keyed by `(plan, step, arm)`. This half answers P8's before number, and Item 6 re-runs the identical command after the edit so the diff is instrument-to-itself.
+>
+> ⚠️ **Order is fixed: the WARN-line BEFORE census must run before Item 4 touches the file.** After the edit the pre-edit behaviour is unrecoverable without a checkout, and a plan that recovers it by checking out its own target mid-step has a worse problem than a missing number.
 >
 > ⚠️ **Then run the P10 probe and report which side parses the bracketed form:**
 >
@@ -231,7 +236,10 @@ Cells are enumerated as tests 1–8 in STEP 1 Item 3, including the positive con
 >
 > Run `tools/mutation_check.py` against it. ⚠️ **A survivor is a missing test, stated as Critical, never a note.**
 >
-> **Item 6 — re-run the corpus census on the post-edit code** and record the after-table beside Item 1's before-table, plus the two set differences (lines lost, lines gained) in full. ⚠️ **Assert the byte-identity property:** for every step where both predicates agree, the emitted line text is unchanged.
+> **Item 6 — re-run BOTH census halves on the post-edit code, with the SAME commands Item 1 used**, and record the after-table beside the before-table. This completes P8. Emit, in full and verbatim in the dev log:
+> - the set of `(u) WARN:` lines **LOST** (expected ≈128) and the set **GAINED** (expected ≈11), each keyed by `(plan, step, arm)`;
+> - ⛔ **the byte-identity assertion:** the intersection of the before and after sets must be **byte-identical line for line**. Compute it as a set operation over the collected lines, not by eye. **A non-empty symmetric difference on any step where the two predicates AGREE means an arm changed and this plan's central MUST-PRESERVE is broken — HALT.**
+> - the reconciliation between the two halves: every gained line must sit on one of the predicate census's blind-spot steps, and every lost line on one of its false-positive steps. **A line in neither set is unexplained — HALT.**
 >
 > **Item 7 — commit** (message tagged with the plan id) and record `numstat` — exactly 4 files.
 >
