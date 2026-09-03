@@ -14,6 +14,7 @@
       "(f) WARN: Cycle Manifest stanza missing or empty field: yields",
       "(o2) WARN: Deposits entry `knowledge/dev-logs/u-predicate-align-dev-N-N-N.md` is not project-prefixed or absolute",
       "(o2) WARN: Deposits entry `knowledge/mutants/u-predicate-plan_lint.json` is not project-prefixed or absolute",
+      "(o2) WARN: Deposits entry `knowledge/qa/evidence/u-predicate-align-N-N-N/census.py` is not project-prefixed or absolute",
       "(o2) WARN: Deposits entry `knowledge/qa/evidence/u-predicate-align-N-N-N/probes-raw.txt` is not project-prefixed or absolute",
       "(o2) WARN: Deposits entry `knowledge/qa/evidence/u-predicate-align-N-N-N/pytest_full.txt` is not project-prefixed or absolute",
       "(o2) WARN: Deposits entry `knowledge/qa/evidence/u-predicate-align-N-N-N/qa-receipt.md` is not project-prefixed or absolute",

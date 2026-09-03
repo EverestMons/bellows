@@ -70,7 +70,11 @@ Measured 2026-09-03 against all 545 `Done/*.md`, running BOTH predicates over th
 
 ## The records that cite a (u) WARN — checked, not assumed stale
 
-⚠️ **Doctrine's rule, applied: any plan whose record cites a (u) WARN that then disappears is CHECKED.** Four files in `bellows/` contain the literal WARN prefix; each was resolved to a plan and step and re-run under both predicates.
+⚠️ **Doctrine's rule, applied: any plan whose record cites a (u) WARN that then disappears is CHECKED.**
+
+⛔ **The enumeration was WRONG on its first pass and the way it was wrong is the point.** A first probe ran `grep -rlF '(u) WARN' --include='*.md'` and reported **four** files. The literal appears in **twelve** (excluding `.pyc`, `logs/` and `.git/`): the four `.md` records, this draft and its `fold_check` baseline, the shipped source and its test module, a mutants manifest, and — the ones the `.md` filter hid — **two `.txt` evidence files**. ⚠️ **This is the parent's cold-scout finding S1-6 re-tripped verbatim** (an occurrence claim true only under an unstated file-type restriction), in a plan whose clone-diff line claimed that trap was carried. Corrected by enumerating with no `--include` filter. *(Cold scout finding 9, MED, author-verified.)*
+
+The seven RECORD-class occurrences (excluding the source, its tests, the manifest, this draft and its baseline):
 
 | record | cited case | under the gate's predicate |
 |---|---|---|
@@ -79,8 +83,10 @@ Measured 2026-09-03 against all 545 `Done/*.md`, running BOTH predicates over th
 | `…:109` | three drafts recorded as producing NO (u) WARN | unchanged — a silence cannot disappear |
 | `knowledge/qa/evidence/qa-predeclaration-2026-09-03/qa-receipt.md:97` | `executable-100028` step 1, both arms | ⛔ **DISAPPEARS — and that disappearance is this plan's whole point.** 100028's MUST-PRESERVE pre-declares those two WARNs as *live specimens of the divergence*, and its step 1 is a DEV step nothing will gate as QA. The one record whose citation goes silent is the record that filed the thread. |
 | `knowledge/decisions/drafts/executable-checker-defects.md:134` / `knowledge/decisions/halted-executable-100022.md:134` | 100007 step 3 again, plus five drafts with no WARN | **SURVIVES** (same case as row 2) |
+| ⚠️ `knowledge/qa/evidence/qa-predeclaration-2026-09-03/probes-raw.txt:189-190` | `executable-100028` step 1, both arms — **the raw evidence behind the receipt row above** | ⛔ **DISAPPEARS — a SECOND record losing the same citation**, and the one the `.md`-only probe hid. Same disposition: it is the pre-declared specimen of the defect this plan closes. |
+| `knowledge/qa/evidence/checker-defects-2026-09-02/probes-raw.txt:378, 381-382` | 100007 step 3 (survives), plus a **synthetic** `qa-report.md` step-2 fixture that resolves to no real plan | pasted checker output from a shipped evidence file. The synthetic case is not a corpus citation and nothing about it can go stale; named here rather than left out of the count. |
 
-**Zero shipped records lose a citation they intended to keep.**
+**Zero shipped records lose a citation they intended to keep.** Two records lose the SAME citation — the receipt line and the raw probe output behind it — and both name it as a pre-declared specimen of this defect.
 
 ## The state space (enumerated from system artifacts, not the author's model)
 
@@ -95,7 +101,7 @@ Cells are enumerated as tests 1–8 in STEP 1 Item 3, including the positive con
 
 ## What this plan does NOT do
 
-- **No change to either of (u)'s two ARMS.** The Deposits-order arm and the raw-evidence arm are untouched; only the gate in front of them moves. Prove it: on any step where both predicates agree, the emitted lines must be byte-identical.
+- **No change to either of (u)'s two ARMS.** The Deposits-order arm and the raw-evidence arm are untouched; only the gate in front of them moves. ⚠️ **The byte-identity check on agreeing steps is a GUARD, not a proof** — under a correct edit it cannot fail, because the arm bodies are not in the edit set. What it catches is an agent who tidies the arms while inside the block, which is a real and cheap failure mode and the only one it is claimed to catch. *(Cold scout finding 14, LOW, accepted.)*
 - **No change to `gates.py`.** ⚠️ The bracket-parse gap named above is the gate's and is owed a thread; fixing a gate is a different plan at a different tier, and the gates' own tests are not this plan's scope.
 - **No change to check (v).** (v) already does what this plan makes (u) do. Its block is read as the idiom to copy and is not edited.
 - ⚠️ **No change to the `qa_steps` ↔ step-label cross-check above (u).** That block deliberately compares the header arm against the heading arm and warns when they disagree — the divergence is its SUBJECT. Aligning it to the gate would delete the check. It keeps `_parse_qa_steps`, which is why that helper is not removed.
@@ -122,12 +128,12 @@ Cells are enumerated as tests 1–8 in STEP 1 Item 3, including the positive con
 | P10 | ⚠️ the inverted claim in the thread record | `gates._gate_is_qa_step` **cannot** parse the bracketed `qa_steps` string form (logs `malformed`, falls back to keyword); `plan_lint._parse_qa_steps` **can** (it strips `[]`). Thread 102 states the reverse. Live divergence contributed by the form: **0** — all 3 `Done/` plans carrying it label step 2 `— QA` | the probe in Step 1, Item 1 |
 | P11 | WARN idiom holds | (u) emits with `print`, never `results.append`; **19** `results.append` calls in the file — 9 FAIL, 7 PASS, and **3 in `_extract_hex_tokens`'s own local list**, a different variable. No advisory check touches the exit code | `/usr/bin/grep -n -F 'results.append'` |
 | P12 | ⛔ the WARN cannot move a verdict | ⚠️ **All three consumers of `plan_lint`'s output read the exit code or stdout, never stderr — read at each consumer, not inferred from one.** (i) `tools/run_check.py:45-48` `judge_lint` branches on the **exit code alone**; (ii) `depositor.py:489-507` reads `lr.returncode` and filters `lr.stdout` for `FAIL:` lines; (iii) `scripts/fold_check.py`'s `is_signal` admits only lines starting `WARN`/`ERROR`/`PIN-CHECK`/`FAIL` or containing `WARN:` | read all three sites |
-| P13 | suite baseline | canonical checkout: **`1 failed, 1850 passed`** in 58.67s (1851 collected). ⚠️ **The one failure is a CWD ARTIFACT, not a regression:** `test_gates_cross_machine_paths.py::TestCrossMachineReRoot::test_relative_path_unchanged` resolves the relative name `config.json`, and the canonical checkout has a real one at its root. **Positive control run:** the same file from a config-free cwd → **`6 passed`**. From a worktree (no `config.json`, gitignored) the expected baseline is **1851 passed** | the run in Step 2, Item 1 |
+| P13 | suite baseline | canonical checkout: **`1 failed, 1850 passed`** in 58.67s (1851 collected). ⚠️ **The one failure is a CWD ARTIFACT, not a regression:** `test_gates_cross_machine_paths.py::TestCrossMachineReRoot::test_relative_path_unchanged` resolves the relative name `config.json`, and the canonical checkout has a real one at its root. **Positive control run:** the same file from a config-free cwd → **`6 passed`**. From a worktree (no `config.json`, gitignored) the expected baseline is **1851 passed**. ⚠️ **One unexplained delta, recorded rather than smoothed:** the clone origin measured `1814 passed, 1 skipped` on 2026-09-02; this run reports **no skip at all**. The skip's disappearance is out of this plan's scope and is not investigated here — but derive your count from a RUN, never from either figure | the run in Step 2, Item 1 |
 | P14 | existing (u) tests | three, at `tests/test_plan_lint.py:3285-3380` (`test_u_receipt_first_no_warn`, `test_u_report_first_warns`, `test_u_no_txt_warns`). ⚠️ **All three declare BOTH `qa_steps: 2` AND a `## STEP 2 — QA` heading, so all three pass under EITHER predicate — not one of them discriminates.** That is why this plan adds tests 2 and 3 | read the three fixtures |
 | P15 | class derivation | `depositor._assign_class` on this write set returns **`shop-infra`** from the bellows root (and `app-feature` from tuyere — thread 66 reproduced live). `shop-infra` is the one class that HOLDS for human release | dry-run against the declared write set |
 | P16 | no in-flight collision | `lifecycle.db` returns **zero** plans in `claimed`/`in_progress`/`awaiting_verdict` | `sqlite3` query |
 | P17 | ⚠️ **the gate run, not just the commands** | `gates.check(parsed, plan_text, 2, <scratch root>)` against a SIMULATED step 2 with deposit-shaped scratch copies → `passed=True`, `is_qa_step=True`, 0 failures; `gates.check(…, 1, …)` → `is_qa_step=False`. **Negative control fires:** deleting the summary line from the scratch evidence file yields the `qa_test_result` failure verbatim | the simulation in Step 1, Item 2 |
-| P18 | ⛔ **`_gate_is_qa_step` IS the authority, named at its dispatch site** | `gates.py:230` computes `is_qa_step` **once** and passes that single value to all three blocking QA gates — `_gate_rule_20_self_check` (`:582`, which reads `md_paths[0]`, exactly (u)'s first arm), `_gate_rule_22_verification`, and `_gate_qa_test_result` (whose branch 1 is (u)'s second arm). **There is no second QA-step determination anywhere in `gates.check`.** So aligning (u) to this function aligns it to the only thing that decides, for both arms | read `gates.py:215-236, 582-607` |
+| P18 | ⛔ **`_gate_is_qa_step` IS the authority, named at its dispatch site** | `gates.py:230` computes `is_qa_step` **once** and passes that single value to all three blocking QA gates — `_gate_rule_20_self_check` (`:582`, which reads `md_paths[0]`, exactly (u)'s first arm), `_gate_rule_22_verification`, and `_gate_qa_test_result` (whose branch 1 is (u)'s second arm). **There is no second QA-step determination anywhere in `gates.check` — nor anywhere in the engine.** Widened at the scout round beyond `gates.check`: the only other consumers are `bellows.py` (16 sites, all reading `gate_result["is_qa_step"]` or calling `gates.qa_mandate_suffix`, which itself calls `_gate_is_qa_step` at `:885`) and `verdict.py:132` (`gate_result.get("is_qa_step")`). ⚠️ **And the HEADER (u) hands the gate is byte-identical to the one `gates.check` builds** — `plan_lint.py:226` parses it with `gates._parse_plan_header`, the same function. So aligning (u) to this function aligns it to the only thing that decides, for both arms | read `gates.py:215-236, 582-607, 885`; `bellows.py`; `verdict.py:132`; `plan_lint.py:226` |
 | P19 | ⚠️ **the fix opens a new STDERR channel — measured, not reasoned** | `_gate_is_qa_step` calls `logger.warning("qa_steps field malformed: %r — falling back to keyword detection", …)` when it cannot `int()` the header value. After the fix (u) triggers that once per step heading on any such plan: **7** `Done/` plans qualify — 3 with the bracketed form, 4 with `none`. **Measured on a constructed fixture:** the line reaches **stderr**, unprefixed, twice for a two-step plan. It moves nothing (P12's three consumers) and is arguably informative — it tells the author the gate cannot read their header | the probe in Step 1, Item 1 |
 
 ## MUST-PRESERVE
@@ -174,6 +180,7 @@ Cells are enumerated as tests 1–8 in STEP 1 Item 3, including the positive con
 > - `tests/test_plan_lint.py`
 > - `knowledge/mutants/u-predicate-plan_lint.json`
 > - `knowledge/dev-logs/u-predicate-align-dev-2026-09-03.md`
+> - `knowledge/qa/evidence/u-predicate-align-2026-09-03/census.py`
 >
 > **Item 1 — re-derive the load-bearing pins and record measured-vs-expected for each.** Re-derive **P1, P2, P3, P4, P5, P7, P9, P10 and P19 in full**, and **P8's BEFORE half only** — P8 is a before/after delta and its after half is unmeasurable until Item 4 has landed, so its second half belongs to Item 6. ⚠️ **P7, P8 and P9 are deliberately NOT halt conditions on their numbers** — `Done/` grows, so 545/861/75/559/442 are authoring-time values. **Only a delta that changes the CLASS of the result is a HALT:** a false positive attributable to the `qa_steps` arm, or a disappearing WARN line on a step the gate DOES gate as QA.
 >
@@ -182,6 +189,10 @@ Cells are enumerated as tests 1–8 in STEP 1 Item 3, including the positive con
 > ```
 > BPY=/Users/marklehn/Developer/bellows/.venv/bin/python
 > ```
+>
+> ⛔ **THE CENSUS IS A COMMITTED SCRIPT, NOT A THROWAWAY.** Write it at **`knowledge/qa/evidence/u-predicate-align-2026-09-03/census.py`** — the house convention (`knowledge/qa/evidence/pt-dc-census-2026-09-02/census.py`) — and commit it in Item 7. **It is in this step's Scope and Deposits and in STEP 2's Scope.** Reason: STEP 2 must re-run it in a FRESH worktree, and a script that lives only in a scratch directory does not survive the verdict gate. A plan that tells a later step to "re-run the census" without saying where the census lives has told it to re-write one. *(Cold scout finding 6, MED, author-verified: the script was in neither Scope nor Deposits, and Item 7's numstat forbade committing it.)*
+>
+> ⚠️ **The script's PREDICATE half necessarily carries a copy of the OLD heuristic** — after Item 4 that expression no longer exists in the code, so the comparison arm has to be a model. That is admissible for the predicate half only, and the copy is taken VERBATIM from the pre-edit blob (`git show <pre-DEV-sha>:scripts/plan_lint.py`), never retyped. ⛔ **The WARN-LINE half never models anything** — it shells out to the shipped `plan_lint.py`, which is why the two halves are separate.
 >
 > **The census has TWO halves and they use DIFFERENT instruments. Keep them apart.**
 >
@@ -261,8 +272,8 @@ Cells are enumerated as tests 1–8 in STEP 1 Item 3, including the positive con
 > - Extend (u)'s header comment to say WHY the gate's predicate is used, naming the measured divergence and the two directions, so a tidier reading only this block cannot undo it.
 > - ⚠️ **Nothing else in the block moves.** Diff the block and confirm the two arms' bodies are byte-identical.
 >
-> **Item 5 — write the mutants manifest** `knowledge/mutants/u-predicate-plan_lint.json`, in the shape of `knowledge/mutants/qa-predeclaration-plan_lint.json` (`target`, then `mutants[]` of `name` / `why` / `anchor` / `replacement` / `expect_fail`). At least six:
-> - **restore the old local heuristic verbatim** → killed by test 2 AND test 3. This is the tidier mutant; it is the one that matters.
+> **Item 5 — write the mutants manifest** `knowledge/mutants/u-predicate-plan_lint.json`, in the shape of `knowledge/mutants/qa-predeclaration-plan_lint.json` (`target`, then `mutants[]` of `name` / `why` / `anchor` / `replacement` / `expect_fail`). ⛔ **EXACTLY these six — not "at least".** The post-conditions in this step and in STEP 2 Item 4 both assert `6 killed / 0 survived`, so a seventh mutant fails both of them. If you find a seventh worth writing, say so and update both post-conditions in the same edit; do not add it silently. *(Cold scout finding 8, MED, author-verified: the parent shipped 8 mutants under the same "at least" wording.)*
+> - ⛔ **restore the old local heuristic — as a SELF-CONTAINED single-line expression, not the deleted binding.** The replacement is `sn in _parse_qa_steps(qa_steps_raw) or "Rule 20" in step_text_u`, which is the old semantics using names that still exist at that line (`qa_steps_raw` is bound in the function body at `:344`; `step_text_u` inside the loop). ⛔ **Do NOT write `sn in qa_steps_set_u`** — Item 4 deleted that binding, so the mutant would raise `NameError` and be scored KILLED by a crash in every test rather than discriminated by tests 2 and 3. A mutant killed by a crash proves nothing about the tests. ⚠️ **`mutation_check` does one `pristine.replace(anchor, replacement, 1)` on a count-1 anchor** (`tools/mutation_check.py:224-243`), so the mutant must be expressible as ONE line's substitution. `expect_fail` is a SINGLE pytest selector: name **test 2**; test 3 also fails and that is stated here, not in the manifest. This is the tidier mutant; it is the one that matters. *(Cold scout finding 7, MED, author-verified.)*
 > - **keep only the `qa_steps` membership arm** (`sn in _parse_qa_steps(qa_steps_raw)`) → the blind spots return; killed by test 3.
 > - **keep only the keyword arm** → killed by test 4.
 > - **drop the `plan_header=header` kwarg** so the gate always falls back to keyword detection → killed by test 4.
@@ -279,11 +290,12 @@ Cells are enumerated as tests 1–8 in STEP 1 Item 3, including the positive con
 > - the reconciliation between the two halves: every gained line must sit on one of the predicate census's blind-spot steps, and every lost line on one of its false-positive steps. **A line in neither set is unexplained — HALT.**
 > - ⚠️ **the arithmetic, stated so it can be checked:** `before − after = LOST − GAINED`. At authoring, `559 − 442 = 117 = 128 − 11`. Report all five numbers and the identity; a set that does not balance means lines were dropped by the collection, not by the edit.
 >
-> **Item 7 — commit** (message tagged with the plan id) and record `numstat` — exactly 4 files.
+> **Item 7 — commit** (message tagged with the plan id) and record `numstat` — **exactly 5 files**: the target, the tests, the mutants manifest, the dev log, and the census script.
 >
 > **Deposits:**
 > - `knowledge/dev-logs/u-predicate-align-dev-2026-09-03.md`
 > - `knowledge/mutants/u-predicate-plan_lint.json`
+> - `knowledge/qa/evidence/u-predicate-align-2026-09-03/census.py`
 >
 > ⚠️ **Gate note:** this step is not a QA step by the gate's predicate; the raw-evidence arm does not apply to it. Its two (u) WARNs are pre-declared in MUST-PRESERVE and are the plan's own specimen of the defect.
 >
@@ -295,6 +307,7 @@ Cells are enumerated as tests 1–8 in STEP 1 Item 3, including the positive con
 > - `knowledge/qa/evidence/u-predicate-align-2026-09-03/qa-receipt.md`
 > - `knowledge/qa/evidence/u-predicate-align-2026-09-03/probes-raw.txt`
 > - `knowledge/qa/evidence/u-predicate-align-2026-09-03/pytest_full.txt`
+> - `knowledge/qa/evidence/u-predicate-align-2026-09-03/census.py` (⚠️ **read and RUN, never rewritten** — STEP 1 committed it; this step is not licensed to edit it, and Item 6's numstat of 3 excludes it)
 >
 > **Item 1 — full suite from a WORKTREE**, never the canonical checkout:
 >
