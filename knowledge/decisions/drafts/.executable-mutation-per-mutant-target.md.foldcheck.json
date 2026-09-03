@@ -1,0 +1,25 @@
+{
+  "plan_lint": {
+    "exit": 0,
+    "signals": [
+      "(f) WARN: Cycle Manifest stanza missing or empty field: class",
+      "(f) WARN: Cycle Manifest stanza missing or empty field: coherence",
+      "(f) WARN: Cycle Manifest stanza missing or empty field: open_forks",
+      "(f) WARN: Cycle Manifest stanza missing or empty field: reads",
+      "(f) WARN: Cycle Manifest stanza missing or empty field: target",
+      "(f) WARN: Cycle Manifest stanza missing or empty field: tier",
+      "(f) WARN: Cycle Manifest stanza missing or empty field: validation",
+      "(f) WARN: Cycle Manifest stanza missing or empty field: walks",
+      "(f) WARN: Cycle Manifest stanza missing or empty field: writes",
+      "(f) WARN: Cycle Manifest stanza missing or empty field: yields",
+      "(o1) WARN: missing path `knowledge/mutants/register-enforcement.json`",
+      "(o2) WARN: Deposits entry `knowledge/dev-logs/mutation-per-mutant-target-dev-N-N-N.md` is not project-prefixed or absolute",
+      "(o2) WARN: Deposits entry `knowledge/mutants/mutation_check.json` is not project-prefixed or absolute",
+      "(o2) WARN: Deposits entry `knowledge/qa/evidence/mutation-per-mutant-target-N-N-N/probes-raw.txt` is not project-prefixed or absolute",
+      "(o2) WARN: Deposits entry `knowledge/qa/evidence/mutation-per-mutant-target-N-N-N/pytest_full.txt` is not project-prefixed or absolute",
+      "(o2) WARN: Deposits entry `knowledge/qa/evidence/mutation-per-mutant-target-N-N-N/qa-receipt.md` is not project-prefixed or absolute",
+      "PIN-CHECK: kind=prefix line=N token=f7037a1359f1\u2026 result=ambiguous",
+      "WARN: Drafting Cycle closing indicates fold as last event, not a dry lens pass (DRAFTING_CYCLE.md \u00a72)"
+    ]
+  }
+}

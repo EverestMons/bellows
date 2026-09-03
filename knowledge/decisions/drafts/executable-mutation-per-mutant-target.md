@@ -36,12 +36,12 @@ Plan 100029's agent wrote those keys in good faith — its dev log states the in
 |---|---|---|---|
 | P1 | target | `tools/mutation_check.py` **261 lines**, sha256 `f7037a1359f1` | `shasum -a 256` |
 | P2 | the defect | `manifest.get("target")` read once at `:100`; **zero** reads of a mutant's own `target` | `/usr/bin/grep -c` for per-mutant target reads → 0 |
-| P3 | the live specimen | `knowledge/mutants/register-enforcement.json` carries `target` on M1 (`scripts/walk_register_lint.py`) and M2 (`tools/run_check.py`); the run reports **3 killed / 0 survived / 2 error** and **exits 2** | run it; read the manifest |
+| P3 | ⚠️ the specimen is HISTORICAL, not live | `knowledge/mutants/register-enforcement.json` carried `target` on M1 (`scripts/walk_register_lint.py`) and M2 (`tools/run_check.py`) and reported **3 killed / 0 survived / 2 error**, exit 2. **Plan 100030 renamed that file and stripped both keys while this plan was being drafted** — measured: **0** manifests in the tree carry a per-mutant `target` today, down from 1 at walk 0. The artifact is extractable at `305506c` (also `5956d26`, `a048ea7`) and must be reconstructed as a TEST FIXTURE, never pinned to a live path | `git show 305506c:knowledge/mutants/register-enforcement.json` |
 | P4 | ⚠️ what already works | the run **exits 2** on any ERROR and names each offending mutant. It is not silent — only uninformative about the file | `mutation_check … >/dev/null 2>&1; echo $?` → 2 |
 | P5 | self-application is established | `knowledge/mutants/mutation_check.json` exists (exec-577) — the runner already mutates itself, so this plan extends that manifest rather than inventing the practice | `ls knowledge/mutants/` |
 | P6 | suite | `tests/test_mutation_check.py` = **11 tests** | `pytest --collect-only` |
-| P7 | blast radius | manifests already carrying per-mutant `target`: **1** (the specimen). Manifest families split across files: **2** (`checker-defects-*`, `propagation-check-*`) — both stay valid | enumerate `knowledge/mutants/*.json` |
-| P8 | in-flight | ⚠️ plan **100030** is running and writes `knowledge/mutants/register-enforcement-*.json`. This plan writes `knowledge/mutants/mutation_check.json` only — **write sets are disjoint** | `sqlite3` + compare the declared write sets |
+| P7 | blast radius | manifests carrying a per-mutant `target`: **0** (was 1 before 100030's split). Manifest families split across files: **3** (`checker-defects-*`, `propagation-check-*`, `register-enforcement-*`) — all stay valid | enumerate `knowledge/mutants/*.json` |
+| P8 | ⛔ the collision I cleared with the WRONG intersection | at walk 0 I checked **writes ∩ writes** against in-flight 100030 and declared it safe. The exposure was **reads ∩ writes**: this plan READ `register-enforcement.json` as its specimen, and 100030 WROTE (renamed) it. The depositor checks both — `writes∩writes` **or** `reads∩writes` — and I used half its vocabulary. 100030 has since closed; the lesson is that a pin on a live artifact is a READ, and an in-flight sibling's write set must be checked against a plan's reads as well as its writes | compare both intersections, not one |
 
 ## MUST-PRESERVE
 
@@ -55,7 +55,18 @@ Plan 100029's agent wrote those keys in good faith — its dev log states the in
 
 ## Drafting Cycle
 
-*(the walks record here)*
+**Tier:** T1 — T-3 fires (the runner runs on every machine that deposits). T-8 not fired: clone by kind of exec-579. T-6 not claimed: a conformance instrument, not a step gate.
+**Walk register:** `/Users/marklehn/Developer/eluvian-governance/governance/knowledge/research/walk-register-mutation-per-mutant-target-2026-09-03.md`
+**Walks:** 2 (walks 0, 1, 2 complete).
+- Weak spots:          w1 1 folded — instruction 0 / record 1; w2 dry.
+- Destruction:         w1 1 folded — instruction 1 / record 0; w2 dry.
+- Vulnerabilities:     w1 dry; w2 dry.
+- Integration-record:  w1 dry; w2 dry.
+- ACID:                w1 dry; w2 2 folded — instruction 2 / record 0.
+**Walk 0 — context pin:** seven measurements. The load-bearing one: `main()` reads the manifest's `target` once at `:100` and a mutant's own **zero** times — the key is accepted by the format and consumed by nothing. ⚠️ Also measured, correcting my own first framing: the tool is NOT silent — it names each offending mutant and exits 2.
+**⚠️ Walk 2's two findings were caused EXTERNALLY, by a sibling plan closing underneath this one.** 100030's manifest split destroyed this plan's specimen mid-draft, and my walk-0 collision check had cleared it by comparing `writes ∩ writes` when the exposure was `reads ∩ writes` — half the vocabulary the depositor itself defines.
+**Direction verdict — PROCEED.** Clone origin stands; the mechanism is narrow; the premise re-measured, including the correction that the tool already refuses loudly.
+**Closing:** NOT CLOSED at walk 2 — two instruction-class findings. Phrased so it cannot match a closure claim until earned.
 
 ## Cycle Manifest
 
@@ -69,7 +80,7 @@ Plan 100029's agent wrote those keys in good faith — its dev log states the in
 > - `knowledge/mutants/mutation_check.json`
 > - `knowledge/dev-logs/mutation-per-mutant-target-dev-2026-09-03.md`
 >
-> **Item 1 — re-derive P1–P7 and HALT on mismatch.** P3 is the plan's justification: run the specimen manifest and show `3 killed / 0 survived / 2 error`, **exit 2**, with M1 and M2 named. ⛔ If it now reports 5 killed, the defect is gone — HALT and request a verdict.
+> **Item 1 — re-derive P1–P8 and HALT on mismatch.** ⚠️ **P3's specimen is no longer in the tree** — extract it and build a FIXTURE: `git show 305506c:knowledge/mutants/register-enforcement.json > "$TMPDIR/specimen.json"`, point its `target` and per-mutant `target`s at fixture files you create in scratch, and run it. Expected: the two per-mutant-targeted mutants ERROR with `anchor matched 0 times`, exit 2. ⛔ If they are scored normally instead, the defect is already fixed — HALT and request a verdict.
 >
 > ⚠️ **Then run the GATE, not just the commands** — `gates.check` on a simulated step 2 with deposit-shaped scratch copies, the receipt dict as `{"receipt_status":"Complete","ceo_flags":[],"is_error":False,"permission_denials":[],"result_text":"### Files Deposited\n- <the three step-2 paths>\n"}`, expecting `passed=True`, `is_qa_step=True`, 0 failures; **then strip the summary line and confirm `qa_test_result` fails.** ⛔ An inert control means the simulation proves nothing — HALT.
 >
