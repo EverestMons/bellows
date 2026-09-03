@@ -50,6 +50,15 @@ Measured 2026-09-03 against all 545 `Done/*.md`, running BOTH predicates over th
 
 ⚠️ **The 128 and the 11 are line counts over two arms per step; the 67 and the 8 are step counts. They are different units and are not expected to match** — a step can emit zero, one or two lines. The reconciliation: the 8 blind-spot steps emit 11 lines between them; the 67 false-positive steps emit 128.
 
+**The fire RATIO, with its denominator** (Rule 104 — a detector's fire count is meaningless without what it evaluated and what it skipped; measured over the 872 raw headings):
+
+| | evaluated | fired | skipped | rate |
+|---|---|---|---|---|
+| (u) today | 372 | 332 | 500 | 89% |
+| (u) after the fix | 312 | 272 | 560 | 87% |
+
+⚠️ **The rate barely moves and that is the point.** The change is not a re-tuning of how loudly (u) speaks on the steps it looks at — it is a change to WHICH steps it looks at. A plan that reported only the fire count would show 332 → 272 and read as a check being quietened; the denominator shows that 60 steps left the candidate set and the behaviour on the survivors is unchanged.
+
 ## The records that cite a (u) WARN — checked, not assumed stale
 
 ⚠️ **Doctrine's rule, applied: any plan whose record cites a (u) WARN that then disappears is CHECKED.** Four files in `bellows/` contain the literal WARN prefix; each was resolved to a plan and step and re-run under both predicates.
@@ -125,7 +134,7 @@ Cells are enumerated as tests 1–8 in STEP 1 Item 3, including the positive con
 - ⚠️ **Worktree dispatch; every claim cites file:line; absence claims carry positive controls; EVERY DATE IS A FIXED LITERAL.**
 - ⚠️ **No date-guard.** `executable-100006` carried a one-day dispatch window and died on it. Nothing here may key on the run date.
 - ⚠️ **Second-interpreter compatibility.** `plan_lint` runs on every machine that deposits, and thread 84 is open on the Air's bellows venv. Write to the older dialect: no `match`, no runtime-evaluated PEP-604 unions, no 3.10+ stdlib. ⚠️ **A CARRIED pin, not one measured this cycle** — the Air was not probed here. The change is a single call expression, so the dialect costs nothing.
-- ⚠️ **This plan's own STEP 1 trips BOTH of (u)'s arms TODAY, and is expected to — verified by RUNNING the lint, not by reading this sentence.** Step 1 Item 3's test-2 fixture spells the banner token that (u)'s keyword arm matches, while step 1 is not a QA step by the gate's predicate and nothing will ever read its deposits as a QA report. It is a live specimen of the very defect — **pre-declared here rather than avoided by rewording**, because a check silenced by prose the state has not earned is the defect this shop measures. ⚠️ **After this plan ships, that WARN pair is exactly what stops firing** — which makes this plan's own lint output a before/after demonstration, and Step 2 Item 2 case 5 makes it show that. ⚠️ **The two lines are therefore an INTENDED part of this plan's `fold_check` baseline, not drift.**
+- ⚠️ **This plan's own STEP 1 trips BOTH of (u)'s arms TODAY, and is expected to — verified by RUNNING the lint, not by reading this sentence.** Step 1 Item 3's test-2 fixture spells the banner token that (u)'s keyword arm matches, while step 1 is not a QA step by the gate's predicate and nothing will ever read its deposits as a QA report. It is a live specimen of the very defect — **pre-declared here rather than avoided by rewording**, because a check silenced by prose the state has not earned is the defect this shop measures. ⚠️ **After this plan ships, that WARN pair is exactly what stops firing** — which makes this plan's own lint output a before/after demonstration, and Step 2 Item 2 case 6 makes it show that. ⚠️ **The two lines are therefore an INTENDED part of this plan's `fold_check` baseline, not drift.**
 
 ## Drafting Cycle
 
