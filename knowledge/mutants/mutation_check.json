@@ -39,10 +39,10 @@
         },
         {
             "name": "revert-pristine-cache-to-single-read",
-            "why": "SAFETY-CRITICAL: pristine content must be cached per target path. A single pre-loop read causes a mutant targeting file B to write file A's content into file B, silently corrupting the sandbox.",
-            "anchor": "        # Per-target pristine cache. Populated lazily on first use of each\n        # target path; prevents a mutant targeting file B from receiving\n        # file A's contents as its pristine baseline.\n        pristines = {}",
-            "replacement": "        sandbox_target_once = os.path.join(sandbox, target)\n        with open(sandbox_target_once, \"r\") as _f:\n            _pristine_once = _f.read()\n        pristines = {target: _pristine_once}",
-            "expect_fail": "tests/test_mutation_check.py::test_two_mutants_different_targets_no_cross_contamination"
+            "why": "SAFETY-CRITICAL: the cache guard prevents reloading pristine content from an already-mutated sandbox file. Removing it causes the second mutant on the same target to load corrupted content as its baseline, scoring incorrectly.",
+            "anchor": "            if mutant_target not in pristines:",
+            "replacement": "            if True:",
+            "expect_fail": "tests/test_mutation_check.py::test_two_mutants_same_target_pristine_cache_correct"
         },
         {
             "name": "revert-live-sha-guard-to-top-level-only",

@@ -524,7 +524,7 @@ def test_anchor_mismatch_message_names_file(tmp_path):
     }
     code, out = _run_checker(tmp_path, repo, manifest)
     assert "MUTANT zero-match: ERROR" in out
-    assert "file_b.py" in out
+    assert "anchor matched 0 times (expected 1) in file_b.py" in out
     assert code == 2
 
 
@@ -567,45 +567,55 @@ def test_per_mutant_target_scoring_unchanged(tmp_path):
     assert code == 1
 
 
-def test_two_mutants_different_targets_no_cross_contamination(tmp_path):
+def test_two_mutants_same_target_pristine_cache_correct(tmp_path):
+    # Two mutants both targeting file_b.py. Mutant 1 changes a shared constant
+    # that also affects b2(); if the pristine cache is broken (second mutant
+    # reloads from the already-mutated sandbox instead of the cache), the
+    # baseline for mutant 2 fails (b2 returns wrong value) and it ERRORs
+    # instead of being KILLED.
     repo = _make_repo(tmp_path, {
-        "file_a.py": "MARKER_A = 'alpha'\ndef a_func():\n    return MARKER_A\n",
-        "file_b.py": "MARKER_B = 'beta'\ndef b_func():\n    return MARKER_B\n",
+        "file_a.py": "X = 1\n",
+        "file_b.py": textwrap.dedent("""\
+            SHARED = 10
+            def b1():
+                return SHARED
+            def b2():
+                return SHARED + 10
+        """),
         "tests/test_files.py": textwrap.dedent("""\
             import sys, os
             sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
-            from file_a import a_func
-            from file_b import b_func
-            def test_a():
-                assert a_func() == 'alpha'
-            def test_b():
-                assert b_func() == 'beta'
+            from file_b import b1, b2
+            def test_b1():
+                assert b1() == 10
+            def test_b2():
+                assert b2() == 20
         """),
     })
     manifest = {
         "target": "file_a.py",
         "mutants": [
             {
-                "name": "mutate-a",
-                "why": "test: targets file_a.py",
-                "anchor": "return MARKER_A",
-                "replacement": "return 'wrong'",
-                "target": "file_a.py",
-                "expect_fail": "tests/test_files.py::test_a",
+                "name": "flip-b1",
+                "why": "test: first mutant on file_b.py; changes SHARED so b2() also breaks",
+                "anchor": "SHARED = 10",
+                "replacement": "SHARED = 0",
+                "target": "file_b.py",
+                "expect_fail": "tests/test_files.py::test_b1",
             },
             {
-                "name": "mutate-b",
-                "why": "test: targets file_b.py, pristine cache must not bleed",
-                "anchor": "return MARKER_B",
-                "replacement": "return 'wrong'",
+                "name": "flip-b2",
+                "why": "test: second mutant on file_b.py; pristine cache must restore correctly",
+                "anchor": "return SHARED + 10",
+                "replacement": "return SHARED",
                 "target": "file_b.py",
-                "expect_fail": "tests/test_files.py::test_b",
+                "expect_fail": "tests/test_files.py::test_b2",
             },
         ],
     }
     code, out = _run_checker(tmp_path, repo, manifest)
-    assert "MUTANT mutate-a: KILLED" in out
-    assert "MUTANT mutate-b: KILLED" in out
+    assert "MUTANT flip-b1: KILLED" in out
+    assert "MUTANT flip-b2: KILLED" in out
     assert code == 0
 
 
