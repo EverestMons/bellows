@@ -9,6 +9,13 @@ import pytest
 BELLOWS_ROOT = Path(__file__).parent.parent.resolve()
 sys.path.insert(0, str(BELLOWS_ROOT / "scripts"))
 
+# Force-load from the worktree's scripts/ so the full suite doesn't pick up
+# a stale version cached by depositor.py (which uses resolve_bellows_root()).
+import importlib  # noqa: E402
+_WRL_PATH = str(BELLOWS_ROOT / "scripts" / "walk_register_lint.py")
+if "walk_register_lint" in sys.modules and sys.modules["walk_register_lint"].__file__ != _WRL_PATH:
+    importlib.reload(sys.modules["walk_register_lint"])
+
 from walk_register_lint import (
     REQUIRED_COLUMNS,
     ROW_OK,
