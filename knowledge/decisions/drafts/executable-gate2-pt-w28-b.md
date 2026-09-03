@@ -1,0 +1,166 @@
+# bellows — executable: DOCTRINE — Gate 2, cycle W=28 PT tranche two: proposals 415, 417, 421, 422, 425, 431, 435, 437 onto PLANNER_TEMPLATE.md v4.98 by a committed builder (Rules 107–109 + five extensions), then the eight flip `implemented` — the W=28 Gate-2 queue reaches zero
+
+**Date:** 2026-09-02 | **Project:** bellows | **Tier:** Small | **Dispatch Mode:** bellows | **cycle_tier:** T2 | **Test Scope:** full (the bellows suite is UNCHANGED by this plan and is run once by QA so the test gate reads a real summary line — measured in a scratch clone, the worktree's shape, which holds no `config.json`; the line is P7 — never a pre-declared override) | **Execution:** Step 1 (DEV) → Step 2 (QA) | **qa_steps:** 2 | **pause_for_verdict:** always | **known_failures:** 0 | **Priority:** 2
+
+**auto_close:** false
+
+**Slug:** `gate2-pt-w28-b-2026-09-02`
+
+**Depends on:** the CEO, 2026-09-02 evening ("One plan of 8" — tranche two lands the eight remaining W=28 accepted proposals in ONE tranche, the plan-540 precedent, after the W=29 Gate 1 packet's flips were applied at 18:54); tuyere thread 76 (the twelve accepted; four landed by tranche one, these eight remain); the non-author Gate 1 packet `gate1-packet-2026-09-01.md` (session 352aa9ee; rows 415/417/421/422/425/431/435/437 routed `codify` with their homes); `Done/executable-100021.md` in bellows (tranche one, `gate2-pt-w28-a-2026-09-02`, closed 2026-09-02 — the clone origin and the newest same-class plan: doctrine prose onto `PLANNER_TEMPLATE.md` by a committed builder, then a scoped CAS flip in the lessons DB) and `Done/executable-540.md` in governance (the multi-site EXTENSION form the builder's E2–E6 clone); the builder `governance/knowledge/decisions/drafts/build-gate2-pt-w28-b-2026-09-02.py` (committed `bb50ba43`; digest below). Walk register: `/Users/marklehn/Developer/eluvian-governance/governance/knowledge/research/walk-register-gate2-pt-w28-b-2026-09-02.md`.
+
+**Tier computed, not judged (§1):** **T-6 fires** — `PLANNER_TEMPLATE.md` is the template → **T2**. T-2 fires (eight canonical rows flip; caps at T1). T-1 fires (two repos, plus the DB). T-8 fires (a clone by kind of 100021). **Panel form — the magnitude proxy, measured at walk 0 (all three must hold): (i) structure-clone** — the parent is 100021 (closed 2026-09-02, the newest PT tranche), and both walk-0 clone-diffs ran (against 100021's final text and its register); **(ii) mechanized edits** — every template mutation flows through the committed builder, whose nine anchors are count-1-asserted BY EXECUTION and whose twenty-nine post-conditions are asserted on the output before any write (proven at walk 0: a scratch build, three refusals, a byte-identical rebuild, a 37-added / 2-removed numstat); the flip is one CAS statement under a structural pre-check; **(iii) scripted probes** — every post-condition token measured 0 against the pre-edit file (the invariant tokens at their pre-edit counts). **→ SMALL form: the walk-0 scout, then EXECUTION, then CAPSTONE.** The CEO may call the full form.
+
+## Why this exists
+
+Gate 1 (the non-author packet, 2026-09-01) routed twelve of cycle W=28's proposals `codify` onto `PLANNER_TEMPLATE.md`; tranche one (100021) landed four as Rules 103–106; the CEO chose ONE tranche for the remaining eight. Their homes are the packet's, re-verified against live v4.97 at authoring (every probe `/usr/bin/grep -c -i -F`, the zero rows the claim, `in-flight plan` → 4 the positive control): **415** (entry 407) — the DECLARATION side of a plan is read on the EXECUTING machine → Dispatch Path Rules, an extension paragraph (`<bellows>` 0, `repo-relative` 0, `executing machine` 0; `ELUVIAN_WRAP_ROOT` → 1, Rule 105's own text, the process-tree axis, not the declaration side); **417** (entry 409) — the amendment act owns the re-pin → Rule 61 (`re-pin` 0, `pin the content` 0, `still growing` 0); **421** (entry 413) — a dormant classification becomes policy when a new consumer reads it → Rule 45, the consumer-side direction (`enforcing` 0; `advisory` → 7, none the promotion audit; `blast radius` → 3, none this claim); **422** (entry 414) — a STOP arm keys on the claim that would make the work worthless → NEW Rule 107 (`stop arm` 0, `worthless` 0, `either outcome` 0, `structural proof` 0); **425** (entry 417) — confirm what the system is FOR before optimizing its lifecycle; unmeasured is not unused → NEW Rule 108 (`what the system is for` 0; `unmeasured` → 3, Rule 104's denominator sense and its History row); **431** (entry 423) — an optional datum's consumers force-classified skip / default / fail-closed → NEW Rule 109 (`skip, default` 0, `if X and` 0; `fail-closed` → 4, none the consumer classification); **435** (entry 427) — inventory a directory before arming a watcher, WITH the packet's 435-row correction folded in (the predicate is `is_runnable_plan`, an allowlist) → Workaround 13 (`watched_projects` 0; `inventory` → 3, `retroactive` → 5, none this claim); **437** (entry 429) — a comparator-read string ranks the shipped corpus above the worked example → Checklist 16 (`shipped corpus` 0, `comparator` 0; `worked example` → 3, none this claim). **Homes:** three NEW Orchestration Plan Rules **107, 108, 109** (after Rule 106, before the Lifecycle DB Read Protocol — tranche one's insertion point) and FIVE extension paragraphs appended after the home's existing last line (540's form), each opening in bold with its proposal, entry and `codified 2026-09-02 — Gate 2, cycle W=28 PT tranche two`.
+
+## What this plan does
+
+**In the governance checkout, by absolute path (`GOV=/Users/marklehn/Developer/eluvian-governance`), nine anchored edits to `PLANNER_TEMPLATE.md` by the committed builder (never by hand):**
+- **E1** — three new rule blocks (107, 108, 109), each ending in its `*Source: …*` line and a `---`, inserted before the `## Lifecycle DB Read Protocol (Planner)` heading (anchor: that heading with its preceding `---`, count 1).
+- **E2** — after `Source: proposal 184, lesson 2026-07-22` (Dispatch Path Rules), the 415 paragraph. **E3** — after Rule 61's prop-240 clause (anchor: its closing words `confirm the method is portable across tool builds before pinning with it.`), the 417 paragraph. **E4** — after `Source: proposal 120, lesson 2026-06-03` (Rule 45), the 421 paragraph. **E5** — after `Source: proposal 105, lesson 2026-06-03` (Workaround 13), the 435 paragraph. **E6** — after Checklist 16's three-proposal Source line, the 437 paragraph. Each anchor is a whole line (or a line's closing clause) that occurs exactly once in v4.97 (P2).
+- **E7** — `**Version:** 4.97` → `**Version:** 4.98`. **E8** — `**Last Updated:** 2026-09-02 (v4.97)` → `**Last Updated:** 2026-09-02 (v4.98)`. **E9** — the History row inserted directly under the `| Date | Lesson |` header (the v4.97 row survives below it).
+
+The builder reads the file as bytes, refuses CRLF, refuses an already-built input, asserts each anchor's count is 1, applies the nine edits, asserts twenty-nine post-conditions on the OUTPUT (the builder's `POST` list: the three new headings once each; the three new-rule Source lines and the five extension openers by their codified strings, 3 and 5; the five extension openers once each; `skip, default, or fail-closed` 2 — Rule 109's heading and body; the v4.98 tokens 1 and the v4.97 tokens 0; the new History row 1 and the v4.97 row still 1; the six section headings and the five anchors surviving at their pre-edit counts — `### 17. ` at 2, Rule 17 AND checklist item 17), asserts the line delta is exactly the edits' own (35) and only then writes — to a SCRATCH path it refuses to let be the live file or anything under the governance root. Apply = copy the proven scratch output over the live file, then re-measure the live file.
+
+**In the lessons DB (`/Users/marklehn/Developer/forge_lessons/lessons-forge.db`, the mini's one live copy), AFTER the doctrine commit:** one scoped CAS flip — `id IN (415,417,421,422,425,431,435,437) AND status='accepted' AND route='codify'` → `implemented`, `status_updated_by='ceo'`, a fresh UTC stamp — under a structural pre-check (a TEMP-TABLE `CHECK(x=8)` that aborts the transaction before the UPDATE if the eight are not all `accepted|codify`), with the capture of every row with `id <= 466` — the whole table at authoring (W=29's band included; a W=30 band, if one lands first, sits outside the capture by design) — `(id, status, route, category, status_updated_by, status_updated_at)` to a SCRATCH file BEFORE the UPDATE (copied into the worktree's evidence dir afterwards — never written into the canonical checkout), and the sentinels by name: `PRE_F=8`, `CHANGES_F=8`, `EXCL_F=8` (the eight rows now `implemented` with a stamp that is NOT the vintage `2026-09-01T22:03:28Z` — the eight share that one stamp, so EXCL_F is a one-value exclusion as in 100021), `ACC_POST=23`, `IMPL_POST=334`. The flip SQL is a committed file in governance; a backup of the DB precedes it.
+
+**In the bellows worktree:** the dev log and the QA evidence.
+
+## What this plan does NOT do
+
+- Does not touch the twenty-three W=29 `accepted|codify` rows (442–466 less 457/465 — their tranches are their own plans), DRAFTING_CYCLE.md, COMPANY.md, MACHINE_SETUP.md, code, or threads. Does not push (the Planner pushes after the pause). Does not close thread 76 (the CEO does, at the keyboard, on the read-back).
+- ⚠️ **Runs AFTER the W=29 Gate 1 flips (applied 2026-09-02 18:54, forge_lessons `1c16de9`) and BEFORE any W=30 ingest or Gate 1** — P8 asserts the accepted population is exactly 31 with the eight at the vintage stamp; a W=30 Gate 1 landing first moves it, and a W=30 ingest could stale an accepted row (`accepted` is not terminal — `src/lessons_forge.py:31`).
+
+## MUST-PRESERVE
+
+- ⚠️ **TWO REPOSITORIES AND A DB, ONE STEP.** Governance by absolute path, `git -C "$GOV"` never `cd`; porcelain EMPTY and sha = P1 before touching `PLANNER_TEMPLATE.md`; commit by explicit pathspec; no push. The DB by absolute path; `sqlite3` with `-bail`; a backup (`pre-gate2-pt-w28-b-<HHMMSS>.db` at the forge root, untracked) BEFORE the flip.
+- **The builder is the only editor of the template.** Its committed blob digest must equal the on-disk file (P4) before it runs; it runs scratch→scratch; the live file is replaced only by `cp` of a scratch output whose post-conditions the builder already asserted, and the live file is then re-measured (Task C).
+- **Doctrine before DB (540's C6):** the flip runs only after the governance commit has landed; a HALT between leaves v4.98 committed-unpushed and the flip owed — the RE-ENTRY arm in A0 resumes at the flip.
+- ⛔ **Never run any `checkout --` on an A0 halt except the ONE recipe named there** (a pre-commit apply that died); a pin mismatch otherwise means the file carries changes that are not this plan's.
+- ⚠️ **Two of the landed texts carry Rule 20 hedging keywords** — Rule 109's body (a silently … check) and the Rule 45 extension (… labels) — so NO receipt row quotes a landed paragraph's body; Task C pins heading fragments and opener fragments only (the tranche-one X-2 / CP-1 class).
+- **`known_failures: 0`.** From a scratch clone under the canonical venv the suite is P7 (a worktree holds no `config.json`). Any failure is a HALT/Critical.
+
+## Numbers discipline — the pins DEV re-derives (measured 2026-09-02 by the Planner)
+
+| pin | what | value | how |
+|---|---|---|---|
+| P1 | **`PT_SHA`**, lines, bytes — pre-edit (v4.97) | `f1701a3744186869`; 2423 lines; 459,239 bytes | `shasum -a 256 "$GOV/PLANNER_TEMPLATE.md" \| cut -c1-16`; `wc -l`; `wc -c` |
+| P2 | **`ANCHORS`** — the builder's nine | each count 1: `## Lifecycle DB Read Protocol (Planner)` (with its preceding `---`) · `Source: proposal 184, lesson 2026-07-22` · `confirm the method is portable across tool builds before pinning with it.` · `Source: proposal 120, lesson 2026-06-03` · `Source: proposal 105, lesson 2026-06-03` · `Source: proposal 114, lesson 2026-06-03; proposal 126, lesson 2026-06-07; proposal 148, lesson 2026-07-07` · `**Version:** 4.97` · `**Last Updated:** 2026-09-02 (v4.97)` · the History header pair | `/usr/bin/grep -cF` (the header pair and the `---`-prefixed heading by the builder's own assertion) |
+| P3 | **`TOKENS`** 0 before | `### 107. ` · `### 108. ` · `### 109. ` · `v4.98` · `codified 2026-09-02 — Gate 2, cycle W=28 PT tranche two` · `codified 2026-09-02 (Gate 2, cycle W=28 PT tranche two)` · `**The DECLARATION side is read on the EXECUTING machine` · `**The amendment act OWNS the re-pin` · `**The OTHER direction — adding a CONSUMER to an existing label` · `**Arming a watcher over a directory is RETROACTIVE` · `**When a string is read by a COMPARATOR` · `skip, default, or fail-closed` — each 0; `### 17. ` 2 and `### 106. ` 1 (unchanged by this plan) | `/usr/bin/grep -cF` |
+| P4 | **`BUILDER`** — on-disk digest = the blob at its OWN last commit | `73344e02b037dd57` (governance `bb50ba43`) | `shasum -a 256 <builder> \| cut -c1-16`; `BC=$(git -C "$GOV" log -1 --format=%H -- governance/knowledge/decisions/drafts/build-gate2-pt-w28-b-2026-09-02.py); git -C "$GOV" show "$BC:governance/knowledge/decisions/drafts/build-gate2-pt-w28-b-2026-09-02.py" \| shasum -a 256 \| cut -c1-16` |
+| P5 | **`DRY_RUN`** — the success line, numstat, sizes | `BUILT: <out> edits=9 blocks=3 lines+35 bytes+17159 post=29/29`; `git diff --no-index --numstat -- "$GOV/PLANNER_TEMPLATE.md" <out>` → `37	2` (exit 1 is the expected differing state — read the numbers, never the exit); `wc -l <out>` → 2458; `wc -c <out>` → 476,398 | as stated, scratch-only |
+| P6 | **`FLIP_PRE`** — the eight rows | each `accepted\|codify\|planner\|2026-09-01T22:03:28Z`; `SELECT COUNT(*) … WHERE status='accepted'` → 31; `implemented` → 326; `SELECT DISTINCT status_updated_at … WHERE status='accepted'` → exactly two values (`2026-09-01T22:03:28Z` the eight; `2026-09-02T23:54:37Z` the W=29 twenty-three); `SELECT MAX(id), COUNT(*) FROM lesson_proposals` → `466\|466` | `sqlite3 -readonly /Users/marklehn/Developer/forge_lessons/lessons-forge.db` |
+| P7 | **`SUITE`** — from a scratch clone under the canonical venv | `<SUITE_LINE — measured at walk 0, entered from captured output in the register; HALT if this placeholder survives to deposit>`, exit 0 | `BPY -m pytest tests -q -p no:cacheprovider` |
+| P8 | **`W29_GATE1_APPLIED`** (precondition) | the accepted population is 31 AND the eight read the vintage stamp AND `SELECT COUNT(*) FROM lesson_entries` → 458 (no W=30 ingest) AND `ls /Users/marklehn/Developer/forge_lessons/knowledge/decisions/ \| /usr/bin/grep -cF -- 'forge-cycle-w30'` → 0 (a zero-match count prints 0 and exits 1 — read the number) | as stated |
+
+## Drafting Cycle
+
+**Tier:** T2 — T-6 (the template), T-2 (eight canonical rows, capped), T-1, T-8 fire. **Panel: SMALL form** (the magnitude proxy measured at walk 0, all three conditions holding) — the walk-0 scout, then EXECUTION, then CAPSTONE; the CEO may call the full form.
+
+**Walk register:** /Users/marklehn/Developer/eluvian-governance/governance/knowledge/research/walk-register-gate2-pt-w28-b-2026-09-02.md
+
+**Walk 0 (context pin, measured):** the template's sha, lines and bytes; the nine anchors counted (five Source-line anchors located at lines 1020, 1159, 1567, 1849, 1943 of v4.97); every new token counted 0 and the invariant tokens at their pre-edit counts; the eight proposals' rows and the two vintage stamps the accepted population now carries; the packet's dedup rows re-verified token by token against live v4.97 (the one new hit, `ELUVIAN_WRAP_ROOT` at Rule 105, classified as tranche one's own codification); the builder executed scratch-to-scratch — the success line, three refusals, a 37/2 numstat, a byte-identical rebuild, the nine block positions (1022, 1163, 1455, 1463, 1471, 1597, 1881, 1977, 2258 in the output) — and its on-disk digest against its committed blob; the builder's first run REFUSED on its own post-condition (`### 17. ` counted 2: Rule 17 and checklist item 17 share the token) and the guard was corrected to the measured invariant before the commit; the flip SQL executed on a scratch `.backup` copy of the live DB — the five sentinels by name, the 466-line capture with 31 `accepted|codify` rows, the fresh read-back, and the already-flipped re-run aborting at the CHECK (`Runtime error near line 4: CHECK constraint failed: x=8 (19)`); the clone-diff against 100021's final text and register in three passes; the consumer dry-run (§2.0) — recorded in the register.
+
+**Direction verdict (after walk 1):** _pending walk 1._
+
+**Walks:**
+- Weak spots:          _pending_
+- Destruction:         _pending_
+- Vulnerabilities:     _pending_
+- Integration-record:  _pending_
+- ACID:                _pending_
+
+**Cold panel (SMALL form):** _not yet convened — the meter opens at the scout's dispatch._
+
+**Conformance (§5):** _pending walk 0's run._
+
+**Closing:** _not closed._
+
+---
+
+## STEP 1 — DEV
+
+> **FIRST — post a short visible chat message (1–2 sentences).** Do NOT rename this file. You are the bellows Developer. ⚠️ Governance runs IN PLACE at `$GOV` (every operand ABSOLUTE); commits there by explicit pathspec; ONE action per compound.
+>
+> ⛔ **A0 — roots, the precondition, then the branch ladder (catch-all LAST):** `cd "$(git rev-parse --show-toplevel)" && [ -f bellows.py ] && [ -d tests ] && echo TREE_OK` — HALT unless TREE_OK; `GOV=/Users/marklehn/Developer/eluvian-governance; PT="$GOV/PLANNER_TEMPLATE.md"; B="$GOV/governance/knowledge/decisions/drafts/build-gate2-pt-w28-b-2026-09-02.py"; DB=/Users/marklehn/Developer/forge_lessons/lessons-forge.db; [ -f "$PT" ] && [ -f "$B" ] && [ -f "$DB" ] && echo GOV_OK` — HALT unless GOV_OK. Re-derive `GOV`, `PT`, `B`, `DB` in every compound. `BPY=/Users/marklehn/Developer/bellows/.venv/bin/python`. **P8 → every value, else HALT: `the accepted set moved — a W=30 Gate 1 or ingest has landed; re-pin P6/P8 and re-deposit`.** Then the ladder — **(1)** P1's sha matches; **(2)** `git -C "$GOV" status --porcelain -- PLANNER_TEMPLATE.md governance/knowledge/development/g2ptw28b-flip.sql` (state it; EMPTY on FRESH); **(3)** `git -C "$GOV" log -1 --format=%s -- PLANNER_TEMPLATE.md` — does the subject carry `gate2-pt-w28-b`?; **(4)** `sqlite3 -readonly "$DB" "SELECT id||'|'||status||'|'||COALESCE(route,'')||'|'||COALESCE(status_updated_at,'') FROM lesson_proposals WHERE id IN (415,417,421,422,425,431,435,437) ORDER BY id;"`.
+> - **FRESH** = (1) match AND (2) empty AND (3) no AND (4) all eight `accepted|codify|2026-09-01T22:03:28Z` → A1.
+> - **RE-ENTRY (doctrine landed, flip owed)** = (3) yes AND (4) all eight still `accepted|codify` at that stamp → verify the COMMITTED state (the Task C counts on the live file, `wc -l` 2458, and `git -C "$GOV" show --stat --format= HEAD -- PLANNER_TEMPLATE.md` → 37 insertions, 2 deletions — never A3's `cmp` against `/tmp` or its working-tree `diff --stat`, which are empty or absent after a commit), then A4 (the flip) and A5 only. If (2) shows `g2ptw28b-flip.sql` untracked or modified with the flip NOT applied, that is this arm too (the SQL was written and the run died before it) — A4 rewrites the file from the exact text, which is idempotent.
+> - **RE-ENTRY (complete)** = (3) yes AND (4) all eight `implemented|codify` with every stamp ≠ `2026-09-01T22:03:28Z` → verify the COMMITTED state (the Task C counts, `wc -l`, `git -C "$GOV" show --stat --format= HEAD -- PLANNER_TEMPLATE.md` → 37/2); then the two idempotent tails of A4: the SQL file — if `git -C "$GOV" log -1 --format=%s -- governance/knowledge/development/g2ptw28b-flip.sql` does not carry `gate2-pt-w28-b`, write it from the exact text and commit it; the capture — if `/tmp/g2ptw28b/flip-capture.txt` exists copy it into the worktree, else reconstruct the worktree copy from the backup DB (`sqlite3 -readonly "file:<backup>?immutable=1" "<the capture SELECT>"` → the same 466 lines, labelled `RECONSTRUCTED (post-commit re-entry)` in the dev log); then A4's read-back (no flip) and A5 with the dev log marked `re-derived on re-entry`.
+> - **NONE-MATCH** = anything else → HALT quoting every measurement. The ONE recipe: (1) mismatch + (3) no + (4) all eight `accepted|codify` at the stamp = a pre-commit apply that died → `git -C "$GOV" checkout HEAD -- PLANNER_TEMPLATE.md` (`HEAD`, not the index — a death between `add` and `commit` leaves v4.98 STAGED), re-assert P1, then A1. Every other shape HALTs untouched.
+>
+> ⛔ **A1 — re-derive P1–P6; state each; a mismatch is a HALT quoting both.** (P4 with the builder's OWN commit, never `HEAD:`.)
+>
+> **A2 — dry-run, scratch→scratch (LITERAL paths, no variables across compounds):** `rm -rf /tmp/g2ptw28b; mkdir -p /tmp/g2ptw28b; python3 "$B" "$GOV/PLANNER_TEMPLATE.md" /tmp/g2ptw28b/PT-out.md; echo "builder_exit=$?"` → P5's `BUILT:` line verbatim, `builder_exit=0`; `git diff --no-index --numstat -- "$GOV/PLANNER_TEMPLATE.md" /tmp/g2ptw28b/PT-out.md` → `37	2`; `wc -l /tmp/g2ptw28b/PT-out.md` → 2458; `wc -c` → 476398. Refusals (each `BUILDER REFUSED`, nonzero; quote each): `python3 "$B" "$GOV/PLANNER_TEMPLATE.md" "$GOV/PLANNER_TEMPLATE.md"` (out == in); `python3 "$B" "$GOV/PLANNER_TEMPLATE.md" "$GOV/x.md"` (under the governance root); `python3 "$B" /tmp/g2ptw28b/PT-out.md /tmp/g2ptw28b/PT-out2.md` (already built).
+>
+> **A3 — apply and measure the LIVE file (Task C), then commit:** `cp /tmp/g2ptw28b/PT-out.md "$GOV/PLANNER_TEMPLATE.md"`; then from the live file, counts read never exit codes (`/usr/bin/grep -cF --`): `### 107. A STOP arm keys on the claim that would make the work WORTHLESS` 1 · `### 108. Before optimizing a system's LIFECYCLE, confirm what the system is FOR` 1 · `### 109. An OPTIONAL datum's consumers silently disagree about absence` 1 · `codified 2026-09-02 (Gate 2, cycle W=28 PT tranche two)` 3 · `codified 2026-09-02 — Gate 2, cycle W=28 PT tranche two` 5 · `**The DECLARATION side is read on the EXECUTING machine` 1 · `**The amendment act OWNS the re-pin` 1 · `**The OTHER direction — adding a CONSUMER to an existing label` 1 · `**Arming a watcher over a directory is RETROACTIVE` 1 · `**When a string is read by a COMPARATOR, the shipped corpus is the known-good artifact` 1 · `**Version:** 4.98` 1 · `**Version:** 4.97` 0 · `**Last Updated:** 2026-09-02 (v4.98)` 1 · `**Last Updated:** 2026-09-02 (v4.97)` 0 · `| 2026-09-02 | v4.98: Gate 2, cycle W=28 PT tranche two` 1 · `| 2026-09-02 | v4.97: Gate 2, cycle W=28 PT tranche one` 1 (the old row survives) · `## Lifecycle DB Read Protocol (Planner)` 1 · `### 106. ` 1 · `### 17. ` 2 (Rule 17 and checklist item 17 — unchanged); `wc -l` 2458; `cmp /tmp/g2ptw28b/PT-out.md "$GOV/PLANNER_TEMPLATE.md"` silent; `git -C "$GOV" diff --stat -- PLANNER_TEMPLATE.md` → 37 insertions, 2 deletions. Any failing → FRESH: `git -C "$GOV" checkout -- PLANNER_TEMPLATE.md` + HALT; RE-ENTRY: HALT, no restore. Commit: `git -C "$GOV" add PLANNER_TEMPLATE.md && git -C "$GOV" commit -m "[<id from your plan filename>] gate2-pt-w28-b: PLANNER_TEMPLATE v4.98 — Rules 107–109 (422, 425, 431) + five extensions (415, 417, 421, 435, 437)" -- PLANNER_TEMPLATE.md`; `git -C "$GOV" log --oneline -1 -- PLANNER_TEMPLATE.md` → that commit. Do NOT push.
+>
+> **A4 — the flip (doctrine before DB):** backup first, by sqlite's own copy — the DB is WAL-journaled, so a filesystem `cp` can lag a non-checkpointed write while sizes match: `sqlite3 "$DB" ".backup /Users/marklehn/Developer/forge_lessons/pre-gate2-pt-w28-b-$(date +%H%M%S).db"`; then on the backup — ⚠️ through `sqlite3 -readonly "file:<backup>?immutable=1"`, never a bare `-readonly <path>`: a `.backup` output of a WAL database has no `-shm` sidecar and a bare read-only open fails `unable to open database file (14)` — `PRAGMA integrity_check` → `ok`; `SELECT COUNT(*) FROM lesson_proposals` → equal to the live count (state both); `SELECT COUNT(*) FROM lesson_proposals WHERE id IN (415,417,421,422,425,431,435,437) AND status='accepted'` → 8 (`BK=8`). Write `$GOV/governance/knowledge/development/g2ptw28b-flip.sql` with a QUOTED heredoc, EXACTLY:
+> ```
+> .timeout 5000
+> BEGIN IMMEDIATE;
+> CREATE TEMP TABLE g_pre(x INTEGER CHECK(x=8));
+> INSERT INTO g_pre VALUES((SELECT COUNT(*) FROM lesson_proposals WHERE id IN (415,417,421,422,425,431,435,437) AND status='accepted' AND route='codify'));
+> SELECT 'PRE_F='||x FROM g_pre;
+> .output /tmp/g2ptw28b/flip-capture.txt
+> SELECT COALESCE(id,'')||'|'||COALESCE(status,'')||'|'||COALESCE(route,'')||'|'||COALESCE(category,'')||'|'||COALESCE(status_updated_by,'')||'|'||COALESCE(status_updated_at,'') FROM lesson_proposals WHERE id <= 466 ORDER BY id;
+> .output stdout
+> UPDATE lesson_proposals SET status='implemented', status_updated_at=strftime('%Y-%m-%dT%H:%M:%SZ','now'), status_updated_by='ceo' WHERE id IN (415,417,421,422,425,431,435,437) AND status='accepted' AND route='codify';
+> SELECT 'CHANGES_F='||changes();
+> SELECT 'EXCL_F='||COUNT(*) FROM lesson_proposals WHERE id IN (415,417,421,422,425,431,435,437) AND status='implemented' AND status_updated_at <> '2026-09-01T22:03:28Z';
+> SELECT 'ACC_POST='||COUNT(*) FROM lesson_proposals WHERE status='accepted';
+> SELECT 'IMPL_POST='||COUNT(*) FROM lesson_proposals WHERE status='implemented';
+> COMMIT;
+> ```
+> ⚠️ The `.output` path is the LITERAL scratch dir A2 created (`sqlite3` dot-commands take no variables) — never a path inside the canonical bellows checkout: an untracked file there at a path this branch commits makes the worktree teardown's dirty-tree check raise and git's `--ff-only` merge abort. Run: `[ -d /tmp/g2ptw28b ] || mkdir -p /tmp/g2ptw28b; sqlite3 -bail "$DB" < "$GOV/governance/knowledge/development/g2ptw28b-flip.sql"` → the five sentinel lines BY NAME: `PRE_F=8`, `CHANGES_F=8`, `EXCL_F=8`, `ACC_POST=23`, `IMPL_POST=334` (a `CHECK` abort prints a line beginning `Runtime error near line 4: CHECK constraint failed: x=8` and writes nothing — HALT on that MESSAGE; never read the exit code through a pipe, it is the last command's). **Read-back on a FRESH read-only connection** (durability is proven post-commit, never by in-transaction sentinels): the eight rows `implemented|codify` with stamps ≠ the vintage; `accepted` 23; `implemented` 334; the capture file has 466 lines and 31 rows containing `|accepted|codify|`. Copy the capture into the worktree: `mkdir -p knowledge/qa/evidence/gate2-pt-w28-b-2026-09-02 && cp /tmp/g2ptw28b/flip-capture.txt knowledge/qa/evidence/gate2-pt-w28-b-2026-09-02/flip-capture.txt` (A5 commits it; QA verifies it). Commit the SQL in governance: `git -C "$GOV" add governance/knowledge/development/g2ptw28b-flip.sql && git -C "$GOV" commit -m "[<id>] gate2-pt-w28-b: the flip SQL (415, 417, 421, 422, 425, 431, 435, 437 → implemented)" -- governance/knowledge/development/g2ptw28b-flip.sql`.
+>
+> **A5 — dev log + commit by explicit pathspec.** `knowledge/development/dev-log-gate2-pt-w28-b-2026-09-02.md`: the A0 determination, A1's pins, A2's lines and the three refusals, A3's counts and the governance commit hash, A4's backup lines, sentinels, read-back and the SQL commit hash. `git add knowledge/development/dev-log-gate2-pt-w28-b-2026-09-02.md knowledge/qa/evidence/gate2-pt-w28-b-2026-09-02/flip-capture.txt && git commit -m "[<id>] gate2-pt-w28-b: PT v4.98 + flip landed (dev log, flip capture)" -- knowledge/development/dev-log-gate2-pt-w28-b-2026-09-02.md knowledge/qa/evidence/gate2-pt-w28-b-2026-09-02/flip-capture.txt`. `git status --short` → empty. STOP.
+>
+> **Deposits:**
+> - `knowledge/development/dev-log-gate2-pt-w28-b-2026-09-02.md`
+> - `/Users/marklehn/Developer/eluvian-governance/PLANNER_TEMPLATE.md`
+> - `/Users/marklehn/Developer/eluvian-governance/governance/knowledge/development/g2ptw28b-flip.sql`
+> - `knowledge/qa/evidence/gate2-pt-w28-b-2026-09-02/flip-capture.txt`
+>
+> **Scope:**
+> - `knowledge/development/dev-log-gate2-pt-w28-b-2026-09-02.md`
+> - `/Users/marklehn/Developer/eluvian-governance/PLANNER_TEMPLATE.md`
+> - `/Users/marklehn/Developer/eluvian-governance/governance/knowledge/development/g2ptw28b-flip.sql`
+> - `knowledge/qa/evidence/gate2-pt-w28-b-2026-09-02/flip-capture.txt`
+
+## STEP 2 — QA
+
+> **Step 1's Receipt status must be `Status: Complete`.** Anything else → HALT. **FIRST — post a short visible chat message.** You are the bellows QA agent. `cd "$(git rev-parse --show-toplevel)"`; `GOV=/Users/marklehn/Developer/eluvian-governance`; `B="$GOV/governance/knowledge/decisions/drafts/build-gate2-pt-w28-b-2026-09-02.py"`; `DB=/Users/marklehn/Developer/forge_lessons/lessons-forge.db`; `BPY=/Users/marklehn/Developer/bellows/.venv/bin/python` — re-derive per compound.
+>
+> **(A) Rule 20 self-check** — the canonical block at the path the dispatcher's mandate names (this machine's `RULE_20_SELF_CHECK_BLOCK.md`; quote the path you were handed). Run with:
+> - `plan_slug`: `gate2-pt-w28-b-2026-09-02`
+> - `qa_report_path`: `"$(pwd)/knowledge/qa/evidence/gate2-pt-w28-b-2026-09-02/qa-receipt.md"`
+> - `evidence_dir`: `"$(pwd)/knowledge/qa/evidence/gate2-pt-w28-b-2026-09-02"`
+> - `required_evidence_files`: `["probes-raw.txt", "full-suite-gate2-pt-w28-b.txt", "flip-capture.txt"]` (the capture committed by DEV in A5; QA verifies it is the committed file — `git log -1 --format=%s -- knowledge/qa/evidence/gate2-pt-w28-b-2026-09-02/flip-capture.txt` carries the plan's id)
+>
+> **(B) Items — raw output appended to `probes-raw.txt`:**
+> - **Item 1 — the live template:** `git -C "$GOV" log --oneline -1 -- PLANNER_TEMPLATE.md` (the `[<id>]` commit); every Task C count re-run (nineteen probes); `wc -l` 2458; `git -C "$GOV" status --porcelain -- PLANNER_TEMPLATE.md governance/knowledge/development/g2ptw28b-flip.sql` → EMPTY.
+> - **Item 2 — the builder, by a second pair of hands (byte-identity):** `rm -rf /tmp/g2ptw28b-qa; mkdir -p /tmp/g2ptw28b-qa; C=$(git -C "$GOV" log -1 --format=%H -- PLANNER_TEMPLATE.md); git -C "$GOV" show "$C^:PLANNER_TEMPLATE.md" > /tmp/g2ptw28b-qa/PT-pre.md; python3 "$B" /tmp/g2ptw28b-qa/PT-pre.md /tmp/g2ptw28b-qa/PT-out.md; echo "builder_exit=$?"; cmp /tmp/g2ptw28b-qa/PT-out.md "$GOV/PLANNER_TEMPLATE.md" && echo BYTE_IDENTICAL` → the `BUILT:` line, `builder_exit=0`, `BYTE_IDENTICAL`; P4 with the builder's own commit; the three refusals reproduced.
+> - **Item 3 — the flip, read back on a FRESH read-only connection:** the eight rows `implemented|codify|ceo|<stamp ≠ 2026-09-01T22:03:28Z>`; `accepted` 23 — and the twenty-three by count, each still `accepted|codify|planner|2026-09-02T23:54:37Z` (`SELECT COUNT(*) … WHERE status='accepted' AND status_updated_at='2026-09-02T23:54:37Z'` → 23); `implemented` 334; `wc -l knowledge/qa/evidence/gate2-pt-w28-b-2026-09-02/flip-capture.txt` → 466; the capture's eight rows for the flipped ids read `accepted|codify` (the pre-flip state, captured before the UPDATE).
+> - **Item 4 — the full-suite file:** `"$BPY" -m pytest tests -q -p no:cacheprovider > knowledge/qa/evidence/gate2-pt-w28-b-2026-09-02/full-suite-gate2-pt-w28-b.txt 2>&1; echo "exit=$?" >> knowledge/qa/evidence/gate2-pt-w28-b-2026-09-02/full-suite-gate2-pt-w28-b.txt` → P7's line, `exit=0`.
+>
+> **(C) The report** `qa-receipt.md`: the verification table — status cells carry the glyph only, and NO positive row quotes a probe token or an output line carrying a Rule 20 hedging keyword (`hedging_keywords` in the canonical block): this plan has THREE such strings — the suite summary line, Rule 109's body and the Rule 45 extension's body — so the suite row names the FILE and `exit=0`, and Item 1's row reads `19/19 counts as pinned in A3, see probes-raw.txt` (the raw file may carry the tokens; the receipt's positive rows may not — a row quoting any of them FAILS the self-check) — the follow-ups (the W=29 tranches; the Planner pushes governance; thread 76 closes at the keyboard), the Rule 20 stdout APPENDED. Commit: `git add knowledge/qa/evidence/gate2-pt-w28-b-2026-09-02/ && git commit -m "[<id>] QA: PT v4.98 rebuilt byte-identical from the pre-edit blob; flip read back (8 implemented, 23 accepted remain)" -- knowledge/qa/evidence/gate2-pt-w28-b-2026-09-02/`. STOP.
+>
+> **Deposits:**
+> - `knowledge/qa/evidence/gate2-pt-w28-b-2026-09-02/qa-receipt.md`
+> - `knowledge/qa/evidence/gate2-pt-w28-b-2026-09-02/probes-raw.txt`
+> - `knowledge/qa/evidence/gate2-pt-w28-b-2026-09-02/full-suite-gate2-pt-w28-b.txt`
+>
+> **Scope:**
+> - `knowledge/qa/evidence/gate2-pt-w28-b-2026-09-02/qa-receipt.md`
+> - `knowledge/qa/evidence/gate2-pt-w28-b-2026-09-02/probes-raw.txt`
+> - `knowledge/qa/evidence/gate2-pt-w28-b-2026-09-02/full-suite-gate2-pt-w28-b.txt`
+
+Rule 20 banner (byte-exact, produced by RUNNING the canonical block — never hand-authored):
+
+```
+============================================================
+Rule 20 — QA Self-Check Results
+============================================================
+PASSED — SELF-CHECK PASSED — all evidence files present, no hedging keywords found.
+```
