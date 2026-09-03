@@ -4,7 +4,7 @@
 
 **auto_close:** false
 
-**Depends on:** tuyere thread 102 (filed 2026-09-03 by plan 100028's cycle, which measured the defect and declined to inherit it); `exec-100028` (Done 2026-09-03 — the clone origin: the newest shipped plan on this exact target, which added check (v) calling the gate's predicate directly); `exec-565` (Done 2026-08-26 — the same-KIND parent: a measured narrowing of a shipped `plan_lint` check's behaviour, not an addition); plan 100022 (**halted**, code on main at `e088d05` — wrote check (u), including the predicate this plan replaces).
+**Depends on:** tuyere thread 102 — ⚠️ **provenance stated as what is checkable from the corpus, not from memory:** `Done/executable-100028.md`'s `open_forks` records the defect measured and DECLINED ("(u)'s QA-step predicate wrong on 74 of 861 steps … owed a thread"), and `Done/executable-100030.md`'s `open_forks` carries it forward already numbered ("thread 102"). Both are Done 2026-09-03; `exec-100028` (Done 2026-09-03 — the clone origin: the newest shipped plan on this exact target, which added check (v) calling the gate's predicate directly); `exec-565` (Done 2026-08-26 — the same-KIND parent: a measured narrowing of a shipped `plan_lint` check's behaviour, not an addition); plan 100022 (**halted**, code on main at `e088d05` — wrote check (u), including the predicate this plan replaces).
 
 ## Why this exists
 
