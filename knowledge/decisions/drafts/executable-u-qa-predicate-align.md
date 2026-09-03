@@ -335,7 +335,9 @@ Cells are enumerated as tests 1–8 in STEP 1 Item 3, including the positive con
 >
 > ⚠️ **Gate note:** this step is not a QA step by the gate's predicate; the raw-evidence arm does not apply to it. Its two (u) WARNs are pre-declared in MUST-PRESERVE and are the plan's own specimen of the defect.
 >
-> **Post-conditions:** all eight tests pass; `grep -cF 'qa_steps_set_u' scripts/plan_lint.py` → 0; `grep -cF '_parse_qa_steps' scripts/plan_lint.py` → 4 (1 `def` + 3 calls); the census re-measures with the class of the result unchanged; `mutation_check` reports 6 killed / 0 survived; the lint on a tripping plan exits 0.
+> **Post-conditions.** ⚠️ **Two kinds, labelled, because doctrine requires every post-condition be shown able to FAIL before the edit and one kind structurally cannot:**
+> - **EARNABLE — each returns the failing value against the pre-edit state, and Item 3 records that it did:** all eight tests pass (3 fail before); `grep -cF 'qa_steps_set_u' scripts/plan_lint.py` → **0** (2 before); `grep -cF '_parse_qa_steps' scripts/plan_lint.py` → **4** (5 before); `mutation_check` reports **6 killed / 0 survived** (before the edit the mutants' anchors do not exist and the run ERRORs); the census re-measures with the class of the result unchanged.
+> - ⚠️ **NON-REGRESSION — cannot fail before the edit, and is not claimed to:** the lint on a tripping plan exits 0. It is true today and must stay true. **Its discriminator is not this line but MUTANT 6** (append the finding as a FAIL instead of printing it), which makes the invariant violable and test 7 the observer. A non-regression post-condition with no mutant behind it is the vacuous class; this one has its mutant named.
 
 ## STEP 2 — QA (FULL suite + the check run against REAL plans)
 
@@ -392,7 +394,9 @@ Cells are enumerated as tests 1–8 in STEP 1 Item 3, including the positive con
 > - `knowledge/qa/evidence/u-predicate-align-2026-09-03/probes-raw.txt`
 > - `knowledge/qa/evidence/u-predicate-align-2026-09-03/pytest_full.txt`
 >
-> **Post-conditions:** suite green at the derived count; the false-positive specimen silent; the blind-spot specimen firing; the retained specimen's WARN byte-identical before and after; the two out-of-repo citations firing, or their sandbox denial stated; `git log <DEV_SHA>..HEAD -- scripts/plan_lint.py` empty; census class unchanged; exit code unchanged; kill map 6/6.
+> **Post-conditions.** ⚠️ **Same two kinds, same reason:**
+> - **EARNABLE:** suite green at the derived count; the false-positive specimen (`diagnostic-100024.md` step 1) SILENT where it emitted one line before; the blind-spot specimen (`executable-scaffold-2026-04-13.md` step 2) FIRING where it was silent before; kill map 6/6.
+> - ⚠️ **NON-REGRESSION — true before and required to stay true:** the retained specimen's WARN byte-identical before and after; the two out-of-repo citations still firing (or their sandbox denial stated); `git log <DEV_SHA>..HEAD -- scripts/plan_lint.py` empty; census class unchanged; exit code unchanged. **None of these can fail against the pre-edit state and none is offered as evidence that the change works** — they are the guards that it broke nothing, and each names what would make it fail.
 
 Rule 20 banner (byte-exact, inside the QA receipt's VERIFICATION section):
 
