@@ -1,0 +1,61 @@
+{
+    "target": "scripts/plan_lint.py",
+    "mutants": [
+        {
+            "name": "v-drop-scope-gate",
+            "why": "Thread 70: check (v) must be gated on test_scope starting 'none'. Without the scope guard the check fires on every QA step regardless of declared test scope, generating spurious WARNs for plans with real pytest coverage.",
+            "anchor": "    if _v_test_scope.strip().lower().startswith(\"none\"):",
+            "replacement": "    if True:  # mutant: scope gate dropped",
+            "expect_fail": "tests/test_plan_lint_qa_predeclaration.py::test_v_silent_when_test_scope_is_targeted"
+        },
+        {
+            "name": "v-invert-suppression",
+            "why": "Thread 70: the suppression check fires when the clause IS present and stays silent when absent — the inverse of the intended direction. A plan that correctly pre-declares the class would still receive a WARN.",
+            "anchor": "            if \"pre-declar\" in _v_lower or \"gate note\" in _v_lower or \"qa_test_result\" in _v_lower:",
+            "replacement": "            if not (\"pre-declar\" in _v_lower or \"gate note\" in _v_lower or \"qa_test_result\" in _v_lower):",
+            "expect_fail": "tests/test_plan_lint_qa_predeclaration.py::test_v_silent_when_qa_step_has_clause"
+        },
+        {
+            "name": "v-narrow-to-gate-name-token",
+            "why": "Thread 70: narrowing the token set to qa_test_result alone regresses the 555 case — executable-555 carries a valid clause using pre-declar and gate note but not the gate-name token. That plan would receive a spurious WARN.",
+            "anchor": "            if \"pre-declar\" in _v_lower or \"gate note\" in _v_lower or \"qa_test_result\" in _v_lower:",
+            "replacement": "            if \"qa_test_result\" in _v_lower:",
+            "expect_fail": "tests/test_plan_lint_qa_predeclaration.py::test_v_silent_when_clause_uses_pre_declar_and_gate_note_without_gate_name"
+        },
+        {
+            "name": "v-widen-suppression-to-whole-plan",
+            "why": "Thread 70: suppression must key on the QA STEP'S OWN text, not the whole plan. A plan that discusses the gate in a non-QA step (or its Why section) would silently suppress the WARN that the QA step earns.",
+            "anchor": "            _v_lower = _v_step_text.lower()",
+            "replacement": "            _v_lower = plan_text.lower()",
+            "expect_fail": "tests/test_plan_lint_qa_predeclaration.py::test_v_not_suppressed_when_clause_outside_qa_step"
+        },
+        {
+            "name": "v-drop-header-guard",
+            "why": "Thread 70: the header guard prevents a KeyError when the plan header fails to parse (header is {}). Without it, any headerless plan raises on the dictionary key access, crashing the lint and silencing all downstream checks.",
+            "anchor": "    _v_test_scope = header.get(\"test_scope\", \"\") if header else \"\"",
+            "replacement": "    _v_test_scope = header[\"test_scope\"]",
+            "expect_fail": "tests/test_plan_lint_qa_predeclaration.py::test_v_headerless_plan_does_not_crash"
+        },
+        {
+            "name": "v-swap-gate-predicate",
+            "why": "Thread 70 / P11: swapping the gate's own predicate for a keyword-in-step-text heuristic (the P11 defect) causes false positives. A non-QA step whose body mentions Rule 20 would be misclassified as QA and receive a spurious WARN.",
+            "anchor": "            if not gates._gate_is_qa_step(plan_text, sn, plan_header=header):",
+            "replacement": "            if \"qa\" not in hl.lower() and \"Rule 20\" not in (gates._extract_step_text(plan_text, sn) or \"\"):",
+            "expect_fail": "tests/test_plan_lint_qa_predeclaration.py::test_v_predicate_does_not_fire_on_non_qa_step_mentioning_rule_20"
+        },
+        {
+            "name": "v-only-last-step",
+            "why": "Thread 70 / cold scout S1-1: hoisting the check to run only on the last step (simulating the leaked-sn crash at wrong indent) causes the check to miss the QA step when it is not last. The first step's WARN is silently dropped.",
+            "anchor": "        for hl, sn_str in step_headers:",
+            "replacement": "        for hl, sn_str in step_headers[-1:]:",
+            "expect_fail": "tests/test_plan_lint_qa_predeclaration.py::test_v_loop_placement"
+        },
+        {
+            "name": "v-append-as-fail",
+            "why": "Thread 70 / P14: (v) is WARN-only and advisory — appending a FAIL to results and setting all_passed=False moves the exit code from 0 to 1, breaking run_check.judge_lint which reads the exit code as its only signal. A plan tripping (v) would be blocked from completing.",
+            "anchor": "                f\" the verdict. (thread 70)\"\n            )",
+            "replacement": "                f\" the verdict. (thread 70)\"\n            )\n            all_passed = False",
+            "expect_fail": "tests/test_plan_lint_qa_predeclaration.py::test_v_does_not_alter_exit_code"
+        }
+    ]
+}

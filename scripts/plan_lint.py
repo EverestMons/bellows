@@ -368,7 +368,34 @@ def lint(plan_path):
                 print(f"(u) WARN: step {sn} Deposits: first .md is {first_basename!r}"
                       f" — rule_20_self_check reads the first .md as the QA report (thread 77)")
         if not any(d.endswith('.txt') for d in deps_u):
-            print(f"(u) WARN: step {sn} Deposits: no .txt evidence entry (thread 70/77)")
+            print(f"(u) WARN: step {sn} Deposits: no .txt evidence entry (thread 77)")
+
+    # (v) No-pytest QA step without pre-declaration clause (WARN-only, advisory, thread 70).
+    # Must call gates._gate_is_qa_step — NOT (u)'s local heuristic: P11 measured 74
+    # divergences across 861 steps (66 false positives, 8 blind spots). This check
+    # keys on the author's test_scope declaration; whether a step will produce a pytest
+    # summary is not inferrable from plan text alone.
+    _v_test_scope = header.get("test_scope", "") if header else ""
+    if _v_test_scope.strip().lower().startswith("none"):
+        for hl, sn_str in step_headers:
+            sn = int(sn_str)
+            if not gates._gate_is_qa_step(plan_text, sn, plan_header=header):
+                continue
+            _v_step_text = gates._extract_step_text(plan_text, sn)
+            if not _v_step_text:
+                continue
+            _v_lower = _v_step_text.lower()
+            if "pre-declar" in _v_lower or "gate note" in _v_lower or "qa_test_result" in _v_lower:
+                continue
+            print(
+                f"(v) WARN: step {sn} is a QA step whose test_scope starts 'none',"
+                f" but its text carries no pre-declaration clause."
+                f" A raw-evidence .txt deposit alone does not clear _gate_qa_test_result:"
+                f" its second branch requires a parseable pytest summary and will FAIL"
+                f" without one. Remedy: add a bolded gate-note in this step's text"
+                f" pre-declaring the benign class and that the Planner overrides at"
+                f" the verdict. (thread 70)"
+            )
 
     dc_block = None
 
