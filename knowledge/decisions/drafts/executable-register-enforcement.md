@@ -49,6 +49,7 @@ A register honestly declaring `0.1` is therefore judged against v0.3's `REQUIRED
 | P10 | suite baseline | targeted: 42 pass for `run_check` + `walk_register` (`-k`); `test_cycle_check.py` and `test_walk_register_lint.py` = 27 tests each | `pytest -q` |
 | P12 | the silent-library invariant | `cycle_check.run_check()` has **0** print calls; only `main()` prints (`:669`). `depositor.py` imports the module (`:27`) and calls `run_check()` in-process (`:476`) — so a print inside an assert reaches the daemon's stdout, not a consumer's parse | `grep -c 'print('` in the run_check body; read `depositor.py:27,476` |
 | P13 | the validator imports cleanly | `walk_register_lint.validate_file(Path)` → `(status, rows, shapes)`, no printing, no CLI side effects; verified live on a CONFORMANT and a NO_TABLE register | the import probe in Task A |
+| P16 | the gate run, not the commands | `gates.check` on a SIMULATED step 2 with deposit-shaped scratch copies → **passed=True, is_qa_step=True, 0 failures**; **negative control fires** (`qa_test_result: no parseable pytest summary`); step 1 → `is_qa_step=False` | the simulation in Step 1 Item 1 |
 | P15 | ⚠️ `run_check()`'s arity is LOAD-BEARING | **43** call sites, all unpacking exactly 2 values: 3 in production — `cycle_check.py:562`, `:666`, and **`depositor.py:476` (the daemon, in-process)** — plus **40 in `tests/test_cycle_check.py`**, every one `verdict, code = cycle_check.run_check(plan)`. A 3-tuple raises `ValueError: too many values to unpack (expected 2)` — a production break. Use an optional collector kwarg | `/usr/bin/grep -n -F 'run_check('` across the three files |
 | P14 | assert-2 blast radius | `check_assert_2` has **1** caller (`:420`) and **0** test references — the 4-tuple change touches one line | `grep -rn check_assert_2` |
 | P11 | no in-flight collision | `lifecycle.db` → zero plans in `claimed`/`in_progress`/`awaiting_verdict` | `sqlite3` query |
@@ -68,21 +69,37 @@ A register honestly declaring `0.1` is therefore judged against v0.3's `REQUIRED
 
 **Tier:** T1 — triggers fired: T-1 (three subsystems) and T-3 (the checkers run on every machine that deposits). T-6 assessed and NOT fired: conformance instruments, not the ten step gates — the ruling 473/474, 100022 and 100023 all took. T-8 not fired: clone by kind of exec-100023.
 **Walk register:** `/Users/marklehn/Developer/eluvian-governance/governance/knowledge/research/walk-register-register-enforcement-2026-09-03.md`
-**Walks:** 1 (walks 0 and 1 complete).
-- Weak spots:          w1 1 folded — instruction 1 / record 0 (an arm built for a case that cannot yet occur, now fixture-declared).
-- Destruction:         w1 1 folded — instruction 1 / record 0 (the warning would have printed into the daemon's stdout on every deposit evaluation).
-- Vulnerabilities:     w1 1 folded — instruction 1 / record 0 (subprocess vs import left unstated; import chosen and verified).
-- Integration-record:  w1 dry — the clone origin's conventions carried; no precedent conflict found.
-- ACID:                w1 dry — two steps, one verdict gate; the DEV-commit window is already guarded by plan-id-tag resolution.
-**Walk 0 — context pin:** nine measurements, all in the register. The load-bearing two: the `"FAIL"` arm at `cycle_check.py:424` is **pre-wired and unreachable**, so the promotion path already exists; and the gap is demonstrated by a plan that shipped this morning — `BAR_MET` against a `NO_TABLE` register.
+**Walks:** 7 (walks 0–7 complete).
+- Weak spots:          w1 1 folded — instruction 1 / record 0; w2 dry; w3 1 folded — instruction 1 / record 0; w4 dry; w5 dry; w6 dry; w7 dry.
+- Destruction:         w1 1 folded — instruction 1 / record 0; w2 1 folded — instruction 1 / record 0; w3 1 folded — instruction 1 / record 0; w4 dry; w5 1 folded — instruction 1 / record 0; w6 1 folded — instruction 1 / record 0; w7 dry.
+- Vulnerabilities:     w1 1 folded — instruction 1 / record 0; w2 dry; w3 dry; w4 1 folded — instruction 1 / record 0; w5 dry; w6 dry; w7 dry.
+- Integration-record:  w1 dry; w2 dry; w3 dry; w4 1 folded — instruction 1 / record 0 (the gate-run mandate the plan owed its agent); w5 dry; w6 dry; w7 dry.
+- ACID:                w1 dry; w2 dry; w3 dry; w4 dry; w5 dry; w6 dry; w7 dry — two steps, one verdict gate, the DEV-commit window guarded by plan-id-tag resolution throughout.
+- Record sweep:        w0 1 folded (instruction); w5 2 folded (record); w7 dry.
+**Per-walk yields:** w0 1 · w1 3 · w2 1 · w3 2 · w4 2 · w5 3 · w6 1 · w7 0. **Total 13 — instruction 11 / record 2; 8 of 13 fold-introduced.**
+**Walk 0 — context pin:** nine measurements, all in the register. The load-bearing two: the `"FAIL"` arm at `cycle_check.py:424` is **pre-wired and unreachable**, so the promotion to blocking already exists as machinery; and the gap is demonstrated by a plan that shipped this morning — `BAR_MET` against a `NO_TABLE` register.
 **Walk 0 — consumer dry-run (the execution act):** class derives `shop-infra` (holds by design); both steps' QA-ness and deposits resolve as intended; `plan_lint` returned **0 FAIL on v0's first pass**.
-**⚠️ Self-application:** this plan is about enforcing register conformance, so its own register was run through the validator — via `run_check register`, not a hand-rolled sweep. It failed first pass on `headerless_rows` (fold tables written without separator rows), was fixed, and now returns **CONFORMANT**. It is written with **verbatim `pre_fold_text` captured at fold time**, which the 117 corpus rows this plan measures could not be.
+**Walk 4 — EXECUTION pass:** `gates.check` on a simulated step 2 → passed/0 with a **firing negative control** and step 1 `is_qa=False`. It found no defect in the artifact and one in the plan's instructions.
+**⚠️ Self-application:** this plan is about enforcing register conformance, so its own register was run through the validator — via `run_check register`, the sanctioned checker, not a hand-rolled sweep. It FAILED first pass on `headerless_rows`, was fixed, and is **CONFORMANT**, carrying **verbatim `pre_fold_text` captured at fold time** — the field 117 corpus rows are missing and cannot get back.
+**⚠️ The cycle's own shape:** 8 of 13 findings were this cycle's own fold damage, and three of them were the SAME defect one layer out — w1 measured `check_assert_2`'s blast radius then changed `run_check()` without measuring it; w2 froze the arity on 3 callers and missed 40 tests; w5 introduced a status without ruling how the judge reads it, which is the very defect the plan fixes. **The recurring error was measuring the thing below the thing being changed.**
+**Auto-advance:** walks 2–7 ran self-driving per §2's cadence — substrate present (register CONFORMANT, reference line committed, per-walk commits, `fold_check` baseline), `cycle_check` CONTINUE at every walk, no direction-class finding. The previous cycle could not auto-advance because its own register did not validate; this one could, and did.
 **Direction verdict — PROCEED.** None of the three forcers fired: the clone origin stands (100023, shipped, on the primary target); the mechanism is intact, with walk 1 refining how the signal travels before any implementation existed; and the licensing premise was re-measured rather than recalled.
-**Closing:** NOT CLOSED at walk 1 — three instruction-class findings. Phrased so it cannot match a closure claim until earned.
+**Closing:** w7 met the bar — **instruction 0 / record 0**, a fully dry full-lens pass: counts reconcile (11 tests declared and claimed; 16 pins defined and 16 cited; both Scope blocks match their numstat claims) and every command the final fold set touched was RE-RUN and executes. Walk 7 restructured nothing, so the convergence clock did not reset. The mandatory closing-record re-read was run and produced one record fold — this log's own walk count, which had lagged at 1 while seven walks ran. ⚠️ **Two counts appear in this record and they differ for a stated reason:** the prose total is **13 findings**, the manifest's machine-derived `yields:` sums to 11. The emitter reads per-LENS lines; walk 5's two record-decay findings sit on a `Record sweep` line, which §3 asks be counted separately from artifact findings and which the emitter therefore cannot parse. The manifest carries the emitter's number verbatim; this sentence is the reconciliation, so a later reader meets both rather than picking one. **`propagation_check=DIVERGENT:22` is declared as emitted and all 22 rows were classified before the close** — every one the numeral-in-string class (pin values that are line numbers 424/476/562/666/420 or plan ids 100028/100022, matched against the same numerals in ordinary prose). Zero real restatement divergences; thread 96's rider, carried in `open_forks`. ⚠️ **FROZEN, NOT DEPOSITED:** deposit authority for this plan has not been given.
 
 ## Cycle Manifest
-
-*(emitted at BAR_MET)*
+tier: T1
+target: scripts/walk_register_lint.py
+target_class: detector
+state_space: declared-schema-version (absent / below-validator / equal / above-validator) x table-shape (conformant / wrong-shape / headerless / none) x judge-classification (good / bad / neither) — every dimension read from SYSTEM artifacts over the 157 committed registers, never from the author's model: the version axis from the corpus's own declarations (25 carry none, 2 declare 0.1, the rest 0.3), the shape axis from the validator's `missing`/`note` columns over 23 UNCONFORMANT files (89 rows missing `pre_fold_text`, 28 missing five columns, 4 missing `sub_question`, 347 clean), and the judge axis measured directly against `judge_register`'s real substring predicate on eight candidate status names. Cells enumerated as tests 1, 1b, 2-5, 5b, 6-9 in STEP 1 Item 2, including the positive control (test 8, a valid register stays silent) and the arity CONTROL mutant
+mutants: knowledge/mutants/register-enforcement.json
+class: shop-infra
+reads: scripts/walk_register_lint.py, scripts/cycle_check.py, tools/run_check.py, depositor.py, scripts/fold_check.py, tests/test_cycle_check.py, tests/test_walk_register_lint.py, tests/test_run_check.py, knowledge/architecture/walk-register-schema.md, knowledge/mutants/checker-defects-cycle_check.json
+writes: scripts/walk_register_lint.py, scripts/cycle_check.py, tools/run_check.py, tests/test_walk_register_lint.py, tests/test_cycle_check.py, tests/test_run_check.py, knowledge/mutants/register-enforcement.json, knowledge/dev-logs/register-enforcement-dev-2026-09-03.md
+open_forks: promoting the register check from WARN to the pre-wired `"FAIL"` arm at `cycle_check.py:424` — earned on a re-measured funnel, a later plan; the 117 fold rows missing `pre_fold_text`, refused for back-fill on measurement and closable only going forward; the 23 UNCONFORMANT and 3 NO_TABLE files, left as records and not rewritten; `(u)`'s QA-step predicate wrong on 74 of 861 steps (thread 102, its own plan); the `propagation_check` numeral-in-string class — thread 96's rider, and the whole of this plan's DIVERGENT count
+walks: 7
+yields: 3, 1, 2, 2, 1, 1, 0
+validation: cycle_check=BAR_MET, plan_lint=0_FAIL, fold_check=PASS, propagation_check=DIVERGENT:22
+coherence: 7/7 walks have register rows
 
 ## STEP 1 — DEV (three instruments, their tests, and the mutants)
 
@@ -105,6 +122,7 @@ A register honestly declaring `0.1` is therefore judged against v0.3's `REQUIRED
 > 3. a register with **no** declaration → still `PRE-SCHEMA` (unchanged)
 > 4. `judge_register` counts a `NO_TABLE` line as bad (the test commit `45d7aff` shipped without)
 > 5. `judge_register` does **not** count `PRE-SCHEMA` as bad
+> 5b. ⛔ **`judge_register` treats the NEW legacy status explicitly** — not by omission. `judge_register` matches `\tUNCONFORMANT`, `\tNO_TABLE` and `\tCONFORMANT` as substrings; a status matching none of them is invisible to the judge, **which is precisely the defect this plan exists to fix**. Introducing a status without deciding its judge treatment would create the next instance of it. Ruled here: a legacy-schema register is **not bad** (it is honest, not defective) and **not good** (nothing was validated against the current schema), so it must not satisfy the positive control on its own — a sweep containing only legacy registers still FAILs with 'nothing was scanned'. Test both arms.
 > 6. the failure message names the actual status rather than always saying `UNCONFORMANT`
 > 7. assert #2 on a plan whose register is invalid → the WARN appears and the verdict is **unchanged**
 > 8. assert #2 on a plan whose register is valid → no WARN
@@ -112,7 +130,8 @@ A register honestly declaring `0.1` is therefore judged against v0.3's `REQUIRED
 >
 > Run them and record the FAILURE output before implementing.
 >
-> **Item 3 — Defect A: make the validator version-aware.** Branch on the declared VALUE, not its presence. A declared version below the validator's own gets its own status; a declared version ABOVE it is also reported (the validator is too old to judge it) rather than silently mis-scored. Keep `PRE-SCHEMA` for no-declaration.
+> **Item 3 — Defect A: make the validator version-aware.** Branch on the declared VALUE, not its presence.
+> - ⛔ **The new status's NAME is load-bearing and must not begin with `CONFORMANT` or `NO_TABLE`.** `judge_register` classifies by tab-prefixed substring, so the name silently decides the semantics. Measured: `CONFORMANT_LEGACY` → counted **good** (a legacy register would satisfy the positive control on its own); `NO_TABLE_LEGACY` → counted **bad** (a legacy register would fail the sweep); `LEGACY_SCHEMA` → neither, which is w5-3's ruled behaviour. Pick a name that classifies as neither, and pin the choice with test 5b rather than leaving it to whoever types the constant. A declared version below the validator's own gets its own status; a declared version ABOVE it is also reported (the validator is too old to judge it) rather than silently mis-scored. Keep `PRE-SCHEMA` for no-declaration.
 >
 > **Item 4 — Defect B: correct the failure label** in `judge_register` so the message names the statuses it actually counted.
 >
@@ -121,7 +140,7 @@ A register honestly declaring `0.1` is therefore judged against v0.3's `REQUIRED
 > - ⚠️ **IMPORT the validator, do not shell out.** `walk_register_lint.validate_file(path)` returns `(status, rows, shapes)` with no printing and no CLI side effects — verified by importing it and running it on two real registers. Importing avoids a subprocess on every deposit evaluation AND avoids `sys.executable` picking the wrong interpreter, which is thread 29's open defect against `mutation_check` and the same idiom `fold_check` uses at `:97-99`.
 > - ⛔ **Do not assign `"FAIL"`** (MUST-PRESERVE, P4). Record in a comment that the `:424` arm is the earned promotion path and why it is deliberately not taken here.
 >
-> **Item 6 — mutants** at `knowledge/mutants/register-enforcement.json`, in the shape of `checker-defects-cycle_check.json`. At least: drop the version branch → legacy registers mis-scored (killed by test 1); treat `PRE-SCHEMA` as bad (test 5); assign `"FAIL"` instead of warning → escalation returns (test 7); print the WARN after the verdict → contract broken (test 9). ⚠️ **A survivor is a missing test, stated as Critical, never a note.**
+> **Item 6 — mutants** at `knowledge/mutants/register-enforcement.json`, in the shape of `checker-defects-cycle_check.json`. At least: drop the version branch → legacy registers mis-scored (killed by test 1); treat `PRE-SCHEMA` as bad (test 5); assign `"FAIL"` instead of warning → escalation returns (test 7); print the WARN after the verdict → contract broken (test 9). ⚠️ **Add a fifth, as a CONTROL:** change `run_check()`'s return to a 3-tuple → must be **killed by the EXISTING suite**, not by a new test, because 40 sites in `tests/test_cycle_check.py` unpack two values. This mutant exists to prove that guard is real rather than assumed — **if it survives, the arity is unprotected and P15's entire design rests on nothing.** ⚠️ **A survivor is a missing test, stated as Critical, never a note.**
 >
 > **Item 7 — re-measure the corpus distribution** (P6) post-change, reading stderr, and state the delta. Expect the two `0.1` files to move out of `NO_TABLE`. **Report your numbers; only a class change is a HALT.**
 >
@@ -133,7 +152,7 @@ A register honestly declaring `0.1` is therefore judged against v0.3's `REQUIRED
 >
 > ⚠️ **On the QA gate:** this step is not a QA step.
 >
-> **Post-conditions:** all nine tests pass; corpus re-measured with the two 0.1 files reclassified; `mutation_check` 4+ killed / 0 survived; `cycle_check`'s last stdout line unchanged in form.
+> **Post-conditions:** all eleven tests pass (1, 1b, 2–5, 5b, 6–9); corpus re-measured with the two 0.1 files reclassified; `mutation_check` 5 killed / 0 survived (the four defect mutants plus the arity CONTROL); `cycle_check`'s last stdout line unchanged in form.
 
 ## STEP 2 — QA (full suite + the instruments run against the REAL corpus)
 
