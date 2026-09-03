@@ -222,7 +222,14 @@ Cells are enumerated as tests 1–8 in STEP 1 Item 3, including the positive con
 > 7. **exit code unaffected:** a plan tripping (u) with no FAILs → exit 0. Clone the `_QA_PLAN_NO_TXT` fixture, which is measured to return exactly that today.
 > 8. **no step headings at all:** a plan with zero `## STEP` headings → no traceback, no (u) output. ⛔ **Also exits NON-ZERO** — measured: `exit 1`, `FAIL: (e) step heading format` plus `FAIL: (c)`. Same warning as test 6.
 >
-> Run them and record the **failure** output before any implementation exists. ⚠️ **Tests 1, 4, 5 and 7 pass BEFORE the edit** — they are the non-regression half and must be recorded as already-green, with tests 2, 3, 6 and 8 recorded as the failing half. A test that fails to fail is not proving anything; say which is which.
+> Run them and record the output before any implementation exists. ⛔ **The split is MEASURED, not assumed, and it is 5–3, not 4–4:**
+>
+> | before the edit | tests | why |
+> |---|---|---|
+> | **already GREEN** — the non-regression half | 1, 4, 5, 7, **8** | each is satisfied by the current local heuristic too. ⚠️ **Test 8 is in this half:** with no `## STEP` heading the loop body never runs, so (u) is silent under either predicate — measured, `0` `(u)` lines on a heading-less fixture. It guards a crash, not a behaviour change, and is a discriminator for no mutant. |
+> | **must FAIL** — the discriminating half | 2, 3, 6 | 2 and 3 are the two divergence directions; 6 is the headerless keyword-fallback case, silent today because a falsy header yields no `qa_steps` and the fixture's body carries no banner token. |
+>
+> ⚠️ **A test that fails to fail is not proving anything — and the inverse trap is live here:** if you record test 8 as "failing before" you have written a different test from the one specified. Paste the actual pre-edit output for all eight and say which half each landed in; if the measured split is not 5–3, that is a finding about the fixtures, not a number to overwrite.
 >
 > **Item 4 — make the edit. Two lines, both count-1 anchors.**
 >
@@ -242,6 +249,8 @@ Cells are enumerated as tests 1–8 in STEP 1 Item 3, including the positive con
 > - **drop the `plan_header=header` kwarg** so the gate always falls back to keyword detection → killed by test 4.
 > - **wrap the call in `if header:`** (the guard MUST-PRESERVE forbids) → the headerless plan goes silent; killed by test 6.
 > - ⚠️ **append the finding to the results list as a FAIL instead of printing it** → the exit code moves from 0; killed by test 7. **This mutant guards the plan's most load-bearing invariant** (P11, P12) — without it, test 7 is an unproven discriminator that would pass whether or not the invariant is enforced.
+>
+> ⚠️ **Three of the eight tests kill no mutant, and that is stated rather than hidden:** test 1 is the positive control (a discriminator for several mutants without being any one's named killer), test 5 PINS inherited behaviour (both predicates fire on the bracketed form, so no mutation of this edit can move it — it exists so a future change to `gates.py` surfaces here), and test 8 is the crash guard above. The six mutants map onto tests 2+3, 3, 4, 4, 6 and 7. ⚠️ **Do not manufacture a mutant to give tests 1, 5 or 8 a kill** — a mutant written to justify a test is the vacuous-check class inverted.
 >
 > Run `tools/mutation_check.py` against it. ⚠️ **A survivor is a missing test, stated as Critical, never a note.**
 >
