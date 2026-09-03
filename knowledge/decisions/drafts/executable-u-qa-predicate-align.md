@@ -176,6 +176,8 @@ Cells are enumerated as tests 1–8 in STEP 1 Item 3, including the positive con
 >
 > Expected: `plan_lint parses -> {2}` and `gate says -> False`. **If the gate returns True the thread's record is right and this plan's premise sentence is wrong — HALT and request a verdict.**
 >
+> ⚠️ **Then measure the new STDERR channel (P19) — separate the two streams or you cannot see it.** Lint a plan whose `qa_steps` the gate cannot parse (`Done/executable-312.md`, `Done/executable-313.md`, `Done/executable-324.md` carry the bracketed form; four more carry `none`) with `1>out 2>err` and count the `falling back to keyword detection` lines in `err`. Expected: **0 before the edit** (nothing in (u) calls the gate yet), **one per step heading after it**. ⛔ **Never `2>&1` this probe** — merging the streams is exactly what would hide the channel, and a channel that only appears on stderr is byte-identical, on stdout, to no channel at all.
+>
 > **Item 2 — run the GATE against a simulated step 2, not just the commands.** Build deposit-shaped copies of **step 2's** deposits in a scratch tree (never a live path — the incident mandate), then:
 >
 > ```
@@ -197,9 +199,9 @@ Cells are enumerated as tests 1–8 in STEP 1 Item 3, including the positive con
 > 3. ⛔ **the blind-spot discriminator:** **no `qa_steps` field at all**, `## STEP 2 — QA`, deposits tripping an arm → **the WARN fires on step 2**. This is the 8-step class and no existing test reaches it.
 > 4. **the header arm without the heading:** `qa_steps: 2` with `## STEP 2 — DEV` (no `qa` in the heading) → the WARN still fires, because the gate's primary arm returns the `qa_steps` membership and never consults the heading. Guards against a mutant that keeps only the keyword fallback.
 > 5. **the bracketed form:** `qa_steps: [2]` with `## STEP 2 — QA` → the WARN fires (via the gate's keyword fallback). This is the inherited-gap case, pinned so a later change to `gates.py` shows up here.
-> 6. **headerless plan degrades, never crashes:** a plan whose header does not parse, with a `## STEP 2 — QA` heading → the lint completes, reports check (a)'s FAIL, emits (u)'s WARN from the keyword fallback, and produces no traceback. This is the MUST-PRESERVE do-not-add-a-header-guard clause, made executable.
-> 7. **exit code unaffected:** a plan tripping (u) with no FAILs → exit 0.
-> 8. **no step headings at all:** a plan with zero `## STEP` headings → no traceback, no (u) output.
+> 6. **headerless plan degrades, never crashes:** a plan whose header does not parse, with a `## STEP 2 — QA` heading → the lint completes, reports check (a)'s FAIL, emits (u)'s WARN from the keyword fallback, and produces no traceback. This is the MUST-PRESERVE do-not-add-a-header-guard clause, made executable. ⛔ **This fixture exits NON-ZERO** — measured against the current code: `exit 1`, `FAIL: (a) header — plan header parse returned empty` plus `FAIL: (c) QA banner pair`. Assert `returncode == 1` and `"Traceback" not in stdout+stderr`; **do not clone test 7's `returncode == 0` assertion into it.**
+> 7. **exit code unaffected:** a plan tripping (u) with no FAILs → exit 0. Clone the `_QA_PLAN_NO_TXT` fixture, which is measured to return exactly that today.
+> 8. **no step headings at all:** a plan with zero `## STEP` headings → no traceback, no (u) output. ⛔ **Also exits NON-ZERO** — measured: `exit 1`, `FAIL: (e) step heading format` plus `FAIL: (c)`. Same warning as test 6.
 >
 > Run them and record the **failure** output before any implementation exists. ⚠️ **Tests 1, 4, 5 and 7 pass BEFORE the edit** — they are the non-regression half and must be recorded as already-green, with tests 2, 3, 6 and 8 recorded as the failing half. A test that fails to fail is not proving anything; say which is which.
 >
