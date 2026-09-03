@@ -15,6 +15,41 @@
             "anchor": "            if baseline_exit != 0:",
             "replacement": "            if False:",
             "expect_fail": "tests/test_mutation_check.py::test_baseline_failure_is_error_not_killed"
+        },
+        {
+            "name": "drop-per-mutant-target-lookup",
+            "why": "the per-mutant target key must be consulted; dropping the lookup reverts to always using the manifest's top-level target, silently ignoring per-mutant overrides.",
+            "anchor": "            mutant_target = mutant.get(\"target\") or target",
+            "replacement": "            mutant_target = target",
+            "expect_fail": "tests/test_mutation_check.py::test_per_mutant_target_applies_to_that_file"
+        },
+        {
+            "name": "drop-unknown-key-refusal",
+            "why": "unknown per-mutant keys must be refused; dropping the refusal silently accepts any key, leaving the class of 'silently-ignored field' defects this plan exists to close.",
+            "anchor": "            if unknown:",
+            "replacement": "            if False:",
+            "expect_fail": "tests/test_mutation_check.py::test_unknown_per_mutant_key_is_error"
+        },
+        {
+            "name": "drop-filename-from-anchor-mismatch",
+            "why": "the anchor-mismatch message must name the file searched; dropping it reverts to the uninformative message that made 100029's failure undiagnosable.",
+            "anchor": "                      f\" (expected 1) in {mutant_target}\")",
+            "replacement": "                      f\" (expected 1)\")",
+            "expect_fail": "tests/test_mutation_check.py::test_anchor_mismatch_message_names_file"
+        },
+        {
+            "name": "revert-pristine-cache-to-single-read",
+            "why": "SAFETY-CRITICAL: pristine content must be cached per target path. A single pre-loop read causes a mutant targeting file B to write file A's content into file B, silently corrupting the sandbox.",
+            "anchor": "        # Per-target pristine cache. Populated lazily on first use of each\n        # target path; prevents a mutant targeting file B from receiving\n        # file A's contents as its pristine baseline.\n        pristines = {}",
+            "replacement": "        sandbox_target_once = os.path.join(sandbox, target)\n        with open(sandbox_target_once, \"r\") as _f:\n            _pristine_once = _f.read()\n        pristines = {target: _pristine_once}",
+            "expect_fail": "tests/test_mutation_check.py::test_two_mutants_different_targets_no_cross_contamination"
+        },
+        {
+            "name": "revert-live-sha-guard-to-top-level-only",
+            "why": "SAFETY-CRITICAL: the live-sha guard must cover every distinct target. Reverting to the top-level target only means mutations to per-mutant targets go undetected, weakening the central safety property.",
+            "anchor": "        for t in sorted(live_shas_before.keys()):",
+            "replacement": "        for t in [target]:",
+            "expect_fail": "tests/test_mutation_check.py::test_live_tree_guard_covers_all_targets"
         }
     ]
 }

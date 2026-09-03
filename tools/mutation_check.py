@@ -17,6 +17,10 @@ destroy.
 The expect_fail field is a pytest NODE ID
 (e.g. tests/test_foo.py::TestClass or tests/test_foo.py::TestClass::test_method).
 
+A mutant may carry its own "target" key to override the manifest's top-level
+target for that mutant only; the sandbox is a git archive of HEAD, so only
+committed paths are valid targets.
+
 The tool audits COMMITTED code (git archive HEAD). Uncommitted edits to the
 target are invisible and warned about.
 """
@@ -29,6 +33,8 @@ import shutil
 import subprocess
 import sys
 import tempfile
+
+_KNOWN_MUTANT_KEYS = {"name", "why", "anchor", "replacement", "expect_fail", "target"}
 
 
 def _sha256(path):
@@ -108,17 +114,35 @@ def main():
         print(f"ERROR: target not found: {live_target}")
         sys.exit(2)
 
-    status_result = subprocess.run(
-        ["git", "status", "--porcelain", "--", target],
-        capture_output=True, text=True, cwd=repo_root,
-    )
-    if status_result.stdout.strip():
-        print("WARNING: target has uncommitted changes "
-              "— this run audits HEAD, not your working tree")
+    # Collect all distinct targets (top-level + any per-mutant overrides) for
+    # uncommitted-changes warnings and the live-sha guard.
+    all_targets = sorted(set(
+        [target] + [m.get("target") for m in mutants if m.get("target")]
+    ))
 
-    live_sha_before = _sha256(live_target)
+    for t in all_targets:
+        lt = os.path.join(repo_root, t)
+        if not os.path.isfile(lt):
+            continue  # per-mutant target existence is validated inside the loop
+        status_result = subprocess.run(
+            ["git", "status", "--porcelain", "--", t],
+            capture_output=True, text=True, cwd=repo_root,
+        )
+        if status_result.stdout.strip():
+            print(f"WARNING: {t} has uncommitted changes "
+                  "— this run audits HEAD, not your working tree")
+
+    # Record live sha for every distinct target that exists before the run.
+    live_shas_before = {}
+    for t in all_targets:
+        lt = os.path.join(repo_root, t)
+        if os.path.isfile(lt):
+            live_shas_before[t] = _sha256(lt)
+
     print(f"HEAD: {head_sha}")
-    print(f"TARGET: {target} sha256={live_sha_before[:12]}")
+    for t in all_targets:
+        sha_prefix = live_shas_before[t][:12] if t in live_shas_before else "MISSING"
+        print(f"TARGET: {t} sha256={sha_prefix}")
     print()
 
     sandbox = tempfile.mkdtemp(prefix="mutation_check_")
@@ -144,32 +168,63 @@ def main():
             print("ERROR: tar extraction failed")
             sys.exit(2)
 
-        sandbox_target = os.path.join(sandbox, target)
-        if not os.path.isfile(sandbox_target):
+        sandbox_top = os.path.join(sandbox, target)
+        if not os.path.isfile(sandbox_top):
             print(f"ERROR: target not in archive: {target}")
             sys.exit(2)
 
-        with open(sandbox_target, "r") as f:
-            pristine = f.read()
+        # Per-target pristine cache. Populated lazily on first use of each
+        # target path; prevents a mutant targeting file B from receiving
+        # file A's contents as its pristine baseline.
+        pristines = {}
 
         for mutant in mutants:
             name = mutant.get("name", "unnamed")
+
+            # Refuse unknown keys (underscore-prefixed keys are commentary).
+            unknown = [k for k in mutant
+                       if not k.startswith("_") and k not in _KNOWN_MUTANT_KEYS]
+            if unknown:
+                key_list = ", ".join(repr(k) for k in sorted(unknown))
+                print(f"MUTANT {name}: ERROR — unknown key(s) {key_list}"
+                      f" (prefix with _ to mark as commentary)")
+                manifest_errors += 1
+                continue
+
             anchor = mutant.get("anchor")
             replacement = mutant.get("replacement")
             selector = mutant.get("expect_fail")
+            mutant_target = mutant.get("target") or target
 
             if not all([anchor is not None, replacement is not None, selector]):
                 print(f"MUTANT {name}: ERROR — missing required fields")
                 manifest_errors += 1
                 continue
 
-            with open(sandbox_target, "w") as f:
-                f.write(pristine)
+            # Load pristine content for this target on first encounter.
+            sandbox_target = os.path.join(sandbox, mutant_target)
+            if mutant_target not in pristines:
+                if not os.path.isfile(sandbox_target):
+                    print(f"MUTANT {name}: ERROR — target not in archive: {mutant_target}")
+                    manifest_errors += 1
+                    continue
+                with open(sandbox_target, "r") as f:
+                    pristines[mutant_target] = f.read()
+
+            # Restore ALL previously-touched sandbox targets to pristine so
+            # this mutant's baseline runs against a clean tree.
+            for pt, pc in pristines.items():
+                sp = os.path.join(sandbox, pt)
+                if os.path.isfile(sp):
+                    with open(sp, "w") as f:
+                        f.write(pc)
+
+            pristine = pristines[mutant_target]
 
             count = pristine.count(anchor)
             if count != 1:
                 print(f"MUTANT {name}: ERROR — anchor matched {count} times"
-                      " (expected 1)")
+                      f" (expected 1) in {mutant_target}")
                 manifest_errors += 1
                 continue
 
@@ -210,12 +265,11 @@ def main():
 
             # Scoring: only the exit-1 arm is KILLED; the non-1 arms below
             # are defence in depth. The exit-5 arm specifically is unreachable
-            # in practice: the baseline control at :177-186 rejects any
-            # selector that collects nothing, and a selector that collects
-            # tests at baseline also collects them when mutated — so exit 5
-            # cannot reach this block past a green baseline. A mutant on the
-            # exit-5 clause therefore SURVIVES by design and must not be read
-            # as a coverage gap.
+            # in practice: the baseline control rejects any selector that
+            # collects nothing, and a selector that collects tests at baseline
+            # also collects them when mutated — so exit 5 cannot reach this
+            # block past a green baseline. A mutant on the exit-5 clause
+            # therefore SURVIVES by design and must not be read as a coverage gap.
             if exit_code == 1:
                 print(f"MUTANT {name}: KILLED — suite caught the defect")
                 killed += 1
@@ -231,12 +285,20 @@ def main():
                 errors += 1
 
     finally:
-        live_sha_after = _sha256(live_target)
-        if live_sha_after == live_sha_before:
-            print(f"\nLIVE-TREE UNCHANGED: {live_sha_after[:12]}")
-        else:
-            print(f"\nERROR: LIVE TREE CHANGED! "
-                  f"before={live_sha_before[:12]} after={live_sha_after[:12]}")
+        # Live-sha guard covers every distinct target, not just the top-level
+        # one. An absolute per-mutant target collapses live and sandbox paths
+        # onto the same real file; extending the guard here ensures mutations
+        # outside the sandbox are observed and flagged.
+        print()
+        for t in sorted(live_shas_before.keys()):
+            lt = os.path.join(repo_root, t)
+            sha_after = _sha256(lt)
+            sha_before = live_shas_before[t]
+            if sha_after == sha_before:
+                print(f"LIVE-TREE UNCHANGED: {t} sha256={sha_after[:12]}")
+            else:
+                print(f"ERROR: LIVE TREE CHANGED! {t} "
+                      f"before={sha_before[:12]} after={sha_after[:12]}")
 
         if not args.keep_sandbox:
             shutil.rmtree(sandbox, ignore_errors=True)

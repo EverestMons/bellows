@@ -375,3 +375,269 @@ def test_consecutive_same_length_mutants_are_both_killed(tmp_path):
     assert "MUTANT flip-add: KILLED" in out
     assert "MUTANT flip-mul: KILLED" in out
     assert code == 0
+
+
+# --- per-mutant target tests (tests 1–9) ---
+
+
+def test_per_mutant_target_applies_to_that_file(tmp_path):
+    repo = _make_repo(tmp_path, {
+        "file_a.py": "A = 1\n",
+        "file_b.py": "def b_func():\n    return 42\n",
+        "tests/test_files.py": textwrap.dedent("""\
+            import sys, os
+            sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
+            from file_b import b_func
+            def test_b():
+                assert b_func() == 42
+        """),
+    })
+    manifest = {
+        "target": "file_a.py",
+        "mutants": [{
+            "name": "flip-b",
+            "why": "test: per-mutant target",
+            "anchor": "return 42",
+            "replacement": "return 0",
+            "target": "file_b.py",
+            "expect_fail": "tests/test_files.py::test_b",
+        }],
+    }
+    code, out = _run_checker(tmp_path, repo, manifest)
+    assert "MUTANT flip-b: KILLED" in out
+    assert code == 0
+
+
+def test_mutant_without_target_falls_back_to_manifest_target(tmp_path):
+    repo = _make_repo(tmp_path, {
+        "target.py": "def add(a, b):\n    return a + b\n",
+        "tests/test_target.py": textwrap.dedent("""\
+            import sys, os
+            sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
+            from target import add
+            def test_add():
+                assert add(1, 2) == 3
+        """),
+    })
+    manifest = {
+        "target": "target.py",
+        "mutants": [{
+            "name": "flip-add",
+            "why": "test: fallback to manifest target",
+            "anchor": "return a + b",
+            "replacement": "return a - b",
+            "expect_fail": "tests/test_target.py::test_add",
+        }],
+    }
+    code, out = _run_checker(tmp_path, repo, manifest)
+    assert "MUTANT flip-add: KILLED" in out
+    assert code == 0
+
+
+def test_no_per_mutant_targets_behaves_identically(tmp_path):
+    repo = _make_repo(tmp_path, {
+        "target.py": "def f():\n    return 1\n",
+        "tests/test_target.py": textwrap.dedent("""\
+            import sys, os
+            sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
+            from target import f
+            def test_f():
+                assert f() == 1
+        """),
+    })
+    manifest = {
+        "target": "target.py",
+        "mutants": [{
+            "name": "change-return",
+            "why": "test: no per-mutant targets",
+            "anchor": "return 1",
+            "replacement": "return 2",
+            "expect_fail": "tests/test_target.py::test_f",
+        }],
+    }
+    code, out = _run_checker(tmp_path, repo, manifest)
+    assert "MUTANT change-return: KILLED" in out
+    assert "LIVE-TREE UNCHANGED" in out
+    assert code == 0
+
+
+def test_per_mutant_target_missing_file_is_error(tmp_path):
+    repo = _make_repo(tmp_path, {
+        "target.py": "X = 1\n",
+        "tests/test_target.py": "def test_x():\n    assert True\n",
+    })
+    manifest = {
+        "target": "target.py",
+        "mutants": [{
+            "name": "bad-target",
+            "why": "test: missing per-mutant target",
+            "anchor": "X = 1",
+            "replacement": "X = 2",
+            "target": "nonexistent_file.py",
+            "expect_fail": "tests/test_target.py::test_x",
+        }],
+    }
+    code, out = _run_checker(tmp_path, repo, manifest)
+    assert "MUTANT bad-target: ERROR" in out
+    assert "nonexistent_file.py" in out
+    assert code == 2
+
+
+def test_unknown_per_mutant_key_is_error(tmp_path):
+    repo = _make_repo(tmp_path, {
+        "target.py": "X = 1\n",
+        "tests/test_target.py": "def test_x():\n    assert True\n",
+    })
+    manifest = {
+        "target": "target.py",
+        "mutants": [{
+            "name": "bad-key-mutant",
+            "why": "test",
+            "anchor": "X = 1",
+            "replacement": "X = 2",
+            "unknown_key": "some_value",
+            "expect_fail": "tests/test_target.py::test_x",
+        }],
+    }
+    code, out = _run_checker(tmp_path, repo, manifest)
+    assert "MUTANT bad-key-mutant: ERROR" in out
+    assert "unknown_key" in out
+    assert code == 2
+
+
+def test_anchor_mismatch_message_names_file(tmp_path):
+    repo = _make_repo(tmp_path, {
+        "file_a.py": "A = 1\n",
+        "file_b.py": "B = 2\n",
+        "tests/test_target.py": "def test_x():\n    assert True\n",
+    })
+    manifest = {
+        "target": "file_a.py",
+        "mutants": [{
+            "name": "zero-match",
+            "why": "test: anchor mismatch names file",
+            "anchor": "DOES_NOT_EXIST",
+            "replacement": "X",
+            "target": "file_b.py",
+            "expect_fail": "tests/test_target.py::test_x",
+        }],
+    }
+    code, out = _run_checker(tmp_path, repo, manifest)
+    assert "MUTANT zero-match: ERROR" in out
+    assert "file_b.py" in out
+    assert code == 2
+
+
+def test_per_mutant_target_scoring_unchanged(tmp_path):
+    repo = _make_repo(tmp_path, {
+        "file_a.py": "def f():\n    return 1\n",
+        "file_b.py": 'UNUSED = "hello"\n',
+        "tests/test_files.py": textwrap.dedent("""\
+            import sys, os
+            sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
+            from file_a import f
+            def test_f():
+                assert f() == 1
+        """),
+    })
+    manifest = {
+        "target": "file_a.py",
+        "mutants": [
+            {
+                "name": "kill-it",
+                "why": "test: killed with per-mutant target",
+                "anchor": "return 1",
+                "replacement": "return 0",
+                "target": "file_a.py",
+                "expect_fail": "tests/test_files.py::test_f",
+            },
+            {
+                "name": "survive-it",
+                "why": "test: survived with per-mutant target",
+                "anchor": 'UNUSED = "hello"',
+                "replacement": 'UNUSED = "world"',
+                "target": "file_b.py",
+                "expect_fail": "tests/test_files.py::test_f",
+            },
+        ],
+    }
+    code, out = _run_checker(tmp_path, repo, manifest)
+    assert "MUTANT kill-it: KILLED" in out
+    assert "MUTANT survive-it: SURVIVED" in out
+    assert code == 1
+
+
+def test_two_mutants_different_targets_no_cross_contamination(tmp_path):
+    repo = _make_repo(tmp_path, {
+        "file_a.py": "MARKER_A = 'alpha'\ndef a_func():\n    return MARKER_A\n",
+        "file_b.py": "MARKER_B = 'beta'\ndef b_func():\n    return MARKER_B\n",
+        "tests/test_files.py": textwrap.dedent("""\
+            import sys, os
+            sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
+            from file_a import a_func
+            from file_b import b_func
+            def test_a():
+                assert a_func() == 'alpha'
+            def test_b():
+                assert b_func() == 'beta'
+        """),
+    })
+    manifest = {
+        "target": "file_a.py",
+        "mutants": [
+            {
+                "name": "mutate-a",
+                "why": "test: targets file_a.py",
+                "anchor": "return MARKER_A",
+                "replacement": "return 'wrong'",
+                "target": "file_a.py",
+                "expect_fail": "tests/test_files.py::test_a",
+            },
+            {
+                "name": "mutate-b",
+                "why": "test: targets file_b.py, pristine cache must not bleed",
+                "anchor": "return MARKER_B",
+                "replacement": "return 'wrong'",
+                "target": "file_b.py",
+                "expect_fail": "tests/test_files.py::test_b",
+            },
+        ],
+    }
+    code, out = _run_checker(tmp_path, repo, manifest)
+    assert "MUTANT mutate-a: KILLED" in out
+    assert "MUTANT mutate-b: KILLED" in out
+    assert code == 0
+
+
+def test_live_tree_guard_covers_all_targets(tmp_path):
+    repo = _make_repo(tmp_path, {
+        "file_a.py": "def a():\n    return 1\n",
+        "file_b.py": "def b():\n    return 2\n",
+        "tests/test_files.py": textwrap.dedent("""\
+            import sys, os
+            sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
+            from file_a import a
+            from file_b import b
+            def test_a():
+                assert a() == 1
+            def test_b():
+                assert b() == 2
+        """),
+    })
+    manifest = {
+        "target": "file_a.py",
+        "mutants": [{
+            "name": "mutate-b",
+            "why": "test: live-tree guard must cover per-mutant target file_b.py",
+            "anchor": "return 2",
+            "replacement": "return 0",
+            "target": "file_b.py",
+            "expect_fail": "tests/test_files.py::test_b",
+        }],
+    }
+    code, out = _run_checker(tmp_path, repo, manifest)
+    assert "MUTANT mutate-b: KILLED" in out
+    assert "LIVE-TREE UNCHANGED: file_b.py" in out
+    live_b = repo / "file_b.py"
+    assert live_b.read_text() == "def b():\n    return 2\n"
+    assert code == 0
