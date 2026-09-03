@@ -8,6 +8,7 @@
       "PIN-CHECK: kind=prefix line=N token=3a84137ed366\u2026 result=ambiguous",
       "PIN-CHECK: kind=prefix line=N token=5138760431ae\u2026 result=ambiguous",
       "PIN-CHECK: kind=prefix line=N token=afdc93b59638\u2026 result=ambiguous",
+      "PIN-CHECK: kind=prefix line=N token=be31b8483ff5\u2026 result=ambiguous",
       "PIN-CHECK: kind=prefix line=N token=e12135909645\u2026 result=ambiguous",
       "WARN: Drafting Cycle closing indicates fold as last event, not a dry lens pass (DRAFTING_CYCLE.md \u00a72)",
       "WARN: step 2 mentions tests but declares no test scope"
