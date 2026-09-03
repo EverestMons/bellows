@@ -114,7 +114,19 @@ Cells are enumerated as tests 1–8 in STEP 1 Item 3, including the positive con
 
 ⚠️ **Measured 2026-09-03 by the Planner; RE-DERIVE each pre-flight — yours supersede and you say so; mismatch on a load-bearing pin → HALT.**
 
-⛔ **Every one of the 19 pins has a named site AND a readable probe — both audited mechanically, not by eye.** The probe column of all 19 rows was extracted and checked for a runnable command, a named scope, and a stated expected value; the **eight** that carry their own command were each given a named file and a stated expected value (P1, P2, P3, P4, P5, P6, P11, P16 — six of them corrected across walks 5, 9 and 10), and the seven that delegate — P7, P8, P9, P10, P13, P17, P19 — name the step and item that runs them, which is the sanctioned form. P12, P14 and P18 are reads and name the lines. **8 + 7 + 3 = 18, plus P15 (the Planner's) = 19.** STEP 1 **Item 1** (11): P1, P2, P3, P4, P5, **P6**, P7, P9, P10, **P11**, P19, and P8's before half. STEP 1 **Item 2**: P17. STEP 1 **Item 6**: P8's after half. STEP 2 **Item 1**: P13. STEP 2 **Item 3**: P16, re-asked as an emptiness assertion over the DEV→QA window rather than a count. ⚠️ **THREE pins are READS, not measurements** — P12, P14 and P18 — re-derived by re-reading the cited lines rather than by running anything; **say `read` beside each, never `ran`**. ⚠️ **P6 and P11 are NOT among them and an earlier form of this block wrongly said they were** (and called the list of five "four"): P6 runs `git blame` and a `sqlite3` query, P11 runs a `grep -c`. Both are measurements with commands and both are now assigned to Item 1. **P15 is the Planner's** (a depositor dry-run against the manifest's write set) and is not an agent obligation. **11 + 1 + 1 + 1 + 1 + 3 + 1 = 19.**
+⛔ **Every pin has a named re-derivation site and a readable probe — the table below IS the count, so nothing here is an arithmetic claim in prose.** *(Re-authored whole at walk 11 after three amendments to this region; §2.7's re-author-rather-than-patch rule. Two corrections it carries rather than hides: an earlier form said "four" and listed five reads, and it counted P6 and P11 among them when both run commands and neither had a site.)*
+
+| pin | re-derived at | method |
+|---|---|---|
+| P1 · P2 · P3 · P4 · P5 · P6 · P7 · P9 · P10 · P11 · P19 | STEP 1 **Item 1** | `ran` |
+| P8 | STEP 1 **Item 1** (before half) and **Item 6** (after half) | `ran` |
+| P17 | STEP 1 **Item 2** | `ran` |
+| P13 | STEP 2 **Item 1** | `ran` |
+| P16 | STEP 2 **Item 3**, re-asked as an emptiness assertion over the DEV→QA window rather than as a count — the assertion observes the effect, the count is a proxy | `ran` |
+| P12 · P14 · P18 | not re-run; re-derived by re-reading the cited lines | ⚠️ `read` |
+| P15 | the Planner's (a depositor dry-run against the manifest's write set); **not an agent obligation** | `ran` (Planner) |
+
+⚠️ **Label every re-derivation `read` or `ran` and mean it** — a read is a hypothesis about a consumer, never a verification result, and the three `read` rows above are the only pins entitled to that label.
 
 | id | pin | value | anchor/probe |
 |---|---|---|---|
