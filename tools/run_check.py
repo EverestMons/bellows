@@ -63,7 +63,7 @@ def judge_propagation(stdout, stderr, rc):
 
 
 def judge_register(stdout, stderr, code):
-    bad = [ln for ln in stderr.splitlines() if "\tUNCONFORMANT" in ln]
+    bad = [ln for ln in stderr.splitlines() if "\tUNCONFORMANT" in ln or "\tNO_TABLE" in ln]
     good = [ln for ln in stderr.splitlines() if "\tCONFORMANT" in ln]
     if bad:
         return "FAIL", f"{len(bad)} UNCONFORMANT file(s): " + "; ".join(
