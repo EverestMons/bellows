@@ -1,0 +1,26 @@
+{
+  "plan_lint": {
+    "exit": 0,
+    "signals": [
+      "(f) WARN: Cycle Manifest stanza missing or empty field: class",
+      "(f) WARN: Cycle Manifest stanza missing or empty field: coherence",
+      "(f) WARN: Cycle Manifest stanza missing or empty field: open_forks",
+      "(f) WARN: Cycle Manifest stanza missing or empty field: reads",
+      "(f) WARN: Cycle Manifest stanza missing or empty field: target",
+      "(f) WARN: Cycle Manifest stanza missing or empty field: tier",
+      "(f) WARN: Cycle Manifest stanza missing or empty field: validation",
+      "(f) WARN: Cycle Manifest stanza missing or empty field: walks",
+      "(f) WARN: Cycle Manifest stanza missing or empty field: writes",
+      "(f) WARN: Cycle Manifest stanza missing or empty field: yields",
+      "(o2) WARN: Deposits entry `knowledge/dev-logs/qa-predeclaration-dev-N-N-N.md` is not project-prefixed or absolute",
+      "(o2) WARN: Deposits entry `knowledge/mutants/qa-predeclaration-plan_lint.json` is not project-prefixed or absolute",
+      "(o2) WARN: Deposits entry `knowledge/qa/evidence/qa-predeclaration-N-N-N/probes-raw.txt` is not project-prefixed or absolute",
+      "(o2) WARN: Deposits entry `knowledge/qa/evidence/qa-predeclaration-N-N-N/pytest_full.txt` is not project-prefixed or absolute",
+      "(o2) WARN: Deposits entry `knowledge/qa/evidence/qa-predeclaration-N-N-N/qa-receipt.md` is not project-prefixed or absolute",
+      "(u) WARN: step 1 Deposits: first .md is 'qa-predeclaration-dev-N-N-N.md' \u2014 rule_20_self_check reads the first .md as the QA report (thread N)",
+      "(u) WARN: step 1 Deposits: no .txt evidence entry (thread N/N)",
+      "PIN-CHECK: kind=sha256 line=N token=e19f3be6d624\u2026 result=ok",
+      "WARN: Drafting Cycle closing indicates fold as last event, not a dry lens pass (DRAFTING_CYCLE.md \u00a72)"
+    ]
+  }
+}

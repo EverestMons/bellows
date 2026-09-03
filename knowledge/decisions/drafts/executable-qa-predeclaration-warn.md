@@ -112,22 +112,21 @@ The four correct plans all use the same authored form — a bolded gate-note lin
 
 **Tier:** T1 — triggers fired: T-3 (cross-machine: the check runs under a second interpreter on the Air). T-6 assessed and NOT fired: `plan_lint` is a deposit-time checker, not a gate module, and the three shipped same-class precedents (561, 576, 100022) all computed T1. T-8 not fired: structure-for-structure clone of 576.
 **Walk register:** `/Users/marklehn/Developer/eluvian-governance/governance/knowledge/research/walk-register-qa-predeclaration-2026-09-03.md`
-**Walks:** 2 (walks 0, 1, 2 complete; the bar is NOT met — walk 2 returned four instruction-class findings).
-- Weak spots:          w1 3 folded — instruction 2 / record 1 (suppression scope; the no-declaration blind spot; negation-blindness).
-- Destruction:         w1 2 folded — instruction 0 / record 2 (the downstream judge reads the exit code only; the retag's two-site blast radius).
-- Vulnerabilities:     w1 1 folded — instruction 1 / record 0 (the second-interpreter pin re-homed onto its tracked thread).
-- Integration-record:  w1 1 folded — instruction 1 / record 0 (the corpus lesson mandating a gate run, not a command run).
-- ACID:                w1 dry — the DEV→QA window's guard is inherited and intact (the step-2 commit resolved by plan-id tag, never HEAD-relative); w2 1 folded — instruction 1 / record 0 (a frozen corpus expectation restated as a supersede rule).
-- Weak spots (w2):     w2 1 folded — instruction 1 / record 0 (step 2's suite command was unspecified where the origin gives it exactly).
-- Integration-record (w2): w2 1 folded — instruction 1 / record 0 (the parent's register measures a separate test module per check family; pinned, no branch).
-- Vulnerabilities (w2): w2 1 folded — instruction 1 / record 0 (a falsy header must degrade, not raise — the file's own three-site idiom).
+**Walks:** 4 (walks 0–4 complete).
+- Weak spots:          w1 3 folded — instruction 2 / record 1; w2 1 folded — instruction 1 / record 0 (step 2's suite command unspecified where the origin gives it exactly); w3 dry; w4 dry.
+- Destruction:         w1 2 folded — instruction 0 / record 2; w2 dry; w3 dry; w4 dry.
+- Vulnerabilities:     w1 1 folded — instruction 1 / record 0; w2 1 folded — instruction 1 / record 0 (a falsy header must degrade, not raise); w3 1 folded — instruction 1 / record 0 (the folded interpreter path was unexecutable from the worktree the same item mandates); w4 dry.
+- Integration-record:  w1 1 folded — instruction 1 / record 0 (the corpus lesson mandating a gate run); w2 1 folded — instruction 1 / record 0 (a separate test module per check family, pinned); w3 dry; w4 1 folded — instruction 1 / record 0 (the exit-code invariant's test had no mutant proving it discriminates).
+- ACID:                w1 dry — the DEV→QA window's guard is inherited and intact; w2 1 folded — instruction 1 / record 0 (a frozen corpus expectation restated as a supersede rule); w3 1 folded — instruction 1 / record 0 (that fold had half-landed, leaving step 2 contradicting step 1); w4 dry.
+**Record decay swept at w4:** the walk count itself had lagged at 2 while walks 3 and 4 ran — the class §3 names, caught by sweeping the log as part of the pass rather than assuming it.
 **Walk 0 — context pin (measured 2026-09-02, never recalled):** (1) newest same-class by `git log` on the target = plan 100022 at `e088d05`, `lifecycle_state=halted`; newest SHIPPED same-class = 576 (Done 2026-08-27) — 576 is the clone origin, since the magnitude proxy requires a shipped parent. (2) Both edit anchors measured for line, length and span — P2 whole-line, P3 a span inside a longer literal. (3) Both count-1 file-wide. (4) Provenance per P4. (5) Target sha per P1. (6) **Consumer dry-run (the execution act):** the class assigner returns `shop-infra` (P12 — this plan will HOLD at deposit, by design); the deposit extractor resolves both steps' blocks, and step 2's first report-class deposit and its raw-evidence entry both satisfy (u)'s two arms.
 **Walk 0 — clone-diff (three passes + the two the parent's text cannot supply):** FACTS — 576's pins E2 and E3 re-verified live and still true, with the line references drifted and re-pinned. ARTEFACTS — 576's funnel-before-authoring, exit-code invariant and warn-first framing all carried; its `Done/`-corpus prototype method carried and re-run. STRUCTURE — ⚠️ **one inherited defect declined:** 576 places the record sections AFTER the last step, which the current record-placement rule forbids; the newest same-class plans (100026, 100027) place them above the first step, and this plan follows the newest. ⚠️ **Second inherited defect declined:** 576's sibling check (u) supplies a QA-step test this plan was drafted to reuse; P11 measured it wrong and (v) calls the gate's predicate instead.
 **Walk 0 findings folded into v1:** 8 — instruction 6 / record 2. Instruction: the predicate correction (P11); the funnel re-measured under the shipped predicate (3 → 9 fires, restratified by the gate's own age); the record-section placement; the two lint FAILs on v0 (a missing self-check banner pair in the QA step, and a step-2 scope block that parsed to zero entries); the plan's own probe lines using an unfixed-string grep against its own rule. Record: the date literals rolled to the authoring date; the sibling-check WARN pre-declared rather than avoided.
-**Walk 1 findings folded:** 7 — instruction 4 / record 3; 2 of 7 fold-introduced (diagnostic). The four instruction findings are the step-scoped suppression, the gate-run pre-flight item, the seventh regression test with its matching mutant, and the interpreter pin re-homed onto thread 84.
+**Per-walk yields:** w0 8 (instruction 6 / record 2) · w1 7 (instruction 4 / record 3; 2 fold-introduced) · w2 5 (instruction 4 / record 1; 3 fold-introduced) · w3 2 (instruction 2 / record 0; **both fold-introduced by w2**) · w4 2 (instruction 1 / record 1; both fold-introduced). ⚠️ The fold-introduced share rises across the cycle — the noise-floor signature §2 names, and a reason to suspect circling rather than a licence to close. The countervailing fact is that w3's instruction finding was **unreachable by reading**: the interpreter path was found dead only by RUNNING the folded command from the dispatch-shaped location.
 **Walk 1 — standing-rules diff (`bellows/CLAUDE.md`, the pass the parent's text cannot supply):** every probe in this plan uses the interpreter its Start block names; the second-interpreter risk this plan carries in MUST-PRESERVE is the same one thread 84 already tracks, so the pin is re-homed onto that thread rather than asserted from a memory note. No command in this plan violates a standing rule.
 **Direction verdict — PROCEED.** The angle is right. None of the three forcing findings fired: (a) the clone origin stands — 576 remains the shipped same-class parent, and the two defects declined (its record placement, its sibling check's predicate) are the clone-diff working as designed, not the origin being invalid; (b) the mechanism is intact — a WARN-only check at a count-1 anchor, gated on an authored declaration; walk 0's predicate correction and walk 1's suppression scoping both refined that mechanism before any implementation existed, which is where refinements are cheapest; (c) the licensing premise — that a no-pytest QA step cannot pass the gate and the remedy is a pre-declared clause — was re-measured twice independently (P6's regex probe with its positive control, and P13's live gate run with its firing negative control) and holds.
-**Closing:** not reached — the bar requires a walk whose findings are all record-class, and walk 1 returned four instruction-class.
+**Cold scout (T1, Planner's call — §2.0):** convened on the walk-2-folded artifact, lens-4-shaped, no brief layered, run on the second machine; result pending at this revision and recorded in the walk register when it reports. The close does not precede it.
+**Closing:** NOT CLOSED at walk 4 — walk 4 returned one instruction-class finding (the exit-code invariant's missing discriminating mutant), so the bar is unmet and a further confirming pass is owed. This line is deliberately phrased so it cannot match a closure claim until the condition is true.
 
 ## Cycle Manifest
 
@@ -143,8 +142,11 @@ The four correct plans all use the same authored form — a bolded gate-note lin
 >
 > **Item 1 — re-derive the load-bearing pins (P1, P2, P3, P6, P9, P11) and HALT on mismatch.** Record measured-vs-expected for each. P6 is the plan's foundation and carries its own positive control; run it with the REAL regex imported from `gates`, never retyped:
 >
+> ⚠️ **The worktree has no `.venv`** — it is gitignored, so a relative `.venv/bin/python` is dead on arrival from the dispatch cwd. Bind the canonical interpreter by ABSOLUTE path first, as plans 100022 / 100026 / 100027 all do:
+>
 > ```
-> .venv/bin/python -c "
+> BPY=/Users/marklehn/Developer/bellows/.venv/bin/python
+> "$BPY" -c "
 > import sys; sys.path.insert(0,'.')
 > import gates
 > p='knowledge/qa/evidence/eluvian-wiring-pull-2026-08-26/probes-raw.txt'
@@ -180,13 +182,14 @@ The four correct plans all use the same authored form — a bolded gate-note lin
 >
 > **Item 4 — narrow (u)'s thread tag** at the count-1 anchor of P3. One string. No behaviour change. Re-run the lint on an unrelated closed plan before and after and show the WARN set is otherwise identical.
 >
-> **Item 5 — write the mutants manifest** `knowledge/mutants/qa-predeclaration-plan_lint.json`, in the shape of `checker-defects-plan_lint.json` (`target`, then `mutants[]` of `name` / `why` / `anchor` / `replacement` / `expect_fail`). At least six:
+> **Item 5 — write the mutants manifest** `knowledge/mutants/qa-predeclaration-plan_lint.json`, in the shape of `checker-defects-plan_lint.json` (`target`, then `mutants[]` of `name` / `why` / `anchor` / `replacement` / `expect_fail`). At least seven:
 > - drop the scope gate → the check fires on every QA step; killed by test 3.
 > - invert the suppression → fires when the clause is present; killed by test 2.
 > - narrow the token set to the gate-name token alone → the 555 case regresses; killed by test 5.
 > - **widen the suppression search from the step's text back to the whole plan** → killed by test 6.
 > - **drop the header guard** (`header.get(...)` unguarded) → a headerless plan raises; killed by test 7.
 > - **swap the gate predicate for the neighbouring block's heuristic** → killed by test 8.
+> - ⚠️ **append the finding to the results list as a FAIL instead of printing it** → `plan_lint`'s exit code moves from 0 to non-zero; killed by test 4. **This mutant guards this plan's most load-bearing invariant** (MUST-PRESERVE: the check may never alter the exit code, because `run_check.judge_lint` reads that code as its only channel — P14). Without it, test 4 is an unproven discriminator: it would pass whether or not the invariant is actually enforced, which is the vacuous-check class 576 caught in its own manifest and the class whose survivors halted 100022.
 >
 > Run `tools/mutation_check.py` against it. ⚠️ **A survivor is a missing test, stated as Critical, never a note** — plan 100022 halted on exactly this and its two survivors are still unfixed.
 >
@@ -200,7 +203,7 @@ The four correct plans all use the same authored form — a bolded gate-note lin
 >
 > ⚠️ **Gate note:** this step is not a QA step; the raw-evidence arm does not apply to it. Its sibling-check WARN is pre-declared in MUST-PRESERVE.
 >
-> **Post-conditions:** all eight new tests pass; the funnel re-measures at 9; `mutation_check` reports 6 killed / 0 survived; the lint on a tripping plan exits 0.
+> **Post-conditions:** all eight new tests pass; the funnel re-measures at 9; `mutation_check` reports 7 killed / 0 survived; the lint on a tripping plan exits 0.
 
 ## STEP 2 — QA (FULL suite + the check run against REAL plans)
 
@@ -212,19 +215,22 @@ The four correct plans all use the same authored form — a bolded gate-note lin
 > **Item 1 — full suite from a WORKTREE**, never the canonical checkout (it carries a repo-root config file and yields a different summary line — P9):
 >
 > ```
-> .venv/bin/python -m pytest tests/ --tb=short -q 2>&1 | cat | tee knowledge/qa/evidence/qa-predeclaration-2026-09-03/pytest_full.txt
+> BPY=/Users/marklehn/Developer/bellows/.venv/bin/python
+> "$BPY" -m pytest tests/ --tb=short -q 2>&1 | cat | tee knowledge/qa/evidence/qa-predeclaration-2026-09-03/pytest_full.txt
 > ```
+>
+> ⚠️ **`.venv` does not exist inside a worktree** (gitignored) — the absolute bind above is required, not stylistic. A relative `.venv/bin/python` here fails with "no such file or directory" and the step produces no evidence file at all, which the deposit gate then reports as a missing deposit rather than as the interpreter error it actually is.
 >
 > Expected: the P9 baseline (`1814 passed, 1 skipped`, 1815 collected) plus the eight new tests, 0 failed. **Derive the count from P9 plus your own additions and state the arithmetic; do not assert it from memory.** ⚠️ Run this from a worktree path — confirm with `pwd` and show that no repo-root config file is present, since that file's absence is what makes P9's line the right baseline.
 >
 > **Item 2 — the check against REAL plans**, raw tails to the raw-evidence file:
 > 1. **fires on the known post-gate true positive:** run the lint on `knowledge/decisions/Done/executable-100013.md` and show the new WARN. Its resolved verdict records the gate failing there and being overridden — this is the case the check exists for.
 > 2. **silent on all four clause-carrying plans:** 100027, 543, 548, 555 → show a zero count for the new WARN on each. ⚠️ A zero from a plan with no QA step at all is vacuous — confirm each of the four is QA-bearing first and say so.
-> 3. **exactly nine fires corpus-wide:** re-run the Item-6 census and paste the list.
+> 3. **the corpus census:** re-run the Item-6 census and paste the list. Expected 9 at authoring; **apply Item 6's supersede rule — report your number, state the delta, and HALT only on a delta that changes the CLASS of the result.**
 > 4. **exit code unaffected:** run the lint on a tripping plan and show `exit=0`. Establish "before" from the commit PRECEDING THIS PLAN'S OWN DEV COMMIT, resolved by its plan-id commit tag — never `HEAD`-relative, and never by `git stash`. Paste the resolved sha and both exit codes.
 > 5. **the predicate holds:** run the lint on this very plan and show the new WARN does NOT fire on its step 1 (its scope is targeted), while the sibling check's WARN does — the pre-declared instance of P11.
 >
-> **Item 3 — re-run `tools/mutation_check.py`** on the committed code and paste the kill map. 6 killed / 0 survived.
+> **Item 3 — re-run `tools/mutation_check.py`** on the committed code and paste the kill map. 7 killed / 0 survived.
 >
 > **Item 4 — hygiene + receipt** at `qa-receipt.md`: numstat vs the DEV commit; toplevel; reflog `-n 4` → 0 amends; a per-item table; the re-measured funnel stated plainly; then the QA self-check block inside a Verification-headed section (the 556 placement law).
 >
@@ -237,7 +243,7 @@ The four correct plans all use the same authored form — a bolded gate-note lin
 > - `knowledge/qa/evidence/qa-predeclaration-2026-09-03/probes-raw.txt`
 > - `knowledge/qa/evidence/qa-predeclaration-2026-09-03/qa-receipt.md`
 >
-> **Post-conditions:** suite green at the derived count; the check fires on 100013 and on exactly nine plans corpus-wide; silent on all four clause-carriers; exit code unchanged; kill map 6/6.
+> **Post-conditions:** suite green at the derived count; the check fires on 100013; the corpus census matches Item 6's supersede rule (9 at authoring, class unchanged); silent on all four clause-carriers; exit code unchanged; kill map 7/7.
 
 Rule 20 banner (byte-exact, inside the QA receipt's VERIFICATION section):
 
