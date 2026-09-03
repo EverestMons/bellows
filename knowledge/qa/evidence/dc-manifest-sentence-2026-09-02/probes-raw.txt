@@ -1,0 +1,181 @@
+# probes-raw.txt — dc-manifest-sentence-2026-09-02 (plan 100027)
+# Generated: 2026-09-02
+
+================================================================
+ITEM 1 — Live doctrine file
+================================================================
+
+--- git log -1 on DRAFTING_CYCLE.md ---
+d02fa149 [100027] dc-manifest-sentence: DRAFTING_CYCLE v2.24 — the thread-67 sentence and the §3 example reconciled to depositor.py/plan_lint.py/cycle_check.py (no rule changed)
+
+--- Task C counts (14 probes) ---
+ten REQUIRED fields: 1
+three OPTIONAL fields: 1
+one of the FOUR values: 1
+compares ONLY the declared: 1
+{read-only, governed-tooling, register-writing}: 0
+HARD-HOLD: 2
+HOLD-AND-REPORT: 2
+**Version:** 2.24 (2026-09-02): 1
+**Version:** 2.23 (2026-09-01): 0
+slug dc-manifest-sentence-2026-09-02 row: 1
+slug gate2-dc-w28-2026-09-01 row: 1
+class: governed-tooling (whole line): 0
+class: shop-infra (whole line): 1
+validation four-pair (whole line): 1
+
+--- wc -l ---
+     370 /Users/marklehn/Developer/eluvian-governance/DRAFTING_CYCLE.md
+
+--- git status --porcelain (EMPTY = clean) ---
+(end porcelain)
+
+================================================================
+ITEM 2 — Builder byte-identity
+================================================================
+
+--- P4: builder digest vs blob ---
+on-disk digest: a9e4d099e11f213d
+builder last commit: f0ab037d88a044bde9c32019ced3d997d6b6fc02
+blob digest: a9e4d099e11f213d
+
+--- rebuild from pre-edit blob ---
+QA-found commit: d02fa1498c9a5ccf418f22ce12712245a4394ef1
+pre-edit blob wc -l: 369
+BUILT: /tmp/dc67-qa/DC-out.md edits=5 lines+1 bytes+4669 post=20/20
+builder_exit=0
+BYTE_IDENTICAL
+
+--- Four refusals ---
+Refusal 1 (out == in):
+BUILDER REFUSED: out == in
+exit=1
+
+Refusal 2 (out under forbidden root):
+BUILDER REFUSED: out is under a forbidden root /Users/marklehn/Developer/eluvian-governance (the literal governance root, or the input's git toplevel)
+exit=1
+
+Refusal 3 (already built):
+BUILDER REFUSED: output tokens already present in input — already built?
+exit=1
+
+Refusal 4 (input missing):
+BUILDER REFUSED: input missing: /tmp/dc67-qa/absent.md
+exit=1
+
+================================================================
+ITEM 3 — Sentence against the code, clause by clause
+================================================================
+
+--- S1: 'ten REQUIRED fields' from sentence ---
+ten REQUIRED fields
+
+--- S1: 'three OPTIONAL fields' from sentence ---
+three OPTIONAL fields
+
+--- S1: plan_lint.py :552-555 (_STANZA_REQUIRED, ten required) ---
+        _STANZA_REQUIRED = [
+            "tier", "target", "class", "reads", "writes",
+            "open_forks", "walks", "yields", "validation", "coherence",
+        ]
+
+--- S1: plan_lint.py :594, :596, :603 (three optional: target_class, state_space, mutants) ---
+        tc_val = stanza_fields.get("target_class", "").strip()
+            ss_val = stanza_fields.get("state_space", "").strip()
+            mut_val = stanza_fields.get("mutants", "").strip()
+Agreement: sentence says ten REQUIRED plus three OPTIONAL detector fields; code requires exactly ten (_STANZA_REQUIRED) and reads three optional (target_class, state_space, mutants) — AGREE
+
+--- S2+D2: 'one of the FOUR values' from sentence ---
+one of the FOUR values
+
+--- S2+D2: depositor.py :307-314 (four return values of _assign_class) ---
+            return "read-only"
+        if has_shop_infra:
+            return "shop-infra"
+        if all_out_of_tree:
+            return None
+        if has_register:
+            return "register-writing"
+        return "app-feature"
+
+--- S2+D2: depositor.py :173-178 (class_mismatch hold) ---
+        if declared_class and declared_class != assigned_class:
+            self._hold(path, "class_mismatch", {
+                "class_assigned": assigned_class,
+                "class_declared": declared_class,
+            })
+            return
+
+--- S2+D2: depositor.py :184-186 (shop-infra hold) ---
+        if assigned_class == "shop-infra":
+            self._hold(path, f"class:{assigned_class}", {
+                "class_assigned": assigned_class,
+Agreement: sentence names four values (read-only, shop-infra, register-writing, app-feature); class_mismatch hold and shop-infra hold; governed-tooling admitted by lint WARN set but produced by no production code — AGREE
+
+--- S2+D2: grep governed-tooling in *.py ---
+/Users/marklehn/Developer/bellows/.bellows-worktrees/100027/tests/conftest.py:14:    lifecycle.write_clearance(basename, content_hash, "governed-tooling", "depositor", db_path)
+/Users/marklehn/Developer/bellows/.bellows-worktrees/100027/tests/test_plan_lint.py:3089:class: governed-tooling
+/Users/marklehn/Developer/bellows/.bellows-worktrees/100027/tests/test_plan_lint.py:3123:class: governed-tooling
+/Users/marklehn/Developer/bellows/.bellows-worktrees/100027/tests/test_plan_lint.py:3191:class: governed-tooling
+/Users/marklehn/Developer/bellows/.bellows-worktrees/100027/tests/test_depositor.py:533:            json.dump({"hold_reason": "class:governed-tooling", "held_at": "2026-08-20T00:00:00"}, f)
+/Users/marklehn/Developer/bellows/.bellows-worktrees/100027/scripts/plan_lint.py:556:        _STANZA_VALID_CLASSES = {"read-only", "governed-tooling", "register-writing", "shop-infra", "app-feature"}
+
+--- S4: 'compares ONLY the declared' from sentence ---
+compares ONLY the declared
+
+--- S4: depositor.py :353, :362 (collision_type writes) ---
+                            "collision_type": "writes∩writes",
+                            "collision_type": "reads∩writes",
+
+--- S4: grep collision_type in *.py (only two writes, no reads) ---
+/Users/marklehn/Developer/bellows/depositor.py:353:                            "collision_type": "writes∩writes",
+/Users/marklehn/Developer/bellows/depositor.py:362:                            "collision_type": "reads∩writes",
+
+--- S4: depositor.py :513-518 (rerun_validation compares only cycle_check=) ---
+        manifest = cycle_check.parse_manifest_stanza(plan_text)
+        if manifest:
+            val = manifest.get("validation", "")
+            if "cycle_check=" in val:
+                expected = val.split("cycle_check=")[1].split(",")[0].strip()
+                if expected and expected != str(verdict):
+Agreement: sentence says one hold path (both collision types call self._hold); collision_type recorded for reader (the two writes); compares ONLY the declared cycle_check= token — AGREE
+
+================================================================
+ITEM 4 — Gate baseline P6 (no gate behaviour changed)
+================================================================
+
+--- plan_lint on executable-100026.md ---
+(o1) INFO: candidates=10 excluded=7 fired=0
+(o2) WARN: Deposits entry `knowledge/development/dev-log-gate2-pt-w28-b-2026-09-02.md` is not project-prefixed or absolute
+(o2) WARN: Deposits entry `knowledge/qa/evidence/gate2-pt-w28-b-2026-09-02/flip-capture.txt` is not project-prefixed or absolute
+(o2) WARN: Deposits entry `knowledge/qa/evidence/gate2-pt-w28-b-2026-09-02/qa-receipt.md` is not project-prefixed or absolute
+(o2) WARN: Deposits entry `knowledge/qa/evidence/gate2-pt-w28-b-2026-09-02/probes-raw.txt` is not project-prefixed or absolute
+(o2) WARN: Deposits entry `knowledge/qa/evidence/gate2-pt-w28-b-2026-09-02/full-suite-gate2-pt-w28-b.txt` is not project-prefixed or absolute
+PIN-CHECK: kind=prefix line=48 token=f1701a374418… result=ambiguous
+PIN-CHECK: kind=prefix line=51 token=5d032b8ce50e… result=ambiguous
+PIN-CHECK: kind=prefix line=63 token=73344e02b037… result=ambiguous
+PIN-CHECK: kind=prefix line=63 token=193c9ef69456… result=ambiguous
+PIN-CHECK: kind=prefix line=63 token=50b1e380b9c5… result=ambiguous
+PIN-CHECK: kind=prefix line=63 token=5d032b8ce50e… result=ambiguous
+PASS: (a) header — parsed
+PASS: (a) dispatch_mode — bellows
+PASS: (a) pause_for_verdict — always
+PASS: (a) known_failures — 0
+PASS: (b) step 1 deposits — 4 path(s)
+PASS: (b) step 2 deposits — 3 path(s)
+PASS: (c) QA banner pair — both strings present
+PASS: (d) step 1 scope — 4 file(s), 0 prefix(es)
+PASS: (d) step 2 scope — 3 file(s), 0 prefix(es)
+plan_lint_exit=0
+PASS (by line start): 9
+WARN (by token): 5
+FAIL (by token): 0
+INFO (by token): 1
+PIN-CHECK (by token): 6
+
+--- cycle_check on executable-100026.md ---
+BAR_MET
+cycle_check_exit=0
+
+Dev log P6 baseline: PASS 9 / WARN 5 / FAIL 0 / INFO 1 / PIN-CHECK 6; cycle_check BAR_MET
+QA re-run comparison: same counts and verdict token — AGREE (this is a fresh pre-edit run; the DC edit does not touch any gate)
