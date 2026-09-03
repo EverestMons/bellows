@@ -203,7 +203,9 @@ Cells are enumerated as tests 1–8 in STEP 1 Item 3, including the positive con
 >
 > **Item 4 — make the edit. Two lines, both count-1 anchors.**
 > - At the P2 anchor (L360, inside (u)'s own loop), replace the local test with `gates._gate_is_qa_step(plan_text, sn, plan_header=header)` — **no `if header` guard** (MUST-PRESERVE).
-> - At the P3 anchor (L354), remove the now-dead `qa_steps_set_u` binding. ⚠️ **Assert `qa_steps_set_u` reaches 0 occurrences file-wide afterwards, and assert `_parse_qa_steps` still has 3 callers** — a deletion is invisible to a probe that greps only for new strings.
+> - At the P3 anchor (L354), remove the now-dead `qa_steps_set_u` binding. ⚠️ **Assert the deletion with SCOPED probes, and the scope is load-bearing** — a deletion is invisible to a probe that greps only for new strings, and an unscoped probe here reports a false survivor:
+>   - `/usr/bin/grep -cF 'qa_steps_set_u' scripts/plan_lint.py` → **0** (was 2). ⛔ **Scope it to that one file.** A repo-wide `grep -rn` returns ~4.3 MB, because the token also lives in `scripts/__pycache__/plan_lint.cpython-312.pyc` and 3 `logs/*.json` dispatch transcripts — neither editable, neither in scope (P4).
+>   - `/usr/bin/grep -cF '_parse_qa_steps' scripts/plan_lint.py` → **4** (was 5): one `def` line plus three surviving call sites at `:346`, and the two `pause_for_verdict` checks. ⚠️ **The count includes the `def` line — say the number you expect and what it is made of, or the probe cannot be read** (P5).
 > - Extend (u)'s header comment to say WHY the gate's predicate is used, naming the measured divergence and the two directions, so a tidier reading only this block cannot undo it.
 > - ⚠️ **Nothing else in the block moves.** Diff the block and confirm the two arms' bodies are byte-identical.
 >
@@ -227,7 +229,7 @@ Cells are enumerated as tests 1–8 in STEP 1 Item 3, including the positive con
 >
 > ⚠️ **Gate note:** this step is not a QA step by the gate's predicate; the raw-evidence arm does not apply to it. Its two (u) WARNs are pre-declared in MUST-PRESERVE and are the plan's own specimen of the defect.
 >
-> **Post-conditions:** all eight tests pass; `qa_steps_set_u` is absent file-wide; `_parse_qa_steps` retains 3 callers; the census re-measures with the class of the result unchanged; `mutation_check` reports 6 killed / 0 survived; the lint on a tripping plan exits 0.
+> **Post-conditions:** all eight tests pass; `grep -cF 'qa_steps_set_u' scripts/plan_lint.py` → 0; `grep -cF '_parse_qa_steps' scripts/plan_lint.py` → 4 (1 `def` + 3 calls); the census re-measures with the class of the result unchanged; `mutation_check` reports 6 killed / 0 survived; the lint on a tripping plan exits 0.
 
 ## STEP 2 — QA (FULL suite + the check run against REAL plans)
 
