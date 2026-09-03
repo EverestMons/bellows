@@ -94,16 +94,15 @@ The builder reads the file as bytes, refuses CRLF, refuses an already-built inpu
 
 ## Cycle Manifest
 tier: T2
-target: <declare>
-class: <declare>
-reads: <declare>
-writes: <declare>
-open_forks: <declare>
+target: /Users/marklehn/Developer/eluvian-governance/PLANNER_TEMPLATE.md
+class: shop-infra
+reads: /Users/marklehn/Developer/eluvian-governance/PLANNER_TEMPLATE.md, /Users/marklehn/Developer/eluvian-governance/governance/knowledge/decisions/drafts/build-gate2-pt-w28-b-2026-09-02.py, /Users/marklehn/Developer/eluvian-governance/gate1-packet-2026-09-01.md, /Users/marklehn/Developer/eluvian-governance/LESSONS.md, knowledge/decisions/Done/executable-100021.md, /Users/marklehn/Developer/eluvian-governance/governance/knowledge/decisions/Done/executable-540.md, /Users/marklehn/Developer/forge_lessons/lessons-forge.db
+writes: /Users/marklehn/Developer/eluvian-governance/PLANNER_TEMPLATE.md, /Users/marklehn/Developer/eluvian-governance/governance/knowledge/development/g2ptw28b-flip.sql, /Users/marklehn/Developer/forge_lessons/lessons-forge.db, knowledge/development/dev-log-gate2-pt-w28-b-2026-09-02.md, knowledge/qa/evidence/gate2-pt-w28-b-2026-09-02/flip-capture.txt, knowledge/qa/evidence/gate2-pt-w28-b-2026-09-02/qa-receipt.md, knowledge/qa/evidence/gate2-pt-w28-b-2026-09-02/probes-raw.txt, knowledge/qa/evidence/gate2-pt-w28-b-2026-09-02/full-suite-gate2-pt-w28-b.txt
+open_forks: the twenty-three W=29 accepted rows (their own tranches; thread 95's ordering is the CEO's); the propagation_check numeral-in-string class (a rider for thread 96); the register hook's ellipsis refusals (four this cycle — the Planner's own quoting habit, not a hook defect); two lesson candidates for the wrap (a HEAD-scoped git show in a multi-commit step; a precondition that embeds a value the plan's own step changes); 100021's Done text says T-8 fired beside a holding structure-clone proxy (a record error DECLARED per Rule 102, not patched)
 walks: 3
 yields: 1, 0, 0
-validation: cycle_check=BAR_MET, plan_lint=0_FAIL, fold_check=N/A, propagation_check=DIVERGENT:100
-coherence: 2/3 walks have register rows
-
+validation: cycle_check=BAR_MET, plan_lint=0_FAIL, fold_check=PASS, propagation_check=DIVERGENT:100
+coherence: 3/3 walks have register rows
 
 ---
 

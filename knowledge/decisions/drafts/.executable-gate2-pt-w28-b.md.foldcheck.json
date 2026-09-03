@@ -2,7 +2,6 @@
   "plan_lint": {
     "exit": 0,
     "signals": [
-      "(f) WARN: Cycle Manifest stanza contains <declare> placeholder(s) \u2014 incomplete template",
       "(o2) WARN: Deposits entry `knowledge/development/dev-log-gate2-pt-w28-b-N-N-N.md` is not project-prefixed or absolute",
       "(o2) WARN: Deposits entry `knowledge/qa/evidence/gate2-pt-w28-b-N-N-N/flip-capture.txt` is not project-prefixed or absolute",
       "(o2) WARN: Deposits entry `knowledge/qa/evidence/gate2-pt-w28-b-N-N-N/full-suite-gate2-pt-w28-b.txt` is not project-prefixed or absolute",
