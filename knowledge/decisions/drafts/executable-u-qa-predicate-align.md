@@ -177,7 +177,7 @@ Cells are enumerated as tests 1–8 in STEP 1 Item 3, including the positive con
 | 14 | no instruction keys on the run date | ⚠️ **UNCARRIED** — prose discipline. `executable-100006` died on a one-day dispatch window; nothing here may repeat it |
 | 15 | the check is written to the older Python dialect (no `match`, no runtime-evaluated PEP-604 unions, no 3.10+ stdlib) | ⚠️ **UNCARRIED, and a CARRIED PIN not measured this cycle** — the Air was not probed here; thread 84 tracks the reconciliation. The change is a single call expression, so the dialect costs nothing |
 
-⚠️ **Nine of fifteen are UNCARRIED or observer-only. That is the honest count and it is stated rather than implied** — the six with real carriers are the ones a violation cannot pass, and the other nine are prose that a reader must enforce.
+⚠️ **Nine of fifteen are UNCARRIED or observer-only. That is the honest count, and it was COUNTED rather than estimated** — the table was parsed: 15 rows, 8 carrying `UNCARRIED` (1, 2, 3, 5, 10, 12, 14, 15), 1 observer-only without it (row 8), **6 with a real carrier**. A violation cannot pass those six; the other nine are prose that a reader must enforce, and saying so is the point of the column.
 
 ⚠️ **Worktree dispatch; every claim cites file:line; absence claims carry positive controls; EVERY DATE IS A FIXED LITERAL.** *(Kept as the standing preamble it has always been, and deliberately NOT split into the table: these bind the agent's reporting, not the artifact's behaviour, and none is violable-and-catchable by construction.)*
 
