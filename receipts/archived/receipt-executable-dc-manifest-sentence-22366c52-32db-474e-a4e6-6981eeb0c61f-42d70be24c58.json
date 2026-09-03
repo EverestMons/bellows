@@ -1,0 +1,8 @@
+{
+  "slug": "executable-dc-manifest-sentence",
+  "content_hash": "42d70be24c58ca5cfd0f02e6dcc9700535bd99068d4447532fdc1953ba854816",
+  "session_id": "22366c52-32db-474e-a4e6-6981eeb0c61f",
+  "armed_at": "2026-09-02T21:48:57.109122",
+  "watcher": "gate_watcher.py spawned detached (pid 52034); log: logs/watch/executable-dc-manifest-sentence.md.log",
+  "attestation_boundary": "This receipt proves the watcher was ARMED at write time. It does NOT prove the watcher stayed alive. Liveness of a session-local monitor is not externally verifiable."
+}
