@@ -2,6 +2,7 @@
   "plan_lint": {
     "exit": 0,
     "signals": [
+      "(f) WARN: Cycle Manifest stanza contains <declare> placeholder(s) \u2014 incomplete template",
       "(o2) WARN: Deposits entry `knowledge/development/dev-log-gate2-pt-w28-b-N-N-N.md` is not project-prefixed or absolute",
       "(o2) WARN: Deposits entry `knowledge/qa/evidence/gate2-pt-w28-b-N-N-N/flip-capture.txt` is not project-prefixed or absolute",
       "(o2) WARN: Deposits entry `knowledge/qa/evidence/gate2-pt-w28-b-N-N-N/full-suite-gate2-pt-w28-b.txt` is not project-prefixed or absolute",
@@ -9,9 +10,9 @@
       "(o2) WARN: Deposits entry `knowledge/qa/evidence/gate2-pt-w28-b-N-N-N/qa-receipt.md` is not project-prefixed or absolute",
       "PIN-CHECK: kind=prefix line=N token=193c9ef69456\u2026 result=ambiguous",
       "PIN-CHECK: kind=prefix line=N token=50b1e380b9c5\u2026 result=ambiguous",
+      "PIN-CHECK: kind=prefix line=N token=5d032b8ce50e\u2026 result=ambiguous",
       "PIN-CHECK: kind=prefix line=N token=73344e02b037\u2026 result=ambiguous",
-      "PIN-CHECK: kind=prefix line=N token=f1701a374418\u2026 result=ambiguous",
-      "WARN: Drafting Cycle closing indicates fold as last event, not a dry lens pass (DRAFTING_CYCLE.md \u00a72)"
+      "PIN-CHECK: kind=prefix line=N token=f1701a374418\u2026 result=ambiguous"
     ]
   }
 }
