@@ -1,0 +1,13 @@
+{
+    "target": "tools/run_check.py",
+    "_note": "Plan 100030: manifests split one-target-per-file per thread 97. M2 targets run_check.py; M1/M6 in register-enforcement-wrl.json; M3-M5 in register-enforcement-cycle_check.json. M2 is carried from plan 100029 unchanged — it was KILLED and stays killed.",
+    "mutants": [
+        {
+            "name": "M2-pre-schema-counted-bad",
+            "why": "Defect B variant: adding PRE-SCHEMA to the bad-status check in judge_register would mis-judge 25 corpus registers as failures. Killed by test 5.",
+            "anchor": "    bad = [ln for ln in stderr.splitlines() if \"\\tUNCONFORMANT\" in ln or \"\\tNO_TABLE\" in ln]",
+            "replacement": "    bad = [ln for ln in stderr.splitlines() if \"\\tUNCONFORMANT\" in ln or \"\\tNO_TABLE\" in ln or \"\\tPRE-SCHEMA\" in ln]",
+            "expect_fail": "tests/test_run_check.py::TestJudgeRegister::test_pre_schema_not_bad"
+        }
+    ]
+}

@@ -560,3 +560,120 @@ def test_no_declaration_still_pre_schema_regression(tmp_path):
         """)
     status, rows, shapes = validate_file(p)
     assert status == STATUS_PRE_SCHEMA
+
+
+# ---- validate-first / exempt-second (plan 100030, 2026-09-03) ----
+
+
+def test_v01_conformant_fold_table_stays_conformant(tmp_path):
+    """Test 1 — a v0.1 register whose fold table IS v0.3-conformant → CONFORMANT with rows.
+    The regression 100029 introduced: a conformant register must not be exempted."""
+    p = _write_register(tmp_path, "walk-register-test.md", """\
+        # Walk Register — test
+
+        **schema_version:** `0.1`
+
+        | id | walk | lens | sub_question | origin | finding | pre_fold_text | resolution |
+        |---|---|---|---|---|---|---|---|
+        | f1 | 1 | Weak spots | 1.1 | pre-existing | bad count | the bytes | fixed |
+        """)
+    status, rows, shapes = validate_file(p)
+    assert status == STATUS_CONFORMANT, f"expected CONFORMANT, got {status!r}"
+    assert len(rows) > 0, "rows must be non-empty for a conformant register"
+
+
+def test_v01_wrong_shaped_fold_table_is_legacy_with_rows(tmp_path):
+    """Test 2 — a v0.1 register with a wrong-shaped fold table → LEGACY_SCHEMA with rows.
+    An old declaration explains a failure; it does not excuse a passing register."""
+    p = _write_register(tmp_path, "walk-register-test.md", """\
+        # Walk Register — test
+
+        **schema_version:** `0.1`
+
+        | # | finding | fold |
+        |---|---|---|
+        | 1 | bad count | fixed |
+        """)
+    status, rows, shapes = validate_file(p)
+    assert status == STATUS_LEGACY_SCHEMA, f"expected LEGACY_SCHEMA, got {status!r}"
+    assert len(rows) > 0, "rows must be non-empty even for LEGACY_SCHEMA"
+
+
+def test_v01_no_fold_table_is_legacy_not_no_table(tmp_path):
+    """Test 3 — a v0.1 register with no fold table at all → LEGACY_SCHEMA, not NO_TABLE."""
+    p = _write_register(tmp_path, "walk-register-test.md", """\
+        # Walk Register — test
+
+        **schema_version:** `0.1`
+
+        Just prose. No tables at all.
+        """)
+    status, rows, shapes = validate_file(p)
+    assert status == STATUS_LEGACY_SCHEMA, f"expected LEGACY_SCHEMA, got {status!r}"
+    assert status != STATUS_NO_TABLE
+
+
+def test_future_schema_rows_still_emitted(tmp_path):
+    """Test 4 — a FUTURE version register whose fold table conforms → FUTURE_SCHEMA with rows.
+    Status flags unjudgeability; rows must never be discarded."""
+    p = _write_register(tmp_path, "walk-register-test.md", """\
+        # Walk Register — test
+
+        **schema_version:** `0.4`
+
+        | id | walk | lens | sub_question | origin | finding | pre_fold_text | resolution |
+        |---|---|---|---|---|---|---|---|
+        | f1 | 1 | Weak spots | 1.1 | pre-existing | bad count | the bytes | fixed |
+        """)
+    status, rows, shapes = validate_file(p)
+    assert status == STATUS_FUTURE_SCHEMA, f"expected FUTURE_SCHEMA, got {status!r}"
+    assert len(rows) > 0, "rows must be non-empty even for FUTURE_SCHEMA"
+
+
+def test_pre_schema_unchanged_post_version_fix(tmp_path):
+    """Test 5 — PRE-SCHEMA (no declaration) is unchanged by the validate-first fix."""
+    p = _write_register(tmp_path, "walk-register-test.md", """\
+        # Walk Register — test
+
+        No schema_version declaration.
+
+        | # | finding | fold |
+        |---|---|---|
+        | 1 | bad count | fixed |
+        """)
+    status, rows, shapes = validate_file(p)
+    assert status == STATUS_PRE_SCHEMA
+
+
+def test_v03_conformant_positive_control(tmp_path):
+    """Test 6 — a conformant v0.3 register is unaffected by the validate-first change."""
+    p = _write_register(tmp_path, "walk-register-test.md", """\
+        # Walk Register — test
+
+        **schema_version:** `0.3`
+
+        | id | walk | lens | sub_question | origin | finding | pre_fold_text | resolution |
+        |---|---|---|---|---|---|---|---|
+        | f1 | 1 | Weak spots | 1.1 | pre-existing | bad count | the bytes | fixed |
+        """)
+    status, rows, shapes = validate_file(p)
+    assert status == STATUS_CONFORMANT
+    assert len(rows) == 1
+
+
+def test_rows_never_empty_on_exemption_path(tmp_path):
+    """Test 7 — ⛔ rows must never be empty on the exemption path.
+    A v0.1 register with parseable fold rows emits them regardless of final status."""
+    p = _write_register(tmp_path, "walk-register-test.md", """\
+        # Walk Register — test
+
+        **schema_version:** `0.1`
+
+        | # | finding | fold |
+        |---|---|---|
+        | 1 | bad count | fixed |
+        | 2 | stale ref | new ref |
+        """)
+    status, rows, shapes = validate_file(p)
+    assert status in (STATUS_LEGACY_SCHEMA, STATUS_CONFORMANT), f"unexpected status {status!r}"
+    assert len(rows) >= 2, "rows must never be empty on the exemption path"

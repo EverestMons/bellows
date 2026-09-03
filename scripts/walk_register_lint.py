@@ -214,16 +214,7 @@ def validate_row(norm_cols, row_cells):
 def validate_file(filepath):
     text = filepath.read_text(encoding="utf-8")
 
-    # Version-aware short-circuit: branch on the declared value, not just its presence.
     declared_version = _extract_schema_version(text)
-    if declared_version is not None:
-        cmp = (_version_tuple(declared_version), _version_tuple(VALIDATOR_SCHEMA_VERSION))
-        if cmp[0] < cmp[1]:
-            return STATUS_LEGACY_SCHEMA, [], []
-        if cmp[0] > cmp[1]:
-            return STATUS_FUTURE_SCHEMA, [], []
-        # declared == current: fall through to normal v0.3 validation
-
     pre_schema = declared_version is None
 
     tables, consumed = extract_tables(text)
@@ -239,6 +230,7 @@ def validate_file(filepath):
         extra_rows, extra_unconformant = _structural_guards(text, consumed, filepath)
         if extra_unconformant:
             status = STATUS_UNCONFORMANT
+        status = _apply_version_status(declared_version, status)
         for r in extra_rows:
             r["file_status"] = status
         return status, extra_rows, shapes
@@ -286,7 +278,27 @@ def validate_file(filepath):
     for r in extra_rows:
         r["file_status"] = file_status
     rows.extend(extra_rows)
+    file_status = _apply_version_status(declared_version, file_status)
+    for r in rows:
+        r["file_status"] = file_status
     return file_status, rows, shapes
+
+
+def _apply_version_status(declared_version, current_status):
+    """Adjust file status based on declared schema version (VALIDATE FIRST, EXEMPT SECOND).
+
+    A CONFORMANT register keeps CONFORMANT regardless of declared version.
+    A non-conformant register with an older declaration becomes LEGACY_SCHEMA.
+    Any register with a newer declaration becomes FUTURE_SCHEMA (unjudgeable).
+    """
+    if declared_version is None:
+        return current_status
+    cmp = (_version_tuple(declared_version), _version_tuple(VALIDATOR_SCHEMA_VERSION))
+    if cmp[0] < cmp[1] and current_status != STATUS_CONFORMANT:
+        return STATUS_LEGACY_SCHEMA
+    if cmp[0] > cmp[1]:
+        return STATUS_FUTURE_SCHEMA
+    return current_status
 
 
 def _structural_guards(text, consumed, filepath):

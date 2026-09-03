@@ -1,23 +1,7 @@
 {
     "target": "scripts/cycle_check.py",
-    "_note": "Multi-file plan: M1 targets walk_register_lint.py, M2 targets tools/run_check.py, M3-M5 target cycle_check.py. mutation_check supports one target per invocation; run it three times (once per target) to verify all 5. The 'target' field names the primary file; per-mutant 'target' overrides the default for M1 and M2.",
+    "_note": "Plan 100030: manifests split one-target-per-file per thread 97. M3-M5 target cycle_check.py; M1/M6 in register-enforcement-wrl.json; M2 in register-enforcement-run_check.json. M3-M5 are carried from plan 100029 unchanged — all three were KILLED and stay killed.",
     "mutants": [
-        {
-            "name": "M1-drop-version-branch",
-            "target": "scripts/walk_register_lint.py",
-            "why": "Defect A: removing the version-aware short-circuit collapses back to presence-only check, mis-classifying 0.1 registers as NO_TABLE (false positive, not a defect). Killed by test 1.",
-            "anchor": "        if cmp[0] < cmp[1]:\n            return STATUS_LEGACY_SCHEMA, [], []",
-            "replacement": "        if False:\n            return STATUS_LEGACY_SCHEMA, [], []",
-            "expect_fail": "tests/test_walk_register_lint.py::test_legacy_schema_v01_not_no_table"
-        },
-        {
-            "name": "M2-pre-schema-counted-bad",
-            "target": "tools/run_check.py",
-            "why": "Defect B variant: adding PRE-SCHEMA to the bad-status check in judge_register would mis-judge 25 corpus registers as failures. Killed by test 5.",
-            "anchor": "    bad = [ln for ln in stderr.splitlines() if \"\\tUNCONFORMANT\" in ln or \"\\tNO_TABLE\" in ln]",
-            "replacement": "    bad = [ln for ln in stderr.splitlines() if \"\\tUNCONFORMANT\" in ln or \"\\tNO_TABLE\" in ln or \"\\tPRE-SCHEMA\" in ln]",
-            "expect_fail": "tests/test_run_check.py::TestJudgeRegister::test_pre_schema_not_bad"
-        },
         {
             "name": "M3-assign-fail-not-warn",
             "why": "Defect C promotion: assigning register_result = 'FAIL' instead of collecting a WARN immediately escalates via the pre-wired arm at run_check():424 — halting every cycle that carries a non-conformant register. Warn-first is deliberate; the FAIL arm is the earned-later promotion path. Killed by test 7 (verdict must remain BAR_MET, not escalate).",

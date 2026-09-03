@@ -1,0 +1,20 @@
+{
+    "target": "scripts/walk_register_lint.py",
+    "_note": "Plan 100030: manifests split one-target-per-file per thread 97. M1 and M6 target walk_register_lint.py; M2 in register-enforcement-run_check.json; M3-M5 in register-enforcement-cycle_check.json.",
+    "mutants": [
+        {
+            "name": "M1-drop-legacy-schema-branch",
+            "why": "Defect A: disabling the LEGACY_SCHEMA return in _apply_version_status means non-conformant v0.1/v0.2 registers report UNCONFORMANT or NO_TABLE instead of LEGACY_SCHEMA — removing the status distinction that tells consumers why a register fails. Killed by test 2.",
+            "anchor": "    if cmp[0] < cmp[1] and current_status != STATUS_CONFORMANT:\n        return STATUS_LEGACY_SCHEMA",
+            "replacement": "    if False and current_status != STATUS_CONFORMANT:\n        return STATUS_LEGACY_SCHEMA",
+            "expect_fail": "tests/test_walk_register_lint.py::test_v01_wrong_shaped_fold_table_is_legacy_with_rows"
+        },
+        {
+            "name": "M6-revert-to-pre-validation-short-circuit",
+            "why": "Defect A': reverting to a pre-validation short-circuit re-introduces the 100029 regression — a v0.1 conformant register returns LEGACY_SCHEMA with empty rows instead of staying CONFORMANT. The whole plan is VALIDATE FIRST, EXEMPT SECOND; this mutant breaks it. Killed by test 1.",
+            "anchor": "    declared_version = _extract_schema_version(text)\n    pre_schema = declared_version is None",
+            "replacement": "    declared_version = _extract_schema_version(text)\n    if declared_version is not None:\n        cmp = (_version_tuple(declared_version), _version_tuple(VALIDATOR_SCHEMA_VERSION))\n        if cmp[0] < cmp[1]:\n            return STATUS_LEGACY_SCHEMA, [], []\n    pre_schema = declared_version is None",
+            "expect_fail": "tests/test_walk_register_lint.py::test_v01_conformant_fold_table_stays_conformant"
+        }
+    ]
+}
