@@ -10,9 +10,9 @@
 
 Check (u) asks "is this a QA step?" with its own local test — the plan's `qa_steps` header field, OR the literal Rule-20 banner token appearing anywhere in the step's body. The gate that actually judges the step asks `gates._gate_is_qa_step`. **They disagree on 75 of the 861 `## STEP` headings in header-parsing `Done/` plans** (78 of 868 counted raw).
 
-(u) exists to tell an author, before deposit, what the QA gates will do to their step. ⚠️ **That is a citation, not a framing:** `gates.py:230` computes `is_qa_step` once from `_gate_is_qa_step` and hands that one value to all three blocking QA gates — `_gate_rule_20_self_check` (which reads the first `.md` deposit, (u)'s first arm), `_gate_rule_22_verification`, and `_gate_qa_test_result` (whose first branch is (u)'s `.txt` arm). There is no second QA-step determination in `gates.check`. A warning about a step nothing will ever gate as QA is noise, and silence on a step that WILL be gated is the failure the check exists to prevent. Both are live:
+(u) exists to tell an author, before deposit, what the QA gates will do to their step. ⚠️ **That is a citation, not a framing:** `gates.py:230` computes `is_qa_step` once from `_gate_is_qa_step` and hands that one value to all three blocking QA gates — `_gate_rule_20_self_check` (which reads the first `.md` deposit, (u)'s first arm), `_gate_rule_22_verification`, and `_gate_qa_test_result` (whose first branch is (u)'s `.txt` arm). There is no second QA-step determination in `gates.check` — nor anywhere else in the engine: the only other readers of the value are `bellows.py` (16 sites) and `verdict.py:132`, all consuming what `gates.check` already computed (P18). A warning about a step nothing will ever gate as QA is noise, and silence on a step that WILL be gated is the failure the check exists to prevent. Both are live:
 
-- **67 false positives** — steps (u) calls QA and the gate does not. ⚠️ **Every one comes from the keyword arm; zero from the `qa_steps` arm.** Twenty-seven of them are `diagnostic-*.md` step 1, whose read-only audit prose quotes the banner token while nothing will ever read that step's deposits as a QA report.
+- **67 false positives** — steps (u) calls QA and the gate does not. ⚠️ **Every one comes from the keyword arm; zero from the `qa_steps` arm.** Twenty-seven of them are `diagnostic-*.md` step 1, whose read-only audit prose quotes the banner token while nothing will ever read that step's deposits as a QA report. ⚠️ **27 in BOTH populations** — measured separately after the scout's two population findings, rather than carried across from the raw count.
 - **8 blind spots** — steps the gate calls QA and (u) is silent on, all in plans predating the `qa_steps` header field, so neither of (u)'s arms fires. ⚠️ **Their headings are NOT uniformly `## STEP 2 — QA`** — only 3 of the 9 raw cases read exactly that; the others are `— Bellows QA: verify the fix`, `— BELLOWS QA` and kin, matched by the gate's `"qa" in heading.lower()` fallback. One of the nine (`executable-plan-mutation-canary-2026-04-19.md`) trips neither arm and so contributes a predicate blind spot but no WARN line. This is the dangerous direction: the check is quiet exactly where the gate will speak.
 
 Check (v), shipped one commit ago on this same file, already calls `gates._gate_is_qa_step` — with a MUST-PRESERVE clause, a regression test and a mutant, precisely so a later tidier could not "simplify" it into (u)'s form. **This plan makes (u) agree with its own neighbour.** The two predicates sit **22 lines apart** in one function — (u)'s at `:360`, (v)'s call at `:382` — answering the same question differently, and that is the state that produced the 75.
@@ -23,7 +23,7 @@ Check (v), shipped one commit ago on this same file, already calls `gates._gate_
 
 **Irreducible, and NOT closed here:** whether `gates._gate_is_qa_step` is itself right. It is not, in one measured respect (the bracket-parse gap — property 1 below, pinned as P10), and this plan deliberately inherits that. (u)'s job is to PREDICT the gate, so where the gate is wrong (u) must be wrong in the same direction, or its warning is false. The gate's own defect is routed as a thread, not smuggled into this plan.
 
-**Why this is a narrowing, not a widening:** 128 WARN lines stop firing and 11 start. The direction of the change is toward silence, and the silence is earned per-step by the gate's own answer.
+**Why this is a narrowing, not a widening:** 128 WARN lines stop firing and 11 start (all 545 plans; 124 / 10 over the header-parsing subset — ⚠️ **the population is named because the two differ and the plan states both**). The direction of the change is toward silence, and the silence is earned per-step by the gate's own answer.
 
 ⚠️ **Two measured properties of the change, stated rather than papered over:**
 
@@ -40,7 +40,7 @@ Measured 2026-09-03 against all 545 `Done/*.md`, running BOTH predicates over th
 |---|---|
 | `Done/*.md` plans | 545 |
 | plans whose header does not parse | 16 |
-| `## STEP` headings (⚠️ **fence-stripped** — see below), raw | 868 |
+| `## STEP` headings (⚠️ **fence-stripped** — see the note above), raw | 868 |
 | …in header-parsing plans (the stated exclusion) | **861** |
 | steps where (u) and the gate DISAGREE | **75** (raw: 78) |
 | …(u) says QA, gate says NOT — false positives | **67** (raw: 69) |
@@ -97,7 +97,7 @@ Every axis below was read off the corpus, never typed from memory.
 - **Header parses / does not** — 16 plans do not; a falsy header must degrade, never raise.
 - **Deposits shape (the two arms (u) already owns)** — first `.md` carries `receipt` / does not / no `.md` at all; a `.txt` entry present / absent.
 
-Cells are enumerated as tests 1–8 in STEP 1 Item 3, including the positive control (test 1, an unchanged true positive) and the two discriminators no existing test supplies (tests 2 and 3).
+Cells are enumerated as tests 1–8 in STEP 1 Item 3, including the positive control (test 1, an unchanged true positive) and the **three** discriminators no existing test supplies — tests 2, 3 and 6, which are exactly the must-fail half of the measured 5–3 split. ⚠️ An earlier form of this line said "two (tests 2 and 3)" and disagreed with the split table thirty lines below it.
 
 ## What this plan does NOT do
 
