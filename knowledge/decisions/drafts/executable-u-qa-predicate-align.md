@@ -1,4 +1,4 @@
-# bellows — executable: plan_lint (u) calls the gate's QA-step predicate (thread 102 — 75 divergences over 865 steps)
+# bellows — executable: plan_lint (u) calls the gate's QA-step predicate (thread 102 — 75 divergences over 861 steps)
 
 **Date:** 2026-09-03 | **Project:** bellows | **Tier:** Small | **Dispatch Mode:** bellows | **cycle_tier:** T1 | **Test Scope:** targeted (the (u) predicate tests) + full suite at QA | **Execution:** Step 1 (DEV) → Step 2 (QA) | **qa_steps:** 2 | **pause_for_verdict:** always | **known_failures:** 0
 
@@ -8,14 +8,14 @@
 
 ## Why this exists
 
-Check (u) asks "is this a QA step?" with its own local test — the plan's `qa_steps` header field, OR the literal Rule-20 banner token appearing anywhere in the step's body. The gate that actually judges the step asks `gates._gate_is_qa_step`. **They disagree on 75 of the 865 `## STEP` headings in header-parsing `Done/` plans** (78 of 872 counted raw).
+Check (u) asks "is this a QA step?" with its own local test — the plan's `qa_steps` header field, OR the literal Rule-20 banner token appearing anywhere in the step's body. The gate that actually judges the step asks `gates._gate_is_qa_step`. **They disagree on 75 of the 861 `## STEP` headings in header-parsing `Done/` plans** (78 of 868 counted raw).
 
 (u) exists to tell an author, before deposit, what the QA gates will do to their step. ⚠️ **That is a citation, not a framing:** `gates.py:230` computes `is_qa_step` once from `_gate_is_qa_step` and hands that one value to all three blocking QA gates — `_gate_rule_20_self_check` (which reads the first `.md` deposit, (u)'s first arm), `_gate_rule_22_verification`, and `_gate_qa_test_result` (whose first branch is (u)'s `.txt` arm). There is no second QA-step determination in `gates.check`. A warning about a step nothing will ever gate as QA is noise, and silence on a step that WILL be gated is the failure the check exists to prevent. Both are live:
 
 - **67 false positives** — steps (u) calls QA and the gate does not. ⚠️ **Every one comes from the keyword arm; zero from the `qa_steps` arm.** Twenty-seven of them are `diagnostic-*.md` step 1, whose read-only audit prose quotes the banner token while nothing will ever read that step's deposits as a QA report.
-- **8 blind spots** — steps the gate calls QA and (u) is silent on. All eight are `## STEP 2 — QA` in plans predating the `qa_steps` header field, so neither of (u)'s arms fires. This is the dangerous direction: the check is quiet exactly where the gate will speak.
+- **8 blind spots** — steps the gate calls QA and (u) is silent on, all in plans predating the `qa_steps` header field, so neither of (u)'s arms fires. ⚠️ **Their headings are NOT uniformly `## STEP 2 — QA`** — only 3 of the 9 raw cases read exactly that; the others are `— Bellows QA: verify the fix`, `— BELLOWS QA` and kin, matched by the gate's `"qa" in heading.lower()` fallback. One of the nine (`executable-plan-mutation-canary-2026-04-19.md`) trips neither arm and so contributes a predicate blind spot but no WARN line. This is the dangerous direction: the check is quiet exactly where the gate will speak.
 
-Check (v), shipped one commit ago on this same file, already calls `gates._gate_is_qa_step` — with a MUST-PRESERVE clause, a regression test and a mutant, precisely so a later tidier could not "simplify" it into (u)'s form. **This plan makes (u) agree with its own neighbour.** The two predicates sitting six lines apart in one function, answering the same question differently, is the state that produced the 75.
+Check (v), shipped one commit ago on this same file, already calls `gates._gate_is_qa_step` — with a MUST-PRESERVE clause, a regression test and a mutant, precisely so a later tidier could not "simplify" it into (u)'s form. **This plan makes (u) agree with its own neighbour.** The two predicates sit **22 lines apart** in one function — (u)'s at `:360`, (v)'s call at `:382` — answering the same question differently, and that is the state that produced the 75.
 
 ## ⚠️ What this can and cannot mechanize — stated up front
 
@@ -34,30 +34,39 @@ Check (v), shipped one commit ago on this same file, already calls `gates._gate_
 
 Measured 2026-09-03 against all 545 `Done/*.md`, running BOTH predicates over the same step population and diffing the emitted WARN lines. ⚠️ The predicate comparison is run with `gates._gate_is_qa_step` imported, never re-implemented.
 
+⛔ **THE POPULATION IS FENCE-STRIPPED, and getting that wrong is how this table was first written.** `plan_lint.py:257-258` builds `step_headers` from `gates.strip_fenced_code_blocks(plan_text)`, so (u) never sees a `## STEP` heading that lives inside a fenced block — **4** do, in 3 plans. A raw `grep -cE '^## STEP'` returns **872 / 865**; the population (u) actually walks is **868 / 861**. ⚠️ **Build the denominator with `strip_fenced_code_blocks`, exactly as the check does, or the numerator and the denominator are over different sets.** *(Cold scout finding 1, HIGH, author-verified: `raw 872 fence-stripped 868 | header-parsing raw 865 fence-stripped 861`.)*
+
 | population | count |
 |---|---|
 | `Done/*.md` plans | 545 |
 | plans whose header does not parse | 16 |
-| `## STEP` headings, raw | 872 |
-| …in header-parsing plans (the stated exclusion) | **865** |
+| `## STEP` headings (⚠️ **fence-stripped** — see below), raw | 868 |
+| …in header-parsing plans (the stated exclusion) | **861** |
 | steps where (u) and the gate DISAGREE | **75** (raw: 78) |
 | …(u) says QA, gate says NOT — false positives | **67** (raw: 69) |
 | …gate says QA, (u) silent — blind spots | **8** (raw: 9) |
-| (u) WARN lines emitted over the corpus TODAY | **560**, across 305 plans |
-| (u) WARN lines emitted AFTER the fix | **443**, across 270 plans |
+| (u) WARN lines emitted over the corpus TODAY | **559**, across 305 plans |
+| (u) WARN lines emitted AFTER the fix | **442**, across 270 plans |
 | …lines that DISAPPEAR | **128** |
 | …lines that APPEAR | **11** |
 
-⚠️ **The 128 and the 11 are line counts over two arms per step; the 67 and the 8 are step counts. They are different units and are not expected to match** — a step can emit zero, one or two lines. The reconciliation: the 8 blind-spot steps emit 11 lines between them; the 67 false-positive steps emit 128.
+⚠️ **The 128 and the 11 are line counts over two arms per step; the 67 and the 8 are step counts. They are different units — and they are also over DIFFERENT POPULATIONS, which is the trap this paragraph originally fell into.** The 128 / 11 are over ALL plans (69 false-positive steps, 9 blind spots); the 67 / 8 are the header-parsing subset. Measured both ways:
 
-**The fire RATIO, with its denominator** (Rule 104 — a detector's fire count is meaningless without what it evaluated and what it skipped; measured over the 872 raw headings):
+| | before | after | LOST | GAINED |
+|---|---|---|---|---|
+| all 545 plans | 559 | 442 | **128** | **11** |
+| header-parsing plans only | 550 | 436 | 124 | 10 |
+
+⚠️ The 11th gained line belongs to `executable-auto-close-canary-2026-04-24.md` — a plan whose header does NOT parse, whose blind-spot step is `## STEP 1 — BELLOWS QA`, and which the header-parsing exclusion removes. ⛔ **Report line counts and step counts against the SAME population or say which each is over.** *(Cold scout finding 2, HIGH, author-verified.)*
+
+**The fire RATIO, with its denominator** (Rule 104 — a detector's fire count is meaningless without what it evaluated and what it skipped; measured over the **868** fence-stripped raw headings):
 
 | | evaluated | fired | skipped | rate |
 |---|---|---|---|---|
-| (u) today | 372 | 332 | 500 | 89% |
-| (u) after the fix | 312 | 272 | 560 | 87% |
+| (u) today | 371 | 331 | 497 | 89% |
+| (u) after the fix | 311 | 271 | 557 | 87% |
 
-⚠️ **The rate barely moves and that is the point.** The change is not a re-tuning of how loudly (u) speaks on the steps it looks at — it is a change to WHICH steps it looks at. A plan that reported only the fire count would show 332 → 272 and read as a check being quietened; the denominator shows that 60 steps left the candidate set and the behaviour on the survivors is unchanged.
+⚠️ **The rate barely moves and that is the point.** The change is not a re-tuning of how loudly (u) speaks on the steps it looks at — it is a change to WHICH steps it looks at. A plan that reported only the fire count would show 331 → 271 and read as a check being quietened; the denominator shows that 60 steps left the candidate set and the behaviour on the survivors is unchanged. ⚠️ **These four figures were 372/332/312/272 before the scout round** — off by one each, from the same unstripped population as the headline denominators. Corrected here from a stripped re-run.
 
 ## The records that cite a (u) WARN — checked, not assumed stale
 
@@ -77,7 +86,7 @@ Measured 2026-09-03 against all 545 `Done/*.md`, running BOTH predicates over th
 
 Every axis below was read off the corpus, never typed from memory.
 
-- **QA-step signal** — `qa_steps` lists the step · the step HEADING carries `qa` · the step BODY carries the banner token · none of these. Measured over 872 headings.
+- **QA-step signal** — `qa_steps` lists the step · the step HEADING carries `qa` · the step BODY carries the banner token · none of these. Measured over the 868 fence-stripped headings. ⚠️ **The heading axis is not the literal `— QA`:** of the 9 blind spots only 3 carry that exact heading; the rest read `— Bellows QA: verify the fix`, `— BELLOWS QA` and similar, and the gate's fallback matches `"qa" in heading.lower()`, which is why they are gated at all.
 - **`qa_steps` header form** — measured distinct values across 545 plans: `'2'` ×127, `'3'` ×9, `'1'` ×4, `'none'` ×4, `'[2]'` ×3, `'4'` ×1, `'1,2'` ×1, absent for the rest. The `'none'` and `'[2]'` forms are both unparseable by the gate and both fall back to keyword detection.
 - **Header parses / does not** — 16 plans do not; a falsy header must degrade, never raise.
 - **Deposits shape (the two arms (u) already owns)** — first `.md` carries `receipt` / does not / no `.md` at all; a `.txt` entry present / absent.
@@ -92,7 +101,7 @@ Cells are enumerated as tests 1–8 in STEP 1 Item 3, including the positive con
 - ⚠️ **No change to the `qa_steps` ↔ step-label cross-check above (u).** That block deliberately compares the header arm against the heading arm and warns when they disagree — the divergence is its SUBJECT. Aligning it to the gate would delete the check. It keeps `_parse_qa_steps`, which is why that helper is not removed.
 - **No FAIL arm.** (u) stays WARN-only. `plan_lint`'s exit code is unaffected.
 - **No retro-fitting of the plans whose WARNs move.** ⚠️ **The units are stated because they differ and are easy to conflate:** 67 STEPS across **65** distinct plans stop warning; 8 steps across 8 plans start (header-parsing corpus). All are closed; none is edited.
-- **No `LESSONS.md` edit.** The corpus bullet that still teaches the refuted `.txt`-deposit remedy (`LESSONS.md:5224`) was routed by 100028 and remains routed; it is not this plan's subject and is not smuggled in.
+- **No `LESSONS.md` edit.** The corpus bullet that still teaches the refuted `.txt`-deposit remedy (`/Users/marklehn/Developer/eluvian-governance/LESSONS.md:5224` — ⚠️ **the governance root, not `bellows/`, which has no `LESSONS.md`**) was routed by 100028 and remains routed; it is not this plan's subject and is not smuggled in.
 - **No memory writes** (sandbox-denied to agents; the Planner records at close).
 
 ## Numbers discipline
@@ -107,8 +116,8 @@ Cells are enumerated as tests 1–8 in STEP 1 Item 3, including the positive con
 | P4 | token blast radius | `qa_steps_set_u` occurs **exactly 2×** in EDITABLE source — `scripts/plan_lint.py` L354 and L360, both edited here — and **0** times in `tools/`, `tests/`, `gates.py`, `depositor.py`, `bellows.py`. ⚠️ **The scope of that claim is part of the claim:** a compiled `scripts/__pycache__/plan_lint.cpython-312.pyc` and **3** `logs/*.json` dispatch transcripts also carry the token, neither editable nor in scope, and an unscoped repo-wide probe returns ~4.3 MB of log noise | `/usr/bin/grep -rn -F 'qa_steps_set_u' scripts tools tests gates.py depositor.py bellows.py` — **never bare `grep -rn` at the repo root** |
 | P5 | `_parse_qa_steps` survives | the helper is called at **4** sites — `:346` (the qa_steps↔label cross-check), `:354` (this plan's deletion), `:673` and `:679` (the `pause_for_verdict` coupling checks). Removing `:354` leaves 3 live callers, so the helper is NOT dead and is NOT removed | `/usr/bin/grep -n -F '_parse_qa_steps'` |
 | P6 | anchor provenance | L353–362 all last written by `e088d05` (plan **100022**, `lifecycle_state=halted` per `lifecycle.db`). Its halt was two SURVIVING `cycle_check` mutants, not a `plan_lint` defect — and plan 100025 (`386b06f`) has since killed both. Nothing defective is inherited from the halt itself | `git blame -L 353,362`; `sqlite3 lifecycle.db` |
-| P7 | ⛔ the divergence, re-measured | over all 545 `Done/*.md`: **75** disagreements across **865** step headings in header-parsing plans — **67** false positives, **8** blind spots. ⚠️ **Reproducible only with the exclusion stated:** count `## STEP` headings ONLY in plans whose header parses; 16 do not, and including them gives 78 over 872 (69 / 9). **The conclusion is identical under both variants**, so a numeric delta here is NOT a halt condition — only a change in the CLASS of the result is | the census in Step 1, Item 1 |
-| P8 | ⛔ the WARN-line delta | (u) emits **560** lines across 305 plans today and **443** across 270 after the fix: **128 disappear, 11 appear.** Every disappearing line is on a step the gate does not gate as QA; every appearing line is on a step the gate does | the census in Step 1, Item 1 |
+| P7 | ⛔ the divergence, re-measured | over all 545 `Done/*.md`: **75** disagreements across **861** step headings in header-parsing plans — **67** false positives (across 65 distinct plans), **8** blind spots. ⚠️ **Reproducible only under TWO stated conditions, and both move the number:** (i) build the population with `gates.strip_fenced_code_blocks`, as `plan_lint.py:257` does — a raw count gives 865/872 and mixes populations; (ii) count only plans whose header parses — 16 do not, and including them gives 78 over 868 (69 FP / 9 blind). **The conclusion is identical under all four variants**, so a numeric delta here is NOT a halt condition — only a change in the CLASS of the result is. ⚠️ **Like-for-like against thread 102's 74/861, this is 75/861** — the +1 is a corpus that grew by two plans, NOT a method change | the census in Step 1, Item 1 |
+| P8 | ⛔ the WARN-line delta | ⚠️ **GROUND TRUTH, obtained by running the shipped `plan_lint.py` over all 545 `Done/*.md` and counting its `(u) WARN:` lines — not modelled:** (u) emits **559** lines across 305 plans today and **442** across 270 after the fix: **128 disappear, 11 appear** (all-plans). Header-parsing plans only: 550 → 436, 124 lost / 10 gained. Every disappearing line is on a step the gate does not gate as QA; every appearing line is on a step the gate does | run the shipped lint per file; the census in Step 1, Item 1 |
 | P9 | the arm attribution | **69 of 69** raw false positives come from the keyword arm; **0** from the `qa_steps` arm. This is why deleting the keyword arm is not the fix — it would leave all 8 blind spots standing | the census in Step 1, Item 1 |
 | P10 | ⚠️ the inverted claim in the thread record | `gates._gate_is_qa_step` **cannot** parse the bracketed `qa_steps` string form (logs `malformed`, falls back to keyword); `plan_lint._parse_qa_steps` **can** (it strips `[]`). Thread 102 states the reverse. Live divergence contributed by the form: **0** — all 3 `Done/` plans carrying it label step 2 `— QA` | the probe in Step 1, Item 1 |
 | P11 | WARN idiom holds | (u) emits with `print`, never `results.append`; **19** `results.append` calls in the file — 9 FAIL, 7 PASS, and **3 in `_extract_hex_tokens`'s own local list**, a different variable. No advisory check touches the exit code | `/usr/bin/grep -n -F 'results.append'` |
@@ -124,7 +133,7 @@ Cells are enumerated as tests 1–8 in STEP 1 Item 3, including the positive con
 ## MUST-PRESERVE
 
 - ⚠️ **`/usr/bin/grep` for ALL probes (`-F` unless a regex is stated); zero-match exits 1 — never `&&`-chain a probe.**
-- ⛔ **(u) calls `gates._gate_is_qa_step(plan_text, sn, plan_header=header)` — the SAME call (v) makes six lines below, argument for argument.** A comment must say why, or the next tidier reintroduces the local heuristic and no existing test objects (P14).
+- ⛔ **(u) calls `gates._gate_is_qa_step(plan_text, sn, plan_header=header)` — the SAME call (v) makes at `:382`, argument for argument.** A comment must say why, or the next tidier reintroduces the local heuristic and no existing test objects (P14).
 - ⚠️ **Do NOT guard the call with `if header`.** `_gate_is_qa_step` tests `if plan_header:` internally and falls through to keyword detection on a falsy header. Adding an outer guard would silence (u) entirely on the 16 unparseable-header plans — a NEW blind-spot class created by the fix for the blind-spot class.
 - ⛔ **(u) may not alter `plan_lint`'s exit code.** It prints; it never appends to the results list. Prove it: a plan tripping (u) with no FAILs must still exit 0 (P11, P12).
 - ⚠️ **Neither ARM changes.** On any step where the two predicates agree, the emitted WARN text must be byte-identical to today's. The regression evidence is a full-corpus before/after diff, not a spot check.
@@ -147,7 +156,7 @@ Cells are enumerated as tests 1–8 in STEP 1 Item 3, including the positive con
 - Integration-record:  w1 3 folded — instruction 2 / record 1; w2 2 folded — instruction 1 / record 1; w3 3 folded — instruction 3 / record 0.
 - ACID:                w1 2 folded — instruction 2 / record 0; w2 2 folded — instruction 2 / record 0; w3 1 folded — instruction 1 / record 0.
 **Walk 0 — context pin (measured 2026-09-03, never recalled):** (1) newest same-class by `git log` on the target = `675f43a [100028]`, Done and shipped — clone origin and newest-of-class are the same plan here. (2) Both edit anchors measured for line, length, indent and enclosing scope — L360 is INSIDE (u)'s own loop, checked because the parent's cold scout HIGH was an anchor outside one. (3) Both count-1 file-wide. (4) Provenance: L353–362 all `e088d05`, plan 100022, `lifecycle_state=halted`. (5) Target sha per P1. (6) **Consumer dry-run (the execution act):** the class assigner returns `shop-infra`; `plan_lint` on v0 returns 0 FAIL / exit 0 with the pin check OK.
-**Walk 0 — clone-diff (three passes + the two the parent's text cannot supply):** FACTS — 100028's divergence pin re-measured live, 74/861 → 75/865, class identical; its exit-code and `judge_lint` invariants still true. ARTEFACTS — thirteen named mechanisms enumerated and all thirteen carried. STRUCTURE — per-step matrix from the parent's steps; the clone is better in one respect (a byte-identity assertion for the unchanged arms, which a purely additive parent had no need of). STANDING RULES — `bellows/CLAUDE.md` enumerated; no rule governs this plan's commands, and the `&&`-chain prohibition the parent's clone-diff found in ITS parent's rules does not exist in this project's. PARENT'S WALK REGISTER — five traps read, four applied.
+**Walk 0 — clone-diff (three passes + the two the parent's text cannot supply):** FACTS — 100028's divergence pin re-measured live, 74/861 → 75/861 like-for-like (⚠️ **corrected at the scout round: the first reading said 75/865, which was a different POPULATION presented as a re-measurement**), class identical; its exit-code and `judge_lint` invariants still true. ARTEFACTS — thirteen named mechanisms enumerated and all thirteen carried. STRUCTURE — per-step matrix from the parent's steps; the clone is better in one respect (a byte-identity assertion for the unchanged arms, which a purely additive parent had no need of). STANDING RULES — `bellows/CLAUDE.md` enumerated; no rule governs this plan's commands, and the `&&`-chain prohibition the parent's clone-diff found in ITS parent's rules does not exist in this project's. PARENT'S WALK REGISTER — the scout round's SEVEN findings (S1-1…S1-7) read; S1-1, S1-2, S1-4, S1-5 and S1-7 carried, **S1-6 re-tripped and then folded** (see the records table). ⚠️ **An earlier form of this line said "five traps read, four applied" — a count that mapped onto nothing in the parent's register and is corrected here rather than tidied away.**
 **Walk 0 findings folded into v1:** 3 — instruction 2 / record 1.
 **Per-walk yields:** w0 3 (instruction 2 / record 1) · w1 10 (instruction 9 / record 1; 1 fold-introduced) · w2 9 (instruction 7 / record 2; 5 fold-introduced) · w3 10 (instruction 10 / record 0; 4 fold-introduced). ⚠️ The fold-introduced share is 56% at walk 2 — the noise-floor signature §2 names, a reason to suspect circling and not a licence to close. The countervailing fact is that two of walk 2's findings were unreachable by reading: the test-first split and the fire ratio were both wrong until a command was run.
 **Direction verdict — PROCEED.** None of the three forcing findings fired. (a) The clone origin stands and is also the measured newest same-class. (b) The mechanism's candidate falsifier — a second QA-step determination inside `gates.check` — was constructed and does not exist (`gates.py:230`). (c) The licensing premise was re-measured, and one of thread 102's stated contributing causes was DISPROVED in the process; the consequent question was asked and the answer narrowed the change rather than widening it.
@@ -166,7 +175,7 @@ Cells are enumerated as tests 1–8 in STEP 1 Item 3, including the positive con
 > - `knowledge/mutants/u-predicate-plan_lint.json`
 > - `knowledge/dev-logs/u-predicate-align-dev-2026-09-03.md`
 >
-> **Item 1 — re-derive the load-bearing pins and record measured-vs-expected for each.** Re-derive **P1, P2, P3, P4, P5, P7, P9, P10 and P19 in full**, and **P8's BEFORE half only** — P8 is a before/after delta and its after half is unmeasurable until Item 4 has landed, so its second half belongs to Item 6. ⚠️ **P7, P8 and P9 are deliberately NOT halt conditions on their numbers** — `Done/` grows, so 545/865/75/560/443 are authoring-time values. **Only a delta that changes the CLASS of the result is a HALT:** a false positive attributable to the `qa_steps` arm, or a disappearing WARN line on a step the gate DOES gate as QA.
+> **Item 1 — re-derive the load-bearing pins and record measured-vs-expected for each.** Re-derive **P1, P2, P3, P4, P5, P7, P9, P10 and P19 in full**, and **P8's BEFORE half only** — P8 is a before/after delta and its after half is unmeasurable until Item 4 has landed, so its second half belongs to Item 6. ⚠️ **P7, P8 and P9 are deliberately NOT halt conditions on their numbers** — `Done/` grows, so 545/861/75/559/442 are authoring-time values. **Only a delta that changes the CLASS of the result is a HALT:** a false positive attributable to the `qa_steps` arm, or a disappearing WARN line on a step the gate DOES gate as QA.
 >
 > ⚠️ **The worktree has no `.venv`** — it is gitignored, so a relative `.venv/bin/python` is dead on arrival from the dispatch cwd. Bind the canonical interpreter by ABSOLUTE path first:
 >
@@ -268,7 +277,7 @@ Cells are enumerated as tests 1–8 in STEP 1 Item 3, including the positive con
 > - the multiset of `(u) WARN:` lines **LOST** (expected 128) and **GAINED** (expected 11). ⛔ **Key on OCCURRENCE, not on `(plan, step, arm)` — that key is not unique in this corpus.** Measured: **3** `Done/` plans carry a duplicate `## STEP N` heading (`executable-bellows-phase8-verdict-layer-redesign-2026-04-16.md`, `executable-header-parser-multiline-fix-2026-05-10.md`, `executable-lessons-forge-extraction-phase-b2-governance-wiring-2026-05-18.md`), so (u) emits the same line twice and a set-keyed diff silently drops one. **On today's corpus both keys give 128 / 11** — none of the three sits in a moved set — so this is a hardening against a corpus that moves, not a correction of the pin;
 > - ⛔ **the byte-identity assertion:** the intersection of the before and after sets must be **byte-identical line for line**. Compute it as a set operation over the collected lines, not by eye. **A non-empty symmetric difference on any step where the two predicates AGREE means an arm changed and this plan's central MUST-PRESERVE is broken — HALT.**
 > - the reconciliation between the two halves: every gained line must sit on one of the predicate census's blind-spot steps, and every lost line on one of its false-positive steps. **A line in neither set is unexplained — HALT.**
-> - ⚠️ **the arithmetic, stated so it can be checked:** `before − after = LOST − GAINED`. At authoring, `560 − 443 = 117 = 128 − 11`. Report all five numbers and the identity; a set that does not balance means lines were dropped by the collection, not by the edit.
+> - ⚠️ **the arithmetic, stated so it can be checked:** `before − after = LOST − GAINED`. At authoring, `559 − 442 = 117 = 128 − 11`. Report all five numbers and the identity; a set that does not balance means lines were dropped by the collection, not by the edit.
 >
 > **Item 7 — commit** (message tagged with the plan id) and record `numstat` — exactly 4 files.
 >
@@ -291,20 +300,29 @@ Cells are enumerated as tests 1–8 in STEP 1 Item 3, including the positive con
 >
 > ```
 > BPY=/Users/marklehn/Developer/bellows/.venv/bin/python
-> mkdir -p knowledge/qa/evidence/u-predicate-align-2026-09-03
-> "$BPY" -m pytest tests/ --tb=short -q 2>&1 | cat | tee knowledge/qa/evidence/u-predicate-align-2026-09-03/pytest_full.txt
+> EV=knowledge/qa/evidence/u-predicate-align-2026-09-03
+> mkdir -p "$EV"
+> "$BPY" -m pytest tests/ --tb=short -q > "$EV/pytest_full.txt" 2>&1
+> PYTEST_RC=$?
+> tail -5 "$EV/pytest_full.txt"
+> echo "pytest exit=$PYTEST_RC"
 > ```
+>
+> ⛔ **The pipe is REMOVED deliberately and this is a declined inheritance.** The clone origin runs this command as `… 2>&1 | cat | tee <file>`, which reports the exit status of the LAST element of the pipeline — so a red suite and a green one produce the same status, and pytest's exit code is the one signal here that carries meaning. Redirect to the file, capture `$?` into a variable on the very next line, and report the code separately. ⚠️ **`PYTEST_RC` must be assigned on the line immediately after the run** — any command in between overwrites `$?`.
 >
 > ⚠️ **`.venv` does not exist inside a worktree** (gitignored) — the absolute bind is required, not stylistic. A relative interpreter path here produces no evidence file at all, which the deposit gate then reports as a missing deposit rather than as the interpreter error it is.
 >
-> Expected: the P13 worktree baseline (1851 collected, 0 failed) plus the eight new tests. **Derive the count from P13 plus your own additions and state the arithmetic; do not assert it from memory.** ⚠️ **Confirm with `pwd` that you are in a worktree and show that no repo-root `config.json` is present** — its absence is exactly what makes P13's worktree line the right baseline, and its presence is what makes the canonical checkout report one failure that is not a regression. If a `config.json` IS present, report the failure as the P13 artifact by name and re-run that one test file from a config-free cwd as the positive control.
+> Expected: the P13 worktree baseline (1851 collected, 0 failed) plus the eight new tests. **Derive the count from P13 plus your own additions and state the arithmetic; do not assert it from memory.** ⚠️ **Confirm with `pwd` that you are in a worktree and show that no repo-root `config.json` is present** — its absence is exactly what makes P13's worktree line the right baseline, and its presence is what makes the canonical checkout report one failure that is not a regression. If a `config.json` IS present, report the failure as the P13 artifact by name and re-run that one test file from a config-free cwd as the positive control. ⚠️ **Do not edit the header's `known_failures: 0` to accommodate it** — that field declares the expectation for the dispatch environment this plan is written for (a worktree, where the count is 0), and rewriting a declaration to match an environment the plan says not to run in is the wrong repair.
 >
-> **Item 2 — the check against REAL plans**, raw tails to the raw-evidence file:
+> **Item 2 — the check against REAL plans**, raw tails to the raw-evidence file.
+>
+> ⛔ **WHERE "BEFORE" COMES FROM — a constraint that SPANS the two steps, named here with all its sites.** By this step the edit is committed, so no command run here can observe the pre-edit behaviour. **Every "before" below is READ from Step 1 Item 1's recorded pre-edit sets in `knowledge/dev-logs/u-predicate-align-dev-2026-09-03.md`, never re-derived and never recalled** — that dev log is a Step 1 deposit precisely so this step has a before to cite. The sites are cases 1, 3, 5 and 6. ⛔ **Do NOT check out the pre-edit commit to re-observe it, and do not run the lint from a detached worktree of the parent commit** — case 7 is the ONE exception, and it reads a resolved sha rather than restoring a tree. If Step 1's log is missing a before-value a case needs, that is a Step 1 defect: say so and report the case as UNPROVEN rather than reconstructing the number.
+>
 > 1. ⛔ **the false positives are gone:** lint `knowledge/decisions/Done/diagnostic-100024.md` and show that no (u) WARN names step 1. Before the fix it emitted one; its step 1 is a read-only audit step nothing gates as QA.
 > 2. ⛔ **the blind spots now speak:** lint `knowledge/decisions/Done/executable-scaffold-2026-04-13.md` and show (u) firing on step 2 (both arms). Before the fix it was silent, and `gates._gate_is_qa_step` returns True for that step — print the predicate's own answer beside the WARN.
 > 3. ⛔ **the teeth are intact, proven SIDE BY SIDE** (the mechanism `exec-565` used when it narrowed check (r), carried here): show the identical (u) WARN line before and after the edit on a `Done/` plan whose WARN is RETAINED. **The measured specimen is `knowledge/decisions/Done/executable-100005.md` step 2** — one arm (`first-md`, `'project-producer-qa-2026-08-31.md'`), `qa_steps: 2`, gate predicate `True`. Print `gates._gate_is_qa_step`'s own answer for that step beside the WARN. **A narrowing that cannot be shown still firing on the class it must keep catching has not been proven to have teeth**, and the aggregate census in case 5 cannot substitute for one displayed pair.
 > 4. **the cited records still hold:** lint `/Users/marklehn/Developer/eluvian-governance/governance/knowledge/decisions/halted-executable-328.md` (step 2) and `/Users/marklehn/Developer/forge_lessons/knowledge/decisions/Done/executable-100007.md` (step 3) and show the WARNs cited in `knowledge/development/dev-log-checker-defects-2026-09-02.md:105,107` still fire. ⚠️ These are absolute paths in OTHER repos, read-only; do not copy, stage or edit them. ⚠️ **If the dispatch sandbox denies the read, that is an expected outcome, not a halt:** say so plainly, cite the authoring-time measurement in the "records that cite a (u) WARN" table, and let case 3's in-repo side-by-side carry the property. ⛔ **Do not work around a denial by copying either file into this repo.**
-> 5. **the corpus census:** re-run Step 1 Item 6's census and paste the before/after table and both set differences. **Apply that item's supersede rule — report your numbers, state the delta against 545/865/75/560/443, and HALT only on a delta that changes the CLASS of the result.**
+> 5. **the corpus census:** re-run Step 1 Item 6's census and paste the before/after table and both set differences. **Apply that item's supersede rule — report your numbers, state the delta against 545/861/75/559/442, and HALT only on a delta that changes the CLASS of the result.**
 > 6. ⚠️ **the plan's own specimen closes:** lint `knowledge/decisions/Done/executable-100028.md` and show that its step 1's two (u) WARNs no longer fire, while its step 2 stays clean — the citation at `knowledge/qa/evidence/qa-predeclaration-2026-09-03/qa-receipt.md:97` names exactly this pair, and this is the one record whose citation the fix retires. Then lint **this very plan** and show the same pair gone from its own step 1. ⚠️ **Resolve this plan's own file by its id, never by a hardcoded name:** `find knowledge/decisions -name '*executable-<id>*.md'` — the claimed file is renamed through `in-progress-` and `verdict-pending-` as it runs.
 > 7. **exit code unaffected:** run the lint on a tripping plan and show `exit=0`. Establish "before" from the commit PRECEDING THIS PLAN'S OWN DEV COMMIT, resolved by its plan-id commit tag — never `HEAD`-relative, and never by `git stash`. Paste the resolved sha and both exit codes.
 >
