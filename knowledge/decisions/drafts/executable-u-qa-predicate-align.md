@@ -114,6 +114,8 @@ Cells are enumerated as tests 1–8 in STEP 1 Item 3, including the positive con
 
 ⚠️ **Measured 2026-09-03 by the Planner; RE-DERIVE each pre-flight — yours supersede and you say so; mismatch on a load-bearing pin → HALT.**
 
+⛔ **Every pin has a named site, so "re-derive each" is checkable rather than aspirational.** STEP 1 **Item 1**: P1, P2, P3, P4, P5, P7, P9, P10, P19, and P8's before half. STEP 1 **Item 2**: P17. STEP 1 **Item 6**: P8's after half. STEP 2 **Item 1**: P13. STEP 2 **Item 3**: P16, re-asked as an emptiness assertion over the DEV→QA window rather than a count. ⚠️ **Four pins are READS, not measurements, and are re-derived by re-reading the cited lines rather than by running anything: P6, P11, P12, P14, P18** — say `read` beside each, never `ran`. **P15 is the Planner's** (a depositor dry-run against the manifest's write set) and is not an agent obligation.
+
 | id | pin | value | anchor/probe |
 |---|---|---|---|
 | P1 | target sha | `scripts/plan_lint.py` = **928 lines**, sha256 `0cec3ff1091433f1e0f9ce78c1055ff83511cea39db64c5cc001eb831f534649` | `shasum -a 256 scripts/plan_lint.py` |
