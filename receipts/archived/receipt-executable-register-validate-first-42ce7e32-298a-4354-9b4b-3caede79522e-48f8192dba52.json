@@ -1,0 +1,8 @@
+{
+  "slug": "executable-register-validate-first",
+  "content_hash": "48f8192dba523f91e0b16ca26a782de337cc22b8be1128d8287042f5cd990381",
+  "session_id": "42ce7e32-298a-4354-9b4b-3caede79522e",
+  "armed_at": "2026-09-03T13:30:40.474782",
+  "watcher": "gate_watcher.py spawned detached (pid 5507); log: logs/watch/executable-register-validate-first.md.log",
+  "attestation_boundary": "This receipt proves the watcher was ARMED at write time. It does NOT prove the watcher stayed alive. Liveness of a session-local monitor is not externally verifiable."
+}
