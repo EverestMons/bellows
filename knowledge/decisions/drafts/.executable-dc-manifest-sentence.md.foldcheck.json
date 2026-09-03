@@ -7,6 +7,7 @@
       "(o2) WARN: Deposits entry `knowledge/qa/evidence/dc-manifest-sentence-N-N-N/qa-receipt.md` is not project-prefixed or absolute",
       "PIN-CHECK: kind=prefix line=N token=3a84137ed366\u2026 result=ambiguous",
       "PIN-CHECK: kind=prefix line=N token=5138760431ae\u2026 result=ambiguous",
+      "PIN-CHECK: kind=prefix line=N token=a9e4d099e11f\u2026 result=ambiguous",
       "PIN-CHECK: kind=prefix line=N token=afdc93b59638\u2026 result=ambiguous",
       "PIN-CHECK: kind=prefix line=N token=be31b8483ff5\u2026 result=ambiguous",
       "PIN-CHECK: kind=prefix line=N token=e12135909645\u2026 result=ambiguous",
