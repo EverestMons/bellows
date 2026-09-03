@@ -1,0 +1,226 @@
+=== Item 2.1: fires on the known post-gate true positive: 100013 ===
+WARN: step 1 mentions tests but declares no test scope
+(v) WARN: step 1 is a QA step whose test_scope starts 'none', but its text carries no pre-declaration clause. A raw-evidence .txt deposit alone does not clear _gate_qa_test_result: its second branch requires a parseable pytest summary and will FAIL without one. Remedy: add a bolded gate-note in this step's text pre-declaring the benign class and that the Planner overrides at the verdict. (thread 70)
+(o1) INFO: candidates=3 excluded=2 fired=0
+(o2) WARN: Deposits entry `knowledge/qa/evidence/mandate-canary-2026-09-01/qa-receipt.md` is not project-prefixed or absolute
+(o2) WARN: Deposits entry `knowledge/qa/evidence/mandate-canary-2026-09-01/probes-raw.txt` is not project-prefixed or absolute
+PASS: (a) header — parsed
+PASS: (a) dispatch_mode — bellows
+PASS: (a) pause_for_verdict — always
+PASS: (a) known_failures — 0
+PASS: (b) step 1 deposits — 2 path(s)
+PASS: (c) QA banner pair — both strings present
+PASS: (d) step 1 scope — 2 file(s), 0 prefix(es)
+exit=0
+
+=== Item 2.2: silent on clause-carrying plans ===
+--- Plan 100027: QA step number: 2 ---
+WARN: step 2 mentions tests but declares no test scope
+(o1) INFO: candidates=10 excluded=4 fired=0
+(o2) WARN: Deposits entry `knowledge/development/dev-log-dc-manifest-sentence-2026-09-02.md` is not project-prefixed or absolute
+(o2) WARN: Deposits entry `knowledge/qa/evidence/dc-manifest-sentence-2026-09-02/qa-receipt.md` is not project-prefixed or absolute
+(o2) WARN: Deposits entry `knowledge/qa/evidence/dc-manifest-sentence-2026-09-02/probes-raw.txt` is not project-prefixed or absolute
+PIN-CHECK: kind=prefix line=55 token=3a84137ed366… result=ambiguous
+PIN-CHECK: kind=prefix line=58 token=a9e4d099e11f… result=ambiguous
+PIN-CHECK: kind=prefix line=60 token=5138760431ae… result=ambiguous
+PIN-CHECK: kind=prefix line=68 token=afdc93b59638… result=ambiguous
+PIN-CHECK: kind=prefix line=68 token=e12135909645… result=ambiguous
+PIN-CHECK: kind=prefix line=68 token=be31b8483ff5… result=ambiguous
+PIN-CHECK: kind=prefix line=68 token=a9e4d099e11f… result=ambiguous
+PASS: (a) header — parsed
+PASS: (a) dispatch_mode — bellows
+PASS: (a) pause_for_verdict — always
+PASS: (a) known_failures — 0
+PASS: (b) step 1 deposits — 2 path(s)
+PASS: (b) step 2 deposits — 2 path(s)
+PASS: (c) QA banner pair — both strings present
+PASS: (d) step 1 scope — 2 file(s), 0 prefix(es)
+PASS: (d) step 2 scope — 2 file(s), 0 prefix(es)
+(v) WARN count: 0
+--- Plan 543: QA step number: 2 ---
+WARN: step 1 mentions tests but declares no test scope
+WARN: step 2 mentions tests but declares no test scope
+(o1) INFO: candidates=8 excluded=4 fired=4
+(o1) WARN: missing path `/Users/marklehn/Developer/GitHub/GLOSSARY.md`
+(o1) WARN: missing path `/Users/marklehn/Developer/GitHub/bellows/hooks/commands/wrap.md`
+(o1) WARN: missing path `/Users/marklehn/Developer/GitHub/bellows/knowledge/glossary.md`
+(o1) WARN: missing path `/Users/marklehn/Developer/GitHub/bellows`
+(o2) WARN: Deposits entry `hooks/commands/wrap.md` is not project-prefixed or absolute
+(o2) WARN: Deposits entry `knowledge/glossary.md` is not project-prefixed or absolute
+(o2) WARN: Deposits entry `knowledge/dev-logs/wrap-3d-central-glossary-dev-2026-08-26.md` is not project-prefixed or absolute
+(o2) WARN: Deposits entry `knowledge/qa/evidence/wrap-3d-central-glossary-2026-08-26/probes-raw.txt` is not project-prefixed or absolute
+(o2) WARN: Deposits entry `knowledge/qa/evidence/wrap-3d-central-glossary-2026-08-26/qa-receipt.md` is not project-prefixed or absolute
+(r) WARN: line 37 probe constant without a supersede-class clause within 2 lines — a wrong authored number here HARD-FAILS a correct state (the 554 class); add measure-record-supersede language or verify the constant is structural
+PASS: (a) header — parsed
+PASS: (a) dispatch_mode — bellows
+PASS: (a) pause_for_verdict — always
+PASS: (b) step 1 deposits — 3 path(s)
+PASS: (b) step 2 deposits — 2 path(s)
+PASS: (c) QA banner pair — both strings present
+PASS: (d) step 1 scope — 3 file(s), 0 prefix(es)
+PASS: (d) step 2 scope — 2 file(s), 0 prefix(es)
+(v) WARN count: 0
+--- Plan 548: QA step number: 2 ---
+WARN: step 1 mentions tests but declares no test scope
+(o1) INFO: candidates=9 excluded=3 fired=5
+(o1) WARN: missing path `/Users/marklehn/Developer/GitHub/ELUVIAN_PATH.md`
+(o1) WARN: missing path `/Users/marklehn/Developer/GitHub/bellows`
+(o1) WARN: missing path `/Users/marklehn/Developer/GitHub`
+(o1) WARN: missing path `/Users/marklehn/.claude/projects/-Users-marklehn-Developer-GitHub/memory`
+(o1) WARN: missing path `/Users/marklehn/Developer/GitHub/GLOSSARY.md`
+(o2) WARN: Deposits entry `hooks/commands/eluvian.md` is not project-prefixed or absolute
+(o2) WARN: Deposits entry `knowledge/dev-logs/eluvian-wiring-pull-dev-2026-08-26.md` is not project-prefixed or absolute
+(o2) WARN: Deposits entry `knowledge/qa/evidence/eluvian-wiring-pull-2026-08-26/probes-raw.txt` is not project-prefixed or absolute
+(o2) WARN: Deposits entry `knowledge/qa/evidence/eluvian-wiring-pull-2026-08-26/qa-receipt.md` is not project-prefixed or absolute
+PIN-CHECK: kind=prefix line=23 token=78ecaa35aaca… result=ambiguous
+PIN-CHECK: kind=prefix line=29 token=78ecaa35aaca… result=ambiguous
+PIN-CHECK: kind=prefix line=121 token=78ecaa35aaca… result=ambiguous
+(r) WARN: line 29 probe constant without a supersede-class clause within 2 lines — a wrong authored number here HARD-FAILS a correct state (the 554 class); add measure-record-supersede language or verify the constant is structural
+PASS: (a) header — parsed
+PASS: (a) dispatch_mode — bellows
+PASS: (a) pause_for_verdict — always
+PASS: (b) step 1 deposits — 2 path(s)
+PASS: (b) step 2 deposits — 2 path(s)
+PASS: (c) QA banner pair — both strings present
+PASS: (d) step 1 scope — 2 file(s), 0 prefix(es)
+PASS: (d) step 2 scope — 2 file(s), 0 prefix(es)
+(v) WARN count: 0
+--- Plan 555: QA step number: 2 ---
+WARN: step 1 mentions tests but declares no test scope
+(o1) INFO: candidates=4 excluded=3 fired=1
+(o1) WARN: missing path `/Users/marklehn/Developer/GitHub/bellows`
+(o2) WARN: Deposits entry `CLAUDE.md` is not project-prefixed or absolute
+(o2) WARN: Deposits entry `knowledge/dev-logs/id-range-partitioning-doc-dev-2026-08-26.md` is not project-prefixed or absolute
+(o2) WARN: Deposits entry `knowledge/qa/evidence/id-range-partitioning-doc-2026-08-26/probes-raw.txt` is not project-prefixed or absolute
+(o2) WARN: Deposits entry `knowledge/qa/evidence/id-range-partitioning-doc-2026-08-26/qa-receipt.md` is not project-prefixed or absolute
+PIN-CHECK: kind=prefix line=19 token=2d689d5943bb… result=ambiguous
+PASS: (a) header — parsed
+PASS: (a) dispatch_mode — bellows
+PASS: (a) pause_for_verdict — always
+PASS: (b) step 1 deposits — 2 path(s)
+PASS: (b) step 2 deposits — 2 path(s)
+PASS: (c) QA banner pair — both strings present
+PASS: (d) step 1 scope — 2 file(s), 0 prefix(es)
+PASS: (d) step 2 scope — 2 file(s), 0 prefix(es)
+(v) WARN count: 0
+
+=== Item 2.3: corpus census ===
+qa_steps field malformed: '[2]' — falling back to keyword detection
+qa_steps field malformed: '[2]' — falling back to keyword detection
+qa_steps field malformed: 'none' — falling back to keyword detection
+qa_steps field malformed: '[2]' — falling back to keyword detection
+qa_steps field malformed: '[2]' — falling back to keyword detection
+qa_steps field malformed: 'none' — falling back to keyword detection
+qa_steps field malformed: 'none' — falling back to keyword detection
+qa_steps field malformed: '[2]' — falling back to keyword detection
+qa_steps field malformed: '[2]' — falling back to keyword detection
+qa_steps field malformed: 'none' — falling back to keyword detection
+Done plans: 543
+(v) fires: 10
+  executable-100013.md step 1
+  executable-555.md step 2
+  executable-backlog-hygiene-cause-5-and-daemon-logging-2026-05-11.md step 2
+  executable-planner-template-bellows-execution-model-section-2026-04-30.md step 2
+  executable-planner-template-lessons-step-numbering-2026-04-23.md step 2
+  executable-priority-3-audit-closeout-2026-05-21.md step 2
+  executable-qa-steps-governance-2026-05-25.md step 2
+  executable-rule-26-evidence-path-fix-2026-05-11.md step 2
+  executable-settings-local-bash-fallback-doc-2026-05-22.md step 2
+  executable-verdict-only-resume-docs-2026-04-28.md step 2
+
+=== Item 2.3 (corrected): corpus census with OR logic matching actual implementation ===
+qa_steps field malformed: '[2]' — falling back to keyword detection
+qa_steps field malformed: '[2]' — falling back to keyword detection
+qa_steps field malformed: 'none' — falling back to keyword detection
+qa_steps field malformed: '[2]' — falling back to keyword detection
+qa_steps field malformed: '[2]' — falling back to keyword detection
+qa_steps field malformed: 'none' — falling back to keyword detection
+qa_steps field malformed: 'none' — falling back to keyword detection
+qa_steps field malformed: '[2]' — falling back to keyword detection
+qa_steps field malformed: '[2]' — falling back to keyword detection
+qa_steps field malformed: 'none' — falling back to keyword detection
+Done plans: 543
+(v) fires: 9
+  executable-100013.md step 1
+  executable-backlog-hygiene-cause-5-and-daemon-logging-2026-05-11.md step 2
+  executable-planner-template-bellows-execution-model-section-2026-04-30.md step 2
+  executable-planner-template-lessons-step-numbering-2026-04-23.md step 2
+  executable-priority-3-audit-closeout-2026-05-21.md step 2
+  executable-qa-steps-governance-2026-05-25.md step 2
+  executable-rule-26-evidence-path-fix-2026-05-11.md step 2
+  executable-settings-local-bash-fallback-doc-2026-05-22.md step 2
+  executable-verdict-only-resume-docs-2026-04-28.md step 2
+
+=== Item 2.4: exit code unaffected ===
+DEV commit (tagged [100028]): 675f43a
+Preceding commit sha: 778a0a2
+--- Before (sha 778a0a2) exit code ---
+exit=1
+--- After (HEAD 675f43a) exit code ---
+exit=0
+
+=== Item 2.4 detail: before-sha output for 100013 ===
+Traceback (most recent call last):
+  File "/tmp/plan_lint_before.py", line 24, in <module>
+    import gates
+ModuleNotFoundError: No module named 'gates'
+exit=0
+
+=== Item 2.4 (corrected): exit code before/after ===
+--- Before (preceding commit 778a0a2) exit code ---
+exit=1
+--- After (DEV commit 675f43a) exit code ---
+exit=0
+
+=== Item 2.4 (final): exit code before/after ===
+DEV commit (tagged [100028]): 675f43a
+Preceding commit sha: 778a0a2
+--- Before (778a0a2) exit code for 100013 ---
+exit=0
+--- After (675f43a) exit code for 100013 ---
+exit=0
+
+=== Item 2.5: predicate holds — lint on this plan (100028) ===
+Plan file found: 
+WARN: plan file not found in knowledge/decisions — checking if it's claimed under another name
+
+=== Item 2.5: predicate holds — lint on this plan (100028) ===
+Plan file: /Users/marklehn/Developer/bellows/knowledge/decisions/in-progress-executable-100028.md
+(u) WARN: step 1 Deposits: first .md is 'qa-predeclaration-dev-2026-09-03.md' — rule_20_self_check reads the first .md as the QA report (thread 77)
+(u) WARN: step 1 Deposits: no .txt evidence entry (thread 77)
+(o1) INFO: candidates=10 excluded=7 fired=0
+(o2) WARN: Deposits entry `knowledge/dev-logs/qa-predeclaration-dev-2026-09-03.md` is not project-prefixed or absolute
+(o2) WARN: Deposits entry `knowledge/mutants/qa-predeclaration-plan_lint.json` is not project-prefixed or absolute
+(o2) WARN: Deposits entry `knowledge/qa/evidence/qa-predeclaration-2026-09-03/pytest_full.txt` is not project-prefixed or absolute
+(o2) WARN: Deposits entry `knowledge/qa/evidence/qa-predeclaration-2026-09-03/probes-raw.txt` is not project-prefixed or absolute
+(o2) WARN: Deposits entry `knowledge/qa/evidence/qa-predeclaration-2026-09-03/qa-receipt.md` is not project-prefixed or absolute
+PIN-CHECK: kind=sha256 line=82 token=e19f3be6d624… result=missing-file
+(q) WARN: line 82 sha256 pin e19f3be6d624… file missing: scripts/plan_lint.py
+PASS: (a) header — parsed
+PASS: (a) dispatch_mode — bellows
+PASS: (a) pause_for_verdict — always
+PASS: (a) known_failures — 0
+PASS: (b) step 1 deposits — 2 path(s)
+PASS: (b) step 2 deposits — 3 path(s)
+PASS: (c) QA banner pair — both strings present
+PASS: (d) step 1 scope — 4 file(s), 0 prefix(es)
+PASS: (d) step 2 scope — 3 file(s), 0 prefix(es)
+exit=0
+
+=== Item 3: mutation_check ===
+HEAD: 675f43a748f302162a51d9dd38749e0e3f5962a7
+TARGET: scripts/plan_lint.py sha256=0cec3ff10914
+
+MUTANT v-drop-scope-gate: KILLED — suite caught the defect
+MUTANT v-invert-suppression: KILLED — suite caught the defect
+MUTANT v-narrow-to-gate-name-token: KILLED — suite caught the defect
+MUTANT v-widen-suppression-to-whole-plan: KILLED — suite caught the defect
+MUTANT v-drop-header-guard: KILLED — suite caught the defect
+MUTANT v-swap-gate-predicate: KILLED — suite caught the defect
+MUTANT v-only-last-step: KILLED — suite caught the defect
+MUTANT v-append-as-fail: KILLED — suite caught the defect
+
+LIVE-TREE UNCHANGED: 0cec3ff10914
+
+MUTATION: 8 killed, 0 survived, 0 error
+exit=0
