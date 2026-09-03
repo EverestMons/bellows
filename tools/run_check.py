@@ -66,12 +66,14 @@ def judge_register(stdout, stderr, code):
     bad = [ln for ln in stderr.splitlines() if "\tUNCONFORMANT" in ln or "\tNO_TABLE" in ln]
     good = [ln for ln in stderr.splitlines() if "\tCONFORMANT" in ln]
     if bad:
-        return "FAIL", f"{len(bad)} UNCONFORMANT file(s): " + "; ".join(
+        statuses = sorted({ln.split("\t")[1] for ln in bad if len(ln.split("\t")) > 1})
+        label = "/".join(statuses) if statuses else "bad"
+        return "FAIL", f"{len(bad)} {label} file(s): " + "; ".join(
             ln.split("\t")[0] for ln in bad)
     if not good:
         return "FAIL", ("no CONFORMANT line seen — nothing was scanned, or the "
                         "verdict channel moved (positive control failed)")
-    return "PASS", f"{len(good)} file(s) CONFORMANT, 0 UNCONFORMANT"
+    return "PASS", f"{len(good)} file(s) CONFORMANT, 0 bad"
 
 
 def main(argv):

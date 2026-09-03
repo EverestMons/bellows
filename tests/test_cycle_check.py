@@ -961,3 +961,73 @@ def test_63_hyphenated_lens_yields_bar_met(tmp_path):
     assert code == 0
 
 
+# ---- register-enforcement (plan 100029) ----
+
+
+def test_assert2_invalid_register_warns_verdict_unchanged(tmp_path, monkeypatch):
+    """Test 7 — assert #2 on a plan whose register is invalid (NO_TABLE) emits a WARN
+    via the warnings collector but does NOT change the verdict. Warn-first: the
+    pre-wired FAIL arm at cycle_check.py:424 is deliberately NOT taken here."""
+    plan = _make_plan(tmp_path, (
+        "**Walk register:** walk-register-test.md\n"
+        "- Weak spots: w1 2 folded — instruction 2 / record 0; w2 dry.\n"
+        "**Closing:** BAR MET\n"
+    ))
+    reg = tmp_path / "walk-register-test.md"
+    reg.write_text(
+        "# Walk Register\n\n**schema_version:** `0.3`\n\nNo tables.\n",
+        encoding="utf-8",
+    )
+    monkeypatch.setattr(cycle_check, "_find_git_root", lambda _: tmp_path)
+
+    warnings = []
+    verdict, code = cycle_check.run_check(plan, warnings=warnings)
+    assert verdict == "BAR_MET", f"verdict must be unchanged; got {verdict!r}"
+    assert code == 0
+    assert len(warnings) > 0, "a WARN must be collected for an invalid register"
+
+
+def test_assert2_valid_register_no_warn(tmp_path, monkeypatch):
+    """Test 8 — assert #2 on a plan whose register is CONFORMANT emits no WARN."""
+    plan = _make_plan(tmp_path, (
+        "**Walk register:** walk-register-test.md\n"
+        "- Weak spots: w1 2 folded — instruction 2 / record 0; w2 dry.\n"
+        "**Closing:** BAR MET\n"
+    ))
+    reg = tmp_path / "walk-register-test.md"
+    reg.write_text(
+        "**schema_version:** `0.3`\n\n"
+        "| id | walk | lens | sub_question | origin | finding | pre_fold_text | resolution |\n"
+        "|---|---|---|---|---|---|---|---|\n"
+        "| f1 | 1 | Weak spots | 1.1 | pre-existing | bad | the bytes | fixed |\n",
+        encoding="utf-8",
+    )
+    monkeypatch.setattr(cycle_check, "_find_git_root", lambda _: tmp_path)
+
+    warnings = []
+    verdict, code = cycle_check.run_check(plan, warnings=warnings)
+    assert verdict == "BAR_MET"
+    assert code == 0
+    assert len(warnings) == 0, "no WARN must be collected for a valid register"
+
+
+def test_contract_last_stdout_line_is_verdict(tmp_path):
+    """Test 9 — contract test (P8): cycle_check's last stdout line is always the bare
+    verdict token after the register-enforcement change. Any register WARN must print
+    before the verdict or on stderr — not after it."""
+    import subprocess
+    plan = _make_plan(tmp_path, (
+        "- Weak spots: w1 1 folded — instruction 1 / record 0; w2 dry.\n"
+        "**Closing:** BAR MET\n"
+    ))
+    result = subprocess.run(
+        [sys.executable, str(SCRIPTS / "cycle_check.py"), str(plan)],
+        capture_output=True, text=True, timeout=30,
+    )
+    assert result.stdout.strip(), "cycle_check must emit at least one stdout line"
+    last_line = result.stdout.strip().splitlines()[-1].strip()
+    assert last_line == "BAR_MET", (
+        f"last stdout line must be bare verdict token; got {last_line!r}"
+    )
+
+

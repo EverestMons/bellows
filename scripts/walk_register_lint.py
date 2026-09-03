@@ -18,6 +18,12 @@ STATUS_PRE_SCHEMA = "PRE-SCHEMA"
 STATUS_CONFORMANT = "CONFORMANT"
 STATUS_UNCONFORMANT = "UNCONFORMANT"
 STATUS_NO_TABLE = "NO_TABLE"
+# Names must NOT start with CONFORMANT or NO_TABLE — judge_register classifies by
+# tab-prefixed substring and the name decides the semantics silently.
+STATUS_LEGACY_SCHEMA = "LEGACY_SCHEMA"   # declared version < validator; not a defect
+STATUS_FUTURE_SCHEMA = "FUTURE_SCHEMA"   # declared version > validator; too new to assess
+
+VALIDATOR_SCHEMA_VERSION = "0.3"
 
 ROW_OK = "OK"
 ROW_WARN = "WARN"
@@ -30,6 +36,18 @@ REQUIRED_COLUMNS = [
 SCHEMA_DECL_RE = re.compile(
     r"^\*\*schema_version:\*\*\s+`?([^`\n]+)`?\s*$", re.MULTILINE
 )
+
+
+def _extract_schema_version(text):
+    m = SCHEMA_DECL_RE.search(text)
+    return m.group(1).strip() if m else None
+
+
+def _version_tuple(v):
+    try:
+        return tuple(int(x) for x in v.split("."))
+    except ValueError:
+        return (0,)
 
 FOLD_MARKERS = {"fold", "resolution", "pre_fold_text"}
 
@@ -195,7 +213,18 @@ def validate_row(norm_cols, row_cells):
 
 def validate_file(filepath):
     text = filepath.read_text(encoding="utf-8")
-    pre_schema = not has_schema_declaration(text)
+
+    # Version-aware short-circuit: branch on the declared value, not just its presence.
+    declared_version = _extract_schema_version(text)
+    if declared_version is not None:
+        cmp = (_version_tuple(declared_version), _version_tuple(VALIDATOR_SCHEMA_VERSION))
+        if cmp[0] < cmp[1]:
+            return STATUS_LEGACY_SCHEMA, [], []
+        if cmp[0] > cmp[1]:
+            return STATUS_FUTURE_SCHEMA, [], []
+        # declared == current: fall through to normal v0.3 validation
+
+    pre_schema = declared_version is None
 
     tables, consumed = extract_tables(text)
     fold_tables = []

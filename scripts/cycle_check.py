@@ -24,6 +24,15 @@ from cycle_yields import (
     PASS_FOLDED_RE,
     PASS_DRY_RE,
 )
+from walk_register_lint import (
+    validate_file as _validate_register,
+    STATUS_CONFORMANT as _REG_CONFORMANT,
+    STATUS_PRE_SCHEMA as _REG_PRE_SCHEMA,
+    STATUS_LEGACY_SCHEMA as _REG_LEGACY_SCHEMA,
+)
+# Statuses that do not warrant a register WARN: CONFORMANT (valid), PRE-SCHEMA (pre-dates
+# schema, not a defect), LEGACY_SCHEMA (honest old-version record, not a defect).
+_REGISTER_SILENT_STATUSES = frozenset({_REG_CONFORMANT, _REG_PRE_SCHEMA, _REG_LEGACY_SCHEMA})
 
 CLASS_SPLIT_RE = re.compile(r"instruction\s+(\d+)\s*/\s*record\s+(\d+)")
 WALK_STATUS_RE = re.compile(
@@ -257,31 +266,43 @@ def check_assert_1(parsed):
 
 
 def check_assert_2(parsed, plan_path):
-    """Evidence exists. Returns (register_result, uncommitted, git_has_context)."""
+    """Evidence exists. Returns (register_result, uncommitted, git_has_context, register_warn).
+
+    register_warn is a WARN string when the resolved register fails validation, or None.
+    Does NOT assign register_result = "FAIL": the pre-wired arm at run_check():424 is the
+    earned promotion path for blocking enforcement; warn-first is deliberate here.
+    """
     register_result = "N/A"
     uncommitted = False
     git_has_context = False
+    register_warn = None
 
     ref = parsed["walk_register_ref"]
     if ref:
         # C-3: three-step resolution order (thread 52)
         resolved = False
+        resolved_path = None
         # Step 1: absolute path
         if Path(ref).is_absolute():
+            candidate = Path(ref)
             try:
-                resolved = Path(ref).exists()
+                resolved = candidate.exists()
             except OSError:
                 resolved = False
+            if resolved:
+                resolved_path = candidate
             register_result = "PASS" if resolved else "UNRESOLVED"
         else:
             git_root = _find_git_root(plan_path)
             # Step 2: git_root / ref
             if git_root:
+                candidate = git_root / ref
                 try:
-                    resolved = (git_root / ref).exists()
+                    resolved = candidate.exists()
                 except OSError:  # C-2: oversized path component (thread 52)
                     resolved = False
                 if resolved:
+                    resolved_path = candidate
                     register_result = "PASS"
             # Step 3: governance root fallback
             if not resolved:
@@ -291,14 +312,29 @@ def check_assert_2(parsed, plan_path):
                 except ImportError:
                     gov_root = None
                 if gov_root:
+                    candidate = gov_root / ref
                     try:
-                        resolved = (gov_root / ref).exists()
+                        resolved = candidate.exists()
                     except OSError:
                         resolved = False
                     if resolved:
+                        resolved_path = candidate
                         register_result = "PASS"
             if not resolved:
                 register_result = "UNRESOLVED"
+
+        # Validate the resolved register; surface non-conformant status as a WARN.
+        # Import happens at function scope to match the existing fold_check pattern (thread 29).
+        if resolved_path is not None:
+            try:
+                reg_status, _, _ = _validate_register(resolved_path)
+                if reg_status not in _REGISTER_SILENT_STATUSES:
+                    register_warn = (
+                        f"WARN: walk register {resolved_path.name!r}"
+                        f" — {reg_status} (non-conformant register; does not block verdict)"
+                    )
+            except Exception:
+                pass  # validation failure does not affect register_result or verdict
 
     walk_data = parsed["walk_data"]
     if walk_data:
@@ -323,7 +359,7 @@ def check_assert_2(parsed, plan_path):
             except (subprocess.TimeoutExpired, ValueError):
                 pass
 
-    return register_result, uncommitted, git_has_context
+    return register_result, uncommitted, git_has_context, register_warn
 
 
 def check_assert_3(parsed, plan_path, git_has_context):
@@ -381,8 +417,15 @@ def check_plateau(walk_data, current_walk, instruction_counts):
     return consecutive >= 3
 
 
-def run_check(plan_path):
-    """Main entry. Returns (verdict, exit_code)."""
+def run_check(plan_path, warnings=None):
+    """Main entry. Returns (verdict, exit_code).
+
+    warnings: optional list; register WARN strings are appended when supplied.
+    All 43 existing call sites pass no kwarg and remain byte-for-byte unaffected.
+    Only main()'s verdict path passes a list so it can print WARNs before the verdict.
+    Do NOT pass warnings on the --emit-manifest path (:562): that call only fills the
+    manifest validation: field and must not inject advisory text into the artifact.
+    """
     try:
         text = plan_path.read_text(encoding="utf-8")
     except Exception as e:
@@ -417,8 +460,11 @@ def run_check(plan_path):
         return "CONTINUE", 0
 
     a1 = check_assert_1(parsed)
-    a2_reg, a2_uncom, a2_git = check_assert_2(parsed, plan_path)
+    a2_reg, a2_uncom, a2_git, a2_warn = check_assert_2(parsed, plan_path)
     a3 = check_assert_3(parsed, plan_path, a2_git)
+
+    if warnings is not None and a2_warn is not None:
+        warnings.append(a2_warn)
 
     if a1 == "FAIL":
         return "ESCALATE:assert-fail:1", 1
@@ -663,9 +709,12 @@ def main():
     if not plan_path.exists():
         print(f"ERROR: {plan_path} not found", file=sys.stderr)
         sys.exit(2)
-    verdict, code = run_check(plan_path)
+    verdict_warnings = []
+    verdict, code = run_check(plan_path, warnings=verdict_warnings)
     if verdict is None:
         sys.exit(2)
+    for w in verdict_warnings:
+        print(w)  # before verdict; stdout contract (P8): verdict is always the LAST line
     print(verdict)
     sys.exit(code)
 

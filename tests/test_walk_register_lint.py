@@ -26,6 +26,11 @@ from walk_register_lint import (
     validate_file,
     validate_row,
 )
+try:
+    from walk_register_lint import STATUS_LEGACY_SCHEMA, STATUS_FUTURE_SCHEMA
+except ImportError:
+    STATUS_LEGACY_SCHEMA = "LEGACY_SCHEMA"
+    STATUS_FUTURE_SCHEMA = "FUTURE_SCHEMA"
 
 
 def _write_register(tmp_path, name, content):
@@ -40,7 +45,7 @@ def _write_register(tmp_path, name, content):
 CONFORMANT_REGISTER = """\
 # Walk Register — test
 
-**schema_version:** `0.1`
+**schema_version:** `0.3`
 
 | id | walk | lens | sub_question | origin | finding | pre_fold_text | resolution |
 |---|---|---|---|---|---|---|---|
@@ -64,7 +69,7 @@ def test_conformant_row(tmp_path):
 MISSING_PFT_REGISTER = """\
 # Walk Register — test
 
-**schema_version:** `0.1`
+**schema_version:** `0.3`
 
 | id | walk | lens | sub_question | origin | finding | pre_fold_text | resolution |
 |---|---|---|---|---|---|---|---|
@@ -89,7 +94,7 @@ def test_missing_pre_fold_text_warns(tmp_path):
 TWO_SHAPE_REGISTER = """\
 # Walk Register — test
 
-**schema_version:** `0.1`
+**schema_version:** `0.3`
 
 ## Walk 1
 
@@ -124,7 +129,7 @@ def test_two_shape_file(tmp_path):
 NO_TABLE_REGISTER = """\
 # Walk Register — test
 
-**schema_version:** `0.1`
+**schema_version:** `0.3`
 
 No tables here. Just prose describing the walk.
 """
@@ -256,7 +261,7 @@ def test_unescaped_pipe_corrupts_row():
 ADDITION_REGISTER = """\
 # Walk Register — test
 
-**schema_version:** `0.1`
+**schema_version:** `0.3`
 
 | id | walk | lens | sub_question | origin | finding | pre_fold_text | resolution |
 |---|---|---|---|---|---|---|---|
@@ -278,7 +283,7 @@ def test_addition_literal_conformant(tmp_path):
 EMPTY_PFT_REGISTER = """\
 # Walk Register — test
 
-**schema_version:** `0.1`
+**schema_version:** `0.3`
 
 | id | walk | lens | sub_question | origin | finding | pre_fold_text | resolution |
 |---|---|---|---|---|---|---|---|
@@ -300,7 +305,7 @@ def test_empty_pre_fold_text_warns(tmp_path):
 TRUNCATED_PFT_REGISTER = """\
 # Walk Register — test
 
-**schema_version:** `0.1`
+**schema_version:** `0.3`
 
 | id | walk | lens | sub_question | origin | finding | pre_fold_text | resolution |
 |---|---|---|---|---|---|---|---|
@@ -322,7 +327,7 @@ def test_truncated_pre_fold_text_warns(tmp_path):
 NON_FOLD_TABLE_REGISTER = """\
 # Walk Register — test
 
-**schema_version:** `0.1`
+**schema_version:** `0.3`
 
 | field | required | meaning |
 |---|---|---|
@@ -484,3 +489,74 @@ def test_fully_detached_rows_no_table_still_flagged(tmp_path):
     status, rows, _ = validate_file(_v03_file(tmp_path, body))
     assert status == "UNCONFORMANT"
     assert any(r["note"] == "headerless_rows" for r in rows)
+
+
+# ---- version-aware classification (register-enforcement-2026-09-03) ----
+
+
+def test_legacy_schema_v01_not_no_table(tmp_path):
+    """Test 1 — a register declaring schema_version 0.1 (below validator v0.3) must
+    not be reported as NO_TABLE. It gets its own legacy status and is not a defect."""
+    p = _write_register(tmp_path, "walk-register-test.md", """\
+        # Walk Register — test
+
+        **schema_version:** `0.1`
+
+        | # | measurement | result |
+        |---|---|---|
+        | 1 | count | ok |
+        """)
+    status, rows, shapes = validate_file(p)
+    assert status == STATUS_LEGACY_SCHEMA, f"expected LEGACY_SCHEMA, got {status!r}"
+    assert status != STATUS_NO_TABLE
+
+
+def test_future_schema_unjudgeable(tmp_path):
+    """Test 1b — a register declaring a version ABOVE the validator's own (0.3) is
+    unjudgeable; the validator is too old to assess it. Reported as FUTURE_SCHEMA.
+
+    CONSTRUCTED FIXTURE: no register in the corpus declares >0.3 as of 2026-09-03.
+    This arm is built for a case that cannot yet occur in the wild.
+    """
+    p = _write_register(tmp_path, "walk-register-test.md", """\
+        # Walk Register — test
+
+        **schema_version:** `0.4`
+
+        | id | walk | lens | sub_question | origin | finding | pre_fold_text | resolution |
+        |---|---|---|---|---|---|---|---|
+        | f1 | 1 | Weak spots | 1.1 | pre-existing | something | bytes | fixed |
+        """)
+    status, rows, shapes = validate_file(p)
+    assert status == STATUS_FUTURE_SCHEMA, f"expected FUTURE_SCHEMA, got {status!r}"
+
+
+def test_v03_no_fold_table_is_no_table(tmp_path):
+    """Test 2 — a register declaring v0.3 (current) with no fold table → NO_TABLE.
+    Verifies that the version-aware branch preserves existing NO_TABLE behavior
+    for current-schema registers without fold tables."""
+    p = _write_register(tmp_path, "walk-register-test.md", """\
+        # Walk Register — test
+
+        **schema_version:** `0.3`
+
+        No fold tables here.
+        """)
+    status, rows, shapes = validate_file(p)
+    assert status == STATUS_NO_TABLE
+
+
+def test_no_declaration_still_pre_schema_regression(tmp_path):
+    """Test 3 (regression) — a register with no schema_version declaration stays
+    PRE-SCHEMA after the version-aware change. PRE-SCHEMA is not a defect."""
+    p = _write_register(tmp_path, "walk-register-test.md", """\
+        # Walk Register — test
+
+        No schema_version declaration.
+
+        | # | finding | fold |
+        |---|---|---|
+        | 1 | bad count | fixed |
+        """)
+    status, rows, shapes = validate_file(p)
+    assert status == STATUS_PRE_SCHEMA

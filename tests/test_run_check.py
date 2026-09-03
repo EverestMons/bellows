@@ -94,6 +94,60 @@ class TestJudgeRegister:
         assert verdict == "FAIL"
         assert "positive control" in reason
 
+    def test_no_table_is_bad(self):
+        """Test 4 — judge_register counts NO_TABLE as bad.
+        Commit 45d7aff added this behavior but shipped without a test."""
+        stderr = "walk-register-qa-predeclaration.md\tNO_TABLE\tshapes: (none)\n"
+        verdict, reason = judge_register("", stderr, 0)
+        assert verdict == "FAIL"
+        assert "walk-register-qa-predeclaration.md" in reason
+
+    def test_pre_schema_not_bad(self):
+        """Test 5 — PRE-SCHEMA is not a defect; judge_register must not count it as bad.
+        25 registers in the corpus legitimately predate the schema declaration."""
+        stderr = (
+            "old-register.md\tPRE-SCHEMA\tshapes: (none)\n"
+            "good-register.md\tCONFORMANT\tshapes: | id | walk | ... |\n"
+        )
+        verdict, reason = judge_register("", stderr, 0)
+        assert verdict == "PASS"
+
+    def test_legacy_schema_neither_bad_nor_good(self):
+        """Test 5b — LEGACY_SCHEMA is neither bad nor good in judge_register.
+
+        This behavior is EXPLICIT, not by omission. Introducing a status whose judge
+        treatment is left to chance creates the defect this plan exists to fix.
+
+        Arm 1: a sweep containing ONLY LEGACY_SCHEMA registers fails the positive
+        control (nothing was CONFORMANT-scanned) — the failure reason must reference
+        positive control, not a 'bad status' count.
+
+        Arm 2: a LEGACY_SCHEMA line alongside a CONFORMANT line → PASS (legacy
+        does not poison a clean sweep).
+        """
+        # Arm 1: pure legacy sweep fails positive control
+        legacy_only = "old.md\tLEGACY_SCHEMA\tshapes: (none)\n"
+        verdict1, reason1 = judge_register("", legacy_only, 0)
+        assert verdict1 == "FAIL"
+        assert "positive control" in reason1
+
+        # Arm 2: legacy + conformant → PASS
+        mixed = (
+            "old.md\tLEGACY_SCHEMA\tshapes: (none)\n"
+            "new.md\tCONFORMANT\tshapes: | id | walk | ... |\n"
+        )
+        verdict2, _ = judge_register("", mixed, 0)
+        assert verdict2 == "PASS"
+
+    def test_failure_message_names_actual_status(self):
+        """Test 6 — the failure message names the actual status, not always UNCONFORMANT.
+        When only NO_TABLE files are bad, the message must say NO_TABLE, not UNCONFORMANT."""
+        no_table_stderr = "register.md\tNO_TABLE\tshapes: (none)\n"
+        _, reason = judge_register("", no_table_stderr, 0)
+        assert "NO_TABLE" in reason
+        # The message must reflect the status actually found, not a hardcoded label
+        assert "UNCONFORMANT" not in reason
+
 
 # ---------------------------------------------------------------------------
 # judge_propagation — four cases from real checker output (M3 kill target)
