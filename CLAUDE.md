@@ -106,3 +106,43 @@ are all mixed-topology — an off- or advisory-errored machine beside a
 shared directory is the double-dispatch channel.
 
 Rulings: `tuyere/knowledge/research/fork1-claim-lock-rulings-2026-08-26.md`.
+
+## Depositing a plan (the act git does not record)
+
+⛔ **Do NOT reconstruct this from `git log`.** A deposit's commits show
+`drafts/<plan>.md → <plan>.md → hold-<plan>.md`. The `ready-` filename that
+actually drives the depositor exists for seconds and is never committed, so
+copying a prior deposit's diff reproduces the wrong step — measured
+2026-09-04, `LESSONS.md` 422.
+
+The sequence, in order:
+
+1. **Receipt FIRST** — `.venv/bin/python tools/deposit_receipt.py <plan-path> <session-id>`.
+   Ordering contract from the tool's own docstring: the receipt precedes staging,
+   because the daemon claims within seconds of a file becoming claimable. It also
+   spawns the detached `gate_watcher`, which logs to `logs/watch/<name>.log`.
+2. **Verify BY PARSING, not by reading** — `_parse_plan(plan_text)` returns
+   `(writes, reads, declared_class)`, in that order. Feed the **writes** to
+   `_assign_class` and confirm it equals the manifest's declared `class:`.
+   ⚠️ Check the returned counts against the manifest's own declared paths: if
+   `writes` does not match, the manifest stanza did not parse and the fallback
+   (`gates._extract_plan_required_deposits`) ran — that is the 2026-09-03
+   failed-open deposit, where four writes became two and the class came out
+   `app-feature`, skipping the human release act entirely.
+3. **Stage as `ready-<slug>.md`** in `knowledge/decisions/` (NOT the bare name —
+   `depositor.evaluate()` fires only on the `ready-` prefix; `bellows.py:2421`).
+4. **Read the hold reason, not the file set.** A pipeline hold and a safety-net
+   hold produce the same two files:
+   - `class:shop-infra` **with** `class_assigned` → the depositor ran (collision,
+     re-run validation, receipt, class assign). This is the designed human gate.
+   - `no_clearance` **without** `class_assigned` → the depositor never ran; the
+     daemon's auto-HOLD caught a plan that was not `ready-` prefixed.
+5. **Release** (`shop-infra` never auto-clears — RULINGS fork 4) —
+   `.venv/bin/python tools/clear_plan.py knowledge/decisions/hold-<slug>.md --release-class-hold`.
+   Re-runs `cycle_check` (BAR_MET required) and `plan_lint`, writes the clearance
+   row (`cleared_by='clear_tool'`), and renames to the bare claimable name. The
+   daemon claims from there.
+
+⚠️ An override justification passed with `--override-gate --ref` must be
+**committed before the override** — `--override-gate` is idempotent, so the
+reference is write-once and uncorrectable (`LESSONS.md` 418, thread 123).
