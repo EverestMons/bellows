@@ -27,6 +27,7 @@ CEO ruling, thread 119: *"I don't want there to be optional gates, only a record
 | P2 | ⛔ FO-3, current location | `scripts/plan_lint.py:288` — `if header.get("qa_steps"):` — the header value is a STRING, so `"none"` is truthy | `grep -n 'header.get("qa_steps")' scripts/plan_lint.py` |
 | P3 | FO-1's demonstration input | `halted-executable-100031.md` — has a `## Cycle Manifest` heading but no parseable `validation:` field → returns `None` → SKIPPED today | call `_manifest_validation_keys` on it |
 | P4 | FO-3's demonstration inputs | 4 `Done` plans carry `qa_steps: none`, and **all four carry banner=0** — every one would fail (c) today. ⛔ **A SECOND live demonstration:** `Done/executable-qa-steps-governance-2026-05-25.md` carries the unfilled placeholder and `plan_lint` on it returns **1 FAIL — `(c) QA banner pair — missing: banner, PASSED line`** right now | `grep -l` the spelling; run `plan_lint` on the placeholder plan |
+| P4a | ⛔ **FO-3's harm is MEASURED, not inferred** | diagnostic **100036** (closed 2026-09-04) found the 4 `qa_steps: none` plans are FALSE POSITIVES **in production**: `gates`' keyword fallback fires on the real step heading and returns True while the oracle returns `set()` — the machinery asserts a QA step exists where the declaration says there is none. ⚠️ Invisible under that census's neutralised-heading protocol (both sides return False); it surfaced only because the instrument reported production behaviour alongside. **This plan's FO-3 normalization is what addresses that class** | read `qa-steps-parsing-2026-09-04.md` Q3's `none` paragraph |
 | P4b | ⛔ the SPELLING POPULATION, derived not invented | measured across `Done/` + `drafts/`: `2` ×150 · `3` ×10 · **empty ×9** · `1` ×5 · **`none` ×4** · **`[comma-separated step numbers]` ×3** · `[2]` ×3 · `4` ×1. ⚠️ **`n/a` and `0` do NOT occur** — an earlier draft normalized those two on the author's guess while MISSING the placeholder | `grep -rhoE "qa_steps:\*\* *[^\|]{0,16}"` over both dirs, sorted and counted |
 | P4c | ⛔ the placeholder is the TEMPLATE's own text | `[comma-separated step numbers]` is what `PLANNER_TEMPLATE.md` ships as the `qa_steps` placeholder — verified identical. It is TRUTHY, so an unfilled template demands a Rule 20 banner. **This is the shape most likely to recur**, being the default every new plan starts from | grep the placeholder in PT and in the corpus |
 | P5 | ⛔ FO-1's blast radius is a PAST-corpus artifact | the census measured 544/547 `Done` plans (99.5%) unable to pass a closed gate — **but `cycle_check` runs on plans being AUTHORED, never over `Done/`**, and the gate fires only inside the `verdict == "BAR_MET"` branch. Legacy plans are untouched by construction | read `run_check`'s call sites and the branch guard |
@@ -57,18 +58,22 @@ CEO ruling, thread 119: *"I don't want there to be optional gates, only a record
 
 **Tier:** T1 — T-3 fires (both checkers run on every machine that drafts). **T-6 does NOT fire**, checked against the trigger as QUOTED (*"Edits doctrine, the template, gates, or specialist contracts"*): `cycle_check` and `plan_lint` are authoring-time instruments, and four measured precedents tier `cycle_check` edits at T1 (`100023`, `100025`, `100022`, `100029`), one stating "T-6 no (no doctrine, no gate, no script)". T-8 not fired: clone by kind of `Done/executable-100033.md`.
 **Walk register:** `/Users/marklehn/Developer/eluvian-governance/governance/knowledge/research/walk-register-close-failopen-defaults-2026-09-04.md`
-**Walks:** 5 (walks 0–5 complete).
-- Weak spots:          w1 1 folded — instruction 1 / record 0; w2 1 folded — instruction 1 / record 0; w5 dry.
-- Destruction:         w4 1 folded — instruction 0 / record 1; w5 dry.
-- Vulnerabilities:     w2 1 folded — instruction 1 / record 0; w5 dry.
+**Walks:** 7 (walks 0–7 complete).
+- Weak spots:          w1 1 folded — instruction 1 / record 0; w2 1 folded — instruction 1 / record 0; w5 dry; w6 1 folded — instruction 1 / record 0; w7 dry.
+- Destruction:         w4 1 folded — instruction 0 / record 1; w5 dry; w7 dry.
+- Vulnerabilities:     w2 1 folded — instruction 1 / record 0; w5 dry; w7 dry.
 - Integration-record:  w1 2 folded — instruction 2 / record 0; w3 1 folded — instruction 1 / record 0; w4 1 folded — instruction 0 / record 1; w5 dry.
-- ACID:                w1 dry; w2 dry; w3 dry; w4 dry; w5 dry.
+- ACID:                w1 dry; w2 dry; w3 dry; w4 dry; w5 dry; w7 dry.
 ⚠️ **ACID is dry for a reason, stated here rather than in the lens line:** one repo, one commit, no cross-repo state — the parenthetical form `dry (…)` is UNPARSEABLE to `cycle_check` and silently blocks BAR_MET, so explanations belong in prose and lens lines carry only `wN dry` / `wN N folded`.
 **Battery run at EVERY walk.** `fold_check` baselined before the first fold and CLEAN after every one; `propagation_check` held at DIVERGENT:2 throughout.
 **Walk 5 — DRY.** Scope gate probed (all 6 declared files named in step 1's text); Item 1's HALT re-run and both paths still open.
 ⚠️ **A recovery is recorded in this cycle:** at the freeze, a manifest-splice by the author deleted five front-matter sections (`Why this exists`, the pin table, `What this does NOT do`, `MUST-PRESERVE`, the Drafting Cycle log). The splice assumed the manifest sat immediately before `## STEP 1`, which walk 1's own MUST-PRESERVE insertion had made false. Recovered by splicing HEAD's front matter to the surviving step sections and re-applying the four front-matter folds FROM THE REGISTER, which records each verbatim. **The register was the authority, not the author's memory.**
 
-**Closing:** BAR MET at walk 5 — yields 3, 2, 1, 2, 0; **zero fold-introduced**; the walk-4 rise was two RECORD-class findings, not instruction defects.
+**Walk 6 — 1 finding (instruction 1 / record 0); 0 fold-introduced.** Diagnostic **100036** closed while this plan sat frozen and supplied MEASURED harm for FO-3 that the plan had only inferred: the 4 `none` plans are production FALSE POSITIVES — the fallback asserts a QA step where the declaration says none. Added as P4a. ⚠️ **100036 also settled FO-2, which this plan deliberately excluded, and the answer inverts the author's stated instinct:** removing `gates`' fallback changes **168** plan+step outcomes (True→False — it is the SOLE QA detector for those legacy steps), while parsing `[2]` in both parsers and KEEPING the fallback changes **0**. The exclusion was right; its stated reason ("whether the fallback should exist") now has a measured answer, and it is *keep it*.
+
+**Walk 7 — DRY**, run at the CEO's direction after walk 6 escalated `yield-rising`. Every count reconciled mechanically: Scope 6 = numstat 6 · 12 tests declared = "all twelve" claimed · 6 mutants · 13 pin rows with zero dangling references. Both HALT conditions re-run and still open. `propagation_check` DIVERGENT:1, the lowest of the session. ⚠️ **The escalation was correct and its cause was unusual:** walk 6's finding was not a defect found by re-reading, it was EXTERNAL evidence — diagnostic 100036 closed while this plan sat frozen and supplied measured harm for FO-3 plus FO-2's answer. A plan improving while frozen is a rise the yield heuristic cannot distinguish from non-convergence, so the CEO ruled walk 7 rather than accepting it.
+
+**Closing:** BAR MET at walk 7 — yields 3, 2, 1, 2, 0, 1, 0; **zero fold-introduced** across the cycle.
 
 ## Cycle Manifest
 tier: T1
@@ -77,10 +82,10 @@ class: shop-infra
 reads: scripts/cycle_check.py, scripts/plan_lint.py, gates.py, /Users/marklehn/Developer/eluvian-governance/governance/knowledge/research/gate-fail-open-census-2026-09-04.md
 writes: scripts/cycle_check.py, scripts/plan_lint.py, tests/test_cycle_check_manifest_provenance.py, tests/test_plan_lint_qa_steps_none.py, knowledge/mutants/close-failopen-defaults.json, knowledge/development/dev-log-close-failopen-defaults-2026-09-04.md
 open_forks: FO-2 deferred to diagnostic-qa-steps-parsing (thread 121)
-walks: 5
-yields: 3, 2, 1, 0, 0
+walks: 7
+yields: 3, 2, 1, 0, 0, 1, 0
 validation: cycle_check=BAR_MET, plan_lint=0_FAIL, fold_check=N/A, propagation_check=DIVERGENT:1
-coherence: 5/5 walks have register rows
+coherence: 7/7 walks have register rows
 
 ## STEP 1 — DEV (two conditionals, two test siblings)
 
