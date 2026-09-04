@@ -92,6 +92,7 @@
 > test -n "${GOV:-}" || { echo "GOV UNSET"; exit 1; }
 > test -f "$GOV/PLANNER_TEMPLATE.md" || { echo "GOV WRONG"; exit 1; }
 > ```
+> ⚠️ **`GOV` is hardcoded to THIS machine's layout (walk 1, v2-4).** The shop MacBook Air keeps governance under `~/Developer/GitHub` (threads 89, 113), so this block FAILS CLOSED there — the safe direction, and the plan is `shop-infra` so it holds for a human release on the machine that releases it. ⛔ **Stated, not fixed:** resolving the root as `bellows_root.py` does would make it portable, but that changes how the plan finds its own operands and belongs in a plan that can test it on both machines.
 > ⛔ **This block is THE root guard (P15).** Do not substitute an emptiness test on `git -C "$GOV" log` — `git -C ""` resolves to the current directory and returns a real sha from the governance checkout.
 >
 > **Item 1 — the PER-SURFACE RE-ENTRY TABLE. Run it BEFORE any edit; it replaces the predecessor's single ladder.**
@@ -116,8 +117,12 @@
 > **Item 6 — the `LESSONS.md` append.** ⛔ **Guard, rooted, over all TWELVE lanes (P11)** for `in-progress-*`, `ready-*`, `hold-*`, `verdict-pending-*`; if any resident plan pins `LESSONS.md`, HOLD and record it. ⛔ **Take `shasum -a 256 "$GOV/LESSONS.md"` at the guard AND again immediately before writing** — three writers (P12), one of them the wrap ritual itself. On a difference, re-read the tail and re-derive `:4447`. ⛔ **Do NOT edit `:4447`; APPEND** a dated entry naming it by file and line and quoting the superseded bullet, with `[status: pending]` as the only status value alongside normal `[tag:]` markers, and a closing `**Tag:**` line.
 >
 > **Item 7 — `wrap.md:68–69`** (P4). Edit the SPAN including its separator whitespace; ⛔ everything from `**Then add a line…**` onward stays byte-identical (P5).
+> ⛔ **The replacement MUST contain the literal `cannot be codified goes to the memory repo` — Item 1's re-entry row for this file tests for exactly that string (walk 1, v2-1).** Without it the row tests a token no Item writes, which is verbatim the S2-3 defect this v0 exists to correct.
 >
 > **Item 8 — `eluvian.md:31`** from col 23 (P6); ⛔ the second clause survives (P7).
+> ⛔ **The replacement MUST contain the literal `cannot be codified` — Item 1's re-entry row for this file tests for it (walk 1, v2-1).**
+>
+> ⚠️ **DECLARED, Items 7–8: these two files are LIVE AT WRITE, not at merge.** `~/.claude/commands/wrap.md` and `eluvian.md` are symlinks INTO THIS WORKING TREE, so an edit takes effect for every subsequent session the moment it is saved — before any commit and before Step 2 verifies it. With `pause_for_verdict: always` the Step 1 → Step 2 window is unbounded wall-clock. ⛔ **Harm bounded and accepted** (the new text IS the intended doctrine), but stated so a clone editing a surface where the intermediate state IS harmful does not inherit an inertness assumption. ⚠️ **This declaration was folded at the predecessor's walk 1 and then DROPPED when this v0 was authored — restored at walk 1 (v2-3).**
 >
 > **Item 9 — dev-log**, recording all four surfaces' prior text verbatim, the `GATE_BASELINE` verdicts, and BOTH commit shas.
 >

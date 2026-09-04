@@ -12,7 +12,6 @@
       "(f) WARN: Cycle Manifest stanza missing or empty field: walks",
       "(f) WARN: Cycle Manifest stanza missing or empty field: writes",
       "(f) WARN: Cycle Manifest stanza missing or empty field: yields",
-      "(o1) WARN: missing path `/Users/marklehn/Developer/eluvian-governance/governance/knowledge/research/walk-register-lessons-destination-v2-N-N-N.md`",
       "(o2) WARN: Deposits entry `hooks/commands/eluvian.md` is not project-prefixed or absolute",
       "(o2) WARN: Deposits entry `hooks/commands/wrap.md` is not project-prefixed or absolute",
       "(o2) WARN: Deposits entry `knowledge/development/dev-log-lessons-destination-v2-N-N-N.md` is not project-prefixed or absolute",
