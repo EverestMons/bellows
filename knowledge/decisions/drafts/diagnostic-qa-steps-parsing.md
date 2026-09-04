@@ -58,9 +58,16 @@ Three positions have been held about `qa_steps: [2]`, and **all three are wrong*
 
 **Tier:** T1 — T-3 fires (both parsers run where plans are drafted and dispatched). **T-6 does NOT fire**: read-only; writes no doctrine, template, gate or specialist contract. ⚠️ It READS a gate, which is not editing one. T-8 not fired: clone by kind of `Done/diagnostic-100034.md`.
 **Walk register:** `/Users/marklehn/Developer/eluvian-governance/governance/knowledge/research/walk-register-qa-steps-parsing-2026-09-04.md`
-**Walks:** 0 (context pin complete).
+**Walks:** 2 (walks 0–2 complete).
+- Weak spots:          w1 dry; w2 dry.
+- Destruction:         w1 dry; w2 dry.
+- Vulnerabilities:     w1 dry; w2 dry.
+- Integration-record:  w1 2 folded — instruction 2 / record 0; w2 1 folded — instruction 0 / record 1.
+- ACID:                w1 dry; w2 dry.
+**Battery run at both walks.** `fold_check` baselined before the first fold and CLEAN after each; `propagation_check` DIVERGENT:4.
+⚠️ **Walk 1 rewrote this plan's own premise** after thread 122 falsified thread 116, which the plan had cited as its measurement. **Walk 2 then swept by CLAIM and found three stale references walk 1's fold had not propagated** — the Depends-on line, the intro's "the first two are wrong", and P5's justification.
 
-**Closing:** NOT CLOSED at walk 0.
+**Closing:** NOT CLOSED at walk 2 — lenses 3–5 unrun.
 
 ## Cycle Manifest
 
