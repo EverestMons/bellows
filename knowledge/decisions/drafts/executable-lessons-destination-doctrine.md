@@ -4,6 +4,23 @@
 
 **auto_close:** false
 
+---
+
+# ⛔⛔ RE-DRAFT — THIS CYCLE IS ENDED. DO NOT DEPOSIT, DO NOT FOLD, DO NOT EXECUTE.
+
+**CEO verdict 2026-09-04, on the cold panel's evidence.** DC §2.0: *"the cycle ENDS here without a deposit. The draft returns to conversation and a new v0 is authored; it is not repaired in place."* Successor: `drafts/executable-lessons-destination-v2.md`.
+
+⚠️ **The ANGLE was never wrong** — four surfaces do contradict the 2026-09-02 ruling, and the licensing premise strengthened during the cycle (on 2026-09-04 one session followed the RULING while another followed `wrap.md`, so compliance is author-dependent). **What failed was convergence and the record.**
+
+⛔ **Why, in numbers.** Instruction-surface yield across passes: **2 → 4 → 13 → 14 → 9**. The capstone's 18 findings were **89% fold-introduced** — the cycle's own fold damage, which §2 names as the circling signature and never a licence to close. Three of five freeze instruments were reporting on a surface that no longer described the artifact: `fold_check` CLEAN was **vacuous** (its baseline was rewritten inside the same commits as the folds), `walk_register_lint` CONFORMANT covered **14 of 48** findings, and `propagation_check` read **89** where the body claimed 52.
+
+⛔ **And the escalation shown to the CEO was the WRONG ONE.** `cycle_check.py:487` tests restructuring BEFORE yield-rising. Seat 1's restructuring fold was declared in the register, the commit message and the CEO report — but **not in the plan body, the only place the tool reads** (body mentions of `restructur`: 0). Proven on a scratch copy: inserting the token in the w2 window flips `ESCALATE:yield-rising` → `ESCALATE:restructuring-fold`. The CEO resumed past the weaker of two rulings.
+
+⛔ **This artifact is EVIDENCE, not a plan.** Its 52 panel findings are the successor's input. Do not repair it; do not clone it. ⚠️ Its banner sits BELOW the header block deliberately — thread 131 measured that a banner above the header makes `plan_lint` (a) FAIL and renders the artifact un-lintable.
+
+---
+
+
 **Depends on:** tuyere thread 91; the CEO ruling of 2026-09-02 and its confirmation of 2026-09-03. Clone origin: `Done/executable-100027.md` (2026-09-02 — cross-repo doctrine edit by a committed builder, itself T2 on T-6 + T-1, doc-only with the same benign `qa_test_result` pre-declaration).
 
 ## ⛔ This is the REBUILD. Read why the first attempt died.
