@@ -1,0 +1,12 @@
+{
+  "plan_lint": {
+    "exit": 0,
+    "signals": [
+      "(o2) WARN: Deposits entry `knowledge/development/dev-log-manifest-provenance-gate-N-N-N.md` is not project-prefixed or absolute",
+      "(o2) WARN: Deposits entry `knowledge/qa/evidence/manifest-provenance-gate-N-N-N/probes-raw.txt` is not project-prefixed or absolute",
+      "(o2) WARN: Deposits entry `knowledge/qa/evidence/manifest-provenance-gate-N-N-N/pytest_full.txt` is not project-prefixed or absolute",
+      "(o2) WARN: Deposits entry `knowledge/qa/evidence/manifest-provenance-gate-N-N-N/qa-receipt.md` is not project-prefixed or absolute",
+      "(t) WARN: target basename looks like a detector but target_class is not declared \u2014 declare \u2018target_class: detector\u2019 (and then state_space + mutants), or leave it undeclared deliberately; this heuristic is advisory and cannot decide the question"
+    ]
+  }
+}
