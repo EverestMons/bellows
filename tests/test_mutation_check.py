@@ -619,6 +619,66 @@ def test_two_mutants_same_target_pristine_cache_correct(tmp_path):
     assert code == 0
 
 
+def test_refuses_an_absolute_top_level_target(tmp_path):
+    """thread 105: os.path.join DISCARDS its prefix on an absolute second argument,
+    so live_target and sandbox_target collapse onto the SAME real file. Reproduced
+    2026-09-04 pre-fix: the tool mutated a file outside the sandbox, LEFT IT
+    MUTATED, and scored the mutant SURVIVED — which reads as "your tests are
+    decorative" for a suite that was never challenged.
+    """
+    repo = _make_repo(tmp_path, {"target.py": "X = 1\n"})
+    outside = tmp_path / "outside.py"
+    outside.write_text("X = 1\n")
+    code, out = _run_checker(tmp_path, repo, {
+        "target": str(outside),
+        "mutants": [{"name": "m1", "anchor": "X = 1", "replacement": "X = 2",
+                     "expect_fail": "tests/test_target.py"}],
+    })
+    assert code == 2, out
+    assert "must be repo-relative" in out, out
+    assert outside.read_text() == "X = 1\n", "the file outside the repo was written to"
+
+
+def test_refuses_a_traversing_per_mutant_target(tmp_path):
+    """Per-mutant targets are LIVE, so every mutant is an independent entry point.
+
+    ⛔ A `..` traversal escapes DIFFERENTLY from an absolute path: the two joins
+    yield different paths, both outside their intended roots, so the live-sha
+    guard — which observes the absolute case's collapse — does not cover it.
+    """
+    repo = _make_repo(tmp_path, {"target.py": "X = 1\n"})
+    code, out = _run_checker(tmp_path, repo, {
+        "target": "target.py",
+        "mutants": [{"name": "escaper", "target": "../../../etc/hosts",
+                     "anchor": "X = 1", "replacement": "X = 2",
+                     "expect_fail": "tests/test_target.py"}],
+    })
+    assert code == 2, out
+    assert "escapes the repo root" in out, out
+    assert "escaper" in out, "the refusal must name the offending mutant"
+
+
+def test_a_legitimate_relative_target_is_untouched(tmp_path):
+    """⛔ The negative control: ordinary repo-relative targets still run."""
+    repo = _make_repo(tmp_path, {
+        "target.py": "def add(a, b):\n    return a + b\n",
+        "tests/test_target.py": textwrap.dedent("""\
+            import sys, os
+            sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
+            from target import add
+            def test_add():
+                assert add(1, 2) == 3
+            """),
+    })
+    code, out = _run_checker(tmp_path, repo, {
+        "target": "target.py",
+        "mutants": [{"name": "flip", "anchor": "a + b", "replacement": "a - b",
+                     "expect_fail": "tests/test_target.py"}],
+    })
+    assert "must be repo-relative" not in out and "escapes the repo root" not in out, out
+    assert "MUTANT flip:" in out, out
+
+
 def test_live_tree_guard_covers_all_targets(tmp_path):
     repo = _make_repo(tmp_path, {
         "file_a.py": "def a():\n    return 1\n",

@@ -67,6 +67,27 @@ def _run_pytest(selector, cwd, timeout):
         return -1
 
 
+def _validate_target(t, repo_root, where):
+    """Refuse a manifest target that leaves the repo root (thread 105).
+
+    `os.path.join` DISCARDS its prefix when the second argument is absolute, so
+    an absolute target collapses `live_target` and `sandbox_target` onto the SAME
+    real file: the tool mutates it outside the sandbox while pytest runs unchanged
+    code, and scores every mutant a false SURVIVED. A `..` traversal escapes
+    differently — the two joins yield DIFFERENT paths, both outside their intended
+    roots — so the per-target live-sha guard, which observes the collapse, does not
+    cover it. Refuse both, loudly, naming where the bad target came from.
+    """
+    if os.path.isabs(t):
+        print(f"ERROR: {where}: target must be repo-relative, got absolute path: {t}")
+        sys.exit(2)
+    resolved = os.path.normpath(os.path.join(repo_root, t))
+    root = os.path.normpath(repo_root)
+    if resolved != root and not resolved.startswith(root + os.sep):
+        print(f"ERROR: {where}: target escapes the repo root: {t} -> {resolved}")
+        sys.exit(2)
+
+
 def main():
     parser = argparse.ArgumentParser(description="Sandboxed mutation runner")
     parser.add_argument("manifest", help="Path to mutant manifest JSON")
@@ -109,6 +130,8 @@ def main():
         print("ERROR: manifest must have 'target' and non-empty 'mutants'")
         sys.exit(2)
 
+    _validate_target(target, repo_root, "manifest target")
+
     live_target = os.path.join(repo_root, target)
     if not os.path.isfile(live_target):
         print(f"ERROR: target not found: {live_target}")
@@ -116,6 +139,13 @@ def main():
 
     # Collect all distinct targets (top-level + any per-mutant overrides) for
     # uncommitted-changes warnings and the live-sha guard.
+    # Per-mutant targets are LIVE (see the mutant loop below), so every mutant is
+    # an independent path entry point — validate each before any join uses it.
+    for _m in mutants:
+        _mt = _m.get("target")
+        if _mt:
+            _validate_target(_mt, repo_root, f"mutant {_m.get('name', 'unnamed')!r}")
+
     all_targets = sorted(set(
         [target] + [m.get("target") for m in mutants if m.get("target")]
     ))
