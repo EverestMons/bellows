@@ -25,10 +25,30 @@ if "cycle_check" in sys.modules and sys.modules["cycle_check"].__file__ != str(S
 import cycle_check
 
 
-def _make_plan(tmp_path, dc_block, filename="plan.md"):
+_FULL_VALIDATION_LINE = (
+    "cycle_check=BAR_MET, plan_lint=0_FAIL, fold_check=PASS, propagation_check=DIVERGENT:5"
+)
+
+_MANIFEST_STANZA = (
+    "\n## Cycle Manifest\n"
+    "tier: T1\n"
+    "target: scripts/cycle_check.py\n"
+    "class: shop-infra\n"
+    "reads: scripts/cycle_check.py\n"
+    "writes: scripts/cycle_check.py\n"
+    "open_forks: none\n"
+    "walks: 2\n"
+    "yields: 2, 0\n"
+    f"validation: {_FULL_VALIDATION_LINE}\n"
+    "coherence: 2/2 walks have register rows\n"
+)
+
+
+def _make_plan(tmp_path, dc_block, filename="plan.md", include_manifest=True):
     plan = tmp_path / filename
+    tail = _MANIFEST_STANZA if include_manifest else ""
     plan.write_text(
-        f"# Plan\n\n## Drafting Cycle\n{dc_block}\n## End\n",
+        f"# Plan\n\n## Drafting Cycle\n{dc_block}\n## End\n{tail}",
         encoding="utf-8",
     )
     return plan
@@ -510,8 +530,15 @@ def test_bar_met_instruction_zero_current(tmp_path):
 
 
 def test_emit_manifest_well_formed(tmp_path):
-    """--emit-manifest emits a well-formed 10-field stanza with correct computed fields."""
-    plan = _make_plan(tmp_path, (
+    """--emit-manifest emits a well-formed 10-field stanza with correct computed fields.
+
+    The plan carries a ## Cycle Manifest stub with validation: <declare> — this is
+    the pre-emission state: the gate passes (None → skip) while --emit-manifest fills
+    the authoritative stanza for the first time.
+    """
+    plan = tmp_path / "plan.md"
+    plan.write_text(
+        "# Plan\n\n## Drafting Cycle\n"
         "**Tier:** T1\n"
         "- Weak spots: w1 2 folded — instruction 2 / record 0; w2 dry.\n"
         "- Destruction: w1 1 folded — instruction 1 / record 0; w2 dry.\n"
@@ -519,7 +546,11 @@ def test_emit_manifest_well_formed(tmp_path):
         "- Integration-record: w1 dry; w2 dry.\n"
         "- ACID: w1 dry; w2 dry.\n"
         "**Closing:** walk 2 dry; cycle CLOSED.\n"
-    ))
+        "## End\n\n"
+        "## Cycle Manifest\n"
+        "validation: <declare>\n",
+        encoding="utf-8",
+    )
     original_bytes = plan.read_bytes()
     r = subprocess.run(
         [sys.executable, str(SCRIPTS / "cycle_check.py"), "--emit-manifest", str(plan)],
@@ -546,10 +577,16 @@ def test_emit_manifest_well_formed(tmp_path):
 
 def test_emit_manifest_stdout_only(tmp_path):
     """--emit-manifest writes NO file — plan is byte-unchanged after the run."""
-    plan = _make_plan(tmp_path, (
+    plan = tmp_path / "plan.md"
+    plan.write_text(
+        "# Plan\n\n## Drafting Cycle\n"
         "- Weak spots: w1 1 folded — instruction 1 / record 0; w2 dry.\n"
         "- Destruction: w1 dry; w2 dry.\n"
-    ))
+        "## End\n\n"
+        "## Cycle Manifest\n"
+        "validation: <declare>\n",
+        encoding="utf-8",
+    )
     original = plan.read_bytes()
     files_before = set(tmp_path.iterdir())
     subprocess.run(
@@ -562,10 +599,16 @@ def test_emit_manifest_stdout_only(tmp_path):
 
 def test_emit_manifest_declare_placeholders(tmp_path):
     """Undeclared authored fields get <declare> placeholders."""
-    plan = _make_plan(tmp_path, (
+    plan = tmp_path / "plan.md"
+    plan.write_text(
+        "# Plan\n\n## Drafting Cycle\n"
         "- Weak spots: w1 1 folded — instruction 1 / record 0; w2 dry.\n"
         "- Destruction: w1 dry; w2 dry.\n"
-    ))
+        "## End\n\n"
+        "## Cycle Manifest\n"
+        "validation: <declare>\n",
+        encoding="utf-8",
+    )
     r = subprocess.run(
         [sys.executable, str(SCRIPTS / "cycle_check.py"), "--emit-manifest", str(plan)],
         capture_output=True, text=True, timeout=30,
@@ -720,7 +763,10 @@ def _build_ss_plan(tmp_path, walk, close, reg, *, monkeypatch=None):
 
     dc_block = f"{reg_lines}{walk_lines}{close_lines}"
     plan = tmp_path / f"plan_{walk}_{close}_{reg}.md"
-    plan.write_text(f"# Plan\n\n## Drafting Cycle\n{dc_block}\n## End\n", encoding="utf-8")
+    plan.write_text(
+        f"# Plan\n\n## Drafting Cycle\n{dc_block}\n## End\n{_MANIFEST_STANZA}",
+        encoding="utf-8",
+    )
     return plan
 
 
@@ -1033,7 +1079,7 @@ def test_contract_last_stdout_line_is_verdict(tmp_path):
         f"**Walk register:** {reg}\n"
         "- Weak spots: w1 1 folded — instruction 1 / record 0; w2 dry.\n"
         "**Closing:** BAR MET\n"
-        "## End\n",
+        f"## End\n{_MANIFEST_STANZA}",
         encoding="utf-8",
     )
     result = subprocess.run(

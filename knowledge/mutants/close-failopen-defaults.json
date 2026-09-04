@@ -1,0 +1,53 @@
+{
+    "_note": "Plan 100037: six mutants closing FO-1 (cycle_check manifest gate) and FO-3 (plan_lint qa_steps normalization). Each mutant re-opens exactly one fail-open and is killed by exactly one new test. 0 ERROR required.",
+    "mutants": [
+        {
+            "name": "M1-arm-b-none",
+            "target": "scripts/cycle_check.py",
+            "why": "Arm B (heading present, stanza does not parse) returning None instead of frozenset() skips the gate — the pre-BAR_MET placeholder shape (*(emitted at BAR_MET)*) silently reaches BAR_MET. Test 1 expects CONTINUE; with None the gate is skipped and BAR_MET passes through.",
+            "anchor": "    if not manifest:\n        return frozenset()  # arm B: heading exists but stanza did not parse",
+            "replacement": "    if not manifest:\n        return None  # MUTANT: reverts arm B to fail-open",
+            "expect_fail": "tests/test_cycle_check_manifest_provenance.py::test_stanza_does_not_parse_returns_continue"
+        },
+        {
+            "name": "M2-arm-a-none",
+            "target": "scripts/cycle_check.py",
+            "why": "Arm A (no ## Cycle Manifest heading) returning None instead of frozenset() skips the gate — plans that never added a manifest section silently reach BAR_MET. Test 2 expects CONTINUE; with None the gate is skipped and BAR_MET passes through.",
+            "anchor": "    if not MANIFEST_HEADING_RE.search(plan_text):\n        return frozenset()  # arm A: no heading — absence is a defect at BAR_MET",
+            "replacement": "    if not MANIFEST_HEADING_RE.search(plan_text):\n        return None  # MUTANT: reverts arm A to fail-open",
+            "expect_fail": "tests/test_cycle_check_manifest_provenance.py::test_no_manifest_heading_returns_continue"
+        },
+        {
+            "name": "M3-empty-validation-none",
+            "target": "scripts/cycle_check.py",
+            "why": "An empty validation: field returning None instead of frozenset() skips the gate — a manifest stanza whose validation row is blank silently reaches BAR_MET. test_validation_empty_blocks expects CONTINUE; with None the gate is skipped.",
+            "anchor": "    if not validation_val:\n        return frozenset()  # validation field absent or empty",
+            "replacement": "    if not validation_val:\n        return None  # MUTANT: reverts empty-validation guard to fail-open",
+            "expect_fail": "tests/test_cycle_check_manifest_provenance.py::test_validation_empty_blocks"
+        },
+        {
+            "name": "M4-revert-fo3-normalization",
+            "target": "scripts/plan_lint.py",
+            "why": "Reverting to the original truthy check makes qa_steps: none (truthy string) demand a Rule 20 banner. Test 6 expects no (c) FAIL for qa_steps: none; this mutant reinstates the FO-3 bug.",
+            "anchor": "    _QA_STEPS_PLACEHOLDER = \"[comma-separated step numbers]\"\n    has_qa = False\n    qa_steps_raw = header.get(\"qa_steps\", \"\")\n    if qa_steps_raw:\n        if qa_steps_raw.strip() == _QA_STEPS_PLACEHOLDER:\n            print(\"(c) WARN: qa_steps: unfilled template placeholder — update with step numbers\")\n        elif qa_steps_raw.strip().lower() != \"none\":\n            has_qa = True\n    if not has_qa:",
+            "replacement": "    has_qa = False\n    if header.get(\"qa_steps\"):\n        has_qa = True\n    if not has_qa:",
+            "expect_fail": "tests/test_plan_lint_qa_steps_none.py::test_qa_steps_none_no_banner_demanded"
+        },
+        {
+            "name": "M5-drop-placeholder-branch",
+            "target": "scripts/plan_lint.py",
+            "why": "Removing the placeholder-specific branch means the template value [comma-separated step numbers] is treated as a real step number — has_qa becomes True and a banner is demanded. Test 9b expects only a WARN and no FAIL; this mutant produces a FAIL.",
+            "anchor": "        if qa_steps_raw.strip() == _QA_STEPS_PLACEHOLDER:\n            print(\"(c) WARN: qa_steps: unfilled template placeholder — update with step numbers\")\n        elif qa_steps_raw.strip().lower() != \"none\":\n            has_qa = True",
+            "replacement": "        if qa_steps_raw.strip().lower() != \"none\":\n            has_qa = True",
+            "expect_fail": "tests/test_plan_lint_qa_steps_none.py::test_qa_steps_placeholder_warns_no_fail"
+        },
+        {
+            "name": "M6-drop-qa-heading-fallback",
+            "target": "scripts/plan_lint.py",
+            "why": "Removing the for-loop fallback means plans with no qa_steps header but a step heading containing 'qa' silently skip the banner check. Test 8 has no qa_steps header and a QA heading; without the for loop has_qa stays False and no banner is demanded, so the test's expected (c) FAIL does not appear.",
+            "anchor": "    if not has_qa:\n        for header_line, _ in step_headers:\n            if \"qa\" in header_line.lower():\n                has_qa = True\n                break",
+            "replacement": "    # MUTANT: for-loop fallback removed",
+            "expect_fail": "tests/test_plan_lint_qa_steps_none.py::test_absent_qa_steps_with_qa_heading_demands_banner"
+        }
+    ]
+}

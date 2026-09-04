@@ -556,16 +556,24 @@ def parse_manifest_stanza(plan_text):
 def _manifest_validation_keys(plan_text):
     """Return the frozenset of key names in the stored validation: line, or None to skip.
 
-    Returns None when: no stanza present, no validation field, value is falsy,
-    <declare> (mid-emission placeholder), or N/A (emitter fallback for no walk data).
-    The falsy and <declare> guards are adopted verbatim from plan_lint (f) at :612.
+    Returns frozenset() (blocks BAR_MET) when:
+      - no ## Cycle Manifest heading present (arm A — silence is not innocence),
+      - heading found but stanza does not parse as key-value pairs (arm B),
+      - validation field absent or empty.
+    Returns None (skip check) when validation value is <declare> or N/A — those
+    are legitimate mid-emission and no-walk-data placeholders, not parse failures.
+    Returns frozenset of key names when a proper key=value validation line is present.
     """
+    if not MANIFEST_HEADING_RE.search(plan_text):
+        return frozenset()  # arm A: no heading — absence is a defect at BAR_MET
     manifest = parse_manifest_stanza(plan_text)
     if not manifest:
-        return None
+        return frozenset()  # arm B: heading exists but stanza did not parse
     validation_val = manifest.get("validation", "")
-    if not validation_val or validation_val == "<declare>" or validation_val == "N/A":
-        return None
+    if not validation_val:
+        return frozenset()  # validation field absent or empty
+    if validation_val == "<declare>" or validation_val == "N/A":
+        return None  # explicit skip values — not a parse failure
     return frozenset(
         part.split("=")[0].strip()
         for part in validation_val.split(",")

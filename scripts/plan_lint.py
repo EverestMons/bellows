@@ -284,10 +284,15 @@ def lint(plan_path):
             all_passed = False
 
     # (c) QA banner pair: QA plans must contain both template strings
+    _QA_STEPS_PLACEHOLDER = "[comma-separated step numbers]"
     has_qa = False
-    if header.get("qa_steps"):
-        has_qa = True
-    else:
+    qa_steps_raw = header.get("qa_steps", "")
+    if qa_steps_raw:
+        if qa_steps_raw.strip() == _QA_STEPS_PLACEHOLDER:
+            print("(c) WARN: qa_steps: unfilled template placeholder — update with step numbers")
+        elif qa_steps_raw.strip().lower() != "none":
+            has_qa = True
+    if not has_qa:
         for header_line, _ in step_headers:
             if "qa" in header_line.lower():
                 has_qa = True
