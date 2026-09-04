@@ -1,0 +1,8 @@
+{
+  "slug": "diagnostic-passfail-record",
+  "content_hash": "12d6ee8b2af6975588c727803c3efc328ec5c7d93b126c4f5221c012aaf23eb5",
+  "session_id": "42ce7e32-298a-4354-9b4b-3caede79522e",
+  "armed_at": "2026-09-04T10:14:37.102117",
+  "watcher": "gate_watcher.py spawned detached (pid 20020); log: logs/watch/diagnostic-passfail-record.md.log",
+  "attestation_boundary": "This receipt proves the watcher was ARMED at write time. It does NOT prove the watcher stayed alive. Liveness of a session-local monitor is not externally verifiable."
+}
