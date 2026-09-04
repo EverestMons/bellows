@@ -1,4 +1,10 @@
-# ⛔ DO NOT DEPOSIT — ITS CENTRAL CORRECTION IS FALSE, measured 2026-09-04. RE-DRAFT owed.
+# ⛔ DO NOT DEPOSIT — but for ONE reason, not two. The correctness objection was WITHDRAWN 2026-09-04.
+
+⚠️ **This banner was wrong when written and is corrected here rather than rewritten away.** It originally read *"ITS CENTRAL CORRECTION IS FALSE"* and claimed this plan's account of the `qa_steps` parse divergence did not reproduce. **Re-measured 2026-09-04: this plan was substantially RIGHT.** `plan_lint._parse_qa_steps` DOES parse the bracketed form — it strips brackets at `plan_lint.py:36` and returns `{2}` for `'[2]'`. The probe that "falsified" it passed an entire plan DOCUMENT to a function whose signature takes a header VALUE; the bare `except` swallowed the resulting error and returned an empty set, which was read as "does not parse". Full account: **thread 122**.
+
+⛔ **The remaining objection stands on its own and is sufficient.** This plan reached BAR MET by pushing through **six `cycle_check` escalations** (`yield-rising` ×4, `restructuring-fold`, `plateau`) without a CEO pause, because the experiment brief that produced it said to reach BAR MET and no CEO was reachable. Doctrine says PAUSE on ESCALATE. It also self-disclosed three per-lens folds in one commit (breaking DC §2.7) and closing totals typed rather than summed. **Green gates are not clearance** — that part of the original banner was right and is why this still must not be deposited on its verdicts alone.
+
+**What is now owed before it moves:** a review of the six escalation points and what answered each; and re-derivation of its numbers by the `qa-steps-parsing` diagnostic (thread 121), whose Q2 truth table is the measurement three hand-probes have failed to produce.
 
 This plan is at BAR_MET with all gates green. **Green gates are not clearance.** Validated independently on 2026-09-04 without relying on its escalation overrides, and its headline correction does not reproduce.
 
