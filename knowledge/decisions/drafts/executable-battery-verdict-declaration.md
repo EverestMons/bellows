@@ -1,3 +1,21 @@
+# ⛔ WITHDRAWN AT WALK 0 — THE MACHINERY ALREADY DOES THIS. Do not execute. Do not deposit.
+
+**Withdrawn 2026-09-03, on measurement, before lens 1.** This plan proposed a `plan_lint` check warning when a Cycle Manifest's `validation:` line omits `propagation_check`. Measured after drafting it: **`cycle_check --emit-manifest` already subprocess-runs `propagation_check.py`** (`scripts/cycle_check.py:640`) and writes its real verdict — `CLEAN`, `DIVERGENT:N`, or `NOT_RUN` — into the `validation:` field it generates. Verified live: emitting for `Done/executable-100030.md` produced `propagation_check=DIVERGENT:12`.
+
+⛔ **So the premise was false.** The declaration is MACHINE-WRITTEN, not hand-typed. `diagnostic-100032`'s manifest lacked `propagation_check` for exactly one reason: **the author hand-typed the stanza instead of running the emitter.** The plan would have added a check to catch the author bypassing a tool that already does the work — machinery to police a practice failure.
+
+**Two design flaws found in the same zoom-out, recorded so the class is not rebuilt:**
+1. **It shipped a WARN, and its own P3 measured that this author ignores WARNs** (three times the same night). A remedy whose delivery mechanism is the one the finding says fails.
+2. **It checked a DECLARATION, not a RUN** — satisfiable by typing a string. Structurally identical to the `[4/memory]` substring stub filed as thread 114 hours earlier: a presence check that passes without the work being done.
+
+**What is actually owed, much smaller:**
+- **Practice:** emit the manifest with `cycle_check --emit-manifest`; never hand-type the stanza. That alone closes the gap this plan was built for.
+- **Optional check, SHAPE not value:** a manifest whose `validation:` line carries fewer than the emitter's four keys was hand-typed. ⚠️ It must test SHAPE — measured, stored and freshly-emitted values legitimately DRIFT after freeze (`fold_check PASS→N/A`, `DIVERGENT:50→56` on a compliant Done plan, because the record grows), so a value-equality check would false-positive on every closed plan.
+
+**What survives for reuse:** P2's corpus battery table, P3's 90%-blast-radius measurement (which correctly killed register-level enforcement), P4's warning against schema-version exemption, and the six-plan positive control set.
+
+---
+
 # bellows — executable: `plan_lint` (w) — an emitted Cycle Manifest whose `validation:` line omits `propagation_check` warns at authoring, because the detector for this shop's dominant fold-damage class is recorded in 18% of registers and was run zero times across three cycles the same night
 
 **Date:** 2026-09-03 | **Project:** bellows | **Tier:** Small | **Dispatch Mode:** bellows | **cycle_tier:** T1 | **Test Scope:** targeted (`tests/test_plan_lint.py` and a new `tests/test_plan_lint_battery_declaration.py`) + full suite at QA | **Execution:** Step 1 (DEV) → Step 2 (QA) | **qa_steps:** 2 | **pause_for_verdict:** always | **known_failures:** 0
