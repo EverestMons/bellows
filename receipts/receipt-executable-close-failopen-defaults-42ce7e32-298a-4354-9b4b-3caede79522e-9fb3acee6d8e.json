@@ -1,0 +1,8 @@
+{
+  "slug": "executable-close-failopen-defaults",
+  "content_hash": "9fb3acee6d8e1ab9cd96cbbe37d3768d14c130f9094d0cf3b686da6b117b5d15",
+  "session_id": "42ce7e32-298a-4354-9b4b-3caede79522e",
+  "armed_at": "2026-09-04T11:27:23.243452",
+  "watcher": "gate_watcher.py spawned detached (pid 32167); log: logs/watch/executable-close-failopen-defaults.md.log",
+  "attestation_boundary": "This receipt proves the watcher was ARMED at write time. It does NOT prove the watcher stayed alive. Liveness of a session-local monitor is not externally verifiable."
+}
