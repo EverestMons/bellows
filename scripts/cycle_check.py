@@ -55,6 +55,13 @@ def _has_closure_claim(block_text):
     return bool(_CLAIM_RE.search(stripped))
 MANIFEST_HEADING_RE = re.compile(r"^## Cycle Manifest\s*$", re.MULTILINE)
 
+# The four keys the emitter writes to validation: (DC:253 — COMPUTED, never hand-typed).
+# Both the gate in run_check and any caller that needs the authoritative set read this
+# constant so the two cannot drift if a key is added.
+MANIFEST_VALIDATION_KEYS = frozenset({
+    "cycle_check", "plan_lint", "fold_check", "propagation_check"
+})
+
 
 def walk_number(token):
     m = WALK_NUM_RE.match(token)
@@ -503,6 +510,13 @@ def run_check(plan_path, warnings=None):
     else:
         verdict = "CONTINUE"
 
+    # Gate: manifest validation: must carry every key the emitter writes (DC:253, P2-P8).
+    # No subprocess; key comparison is against the MANIFEST_VALIDATION_KEYS constant.
+    if verdict == "BAR_MET":
+        stored = _manifest_validation_keys(text)
+        if stored is not None and not MANIFEST_VALIDATION_KEYS.issubset(stored):
+            verdict = "CONTINUE"
+
     if parsed["claims_closure"] and verdict == "CONTINUE" and not parsed["has_unparseable"]:
         return "ESCALATE:claimed-close-unmet", 1
 
@@ -537,6 +551,26 @@ def parse_manifest_stanza(plan_text):
             current_val = fm.group(2).strip()
             fields[current_key] = current_val
     return fields
+
+
+def _manifest_validation_keys(plan_text):
+    """Return the frozenset of key names in the stored validation: line, or None to skip.
+
+    Returns None when: no stanza present, no validation field, value is falsy,
+    <declare> (mid-emission placeholder), or N/A (emitter fallback for no walk data).
+    The falsy and <declare> guards are adopted verbatim from plan_lint (f) at :612.
+    """
+    manifest = parse_manifest_stanza(plan_text)
+    if not manifest:
+        return None
+    validation_val = manifest.get("validation", "")
+    if not validation_val or validation_val == "<declare>" or validation_val == "N/A":
+        return None
+    return frozenset(
+        part.split("=")[0].strip()
+        for part in validation_val.split(",")
+        if "=" in part
+    )
 
 
 def _extract_tier_from_plan(plan_text, dc_block):
