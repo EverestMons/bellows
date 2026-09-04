@@ -1,0 +1,8 @@
+{
+  "slug": "diagnostic-in-cycle-battery",
+  "content_hash": "64337ca52bbc4892b3e89b8a1ce8590f040989edeba9eec32689ef327b400d9e",
+  "session_id": "d04ebd33-0b49-4d7c-a177-322fdddcf2ec",
+  "armed_at": "2026-09-04T13:55:19.741937",
+  "watcher": "gate_watcher.py spawned detached (pid 71495); log: logs/watch/diagnostic-in-cycle-battery.md.log",
+  "attestation_boundary": "This receipt proves the watcher was ARMED at write time. It does NOT prove the watcher stayed alive. Liveness of a session-local monitor is not externally verifiable."
+}
