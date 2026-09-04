@@ -1,0 +1,74 @@
+=== PROBES-RAW: manifest-provenance-gate-2026-09-03 ===
+Generated: Fri Sep  4 13:13:34 UTC 2026
+
+==============================
+ITEM 2A: POST-CHANGE control set
+==============================
+--- knowledge/decisions/Done/diagnostic-100032.md ---
+ESCALATE:claimed-close-unmet
+
+--- knowledge/decisions/Done/executable-100028.md ---
+WARN: walk register 'walk-register-qa-predeclaration-2026-09-03.md' — NO_TABLE (non-conformant register; does not block verdict)
+BAR_MET
+
+--- knowledge/decisions/Done/executable-100030.md ---
+BAR_MET
+
+==============================
+ITEM 2B: PRE-CHANGE control set (scripts/cycle_check_old.py)
+==============================
+--- knowledge/decisions/Done/diagnostic-100032.md ---
+BAR_MET
+
+--- knowledge/decisions/Done/executable-100028.md ---
+WARN: walk register 'walk-register-qa-predeclaration-2026-09-03.md' — NO_TABLE (non-conformant register; does not block verdict)
+BAR_MET
+
+--- knowledge/decisions/Done/executable-100030.md ---
+BAR_MET
+
+==============================
+ITEM 3: Drift false-positive scan (Done/ full-key plans)
+==============================
+knowledge/decisions/Done/executable-100025.md -> BAR_MET
+knowledge/decisions/Done/executable-100026.md -> BAR_MET
+knowledge/decisions/Done/executable-100027.md -> BAR_MET
+knowledge/decisions/Done/executable-100028.md -> BAR_MET
+knowledge/decisions/Done/executable-100030.md -> BAR_MET
+
+==============================
+ITEM 4: Byte-identical emit check
+==============================
+BYTE-IDENTICAL: no diff
+
+==============================
+ITEM 5: Mutation kill map
+==============================
+HEAD: 64486f27c0c84800b538321ba01a3732dd3cd273
+TARGET: scripts/cycle_check.py sha256=c2e34f9b345c
+
+MUTANT M1-drop-missing-key-arm: KILLED — suite caught the defect
+MUTANT M2-drop-no-stanza-guard: KILLED — suite caught the defect
+MUTANT M3-compare-values-not-keys: KILLED — suite caught the defect
+MUTANT M4-hardcode-key-list: KILLED — suite caught the defect
+
+LIVE-TREE UNCHANGED: scripts/cycle_check.py sha256=c2e34f9b345c
+
+MUTATION: 4 killed, 0 survived, 0 error
+
+==============================
+ITEM 6: Self-application (plan 100033)
+==============================
+BAR_MET
+
+==============================
+ITEM 7: Hygiene
+==============================
+--- numstat DEV commit ---
+89	0	knowledge/development/dev-log-manifest-provenance-gate-2026-09-03.md
+34	0	knowledge/mutants/manifest-provenance-gate.json
+34	0	scripts/cycle_check.py
+191	0	tests/test_cycle_check_manifest_provenance.py
+--- reflog -n 4 ---
+64486f2 HEAD@{0}: reset: moving to HEAD
+64486f2 HEAD@{1}: 
