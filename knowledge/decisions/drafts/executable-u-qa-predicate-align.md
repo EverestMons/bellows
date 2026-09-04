@@ -1,3 +1,22 @@
+# ⛔ DO NOT DEPOSIT — ITS CENTRAL CORRECTION IS FALSE, measured 2026-09-04. RE-DRAFT owed.
+
+This plan is at BAR_MET with all gates green. **Green gates are not clearance.** Validated independently on 2026-09-04 without relying on its escalation overrides, and its headline correction does not reproduce.
+
+The plan states that thread 102 has the cause inverted — that `plan_lint._parse_qa_steps` DOES parse the YAML list form `[2]` while `gates._gate_is_qa_step` does not. **Measured on real corpus artifacts (`Done/executable-312.md`, `Done/executable-313.md`, both carrying `**qa_steps:** [2]`): NEITHER parses it.**
+
+    plan_lint._parse_qa_steps  -> set()
+    gates._gate_is_qa_step     -> True, via stderr "qa_steps field malformed: '[2]' — falling back to keyword detection"
+
+⛔ **The proof that isolates it:** rewrite that plan's step-2 heading from `## STEP 2 — QA` to `## STEP 2 — Beta`, changing nothing else, and `gates._gate_is_qa_step` returns **False**. Its correct-looking answer was entirely the keyword fallback, never header parsing.
+
+**So there is a third defect, worse than either claim describes:** a silent fail-open that is right on the common case (QA steps are conventionally titled "QA") and wrong on the uncommon one, masked by the corpus's own naming convention. Every number in this plan resting on the parse asymmetry was derived without knowing the fallback was in play.
+
+**What survives:** the cold scout's population and denominator corrections (the unstripped-corpus finding) may be salvageable on re-measurement. **What does not:** the contributing-cause analysis and anything downstream of it.
+
+⚠️ **Thread 108's provenance caveat is vindicated by an independent route.** This plan reached BAR_MET by overriding six `cycle_check` escalations, and separately its central claim is false — two unrelated reasons not to deposit, either sufficient. Full analysis: thread 116.
+
+---
+
 # bellows — executable: plan_lint (u) calls the gate's QA-step predicate (thread 102 — 75 divergences over 861 steps)
 
 **Date:** 2026-09-03 | **Project:** bellows | **Tier:** Small | **Dispatch Mode:** bellows | **cycle_tier:** T1 | **Test Scope:** targeted (the (u) predicate tests) + full suite at QA | **Execution:** Step 1 (DEV) → Step 2 (QA) | **qa_steps:** 2 | **pause_for_verdict:** always | **known_failures:** 0
