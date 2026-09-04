@@ -24,10 +24,12 @@ codes and stderr are captured exactly as a gate would see them.
 """
 
 import argparse
+import hashlib
 import json
 import re
 import subprocess
 import sys
+from datetime import datetime
 from pathlib import Path
 
 SCRIPTS_DIR = Path(__file__).parent.resolve()
@@ -115,6 +117,25 @@ def collect(artifact):
     return state
 
 
+_META_KEY = "_meta"
+
+
+def artifact_fingerprint(artifact):
+    """sha256 of the artifact's bytes — the state a baseline describes."""
+    return hashlib.sha256(artifact.read_bytes()).hexdigest()
+
+
+def split_meta(loaded):
+    """Separate provenance from reader state. Returns (readers, meta_or_None).
+
+    Baselines saved before provenance recording have no _meta; they load as
+    readers-only and their provenance is UNKNOWN, never assumed good.
+    """
+    meta = loaded.get(_META_KEY)
+    readers = {k: v for k, v in loaded.items() if k != _META_KEY}
+    return readers, meta
+
+
 def baseline_path(artifact, explicit):
     if explicit:
         return Path(explicit)
@@ -160,7 +181,12 @@ def main(argv=None):
     bpath = baseline_path(artifact, args.baseline)
 
     if args.save_baseline:
-        bpath.write_text(json.dumps(state, indent=2, sort_keys=True), encoding="utf-8")
+        payload = dict(state)
+        payload[_META_KEY] = {
+            "artifact_sha256": artifact_fingerprint(artifact),
+            "saved_at": datetime.now().isoformat(timespec="seconds"),
+        }
+        bpath.write_text(json.dumps(payload, indent=2, sort_keys=True), encoding="utf-8")
         total = sum(len(v["signals"]) for v in state.values())
         print(f"BASELINE SAVED: {bpath}")
         print(f"readers={len(state)} signals={total}")
@@ -173,16 +199,36 @@ def main(argv=None):
         return 2
 
     try:
-        before = json.loads(bpath.read_text(encoding="utf-8"))
+        loaded = json.loads(bpath.read_text(encoding="utf-8"))
     except (OSError, ValueError) as e:
         print(f"ERROR: baseline unreadable ({e})", file=sys.stderr)
         return 2
+
+    before, meta = split_meta(loaded)
+
+    # A baseline taken from the state it is being compared against cannot observe
+    # a fold: the comparison is self-referential and any CLEAN verdict is vacuous.
+    # Measured 2026-09-04 (thread 134): across four fold rounds the baseline was
+    # re-saved in the same commit as the folds, and CLEAN was reported three times
+    # and quoted as evidence the folds changed nothing.
+    if meta and meta.get("artifact_sha256"):
+        if meta["artifact_sha256"] == artifact_fingerprint(artifact):
+            print("FOLD-CHECK VACUOUS: the baseline was taken from THIS exact state "
+                  f"(sha256 {meta['artifact_sha256'][:12]}…), so it cannot observe a fold.")
+            print(f"  baseline saved: {meta.get('saved_at', 'unknown')}")
+            print("  Re-save the baseline BEFORE the next fold, not after it.")
+            return 2
+        provenance = f"baseline sha256 {meta['artifact_sha256'][:12]}… saved {meta.get('saved_at', 'unknown')}"
+    else:
+        provenance = ("baseline provenance UNKNOWN — saved before provenance recording; "
+                      "a CLEAN verdict from it is not evidence that a fold was observed")
 
     appeared, vanished, exit_changes = diff_state(before, state)
 
     if not (appeared or vanished or exit_changes):
         total = sum(len(v["signals"]) for v in state.values())
         print(f"FOLD-CHECK CLEAN: machine-readable state unchanged ({total} signals held)")
+        print(f"  {provenance}")
         return 0
 
     print("FOLD-CHECK DRIFT — the fold changed the machine-readable state:")
@@ -192,6 +238,7 @@ def main(argv=None):
         print(f"  VANISHED: {s}")
     for s in exit_changes:
         print(f"  EXIT:     {s}")
+    print(f"  {provenance}")
     print("\nIf a change is INTENDED, re-save the baseline and say so in the fold's record.")
     return 1
 

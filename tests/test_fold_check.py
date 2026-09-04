@@ -104,13 +104,63 @@ def write_plan(tmp_path, extra="", step_extra="", name="executable-999.md"):
     return p
 
 
-def test_clean_when_nothing_changed(tmp_path):
+def test_clean_when_a_real_fold_changed_no_signals(tmp_path):
+    """CLEAN means a fold happened and moved no signal — not that no fold happened.
+
+    The fold below is real (the artifact's bytes change) and signal-neutral (prose
+    that trips no check). Before 2026-09-04 this test compared the baseline against
+    the UNCHANGED artifact, which is the self-referential case fold_check now
+    refuses: it could not distinguish "a fold moved nothing" from "nothing was
+    folded", and that ambiguity is what let a vacuous CLEAN be quoted as evidence
+    (thread 134).
+    """
     plan = write_plan(tmp_path)
     code, out = run_cli("--save-baseline", str(plan))
     assert code == 0 and "BASELINE SAVED" in out
+
+    # a REAL fold: bytes change, no check fires on the added prose
+    plan.write_text(
+        plan.read_text(encoding="utf-8") + "\n<!-- signal-neutral fold -->\n",
+        encoding="utf-8",
+    )
+
     code, out = run_cli(str(plan))
     assert code == 0, out
     assert "FOLD-CHECK CLEAN" in out
+
+
+def test_refuses_a_baseline_taken_from_the_state_being_compared(tmp_path):
+    """thread 134: a baseline re-saved from the folded state cannot observe the fold.
+
+    Measured on a live cycle — the baseline was committed in the same commit as the
+    folds it was meant to observe, and CLEAN was reported three times and quoted as
+    evidence the folds changed nothing.
+    """
+    plan = write_plan(tmp_path)
+    code, _ = run_cli("--save-baseline", str(plan))
+    assert code == 0
+
+    code, out = run_cli(str(plan))          # no fold between save and compare
+    assert code == 2, out
+    assert "FOLD-CHECK VACUOUS" in out
+    assert "cannot observe a fold" in out
+
+
+def test_baseline_without_provenance_still_runs_and_says_so(tmp_path):
+    """The 37 baselines saved before provenance recording must not break."""
+    plan = write_plan(tmp_path)
+    code, _ = run_cli("--save-baseline", str(plan))
+    assert code == 0
+
+    bpath = plan.parent / f".{plan.name}.foldcheck.json"
+    state = json.loads(bpath.read_text(encoding="utf-8"))
+    state.pop("_meta", None)                # a pre-provenance baseline
+    bpath.write_text(json.dumps(state), encoding="utf-8")
+
+    code, out = run_cli(str(plan))
+    assert code == 0, out
+    assert "FOLD-CHECK CLEAN" in out
+    assert "provenance UNKNOWN" in out
 
 
 def test_detects_deleted_required_literal(tmp_path):
@@ -187,6 +237,14 @@ def test_explicit_baseline_path_is_honoured(tmp_path):
     b = tmp_path / "custom-baseline.json"
     code, _ = run_cli("--save-baseline", str(plan), "--baseline", str(b))
     assert code == 0 and b.is_file()
+
+    # a real signal-neutral fold, so this tests the PATH and not the
+    # self-referential case (thread 134)
+    plan.write_text(
+        plan.read_text(encoding="utf-8") + "\n<!-- signal-neutral fold -->\n",
+        encoding="utf-8",
+    )
+
     code, out = run_cli(str(plan), "--baseline", str(b))
     assert code == 0, out
 
