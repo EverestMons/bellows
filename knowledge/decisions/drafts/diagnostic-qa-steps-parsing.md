@@ -4,7 +4,7 @@
 
 **auto_close:** false
 
-**Depends on:** tuyere threads 116 (the measurement), 102 (the original divergence filing, whose numbers 116 invalidated), 121 (the split that deferred FO-2 here) and 119 (the ruling). Clone origin: `Done/diagnostic-100034.md` — same kind, one Item per question, read-only, closed 2026-09-04.
+**Depends on:** tuyere threads **122** (the correction — 116's headline is wrong), 116 (superseded in part; its `gates` half stands), 102 (the original filing, whose counts remain unre-derived), 121 (the split that deferred FO-2 here) and 119 (the ruling). ⛔ **Do not read 116 without 122.** Clone origin: `Done/diagnostic-100034.md` — same kind, one Item per question, read-only, closed 2026-09-04.
 
 ## What this decides
 
@@ -12,25 +12,27 @@
 
 ## Why this exists
 
-Three positions have been held about `qa_steps: [2]`, and **the first two are both wrong** (thread 116, measured on real corpus artifacts):
+Three positions have been held about `qa_steps: [2]`, and **all three are wrong** — including the one filed as the correction to the other two:
 
-| position | source | verdict |
+| position | source | verdict, as of 2026-09-04 |
 |---|---|---|
-| "`plan_lint` can't parse `[2]`, `gates` can" | thread 102 | **wrong** — `gates` can't either |
-| "`plan_lint` DOES parse `[2]`, `gates` does NOT" | plan `u-qa-predicate-align` | **wrong** — `plan_lint` doesn't |
-| neither parses it; `gates` falls back to keyword detection | thread 116 | measured |
+| "`plan_lint` can't parse `[2]`, `gates` can" | thread 102 | **wrong** on both halves |
+| "`plan_lint` DOES parse `[2]`, `gates` does NOT" | plan `u-qa-predicate-align` | ⛔ **substantially RIGHT** — and it was marked false in error |
+| "neither parses it; `gates` falls back to keyword detection" | thread 116 | ⛔ **wrong about `plan_lint`**; right about `gates` |
+
+⛔ **THREE positions, all three wrong, TWO of them this author's.** Thread 122 records the last one: `_parse_qa_steps` strips brackets at `plan_lint.py:36` and returns `{2}` for `'[2]'`. The probe that "measured" otherwise passed an entire plan DOCUMENT to a function whose signature takes a header VALUE; a bare `except` swallowed the error and returned `set()`, read as "does not parse". ⚠️ **A one-line positive control — `_parse_qa_steps('2') -> {2}` — would have exposed it.**
 
 ⛔ **The fallback is right only by coincidence.** `gates._gate_is_qa_step` declares the field malformed and scans the step heading for "qa". On `Done/executable-312.md` (step 2 titled `## STEP 2 — QA`) it returns True and looks correct. Rename that heading to `## STEP 2 — Beta`, changing nothing else, and it returns **False** with `[2]` still in the header.
 
-⚠️ **Two people have now reasoned about this from source and gotten it backwards in opposite directions.** That is the licensing argument for measuring the whole input space rather than arguing about it again.
+⚠️ **Three published positions, every one wrong, produced by three separate hand-probes — two of them this author's, one of them the correction to the first.** Each was plausible, each named a real function, and each was believed. **That is the licensing argument**: this question has now defeated argument-from-source three times, and the only thing not yet tried is a systematic truth table over the real input space.
 
 | # | pin | value | how to re-derive |
 |---|---|---|---|
 | P1 | the divergent parsers | `plan_lint._parse_qa_steps` and `gates._gate_is_qa_step` (`gates.py:848`, the int-comprehension over a comma split) | grep both |
-| P2 | ⛔ neither parses the list form | on `Done/executable-312.md` and `-313.md` (both `**qa_steps:** [2]`): `_parse_qa_steps` → `set()`; `_gate_is_qa_step` → True **via** `qa_steps field malformed: '[2]' — falling back to keyword detection` | call both on those files |
+| P2 | ⛔ ONE parses it, one does not — CORRECTED 2026-09-04 | passing the HEADER VALUE as each signature requires: `_parse_qa_steps('[2]')` → **`{2}`** (it strips brackets, `:36`); `_gate_is_qa_step` on the same plans → True **only via** `qa_steps field malformed: '[2]' — falling back to keyword detection`. ⛔ **Pass the VALUE, never the document** — the document form returns `set()` from the bare `except` and reads as a parse failure (thread 122) | call each on the header VALUE, and on a known-good `'2'` first as a positive control |
 | P3 | ⛔ the isolating proof | rewrite `312`'s step-2 heading to `## STEP 2 — Beta` and re-ask: `_gate_is_qa_step` → **False**. The correct-looking answer was entirely the fallback | re-run with the heading neutralised |
 | P4 | the fallback's VALUE, not just its cost | the `else` arm is what catches a plan carrying a QA step that never declared one — the direction worth keeping strict (thread 118's warning against deleting the arm) | read the arm |
-| P5 | thread 102's numbers are void | its divergence counts (74 or 75; 66 or 67 FP; 8 blind) were derived without knowing the fallback was in play | read threads 102 and 116 |
+| P5 | thread 102's numbers are void, for a reason 116 got wrong | its counts (74 or 75; 66 or 67 FP; 8 blind) were derived without knowing the fallback was in play — that much holds. ⚠️ But 116's stated cause for voiding them ("neither parser handles the list form") is itself false, so the counts must be re-derived from the truth table rather than from either thread's account | read threads 102, 116 **and 122** |
 | P6 | corpus spellings seen so far | `2` (101+26 occurrences), `[2]`, `none` (4 plans), `3`, empty, and a `[comma-separ…` form — **six shapes already observed, unenumerated** | `grep -ohE "qa_steps:\*\* *[^|]{1,14}" Done/*.md \| sort \| uniq -c` |
 | P7 | in-flight | re-derive at execution | `sqlite3 lifecycle.db …` |
 
