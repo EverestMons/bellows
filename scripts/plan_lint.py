@@ -381,10 +381,25 @@ def lint(plan_path):
             print(f"(u) WARN: step {sn} Deposits: no .txt evidence entry (thread 77)")
 
     # (v) No-pytest QA step without pre-declaration clause (WARN-only, advisory, thread 70).
-    # Must call gates._gate_is_qa_step — NOT (u)'s local heuristic: P11 measured 74
-    # divergences across 861 steps (66 false positives, 8 blind spots). This check
-    # keys on the author's test_scope declaration; whether a step will produce a pytest
-    # summary is not inferrable from plan text alone.
+    # Must call gates._gate_is_qa_step — NOT (u)'s local heuristic. This check keys on
+    # the author's test_scope declaration; whether a step will produce a pytest summary
+    # is not inferrable from plan text alone, so it needs the predicate the DISPATCH
+    # gate actually uses.
+    #
+    # ⚠️ This comment previously justified itself with "P11 measured 74 divergences
+    # across 861 steps (66 false positives, 8 blind spots)". Those figures were struck
+    # 2026-09-04 (thread 102, closed): the denominator does not reproduce — 102 reports
+    # 861 steps in Done/ at 2026-09-03 10:55, and the tree at that moment (df83640)
+    # yields 870, which is above every neighbouring measurement, so it is not drift.
+    # The divergence between (u) and this gate is REAL but the counts were never
+    # re-derived. Do not re-cite them.
+    #
+    # ⛔ And do not "fix" (u) by pointing it here without a ruling. Diagnostic 100036
+    # Q6 measured that _parse_qa_steps is the CORRECT reference — it handles every
+    # corpus spelling — while gates._gate_is_qa_step fails on the `[2]` form and masks
+    # it with keyword detection. Converging (u) onto this gate would converge it onto
+    # the defective side. (u) is WARN-only, so the divergence costs noise, not
+    # correctness; that is why 102 closed without a code change.
     _v_test_scope = header.get("test_scope", "") if header else ""
     if _v_test_scope.strip().lower().startswith("none"):
         for hl, sn_str in step_headers:

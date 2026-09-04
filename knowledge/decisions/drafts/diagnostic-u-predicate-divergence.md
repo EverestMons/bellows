@@ -4,6 +4,19 @@
 
 **auto_close:** false
 
+---
+
+# ⛔⛔ RETIRED — ITS SUBJECT WAS CLOSED WITHOUT IT. DO NOT DEPOSIT OR WALK.
+
+**CEO ruling 2026-09-04: thread 102 closes without a code change**, so this diagnostic has no consumer. It existed to settle 102's (u)-vs-gate divergence counts; those counts are now struck rather than re-derived.
+
+**Why 102 closed:** ⛔ **check (u) is WARN-only — zero FAIL sites in its block** — so the divergence costs NOISE (66 false warnings) and SILENCE (8 missed ones), never correctness. Nothing halts, nothing gates. An advisory-only divergence did not earn a T1 cycle while the drafting cycle is itself under repair.
+
+⚠️ **What this artifact still holds, and why it was not deleted.** Its walk 0 measured three things nothing else records: (1) 102's denominator does NOT reproduce — 861 claimed at 2026-09-03 10:55 against 870 in the tree at `df83640`, above every neighbouring measurement, so not drift; (2) diagnostic 100036 never measured check (u) at all — zero hits for `(u)` and for `861` across the plan and its research note, so its Q7 answers about a comparison 102 never made; (3) 100036's coverage statement contradicts its own Q7 against a post-condition requiring that derivation. ⛔ **Read it as EVIDENCE, never as a plan.**
+
+⚠️ **Its P10 pin on `scripts/plan_lint.py` is stale** — `40382ba` and the thread-102 comment strike both changed that file. Re-derive before citing it.
+
+
 **Depends on:** tuyere threads **102** (the filing under examination — still OPEN and un-re-scoped), **122** (the correction that voided 116), **116** (⛔ closed SUPERSEDED by 122 on 2026-09-04 13:09 — do not read it without 122), **124** (the wrap triage that instructed a re-scope of 102 on a premise this plan tests), **125** (the Rule 102 routing of 116's three surviving citation sites) and **120** (the ruling: for deep analysis, diagnostic output is the only admissible evidence). Clone origin: `Done/diagnostic-100036.md` — same kind, same question family, closed 2026-09-04, and the plan whose Q7 this one examines.
 
 ## What this decides
