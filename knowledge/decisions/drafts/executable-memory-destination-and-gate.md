@@ -50,12 +50,15 @@
 **Tier:** **T2 — computed, not judged.** ⛔ **T-6 fires THREE times**, quoted: *"T-6 — Governance surface. Edits doctrine, **the template**, **gates**, or specialist contracts."* This plan edits `PLANNER_TEMPLATE.md` (the template), `wrap_check.py` (a gate), and `hooks/commands/wrap.md` (doctrine). **T-1 also fires** — two repositories, the 100027 precedent. §1: *"T2 — Cold-panel cycle. T-5 or T-6 fires … → run T1 plus the cold-reader panel (§2.6)."* T-3 fires too (`wrap_check` runs on every machine that wraps). T-8 not fired: clone by kind of `Done/executable-100027.md` (doctrine half, itself T2 on the same triggers) and of the shipped `[4/memory]` gate (code half).
 ⚠️ **v0 declared T1 and argued "T-6 not claimed: a wrap gate, not a step gate."** That was a RESTATEMENT of the trigger, and it inverted it — T-6 says *gates*, not *step gates*. Caught at walk 1 by quoting the rule instead of paraphrasing it. **A cold panel is mandatory for this plan and is not optional at the author's judgement.**
 **Walk register:** `/Users/marklehn/Developer/eluvian-governance/governance/knowledge/research/walk-register-memory-destination-and-gate-2026-09-03.md`
-**Walks:** 1 (walks 0–1 complete).
+**Walks:** 4 (walks 0–4 complete).
 **Walk 0 — context pin:** eleven measurements. The load-bearing one: the ruling is ALREADY in code and the documents are what dissent — which inverts the thread's framing from "remove a destination" to "make three surfaces agree." Second: the gate is inert on the mini, so the enforcement that exists has never run here.
 
 **Walk 1 — 3 findings (instruction 3 / record 0); 0 fold-introduced.** ⛔ The tier was wrong (T1 → T2) and wrong by restating a trigger rather than quoting it — the recorded Planner failure class recurring. `plan_lint` FAILs (c): step 2 carries no Rule 20 QA banner pair. And the manifest's proposed home inside the memory directory is unversioned and deletable, so losing it silently re-seeds the grace and grandfathers a classless entry forever — it needs a home that cannot vanish, or a seed record that survives deletion.
 **⛔ CONSEQUENCE OF THE TIER CORRECTION:** this plan requires a COLD PANEL (§2.6) before it can close. It cannot reach the bar on warm walks alone.
-**Closing:** NOT CLOSED at walk 1 — three instruction-class findings.
+**Walk 2 — 2 findings (instruction 2 / record 0), both discharging walk 1's pending items.** The manifest's silent-reset hole closed by making SEEDING LOUD — an unversioned manifest in a harness-owned directory can vanish, and a grace reset nobody can see is the failure mode, not the seeding. And the Rule 20 banner pair added, clearing `plan_lint` (c).
+**Walk 3 — 2 findings (instruction 2 / record 0); 0 fold-introduced.** ⛔ The manifest's POPULATION had to be pinned: `MEMORY.md` is the index, not an entry, and the shipped test asserts editing it alone raises no class failure — a manifest hashing every `*.md` would fail every wrap, since step 3b updates the index every time. ⛔ And the plan writes TWO repositories with no stated ordering: bellows must commit LAST, or the documents lead the code and the surfaces disagree in a new way — the very failure being removed.
+**Walk 4 — 1 finding (instruction 1 / record 0); 0 fold-introduced.** ⛔ The gate demands `class: mechanize|codify|keep|stale` from a vocabulary that is defined NOWHERE — it exists only inside the failure message that demands it. Item 4 would have made `PLANNER_TEMPLATE.md` the first doctrine reference to those terms while still leaving them undefined, i.e. shipping a NEW doctrine/code gap inside the plan that exists to close one. Added Item 4b (four `GLOSSARY.md` entries), `GLOSSARY.md` to Scope, numstat 6 → 7.
+**Closing:** NOT CLOSED at walk 4 — one instruction-class finding.
 
 ## Cycle Manifest
 
@@ -65,11 +68,14 @@
 
 > **Scope:**
 > - `/Users/marklehn/Developer/eluvian-governance/PLANNER_TEMPLATE.md`
+> - `/Users/marklehn/Developer/eluvian-governance/GLOSSARY.md`
 > - `hooks/commands/wrap.md`
 > - `hooks/eluvian/wrap_check.py`
 > - `tests/test_wrap_memory_class_gate.py`
 > - `knowledge/mutants/memory-destination-gate.json`
 > - `knowledge/development/dev-log-memory-destination-and-gate-2026-09-03.md`
+>
+> ⚠️ **TWO REPOSITORIES, ONE STEP.** Reach the governance checkout by absolute path with `git -C "$GOV"` and **never `cd`** (the 100027 discipline, same shape). Before editing, confirm `git -C "$GOV" status --porcelain -- PLANNER_TEMPLATE.md` is EMPTY and its sha matches P9's version reading; a dirty governance tree means another editor is live and this step must HALT rather than interleave. ⛔ **Commit bellows LAST.** If the governance edit lands and bellows does not, the documents lead the code and the surfaces disagree in a NEW way — which is the exact failure this plan exists to remove. State both commit shas in the dev-log.
 >
 > **Item 1 — re-derive P1–P11 and HALT on mismatch.** ⚠️ P1, P3 and P5 are LINE NUMBERS in files other plans edit; thread 91 recorded `PLANNER_TEMPLATE.md:2028` on 2026-09-02 and it had moved to `:2094` by 2026-09-03. Re-derive every one by grep, never by the number written here. ⛔ If the `[4/memory]` gate no longer contains the `class:` check, or the memory directory has become a git repo, HALT and request a verdict — this plan's premise is that the code is right and cannot run.
 >
@@ -85,9 +91,13 @@
 >
 > Run them and record the FAILURE output before implementing.
 >
-> **Item 3 — make the gate's change detection git-independent.** Keep git as the detector when the directory IS a repo (P7 of the test list). When it is not, derive new/modified from a manifest at `<memory>/.wrap-manifest.json` mapping entry filename → sha256 as of the last successful wrap. Absent manifest → SEED it and check nothing (P8's grace, reproduced without git). ⛔ **Do not use bare mtime**: a file re-written with identical content is not a modification, and mtime alone would fail a wrap for a no-op edit.
+> **Item 3 — make the gate's change detection git-independent.** Keep git as the detector when the directory IS a repo (test 7). When it is not, derive new/modified from a manifest at `<memory>/.wrap-manifest.json` mapping entry filename → sha256 as of the last successful wrap. Absent manifest → SEED it and check nothing (P8's grace, reproduced without git). ⛔ **Do not use bare mtime**: a file re-written with identical content is not a modification, and mtime alone would fail a wrap for a no-op edit.
+> ⛔ **The manifest's POPULATION must reproduce the git path's exactly.** `MEMORY.md` is the index, not an entry, and the shipped test `test_memory_md_edit_alone_no_class_fail` asserts that editing it alone raises no class failure. A manifest that hashes every `*.md` in the directory would fail a wrap the moment the index is updated — which every wrap does, at step 3b. Exclude `MEMORY.md`, and add a test asserting the non-git path agrees with the git path on that exclusion.
+> ⛔ **SEEDING MUST BE LOUD.** The manifest lives in a harness-owned directory, is unversioned, and can be deleted or re-provisioned; a silent re-seed would reopen the grace window and grandfather every classless entry — indistinguishable from the inert gate this plan exists to fix. Print a `[4/memory] SEEDED manifest with N entr(ies) — grace window opened` line on every seed, and assert it in the tests. A grace reset that nobody can see is the failure mode, not the seeding itself.
 >
 > **Item 4 — `PLANNER_TEMPLATE.md` step 7.** Demote memory from a routine destination to the exception, in the CODE's own vocabulary so the two cannot drift again: lessons go to `LESSONS.md` or the central glossary; memory holds only what cannot be codified, and an entry that stays there declares `class: keep` **with a stated impossibility**. Update "THREE destinations" to TWO. ⚠️ The second routing test ("does this destination feed a system that ACTS on it?") still does work — it separates forge-ingested `LESSONS.md` from the glossary — so keep it and re-word only its examples. Add a History row for **v4.99** citing the CEO ruling of 2026-09-02 (the v4.84 direct-ruling precedent). ⛔ **Do not edit the v4.89 or v4.84 History rows** (P2).
+>
+> **Item 4b — define the class vocabulary in `GLOSSARY.md`.** ⛔ **`mechanize`, `codify`, `keep` and `stale` are defined NOWHERE** — measured: they appear only inside `wrap_check.py:349`'s failure message, and in no doctrine file, no template, and no glossary entry. An agent that trips the gate has no definition to consult, and Item 4 would make `PLANNER_TEMPLATE.md` the first doctrine surface to reference the vocabulary while still not defining it — leaving a NEW disagreement in a plan whose purpose is removing one. Add one glossary entry per value, tagged `[project: bellows]`, each stating what the value asserts about the entry and what the wrap does with it. ⛔ Derive the four values from the code's own string, not from this plan's prose.
 >
 > **Item 5 — `hooks/commands/wrap.md:69`.** Remove the routine-destination sentence and state the exception in one clause. ⛔ Leave step 4 (`:103`) untouched (P4).
 >
@@ -95,7 +105,7 @@
 >
 > **Item 7 — dev-log**, recording the three-surface disagreement and what each surface said before the change.
 >
-> **Item 8 — commit** (message tagged with the plan id); record `numstat` — exactly 6 files.
+> **Item 8 — commit** (message tagged with the plan id); record `numstat` — exactly 7 files.
 >
 > **Post-conditions:** all eight tests pass; the six pre-existing gate tests unchanged; a non-git memory directory with a classless touched entry now FAILS where it passed before, demonstrated as a before/after pair in the same run; the twelve existing entries do NOT fail a first wrap; `PLANNER_TEMPLATE.md` and `wrap.md` no longer route working-pattern lessons to memory by default, verified by grepping the CLAIM in several phrasings rather than one literal; the runner's own mutants all killed, 0 error.
 
@@ -112,5 +122,22 @@
 > **Item 5 — the runner's own kill map:** `mutation_check` over `knowledge/mutants/memory-destination-gate.json` → all killed, 0 survived, **0 error**.
 >
 > **Item 6 — hygiene + receipt:** numstat vs the DEV commit; toplevel; reflog `-n 4` → 0 amends; per-item table; then the QA self-check block inside a Verification-headed section (the 556 placement law).
+>
+> Run the canonical Rule 20 self-check from `RULE_20_SELF_CHECK_BLOCK.md` at the governance root. Use these values when filling in the template:
+> - `plan_slug`: `memory-destination-and-gate-2026-09-03`
+> - `qa_report_path`: `"$(pwd)/knowledge/qa/evidence/memory-destination-and-gate-2026-09-03/qa-receipt.md"`
+> - `evidence_dir`: `"$(pwd)/knowledge/qa/evidence/memory-destination-and-gate-2026-09-03"`
+> - `required_evidence_files`: `["pytest_full.txt", "probes-raw.txt"]`
+>
+> Include the literal stdout of the block in the QA report. Banner, byte-exact, inside the receipt's VERIFICATION section:
+>
+> ```
+> ============================================================
+> Rule 20 — QA Self-Check Results
+> ============================================================
+> PASSED — SELF-CHECK PASSED — all evidence files present, no hedging keywords found.
+> ```
+>
+> ⛔ If the block prints `FAILED`, do not proceed with closure — halt and report.
 >
 > **Post-conditions:** suite green from a worktree, 0 failed; the three surfaces quoted and agreeing; the gate shown to fail on a non-git classless touch AND shown not to fail before the change; the twelve existing entries not detonating; kill map clean.
