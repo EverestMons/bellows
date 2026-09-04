@@ -1,0 +1,8 @@
+{
+  "slug": "executable-draft-201045",
+  "content_hash": "c9a4356c289634c600a4367816ca40726fc3c6717700032a40b7e03d665845b7",
+  "session_id": "b2c5290b-f08b-4c26-998b-816f5fa31d7f",
+  "armed_at": "2026-09-03T20:10:45.705991",
+  "watcher": "gate_watcher.py spawned detached (pid 95521); log: logs/watch/executable-draft-201045.md.log",
+  "attestation_boundary": "This receipt proves the watcher was ARMED at write time. It does NOT prove the watcher stayed alive. Liveness of a session-local monitor is not externally verifiable."
+}

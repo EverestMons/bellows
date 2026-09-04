@@ -1,0 +1,8 @@
+{
+  "slug": "diagnostic-draft-191957",
+  "content_hash": "415d322559473efac6f990408396d2485d484057730fea316a87d4f438a1eeec",
+  "session_id": "b2c5290b-f08b-4c26-998b-816f5fa31d7f",
+  "armed_at": "2026-09-03T19:22:49.222827",
+  "watcher": "gate-watcher armed in depositing session",
+  "attestation_boundary": "This receipt proves the watcher was ARMED at write time. It does NOT prove the watcher stayed alive. Liveness of a session-local monitor is not externally verifiable."
+}
