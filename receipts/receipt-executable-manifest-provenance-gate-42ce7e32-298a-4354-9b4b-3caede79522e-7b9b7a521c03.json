@@ -1,0 +1,8 @@
+{
+  "slug": "executable-manifest-provenance-gate",
+  "content_hash": "7b9b7a521c03e1fe88dff2961b1bdbd4561870db07878cda085fb1cac2409fd8",
+  "session_id": "42ce7e32-298a-4354-9b4b-3caede79522e",
+  "armed_at": "2026-09-04T07:40:29.215543",
+  "watcher": "gate_watcher.py spawned detached (pid 90329); log: logs/watch/executable-manifest-provenance-gate.md.log",
+  "attestation_boundary": "This receipt proves the watcher was ARMED at write time. It does NOT prove the watcher stayed alive. Liveness of a session-local monitor is not externally verifiable."
+}
