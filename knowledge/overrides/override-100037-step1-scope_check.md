@@ -1,3 +1,17 @@
+# Override record — plan 100037, step 1, gate `scope_check`
+
+⚠️ **THE DATABASE POINTS AT A DEAD PATH. This file is the real record.**
+
+`gate_events.override_ref` for this override reads
+`/private/tmp/claude-501/.../scratchpad/override-ref.txt` — a session scratchpad that
+ceases to exist when the session ends. The reference was written there by mistake, and
+`clear_plan.py --override-gate` is IDEMPOTENT: it refuses with *"no unoverridden fail rows"*
+once an override is applied, so the reference cannot be corrected through the sanctioned
+path. Filed as a defect; this file is the durable substitute and is discoverable by its
+name (`override-<plan>-step<N>-<gate>.md`).
+
+---
+
 CEO-directed override, 2026-09-04, session 42ce7e32.
 
 GATE: scope_check, step 1 of plan 100037. Out-of-scope file: tests/test_cycle_check.py.
