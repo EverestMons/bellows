@@ -1,0 +1,8 @@
+{
+  "slug": "diagnostic-qa-steps-parsing",
+  "content_hash": "5a4aa16447f5ff2060fc42b7586ef0cb993939d45ccbdcdfa03f9b8fcf43ecd0",
+  "session_id": "42ce7e32-298a-4354-9b4b-3caede79522e",
+  "armed_at": "2026-09-04T11:06:32.212868",
+  "watcher": "gate_watcher.py spawned detached (pid 28613); log: logs/watch/diagnostic-qa-steps-parsing.md.log",
+  "attestation_boundary": "This receipt proves the watcher was ARMED at write time. It does NOT prove the watcher stayed alive. Liveness of a session-local monitor is not externally verifiable."
+}
