@@ -1,0 +1,34 @@
+{
+  "plan_lint": {
+    "exit": 0,
+    "signals": [
+      "(f) WARN: Cycle Manifest stanza missing or empty field: class",
+      "(f) WARN: Cycle Manifest stanza missing or empty field: coherence",
+      "(f) WARN: Cycle Manifest stanza missing or empty field: open_forks",
+      "(f) WARN: Cycle Manifest stanza missing or empty field: reads",
+      "(f) WARN: Cycle Manifest stanza missing or empty field: target",
+      "(f) WARN: Cycle Manifest stanza missing or empty field: tier",
+      "(f) WARN: Cycle Manifest stanza missing or empty field: validation",
+      "(f) WARN: Cycle Manifest stanza missing or empty field: walks",
+      "(f) WARN: Cycle Manifest stanza missing or empty field: writes",
+      "(f) WARN: Cycle Manifest stanza missing or empty field: yields",
+      "(n) WARN: `grep -n \"MECHANIZE\" <that file>` \u2014 grep on literal pattern without -F (ugrep-shim hazard)",
+      "(n) WARN: `grep -n \"memory repo\" PLANNER_TEMPLATE.md` \u2014 grep on literal pattern without -F (ugrep-shim hazard)",
+      "(n) WARN: `grep -n \"working patterns\" hooks/commands/eluvian.md` \u2014 grep on literal pattern without -F (ugrep-shim hazard)",
+      "(n) WARN: `grep -n \"working-pattern\" hooks/commands/wrap.md` \u2014 grep on literal pattern without -F (ugrep-shim hazard)",
+      "(o1) WARN: missing path `/Users/marklehn/Developer/GitHub/GLOSSARY.md`",
+      "(o2) WARN: Deposits entry `hooks/commands/eluvian.md` is not project-prefixed or absolute",
+      "(o2) WARN: Deposits entry `hooks/commands/wrap.md` is not project-prefixed or absolute",
+      "(o2) WARN: Deposits entry `knowledge/development/dev-log-lessons-destination-doctrine-N-N-N.md` is not project-prefixed or absolute",
+      "(o2) WARN: Deposits entry `knowledge/qa/evidence/lessons-destination-doctrine-N-N-N/probes-raw.txt` is not project-prefixed or absolute",
+      "(o2) WARN: Deposits entry `knowledge/qa/evidence/lessons-destination-doctrine-N-N-N/qa-receipt.md` is not project-prefixed or absolute",
+      "PIN-CHECK: kind=prefix line=N token=05d1110a5c1c\u2026 result=ambiguous",
+      "PIN-CHECK: kind=prefix line=N token=218301d12677\u2026 result=ambiguous",
+      "PIN-CHECK: kind=prefix line=N token=4172af6310e6\u2026 result=ambiguous",
+      "PIN-CHECK: kind=prefix line=N token=9a2c2e11bdaf\u2026 result=ambiguous",
+      "PIN-CHECK: kind=prefix line=N token=dac462624af4\u2026 result=ambiguous",
+      "WARN: Drafting Cycle closing indicates fold as last event, not a dry lens pass (DRAFTING_CYCLE.md \u00a72)",
+      "WARN: step 1 mentions tests but declares no test scope"
+    ]
+  }
+}
