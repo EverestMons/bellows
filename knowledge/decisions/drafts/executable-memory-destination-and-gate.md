@@ -1,3 +1,15 @@
+# ⛔ RE-DRAFT — THIS PLAN'S CENTRAL PREMISE IS FALSE. Do not execute. Do not deposit.
+
+**Direction verdict, 2026-09-03: RE-DRAFT** (forcer (c) — the premise licensing the scope). A T2 cold panel measured that `wrap_check.py:344` is `if "class:" not in _head` over the first 600 bytes of the whole file: a substring presence check that accepts `class: banana` and `class: keep` with no stated impossibility, and that cannot distinguish frontmatter from the word appearing in prose. On the 139-entry shop corpus, 11 entries carry a class and all 11 are `stale`. **So "the rule is already in the code" — this plan's whole framing — is false, and P5 with it.**
+
+⚠️ **CEO ruling 2026-09-03, obtained during the panel:** the 2026-09-02 ruling SUPERSEDES the 2026-08-18 test shipped at `LESSONS.md:4447` (*"Planner working-patterns go to the Planner's memory"*). The rebuild must RECORD that superseding explicitly — the older ruling is `[status: implemented]` and forge-ingested. The **baton**, which 08-18 names and this plan never mentioned, is read as ORTHOGONAL (it holds uncertain in-flight items, not lessons routed by class); that reading is stated for correction, not assumed.
+
+**What the rebuild inherits:** every pin that reproduced (P1, P2, P3, P6, P7's substance, P9), the two-repo commit discipline, the loud-seed requirement, and the mutant discipline that correctly pre-empts thread 105. **What it discards:** P5, Item 2's test 6 (a new unbuilt feature with no implementing Item), and the "three surfaces, the code is right" framing. **What it must add:** the `section-*` exclusion the git path also makes; the separation of `m_dirty`'s TWO consumers; a manifest UPDATE path (there is only a seed today); 100027's A0 re-entry ladder; `hooks/commands/eluvian.md:31` as a fourth carrier; and Item 4b pointed at `memory-to-system-audit-2026-08-25.md`, which DOES define the vocabulary — walk 4's "defined nowhere" was falsified.
+
+Full panel: the walk register's cold-panel section, 19 findings (7 HIGH incl. one DIRECTION, 7 MEDIUM, 5 LOW).
+
+---
+
 # bellows — executable: DOCTRINE + CODE — the lessons-destination ruling of 2026-09-02 reaches the two documents that still contradict it, and the `[4/memory]` gate that already enforces it stops being inert on the mini (thread 91)
 
 **Date:** 2026-09-03 | **Project:** bellows | **Tier:** Small | **Dispatch Mode:** bellows | **cycle_tier:** T2 | **Test Scope:** targeted (`tests/test_wrap_memory_class_gate.py`, `tests/test_wrap_hooks.py`) + full suite at QA | **Execution:** Step 1 (DEV) → Step 2 (QA) | **qa_steps:** 2 | **pause_for_verdict:** always | **known_failures:** 0
