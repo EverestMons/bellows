@@ -3026,6 +3026,37 @@ def test_q_m1_cross_repo():
             assert any(r[3] == "cross-repo" for r in telemetry), telemetry
 
 
+def test_q_adjacent_pin_rows_resolve_to_their_own_file(tmp_path):
+    """thread 129: a pin row must resolve against the file IT names.
+
+    _check_pins builds a 3-line window and _extract_pin_path returns the path from
+    the FIRST line in it matching the sha pattern. line_num is 1-based, so the old
+    order [line_num-2, line_num-1, line_num] was [previous, OWN, next] — and a
+    PRECEDING pin row's path shadowed the pin's own. Measured 2026-09-04: two
+    adjacent rows carrying correct shas for different files produced
+    "MISMATCH on <the other file>" — the exact signal an author is told to read as
+    "the file changed under you".
+    """
+    import hashlib
+    a = tmp_path / "alpha.py"
+    b = tmp_path / "beta.py"
+    a.write_text("alpha\n", encoding="utf-8")
+    b.write_text("beta\n", encoding="utf-8")
+    sha_a = hashlib.sha256(a.read_bytes()).hexdigest()
+    sha_b = hashlib.sha256(b.read_bytes()).hexdigest()
+
+    plan = (
+        "| # | pin | value | how |\n"
+        "|---|---|---|---|\n"
+        f"| P1 | alpha | `alpha.py` sha256 `{sha_a}` | `shasum -a 256 alpha.py` |\n"
+        f"| P2 | beta | `beta.py` sha256 `{sha_b}` | `shasum -a 256 beta.py` |\n"
+    )
+    telemetry, warns = _check_pins(plan, str(tmp_path), str(tmp_path))
+    results = {tok: res for _, _, tok, res in telemetry}
+    assert set(results.values()) == {"ok"}, (telemetry, warns)
+    assert not [w for w in warns if "MISMATCH" in w], warns
+
+
 def test_q_fenced_block_pin_seen():
     """C3: pin inside fenced block IS seen (raw-text scan)."""
     fake = "f" * 40

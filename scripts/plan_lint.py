@@ -97,7 +97,12 @@ def _check_pins(plan_text, project_repo, root_repo):
         tp = token[:12]
 
         if kind == 'sha256':
-            ctx_idx = [i for i in [line_num - 2, line_num - 1, line_num]
+            # The pin's OWN line first, then its neighbours (thread 129).
+            # line_num is 1-based, so text_lines[line_num - 1] IS the pin's line;
+            # the old order [prev, own, next] let a NEIGHBOURING pin row's path
+            # shadow the pin's own and produced a false MISMATCH naming the wrong
+            # file. A row that names its own file must resolve to that file.
+            ctx_idx = [i for i in [line_num - 1, line_num - 2, line_num]
                        if 0 <= i < len(text_lines)]
             ctx = [text_lines[i] for i in ctx_idx]
             if not any(re.search(_SHA_PAT, ln, re.IGNORECASE) for ln in ctx):
