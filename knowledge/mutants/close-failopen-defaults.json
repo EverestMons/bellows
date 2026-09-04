@@ -1,5 +1,6 @@
 {
     "_note": "Plan 100037: six mutants closing FO-1 (cycle_check manifest gate) and FO-3 (plan_lint qa_steps normalization). Each mutant re-opens exactly one fail-open and is killed by exactly one new test. 0 ERROR required.",
+    "target": "scripts/cycle_check.py",
     "mutants": [
         {
             "name": "M1-arm-b-none",

@@ -754,6 +754,7 @@ class TestPositiveRoutingGuard:
             "tier: T2\n"
             "target: hooks/eluvian/wrap_check.py\n"
             "class: shop-infra\n"
+            "validation: cycle_check=BAR_MET, plan_lint=0_FAIL, fold_check=N/A, propagation_check=N/A\n"
         )
         hold_path = self._make_held_plan(
             decisions_dir, "executable-r18a", "class:shop-infra",
@@ -789,6 +790,7 @@ class TestPositiveRoutingGuard:
             "tier: T2\n"
             "target: hooks/eluvian/wrap_check.py\n"
             "class: shop-infra\n"
+            "validation: cycle_check=BAR_MET, plan_lint=0_FAIL, fold_check=N/A, propagation_check=N/A\n"
         )
         hold_path = self._make_held_plan(
             decisions_dir, "executable-r18b", "held_pending_ceo_release",

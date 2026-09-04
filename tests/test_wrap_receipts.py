@@ -387,6 +387,7 @@ class TestClearToolRelease:
                 tier: T2
                 target: hooks/eluvian/wrap_check.py
                 class: {plan_class}
+                validation: cycle_check=BAR_MET, plan_lint=0_FAIL, fold_check=N/A, propagation_check=N/A
             """)
         hold_name = f"hold-{slug}.md"
         hold_path = self.decisions / hold_name
