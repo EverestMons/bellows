@@ -484,18 +484,42 @@ def run_check(plan_path, warnings=None):
 
     instruction_counts = get_instruction_counts(parsed)
 
+    # BASIS (thread 133). The ladder below is first-match-wins over several
+    # conditions, and a verdict alone does not say which of them had DATA to
+    # evaluate. Measured 2026-09-04: a cycle whose restructuring fold was declared
+    # in its walk register but not in its body returned ESCALATE:yield-rising, and
+    # the CEO resumed past it; the machine-correct ruling was restructuring-fold,
+    # which is stronger (no walk containing one can meet the bar). `restructuring_walks`
+    # is read ONLY from the body's per-lens lines, so an empty set is indistinguishable
+    # from "none declared" unless it is stated. Emitted on ESCALATE only — the
+    # CONTINUE/BAR_MET paths stay byte-identical, because a checker that speaks on
+    # every run trains the reader to skim it (thread 117's habituation finding).
+    def _escalate(tag):
+        if warnings is not None:
+            restr = parsed["restructuring_walks"]
+            warnings.append(
+                "BASIS: current_walk=%s instruction_counts=%s restructuring_walks=%s"
+                % (
+                    current_walk,
+                    {k: instruction_counts[k] for k in sorted(instruction_counts)},
+                    (sorted(restr) if restr else "EMPTY — none declared in the plan BODY; "
+                     "this arm had no data to evaluate"),
+                )
+            )
+        return tag, 1
+
     if current_walk in parsed["restructuring_walks"]:
-        return "ESCALATE:restructuring-fold", 1
+        return _escalate("ESCALATE:restructuring-fold")
 
     cur_instr = instruction_counts.get(current_walk)
     prior_instr = instruction_counts.get(current_walk - 1)
     if cur_instr is not None and prior_instr is not None:
         if cur_instr > prior_instr:
-            return "ESCALATE:yield-rising", 1
+            return _escalate("ESCALATE:yield-rising")
 
     plateau = check_plateau(walk_data, current_walk, instruction_counts)
     if plateau:
-        return "ESCALATE:plateau", 1
+        return _escalate("ESCALATE:plateau")
 
     cur_wd = walk_data[current_walk]
     if cur_instr is not None:

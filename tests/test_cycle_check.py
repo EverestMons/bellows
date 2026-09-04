@@ -156,6 +156,58 @@ def test_yield_rising(tmp_path):
     assert code == 1
 
 
+# ---------- BASIS on escalation (thread 133) ----------
+
+
+def test_escalation_states_its_basis(tmp_path):
+    """An ESCALATE must say what the ladder had to evaluate, not just its verdict.
+
+    Measured 2026-09-04: a cycle whose restructuring fold was declared in its walk
+    register but NOT in its body returned ESCALATE:yield-rising. restructuring_walks
+    is read only from the body, so the stronger arm was silently skipped and the
+    CEO resumed past the weaker ruling. An empty set must be VISIBLE beside the
+    verdict, because "none declared" and "not detectable" are otherwise identical.
+    """
+    plan = _make_plan(tmp_path, (
+        "- Weak spots: w1 1 folded — instruction 1 / record 0; "
+        "w2 2 folded — instruction 2 / record 0.\n"
+        "- Destruction: w1 dry; w2 dry.\n"
+    ))
+    warnings = []
+    verdict, code = cycle_check.run_check(plan, warnings=warnings)
+    assert verdict == "ESCALATE:yield-rising"
+
+    basis = [w for w in warnings if w.startswith("BASIS:")]
+    assert len(basis) == 1, warnings
+    assert "current_walk=2" in basis[0]
+    assert "instruction_counts={1: 1, 2: 2}" in basis[0]
+    assert "restructuring_walks=EMPTY" in basis[0]
+
+
+def test_basis_names_the_restructuring_walks_when_present(tmp_path):
+    plan = _make_plan(tmp_path, (
+        "- Weak spots: w1 2 folded — instruction 2 / record 0 (restructuring — moved section order).\n"
+    ))
+    warnings = []
+    verdict, _ = cycle_check.run_check(plan, warnings=warnings)
+    assert verdict == "ESCALATE:restructuring-fold"
+    basis = [w for w in warnings if w.startswith("BASIS:")]
+    assert len(basis) == 1 and "restructuring_walks=[1]" in basis[0], warnings
+
+
+def test_no_basis_on_a_non_escalating_verdict(tmp_path):
+    """The common path stays byte-identical — a checker that speaks every run
+    trains the reader to skim it (thread 117's habituation finding)."""
+    plan = _make_plan(tmp_path, (
+        "- Weak spots: w1 2 folded — instruction 2 / record 0.\n"
+        "- Destruction: w1 dry.\n"
+    ))
+    warnings = []
+    verdict, _ = cycle_check.run_check(plan, warnings=warnings)
+    assert not verdict.startswith("ESCALATE"), verdict
+    assert [w for w in warnings if w.startswith("BASIS:")] == []
+
+
 # ---------- plateau ----------
 
 
