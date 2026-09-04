@@ -619,6 +619,49 @@ def test_two_mutants_same_target_pristine_cache_correct(tmp_path):
     assert code == 0
 
 
+def test_report_names_the_auditing_interpreter(tmp_path):
+    """thread 29: the same manifest and repo-root give OPPOSITE verdicts under
+    different interpreters, and the report never said which one ran.
+
+    Measured 2026-08-27: under bellows/.venv, tuyere's baseline went red and every
+    mutant scored ERROR "baseline not green"; under tuyere/.venv, 2 killed / 0 / 0.
+    The baseline control was correct both times — the hazard is DIAGNOSIS, because
+    "baseline not green" reads as a defect in the TARGET repo.
+    """
+    repo = _make_repo(tmp_path, {"target.py": "X = 1\n"})
+    code, out = _run_checker(tmp_path, repo, {
+        "target": "target.py",
+        "mutants": [{"name": "m", "anchor": "X = 1", "replacement": "X = 2",
+                     "expect_fail": "tests/test_target.py"}],
+    })
+    assert "PYTHON:" in out, out
+    assert sys.executable in out, out
+
+
+def test_baseline_failure_names_the_interpreter_and_hints(tmp_path):
+    """⛔ The diagnosis half: on a red baseline the operator must be told what ran it."""
+    repo = _make_repo(tmp_path, {"target.py": "X = 1\n"})
+    code, out = _run_checker(tmp_path, repo, {
+        "target": "target.py",
+        "mutants": [{"name": "m", "anchor": "X = 1", "replacement": "X = 2",
+                     "expect_fail": "tests/test_missing.py"}],
+    })
+    assert "ERROR" in out, out
+    assert "interpreter:" in out, out
+    assert "--python" in out, out
+
+
+def test_python_flag_selects_the_interpreter(tmp_path):
+    """--python is explicit and recorded; omitting it changes nothing."""
+    repo = _make_repo(tmp_path, {"target.py": "X = 1\n"})
+    manifest = {"target": "target.py",
+                "mutants": [{"name": "m", "anchor": "X = 1", "replacement": "X = 2",
+                             "expect_fail": "tests/test_target.py"}]}
+    code, out = _run_checker(tmp_path, repo, manifest,
+                             extra_args=["--python", "/usr/bin/python3"])
+    assert "PYTHON: /usr/bin/python3" in out, out
+
+
 def test_refuses_an_absolute_top_level_target(tmp_path):
     """thread 105: os.path.join DISCARDS its prefix on an absolute second argument,
     so live_target and sandbox_target collapse onto the SAME real file. Reproduced

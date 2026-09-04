@@ -45,7 +45,7 @@ def _sha256(path):
     return h.hexdigest()
 
 
-def _run_pytest(selector, cwd, timeout):
+def _run_pytest(selector, cwd, timeout, python=None):
     # Bytecode is invalidated by (mtime, size) — a same-byte-length mutation
     # written within the same mtime second leaves the cached .pyc valid and
     # the mutant run executes baseline code. The cache location is environment-
@@ -55,7 +55,7 @@ def _run_pytest(selector, cwd, timeout):
     env["PYTHONDONTWRITEBYTECODE"] = "1"
     try:
         result = subprocess.run(
-            [sys.executable, "-m", "pytest", selector, "-q"],
+            [python or sys.executable, "-m", "pytest", selector, "-q"],
             cwd=cwd,
             timeout=timeout,
             capture_output=True,
@@ -95,6 +95,10 @@ def main():
                         help="Repository root (default: git rev-parse --show-toplevel)")
     parser.add_argument("--keep-sandbox", action="store_true",
                         help="Keep sandbox directory after run")
+    parser.add_argument("--python", default=None,
+                        help="Interpreter that runs the audited suite "
+                             "(default: the one running this tool). A cross-repo "
+                             "audit usually needs the TARGET repo's venv — thread 29.")
     parser.add_argument("--timeout", type=int, default=300,
                         help="Per-pytest timeout in seconds (default: 300)")
     args = parser.parse_args()
@@ -169,6 +173,14 @@ def main():
         if os.path.isfile(lt):
             live_shas_before[t] = _sha256(lt)
 
+    audit_python = args.python or sys.executable
+
+    # Thread 29: the same manifest and repo-root give OPPOSITE verdicts under
+    # different interpreters (bellows/.venv -> every mutant ERROR "baseline not
+    # green"; tuyere/.venv -> 2 killed/0/0). The baseline control was right both
+    # times; what the report never said was WHICH interpreter produced it, so the
+    # failure read as a defect in the target repo.
+    print(f"PYTHON: {audit_python}")
     print(f"HEAD: {head_sha}")
     for t in all_targets:
         sha_prefix = live_shas_before[t][:12] if t in live_shas_before else "MISSING"
@@ -258,7 +270,7 @@ def main():
                 manifest_errors += 1
                 continue
 
-            baseline_exit = _run_pytest(selector, sandbox, args.timeout)
+            baseline_exit = _run_pytest(selector, sandbox, args.timeout, audit_python)
             if baseline_exit != 0:
                 if baseline_exit == -1:
                     detail = "baseline timed out"
@@ -267,6 +279,9 @@ def main():
                 else:
                     detail = f"baseline not green (pytest exit {baseline_exit})"
                 print(f"MUTANT {name}: ERROR — {detail}")
+                print(f"  interpreter: {audit_python}")
+                print("  a cross-repo audit usually needs the TARGET repo's venv "
+                      "— pass --python <target>/.venv/bin/python (thread 29)")
                 errors += 1
                 continue
 
@@ -291,7 +306,7 @@ def main():
                 manifest_errors += 1
                 continue
 
-            exit_code = _run_pytest(selector, sandbox, args.timeout)
+            exit_code = _run_pytest(selector, sandbox, args.timeout, audit_python)
 
             # Scoring: only the exit-1 arm is KILLED; the non-1 arms below
             # are defence in depth. The exit-5 arm specifically is unreachable
