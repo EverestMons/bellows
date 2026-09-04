@@ -198,6 +198,36 @@ def test_sha256_context_excluded():
 # Report format
 # ---------------------------------------------------------------------------
 
+def test_line_reference_is_not_a_declared_value():
+    """thread 96 form 1: `file.ext:NNN` is a location, not a quantity.
+
+    Measured 2026-09-04 over 86 plans: 276 of 1444 extracted values (19%) were of
+    this form, and each one then flagged every later mention of that number as a
+    restatement — the false-positive flood that made the tool unreadable.
+    """
+    vals = pc._cell_numerals(
+        "the guard at `bellows.py:1179` and its sibling `:1317`"
+    )
+    assert vals == [], vals
+
+
+def test_identifier_word_numeral_is_not_a_declared_value():
+    """thread 96 form 2: a numeral introduced by an identifier word is a NAME."""
+    vals = pc._cell_numerals(
+        "per thread 119 and Rule 34, superseded by plan 520"
+    )
+    assert vals == [], vals
+
+
+def test_a_real_declaration_survives_both_qualifiers():
+    """⛔ The negative control. A colon-with-space is a DECLARATION, not a location,
+    and a bare quantity beside identifier words must still be extracted."""
+    vals = pc._cell_numerals(
+        "threads: 90 open; the census counted 1444 values across 86 plans"
+    )
+    assert "90" in vals and "1444" in vals and "86" in vals, vals
+
+
 def test_report_line_format(tmp_path):
     """First stdout line is 'declared symbols: N (values: M)'."""
     plan = "# Plan\n\n| P1 | **`SUITE`** | 1782 |\n\n## Drafting Cycle\nw1 dry.\n"

@@ -73,6 +73,26 @@ def instruction_region(text, region_end):
     return text[:i] + text[j:]
 
 
+# A numeral bound to a preceding path/word by a COLON is a line reference, not a
+# declared value (thread 96). Measured 2026-09-04 over 86 plans: 276 of 1444
+# extracted values (19%) are of this form — `bellows.py:1179`, `lifecycle.py:577`,
+# `:1317` — and each one then flags every later mention of that number as a
+# restatement. The lookbehind requires a non-space character, so `count: 47` and
+# `total: 12` (a real declaration) are untouched; only `file.ext:NNN` and its
+# bare `:NNN` continuation form match.
+_LINEREF_RE = re.compile(r'(?<=[\w./)\]`]):\d{2,}(?!\d)')
+
+# A numeral introduced by an IDENTIFIER WORD is a name, not a quantity (thread 96).
+# Measured 2026-09-04 over the same corpus: 62 of 1171 values (5%), with ZERO cases
+# where the same number also appeared as `x: N` in that cell — so the rule removes
+# names without shadowing a real declaration. `thread 119`, `Rule 34`, `plan 520`,
+# `minted id 568`. ⛔ The word must be followed by whitespace and the numeral: a
+# declaration written `threads: 90` keeps its colon and is untouched.
+_IDENT_RE = re.compile(
+    r'\b(?:thread|threads|plan|plans|Rule|rule|entry|proposal|session|exec|id)\s+#?\d{2,}(?!\d)'
+)
+
+
 def _mask_exclusions(s):
     """Blank excluded regions so numeral extraction skips them."""
     chars = list(s)
@@ -81,7 +101,7 @@ def _mask_exclusions(s):
         for i in range(start, end):
             chars[i] = '\x00'
 
-    for pat in (_HEX_TOKEN_RE, _DATE_RE, _TIME_RE):
+    for pat in (_HEX_TOKEN_RE, _DATE_RE, _TIME_RE, _LINEREF_RE, _IDENT_RE):
         for m in pat.finditer(s):
             _blank(m.start(), m.end())
     # Mask the "256" at the tail of sha-256 / -a 256 context
