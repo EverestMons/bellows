@@ -13,7 +13,8 @@
       "(f) WARN: Cycle Manifest stanza missing or empty field: writes",
       "(f) WARN: Cycle Manifest stanza missing or empty field: yields",
       "(o1) WARN: missing path `/Users/marklehn/Developer/eluvian-governance/governance/knowledge/research/walk-register-gate-fail-open-census-N-N-N.md`",
-      "WARN: Drafting Cycle block missing lens(es): Weak spots, Destruction, Vulnerabilities, Integration, ACID (DRAFTING_CYCLE.md \u00a73)"
+      "WARN: Drafting Cycle block missing lens(es): Weak spots, Destruction, Vulnerabilities, Integration, ACID (DRAFTING_CYCLE.md \u00a73)",
+      "WARN: step 1 mentions tests but declares no test scope"
     ]
   }
 }

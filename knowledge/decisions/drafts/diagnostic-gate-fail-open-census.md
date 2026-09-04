@@ -34,7 +34,8 @@ CEO ruling, 2026-09-04 (thread 119): *"I don't want there to be optional gates, 
 | P5 | two kinds of optional | **in code** (a skip path) and **in practice** (never invoked). `propagation_check` is recorded in **18%** of 164 registers, and this Planner ran it **zero** times across three cycles on 2026-09-03 | `tools/battery_census.py`; the 100032 research note |
 | P6 | the legitimate fail-open | `wrap_check.py` — *"Committed files are exempt until touched — gradual backfill by design; the first post-ship wrap must not detonate."* A declared grace, though with no expiry | read the comment above the `[4/memory]` class check |
 | P7 | corpus scale (why fail-closed is not free) | `knowledge/decisions/Done/` carries **546** plans; 81 have a `validation:` line; **13** are compliant under the current 4-key gate | count them |
-| P8 | in-flight | re-derive at execution | `sqlite3 lifecycle.db …` |
+| P8 | ⛔ the population's SCALE, and how it is discoverable | each module carries its own identifier convention, measured 2026-09-04: `plan_lint` **22** check letters · `gates.py` **11** `_gate_*` functions · `depositor` **9** `_hold(path, "...")` reasons · `cycle_check` **8** verdict strings · `wrap_check` **7** `[n/name]` steps · `walk_register_lint` **6** `STATUS_*` constants. **≈63 checks.** ⚠️ Sizes re-derived at execution; the conventions, not the counts, are the finding | grep each convention per module |
+| P9 | in-flight | re-derive at execution | `sqlite3 lifecycle.db …` |
 
 ## The questions
 
@@ -45,6 +46,7 @@ CEO ruling, 2026-09-04 (thread 119): *"I don't want there to be optional gates, 
 > **Q2 — For each check, what are its INPUTS and what happens when each is missing, empty, or malformed?** Build the truth table. ⚠️ "Malformed" must include the shapes actually seen in the corpus (a YAML list where an int was expected, the string `none`, an unparsed placeholder), not invented ones.
 >
 > **Q3 — Which paths yield a PASS on missing or malformed input?** This is the fail-open census and the headline number. Report per check, with the exact conditional.
+> ⛔ **PRIORITISE BLOCKING CHECKS.** The ruling is about gates, and a check that can only WARN is already optional by construction — so a fail-open path in a blocking check is strictly worse than one in an advisory. Measured 2026-09-04, blocking emission sites: `gates.py` **24** · `wrap_check` **17** · `plan_lint` **9** · `depositor` **9** · `cycle_check` **6** — **≈65**. Answer Q3 for every blocking check FIRST and completely; cover advisories only after, and say plainly if they were not reached. ⚠️ An advisory's fail-open path is still a finding — thread 118's `(c)` is advisory and still pressures an author into fabricating evidence — but it is not what the ruling is about.
 >
 > **Q4 — Which checks are optional IN PRACTICE?** Per tool, invocation rate across the committed register corpus (**P5**) and the `Done` corpus (**P7**) — ⛔ re-derive both sizes at execution rather than trusting any figure written here; both grow. ⚠️ A gate nobody runs is as optional as one that skips; both count against the ruling.
 >
@@ -58,9 +60,15 @@ CEO ruling, 2026-09-04 (thread 119): *"I don't want there to be optional gates, 
 
 **Tier:** T1 — T-3 fires (the instrument runs where plans are drafted). **T-6 does NOT fire**: read-only; writes no doctrine, no template, no gate, no specialist contract. ⚠️ It READS every gate, which is not the same as editing one — stated because this plan's subject is gates and the trigger is about editing them. T-8 not fired: clone by kind of `Done/diagnostic-100032.md`.
 **Walk register:** `/Users/marklehn/Developer/eluvian-governance/governance/knowledge/research/walk-register-gate-fail-open-census-2026-09-04.md`
-**Walks:** 0 (context pin complete).
-
-**Closing:** NOT CLOSED at walk 0.
+**Walks:** 2 (walks 0–2 complete).
+- Weak spots:          w0 dry; w1 1 folded — instruction 1 / record 0; w2 1 folded — instruction 1 / record 0.
+- Destruction:         w0 dry; w1 1 folded — instruction 1 / record 0; w2 dry.
+- Vulnerabilities:     w0 dry; w1 1 folded — instruction 1 / record 0; w2 1 folded — instruction 1 / record 0.
+- Integration-record:  w0 1 folded — instruction 1 / record 0; w1 dry; w2 dry.
+- ACID:                w0 dry; w1 dry; w2 dry.
+**⛔ The battery ran at EVERY walk, and earned it twice.** `propagation_check` at walk 0 found the corpus sizes restated as bare numerals in three instruction sites while both are declared pins (10 → 4 after the fold). `fold_check` at walk 1 caught the fold itself introducing a `plan_lint` (v) WARN — `APPEARED:`, found by the tool, not by reading. ⚠️ This is the detector this Planner ran ZERO times across three cycles on 2026-09-03.
+**⚠️ Walk 2 found the author committing this diagnostic's own subject while writing it:** two probes disagreed on the advisory count (45 versus 0) because one shared pattern was applied across modules that do not share an emission form.
+**Closing:** NOT CLOSED at walk 2 — yields 1, 3, 2; 1 fold-introduced of 6 (17%), caught within its own walk.
 
 ## Cycle Manifest
 
@@ -75,9 +83,9 @@ CEO ruling, 2026-09-04 (thread 119): *"I don't want there to be optional gates, 
 >
 > ⚠️ **TWO REPOSITORIES.** Reach governance by absolute path with `git -C "$GOV"`, never `cd`; commit it by **EXPLICIT PATHSPEC** — this plan's own walk register lives there and will be dirty, so a bare `commit -a` sweeps it in. ⛔ Commit bellows LAST.
 >
-> **Item 1 — re-derive P1–P8 and HALT on mismatch.** ⛔ Re-derive P2's line numbers by grep, never from this plan — `cycle_check.py` gained 34 lines on 2026-09-04 and every pin into it has already moved once.
+> **Item 1 — re-derive P1–P9 and HALT on mismatch.** ⛔ Re-derive P2's line numbers by grep, never from this plan — `cycle_check.py` gained 34 lines on 2026-09-04 and every pin into it has already moved once.
 >
-> **Item 2 — build `tools/gate_failopen_census.py`.** ⛔ **Derive the check inventory from the CODE.** Parse each module for its conditionals rather than reading docstrings — all four known instances are cases where behaviour and description disagreed. ⚠️ Where a check's fail-open path cannot be determined statically, **exercise it**: construct the missing/malformed input and record what the check actually returns. A static reading that cannot be exercised is reported as UNVERIFIED, never as a pass.
+> **Item 2 — build `tools/gate_failopen_census.py`.** ⛔ **Derive the check inventory from the CODE, by each module's OWN identifier convention** (P8), not by parsing conditionals — AST analysis of control flow is overreach and would produce a result nobody can audit. The conventions are: `plan_lint`'s `# (x)` comment letters, `gates.py`'s `_gate_*` function names, `depositor`'s `_hold(path, "reason")` literals, `cycle_check`'s verdict strings, `wrap_check`'s `[n/name]` step tags, `walk_register_lint`'s `STATUS_*` constants. ⛔ **Emission forms DIFFER PER MODULE — derive them per module, never by a shared pattern.** Measured: `plan_lint` uses `results.append(("FAIL", ...))`, `gates.py` uses `failures.append`, `depositor` uses `_hold(path, "reason")`, `wrap_check` uses `fails.append`, `cycle_check` returns verdict strings. ⚠️ Two probes written by this author during walk 2 disagreed with each other on the advisory counts (45 versus 0) precisely because one shared pattern was applied across modules that do not share one — the same defect this diagnostic exists to find, committed while looking for it. ⛔ Read docstrings LAST and only to compare — all four known instances are cases where behaviour and description disagreed, so a description is a hypothesis to test, never evidence. ⚠️ Where a check's fail-open path cannot be determined statically, **exercise it**: construct the missing/malformed input and record what the check actually returns. A static reading that cannot be exercised is reported as UNVERIFIED, never as a pass.
 >
 > **Item 3 — Q1: the gate population**, enumerated mechanically with each check's module and identifier.
 >
@@ -98,6 +106,8 @@ CEO ruling, 2026-09-04 (thread 119): *"I don't want there to be optional gates, 
 > **Item 11 — dev-log**, recording the inventory method and every check whose behaviour disagreed with its description.
 >
 > **Item 12 — commit** (message tagged with the plan id); record `numstat` — **TWO commits in two repos**: 1 governance, 2 bellows.
+>
+> ⚠️ **Pre-declared advisory: `plan_lint` (v) fires here as a FALSE POSITIVE.** Step 1's prose uses "test" in the sense of *examine a hypothesis*, not *run pytest*; (v) keyword-matches and warns that the step "mentions tests but declares no test scope". The declaration is correct as written — `test_scope: none`, this is a read-only diagnostic that runs no suite. ⛔ **The wording is NOT changed to dodge the check.** Rewording prose so a keyword check falls silent is the token-gaming class the corpus records, and it would leave the check's real limitation undocumented. Declared here so the WARN reads as known, and so (v)'s negation-blindness has one more recorded instance (thread 102's neighbourhood).
 >
 > ⚠️ **Pre-declared benign gate failure.** `test_scope` is `none` and this step deposits raw output as `.txt`, so `_gate_qa_test_result` finds no pytest summary and FAILs. Expected, named here, overridden by the Planner with reference to this note — the 100032 precedent, and the case `plan_lint` check (v) exists to make authors declare.
 >
