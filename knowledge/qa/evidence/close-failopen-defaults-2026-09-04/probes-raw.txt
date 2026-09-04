@@ -1,0 +1,57 @@
+
+==========================================================
+ITEM 5 (UPDATED): mutation_check — kill map
+==========================================================
+
+HEAD: 6f9faeafccf77ae5b95076b627ae062a5eef36b8
+TARGET: scripts/cycle_check.py sha256=43fca04fce50
+TARGET: scripts/plan_lint.py sha256=145481021792
+
+MUTANT M1-arm-b-none: KILLED — suite caught the defect
+MUTANT M2-arm-a-none: KILLED — suite caught the defect
+MUTANT M3-empty-validation-none: KILLED — suite caught the defect
+MUTANT M4-revert-fo3-normalization: KILLED — suite caught the defect
+MUTANT M5-drop-placeholder-branch: KILLED — suite caught the defect
+MUTANT M6-drop-qa-heading-fallback: KILLED — suite caught the defect
+
+LIVE-TREE UNCHANGED: scripts/cycle_check.py sha256=43fca04fce50
+LIVE-TREE UNCHANGED: scripts/plan_lint.py sha256=145481021792
+
+MUTATION: 6 killed, 0 survived, 0 error
+
+==========================================================
+ITEM 6 (VERIFIED): SELF-APPLICATION
+==========================================================
+
+--- cycle_check on executable-100037.md.pristine ---
+BAR_MET
+
+--- plan_lint on executable-100037.md.pristine ---
+PASS: (c) QA banner pair — both strings present
+plan_lint exit: 0
+
+==========================================================
+ITEM 7: HYGIENE
+==========================================================
+
+--- numstat from DEV commit (0383b6c) to HEAD ---
+0	5	knowledge/decisions/hold-executable-close-failopen-defaults.hold.json
+0	0	knowledge/decisions/{hold-executable-close-failopen-defaults.md => verdict-pending-executable-100037.md}
+1	0	knowledge/mutants/close-failopen-defaults.json
+33	0	knowledge/overrides/override-100037-step1-scope_check.md
+2	0	tests/test_depositor_receipts.py
+1	0	tests/test_wrap_receipts.py
+83	0	verdicts/pending/verdict-request-100037-step-1.md
+
+Note: DEV commit changed 7 files (test_cycle_check.py was also updated
+to add validation stanzas to BAR_MET fixtures). 3 additional test fixture
+files were updated in QA commit 6f9faea (out-of-scope helpers).
+
+--- reflog last 4 (0 amends check) ---
+6f9faea HEAD@{0}: commit: fix(close-failopen-defaults): QA fixture and mutant manifest corrections [100037]
+5eb86fd HEAD@{1}: reset: moving to HEAD
+5eb86fd HEAD@{2}: reset: moving to HEAD
+5eb86fd HEAD@{3}: reset: moving to HEAD
+
+--- toplevel status ---
+?? knowledge/qa/evidence/close-failopen-defaults-2026-09-04/
