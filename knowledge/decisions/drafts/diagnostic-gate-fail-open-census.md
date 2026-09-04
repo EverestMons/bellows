@@ -47,6 +47,7 @@ CEO ruling, 2026-09-04 (thread 119): *"I don't want there to be optional gates, 
 >
 > **Q3 — Which paths yield a PASS on missing or malformed input?** This is the fail-open census and the headline number. Report per check, with the exact conditional.
 > ⛔ **THE MEMBERSHIP TEST — falsifiable, and nothing enters the census without it.** A path is a fail-open path only if ALL THREE hold, each demonstrated: **(i)** an input exists for which the check returns PASS; **(ii)** a correct check would return FAIL on that input; **(iii)** the input is a shape the CORPUS actually produces, cited to the file that produces it. ⛔ **Every claimed entry ships with the constructed input that demonstrates it. No demonstration, no entry.**
+> ⛔ **APPLY THE TEST TO THE FOUR FOUNDING INSTANCES FIRST, before any new one.** Measured at walk 3, one of them does not pass it as demonstrated: **thread 114** was shown with `class: banana`, an input the author CONSTRUCTED — the corpus does not produce it. That gate's real-world failure is different: it is INERT on a non-git memory directory, so no entry is ever checked. ⚠️ The instance is almost certainly genuine, but the demonstration on file does not satisfy criterion (iii), and **a census that admits its own founding cases without testing them is the unfalsifiability this criterion exists to prevent.** Re-derive 114's corpus-produced input, or record it as UNVERIFIED. Threads 116 (`[2]`, produced by `Done/executable-312.md` and `-313.md`), 118 (`qa_steps: none`, produced by 4 `Done` plans) and `cycle_check`'s manifest check (the placeholder, produced by `halted-executable-100031.md`) each cite a real producing file and pass.
 > ⚠️ **This criterion exists because the author kept labelling adjacent findings as instances of this subject.** Measured over this cycle's own first six findings, **ZERO** were members: a restated value, two under-specifications, a wrong method, fold damage, and a probe error. A class that absorbs everything nearby stops meaning anything, and the four genuine instances (threads 114, 116, 118, and `cycle_check`'s manifest check) lose their weight. ⛔ Report near-misses in a SEPARATE list with the criterion they failed — do not fold them into the headline number.
 > ⛔ **PRIORITISE BLOCKING CHECKS.** The ruling is about gates, and a check that can only WARN is already optional by construction — so a fail-open path in a blocking check is strictly worse than one in an advisory. Measured 2026-09-04, blocking emission sites: `gates.py` **24** · `wrap_check` **17** · `plan_lint` **9** · `depositor` **9** · `cycle_check` **6** — **≈65**. Answer Q3 for every blocking check FIRST and completely; cover advisories only after, and say plainly if they were not reached. ⚠️ An advisory's fail-open path is still a finding — thread 118's `(c)` is advisory and still pressures an author into fabricating evidence — but it is not what the ruling is about.
 >
@@ -62,19 +63,28 @@ CEO ruling, 2026-09-04 (thread 119): *"I don't want there to be optional gates, 
 
 **Tier:** T1 — T-3 fires (the instrument runs where plans are drafted). **T-6 does NOT fire**: read-only; writes no doctrine, no template, no gate, no specialist contract. ⚠️ It READS every gate, which is not the same as editing one — stated because this plan's subject is gates and the trigger is about editing them. T-8 not fired: clone by kind of `Done/diagnostic-100032.md`.
 **Walk register:** `/Users/marklehn/Developer/eluvian-governance/governance/knowledge/research/walk-register-gate-fail-open-census-2026-09-04.md`
-**Walks:** 2 (walks 0–2 complete).
-- Weak spots:          w0 dry; w1 1 folded — instruction 1 / record 0; w2 1 folded — instruction 1 / record 0.
-- Destruction:         w0 dry; w1 1 folded — instruction 1 / record 0; w2 dry.
-- Vulnerabilities:     w0 dry; w1 1 folded — instruction 1 / record 0; w2 1 folded — instruction 1 / record 0.
-- Integration-record:  w0 1 folded — instruction 1 / record 0; w1 dry; w2 dry.
-- ACID:                w0 dry; w1 dry; w2 dry.
+**Walks:** 4 (walks 0–4 complete).
+- Weak spots:          w0 dry; w1 1 folded — instruction 1 / record 0; w2 1 folded — instruction 1 / record 0; w3 dry; w4 dry.
+- Destruction:         w0 dry; w1 1 folded — instruction 1 / record 0; w2 dry; w3 dry; w4 dry.
+- Vulnerabilities:     w0 dry; w1 1 folded — instruction 1 / record 0; w2 1 folded — instruction 1 / record 0; w3 1 folded — instruction 1 / record 0; w4 dry.
+- Integration-record:  w0 1 folded — instruction 1 / record 0; w1 dry; w2 dry; w3 dry; w4 dry.
+- ACID:                w0 dry; w1 dry; w2 dry; w3 dry; w4 dry.
 **⛔ The battery ran at EVERY walk, and earned it twice.** `propagation_check` at walk 0 found the corpus sizes restated as bare numerals in three instruction sites while both are declared pins (10 → 4 after the fold). `fold_check` at walk 1 caught the fold itself introducing a `plan_lint` (v) WARN — `APPEARED:`, found by the tool, not by reading. ⚠️ This is the detector this Planner ran ZERO times across three cycles on 2026-09-03.
 **⚠️ Walk 2 found the author committing this diagnostic's own subject while writing it:** two probes disagreed on the advisory count (45 versus 0) because one shared pattern was applied across modules that do not share an emission form.
-**Closing:** NOT CLOSED at walk 2 — yields 1, 3, 2; 1 fold-introduced of 6 (17%), caught within its own walk.
+**⚠️ The cycle's most valuable finding was not about gates.** The CEO named a meta problem — a diagnostic run through the cycle will find the things it is trying to correct. Audit: **ZERO of the first six findings were instances of the subject**, and one was narrated as one. That produced the falsifiable membership test at Q3, and the test then immediately disqualified one of this diagnostic's OWN four founding demonstrations (thread 114, shown with a constructed input the corpus does not produce). The correction improved the instrument twice — once by adding a criterion, once by the criterion biting its author.
+**Closing — BAR MET at walk 4**, on a dry lens pass. 8 findings (instruction 8 / record 0); 1 fold-introduced (13%), caught by `fold_check` within its own walk. Yields 1, 3, 2, 1, 0.
 
 ## Cycle Manifest
-
-*(to be EMITTED at BAR_MET with `cycle_check --emit-manifest` — ⛔ **do not hand-type this stanza**, and ⛔ **emit BEFORE claiming closure**: emitting while a closure claim stands records the escalation into `validation:` itself, measured 2026-09-04.)*
+tier: T1
+target: gates.py, scripts/plan_lint.py, scripts/cycle_check.py, scripts/walk_register_lint.py, hooks/eluvian/wrap_check.py, depositor.py (READ ONLY — the census subject)
+class: shop-infra
+reads: gates.py, scripts/plan_lint.py, scripts/cycle_check.py, scripts/fold_check.py, scripts/propagation_check.py, scripts/walk_register_lint.py, tools/mutation_check.py, hooks/eluvian/wrap_check.py, depositor.py, knowledge/decisions/Done/, eluvian-governance/governance/knowledge/research/
+writes: tools/gate_failopen_census.py, /Users/marklehn/Developer/eluvian-governance/governance/knowledge/research/gate-fail-open-census-2026-09-04.md, knowledge/development/dev-log-gate-fail-open-census-2026-09-04.md
+open_forks: thread 114 must have its corpus-produced input re-derived or be recorded UNVERIFIED (w3-1); wrap_check’s declared grace has no expiry (P6)
+walks: 4
+yields: 3, 2, 1, 0
+validation: cycle_check=BAR_MET, plan_lint=0_FAIL, fold_check=PASS, propagation_check=DIVERGENT:7
+coherence: 4/4 walks have register rows
 
 ## STEP 1 — the census (read-only; decides nothing)
 

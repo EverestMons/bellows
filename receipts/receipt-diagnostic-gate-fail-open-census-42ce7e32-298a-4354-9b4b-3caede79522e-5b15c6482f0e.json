@@ -1,0 +1,8 @@
+{
+  "slug": "diagnostic-gate-fail-open-census",
+  "content_hash": "5b15c6482f0e7554fa0a0536f83a6ea0a0c052f284a29a26eb857b1ba88649fa",
+  "session_id": "42ce7e32-298a-4354-9b4b-3caede79522e",
+  "armed_at": "2026-09-04T09:23:18.694326",
+  "watcher": "gate_watcher.py spawned detached (pid 10519); log: logs/watch/diagnostic-gate-fail-open-census.md.log",
+  "attestation_boundary": "This receipt proves the watcher was ARMED at write time. It does NOT prove the watcher stayed alive. Liveness of a session-local monitor is not externally verifiable."
+}
