@@ -1,0 +1,34 @@
+{
+    "target": "scripts/cycle_check.py",
+    "_note": "Plan 100033: four mutants, one per branch of the manifest-provenance gate. A survivor is a missing test, stated as Critical. 0 ERROR required.",
+    "mutants": [
+        {
+            "name": "M1-drop-missing-key-arm",
+            "why": "Removing the gate check entirely re-opens the defect: a validation: line missing propagation_check= (the diagnostic-100032 defect) silently reaches BAR_MET. Test 1 expects CONTINUE; without the gate it gets BAR_MET.",
+            "anchor": "    # Gate: manifest validation: must carry every key the emitter writes (DC:253, P2-P8).\n    # No subprocess; key comparison is against the MANIFEST_VALIDATION_KEYS constant.\n    if verdict == \"BAR_MET\":\n        stored = _manifest_validation_keys(text)\n        if stored is not None and not MANIFEST_VALIDATION_KEYS.issubset(stored):\n            verdict = \"CONTINUE\"",
+            "replacement": "",
+            "expect_fail": "tests/test_cycle_check_manifest_provenance.py::test_manifest_missing_key_returns_continue"
+        },
+        {
+            "name": "M2-drop-no-stanza-guard",
+            "why": "Returning an empty frozenset instead of None when no stanza is found causes the gate to fire on every plan without a manifest (empty set ⊄ MANIFEST_VALIDATION_KEYS). Test 3 expects BAR_MET on a no-stanza plan; this mutant makes it return CONTINUE.",
+            "anchor": "    if not manifest:\n        return None",
+            "replacement": "    if not manifest:\n        return frozenset()",
+            "expect_fail": "tests/test_cycle_check_manifest_provenance.py::test_no_stanza_gate_does_not_fire"
+        },
+        {
+            "name": "M3-compare-values-not-keys",
+            "why": "Extracting the value portion (split('=')[1]) instead of the key portion (split('=')[0]) causes the gate to compare MANIFEST_VALIDATION_KEYS against the stored VALUES ('BAR_MET', '0_FAIL', …), which never match key names — gate always fires. Test 4 expects BAR_MET with stale values; this mutant makes it return CONTINUE.",
+            "anchor": "        part.split(\"=\")[0].strip()",
+            "replacement": "        part.split(\"=\")[1].strip()",
+            "expect_fail": "tests/test_cycle_check_manifest_provenance.py::test_stale_values_do_not_fire"
+        },
+        {
+            "name": "M4-hardcode-key-list",
+            "why": "Inlining the key set instead of reading MANIFEST_VALIDATION_KEYS breaks the anti-drift coupling: patch.object(cycle_check, 'MANIFEST_VALIDATION_KEYS', augmented) no longer affects the gate. Test 5 patches the constant to add 'extra_key' and expects CONTINUE; this mutant lets BAR_MET through because the hardcoded set lacks 'extra_key'.",
+            "anchor": "        if stored is not None and not MANIFEST_VALIDATION_KEYS.issubset(stored):",
+            "replacement": "        if stored is not None and not frozenset({\"cycle_check\", \"plan_lint\", \"fold_check\", \"propagation_check\"}).issubset(stored):",
+            "expect_fail": "tests/test_cycle_check_manifest_provenance.py::test_key_set_derived_from_emitter_constant"
+        }
+    ]
+}
