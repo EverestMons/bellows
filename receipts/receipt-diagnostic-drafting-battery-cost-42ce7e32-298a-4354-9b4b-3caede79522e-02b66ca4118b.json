@@ -1,0 +1,8 @@
+{
+  "slug": "diagnostic-drafting-battery-cost",
+  "content_hash": "02b66ca4118b0f963982ae6f4cae7635c53de00dbc7dc9e25b2977ac69211652",
+  "session_id": "42ce7e32-298a-4354-9b4b-3caede79522e",
+  "armed_at": "2026-09-03T19:23:27.733386",
+  "watcher": "gate_watcher.py spawned detached (pid 87937); log: logs/watch/diagnostic-drafting-battery-cost.md.log",
+  "attestation_boundary": "This receipt proves the watcher was ARMED at write time. It does NOT prove the watcher stayed alive. Liveness of a session-local monitor is not externally verifiable."
+}

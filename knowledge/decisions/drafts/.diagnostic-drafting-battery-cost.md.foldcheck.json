@@ -1,0 +1,8 @@
+{
+  "plan_lint": {
+    "exit": 0,
+    "signals": [
+      "(o2) WARN: Deposits entry `knowledge/development/dev-log-drafting-battery-cost-N-N-N.md` is not project-prefixed or absolute"
+    ]
+  }
+}
