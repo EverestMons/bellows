@@ -1,19 +1,6 @@
 {
   "plan_lint": {
     "exit": 0,
-    "signals": [
-      "(f) WARN: Cycle Manifest stanza missing or empty field: class",
-      "(f) WARN: Cycle Manifest stanza missing or empty field: coherence",
-      "(f) WARN: Cycle Manifest stanza missing or empty field: open_forks",
-      "(f) WARN: Cycle Manifest stanza missing or empty field: reads",
-      "(f) WARN: Cycle Manifest stanza missing or empty field: target",
-      "(f) WARN: Cycle Manifest stanza missing or empty field: tier",
-      "(f) WARN: Cycle Manifest stanza missing or empty field: validation",
-      "(f) WARN: Cycle Manifest stanza missing or empty field: walks",
-      "(f) WARN: Cycle Manifest stanza missing or empty field: writes",
-      "(f) WARN: Cycle Manifest stanza missing or empty field: yields",
-      "(o1) WARN: missing path `/Users/marklehn/Developer/eluvian-governance/governance/knowledge/research/walk-register-qa-steps-parsing-N-N-N.md`",
-      "WARN: Drafting Cycle block missing lens(es): Weak spots, Destruction, Vulnerabilities, Integration, ACID (DRAFTING_CYCLE.md \u00a73)"
-    ]
+    "signals": []
   }
 }
