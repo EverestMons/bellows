@@ -1,0 +1,15 @@
+{
+  "plan_lint": {
+    "exit": 0,
+    "signals": [
+      "(f) WARN: Cycle Manifest validation missing cycle_check= entry",
+      "(f) WARN: Cycle Manifest validation missing plan_lint= entry",
+      "(u) WARN: step 1 Deposits: first .md is 'u-predicate-divergence-N-N-N.md' \u2014 rule_20_self_check reads the first .md as the QA report (thread N)",
+      "(u) WARN: step 1 Deposits: no .txt evidence entry (thread N)",
+      "PIN-CHECK: kind=sha256 line=N token=145481021792\u2026 result=ok",
+      "PIN-CHECK: kind=sha256 line=N token=33ecbbf67d98\u2026 result=ok",
+      "WARN: Drafting Cycle block has no **Closing:** line (DRAFTING_CYCLE.md \u00a73)",
+      "WARN: Drafting Cycle block missing lens(es): Weak spots, Destruction, Vulnerabilities, Integration, ACID (DRAFTING_CYCLE.md \u00a73)"
+    ]
+  }
+}
