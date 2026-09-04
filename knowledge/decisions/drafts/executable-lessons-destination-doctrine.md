@@ -51,6 +51,7 @@
 **Walk register:** `/Users/marklehn/Developer/eluvian-governance/governance/knowledge/research/walk-register-lessons-destination-doctrine-2026-09-03.md`
 **Walks:** 0. **Walk-0 obligations DISCHARGED in position:** the clone-diff against `Done/executable-100027.md` ran before lens 1 — all six machinery elements carried (Deposits, A0, explicit pathspec, two-repo discipline, numstat, benign-failure pre-declaration), none dropped. ONE cold scout convened before lens 1; its findings are folded above and recorded in the register. §2.0 measurements (3) and (5) added as P12–P13; the EXECUTION act (6) run and recorded as P11.
 ⛔ **Still owed and declared:** §2.0 (2)'s per-anchor line-length and start-column for the three carriers other than `PLANNER_TEMPLATE.md:2094`, and (4)'s `lifecycle_state` for each line's last-writing plan.
+⛔ **`propagation_check` run at walk 0 — DIVERGENT:27, all classified, zero real restatement divergences.** It had never been run on any cycle this Planner authored (0, 0, 0 across the night's three, against the fresh agent's 5). It flagged ONE of the four sites where the s0-1 fold failed to propagate; a claim-sweep found the other three. Recorded because it decides what a daemon-driven battery could and could not have caught.
 
 **Closing:** NOT CLOSED at walk 0.
 
@@ -58,7 +59,7 @@
 
 *(to be EMITTED at BAR_MET — ⛔ this placeholder must not survive the freeze; an unemitted manifest reclassified plan 100031 and dispatched it past the class hold, LESSONS.md 2026-09-03 entry 413)*
 
-## STEP 1 — DEV (four surfaces reconciled, one supersede struck where it stands)
+## STEP 1 — DEV (four surfaces reconciled, one supersede retired by an appended correcting entry)
 
 > **Scope:**
 > - `/Users/marklehn/Developer/eluvian-governance/PLANNER_TEMPLATE.md`
@@ -98,7 +99,7 @@
 >
 > **Item 8 — commit** (message tagged with the plan id). ⛔ **numstat is TWO commits, not one** — 2 files in governance, 3 in bellows. Record both; a single-numstat post-condition is arithmetically unreachable across two repos (the predecessor's F11).
 >
-> **Post-conditions:** all four carriers re-read and none routes working-pattern lessons to memory by default, verified by grepping the CLAIM in several phrasings rather than one literal; the struck clause present with its supersede note and the surrounding entries byte-identical; `PLANNER_TEMPLATE.md` at v4.99 with a History row citing the ruling; the glossary path in the rewritten sentence resolves on this machine; both commit shas recorded.
+> **Post-conditions:** all four carriers re-read and none routes working-pattern lessons to memory by default, verified by grepping the CLAIM in several phrasings rather than one literal; the appended correcting entry present, naming `LESSONS.md:4447` by file and line and quoting the superseded bullet, with the 2026-08-19 entry byte-identical (its sha unchanged) and the previous last entry intact; `PLANNER_TEMPLATE.md` at v4.99 with a History row citing the ruling; the glossary path in the rewritten sentence resolves on this machine; both commit shas recorded.
 
 ## STEP 2 — QA (the four surfaces shown to agree; gates unchanged)
 
@@ -106,7 +107,7 @@
 >
 > **Item 1 — the reconciliation demonstrated:** quote the post-change sentence from each of the FOUR surfaces side by side. ⛔ A reader must not be able to derive a different destination from any one of them — and the check must cover `eluvian.md`, which the predecessor plan missed.
 >
-> **Item 2 — the supersede is legible:** show `LESSONS.md:4447` with the strike and its note, and show the entry's neighbours byte-identical (`git diff --numstat` on the file: one line changed).
+> **Item 2 — the supersede is legible:** show the APPENDED entry naming `LESSONS.md:4447` by file and line and quoting the superseded bullet, and show the 2026-08-19 entry unchanged (its sha before and after) and the previous last entry intact. ⛔ `git diff --numstat` must show lines ADDED and **zero deleted** — an append, not an edit.
 >
 > **Item 3 — no-regression on the gates:** run `plan_lint`, `cycle_check` and `gates.check` against a SHIPPED plan before and after, and show identical output. ⛔ These files' CONTENT is read by no code path; prove it rather than asserting it.
 >
@@ -135,4 +136,4 @@
 > - `knowledge/qa/evidence/lessons-destination-doctrine-2026-09-03/qa-receipt.md`
 > - `knowledge/qa/evidence/lessons-destination-doctrine-2026-09-03/probes-raw.txt`
 >
-> **Post-conditions:** four surfaces quoted and agreeing; the strike legible and non-destructive; gates byte-identical on a shipped plan; 29 → 28 hardcoded paths; both DEV shas reconciled.
+> **Post-conditions:** four surfaces quoted and agreeing; the appended correcting entry legible and naming the superseded bullet by file and line, with zero deletions in `LESSONS.md`; gates byte-identical on a shipped plan; 29 → 28 hardcoded paths; both DEV shas reconciled.
