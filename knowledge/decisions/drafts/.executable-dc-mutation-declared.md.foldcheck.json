@@ -1,7 +1,7 @@
 {
   "_meta": {
-    "artifact_sha256": "29a7d01f7bd5a9c030f30afe87df87ae5015ba5acb14aff3ca7509970a2a0f79",
-    "saved_at": "2026-09-05T15:23:04"
+    "artifact_sha256": "7dfda674b6358d0ad3290b26e611bad3de4a8b013653c5c59e5b1d72b142db81",
+    "saved_at": "2026-09-05T15:23:24"
   },
   "plan_lint": {
     "exit": 0,
@@ -21,6 +21,8 @@
       "(o2) WARN: Deposits entry `knowledge/mutants/dc-mutation-declared.json` is not project-prefixed or absolute",
       "(o2) WARN: Deposits entry `knowledge/qa/evidence/dc-mutation-declared-N-N-N/probes-raw.txt` is not project-prefixed or absolute",
       "(o2) WARN: Deposits entry `knowledge/qa/evidence/dc-mutation-declared-N-N-N/qa-receipt.md` is not project-prefixed or absolute",
+      "(o2) WARN: Deposits entry `scripts/plan_lint.py` is not project-prefixed or absolute",
+      "(o2) WARN: Deposits entry `tests/test_plan_lint.py` is not project-prefixed or absolute",
       "WARN: Drafting Cycle block missing lens(es): Weak spots, Destruction, Vulnerabilities, Integration, ACID (DRAFTING_CYCLE.md \u00a73)"
     ]
   }

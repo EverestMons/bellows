@@ -91,8 +91,12 @@ One advisory check. **A plan whose manifest `writes:` names a shop instrument, a
 > **Item 6 — commit** (message tagged with the plan id); record `numstat`.
 >
 > **Deposits:**
+> - `scripts/plan_lint.py`
+> - `tests/test_plan_lint.py`
 > - `knowledge/development/dev-log-dc-mutation-declared-2026-09-05.md`
 > - `knowledge/mutants/dc-mutation-declared.json`
+>
+> ⛔ **The two code paths are listed DELIBERATELY.** With only the `knowledge/` paths, `_parse_plan` yields `writes=2` and `_assign_class` returns **`app-feature`, which AUTO-CLEARS** — a plan editing the shop's most-run checker would deposit with NO human release act. Measured on this plan's own v0. ⚠️ Verbatim the panel finding `S1-5` from 2026-09-04, reproduced one day later in the plan whose subject is DC-work safety. **Re-run `_parse_plan` → `_assign_class` after ANY edit to this block; `project_root` is required, and its default returns the dangerous answer.**
 >
 > **Post-conditions:** (w) present and WARN-only; the four test cases pass; `plan_lint` exit code unchanged for every input; this plan's own `mutants:` declared and its manifest built; ⛔ **no doctrine file touched**.
 >
