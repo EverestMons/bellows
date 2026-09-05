@@ -334,12 +334,29 @@ def check_assert_2(parsed, plan_path):
         # Import happens at function scope to match the existing fold_check pattern (thread 29).
         if resolved_path is not None:
             try:
-                reg_status, _, _ = _validate_register(resolved_path)
+                reg_status, reg_rows, _ = _validate_register(resolved_path)
                 if reg_status not in _REGISTER_SILENT_STATUSES:
                     register_warn = (
                         f"WARN: walk register {resolved_path.name!r}"
                         f" — {reg_status} (non-conformant register; does not block verdict)"
                     )
+                # Thread 141: the register carries findings rows while the Cycle Log's
+                # Walks block declares none. The body is the ONLY place this tool reads,
+                # so in that state every verdict is computed from an EMPTY record.
+                # Measured on the Planner's own artifact 2026-09-05: two walks, 17
+                # findings and a direction verdict lived in the register while the body
+                # said nothing. ⛔ The CONJUNCTION is the discriminator, not the empty
+                # body alone — an empty Walks block is CORRECT at walk 0. Over 152 plans:
+                # empty-body alone matches 18 (8 declaring no register, 7 unresolvable);
+                # the conjunction matches 2.
+                if reg_rows and not parsed.get("walk_data"):
+                    conj = (
+                        f"WARN: walk register {resolved_path.name!r} carries "
+                        f"{len(reg_rows)} findings row(s) but the Cycle Log's Walks block "
+                        f"declares NO walks — the verdict below is computed from an empty "
+                        f"record. Write the per-lens lines into the plan BODY (thread 141)."
+                    )
+                    register_warn = f"{register_warn}\n{conj}" if register_warn else conj
             except Exception:
                 pass  # validation failure does not affect register_result or verdict
 
@@ -460,6 +477,19 @@ def run_check(plan_path, warnings=None):
         return "ESCALATE:unparseable", 1
 
     if not walk_data:
+        # Thread 141: this early return fired BEFORE check_assert_2 was ever called, so
+        # the register was never resolved and a plan whose findings live only in its
+        # register got a silent CONTINUE. Consult the register first; the verdict is
+        # unchanged (advisory), and the conjunction warn is the only new output.
+        # ⚠️ check_assert_2's git/uncommitted work is itself guarded by `if walk_data:`,
+        # so on this path it does register resolution and validation only.
+        if warnings is not None:
+            try:
+                _, _, _, empty_warn = check_assert_2(parsed, plan_path)
+                if empty_warn is not None:
+                    warnings.append(empty_warn)
+            except Exception:
+                pass  # never let an advisory path change the verdict
         return "CONTINUE", 0
 
     current_walk = max(walk_data.keys())

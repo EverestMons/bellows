@@ -159,6 +159,52 @@ def test_yield_rising(tmp_path):
 # ---------- BASIS on escalation (thread 133) ----------
 
 
+def test_empty_walks_block_with_a_populated_register_warns(tmp_path):
+    """thread 141: run_check returned CONTINUE on an empty Walks block BEFORE
+    check_assert_2 ran, so a plan whose findings live only in its register got a
+    silent CONTINUE — every verdict computed from an empty record.
+
+    Measured on the Planner's own artifact 2026-09-05: two walks, 17 findings and a
+    direction verdict in the register, nothing in the body. ⛔ The CONJUNCTION is the
+    discriminator — an empty Walks block is CORRECT at walk 0.
+    """
+    reg = tmp_path / "walk-register-fixture-2026-09-05.md"
+    reg.write_text(
+        "**schema_version:** `0.3`\n\n"
+        "| id | walk | lens | sub_question | origin | finding | pre_fold_text | resolution |\n"
+        "|---|---|---|---|---|---|---|---|\n"
+        "| w1-1 | 1 | 1 Weak spots | 1.1 | pre-existing-v0 | a finding | some text | folded |\n",
+        encoding="utf-8",
+    )
+    plan = _make_plan(tmp_path, "")            # no per-lens lines: empty Walks block
+    plan.write_text(
+        plan.read_text(encoding="utf-8").replace(
+            "## Drafting Cycle",
+            f"## Drafting Cycle\n**Walk register:** `{reg}`",
+        ),
+        encoding="utf-8",
+    )
+    warnings = []
+    verdict, _ = cycle_check.run_check(plan, warnings=warnings)
+    assert verdict == "CONTINUE", "advisory only — the verdict must not move"
+    hits = [w for w in warnings if "thread 141" in w]
+    assert len(hits) == 1, warnings
+    assert "declares NO walks" in hits[0]
+
+
+def test_empty_walks_block_with_no_register_is_silent(tmp_path):
+    """⛔ An empty Walks block alone is CORRECT at walk 0 and must not warn.
+
+    Measured over 152 plans: empty-body alone matches 18 — 8 declaring no register
+    at all — while the conjunction matches 2.
+    """
+    plan = _make_plan(tmp_path, "")
+    warnings = []
+    verdict, _ = cycle_check.run_check(plan, warnings=warnings)
+    assert verdict == "CONTINUE"
+    assert [w for w in warnings if "thread 141" in w] == []
+
+
 def test_escalation_states_its_basis(tmp_path):
     """An ESCALATE must say what the ladder had to evaluate, not just its verdict.
 
