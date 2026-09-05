@@ -1,7 +1,7 @@
 {
   "_meta": {
-    "artifact_sha256": "c0f3916ca904376c275478e1d5d6ad368190c3a10686a197450a47bca7bf1ae9",
-    "saved_at": "2026-09-05T12:00:56"
+    "artifact_sha256": "66ed86b8526eb918e1b203f3a75e3e6833c2929037ecd4cfaf6939ea9d43beb6",
+    "saved_at": "2026-09-05T12:06:04"
   },
   "plan_lint": {
     "exit": 0,
@@ -20,7 +20,7 @@
       "(o2) WARN: Deposits entry `tools/register_coverage_census.py` is not project-prefixed or absolute",
       "PIN-CHECK: kind=sha256 line=N token=e50b63a1bd40\u2026 result=ok",
       "WARN: Drafting Cycle block has no **Closing:** line (DRAFTING_CYCLE.md \u00a73)",
-      "WARN: Drafting Cycle block missing lens(es): Weak spots, Destruction, Vulnerabilities, Integration, ACID (DRAFTING_CYCLE.md \u00a73)",
+      "WARN: Drafting Cycle closing indicates fold as last event, not a dry lens pass (DRAFTING_CYCLE.md \u00a72)",
       "WARN: step 1 mentions tests but declares no test scope"
     ]
   }
