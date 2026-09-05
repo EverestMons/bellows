@@ -1,0 +1,1352 @@
+==============================================================================
+cycle_log_signal_census — RAW OUTPUT
+plan: diagnostic-cycle-log-signal (manual_bootstrap, 2026-09-05)
+==============================================================================
+corpus roots: /Users/marklehn/Developer/bellows/knowledge/decisions/Done
+              /Users/marklehn/Developer/bellows/knowledge/decisions/drafts
+cycle_check   : /Users/marklehn/Developer/bellows/scripts/cycle_check.py
+walk_register_lint schema version: 0.3
+
+## SECTION 0 — CONTROLS (read before any finding)
+
+C0.1  POSITIVE CONTROL — executable-lessons-destination-v2.md
+      expected {'body_walks': 0, 'register_rows': 4}
+      measured {'body_walks': 0, 'register_rows': 4}
+      resolved register: /Users/marklehn/Developer/eluvian-governance/governance/knowledge/research/walk-register-lessons-destination-v2-2026-09-04.md
+      register status  : CONFORMANT
+      RESULT: PASS — the instrument discriminates
+
+C0.2  RESOLVER MIRROR vs cycle_check.check_assert_2 (every plan)
+      plans compared : 102
+      disagreements  : 0
+      RESULT: PASS — resolution is cycle_check-identical
+
+C0.3  NEGATIVE CONTROL — an unresolved ref must yield no register rows
+      unresolved plans: 22   with non-empty rows: 0
+      RESULT: PASS
+
+C0.4  files skipped (no ref / no single DC block): 482
+        Done/archived-halted-diagnostic-priority-3-carryover-audit-v1-2026-05-21.md: dc_blocks=0
+        Done/diagnostic-109.md: dc_blocks=0
+        Done/diagnostic-111.md: dc_blocks=0
+        Done/diagnostic-123.md: dc_blocks=0
+        Done/diagnostic-139.md: dc_blocks=0
+        Done/diagnostic-184.md: dc_blocks=0
+        Done/diagnostic-21.md: dc_blocks=0
+        Done/diagnostic-23.md: dc_blocks=0
+        Done/diagnostic-27.md: dc_blocks=0
+        Done/diagnostic-34.md: dc_blocks=0
+        Done/diagnostic-39.md: dc_blocks=0
+        Done/diagnostic-41.md: dc_blocks=0
+        Done/diagnostic-42.md: dc_blocks=0
+        Done/diagnostic-46.md: dc_blocks=0
+        Done/diagnostic-47.md: dc_blocks=0
+        Done/diagnostic-50.md: dc_blocks=0
+        Done/diagnostic-52.md: dc_blocks=0
+        Done/diagnostic-53.md: dc_blocks=0
+        Done/diagnostic-55.md: dc_blocks=0
+        Done/diagnostic-57.md: dc_blocks=0
+        Done/diagnostic-58.md: dc_blocks=0
+        Done/diagnostic-6.md: dc_blocks=0
+        Done/diagnostic-61.md: dc_blocks=0
+        Done/diagnostic-63.md: dc_blocks=0
+        Done/diagnostic-activity-based-timeout-2026-05-01.md: dc_blocks=0
+        Done/diagnostic-agent-self-request-verdict-2026-04-16.md: dc_blocks=0
+        Done/diagnostic-backlog-1-reproduction-audit-2026-05-05.md: dc_blocks=0
+        Done/diagnostic-bash-gate-vs-guardrails-2026-05-20.md: dc_blocks=0
+        Done/diagnostic-bash-permission-rules-audit-2026-05-04.md: dc_blocks=0
+        Done/diagnostic-bellows-architecture-audit-2026-04-18.md: dc_blocks=0
+        Done/diagnostic-bellows-backlog-sweep-2026-05-12.md: dc_blocks=0
+        Done/diagnostic-bellows-cross-project-verdict-queue-2026-04-16.md: dc_blocks=0
+        Done/diagnostic-bellows-deposit-path-formats-2026-04-18.md: dc_blocks=0
+        Done/diagnostic-bellows-dispatch-path-2026-04-15.md: dc_blocks=0
+        Done/diagnostic-bellows-expected-keys-shape-choice-2026-05-21.md: dc_blocks=0
+        Done/diagnostic-bellows-expected-keys-warning-2026-05-21.md: dc_blocks=0
+        Done/diagnostic-bellows-hardening-batch-freshness-2026-05-26.md: dc_blocks=0
+        Done/diagnostic-bellows-integration-section-audit-2026-05-01.md: dc_blocks=0
+        Done/diagnostic-bellows-isinstance-asymmetry-2026-05-21.md: dc_blocks=0
+        Done/diagnostic-bellows-lifecycle-db-id-threading-surface-2026-06-11.md: dc_blocks=0
+        Done/diagnostic-bellows-parse-diff-stat-audit-2026-04-16.md: dc_blocks=0
+        Done/diagnostic-bellows-phase8-1-validation-smoke-2026-04-16.md: dc_blocks=0
+        Done/diagnostic-bellows-plan-2b-dispatch-failure-2026-04-16.md: dc_blocks=0
+        Done/diagnostic-bellows-post-plan-hang-2026-04-16.md: dc_blocks=0
+        Done/diagnostic-bellows-reproduce-bugs-2026-04-15.md: dc_blocks=0
+        Done/diagnostic-bellows-reproduce-single-step-strand-2026-04-15.md: dc_blocks=0
+        Done/diagnostic-bellows-rerun-cascade-2026-04-19.md: dc_blocks=0
+        Done/diagnostic-bellows-root-worktree-reachability-audit-2026-06-08.md: dc_blocks=0
+        Done/diagnostic-bellows-runner-retry-state-2026-05-13.md: dc_blocks=0
+        Done/diagnostic-bellows-scope-check-fp-fix-2026-06-09.md: dc_blocks=0
+        Done/diagnostic-bellows-scope-check-infra-files-2026-04-16.md: dc_blocks=0
+        Done/diagnostic-bellows-self-exposure-disposition-2026-05-12.md: dc_blocks=0
+        Done/diagnostic-bellows-silent-deposit-loss-teardown-2026-06-10.md: dc_blocks=0
+        Done/diagnostic-bellows-strand-timeline-2026-04-15.md: dc_blocks=0
+        Done/diagnostic-bellows-test-isolation-conftest-2026-05-26.md: dc_blocks=0
+        Done/diagnostic-bellows-verdict-file-schema-2026-04-18.md: dc_blocks=0
+        Done/diagnostic-canary-detector-validation-2026-05-12.md: dc_blocks=0
+        Done/diagnostic-canary-v2-detector-validation-2026-05-12.md: dc_blocks=0
+        Done/diagnostic-claude-p-prompt-suppression-2026-05-04.md: dc_blocks=0
+        Done/diagnostic-claude-settings-permission-gap-2026-05-22.md: dc_blocks=0
+        Done/diagnostic-cleanup-verdicts-call-site-gap-rerun-2026-05-01.md: dc_blocks=0
+        Done/diagnostic-consume-verdicts-drain-2026-05-21.md: dc_blocks=0
+        Done/diagnostic-consume-verdicts-not-processing-2026-05-12.md: dc_blocks=0
+        Done/diagnostic-daemon-restart-state-divergence-2026-05-24.md: dc_blocks=0
+        Done/diagnostic-deposit-exists-false-positive-audit-2026-05-11.md: dc_blocks=0
+        Done/diagnostic-deposit-exists-false-positive-root-cause-2026-05-06.md: dc_blocks=0
+        Done/diagnostic-deposit-exists-path-form-normalization-2026-05-27.md: dc_blocks=0
+        Done/diagnostic-deposit-parser-prose-failure-2026-05-05.md: dc_blocks=0
+        Done/diagnostic-dirty-tree-precheck-false-trip-surface-2026-05-28.md: dc_blocks=0
+        Done/diagnostic-extract-primary-deposit-shape-2026-04-19.md: dc_blocks=0
+        Done/diagnostic-extract-total-steps-fence-class-audit-2026-05-11.md: dc_blocks=0
+        Done/diagnostic-extract-total-steps-undercount-2026-05-03.md: dc_blocks=0
+        Done/diagnostic-failure-3-mode-a-closure-design-2026-05-06.md: dc_blocks=0
+        Done/diagnostic-failure-3-mode-a-occurrence-investigation-2026-05-06.md: dc_blocks=0
+        Done/diagnostic-failure-3-mode-b-static-analysis-2026-05-05.md: dc_blocks=0
+        Done/diagnostic-failure-3-ordering-2026-04-24.md: dc_blocks=0
+        Done/diagnostic-failure-3-population-audit-2026-05-05.md: dc_blocks=0
+        Done/diagnostic-file-change-audit-false-negative-2026-05-25.md: dc_blocks=0
+        Done/diagnostic-gate-file-scoping-2026-05-24.md: dc_blocks=0
+        Done/diagnostic-gate-fp-coordinated-shape-2026-05-27.md: dc_blocks=0
+        Done/diagnostic-gate-path-resolution-post-teardown-2026-05-10.md: dc_blocks=0
+        Done/diagnostic-gates-deposit-parser-current-state-2026-04-19.md: dc_blocks=0
+        Done/diagnostic-header-parser-multiline-bold-2026-05-10.md: dc_blocks=0
+        Done/diagnostic-in-progress-rename-verification-2026-05-10.md: dc_blocks=0
+        Done/diagnostic-inactivity-timeout-investigation-2026-05-10.md: dc_blocks=0
+        Done/diagnostic-intermediate-decision-detection-design-2026-05-12.md: dc_blocks=0
+        Done/diagnostic-is-runnable-plan-parallel-2026-04-14.md: dc_blocks=0
+        Done/diagnostic-leftover-after-ship-tooling-scope-2026-05-26.md: dc_blocks=0
+        Done/diagnostic-mcp-read-class-tools-exemption-2026-05-25.md: dc_blocks=0
+        Done/diagnostic-monorepo-worktree-fix-canary-2026-05-04.md: dc_blocks=0
+        Done/diagnostic-no-permission-denials-fix-canary-2026-04-28.md: dc_blocks=0
+        Done/diagnostic-no-permission-denials-taxonomy-2026-04-28.md: dc_blocks=0
+        Done/diagnostic-on-moved-fix-shape-2026-04-19.md: dc_blocks=0
+        Done/diagnostic-orchestrator-support-current-state-2026-04-23.md: dc_blocks=0
+        Done/diagnostic-output-receipt-capture-audit-2026-05-12.md: dc_blocks=0
+        Done/diagnostic-parallel-plan-scope-check-collision-2026-05-01.md: dc_blocks=0
+        Done/diagnostic-parallel-scope-check-collision-2026-05-03.md: dc_blocks=0
+        Done/diagnostic-parallel-sha-population-audit-2026-05-26.md: dc_blocks=0
+        Done/diagnostic-path-001-hygiene-close-edit-surface-2026-05-11.md: dc_blocks=0
+        Done/diagnostic-path-001-rule-20-staleness-audit-2026-05-11.md: dc_blocks=0
+        Done/diagnostic-permission-prompt-substrate-2026-04-23.md: dc_blocks=0
+        Done/diagnostic-phase-3b-mechanism-and-cost-benefit-2026-05-01.md: dc_blocks=0
+        Done/diagnostic-phase-3b-read-side-step-state-resume-2026-05-26.md: dc_blocks=0
+        Done/diagnostic-plan-handler-seen-retry-cache-2026-05-11.md: dc_blocks=0
+        Done/diagnostic-plan-mutation-source-2026-04-19.md: dc_blocks=0
+        Done/diagnostic-plan-pickup-failure-2026-05-08.md: dc_blocks=0
+        Done/diagnostic-planner-authored-contract-validation-2026-05-12.md: dc_blocks=0
+        Done/diagnostic-planner-authored-contract-validation-2026-05-20.md: dc_blocks=0
+        Done/diagnostic-pre-scan-orphan-warn-flood-2026-05-22.md: dc_blocks=0
+        Done/diagnostic-priority-3-carryover-audit-v2-2026-05-21.md: dc_blocks=0
+        Done/diagnostic-processed-prefix-reconsumption-and-rename-skip-2026-05-24.md: dc_blocks=0
+        Done/diagnostic-qa-step-detection-audit-2026-05-22.md: dc_blocks=0
+        Done/diagnostic-r3-inline-step-text-surface-2026-04-19.md: dc_blocks=0
+        Done/diagnostic-rescan-miss-disposition-2026-05-28.md: dc_blocks=0
+        Done/diagnostic-resume-path-pending-cleanup-2026-04-16.md: dc_blocks=0
+        Done/diagnostic-rule-20-block-sourcing-2026-05-10.md: dc_blocks=0
+        Done/diagnostic-rule-20-gate-addition-surface-2026-05-05.md: dc_blocks=0
+        Done/diagnostic-rule-20-gate-false-positive-2026-05-12.md: dc_blocks=0
+        Done/diagnostic-rule-20-gate-false-positive-root-cause-2026-05-11.md: dc_blocks=0
+        Done/diagnostic-rule-26-directory-bullet-canary-2026-05-11.md: dc_blocks=0
+        Done/diagnostic-rule-26-gate-smoke-test-2026-04-19.md: dc_blocks=0
+        Done/diagnostic-runner-subprocess-2026-04-17.md: dc_blocks=0
+        Done/diagnostic-s3-done-stale-check-verification-2026-05-10.md: dc_blocks=0
+        Done/diagnostic-s3-verdict-resolved-retry-loop-2026-05-09.md: dc_blocks=0
+        Done/diagnostic-scope-check-git-range-2026-04-22.md: dc_blocks=0
+        Done/diagnostic-scope-check-monorepo-fix-smoke-2026-04-28.md: dc_blocks=0
+        Done/diagnostic-scope-check-monorepo-topology-2026-04-28.md: dc_blocks=0
+        Done/diagnostic-scope-check-post-fix-behavior-2026-05-26.md: dc_blocks=0
+        Done/diagnostic-scope-check-text-mention-audit-2026-05-26.md: dc_blocks=0
+        Done/diagnostic-step-state-persistence-map-2026-04-28.md: dc_blocks=0
+        Done/diagnostic-step-state-resume-design-2026-04-28.md: dc_blocks=0
+        Done/diagnostic-step-state-resume-phase-3b-verification-2026-04-28.md: dc_blocks=0
+        Done/diagnostic-step1-phase-skip-investigation-2026-05-03.md: dc_blocks=0
+        Done/diagnostic-step2-auto-advance-2026-05-08.md: dc_blocks=0
+        Done/diagnostic-stream-json-feasibility-2026-04-23.md: dc_blocks=0
+        Done/diagnostic-teardown-cherry-pick-audit-2026-05-10.md: dc_blocks=0
+        Done/diagnostic-teardown-git-operations-mapping-2026-05-21.md: dc_blocks=0
+        Done/diagnostic-teardown-push-silent-failure-2026-05-26.md: dc_blocks=0
+        Done/diagnostic-teardown-worktree-reliability-2026-05-10.md: dc_blocks=0
+        Done/diagnostic-terminal-and-notification-surface-audit-2026-05-11.md: dc_blocks=0
+        Done/diagnostic-terminal-notification-backlog-close-edit-surface-2026-05-12.md: dc_blocks=0
+        Done/diagnostic-terminal-notification-capture-design-2026-05-11.md: dc_blocks=0
+        Done/diagnostic-verdict-enrichment-surface-2026-05-27.md: dc_blocks=0
+        Done/diagnostic-verdict-ledger-gate-result-preservation-2026-05-26.md: dc_blocks=0
+        Done/diagnostic-verdict-lifecycle-coupling-2026-04-19.md: dc_blocks=0
+        Done/diagnostic-verdict-mechanization-distribution-audit-2026-04-30.md: dc_blocks=0
+        Done/diagnostic-verdict-request-pause-reasons-2026-04-16.md: dc_blocks=0
+        Done/diagnostic-verdict-request-pause-reasons-completion-2026-04-16.md: dc_blocks=0
+        Done/diagnostic-verdict-schema-refresh-2026-04-19.md: dc_blocks=0
+        Done/diagnostic-watcher-reliability-2026-04-19.md: dc_blocks=0
+        Done/diagnostic-worktree-candidate-designs-2026-05-03.md: dc_blocks=0
+        Done/diagnostic-worktree-cost-coverage-recommendation-2026-05-03.md: dc_blocks=0
+        Done/diagnostic-worktree-delta-2026-05-05.md: dc_blocks=0
+        Done/diagnostic-worktree-implementation-surface-2026-05-03.md: dc_blocks=0
+        Done/diagnostic-worktree-teardown-current-state-2026-05-05.md: dc_blocks=0
+        Done/diagnostic-worktree-teardown-dirty-tree-precheck-v2-2026-05-27.md: dc_blocks=0
+        Done/executable-1.md: dc_blocks=0
+        Done/executable-11.md: dc_blocks=0
+        Done/executable-110.md: dc_blocks=0
+        Done/executable-118.md: dc_blocks=0
+        Done/executable-119.md: dc_blocks=0
+        Done/executable-12.md: dc_blocks=0
+        Done/executable-120.md: dc_blocks=0
+        Done/executable-122.md: dc_blocks=0
+        Done/executable-124.md: dc_blocks=0
+        Done/executable-129.md: dc_blocks=0
+        Done/executable-136.md: dc_blocks=0
+        Done/executable-137.md: dc_blocks=0
+        Done/executable-138.md: dc_blocks=0
+        Done/executable-140.md: dc_blocks=0
+        Done/executable-141.md: dc_blocks=0
+        Done/executable-150.md: dc_blocks=0
+        Done/executable-151.md: dc_blocks=0
+        Done/executable-17.md: dc_blocks=0
+        Done/executable-172.md: dc_blocks=0
+        Done/executable-185.md: dc_blocks=0
+        Done/executable-197.md: dc_blocks=0
+        Done/executable-2.md: dc_blocks=0
+        Done/executable-22.md: dc_blocks=0
+        Done/executable-24.md: dc_blocks=0
+        Done/executable-25.md: dc_blocks=0
+        Done/executable-28.md: dc_blocks=0
+        Done/executable-280.md: dc_blocks=0
+        Done/executable-29.md: dc_blocks=0
+        Done/executable-3.md: dc_blocks=0
+        Done/executable-31.md: dc_blocks=0
+        Done/executable-312.md: dc_blocks=0
+        Done/executable-32.md: dc_blocks=0
+        Done/executable-33.md: dc_blocks=0
+        Done/executable-35.md: dc_blocks=0
+        Done/executable-36.md: dc_blocks=0
+        Done/executable-37.md: dc_blocks=0
+        Done/executable-4.md: dc_blocks=0
+        Done/executable-43.md: dc_blocks=0
+        Done/executable-44.md: dc_blocks=0
+        Done/executable-441.md: dc_blocks=0
+        Done/executable-442.md: dc_blocks=0
+        Done/executable-443.md: dc_blocks=0
+        Done/executable-449.md: dc_blocks=0
+        Done/executable-45.md: dc_blocks=0
+        Done/executable-48.md: dc_blocks=0
+        Done/executable-49.md: dc_blocks=0
+        Done/executable-5.md: dc_blocks=0
+        Done/executable-51.md: dc_blocks=0
+        Done/executable-54.md: dc_blocks=0
+        Done/executable-56.md: dc_blocks=0
+        Done/executable-59.md: dc_blocks=0
+        Done/executable-60.md: dc_blocks=0
+        Done/executable-62.md: dc_blocks=0
+        Done/executable-64.md: dc_blocks=0
+        Done/executable-7.md: dc_blocks=0
+        Done/executable-87.md: dc_blocks=0
+        Done/executable-activity-timeout-2026-04-17.md: dc_blocks=0
+        Done/executable-adr-structured-plan-metadata-2026-05-20.md: dc_blocks=0
+        Done/executable-agent-self-request-verdict-2026-04-16.md: dc_blocks=0
+        Done/executable-auto-close-canary-2026-04-24.md: dc_blocks=0
+        Done/executable-auto-close-type-safety-qa-recovery-2026-05-17.md: dc_blocks=0
+        Done/executable-backlog-1-close-and-lessons-2026-05-05.md: dc_blocks=0
+        Done/executable-backlog-2026-04-19-plan-fixing-bug-x-hygiene-close-2026-05-12.md: dc_blocks=0
+        Done/executable-backlog-addendum-scope-check-external-vector-2026-05-04.md: dc_blocks=0
+        Done/executable-backlog-append-2026-04-19.md: dc_blocks=0
+        Done/executable-backlog-append-fix-plan-trips-own-bug-2026-05-11.md: dc_blocks=0
+        Done/executable-backlog-capture-monorepo-worktree-2026-05-04.md: dc_blocks=0
+        Done/executable-backlog-close-2026-04-18-integration-protocol-2026-05-01.md: dc_blocks=0
+        Done/executable-backlog-hygiene-cause-5-and-daemon-logging-2026-05-11.md: dc_blocks=0
+        Done/executable-backlog-hygiene-sweep-2026-04-30.md: dc_blocks=0
+        Done/executable-bash-gate-guardrails-exemption-2026-05-20.md: dc_blocks=0
+        Done/executable-bellows-backlog-three-reliability-entries-2026-05-06.md: dc_blocks=0
+        Done/executable-bellows-config-split-2026-05-23.md: dc_blocks=0
+        Done/executable-bellows-deposit-loss-fix-2026-06-10.md: dc_blocks=0
+        Done/executable-bellows-expected-keys-narrow-2026-05-21.md: dc_blocks=0
+        Done/executable-bellows-hardening-batch-items-1-3-4-2026-05-26.md: dc_blocks=0
+        Done/executable-bellows-id-threading-lifecycle-mint-2026-06-11.md: dc_blocks=0
+        Done/executable-bellows-id-threading-lifecycle-mint-v2-2026-06-11.md: dc_blocks=0
+        Done/executable-bellows-isinstance-asymmetry-fix-2026-05-21.md: dc_blocks=0
+        Done/executable-bellows-notifier-timeout-2026-04-16.md: dc_blocks=0
+        Done/executable-bellows-phase4-reliability-fixes-2026-04-15.md: dc_blocks=0
+        Done/executable-bellows-phase6-runner-observability-2026-04-16.md: dc_blocks=0
+        Done/executable-bellows-phase7-polish-2026-04-16.md: dc_blocks=0
+        Done/executable-bellows-phase7-validation-gates-2026-04-16.md: dc_blocks=0
+        Done/executable-bellows-phase8-1-final-step-pause-fix-2026-04-16.md: dc_blocks=0
+        Done/executable-bellows-phase8-verdict-layer-redesign-2026-04-16.md: dc_blocks=0
+        Done/executable-bellows-qa-prefix-and-skip-logging-2026-05-08.md: dc_blocks=0
+        Done/executable-bellows-reliability-bugs-1-2-3-2026-04-24.md: dc_blocks=0
+        Done/executable-bellows-root-helper-runner-conversion-2026-06-08.md: dc_blocks=0
+        Done/executable-bellows-scope-check-fix-2026-04-16.md: dc_blocks=0
+        Done/executable-bellows-scope-check-fp-fix-impl-2026-06-10.md: dc_blocks=0
+        Done/executable-bellows-self-exposure-wontfix-close-2026-05-12.md: dc_blocks=0
+        Done/executable-bellows-session-wrap-2026-05-01.md: dc_blocks=0
+        Done/executable-bellows-session-wrap-2026-05-03.md: dc_blocks=0
+        Done/executable-bellows-session-wrap-final-2026-05-01.md: dc_blocks=0
+        Done/executable-bellows-session-wrap-v2-2026-05-01.md: dc_blocks=0
+        Done/executable-bellows-suite-green-fixes-2026-06-06.md: dc_blocks=0
+        Done/executable-bellows-teardown-merge-model-2026-06-05.md: dc_blocks=0
+        Done/executable-bellows-test-isolation-conftest-2026-05-26.md: dc_blocks=0
+        Done/executable-bellows-tier-1-batch-2026-05-21.md: dc_blocks=0
+        Done/executable-bellows-verdict-enrichment-2026-05-21.md: dc_blocks=0
+        Done/executable-bellows-verdict-request-integration-test-2026-04-16.md: dc_blocks=0
+        Done/executable-bellows-verdict-schema-plan-a-2026-04-18.md: dc_blocks=0
+        Done/executable-bellows-verdict-schema-plan-b-2026-04-18.md: dc_blocks=0
+        Done/executable-bellows-worktree-impl-2026-05-03.md: dc_blocks=0
+        Done/executable-bellows-worktree-tests-2026-05-03.md: dc_blocks=0
+        Done/executable-block-continue-over-worktree-teardown-failure-2026-06-01.md: dc_blocks=0
+        Done/executable-canary-bugs-1-3-2026-04-24.md: dc_blocks=0
+        Done/executable-canary-phase-3b-restart-2026-04-30.md: dc_blocks=0
+        Done/executable-canary-step-header-parser-fixes-2026-05-11.md: dc_blocks=0
+        Done/executable-capture-s3-bug-c-to-backlog-2026-05-09.md: dc_blocks=0
+        Done/executable-cleanup-slug-normalization-2026-05-01.md: dc_blocks=0
+        Done/executable-close-2026-05-03-step-count-regression-2026-05-03.md: dc_blocks=0
+        Done/executable-close-activity-timeout-backlog-2026-05-01.md: dc_blocks=0
+        Done/executable-close-monorepo-worktree-backlog-2026-05-04.md: dc_blocks=0
+        Done/executable-close-stranded-lessons-step-numbering-2026-05-01.md: dc_blocks=0
+        Done/executable-consume-verdicts-prefix-fix-2026-05-21.md: dc_blocks=0
+        Done/executable-corrective-narrow-is-diagnostic-override-2026-05-03.md: dc_blocks=0
+        Done/executable-create-bellows-specialist-roster-2026-04-19.md: dc_blocks=0
+        Done/executable-daemon-version-observability-2026-05-11.md: dc_blocks=0
+        Done/executable-deposit-exists-path-form-normalization-2026-05-27.md: dc_blocks=0
+        Done/executable-deposit-exists-prose-canary-2026-04-28.md: dc_blocks=0
+        Done/executable-deposit-exists-worktree-aware-2026-05-06.md: dc_blocks=0
+        Done/executable-deposit-parser-agent-receipt-fix-2026-05-05.md: dc_blocks=0
+        Done/executable-deposits-block-inline-format-2026-05-12.md: dc_blocks=0
+        Done/executable-deposits-block-regex-blank-line-2026-04-28.md: dc_blocks=0
+        Done/executable-detector-shape-fix-2026-05-12.md: dc_blocks=0
+        Done/executable-disable-auto-close-2026-04-24.md: dc_blocks=0
+        Done/executable-disable-autoupdater-2026-05-27.md: dc_blocks=0
+        Done/executable-dispatch-mode-validator-qa-recovery-2026-05-19.md: dc_blocks=0
+        Done/executable-extract-plan-required-deposits-set-to-list-2026-05-25.md: dc_blocks=0
+        Done/executable-extract-primary-deposit-block-aware-2026-04-19.md: dc_blocks=0
+        Done/executable-failure-3-mode-a-closure-2026-05-06.md: dc_blocks=0
+        Done/executable-fence-strip-plan-text-parsers-2026-05-11.md: dc_blocks=0
+        Done/executable-file-change-audit-fix-2026-05-25.md: dc_blocks=0
+        Done/executable-fix-f-guard-removal-2026-05-26.md: dc_blocks=0
+        Done/executable-freshness-check-algorithm-v2-blueprint-retry-2026-05-27.md: dc_blocks=0
+        Done/executable-frontmatter-canary-2026-05-20.md: dc_blocks=0
+        Done/executable-frontmatter-prototype-deposit-exists-2026-05-20.md: dc_blocks=0
+        Done/executable-gate-2c-bellows-gate-fixes-2026-05-19.md: dc_blocks=0
+        Done/executable-gate-2c-canary-rerun-2026-05-19.md: dc_blocks=0
+        Done/executable-gate-file-scoping-2026-05-24.md: dc_blocks=0
+        Done/executable-gate-fp-coordinated-shape-2026-05-27.md: dc_blocks=0
+        Done/executable-gate5-fix-verdict-emoji-2026-04-16.md: dc_blocks=0
+        Done/executable-gate5-path-double-project-2026-04-17.md: dc_blocks=0
+        Done/executable-governance-dispatch-infrastructure-2026-05-20.md: dc_blocks=0
+        Done/executable-governance-lessons-verdict-format-2026-05-12.md: dc_blocks=0
+        Done/executable-handle-subdirectory-guard-2026-04-19.md: dc_blocks=0
+        Done/executable-header-parser-canary-2026-05-10.md: dc_blocks=0
+        Done/executable-header-parser-multiline-fix-2026-05-10.md: dc_blocks=0
+        Done/executable-inactivity-timeout-bump-1800s-2026-05-01.md: dc_blocks=0
+        Done/executable-intermediate-decision-detector-2026-05-12.md: dc_blocks=0
+        Done/executable-is-runnable-plan-parallel-fix-2026-04-14.md: dc_blocks=0
+        Done/executable-leftover-after-ship-tooling-blueprint-2026-05-26.md: dc_blocks=0
+        Done/executable-lessons-forge-extraction-phase-b2-governance-wiring-2026-05-18.md: dc_blocks=0
+        Done/executable-lessons-verdict-format-and-stranded-plans-2026-05-01.md: dc_blocks=0
+        Done/executable-mcp-read-class-tools-extension-2026-05-25.md: dc_blocks=0
+        Done/executable-model-override-backtick-fix-2026-04-17.md: dc_blocks=0
+        Done/executable-monorepo-worktree-fix-2026-05-04.md: dc_blocks=0
+        Done/executable-no-match-verdict-warning-dedup-2026-05-31.md: dc_blocks=0
+        Done/executable-no-permission-denials-read-class-fix-2026-04-28.md: dc_blocks=0
+        Done/executable-notification-coalescing-2026-05-12.md: dc_blocks=0
+        Done/executable-notifier-server-2026-04-13.md: dc_blocks=0
+        Done/executable-orchestrator-2026-04-13.md: dc_blocks=0
+        Done/executable-parse-diff-stat-truncation-fix-2026-05-26.md: dc_blocks=0
+        Done/executable-path-001-hygiene-close-2026-05-11.md: dc_blocks=0
+        Done/executable-phase-1-5-lessons-source-d-2026-05-10.md: dc_blocks=0
+        Done/executable-phase-3c-plan-hash-drift-warning-2026-04-30.md: dc_blocks=0
+        Done/executable-phase2a-2026-04-14.md: dc_blocks=0
+        Done/executable-phase2b-2026-04-14.md: dc_blocks=0
+        Done/executable-pipe-header-parser-and-comprehensive-qa-2026-05-08.md: dc_blocks=0
+        Done/executable-plan-handler-seen-slug-refactor-2026-05-11.md: dc_blocks=0
+        Done/executable-plan-mutation-canary-2026-04-19.md: dc_blocks=0
+        Done/executable-plan-truncation-fix-2026-04-17.md: dc_blocks=0
+        Done/executable-plan-truncation-fix-v2-2026-04-17.md: dc_blocks=0
+        Done/executable-plan-write-time-lessons-reread-2026-05-13.md: dc_blocks=0
+        Done/executable-planner-2026-04-13.md: dc_blocks=0
+        Done/executable-planner-claude-code-2026-04-14.md: dc_blocks=0
+        Done/executable-planner-contract-validators-three-validator-drop-2026-05-20.md: dc_blocks=0
+        Done/executable-planner-template-bellows-execution-model-section-2026-04-30.md: dc_blocks=0
+        Done/executable-planner-template-lessons-2026-05-01.md: dc_blocks=0
+        Done/executable-planner-template-lessons-step-numbering-2026-04-23.md: dc_blocks=0
+        Done/executable-planner-template-no-push-and-routing-count-2026-05-21.md: dc_blocks=0
+        Done/executable-planner-template-parser-self-trip-and-session-wrap-2026-05-11.md: dc_blocks=0
+        Done/executable-planner-template-rule-25-2026-04-18.md: dc_blocks=0
+        Done/executable-planner-template-rule-25-codification-2026-05-21.md: dc_blocks=0
+        Done/executable-planner-template-rule-26-2026-04-18.md: dc_blocks=0
+        Done/executable-post-relocation-restart-canary-2026-05-15.md: dc_blocks=0
+        Done/executable-pre-scan-orphan-guard-2026-05-22.md: dc_blocks=0
+        Done/executable-precondition-failure-field-2026-05-24.md: dc_blocks=0
+        Done/executable-preserve-unlanded-commits-on-stranded-cleanup-2026-06-01.md: dc_blocks=0
+        Done/executable-priority-3-audit-closeout-2026-05-21.md: dc_blocks=0
+        Done/executable-project-status-reliability-bugs-1-2-3-2026-04-24.md: dc_blocks=0
+        Done/executable-qa-steps-governance-2026-05-25.md: dc_blocks=0
+        Done/executable-qa-steps-header-field-code-2026-05-25.md: dc_blocks=0
+        Done/executable-r3-shadow-cache-prompt-2026-04-19.md: dc_blocks=0
+        Done/executable-r3-smoke-test-2026-04-19.md: dc_blocks=0
+        Done/executable-reattempt-teardown-on-continue-resume-2026-06-04.md: dc_blocks=0
+        Done/executable-reliability-fixes-a-b-2026-04-14.md: dc_blocks=0
+        Done/executable-remove-phase-3b-3c-2026-05-01.md: dc_blocks=0
+        Done/executable-remove-pre-scan-processed-rename-v2-2026-05-24.md: dc_blocks=0
+        Done/executable-rename-first-ordering-2026-05-24.md: dc_blocks=0
+        Done/executable-resume-path-pending-cleanup-2026-04-16.md: dc_blocks=0
+        Done/executable-revert-snapshot-fix-and-reopen-backlog-2026-05-01.md: dc_blocks=0
+        Done/executable-rule-20-bold-tolerance-qa-recovery-2026-05-17.md: dc_blocks=0
+        Done/executable-rule-20-self-check-gate-2026-05-05.md: dc_blocks=0
+        Done/executable-rule-20-self-check-wt-path-2026-05-10.md: dc_blocks=0
+        Done/executable-rule-20-single-source-2026-05-10.md: dc_blocks=0
+        Done/executable-rule-22e-rule-20-tightening-2026-05-05.md: dc_blocks=0
+        Done/executable-rule-25-verdict-content-spec-fix-2026-05-01.md: dc_blocks=0
+        Done/executable-rule-26-deposit-parser-scope-2026-04-19.md: dc_blocks=0
+        Done/executable-rule-26-evidence-path-fix-2026-05-11.md: dc_blocks=0
+        Done/executable-runner-parser-2026-04-13.md: dc_blocks=0
+        Done/executable-runner-retry-transient-failure-2026-05-13.md: dc_blocks=0
+        Done/executable-s3-bug-c-halted-stale-check-2026-05-10.md: dc_blocks=0
+        Done/executable-s3-fix-qa-rule-20-banner-redeposit-2026-05-09.md: dc_blocks=0
+        Done/executable-s3-verdict-resolved-retry-loop-fix-2026-05-09.md: dc_blocks=0
+        Done/executable-scaffold-2026-04-13.md: dc_blocks=0
+        Done/executable-scope-check-dir-mention-2026-06-04.md: dc_blocks=0
+        Done/executable-scope-check-monorepo-fix-2026-04-28.md: dc_blocks=0
+        Done/executable-scope-check-project-path-filter-2026-04-22.md: dc_blocks=0
+        Done/executable-seen-discard-rejection-path-2026-05-28.md: dc_blocks=0
+        Done/executable-seen-invalidate-on-created-moved-2026-06-04.md: dc_blocks=0
+        Done/executable-session-close-out-2026-04-19.md: dc_blocks=0
+        Done/executable-session-end-full-suite-2026-05-11.md: dc_blocks=0
+        Done/executable-session-wrap-2026-05-05.md: dc_blocks=0
+        Done/executable-session-wrap-2026-05-08.md: dc_blocks=0
+        Done/executable-session-wrap-2026-05-10.md: dc_blocks=0
+        Done/executable-session-wrap-2026-05-12.md: dc_blocks=0
+        Done/executable-session-wrap-evening-2026-05-10.md: dc_blocks=0
+        Done/executable-session-wrap-s3-2026-05-09.md: dc_blocks=0
+        Done/executable-settings-local-bash-fallback-doc-2026-05-22.md: dc_blocks=0
+        Done/executable-shadow-copy-cache-2026-04-17.md: dc_blocks=0
+        Done/executable-smoke-test-infra-2026-04-17.md: dc_blocks=0
+        Done/executable-source-sha-startup-2026-04-14.md: dc_blocks=0
+        Done/executable-startup-sweep-extract-2026-05-10.md: dc_blocks=0
+        Done/executable-step-header-line-anchor-2026-05-11.md: dc_blocks=0
+        Done/executable-step-state-resume-phase-3b-2026-04-28.md: dc_blocks=0
+        Done/executable-step2-auto-advance-fix-2026-05-08.md: dc_blocks=0
+        Done/executable-stranded-verdict-cleanup-2026-05-12.md: dc_blocks=0
+        Done/executable-stream-json-minimal-switch-2026-04-23.md: dc_blocks=0
+        Done/executable-stream-json-smoke-test-2026-04-23.md: dc_blocks=0
+        Done/executable-teardown-b-raise-on-log-failure-2026-06-05.md: dc_blocks=0
+        Done/executable-teardown-worktree-lock-cleanup-2026-05-10.md: dc_blocks=0
+        Done/executable-terminal-capture-2026-05-12.md: dc_blocks=0
+        Done/executable-terminal-notification-backlog-close-2026-05-12.md: dc_blocks=0
+        Done/executable-test-rule-26-set-to-list-followup-2026-05-25.md: dc_blocks=0
+        Done/executable-verdict-ledger-gate-result-preservation-2026-05-26.md: dc_blocks=0
+        Done/executable-verdict-lifecycle-coupling-2026-04-19.md: dc_blocks=0
+        Done/executable-verdict-only-resume-docs-2026-04-28.md: dc_blocks=0
+        Done/executable-verdict-request-pause-reason-2026-04-16.md: dc_blocks=0
+        Done/executable-watcher-on-moved-handler-2026-04-19.md: dc_blocks=0
+        Done/executable-worktree-precheck-hardening-2026-05-29.md: dc_blocks=0
+        Done/executable-worktree-teardown-dirty-tree-precheck-2026-05-27.md: dc_blocks=0
+        Done/halted-diagnostic-consume-verdicts-drain-failure-2026-05-21.md: dc_blocks=0
+        Done/halted-diagnostic-worktree-teardown-dirty-tree-precheck-2026-05-27.md: dc_blocks=0
+        Done/halted-executable-148.md: dc_blocks=0
+        Done/halted-executable-planner-template-rule-21-contract-change-2026-05-26.md: dc_blocks=0
+        Done/halted-executable-remove-pre-scan-processed-rename-2026-05-24.md: dc_blocks=0
+        Done/halted-executable-remove-pre-scan-processed-rename-continuation-2026-05-24.md: dc_blocks=0
+        Done/halted-executable-remove-pre-scan-processed-rename-continuation-v2-2026-05-24.md: dc_blocks=0
+        Done/parallel-1-diagnostic-bellows-parallel-group-collection-2026-04-16.md: dc_blocks=0
+        Done/parallel-1-diagnostic-bellows-reliability-2026-04-14.md: dc_blocks=0
+        Done/parallel-1-diagnostic-bellows-rescan-duplicate-runs-2026-04-16.md: dc_blocks=0
+        Done/parallel-1-diagnostic-startup-sweep-test-refactor-2026-05-05.md: dc_blocks=0
+        Done/parallel-1-executable-bellows-claim-at-entry-2026-04-16.md: dc_blocks=0
+        Done/parallel-1-executable-bellows-parallel-defer-2026-04-16.md: dc_blocks=0
+        Done/parallel-1-executable-bellows-verdict-scoping-2026-04-16.md: dc_blocks=0
+        Done/parallel-1-executable-deposit-exists-directory-paths-2026-04-30.md: dc_blocks=0
+        Done/parallel-1-executable-ledger-pause-reason-code-2026-04-30.md: dc_blocks=0
+        Done/parallel-1-executable-parse-diff-stat-fix-2026-04-16.md: dc_blocks=0
+        Done/parallel-1-executable-planner-template-parallel-group-dispatch-subsection-2026-05-05.md: dc_blocks=0
+        Done/parallel-1-executable-verdict-content-validator-2026-05-12.md: dc_blocks=0
+        Done/parallel-1-executable-verdict-directory-validator-2026-05-12.md: dc_blocks=0
+        Done/parallel-1-executable-verdict-readme-2026-04-16.md: dc_blocks=0
+        Done/qa-149.md: dc_blocks=0
+      (plans skipped only for 'no walk_register_ref' are not listed — they are
+       outside P1 by definition.)
+
+==============================================================================
+## SECTION 1 — ITEM 1: re-derivation of P1-P8
+==============================================================================
+
+P1  plans declaring a walk_register_ref (Done + drafts) : 102   [pin 103]
+P2  bodies carrying per-lens walk data (walk_data > 0)   : 92   [pin 94]
+P3  bodies EMPTY (walk_data == 0)                        : 10   [pin 9]   (9.8%)
+P4  CONJUNCTION: body empty AND resolvable register with rows : 6   [pin 2]
+      - Done/diagnostic-370.md  rows=13  status=LEGACY_SCHEMA
+      - Done/executable-371.md  rows=4  status=CONFORMANT
+      - Done/executable-376.md  rows=4  status=CONFORMANT
+      - Done/executable-379.md  rows=1  status=CONFORMANT
+      - drafts/executable-lessons-destination-v2.md  rows=4  status=CONFORMANT
+      - drafts/executable-memory-destination-and-gate.md  rows=8  status=CONFORMANT
+P5  legitimate walk-0: body empty AND register empty     : 1   [pin 1]
+      - drafts/diagnostic-u-predicate-divergence.md  rows=0  status=NO_TABLE
+P6  UNRESOLVABLE refs                                    : 22   [pin 6]
+      - Done/diagnostic-482.md  ref='in the block) exists + is committed in the git root (returns **N/A** if no register ref); **#3**'
+      - Done/diagnostic-568.md  ref='bellows/knowledge/research/walk-register-verify-then-retire-sweep-2026-08-26.md'
+      - Done/executable-543.md  ref='bellows/knowledge/research/walk-register-wrap-3d-central-glossary-2026-08-26.md'
+      - Done/executable-548.md  ref='bellows/knowledge/research/walk-register-eluvian-wiring-pull-2026-08-26.md'
+      - Done/executable-554.md  ref='bellows/knowledge/research/walk-register-align-hook-sync-2026-08-26.md'
+      - Done/executable-555.md  ref='bellows/knowledge/research/walk-register-id-range-partitioning-doc-2026-08-26.md'
+      - Done/executable-561.md  ref='bellows/knowledge/research/walk-register-plan-lint-bare-constants-2026-08-26.md'
+      - Done/executable-562.md  ref='bellows/knowledge/research/walk-register-wrap-check-memory-class-gate-2026-08-26.md'
+      - Done/executable-563.md  ref='bellows/knowledge/research/walk-register-run-check-wrapper-2026-08-26.md'
+      - Done/executable-564.md  ref='bellows/knowledge/research/walk-register-gates-cross-machine-paths-2026-08-26.md'
+      - Done/executable-565.md  ref='bellows/knowledge/research/walk-register-plan-lint-fence-exclusion-2026-08-26.md'
+      - Done/executable-566.md  ref='bellows/knowledge/research/walk-register-reconcile-plan-tool-2026-08-26.md'
+      - Done/executable-567.md  ref='bellows/knowledge/research/walk-register-diff-stat-rename-normalize-2026-08-26.md'
+      - Done/executable-569.md  ref='bellows/knowledge/research/walk-register-depositor-cluster-2026-08-26.md'
+      - Done/executable-571.md  ref='bellows/knowledge/research/walk-register-gate-watcher-pause-2026-08-26.md'
+      - Done/executable-573.md  ref='bellows/knowledge/research/walk-register-gate-watcher-staleness-2026-08-27.md'
+      - Done/executable-575.md  ref='bellows/knowledge/research/walk-register-mutation-runner-fix-2026-08-27.md'
+      - Done/executable-576.md  ref='bellows/knowledge/research/walk-register-detector-coverage-lint-2026-08-27.md'
+      - Done/executable-579.md  ref='bellows/knowledge/research/walk-register-mtime-format-proof-2026-08-27.md'
+      - drafts/diagnostic-cycle-log-signal.md  ref='/Users/marklehn/Developer/eluvian-governance/governance/knowledge/research/walk-register-cycle-log-signal-2026-09-05.md'
+      - drafts/diagnostic-multi-machine-wrap.md  ref='/Users/marklehn/Developer/eluvian-governance/governance/knowledge/research/walk-register-multi-machine-wrap-2026-09-04.md'
+      - drafts/executable-battery-verdict-declaration.md  ref='/Users/marklehn/Developer/eluvian-governance/governance/knowledge/research/walk-register-battery-verdict-declaration-2026-09-03.md'
+
+P3 residue (body empty, ref unresolvable — placeable in neither P4 nor P5):
+      - drafts/diagnostic-cycle-log-signal.md  ref='/Users/marklehn/Developer/eluvian-governance/governance/knowledge/research/walk-register-cycle-log-signal-2026-09-05.md'
+      - drafts/diagnostic-multi-machine-wrap.md  ref='/Users/marklehn/Developer/eluvian-governance/governance/knowledge/research/walk-register-multi-machine-wrap-2026-09-04.md'
+      - drafts/executable-battery-verdict-declaration.md  ref='/Users/marklehn/Developer/eluvian-governance/governance/knowledge/research/walk-register-battery-verdict-declaration-2026-09-03.md'
+      count: 3   (P4 6 + P5 1 + residue 3 = 10 = P3 10)
+
+PIN RECONCILIATION — every mismatch is a FINDING (Item 1).
+    P1 pin 103 / measured 102    delta -1
+    P2 pin  94 / measured 92    delta -2
+    P3 pin   9 / measured 10    delta +1
+    P4 pin   2 / measured 6    delta +4
+    P5 pin   1 / measured 1    delta +0
+    P6 pin   6 / measured 22    delta +16
+
+P7  the three silent checks — VERIFIED IN SOURCE AND BY BEHAVIOUR
+    ⛔ Item 1 HALTS the plan only on P7's failure. Each sub-claim is
+       probed against the LIVE module, not recalled.
+
+    P7a  BASIS emission sites in cycle_check.py: lines [501]
+         _escalate() body spans lines 497-511
+         sites inside _escalate: [501]  outside: []
+         SOURCE: HOLDS — BASIS is reachable only via _escalate
+         BEHAVIOUR: ran run_check(warnings=[]) over all 102 plans; BASIS emitted on a non-ESCALATE verdict in 0 of them.
+         P7a: HOLDS
+
+    P7b  _compute_coherence on total_walks == 0
+         diagnostic-370.md: 'N/A'
+         executable-371.md: 'N/A'
+         executable-376.md: 'N/A'
+         executable-379.md: 'N/A'
+         diagnostic-u-predicate-divergence.md: 'N/A'
+         executable-lessons-destination-v2.md: 'N/A'
+         executable-memory-destination-and-gate.md: 'N/A'
+         live cases (body empty, register resolvable): 7
+         all returned 'N/A': True
+         SOURCE: `if total_walks == 0: return "N/A"` present: True
+         P7b: HOLDS
+
+    P7c  _compute_coherence call sites
+         call sites: lines [728]
+         emit_manifest() spans lines 646-762
+         all inside emit_manifest, and exactly one: True
+         P7c: HOLDS
+
+    P7 OVERALL: HOLDS — the premise is intact, the plan proceeds
+
+P8  in-flight plans (re-derived at execution)
+      lifecycle.db tables: ['id_sequence', 'plans', 'diagnostic_meta', 'executable_meta', 'derivations', 'sqlite_sequence', 'steps', 'commits', 'deposits', 'verdicts', 'gate_events', 'prompt_feedback', 'ledger_writes', 'clearances']
+      plans by lifecycle_state: [('closed', 36), ('halted', 6)]
+      IN-FLIGHT (lifecycle_state not a terminal value): 6
+        #1 [halted] diagnostic: tuyere — census the machine-coordination blind spots and shape the mac
+              plan_doc_ref=knowledge/decisions/halted-diagnostic-1.md
+        #100006 [halted] executable: bellows — executable: RECONCILE THE MANIFEST WORKED EXAMPLE — the doct
+              plan_doc_ref=knowledge/decisions/halted-executable-100006.md
+        #100011 [halted] executable: bellows — executable: NO MACHINE IS THE SHOP — one resolver for the go
+              plan_doc_ref=knowledge/decisions/halted-executable-100011.md
+        #100022 [halted] executable: bellows — executable: the checker defects the lessons named — cycle_ch
+              plan_doc_ref=knowledge/decisions/halted-executable-100022.md
+        #100029 [halted] executable: bellows — executable: make walk-register conformance ENFORCEABLE, then
+              plan_doc_ref=knowledge/decisions/halted-executable-100029.md
+        #100031 [halted] executable: bellows — executable: `mutation_check` silently ignores a per-mutant `
+              plan_doc_ref=knowledge/decisions/halted-executable-100031.md
+      ⚠️ This plan is manual_bootstrap: it holds NO lifecycle id and appears
+         in no row above. That absence is the mode working as declared, not
+         a measurement gap.
+
+==============================================================================
+## SECTION 2 — Q1: the unresolvable walk_register_refs, CLASSIFIED
+==============================================================================
+⛔ Classification only. Nothing here is repaired.
+
+### Done/diagnostic-482.md
+    declared ref : 'in the block) exists + is committed in the git root (returns **N/A** if no register ref); **#3**'
+    ref shape    : RELATIVE
+    resolution attempted (cycle_check's own three-step order):
+      step 2:git_root   -> /Users/marklehn/Developer/bellows/in the block) exists + is committed in the git root (returns **N/A** if no register ref); **#3**
+           exists: False
+      step 3:gov_root   -> /Users/marklehn/Developer/eluvian-governance/in the block) exists + is committed in the git root (returns **N/A** if no register ref); **#3**
+           exists: False
+    basename 'A** if no register ref); **#3**' found elsewhere on disk: 0
+    body walks   : 5   verdict now: ESCALATE:assert-fail:2
+
+### Done/diagnostic-568.md
+    declared ref : 'bellows/knowledge/research/walk-register-verify-then-retire-sweep-2026-08-26.md'
+    ref shape    : RELATIVE
+    resolution attempted (cycle_check's own three-step order):
+      step 2:git_root   -> /Users/marklehn/Developer/bellows/bellows/knowledge/research/walk-register-verify-then-retire-sweep-2026-08-26.md
+           exists: False
+      step 3:gov_root   -> /Users/marklehn/Developer/eluvian-governance/bellows/knowledge/research/walk-register-verify-then-retire-sweep-2026-08-26.md
+           exists: False
+    basename 'walk-register-verify-then-retire-sweep-2026-08-26.md' found elsewhere on disk: 1
+      -> /Users/marklehn/Developer/bellows/knowledge/research/walk-register-verify-then-retire-sweep-2026-08-26.md
+    body walks   : 3   verdict now: ESCALATE:assert-fail:2
+
+### Done/executable-543.md
+    declared ref : 'bellows/knowledge/research/walk-register-wrap-3d-central-glossary-2026-08-26.md'
+    ref shape    : RELATIVE
+    resolution attempted (cycle_check's own three-step order):
+      step 2:git_root   -> /Users/marklehn/Developer/bellows/bellows/knowledge/research/walk-register-wrap-3d-central-glossary-2026-08-26.md
+           exists: False
+      step 3:gov_root   -> /Users/marklehn/Developer/eluvian-governance/bellows/knowledge/research/walk-register-wrap-3d-central-glossary-2026-08-26.md
+           exists: False
+    basename 'walk-register-wrap-3d-central-glossary-2026-08-26.md' found elsewhere on disk: 1
+      -> /Users/marklehn/Developer/bellows/knowledge/research/walk-register-wrap-3d-central-glossary-2026-08-26.md
+    body walks   : 2   verdict now: ESCALATE:assert-fail:2
+
+### Done/executable-548.md
+    declared ref : 'bellows/knowledge/research/walk-register-eluvian-wiring-pull-2026-08-26.md'
+    ref shape    : RELATIVE
+    resolution attempted (cycle_check's own three-step order):
+      step 2:git_root   -> /Users/marklehn/Developer/bellows/bellows/knowledge/research/walk-register-eluvian-wiring-pull-2026-08-26.md
+           exists: False
+      step 3:gov_root   -> /Users/marklehn/Developer/eluvian-governance/bellows/knowledge/research/walk-register-eluvian-wiring-pull-2026-08-26.md
+           exists: False
+    basename 'walk-register-eluvian-wiring-pull-2026-08-26.md' found elsewhere on disk: 1
+      -> /Users/marklehn/Developer/bellows/knowledge/research/walk-register-eluvian-wiring-pull-2026-08-26.md
+    body walks   : 2   verdict now: ESCALATE:assert-fail:2
+
+### Done/executable-554.md
+    declared ref : 'bellows/knowledge/research/walk-register-align-hook-sync-2026-08-26.md'
+    ref shape    : RELATIVE
+    resolution attempted (cycle_check's own three-step order):
+      step 2:git_root   -> /Users/marklehn/Developer/bellows/bellows/knowledge/research/walk-register-align-hook-sync-2026-08-26.md
+           exists: False
+      step 3:gov_root   -> /Users/marklehn/Developer/eluvian-governance/bellows/knowledge/research/walk-register-align-hook-sync-2026-08-26.md
+           exists: False
+    basename 'walk-register-align-hook-sync-2026-08-26.md' found elsewhere on disk: 1
+      -> /Users/marklehn/Developer/bellows/knowledge/research/walk-register-align-hook-sync-2026-08-26.md
+    body walks   : 2   verdict now: ESCALATE:assert-fail:2
+
+### Done/executable-555.md
+    declared ref : 'bellows/knowledge/research/walk-register-id-range-partitioning-doc-2026-08-26.md'
+    ref shape    : RELATIVE
+    resolution attempted (cycle_check's own three-step order):
+      step 2:git_root   -> /Users/marklehn/Developer/bellows/bellows/knowledge/research/walk-register-id-range-partitioning-doc-2026-08-26.md
+           exists: False
+      step 3:gov_root   -> /Users/marklehn/Developer/eluvian-governance/bellows/knowledge/research/walk-register-id-range-partitioning-doc-2026-08-26.md
+           exists: False
+    basename 'walk-register-id-range-partitioning-doc-2026-08-26.md' found elsewhere on disk: 1
+      -> /Users/marklehn/Developer/bellows/knowledge/research/walk-register-id-range-partitioning-doc-2026-08-26.md
+    body walks   : 2   verdict now: ESCALATE:assert-fail:2
+
+### Done/executable-561.md
+    declared ref : 'bellows/knowledge/research/walk-register-plan-lint-bare-constants-2026-08-26.md'
+    ref shape    : RELATIVE
+    resolution attempted (cycle_check's own three-step order):
+      step 2:git_root   -> /Users/marklehn/Developer/bellows/bellows/knowledge/research/walk-register-plan-lint-bare-constants-2026-08-26.md
+           exists: False
+      step 3:gov_root   -> /Users/marklehn/Developer/eluvian-governance/bellows/knowledge/research/walk-register-plan-lint-bare-constants-2026-08-26.md
+           exists: False
+    basename 'walk-register-plan-lint-bare-constants-2026-08-26.md' found elsewhere on disk: 1
+      -> /Users/marklehn/Developer/bellows/knowledge/research/walk-register-plan-lint-bare-constants-2026-08-26.md
+    body walks   : 2   verdict now: ESCALATE:assert-fail:2
+
+### Done/executable-562.md
+    declared ref : 'bellows/knowledge/research/walk-register-wrap-check-memory-class-gate-2026-08-26.md'
+    ref shape    : RELATIVE
+    resolution attempted (cycle_check's own three-step order):
+      step 2:git_root   -> /Users/marklehn/Developer/bellows/bellows/knowledge/research/walk-register-wrap-check-memory-class-gate-2026-08-26.md
+           exists: False
+      step 3:gov_root   -> /Users/marklehn/Developer/eluvian-governance/bellows/knowledge/research/walk-register-wrap-check-memory-class-gate-2026-08-26.md
+           exists: False
+    basename 'walk-register-wrap-check-memory-class-gate-2026-08-26.md' found elsewhere on disk: 1
+      -> /Users/marklehn/Developer/bellows/knowledge/research/walk-register-wrap-check-memory-class-gate-2026-08-26.md
+    body walks   : 2   verdict now: ESCALATE:assert-fail:2
+
+### Done/executable-563.md
+    declared ref : 'bellows/knowledge/research/walk-register-run-check-wrapper-2026-08-26.md'
+    ref shape    : RELATIVE
+    resolution attempted (cycle_check's own three-step order):
+      step 2:git_root   -> /Users/marklehn/Developer/bellows/bellows/knowledge/research/walk-register-run-check-wrapper-2026-08-26.md
+           exists: False
+      step 3:gov_root   -> /Users/marklehn/Developer/eluvian-governance/bellows/knowledge/research/walk-register-run-check-wrapper-2026-08-26.md
+           exists: False
+    basename 'walk-register-run-check-wrapper-2026-08-26.md' found elsewhere on disk: 1
+      -> /Users/marklehn/Developer/bellows/knowledge/research/walk-register-run-check-wrapper-2026-08-26.md
+    body walks   : 2   verdict now: ESCALATE:assert-fail:2
+
+### Done/executable-564.md
+    declared ref : 'bellows/knowledge/research/walk-register-gates-cross-machine-paths-2026-08-26.md'
+    ref shape    : RELATIVE
+    resolution attempted (cycle_check's own three-step order):
+      step 2:git_root   -> /Users/marklehn/Developer/bellows/bellows/knowledge/research/walk-register-gates-cross-machine-paths-2026-08-26.md
+           exists: False
+      step 3:gov_root   -> /Users/marklehn/Developer/eluvian-governance/bellows/knowledge/research/walk-register-gates-cross-machine-paths-2026-08-26.md
+           exists: False
+    basename 'walk-register-gates-cross-machine-paths-2026-08-26.md' found elsewhere on disk: 1
+      -> /Users/marklehn/Developer/bellows/knowledge/research/walk-register-gates-cross-machine-paths-2026-08-26.md
+    body walks   : 2   verdict now: ESCALATE:assert-fail:2
+
+### Done/executable-565.md
+    declared ref : 'bellows/knowledge/research/walk-register-plan-lint-fence-exclusion-2026-08-26.md'
+    ref shape    : RELATIVE
+    resolution attempted (cycle_check's own three-step order):
+      step 2:git_root   -> /Users/marklehn/Developer/bellows/bellows/knowledge/research/walk-register-plan-lint-fence-exclusion-2026-08-26.md
+           exists: False
+      step 3:gov_root   -> /Users/marklehn/Developer/eluvian-governance/bellows/knowledge/research/walk-register-plan-lint-fence-exclusion-2026-08-26.md
+           exists: False
+    basename 'walk-register-plan-lint-fence-exclusion-2026-08-26.md' found elsewhere on disk: 1
+      -> /Users/marklehn/Developer/bellows/knowledge/research/walk-register-plan-lint-fence-exclusion-2026-08-26.md
+    body walks   : 2   verdict now: ESCALATE:assert-fail:2
+
+### Done/executable-566.md
+    declared ref : 'bellows/knowledge/research/walk-register-reconcile-plan-tool-2026-08-26.md'
+    ref shape    : RELATIVE
+    resolution attempted (cycle_check's own three-step order):
+      step 2:git_root   -> /Users/marklehn/Developer/bellows/bellows/knowledge/research/walk-register-reconcile-plan-tool-2026-08-26.md
+           exists: False
+      step 3:gov_root   -> /Users/marklehn/Developer/eluvian-governance/bellows/knowledge/research/walk-register-reconcile-plan-tool-2026-08-26.md
+           exists: False
+    basename 'walk-register-reconcile-plan-tool-2026-08-26.md' found elsewhere on disk: 1
+      -> /Users/marklehn/Developer/bellows/knowledge/research/walk-register-reconcile-plan-tool-2026-08-26.md
+    body walks   : 2   verdict now: ESCALATE:assert-fail:2
+
+### Done/executable-567.md
+    declared ref : 'bellows/knowledge/research/walk-register-diff-stat-rename-normalize-2026-08-26.md'
+    ref shape    : RELATIVE
+    resolution attempted (cycle_check's own three-step order):
+      step 2:git_root   -> /Users/marklehn/Developer/bellows/bellows/knowledge/research/walk-register-diff-stat-rename-normalize-2026-08-26.md
+           exists: False
+      step 3:gov_root   -> /Users/marklehn/Developer/eluvian-governance/bellows/knowledge/research/walk-register-diff-stat-rename-normalize-2026-08-26.md
+           exists: False
+    basename 'walk-register-diff-stat-rename-normalize-2026-08-26.md' found elsewhere on disk: 1
+      -> /Users/marklehn/Developer/bellows/knowledge/research/walk-register-diff-stat-rename-normalize-2026-08-26.md
+    body walks   : 2   verdict now: ESCALATE:assert-fail:2
+
+### Done/executable-569.md
+    declared ref : 'bellows/knowledge/research/walk-register-depositor-cluster-2026-08-26.md'
+    ref shape    : RELATIVE
+    resolution attempted (cycle_check's own three-step order):
+      step 2:git_root   -> /Users/marklehn/Developer/bellows/bellows/knowledge/research/walk-register-depositor-cluster-2026-08-26.md
+           exists: False
+      step 3:gov_root   -> /Users/marklehn/Developer/eluvian-governance/bellows/knowledge/research/walk-register-depositor-cluster-2026-08-26.md
+           exists: False
+    basename 'walk-register-depositor-cluster-2026-08-26.md' found elsewhere on disk: 1
+      -> /Users/marklehn/Developer/bellows/knowledge/research/walk-register-depositor-cluster-2026-08-26.md
+    body walks   : 3   verdict now: ESCALATE:assert-fail:2
+
+### Done/executable-571.md
+    declared ref : 'bellows/knowledge/research/walk-register-gate-watcher-pause-2026-08-26.md'
+    ref shape    : RELATIVE
+    resolution attempted (cycle_check's own three-step order):
+      step 2:git_root   -> /Users/marklehn/Developer/bellows/bellows/knowledge/research/walk-register-gate-watcher-pause-2026-08-26.md
+           exists: False
+      step 3:gov_root   -> /Users/marklehn/Developer/eluvian-governance/bellows/knowledge/research/walk-register-gate-watcher-pause-2026-08-26.md
+           exists: False
+    basename 'walk-register-gate-watcher-pause-2026-08-26.md' found elsewhere on disk: 1
+      -> /Users/marklehn/Developer/bellows/knowledge/research/walk-register-gate-watcher-pause-2026-08-26.md
+    body walks   : 3   verdict now: ESCALATE:assert-fail:2
+
+### Done/executable-573.md
+    declared ref : 'bellows/knowledge/research/walk-register-gate-watcher-staleness-2026-08-27.md'
+    ref shape    : RELATIVE
+    resolution attempted (cycle_check's own three-step order):
+      step 2:git_root   -> /Users/marklehn/Developer/bellows/bellows/knowledge/research/walk-register-gate-watcher-staleness-2026-08-27.md
+           exists: False
+      step 3:gov_root   -> /Users/marklehn/Developer/eluvian-governance/bellows/knowledge/research/walk-register-gate-watcher-staleness-2026-08-27.md
+           exists: False
+    basename 'walk-register-gate-watcher-staleness-2026-08-27.md' found elsewhere on disk: 1
+      -> /Users/marklehn/Developer/bellows/knowledge/research/walk-register-gate-watcher-staleness-2026-08-27.md
+    body walks   : 4   verdict now: ESCALATE:assert-fail:2
+
+### Done/executable-575.md
+    declared ref : 'bellows/knowledge/research/walk-register-mutation-runner-fix-2026-08-27.md'
+    ref shape    : RELATIVE
+    resolution attempted (cycle_check's own three-step order):
+      step 2:git_root   -> /Users/marklehn/Developer/bellows/bellows/knowledge/research/walk-register-mutation-runner-fix-2026-08-27.md
+           exists: False
+      step 3:gov_root   -> /Users/marklehn/Developer/eluvian-governance/bellows/knowledge/research/walk-register-mutation-runner-fix-2026-08-27.md
+           exists: False
+    basename 'walk-register-mutation-runner-fix-2026-08-27.md' found elsewhere on disk: 1
+      -> /Users/marklehn/Developer/bellows/knowledge/research/walk-register-mutation-runner-fix-2026-08-27.md
+    body walks   : 4   verdict now: ESCALATE:assert-fail:2
+
+### Done/executable-576.md
+    declared ref : 'bellows/knowledge/research/walk-register-detector-coverage-lint-2026-08-27.md'
+    ref shape    : RELATIVE
+    resolution attempted (cycle_check's own three-step order):
+      step 2:git_root   -> /Users/marklehn/Developer/bellows/bellows/knowledge/research/walk-register-detector-coverage-lint-2026-08-27.md
+           exists: False
+      step 3:gov_root   -> /Users/marklehn/Developer/eluvian-governance/bellows/knowledge/research/walk-register-detector-coverage-lint-2026-08-27.md
+           exists: False
+    basename 'walk-register-detector-coverage-lint-2026-08-27.md' found elsewhere on disk: 1
+      -> /Users/marklehn/Developer/bellows/knowledge/research/walk-register-detector-coverage-lint-2026-08-27.md
+    body walks   : 4   verdict now: ESCALATE:assert-fail:2
+
+### Done/executable-579.md
+    declared ref : 'bellows/knowledge/research/walk-register-mtime-format-proof-2026-08-27.md'
+    ref shape    : RELATIVE
+    resolution attempted (cycle_check's own three-step order):
+      step 2:git_root   -> /Users/marklehn/Developer/bellows/bellows/knowledge/research/walk-register-mtime-format-proof-2026-08-27.md
+           exists: False
+      step 3:gov_root   -> /Users/marklehn/Developer/eluvian-governance/bellows/knowledge/research/walk-register-mtime-format-proof-2026-08-27.md
+           exists: False
+    basename 'walk-register-mtime-format-proof-2026-08-27.md' found elsewhere on disk: 1
+      -> /Users/marklehn/Developer/bellows/knowledge/research/walk-register-mtime-format-proof-2026-08-27.md
+    body walks   : 3   verdict now: ESCALATE:assert-fail:2
+
+### drafts/diagnostic-cycle-log-signal.md
+    declared ref : '/Users/marklehn/Developer/eluvian-governance/governance/knowledge/research/walk-register-cycle-log-signal-2026-09-05.md'
+    ref shape    : ABSOLUTE
+    resolution attempted (cycle_check's own three-step order):
+      step 1:absolute   -> /Users/marklehn/Developer/eluvian-governance/governance/knowledge/research/walk-register-cycle-log-signal-2026-09-05.md
+           exists: False
+    basename 'walk-register-cycle-log-signal-2026-09-05.md' found elsewhere on disk: 0
+    body walks   : 0   verdict now: CONTINUE
+
+### drafts/diagnostic-multi-machine-wrap.md
+    declared ref : '/Users/marklehn/Developer/eluvian-governance/governance/knowledge/research/walk-register-multi-machine-wrap-2026-09-04.md'
+    ref shape    : ABSOLUTE
+    resolution attempted (cycle_check's own three-step order):
+      step 1:absolute   -> /Users/marklehn/Developer/eluvian-governance/governance/knowledge/research/walk-register-multi-machine-wrap-2026-09-04.md
+           exists: False
+    basename 'walk-register-multi-machine-wrap-2026-09-04.md' found elsewhere on disk: 0
+    body walks   : 0   verdict now: CONTINUE
+
+### drafts/executable-battery-verdict-declaration.md
+    declared ref : '/Users/marklehn/Developer/eluvian-governance/governance/knowledge/research/walk-register-battery-verdict-declaration-2026-09-03.md'
+    ref shape    : ABSOLUTE
+    resolution attempted (cycle_check's own three-step order):
+      step 1:absolute   -> /Users/marklehn/Developer/eluvian-governance/governance/knowledge/research/walk-register-battery-verdict-declaration-2026-09-03.md
+           exists: False
+    basename 'walk-register-battery-verdict-declaration-2026-09-03.md' found elsewhere on disk: 0
+    body walks   : 0   verdict now: CONTINUE
+
+==============================================================================
+## SECTION 3 — Q2: the 2x2, body walks x register rows
+==============================================================================
+
+Population: 102 plans declaring a ref; 80 resolvable, 22 NOT (excluded from the grid — see Q1).
+
+                       | register rows == 0 | register rows > 0  |
+    -------------------+--------------------+--------------------+------
+    body walks == 0    |                  1 |                  6 |    7
+    body walks  > 0    |                  2 |                 71 |   73
+    -------------------+--------------------+--------------------+------
+                       |                  3 |                 77 |   80
+
+Cell (body 0, rows >0) — the P4 defect cell:
+    Done/diagnostic-370.md: rows=13 status=LEGACY_SCHEMA
+    Done/executable-371.md: rows=4 status=CONFORMANT
+    Done/executable-376.md: rows=4 status=CONFORMANT
+    Done/executable-379.md: rows=1 status=CONFORMANT
+    drafts/executable-lessons-destination-v2.md: rows=4 status=CONFORMANT
+    drafts/executable-memory-destination-and-gate.md: rows=8 status=CONFORMANT
+Cell (body 0, rows 0) — legitimate walk-0 / no-work registers:
+    drafts/diagnostic-u-predicate-divergence.md: status=NO_TABLE fold_tables=0
+Cell (body >0, rows 0) — walks recorded, register carries no fold rows:
+    Done/executable-100028.md: body_walks=9 max_walk=9 status=NO_TABLE fold_tables=0
+    drafts/executable-qa-predeclaration-warn.md: body_walks=9 max_walk=9 status=NO_TABLE fold_tables=0
+
+FALSE-POSITIVE ADJUDICATION for the conjunction (body==0 AND rows>0)
+⛔ MECHANICAL RULE, stated before it is applied: a flag is a FALSE POSITIVE
+   when the plan BODY textually carries per-lens walk lines — i.e. at least one
+   line whose SHAPE is a lens line (`- <one of the five lenses>: ...`). Such a
+   body holds the record a reader would read; only cycle_check's GRAMMAR misses
+   it. The rule is a text probe, not a judgement call.
+
+  FALSE POSITIVE (body carries lens-shaped lines) — 4:
+    Done/diagnostic-370.md
+        lens-shaped body lines : 5
+        body **Walks:** line   : **Walks:** 2 (five lenses each, this corrective read against the parent as folded) — per-lens results in the r
+        register rows          : 13
+        cycle_check verdict NOW: ESCALATE:unparseable
+        has_lens_lines=True has_any_parsed=False has_unparseable=True
+    Done/executable-371.md
+        lens-shaped body lines : 5
+        body **Walks:** line   : **Walks:** 2. Fold trajectory 4 → 0.
+        register rows          : 4
+        cycle_check verdict NOW: ESCALATE:unparseable
+        has_lens_lines=True has_any_parsed=False has_unparseable=True
+    Done/executable-376.md
+        lens-shaped body lines : 5
+        body **Walks:** line   : **Walks:** 3. Fold trajectory 3 → 1 → 0; the headline catch was walk-1's g1 — the draft's whitespace-safety pr
+        register rows          : 4
+        cycle_check verdict NOW: ESCALATE:unparseable
+        has_lens_lines=True has_any_parsed=False has_unparseable=True
+    Done/executable-379.md
+        lens-shaped body lines : 5
+        body **Walks:** line   : **Walks:** 2. Fold trajectory 1 → 0.
+        register rows          : 1
+        cycle_check verdict NOW: ESCALATE:unparseable
+        has_lens_lines=True has_any_parsed=False has_unparseable=True
+
+  TRUE POSITIVE (body carries no lens-shaped line) — 2:
+    drafts/executable-lessons-destination-v2.md
+        lens-shaped body lines : 0
+        body **Walks:** line   : **Walks:**
+        register rows          : 4
+        cycle_check verdict NOW: CONTINUE
+        has_lens_lines=False has_any_parsed=False has_unparseable=False
+    drafts/executable-memory-destination-and-gate.md
+        lens-shaped body lines : 0
+        body **Walks:** line   : **Walks:** 4 (walks 0–4 complete).
+        register rows          : 8
+        cycle_check verdict NOW: CONTINUE
+        has_lens_lines=False has_any_parsed=False has_unparseable=False
+
+  FALSE-POSITIVE COUNT: 4 of 6 flagged (67%)
+  TRUE-POSITIVE COUNT : 2 of 6
+
+  ⚠️ MARGINAL SIGNAL. Of the flagged plans, those already emitting a non-
+     silent verdict today gain NOTHING from a new check:
+    diagnostic-370.md                            verdict=ESCALATE:unparseable     already emits
+    executable-371.md                            verdict=ESCALATE:unparseable     already emits
+    executable-376.md                            verdict=ESCALATE:unparseable     already emits
+    executable-379.md                            verdict=ESCALATE:unparseable     already emits
+    executable-lessons-destination-v2.md         verdict=CONTINUE                 SILENT TODAY
+    executable-memory-destination-and-gate.md    verdict=CONTINUE                 SILENT TODAY
+  Conjunction check's NEW signal: 2 plan(s) — executable-lessons-destination-v2.md, executable-memory-destination-and-gate.md
+
+Comparison arm — a body-emptiness-only check (P3 rule) over the same grid:
+    flags 7 resolvable plans + 3 unresolvable-ref plan(s) = 10 total
+    of which the (body 0, rows 0) cell — 1 plan(s) — has no register
+    evidence of a missed record at all.
+
+==============================================================================
+## SECTION 4 — Q3: capability x timing, reported SEPARATELY
+==============================================================================
+
+CAPABILITY (measured from source — token counts, not recall):
+  cycle_check.py
+      walk_register_ref          occurrences: 8
+      Walk register              occurrences: 0
+      walk_register_lint         occurrences: 1
+      validate_file              occurrences: 1
+      extract_tables             occurrences: 0
+      _find_git_root             occurrences: 4
+      resolve_governance_root    occurrences: 2
+      check_assert_2             occurrences: 2
+  plan_lint.py
+      walk_register_ref          occurrences: 0
+      Walk register              occurrences: 0
+      walk_register_lint         occurrences: 0
+      validate_file              occurrences: 0
+      extract_tables             occurrences: 0
+      _find_git_root             occurrences: 0
+      resolve_governance_root    occurrences: 1
+      check_assert_2             occurrences: 0
+
+TIMING (measured — every call site of each tool in the live repo,
+         excluding the tool's own file, tests/, and knowledge/ prose):
+  EXECUTING INVOKERS (import, or the .py named in an argv) — the timing answer:
+  tool                 invoker                       line  form
+  --------------------------------------------------------------------------
+  cycle_check          depositor.py                    27  import: import cycle_check  # noqa: E402 — scripts/ must be on path 
+  cycle_check          tools/gate_failopen_census.py   227  subprocess: "cycle_check": (SCRIPTS_DIR / "cycle_check.py", extract_cycl
+  cycle_check          tools/fold_signal_census.py     76  subprocess: "cycle_check":        SCRIPTS / "cycle_check.py",
+  cycle_check          tools/clear_plan.py            111  import: import cycle_check
+  cycle_check          tools/run_check.py              85  subprocess: script = {"cycle": "cycle_check.py", "lint": "plan_lint.py",
+  plan_lint            depositor.py                   487  subprocess: lint_script = str(self._bellows_root / "scripts" / "plan_lin
+  plan_lint            tools/qa_steps_parse_census.py    29  import: from plan_lint import _parse_qa_steps
+  plan_lint            tools/gate_failopen_census.py   224  subprocess: "plan_lint": (SCRIPTS_DIR / "plan_lint.py", extract_plan_lin
+  plan_lint            tools/fold_signal_census.py     74  subprocess: "plan_lint":          SCRIPTS / "plan_lint.py",
+  plan_lint            tools/clear_plan.py            117  subprocess: [sys.executable, os.path.join(_BELLOWS_ROOT, "scripts", "pla
+  plan_lint            tools/run_check.py              85  subprocess: script = {"cycle": "cycle_check.py", "lint": "plan_lint.py",
+  plan_lint            scripts/fold_check.py          103  subprocess: script = SCRIPTS_DIR / "plan_lint.py"
+  walk_register_lint   tools/gate_failopen_census.py   229  subprocess: "walk_register_lint": (SCRIPTS_DIR / "walk_register_lint.py"
+  walk_register_lint   tools/battery_census.py         30  import: import walk_register_lint as wrl
+  walk_register_lint   tools/run_check.py              87  subprocess: "register": "walk_register_lint.py"}.get(mode)
+  walk_register_lint   scripts/fold_check.py           99  subprocess: script = SCRIPTS_DIR / "walk_register_lint.py"
+
+  (Full reference dump — prose, censuses and docs included — follows so the
+   filter above can be audited against it.)
+
+  cycle_check: 49 call/reference site(s) outside its own file
+      depositor.py:27  import cycle_check  # noqa: E402 — scripts/ must be on path first
+      depositor.py:238  manifest = cycle_check.parse_manifest_stanza(plan_text)
+      depositor.py:473  "cycle_check": None, "plan_lint": None}
+      depositor.py:476  verdict, _ = cycle_check.run_check(Path(path))
+      depositor.py:477  result["cycle_check"] = verdict
+      depositor.py:480  result["reason"] = f"cycle_check:{verdict}"
+      depositor.py:484  result["reason"] = f"cycle_check:exception:{e}"
+      depositor.py:513  manifest = cycle_check.parse_manifest_stanza(plan_text)
+      depositor.py:516  if "cycle_check=" in val:
+      depositor.py:517  expected = val.split("cycle_check=")[1].split(",")[0].strip()
+      depositor.py:521  f"validation_mismatch:cycle_check "
+      CLAUDE.md:142  Re-runs `cycle_check` (BAR_MET required) and `plan_lint`, writes the clearance
+      tools/gate_failopen_census.py:12  cycle_check.py    return "VERDICT" string literals
+      tools/gate_failopen_census.py:121  # Dynamic f-string reasons (collision, cycle_check, plan_lint, class:)
+      tools/gate_failopen_census.py:125  ("cycle_check:{verdict}", "cycle_check returned non-BAR_MET"),
+      tools/gate_failopen_census.py:126  ("cycle_check:exception:{e}", "cycle_check raised exception"),
+      tools/gate_failopen_census.py:129  ("validation_mismatch:cycle_check", "manifest validation: cycle_check mismatch"),
+      tools/gate_failopen_census.py:144  def extract_cycle_check_verdicts(src: str) -> list[dict]:
+      tools/gate_failopen_census.py:147  cycle_check.py convention: return "ESCALATE:*" (exit 1), "BAR_MET" (exit 0),
+      tools/gate_failopen_census.py:157  "module": "cycle_check",
+      tools/gate_failopen_census.py:206  # Blocking for the caller (cycle_check treats non-silent statuses as WARN)
+      tools/gate_failopen_census.py:212  "blocking": not silent,  # non-silent statuses surface as WARN in cycle_check
+      tools/gate_failopen_census.py:227  "cycle_check": (SCRIPTS_DIR / "cycle_check.py", extract_cycle_check_verdicts),
+      tools/gate_failopen_census.py:288  suffix = " [silent in cycle_check]"
+      tools/fold_signal_census.py:26  cycle_check:        none — emits only verdicts (CONTINUE/BAR_MET/ESCALATE:*)
+      tools/fold_signal_census.py:66  "plan_lint", "cycle_check", "fold_check",
+      tools/fold_signal_census.py:76  "cycle_check":        SCRIPTS / "cycle_check.py",
+      tools/fold_signal_census.py:83  "cycle_check": None,
+      tools/fold_signal_census.py:90  "cycle_check": None,
+      tools/fold_signal_census.py:458  C1 = plan_lint + propagation_check + cycle_check
+      tools/fold_signal_census.py:832  print("  cycle_check:        no count fields  (emits only CONTINUE/BAR_MET/ESCALATE:*)")
+      tools/clear_plan.py:10  this arm re-runs cycle_check (BAR_MET required) and plan_lint (0 non-benign
+      tools/clear_plan.py:111  import cycle_check
+      tools/clear_plan.py:112  verdict, _ = cycle_check.run_check(Path(hold_path))
+      tools/clear_plan.py:114  return _fail(f"cycle_check gate: {verdict} (BAR_MET required) — file left held")
+      tools/clear_plan.py:256  "re-runs cycle_check + plan_lint, writes the "
+      tools/passfail_record_census.py:174  print("    ABSENT — cycle_check.py (11 verdicts: 9B / 2a):")
+      tools/passfail_record_census.py:176  print("    ABSENT — walk_register_lint.py (6 STATUS_* — invoked via cycle_check):")
+      tools/passfail_record_census.py:186  print("      dynamic: collision:*/*, cycle_check:*, plan_lint:*, validation_mismatch:*, class:*")
+      tools/passfail_record_census.py:226  print("  CLASS B absent (authoring-time — plan_lint, cycle_check, walk_register_lint,")
+      tools/passfail_record_census.py:279  print("    plan_lint, cycle_check, fold_check, propagation_check run BEFORE any step.")
+      tools/battery_census.py:7  plan_lint, cycle_check, fold_check, propagation_check,
+      tools/battery_census.py:36  "plan_lint", "cycle_check", "fold_check",
+      tools/battery_census.py:116  "cycle_check": re.compile(
+      tools/battery_census.py:117  r"`cycle_check`\s*(→|exit\s*\d)\s*(BAR_MET|CONTINUE|ESCALATE|FAIL|0|1)",
+      tools/battery_census.py:190  "plan_lint", "cycle_check", "fold_check", "propagation_check",
+      tools/battery_census.py:223  "cycle_check": battery["cycle_check"],
+      tools/run_check.py:14  - cycle_check: verdict is the LAST STDOUT LINE (BAR_MET / CONTINUE /
+      tools/run_check.py:85  script = {"cycle": "cycle_check.py", "lint": "plan_lint.py",
+
+  plan_lint: 69 call/reference site(s) outside its own file
+      PROJECT_STATUS.md:11  `knowledge/research/lint-class-census-findings-2026-08-10.md`. Ran the funnel's stages 2 and 3 on four candida
+      PROJECT_STATUS.md:17  - plan_lint §4's four defects fixed — Vulnerabilities lens-line selection, negation-aware closing status, reac
+      PROJECT_STATUS.md:20  The (f) suite in `bellows/tests/test_plan_lint.py` now covers the T2 cold-panel branch — f-h added. The plan_l
+      PROJECT_STATUS.md:23  - **plan_lint §4 refined** — 189/N5 reads the last lens line's status (closing-line fallback for legacy logs),
+      PROJECT_STATUS.md:26  - **DRAFTING_CYCLE.md §4 self-check live in plan_lint, warn-first** — plans are now reminded to declare `cycle
+      PROJECT_STATUS.md:41  plan_lint qa_steps ↔ step-label cross-check shipped 2026-07-07 (plan 140). WARN-only advisory in `scripts/plan
+      PROJECT_STATUS.md:53  FORWARD row 9 pre-deposit lint script shipped (`scripts/plan_lint.py`) and `rule_20` receipt fallback in `gate
+      depositor.py:473  "cycle_check": None, "plan_lint": None}
+      depositor.py:487  lint_script = str(self._bellows_root / "scripts" / "plan_lint.py")
+      depositor.py:493  result["plan_lint"] = f"exit_{lr.returncode}"
+      depositor.py:506  result["reason"] = f"plan_lint:{len(non_benign)}_real_FAIL"
+      depositor.py:510  result["reason"] = f"plan_lint:exception:{e}"
+      CLAUDE.md:142  Re-runs `cycle_check` (BAR_MET required) and `plan_lint`, writes the clearance
+      tools/qa_steps_parse_census.py:4  Derives the truth table for plan_lint._parse_qa_steps vs gates._gate_is_qa_step
+      tools/qa_steps_parse_census.py:29  from plan_lint import _parse_qa_steps
+      tools/qa_steps_parse_census.py:119  "plan_lint": pl_result,
+      tools/qa_steps_parse_census.py:247  # plan_lint: warns at authoring time, sets qa_steps_set for step/label cross-check
+      tools/qa_steps_parse_census.py:296  a(f"  {'spelling':<30} {'plan_lint':<20} {'gates parse':<20} {'gates outcome'}")
+      tools/qa_steps_parse_census.py:299  pl = str(row["plan_lint"])
+      tools/qa_steps_parse_census.py:348  a("  plan_lint._parse_qa_steps: authoring-time warning about step/label mismatch")
+      tools/gate_failopen_census.py:9  plan_lint         (x) labels in results.append/print calls
+      tools/gate_failopen_census.py:36  def extract_plan_lint_checks(src: str) -> list[dict]:
+      tools/gate_failopen_census.py:39  plan_lint's emission form: results.append(("FAIL"/"PASS", "(x) label", ...))
+      tools/gate_failopen_census.py:67  "module": "plan_lint",
+      tools/gate_failopen_census.py:121  # Dynamic f-string reasons (collision, cycle_check, plan_lint, class:)
+      tools/gate_failopen_census.py:127  ("plan_lint:{n}_real_FAIL", "plan_lint returned non-benign FAIL(s)"),
+      tools/gate_failopen_census.py:128  ("plan_lint:exception:{e}", "plan_lint subprocess exception"),
+      tools/gate_failopen_census.py:224  "plan_lint": (SCRIPTS_DIR / "plan_lint.py", extract_plan_lint_checks),
+      tools/fold_signal_census.py:15  (<tmpdir>/knowledge/decisions/drafts/<name>.md) so plan_lint can locate the
+      tools/fold_signal_census.py:24  plan_lint:          candidates=\\d+  excluded=\\d+  fired=\\d+  (in INFO lines)
+      tools/fold_signal_census.py:29  plan_lint:          line[= ]\\d+  (in WARN messages — is_signal line)
+      tools/fold_signal_census.py:66  "plan_lint", "cycle_check", "fold_check",
+      tools/fold_signal_census.py:74  "plan_lint":          SCRIPTS / "plan_lint.py",
+      tools/fold_signal_census.py:81  "plan_lint": re.compile(r"(candidates|excluded|fired)=(\d+)"),
+      tools/fold_signal_census.py:88  "plan_lint": re.compile(r"\bline[= ]\d+\b", re.IGNORECASE),
+      tools/fold_signal_census.py:211  if len(groups) == 2:  # plan_lint: (field, value)
+      tools/fold_signal_census.py:457  C0 = plan_lint only (as fold_check does today)
+      tools/fold_signal_census.py:458  C1 = plan_lint + propagation_check + cycle_check
+      tools/fold_signal_census.py:473  # C0: plan_lint only
+      tools/fold_signal_census.py:475  run_tool("plan_lint", bp)
+      tools/fold_signal_census.py:476  run_tool("plan_lint", ap)
+      tools/fold_signal_census.py:607  # C0 = plan_lint only
+      tools/fold_signal_census.py:608  c0_lines = [p["tools"]["plan_lint"]["output_lines_before"] for p in usable_any
+      tools/fold_signal_census.py:609  if p["tools"].get("plan_lint", {}).get("usable")]
+      tools/fold_signal_census.py:610  c0_lines += [p["tools"]["plan_lint"]["output_lines_after"] for p in usable_any
+      tools/fold_signal_census.py:611  if p["tools"].get("plan_lint", {}).get("usable")]
+      tools/fold_signal_census.py:662  "C0_plan_lint_only_lines_mean": _safe_mean(c0_lines),
+      tools/fold_signal_census.py:710  print(f"  C0 (plan_lint only): {timing['C0']['mean_ms']}ms/fold-check mean", file=sys.stderr)
+      tools/fold_signal_census.py:796  print(f"  C0 (plan_lint only):   {q7['C0_plan_lint_only_lines_mean']} lines/revision")
+      tools/fold_signal_census.py:828  print("  plan_lint:          candidates=N  excluded=N  fired=N  (INFO lines, not signals)")
+      tools/fold_signal_census.py:846  print("  plan_lint checks (u),(v) and the 100033 gate post-date most of the corpus.")
+      tools/clear_plan.py:10  this arm re-runs cycle_check (BAR_MET required) and plan_lint (0 non-benign
+      tools/clear_plan.py:117  [sys.executable, os.path.join(_BELLOWS_ROOT, "scripts", "plan_lint.py"), hold_path],
+      tools/clear_plan.py:131  return _fail(f"plan_lint gate: {len(non_benign)} non-benign FAIL — file left held")
+      tools/clear_plan.py:256  "re-runs cycle_check + plan_lint, writes the "
+      tools/passfail_record_census.py:172  print("    ABSENT — plan_lint.py (22 checks: 5B / 17a):")
+      tools/passfail_record_census.py:186  print("      dynamic: collision:*/*, cycle_check:*, plan_lint:*, validation_mismatch:*, class:*")
+      tools/passfail_record_census.py:226  print("  CLASS B absent (authoring-time — plan_lint, cycle_check, walk_register_lint,")
+      tools/passfail_record_census.py:279  print("    plan_lint, cycle_check, fold_check, propagation_check run BEFORE any step.")
+      tools/battery_census.py:7  plan_lint, cycle_check, fold_check, propagation_check,
+      tools/battery_census.py:36  "plan_lint", "cycle_check", "fold_check",
+      tools/battery_census.py:112  "plan_lint": re.compile(
+      tools/battery_census.py:113  r"`plan_lint`\s*(exit\s*\d|→\s*(PASS|FAIL|WARN)|\d+\s*(PASS|FAIL|WARN))",
+      tools/battery_census.py:190  "plan_lint", "cycle_check", "fold_check", "propagation_check",
+      tools/battery_census.py:222  "plan_lint": battery["plan_lint"],
+      tools/run_check.py:16  - plan_lint: the exit code IS the channel; WARN lines are advisory.
+      tools/run_check.py:85  script = {"cycle": "cycle_check.py", "lint": "plan_lint.py",
+      scripts/fold_check.py:103  script = SCRIPTS_DIR / "plan_lint.py"
+      scripts/fold_check.py:105  readers.append(("plan_lint", [sys.executable, str(script), str(artifact)]))
+
+  walk_register_lint: 20 call/reference site(s) outside its own file
+      tools/gate_failopen_census.py:14  walk_register_lint STATUS_* constant definitions
+      tools/gate_failopen_census.py:201  walk_register_lint.py convention: STATUS_NAME = "VALUE" at module scope.
+      tools/gate_failopen_census.py:209  "module": "walk_register_lint",
+      tools/gate_failopen_census.py:229  "walk_register_lint": (SCRIPTS_DIR / "walk_register_lint.py", extract_walk_register_statuses),
+      tools/fold_signal_census.py:67  "propagation_check", "walk_register_lint", "mutation_check",
+      tools/fold_signal_census.py:70  # Tools run in this census over plan files.  walk_register_lint applies only to
+      tools/passfail_record_census.py:176  print("    ABSENT — walk_register_lint.py (6 STATUS_* — invoked via cycle_check):")
+      tools/passfail_record_census.py:226  print("  CLASS B absent (authoring-time — plan_lint, cycle_check, walk_register_lint,")
+      tools/battery_census.py:8  walk_register_lint, mutation_check, lifecycle_state, tableless
+      tools/battery_census.py:12  Imports walk_register_lint (the shipped parser) for table extraction.
+      tools/battery_census.py:30  import walk_register_lint as wrl
+      tools/battery_census.py:37  "propagation_check", "walk_register_lint", "mutation_check",
+      tools/battery_census.py:128  "walk_register_lint": re.compile(
+      tools/battery_census.py:129  r"`walk_register_lint`\s*(CONFORMANT|UNCONFORMANT|NO_TABLE|PRE.SCHEMA|LEGACY|→)",
+      tools/battery_census.py:191  "walk_register_lint", "mutation_check",
+      tools/battery_census.py:226  "walk_register_lint": battery["walk_register_lint"],
+      tools/run_check.py:17  - walk_register_lint: per-file verdicts print on STDERR as
+      tools/run_check.py:87  "register": "walk_register_lint.py"}.get(mode)
+      scripts/fold_check.py:99  script = SCRIPTS_DIR / "walk_register_lint.py"
+      scripts/fold_check.py:101  readers.append(("walk_register_lint", [sys.executable, str(script), str(artifact)]))
+
+==============================================================================
+## SECTION 5 — Q4: noise cost per candidate
+==============================================================================
+⛔ Pricing only. No candidate is recommended.
+
+⛔ TWO counts per candidate, and they are NOT the same number:
+   RAW      = plans the rule matches.
+   MARGINAL = plans the rule matches that today return CONTINUE or BAR_MET —
+              the only plans where a new check adds signal a reader does not
+              already get. A plan already returning ESCALATE gains nothing.
+
+cand     RAW  MARGINAL  rule
+------------------------------------------------------------------------------
+A         10         6  body walk_data empty  (P3 rule — body-only, no register read)
+B          6         2  body empty AND resolvable register carries fold rows (P4 conjunction)
+C         22         3  register ref UNRESOLVABLE, at any walk count (P6 rule)
+D          1         1  a body walk N with no 'walk N' mention in the register (coverage rule)
+E         26        11  register mentions a walk N the BODY does not carry (inverse coverage)
+
+[A] body walk_data empty  (P3 rule — body-only, no register read) — 10 plan(s):
+      Done/diagnostic-370.md
+      Done/executable-371.md
+      Done/executable-376.md
+      Done/executable-379.md
+      drafts/diagnostic-cycle-log-signal.md
+      drafts/diagnostic-multi-machine-wrap.md
+      drafts/diagnostic-u-predicate-divergence.md
+      drafts/executable-battery-verdict-declaration.md
+      drafts/executable-lessons-destination-v2.md
+      drafts/executable-memory-destination-and-gate.md
+
+[B] body empty AND resolvable register carries fold rows (P4 conjunction) — 6 plan(s):
+      Done/diagnostic-370.md
+      Done/executable-371.md
+      Done/executable-376.md
+      Done/executable-379.md
+      drafts/executable-lessons-destination-v2.md
+      drafts/executable-memory-destination-and-gate.md
+
+[C] register ref UNRESOLVABLE, at any walk count (P6 rule) — 22 plan(s):
+      Done/diagnostic-482.md
+      Done/diagnostic-568.md
+      Done/executable-543.md
+      Done/executable-548.md
+      Done/executable-554.md
+      Done/executable-555.md
+      Done/executable-561.md
+      Done/executable-562.md
+      Done/executable-563.md
+      Done/executable-564.md
+      Done/executable-565.md
+      Done/executable-566.md
+      Done/executable-567.md
+      Done/executable-569.md
+      Done/executable-571.md
+      Done/executable-573.md
+      Done/executable-575.md
+      Done/executable-576.md
+      Done/executable-579.md
+      drafts/diagnostic-cycle-log-signal.md
+      drafts/diagnostic-multi-machine-wrap.md
+      drafts/executable-battery-verdict-declaration.md
+
+[D] a body walk N with no 'walk N' mention in the register (coverage rule) — 1 plan(s):
+      Done/executable-418.md  missing_walks=[1, 2]
+
+[E] register mentions a walk N the BODY does not carry (inverse coverage) — 26 plan(s):
+      Done/diagnostic-100024.md  register_only_walks=[28]
+      Done/diagnostic-370.md  register_only_walks=[1, 2, 3]
+      Done/executable-100009.md  register_only_walks=[28]
+      Done/executable-100010.md  register_only_walks=[2, 28]
+      Done/executable-100013.md  register_only_walks=[2]
+      Done/executable-100019.md  register_only_walks=[6, 28]
+      Done/executable-100021.md  register_only_walks=[3, 5, 8, 28, 29]
+      Done/executable-100023.md  register_only_walks=[3, 28, 29]
+      Done/executable-100026.md  register_only_walks=[28, 29, 30]
+      Done/executable-100027.md  register_only_walks=[28]
+      Done/executable-379.md  register_only_walks=[2]
+      Done/executable-430.md  register_only_walks=[2]
+      drafts/diagnostic-pt-dc-census.md  register_only_walks=[28]
+      drafts/diagnostic-register-coverage.md  register_only_walks=[4]
+      drafts/executable-checker-defects.md  register_only_walks=[28]
+      drafts/executable-dc-manifest-sentence.md  register_only_walks=[28]
+      drafts/executable-gate2-pt-w28-a.md  register_only_walks=[3, 5, 8, 28, 29]
+      drafts/executable-gate2-pt-w28-b.md  register_only_walks=[28, 29, 30]
+      drafts/executable-lessons-destination-doctrine.md  register_only_walks=[3]
+      drafts/executable-lessons-destination-v2.md  register_only_walks=[1]
+      drafts/executable-mandate-canary.md  register_only_walks=[2]
+      drafts/executable-memory-destination-and-gate.md  register_only_walks=[1, 2, 3, 4]
+      drafts/executable-propagation-check-pin-forms.md  register_only_walks=[3, 28, 29]
+      drafts/executable-shop-server-invariant-company.md  register_only_walks=[6, 28]
+      drafts/executable-verdict-signal-canary.md  register_only_walks=[2, 28]
+      drafts/executable-verdict-signal.md  register_only_walks=[28]
+
+Baseline for habituation (thread 117) — denominator is the surveyed
+population of 102 ref-declaring plans:
+      candidate A: RAW 10/102 = 9.8%   |   MARGINAL 6/102 = 5.9%
+      candidate B: RAW 6/102 = 5.9%   |   MARGINAL 2/102 = 2.0%
+      candidate C: RAW 22/102 = 21.6%   |   MARGINAL 3/102 = 2.9%
+      candidate D: RAW 1/102 = 1.0%   |   MARGINAL 1/102 = 1.0%
+      candidate E: RAW 26/102 = 25.5%   |   MARGINAL 11/102 = 10.8%
+
+⚠️ CANDIDATE E CARRIES A KNOWN FALSE-MATCH CLASS, named here so its count is
+   not read as clean. E (and candidate D, and cycle_check._compute_coherence
+   itself) locate a walk in a register with the regex
+       \b[Ww]alk\s+N\b | \bwN\b
+   which matches any token of the form wNN. Evidence — the matched text for
+   every register-only walk >= 20 reported above:
+      diagnostic-100024.md w28: ...eighth in tonight's order — after `gate2-pt-w28-a` lands v4.97; re-read at de...
+      executable-100009.md w28: ...ithin 8–9 s (`logs/watch/executable-gate2-dc-w28.md.log`, 19:24:33 and 19:50:1...
+      executable-100010.md w28: ...ithin 8–9 s (`logs/watch/executable-gate2-dc-w28.md.log`, 19:24:33 and 19:50:1...
+      executable-100019.md w28: ...(100008's register, `walk-register-gate2-dc-w28-2026-09-01.md`):** its traps...
+      executable-100021.md w28: ...# Walk register — `gate2-pt-w28-a-2026-09-02` (bellows-hosted...
+      executable-100021.md w29: ...`plan_lint` (n). | `\| grep -c 'forge-cycle-w29'` | `/usr/bin/grep -cF --`, w...
+      executable-100023.md w28: ...` 0 (`{'ADDENDUM_LANDED': '1'}`) · `gate2-pt-w28-a` 2 · `checker-defects` 2 ·...
+      executable-100023.md w29: ...28-a` 2 · `checker-defects` 2 · `forge-cycle-w29` 2. A crude scratch conversio...
+      executable-100026.md w28: ...# Walk register — `gate2-pt-w28-b-2026-09-02` (bellows-hosted...
+      executable-100026.md w29: ...ropped by design:** 100021's P8 `forge-cycle-w29` file check (W=29 is Done) →...
+      executable-100026.md w30: ...epted-population + entries + no-`forge-cycle-w30` precondition; the capture bo...
+      executable-100027.md w28: ...line -1 -- DRAFTING_CYCLE.md` → the gate2-dc-w28 commit (2.23, 2026-09-01, pla...
+      diagnostic-pt-dc-census.md w28: ...eighth in tonight's order — after `gate2-pt-w28-a` lands v4.97; re-read at de...
+      executable-checker-defects.md w28: ...ce/knowledge/research/walk-register-gate2-pt-w28-a-2026-09-02.md
+- Weak spots:...
+      executable-dc-manifest-sentence.md w28: ...line -1 -- DRAFTING_CYCLE.md` → the gate2-dc-w28 commit (2.23, 2026-09-01, pla...
+   E hits driven ONLY by a walk number >= 20 (wholly artifact): 9
+   E hits mixing a >=20 token with a real walk number         : 8
+   E hits with no >=20 token at all (uncontaminated)          : 9
+   total 9+8+9 = 26
+   No cycle in this corpus ran 20 walks (max body walk measured: 17).
+   Treat E's RAW count as an upper bound contaminated by this class. Its
+   uncontaminated floor is 9.
+
+==============================================================================
+## SECTION 6 — full per-plan table (evidence for every count above)
+==============================================================================
+where   body maxw  rows res  reg_status       verdict                      name
+Done       2    2     5 Y    CONFORMANT       ESCALATE:claimed-close-unmet diagnostic-100014.md
+Done       2    2     3 Y    CONFORMANT       ESCALATE:claimed-close-unmet diagnostic-100024.md
+Done       6    6    10 Y    CONFORMANT       ESCALATE:claimed-close-unmet diagnostic-100032.md
+Done       5    4     7 Y    CONFORMANT       BAR_MET                      diagnostic-100034.md
+Done       4    4     6 Y    CONFORMANT       BAR_MET                      diagnostic-100035.md
+Done       6    6     8 Y    CONFORMANT       BAR_MET                      diagnostic-100036.md
+Done      10    9    12 Y    CONFORMANT       BAR_MET                      diagnostic-100038.md
+Done       0 None    13 Y    LEGACY_SCHEMA    ESCALATE:unparseable         diagnostic-370.md
+Done       2    2     2 Y    UNCONFORMANT     ESCALATE:claimed-close-unmet diagnostic-429.md
+Done       5    5  None N    None             ESCALATE:assert-fail:2       diagnostic-482.md
+Done       2    2    11 Y    CONFORMANT       ESCALATE:claimed-close-unmet diagnostic-511.md
+Done       3    3    17 Y    CONFORMANT       ESCALATE:claimed-close-unmet diagnostic-515.md
+Done       2    2    10 Y    CONFORMANT       ESCALATE:claimed-close-unmet diagnostic-517.md
+Done       2    2    10 Y    CONFORMANT       ESCALATE:claimed-close-unmet diagnostic-519.md
+Done       3    3    16 Y    CONFORMANT       ESCALATE:claimed-close-unmet diagnostic-521.md
+Done       3    3    15 Y    CONFORMANT       ESCALATE:claimed-close-unmet diagnostic-522.md
+Done       2    2    10 Y    CONFORMANT       ESCALATE:claimed-close-unmet diagnostic-526.md
+Done       2    2    10 Y    CONFORMANT       ESCALATE:claimed-close-unmet diagnostic-531.md
+Done       3    3  None N    None             ESCALATE:assert-fail:2       diagnostic-568.md
+Done       7    7    16 Y    CONFORMANT       ESCALATE:claimed-close-unmet diagnostic-582.md
+Done       9    8    32 Y    CONFORMANT       CONTINUE                     executable-100005.md
+Done       2    2    11 Y    CONFORMANT       ESCALATE:claimed-close-unmet executable-100009.md
+Done       1    1    11 Y    CONFORMANT       CONTINUE                     executable-100010.md
+Done       2    2    23 Y    CONFORMANT       ESCALATE:claimed-close-unmet executable-100012.md
+Done       1    1    23 Y    CONFORMANT       CONTINUE                     executable-100013.md
+Done       2    2     3 Y    CONFORMANT       ESCALATE:claimed-close-unmet executable-100015.md
+Done       9    9    14 Y    CONFORMANT       ESCALATE:claimed-close-unmet executable-100017.md
+Done       6    6     8 Y    CONFORMANT       ESCALATE:claimed-close-unmet executable-100018.md
+Done       4    4    31 Y    CONFORMANT       ESCALATE:claimed-close-unmet executable-100019.md
+Done       2    2    29 Y    CONFORMANT       ESCALATE:claimed-close-unmet executable-100021.md
+Done       2    2     2 Y    CONFORMANT       ESCALATE:claimed-close-unmet executable-100023.md
+Done       4    4    13 Y    CONFORMANT       BAR_MET                      executable-100025.md
+Done       3    3    39 Y    CONFORMANT       BAR_MET                      executable-100026.md
+Done       3    3    30 Y    CONFORMANT       BAR_MET                      executable-100027.md
+Done       9    9     0 Y    NO_TABLE         BAR_MET                      executable-100028.md
+Done       7    7     9 Y    CONFORMANT       BAR_MET                      executable-100030.md
+Done       5    5     7 Y    CONFORMANT       BAR_MET                      executable-100033.md
+Done       7    7    11 Y    CONFORMANT       BAR_MET                      executable-100037.md
+Done       0 None     4 Y    CONFORMANT       ESCALATE:unparseable         executable-371.md
+Done       0 None     4 Y    CONFORMANT       ESCALATE:unparseable         executable-376.md
+Done       0 None     1 Y    CONFORMANT       ESCALATE:unparseable         executable-379.md
+Done       2    2    11 Y    CONFORMANT       CONTINUE                     executable-392.md
+Done       2    2     4 Y    CONFORMANT       CONTINUE                     executable-418.md
+Done       1    1    19 Y    UNCONFORMANT     ESCALATE:claimed-close-unmet executable-430.md
+Done       6    6    66 Y    CONFORMANT       ESCALATE:claimed-close-unmet executable-516.md
+Done       3    3    46 Y    CONFORMANT       ESCALATE:claimed-close-unmet executable-518.md
+Done       3    3    36 Y    CONFORMANT       ESCALATE:claimed-close-unmet executable-520.md
+Done       2    2    44 Y    CONFORMANT       CONTINUE                     executable-523.md
+Done       2    2    43 Y    CONFORMANT       CONTINUE                     executable-524.md
+Done       2    2    41 Y    CONFORMANT       CONTINUE                     executable-527.md
+Done       2    2    10 Y    CONFORMANT       ESCALATE:claimed-close-unmet executable-532.md
+Done       2    2    10 Y    CONFORMANT       ESCALATE:claimed-close-unmet executable-533.md
+Done       2    2    10 Y    CONFORMANT       ESCALATE:claimed-close-unmet executable-534.md
+Done       2    2    10 Y    CONFORMANT       ESCALATE:claimed-close-unmet executable-535.md
+Done       2    2  None N    None             ESCALATE:assert-fail:2       executable-543.md
+Done       2    2  None N    None             ESCALATE:assert-fail:2       executable-548.md
+Done       2    2  None N    None             ESCALATE:assert-fail:2       executable-554.md
+Done       2    2  None N    None             ESCALATE:assert-fail:2       executable-555.md
+Done       4    4    19 Y    CONFORMANT       ESCALATE:claimed-close-unmet executable-560.md
+Done       2    2  None N    None             ESCALATE:assert-fail:2       executable-561.md
+Done       2    2  None N    None             ESCALATE:assert-fail:2       executable-562.md
+Done       2    2  None N    None             ESCALATE:assert-fail:2       executable-563.md
+Done       2    2  None N    None             ESCALATE:assert-fail:2       executable-564.md
+Done       2    2  None N    None             ESCALATE:assert-fail:2       executable-565.md
+Done       2    2  None N    None             ESCALATE:assert-fail:2       executable-566.md
+Done       2    2  None N    None             ESCALATE:assert-fail:2       executable-567.md
+Done       3    3  None N    None             ESCALATE:assert-fail:2       executable-569.md
+Done       4    4    24 Y    CONFORMANT       ESCALATE:claimed-close-unmet executable-570.md
+Done       3    3  None N    None             ESCALATE:assert-fail:2       executable-571.md
+Done       4    4  None N    None             ESCALATE:assert-fail:2       executable-573.md
+Done       4    4  None N    None             ESCALATE:assert-fail:2       executable-575.md
+Done       4    4  None N    None             ESCALATE:assert-fail:2       executable-576.md
+Done       3    3  None N    None             ESCALATE:assert-fail:2       executable-579.md
+drafts     0 None  None N    None             CONTINUE                     diagnostic-cycle-log-signal.md
+drafts     2    2     5 Y    CONFORMANT       ESCALATE:claimed-close-unmet diagnostic-drafting-stage-pricing.md
+drafts     0 None  None N    None             CONTINUE                     diagnostic-multi-machine-wrap.md
+drafts     2    2     3 Y    CONFORMANT       ESCALATE:claimed-close-unmet diagnostic-pt-dc-census.md
+drafts     2    2    18 Y    CONFORMANT       CONTINUE                     diagnostic-register-coverage.md
+drafts     0 None     0 Y    NO_TABLE         CONTINUE                     diagnostic-u-predicate-divergence.md
+drafts     0 None  None N    None             CONTINUE                     executable-battery-verdict-declaration.md
+drafts     9    9    14 Y    CONFORMANT       ESCALATE:claimed-close-unmet executable-bellows-bootstrap.md
+drafts     4    4     6 Y    CONFORMANT       ESCALATE:claimed-close-unmet executable-checker-defects.md
+drafts     4    4    13 Y    CONFORMANT       BAR_MET                      executable-checker-kill-gap.md
+drafts     3    3    30 Y    CONFORMANT       BAR_MET                      executable-dc-manifest-sentence.md
+drafts     2    2    23 Y    CONFORMANT       ESCALATE:claimed-close-unmet executable-de-hardcode-governance-root.md
+drafts     2    2    29 Y    CONFORMANT       ESCALATE:claimed-close-unmet executable-gate2-pt-w28-a.md
+drafts     3    3    39 Y    CONFORMANT       BAR_MET                      executable-gate2-pt-w28-b.md
+drafts     2    2     3 Y    CONFORMANT       ESCALATE:claimed-close-unmet executable-hooks-de-hardcode.md
+drafts     2    2    14 Y    CONFORMANT       ESCALATE:yield-rising        executable-lessons-destination-doctrine.md
+drafts     0 None     4 Y    CONFORMANT       CONTINUE                     executable-lessons-destination-v2.md
+drafts     1    1    23 Y    CONFORMANT       CONTINUE                     executable-mandate-canary.md
+drafts     0 None     8 Y    CONFORMANT       CONTINUE                     executable-memory-destination-and-gate.md
+drafts     2    2     2 Y    CONFORMANT       ESCALATE:claimed-close-unmet executable-propagation-check-pin-forms.md
+drafts     9    9     0 Y    NO_TABLE         BAR_MET                      executable-qa-predeclaration-warn.md
+drafts     7    7    13 Y    CONFORMANT       BAR_MET                      executable-register-enforcement.md
+drafts     7    7     9 Y    CONFORMANT       BAR_MET                      executable-register-validate-first.md
+drafts     2    2    23 Y    CONFORMANT       ESCALATE:claimed-close-unmet executable-seam-tests-projects-parent.md
+drafts     4    4    31 Y    CONFORMANT       ESCALATE:claimed-close-unmet executable-shop-server-invariant-company.md
+drafts     6    6     8 Y    CONFORMANT       ESCALATE:claimed-close-unmet executable-shop-server-invariant-sketch.md
+drafts    17   17   108 Y    CONFORMANT       BAR_MET                      executable-u-qa-predicate-align.md
+drafts     1    1    11 Y    CONFORMANT       CONTINUE                     executable-verdict-signal-canary.md
+drafts     2    2    11 Y    CONFORMANT       ESCALATE:claimed-close-unmet executable-verdict-signal.md
+
+END OF RAW OUTPUT
