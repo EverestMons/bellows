@@ -41,6 +41,15 @@
 - ⛔ **Deposits keep all three paths** — with only the dev-log, `_parse_plan`'s fallback yields one path under `knowledge/` and `_assign_class` returns `app-feature`, which AUTO-CLEARS (measured 2026-09-04).
 - **Report per SCHEMA STATE.** A single corpus-wide percentage over four schema states is the shape of answer this plan exists to avoid.
 
+## ⛔ What this population would AUTHORIZE — priced here, because a diagnostic's findings license downstream change (lens 2, 2.4)
+
+⚠️ **A number this plan produces could license two changes, each with a 172-register blast radius, and neither is a decision this plan may make:**
+
+1. **Imposing a shop-wide id convention.** At least four are in use (P5). "Normalize them" reads as tidying and is a rewrite of **172 committed registers**, every one an append-only walk record whose rows are cited by plan bodies and panel reports. ⛔ **A convention change is a corpus migration, not a lint fix.**
+2. **Promoting orphan rows to `UNCONFORMANT`.** `walk_register_lint`'s status is read as "this register is in order" and is quoted in freeze records. Flipping the verdict on an unknown share of 172 registers would invalidate closing records already relied on — ⛔ **the same shape as thread 117's measured 13-compliant→0, which is why the emitter key set is a versioned interface.**
+
+⛔ **This plan therefore reports the population and its DISTRIBUTION and prices neither change.** ⚠️ A later plan acting on these findings must measure its own blast radius against the 172 — the count alone does not license either move, and this note must not be cited as if it did.
+
 ## The question
 
 ⛔ **ONE question, deliberately.** 100036 asked seven and answered its last from a restatement.
@@ -87,5 +96,8 @@
 > - `/Users/marklehn/Developer/eluvian-governance/governance/knowledge/research/register-coverage-2026-09-04.md`
 > - `bellows/knowledge/development/dev-log-register-coverage-2026-09-04.md`
 > - `tools/register_coverage_census.py`
+> - `knowledge/qa/evidence/register-coverage-2026-09-04/census-raw.txt`
+>
+> ⛔ **The `.txt` is listed DELIBERATELY (lens 2, 2.1).** The gate note above pre-declares that this step "deposits raw output as `.txt` evidence" and that `qa_test_result` will refuse to certify it — but the Deposits block listed no `.txt`, so the pre-declaration described an artifact that would never exist and the benign failure could not fire for its stated reason. ⚠️ **Measured on plan 100038 the same day:** its header carried the identical pre-declaration, `qa_step_detection` read the step as not-QA, the gate never ran, no `.txt` landed, and its numbers became reproducible only by re-running the census. ⛔ **Raw output is the evidence; a note that summarises it is not.**
 >
 > **Post-conditions:** every register in P1's population classified; per-schema-state subtotals reported; id conventions DERIVED and listed; no-table, rowed, named-but-unrowed and present-but-unreadable kept as distinct states; this cycle's battery numbers recorded against the stated baselines; ⛔ **no recommendation and no design anywhere in the note** — it sizes, it does not choose.

@@ -1,7 +1,7 @@
 {
   "_meta": {
-    "artifact_sha256": "588a5dcf5298f5b356a09b1b7a9e00f6a22992ffb2d96e32568a3ca903cb3aeb",
-    "saved_at": "2026-09-04T20:09:00"
+    "artifact_sha256": "bdb541f6a40f05b665c7011b57f5919649839ac1abc6bd905d5d63cc6f33ce17",
+    "saved_at": "2026-09-04T20:44:18"
   },
   "plan_lint": {
     "exit": 0,
@@ -16,6 +16,7 @@
       "(f) WARN: Cycle Manifest stanza missing or empty field: walks",
       "(f) WARN: Cycle Manifest stanza missing or empty field: writes",
       "(f) WARN: Cycle Manifest stanza missing or empty field: yields",
+      "(o2) WARN: Deposits entry `knowledge/qa/evidence/register-coverage-N-N-N/census-raw.txt` is not project-prefixed or absolute",
       "(o2) WARN: Deposits entry `tools/register_coverage_census.py` is not project-prefixed or absolute",
       "PIN-CHECK: kind=sha256 line=N token=e50b63a1bd40\u2026 result=ok",
       "WARN: Drafting Cycle block has no **Closing:** line (DRAFTING_CYCLE.md \u00a73)",
