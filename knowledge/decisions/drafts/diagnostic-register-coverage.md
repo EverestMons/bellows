@@ -4,6 +4,17 @@
 
 **auto_close:** false
 
+---
+
+# ⏸️ PARKED at walk 2 — CEO direction 2026-09-05. Findings intact; do not deposit or walk.
+
+**Why:** this cycle was run as a TEST of whether the drafting cycle is ready for unsupervised auto-advance. ⛔ **It answered no, and named which part.** The cycle's FINDING power worked — 19 findings across two walks, three of which would have shipped real defects. What failed is the ADVANCE SIGNAL: `cycle_check` evaluated on an empty record for two full walks and nothing detected it (thread **140**).
+
+⚠️ **Park, not abandon.** Yield was converging honestly (13 → 6; instruction 10 → 3), the register is CONFORMANT at 18 rows, and the substrate is 4/4. Resume by re-reading the Cycle Log block FIRST — it is now current and is what `cycle_check` reads.
+
+**Blocked on:** thread **140** (BASIS on an empty ladder) and the unbuilt substrate-reporting fix. Both make "auto-walk to BAR MET" checkable rather than assumed.
+
+
 **Depends on:** tuyere thread **135** (the filing — `walk_register_lint` attests row SHAPE, not coverage) and **127** (why 135 carries no annotation: an open thread cannot be annotated). Clone origin: `Done/diagnostic-100036.md` — same kind, read-only, one Item per question, closed 2026-09-04. ⚠️ **Read that parent's failure too**: its final question was answered from a RESTATEMENT rather than its instrument, and its coverage statement claimed nothing was unassessable while that question said "not re-derivable".
 
 ## What this decides
