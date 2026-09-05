@@ -64,7 +64,15 @@
 **Tier:** T1 — **T-7 fires** (a later plan will act on this population without re-verification). **T-6 does NOT fire**: read-only; it READS `walk_register_lint`, which is not editing it. **T-8 not fired**: clone by kind of `Done/diagnostic-100036.md`.
 ⚠️ **This cycle is also a TEST of the six drafting-cycle fixes shipped 2026-09-04** (`fold_check` VACUOUS refusal · `cycle_check` BASIS on escalation · `plan_lint` (q) pin resolution · `propagation_check` id/line-ref masking). Baselines from the cycle those fixes came out of: `propagation_check` ran 164/52/69/89 divergences, **100% hand-classified false positive**; `fold_check` reported CLEAN three times **vacuously**; `cycle_check` returned the weaker of two escalations silently. ⛔ **Record this cycle's equivalents per walk so the comparison is measured, not felt.** `mutation_check`'s two fixes are NOT exercised by a read-only diagnostic — claim no coverage there.
 **Walk register:** `/Users/marklehn/Developer/eluvian-governance/governance/knowledge/research/walk-register-register-coverage-2026-09-04.md`
-**Walks:** walk 0 complete (context pin). ⛔ **v0 — NO LENS HAS WALKED IT and NO DIRECTION VERDICT has been issued.**
+**Walks:** 2 (walk 0 context pin complete; walks 1–2 run).
+- Weak spots:          w1 4 folded — instruction 4 / record 0; w2 2 folded — instruction 1 / record 1.
+- Destruction:         w1 2 folded — instruction 2 / record 0; w2 1 folded — instruction 1 / record 0.
+- Vulnerabilities:     w1 3 folded — instruction 1 / record 2; w2 1 folded — instruction 1 / record 0.
+- Integration-record:  w1 2 folded — instruction 1 / record 1; w2 1 folded — instruction 0 / record 1.
+- ACID:                w1 2 folded — instruction 2 / record 0; w2 not yet run.
+**Battery run after EVERY lens pass**, not per walk. `fold_check` baselined before the first fold and re-saved after each intended one.
+⛔ **§2.0 DIRECTION VERDICT at walk 1: PROCEED** — checked against all three forcers, recorded in the register.
+⚠️ **This block was ABSENT until walk 2's lens 4.** Every finding was recorded in the walk register and none in the body — and the body is the ONLY place `cycle_check` reads. Measured at that moment: `walk_data []`, `instruction_counts {}`, `restructuring_walks set()`. **Two walks of `CONTINUE` were computed from an empty record — correct, and vacuous.** ⛔ Verbatim the recording error that produced the WRONG ESCALATION on the predecessor cycle (thread 133), committed one cycle after diagnosing it.
 
 ## Cycle Manifest
 
