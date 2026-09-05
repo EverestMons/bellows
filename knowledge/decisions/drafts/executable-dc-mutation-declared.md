@@ -6,6 +6,19 @@
 
 **auto_close:** false
 
+---
+
+# ⛔⛔ RETIRED — its subject SHIPPED by direct edit. Do not walk, deposit, or clone.
+
+**CEO direction 2026-09-05.** `plan_lint` check (w) shipped as commit `1413d68`. This plan is superseded by that edit and is kept only for the reasoning it carries.
+
+⚠️ **Why it was not walked.** 139 lines of plan for ~10 lines of code inside an existing block, then five lens passes — the same ceremony-to-value ratio criticised on thread 91 (2,418 lines of apparatus for 140 characters). ⛔ **And a deeper incoherence: check (w) reads the manifest's `writes:` field, so it is INERT for a direct edit — the very method the shop has been using for DC work.** The rule polices the path not in use and ignores the one in use; that tension is unresolved and outlives this plan.
+
+⛔ **Two defects found in this plan's own v0, both worth keeping:** its Deposits block listed only `knowledge/` paths, so `_assign_class` returned **`app-feature`, which AUTO-CLEARS** — a plan editing the shop's most-run checker would have deposited with no human release act, verbatim panel finding S1-5 from the day before. And it FAILED `plan_lint` (c) on the Rule 20 banner pair, fixed only by copying the byte-exact strings from `RULE_20_SELF_CHECK_BLOCK.md`.
+
+**What survives into the shipped edit:** the 6-of-11 measurement, the instrument list, the advisory-not-required reasoning (mutation_check is the least-trusted instrument in the set), and the finding that `plan_lint` already parses the stanza so no new import was ever needed.
+
+
 **cycle_tier:** T1 — **T-3 fires** (`plan_lint` runs on every machine that drafts). ⛔ **T-6 does NOT fire**, checked against the trigger as quoted (*"Edits doctrine, the template, gates, or specialist contracts"*): `plan_lint` is an authoring-time instrument, and four measured precedents tier `plan_lint`/`cycle_check` edits at T1 (`100023`, `100025`, `100033`, `100037`). ⚠️ **This plan deliberately does NOT write the requirement into doctrine** — see "What this does NOT do". T-8 not fired: clone by kind of `Done/executable-100037.md`.
 
 **Depends on:** the DC-work path question (CEO, 2026-09-05) and threads **141**, **119**. Clone origin: `Done/executable-100037.md` — same kind, `plan_lint` edit, advisory check, T1.
