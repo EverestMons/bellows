@@ -3026,6 +3026,53 @@ def test_q_m1_cross_repo():
             assert any(r[3] == "cross-repo" for r in telemetry), telemetry
 
 
+def test_w_dc_work_without_mutants_warns(tmp_path):
+    """A plan whose writes: names a shop instrument must declare its mutants.
+
+    Measured 2026-09-05: of 11 Done plans writing a shop instrument, 6 declared
+    `mutants:` and 5 did not — including 100033 and 100037, which changed
+    cycle_check and plan_lint themselves. The bootstrap remedy (revert the tool,
+    confirm the new tests FAIL) was already practised six times and never declared.
+    """
+    result = _run_lint(
+        "# t\n\n**Dispatch Mode:** bellows | **pause_for_verdict:** always\n\n"
+        "## Cycle Manifest\n"
+        "tier: T1\nclass: shop-infra\n"
+        "writes: scripts/plan_lint.py, tests/test_plan_lint.py\n",
+    )
+    out = result.stdout + result.stderr
+    code = result.returncode
+    assert "(w) WARN" in out, out
+    assert "plan_lint" in out
+    assert code == 0, "check (w) is advisory; the exit code must not move"
+
+
+def test_w_silent_when_mutants_declared(tmp_path):
+    result = _run_lint(
+        "# t\n\n**Dispatch Mode:** bellows | **pause_for_verdict:** always\n\n"
+        "## Cycle Manifest\n"
+        "tier: T1\nclass: shop-infra\n"
+        "writes: scripts/plan_lint.py\n"
+        "mutants: knowledge/mutants/x.json\n",
+    )
+    out = result.stdout + result.stderr
+    code = result.returncode
+    assert "(w) WARN" not in out, out
+
+
+def test_w_silent_when_no_instrument_written(tmp_path):
+    """⛔ The discriminator is the INSTRUMENT, not the absence of mutants."""
+    result = _run_lint(
+        "# t\n\n**Dispatch Mode:** bellows | **pause_for_verdict:** always\n\n"
+        "## Cycle Manifest\n"
+        "tier: T1\nclass: app-feature\n"
+        "writes: app/thing.py\n",
+    )
+    out = result.stdout + result.stderr
+    code = result.returncode
+    assert "(w) WARN" not in out, out
+
+
 def test_q_adjacent_pin_rows_resolve_to_their_own_file(tmp_path):
     """thread 129: a pin row must resolve against the file IT names.
 

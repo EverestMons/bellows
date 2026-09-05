@@ -601,6 +601,34 @@ def lint(plan_path):
                 s_current_val = s_fm.group(2).strip()
                 stanza_fields[s_current_key] = s_current_val
 
+        # (w) DC work declares its mutants (advisory, WARN-only).
+        # A plan whose manifest writes: names a shop instrument is DC WORK: its DEV step
+        # edits a checker, and its own QA then runs that edited checker to validate it.
+        # The bootstrap remedy — revert the tool, confirm the new tests FAIL — is already
+        # practised (six instrument fixes, 2026-09-04) but was never declared. Measured
+        # 2026-09-05: of 11 Done plans writing a shop instrument, 6 declared `mutants:`
+        # and 5 did not, including 100033 and 100037, which changed cycle_check and
+        # plan_lint themselves.
+        # ⛔ Advisory, NOT required: mutation_check is the least-trusted instrument in
+        # the set (5% recording rate per 100032; threads 97/107/112 open against it), so
+        # a hard requirement would make it load-bearing for the shop's most sensitive
+        # work. Promote only after that debt is settled.
+        _DC_INSTRUMENTS = (
+            "cycle_check", "plan_lint", "fold_check",
+            "propagation_check", "walk_register_lint", "mutation_check",
+        )
+        _w_writes = stanza_fields.get("writes", "")
+        _w_hits = sorted({i for i in _DC_INSTRUMENTS if f"{i}.py" in _w_writes})
+        if _w_hits:
+            _w_mut = stanza_fields.get("mutants", "").strip()
+            if not _w_mut or _w_mut.upper().startswith("NONE"):
+                print(
+                    f"(w) WARN: writes: names shop instrument(s) {', '.join(_w_hits)}"
+                    f" but mutants: is {'absent' if not _w_mut else 'NONE'}"
+                    f" — DC work should declare the mutants that prove the OLD tool"
+                    f" fails the NEW tests (advisory)"
+                )
+
         _STANZA_REQUIRED = [
             "tier", "target", "class", "reads", "writes",
             "open_forks", "walks", "yields", "validation", "coherence",
