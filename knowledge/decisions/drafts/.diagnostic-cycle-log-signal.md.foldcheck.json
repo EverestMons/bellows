@@ -1,7 +1,7 @@
 {
   "_meta": {
-    "artifact_sha256": "fb0249c3e24fa87b48d55523872d4a7b151a25b1cec5379a5b34cc2a6156cdec",
-    "saved_at": "2026-09-05T12:26:22"
+    "artifact_sha256": "ef007120ff6bd9cd3f2ad6f273e2d974ebad1c3b62689d9e14d0da3a6e62be9d",
+    "saved_at": "2026-09-05T12:30:21"
   },
   "plan_lint": {
     "exit": 0,
@@ -20,7 +20,7 @@
       "(o2) WARN: Deposits entry `knowledge/development/dev-log-cycle-log-signal-N-N-N.md` is not project-prefixed or absolute",
       "(o2) WARN: Deposits entry `knowledge/qa/evidence/cycle-log-signal-N-N-N/census-raw.txt` is not project-prefixed or absolute",
       "(o2) WARN: Deposits entry `tools/cycle_log_signal_census.py` is not project-prefixed or absolute",
-      "WARN: Drafting Cycle block missing lens(es): Weak spots, Destruction, Vulnerabilities, Integration, ACID (DRAFTING_CYCLE.md \u00a73)",
+      "WARN: no cycle_tier declared (DRAFTING_CYCLE.md \u00a71/\u00a73)",
       "WARN: step 1 mentions tests but declares no test scope"
     ]
   }

@@ -1,8 +1,20 @@
 # bellows — diagnostic: WHERE THE BODY-VS-REGISTER CHECK BELONGS, and what the six unresolvable `walk_register_ref`s are
 
-**Date:** 2026-09-05 | **Tier:** Small | **Dispatch Mode:** bellows | **Test Scope:** none (read-only diagnostic — the instrument is new code with no consumers; this step deposits raw output as `.txt` evidence, which `qa_test_result` will refuse to certify having no pytest summary to parse: the pre-declared benign gate failure of the gate note below) | **Execution:** Step 1 (DIAGNOSTIC) | **qa_steps:** none | **pause_for_verdict:** always
+**Date:** 2026-09-05 | **Tier:** Small | **Dispatch Mode:** manual_bootstrap | **Test Scope:** none (read-only diagnostic — the instrument is new code with no consumers; this step deposits raw output as `.txt` evidence, which `qa_test_result` will refuse to certify having no pytest summary to parse: the pre-declared benign gate failure of the gate note below) | **Execution:** Step 1 (DIAGNOSTIC) | **qa_steps:** none | **pause_for_verdict:** always
 
 **Priority:** 20
+
+## ⛔ DISPATCH MODE — `manual_bootstrap`, and why
+
+**CEO direction 2026-09-05.** This plan is executed by pasting the bootstrap prompt below into Claude Code. **Bellows is not in the loop**, per the template's own definition of the mode.
+
+⚠️ **The reason is the subject.** This plan prices a defect in `cycle_check`, and the daemon lane's admission gate IS `cycle_check`: `depositor._rerun_validation` holds on any verdict that is not `BAR_MET`, and `clear_plan.py --release-class-hold` re-runs the same gate before releasing. **Routing a diagnostic about the advance signal through the advance signal is the circularity this plan exists to examine.**
+
+⛔ **NOTHING IS BEING OVERRIDDEN OR BYPASSED.** `manual_bootstrap` is a sanctioned mode, not an exception: no gate is asked a question it would refuse, no clearance row is written, and no override is recorded — because none is needed. The plan stays in `drafts/`, which the daemon never scans.
+
+⚠️ **What this forgoes, stated so it is a choice and not an oversight:** no `Done/` record and no lifecycle plan id. The research note, dev-log and raw `.txt` still land — they are in the Deposits block either way. ⛔ **A later plan citing these findings must cite the research note by path, not a plan id.**
+
+**Standing condition:** the drafting cycle is itself under repair (threads 133, 134, 135, 140; six instrument fixes shipped 2026-09-04). When the advance signal is trustworthy again, diagnostics of this kind return to the daemon lane. This mode is chosen for THIS plan, not adopted as a practice.
 
 **auto_close:** false
 
