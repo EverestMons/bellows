@@ -1,12 +1,28 @@
 # bellows — diagnostic: WHAT IS THE ORPHAN-ID POPULATION IN THE WALK REGISTERS — how many findings a register NAMES but carries no schema row for, across every id convention and schema state
 
-**Date:** 2026-09-04 | **Project:** bellows | **Tier:** Small | **Dispatch Mode:** bellows | **cycle_tier:** T1 | **Test Scope:** none (read-only diagnostic — the instrument is new code with no consumers; this step deposits raw output as `.txt` evidence, which `qa_test_result` will refuse to certify having no pytest summary to parse: the pre-declared benign gate failure of the gate note below) | **Execution:** Step 1 (DIAGNOSTIC) | **pause_for_verdict:** always | **known_failures:** 0
+**Date:** 2026-09-04 | **Project:** bellows | **Tier:** Small | **Dispatch Mode:** manual_bootstrap | **cycle_tier:** T1 | **Test Scope:** none (read-only diagnostic — the instrument is new code with no consumers; this step deposits raw output as `.txt` evidence, which `qa_test_result` will refuse to certify having no pytest summary to parse: the pre-declared benign gate failure of the gate note below) | **Execution:** Step 1 (DIAGNOSTIC) | **pause_for_verdict:** always | **known_failures:** 0
 
 **auto_close:** false
 
 ---
 
-# ▶️ UN-PARKED 2026-09-05 — the blocker shipped. Resuming at walk 3.
+# ▶️ UN-PARKED 2026-09-05 — and STOP WALKING IT. Run it.
+
+⛔ **CEO direction: this plan goes to `manual_bootstrap` and executes. It is not walked further.**
+
+⚠️ **Measured, same session, two diagnostics treated differently:** `cycle-log-signal` was written, **not walked**, and run via bootstrap — it produced a 32KB census tool, a 21KB research note answering all four of its questions, and 99KB of raw evidence, in about twenty minutes. This plan has had **3 walks, 21 register rows and 8 commits** and has produced **zero** measurements of the orphan-id population: no census tool, no research note.
+
+⛔ **The walks were not waste — they hardened the brief** (the 68%-multi-table fact, the second-parser trap 100032 already forbade, the census self-inclusion, the unbounded retry). Remaining lenses would polish a plan that has measured nothing.
+
+⚠️ **And there is a circularity specific to THIS subject:** `walk_register_lint` is what this plan studies, and it also validates this plan's own register. It reported CONFORMANT throughout walk 2 on a register that was missing a row — **the tool under study failed to catch a defect in the cycle studying it** (w3-2). Walking further would keep asking the subject to grade its own examiner.
+
+## How to Run This Plan
+
+```
+Read the plan at bellows/knowledge/decisions/drafts/diagnostic-register-coverage.md. Execute Step 1 ONLY. After completing Step 1, STOP and wait for my confirmation. Do NOT proceed further and do NOT move the plan to Done.
+```
+
+⚠️ **Cost of this route, stated so it is a choice:** no `Done` record and no lifecycle plan id. A later plan citing these findings must cite the research note BY PATH.
 
 **Why:** this cycle was run as a TEST of whether the drafting cycle is ready for unsupervised auto-advance. ⛔ **It answered no, and named which part.** The cycle's FINDING power worked — 19 findings across two walks, three of which would have shipped real defects. What failed is the ADVANCE SIGNAL: `cycle_check` evaluated on an empty record for two full walks and nothing detected it (thread **140**).
 
