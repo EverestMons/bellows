@@ -463,13 +463,41 @@ def run_check(plan_path, warnings=None):
         # unchanged (advisory), and the conjunction warn is the only new output.
         # ⚠️ check_assert_2's git/uncommitted work is itself guarded by `if walk_data:`,
         # so on this path it does register resolution and validation only.
+        empty_reg_status = None
         if warnings is not None:
             try:
-                _, _, _, empty_warn = check_assert_2(parsed, plan_path)
+                empty_reg_status, _, _, empty_warn = check_assert_2(parsed, plan_path)
                 if empty_warn is not None:
                     warnings.append(empty_warn)
+                # Thread 151: BOTH warns are built inside `if resolved_path is not
+                # None`, so a ref resolving to NOTHING left register_warn as None and
+                # this path emitted nothing at all — while the SAME ref is a blocking
+                # ESCALATE:assert-fail:2 the moment the body has walks (:488, which
+                # this early return precedes). Total silence in exactly the state where
+                # the register is the only place the record could be.
+                # ⚠️ A WARN and not an escalation, measured: all 6 plans in this window
+                # are legitimately PRE-WALK — they declare a register they have not
+                # created yet, and none claims closure. Escalating would block every
+                # one. ⚠️ And a warn only when UNRESOLVED, not on every empty body:
+                # the BASIS note below states why a checker that speaks on every run
+                # trains the reader to skim it (thread 117).
+                if empty_reg_status == "UNRESOLVED":
+                    warnings.append(
+                        "WARN: walk register declared but UNRESOLVABLE — the body has "
+                        "no walks, so this register is the only place the record could "
+                        "be, and it is absent (the same ref ESCALATEs once walks exist)"
+                    )
             except Exception:
                 pass  # never let an advisory path change the verdict
+
+        # ⛔ THREAD 151's SECOND ASYMMETRY IS DELIBERATELY LEFT OPEN. A plan CLAIMING
+        # CLOSURE with an empty body is told CONTINUE, bypassing the closure check at
+        # :553 which blocks on every other path. That looks like the same defect —
+        # but it is RATIFIED: the Tier-2 state-space table (tests/test_cycle_check.py,
+        # _WALK_DIM "no walk lines -> CONTINUE regardless") force-classifies rule 2 as
+        # "none walk -> CONTINUE, no walk data DOMINATES close/reg", and 8 cells assert
+        # it. Closing it flipped all 8. Changing a ratified precedence is a design
+        # decision for the CEO, not a bug fix; recorded rather than taken.
         return "CONTINUE", 0
 
     current_walk = max(walk_data.keys())
