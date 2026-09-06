@@ -154,7 +154,16 @@ def _parse_plan_header(plan_text):
     # Strategy 2: Pipe-separated bold-Markdown header
     # Expects: line 1 = "# Title", line 2 = "**Key:** value | **Key:** value | ..."
     lines = plan_text.split("\n")
-    header_line = None
+    # The plan header is the first `# ` heading FOLLOWED BY bold fields — not simply
+    # the first `# ` heading. A stop-banner (`# ⛔ DO NOT DEPOSIT …`, `# ⛔ RE-DRAFT …`)
+    # is itself an h1 and sits ABOVE the header by editorial convention, so keying on
+    # the first h1 let the banner consume the header slot and returned {}. Measured
+    # 2026-09-05 (thread 131): 4 of 617 plans, 3 of them live drafts. Emptiness is not
+    # an admission interlock — no gate fails on it — so the cost was silent: with no
+    # header, `_gate_is_qa_step` skips its `qa_steps` field entirely and decides on
+    # whether the step heading contains "QA".
+    if not next((s for s in (ln.strip() for ln in lines) if s), "").startswith("# "):
+        return {}
     for i, line in enumerate(lines):
         stripped = line.strip()
         if not stripped:
@@ -180,15 +189,23 @@ def _parse_plan_header(plan_text):
                 else:
                     # Non-bold, non-blank line — header block is over
                     break
-            header_line = " | ".join(header_lines) if header_lines else None
-            break
-        else:
-            # File doesn't start with # — no pipe-format header
-            break
+            # A banner is followed either by prose (no bold lines collected) or by
+            # BOLD prose (`**Withdrawn 2026-09-03 …**` — bold, but carrying no
+            # `**Key:** value` pair). Both shapes occur in the corpus, so the test
+            # that ends the scan is FIELDS EXTRACTED, not bold lines collected.
+            if header_lines:
+                fields = _extract_header_fields(" | ".join(header_lines))
+                if fields:
+                    return fields
+            continue
 
-    if not header_line or "**" not in header_line:
+    return {}
+
+
+def _extract_header_fields(header_line):
+    """Pull `**Key:** value` pairs out of a joined header line. {} if there are none."""
+    if "**" not in header_line:
         return {}
-
     result = {}
     for m in re.finditer(r'\*\*([^:*]+):\*\*\s*([^|]*?)(?:\s*\||$)', header_line):
         key = m.group(1).strip().lower().replace(" ", "_")

@@ -2525,3 +2525,77 @@ def test_agent_receipt_strips_trailing_parenthetical():
     paths = gates._extract_agent_declared_deposits(parsed)
     assert len(paths) == 1
     assert paths[0] == "knowledge/development/dev-log.md"
+
+
+def test_parse_plan_header_skips_stop_banner_with_prose():
+    """Thread 131 — a `# ⛔` stop-banner is an h1 and sits ABOVE the header by
+    editorial convention. Keying on the FIRST h1 let it consume the header slot."""
+    plan_text = (
+        "# ⛔ DO NOT DEPOSIT — the correctness objection was withdrawn.\n"
+        "\n"
+        "⚠️ This banner was wrong when written and is corrected here.\n"
+        "\n"
+        "---\n"
+        "\n"
+        "# bellows — executable: the real plan\n"
+        "\n"
+        "**Date:** 2026-09-03 | **Project:** bellows | **Dispatch Mode:** bellows\n"
+    )
+    header = gates._parse_plan_header(plan_text)
+    assert header.get("project") == "bellows"
+    assert header.get("dispatch_mode") == "bellows"
+
+
+def test_parse_plan_header_skips_stop_banner_followed_by_bold_prose():
+    """The second corpus shape: the banner is followed by BOLD prose, which fills
+    the collector but yields no `**Key:** value` pair. The scan must end on FIELDS
+    EXTRACTED, not on bold lines collected."""
+    plan_text = (
+        "# ⛔ WITHDRAWN AT WALK 0 — the machinery already does this.\n"
+        "\n"
+        "**Withdrawn 2026-09-03, on measurement, before lens 1.** This plan proposed a check.\n"
+        "\n"
+        "# bellows — executable: the real plan\n"
+        "\n"
+        "**Date:** 2026-09-03 | **Project:** bellows | **qa_steps:** 2\n"
+    )
+    header = gates._parse_plan_header(plan_text)
+    assert header.get("project") == "bellows", f"bold-prose banner consumed the header: {header}"
+    assert header.get("qa_steps") == "2"
+
+
+def test_parse_plan_header_still_requires_file_to_start_with_h1():
+    """⛔ Guard against over-reach. A file whose header sits ABOVE any h1 (one real
+    Done/ plan does) must still return {} — otherwise the scan walks on into the
+    body and returns a Dev Log section's `**Date:**` as the plan header."""
+    plan_text = (
+        "**Project:** bellows | **Type:** executable\n"
+        "\n"
+        "# Hygiene Close — a title that is not the header\n"
+        "\n"
+        "## Context\n"
+        "\n"
+        "# Dev Log — a later section\n"
+        "\n"
+        "**Date:** 2026-05-12\n"
+    )
+    assert gates._parse_plan_header(plan_text) == {}
+
+
+def test_parse_plan_header_first_h1_with_fields_still_wins():
+    """The common case is untouched: when the first h1 carries the fields, they are
+    what is returned — the scan never reaches a later heading."""
+    plan_text = (
+        "# bellows — executable: the real plan\n"
+        "\n"
+        "**Project:** bellows | **Tier:** Small\n"
+        "\n"
+        "## STEP 1\n"
+        "\n"
+        "# A later heading\n"
+        "\n"
+        "**Project:** WRONG | **Tier:** WRONG\n"
+    )
+    header = gates._parse_plan_header(plan_text)
+    assert header.get("project") == "bellows"
+    assert header.get("tier") == "Small"
