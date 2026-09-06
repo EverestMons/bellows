@@ -1,0 +1,320 @@
+==============================================================================
+cycle_log_projection_census — RAW EVIDENCE (appended AS ESTABLISHED)
+plan: bellows/knowledge/decisions/drafts/diagnostic-cycle-log-projection.md
+Step 1 (DIAGNOSTIC) — manual_bootstrap, no lifecycle plan id, no Done/ record
+==============================================================================
+
+## ITEM 0 — ROOTS
+GOV=/Users/marklehn/Developer/eluvian-governance   marker GLOSSARY.md: present
+BPY=/Users/marklehn/Developer/bellows/.venv/bin/python (Python 3.12.14)
+machine: the mini.
+⛔ HARDCODED ROOTS ARE A KNOWN INVARIANT BREACH, not a design choice.
+   CEO 2026-09-06: every machine operates identically; the mini is special
+   ONLY in holding the tuyere database. Threads 89/113/145/146/99 carry the
+   debt. This plan INHERITS it and does not fix it. Fails closed elsewhere.
+
+## ITEM 1 — P1-P6 RE-DERIVATION
+
+### P4 — THE HALT CONDITION (the only one). Does the observer carry more than walk+lens?
+every compiled pattern in scripts/lens_order_check.py:
+  70:_WALK_RE = re.compile(r"\bwalk\s+(\d+)\b", re.IGNORECASE)
+  76:_LENS_RE = re.compile(r"\blens\s+(\d+(?:\s*/\s*\d+)*)", re.IGNORECASE)
+  82:_CONT_RE = re.compile(r"\(cont\.?\)|\bcontinued\b", re.IGNORECASE)
+
+every capture group actually READ from a commit subject:
+  116:        w = _WALK_RE.search(subject)
+  118:        for group in _LENS_RE.findall(subject):
+  121:            rows.append((int(w.group(1)), lenses, sha[:7], subject))
+  137:    m = re.match(r"^(T[012])\b", str(raw).strip())
+  138:    return m.group(1) if m else None
+  162:                   for l in lenses if not _CONT_RE.search(subj)]
+  -> _WALK_RE captures walk N; _LENS_RE captures lens N(/N); _CONT_RE is a
+     continuation FLAG. Line 137 parses a TIER from the plan header, not from
+     a commit. NO fold count, NO instruction/record class, anywhere.
+  ⛔ P4 HOLDS. NO HALT. The plan proceeds.
+
+### P1 — the register population
+  registers in the directory: 173
+  pinned: 173 in the directory today; this plan's own register would make 174
+  and the CENSUSED population is 173 (its own excluded by exact name).
+  self register created yet: NO (v0 — created at walk 1)
+
+### P3 — the missing field
+  registers with a 'class' column in an id table: 5
+  'instruction N / record N' as PROSE in registers: 463
+  same, in plan bodies (Done/): 652
+  pinned: 5 of 173 · 463 in registers · 652 in bodies
+
+### P5 — observer adoption
+  commits touching knowledge/decisions/ since 2026-07-01: 596
+  of those, carrying a lens token: 75
+  pinned: 75 of 593. DC v2.25 measured 18 of 19 plans at the bar NO-RECORD.
+
+### P6 — the projection precedent (quoted, not restated)
+  GLOSSARY: COMPUTED and never hand-typed:** `walks`, `yields`, `validation`, `coherence` — `cycle_check --emit-manifest` derives them from the cycle's walk data, checker verdicts and register state.
+  the four fields: walks`, `yields`, `validation`, `coherence`
+==============================================================================
+## ITEM 2 — POSITIVE CONTROLS (both directions, before any corpus run)
+==============================================================================
+⛔ One control proves only that the instrument reads the case it was
+   written for. Two, in OPPOSITE directions, is the minimum.
+
+  executable-100030.md
+      body walks     : [1, 2, 3, 4, 5, 6, 7]
+      register walks : [1, 2, 3, 4, 5, 6, 7]   rows=9
+      verdict        : exact — walk-sets identical
+      expected       : AGREEING
+      RESULT: PASS
+
+  executable-100017.md
+      body walks     : [1, 2, 3, 4, 5, 6, 7, 8, 9]
+      register walks : [1, 2, 3, 5, 7, 8, 9]   rows=12
+      verdict        : derivable-with-gap — BODY-AHEAD: walks [4, 6] declared, no register rows
+      expected       : DIVERGING, missing [4, 6]
+      RESULT: PASS
+
+  CONTROLS OVERALL: PASS — proceed to the corpus
+
+  SELF-EXCLUSION: walk-register-cycle-log-projection-2026-09-06.md
+      plans whose register resolved to it: 0 (v0 — the register is created at walk 1)
+
+==============================================================================
+## ITEM 3 / Q1 — PER-LENS DERIVABILITY, with the direction of each mismatch
+==============================================================================
+plans carrying BOTH a body Cycle Log with walk data AND a register with walk rows: 71
+
+plan                                           verdict              detail
+--------------------------------------------------------------------------------------------------------------
+diagnostic-100014.md                           derivable-with-gap   BODY-AHEAD: walks [2] declared, no register rows
+diagnostic-100032.md                           derivable-with-gap   BODY-AHEAD: walks [6] declared, no register rows
+diagnostic-100034.md                           derivable-with-gap   BODY-AHEAD: walks [4] declared, no register rows
+diagnostic-100036.md                           derivable-with-gap   BODY-AHEAD: walks [6] declared, no register rows
+diagnostic-100038.md                           derivable-with-gap   BODY-AHEAD: walks [9] declared, no register rows
+diagnostic-429.md                              derivable-with-gap   BODY-AHEAD: walks [2] declared, no register rows
+diagnostic-drafting-stage-pricing.md           derivable-with-gap   BODY-AHEAD: walks [2] declared, no register rows
+diagnostic-register-coverage.md                derivable-with-gap   BODY-BEHIND: walks [3] in register, absent from body
+executable-100005.md                           derivable-with-gap   BODY-AHEAD: walks [8] declared, no register rows
+executable-100010.md                           derivable-with-gap   BODY-BEHIND: walks [2] in register, absent from body
+executable-100013.md                           derivable-with-gap   BODY-BEHIND: walks [2] in register, absent from body
+executable-100015.md                           derivable-with-gap   BODY-AHEAD: walks [2] declared, no register rows
+executable-100017.md                           derivable-with-gap   BODY-AHEAD: walks [4, 6] declared, no register rows
+executable-100018.md                           derivable-with-gap   BODY-AHEAD: walks [3] declared, no register rows
+executable-100033.md                           derivable-with-gap   BODY-AHEAD: walks [5] declared, no register rows
+executable-100037.md                           derivable-with-gap   BODY-AHEAD: walks [7] declared, no register rows
+executable-392.md                              derivable-with-gap   BODY-AHEAD: walks [2] declared, no register rows
+executable-bellows-bootstrap.md                derivable-with-gap   BODY-AHEAD: walks [4, 6] declared, no register rows
+executable-hooks-de-hardcode.md                derivable-with-gap   BODY-AHEAD: walks [2] declared, no register rows
+executable-mandate-canary.md                   derivable-with-gap   BODY-BEHIND: walks [2] in register, absent from body
+executable-register-enforcement.md             derivable-with-gap   BODY-AHEAD: walks [7] declared, no register rows
+executable-shop-server-invariant-sketch.md     derivable-with-gap   BODY-AHEAD: walks [3] declared, no register rows
+executable-verdict-signal-canary.md            derivable-with-gap   BODY-BEHIND: walks [2] in register, absent from body
+diagnostic-100024.md                           exact                walk-sets identical
+diagnostic-100035.md                           exact                walk-sets identical
+diagnostic-511.md                              exact                walk-sets identical
+diagnostic-515.md                              exact                walk-sets identical
+diagnostic-517.md                              exact                walk-sets identical
+diagnostic-519.md                              exact                walk-sets identical
+diagnostic-521.md                              exact                walk-sets identical
+diagnostic-522.md                              exact                walk-sets identical
+diagnostic-526.md                              exact                walk-sets identical
+diagnostic-531.md                              exact                walk-sets identical
+diagnostic-582.md                              exact                walk-sets identical
+diagnostic-pt-dc-census.md                     exact                walk-sets identical
+executable-100009.md                           exact                walk-sets identical
+executable-100012.md                           exact                walk-sets identical
+executable-100019.md                           exact                walk-sets identical
+executable-100021.md                           exact                walk-sets identical
+executable-100023.md                           exact                walk-sets identical
+executable-100025.md                           exact                walk-sets identical
+executable-100026.md                           exact                walk-sets identical
+executable-100027.md                           exact                walk-sets identical
+executable-100030.md                           exact                walk-sets identical
+executable-430.md                              exact                walk-sets identical
+executable-516.md                              exact                walk-sets identical
+executable-518.md                              exact                walk-sets identical
+executable-520.md                              exact                walk-sets identical
+executable-523.md                              exact                walk-sets identical
+executable-524.md                              exact                walk-sets identical
+executable-527.md                              exact                walk-sets identical
+executable-532.md                              exact                walk-sets identical
+executable-533.md                              exact                walk-sets identical
+executable-534.md                              exact                walk-sets identical
+executable-535.md                              exact                walk-sets identical
+executable-560.md                              exact                walk-sets identical
+executable-570.md                              exact                walk-sets identical
+executable-checker-defects.md                  exact                walk-sets identical
+executable-checker-kill-gap.md                 exact                walk-sets identical
+executable-dc-manifest-sentence.md             exact                walk-sets identical
+executable-de-hardcode-governance-root.md      exact                walk-sets identical
+executable-gate2-pt-w28-a.md                   exact                walk-sets identical
+executable-gate2-pt-w28-b.md                   exact                walk-sets identical
+executable-lessons-destination-doctrine.md     exact                walk-sets identical
+executable-propagation-check-pin-forms.md      exact                walk-sets identical
+executable-register-validate-first.md          exact                walk-sets identical
+executable-seam-tests-projects-parent.md       exact                walk-sets identical
+executable-shop-server-invariant-company.md    exact                walk-sets identical
+executable-u-qa-predicate-align.md             exact                walk-sets identical
+executable-verdict-signal.md                   exact                walk-sets identical
+executable-418.md                              not-derivable        register carries NO walk rows
+
+SUBTOTALS:
+    exact                  47
+    derivable-with-gap     23
+    not-derivable          1
+    no-data                0
+
+⛔ DIRECTION MATTERS — these are different failures with different remedies:
+    BODY-AHEAD  (walks declared with no register rows) : 18
+    BODY-BEHIND (register rows for walks the body omits): 5
+    BODY-BEHIND is thread 140/141's failure — the record cycle_check reads
+    lagging the record the findings live in.
+      executable-100010.md: BODY-BEHIND: walks [2] in register, absent from body
+      executable-100013.md: BODY-BEHIND: walks [2] in register, absent from body
+      diagnostic-register-coverage.md: BODY-BEHIND: walks [3] in register, absent from body
+      executable-mandate-canary.md: BODY-BEHIND: walks [2] in register, absent from body
+      executable-verdict-signal-canary.md: BODY-BEHIND: walks [2] in register, absent from body
+
+PER-LENS derivability (the stricter test Q1 actually asks for):
+    register rows carry a LENS value      : 71 of 71
+    no lens column at all                 : 0
+    ⛔ per-lens counts therefore derivable for at most 71 of 71 plans
+
+==============================================================================
+## ITEM 4 / Q2 — WHAT THE BODY CARRIES THAT THE REGISTER CANNOT
+==============================================================================
+parse_block field        register can supply?     evidence
+----------------------------------------------------------------------------------------------------
+walk_data (walks)        DERIVABLE                every fold row carries a walk column
+walk_data (lenses)       DERIVABLE where present  71/71 pairs have a lens value
+walk_data (fold counts)  DERIVABLE                count of rows per (walk, lens)
+instruction/record split ⛔ NOT DERIVABLE          class column present in 0 plan(s) of 155
+walk_status totals       DERIVABLE                row count per walk
+restructuring_walks      ⛔ ABSENT                 no register field encodes it
+claims_closure           ⛔ ABSENT                 a body prose claim, by construction
+walk_register_ref        N/A                      the pointer TO the register
+
+⛔ THE INSTRUCTION/RECORD SPLIT IS THE CONVERGENCE SIGNAL. DRAFTING_CYCLE:
+   "The cycle is DONE when a full walk's findings, classified by the surface
+    each TOUCHES, are all record-class — zero instruction-class findings."
+   If it is not derivable, THE BAR IS NOT DERIVABLE and a projected Cycle
+   Log cannot carry the verdict — only the counts beneath it.
+
+==============================================================================
+## ITEM 5 / Q3 — COST OF ADDING `class` TO REQUIRED_COLUMNS
+==============================================================================
+registers censused (self excluded): 173
+already carrying a class column   : 7
+would become non-conformant       : 166
+
+status distribution TODAY (before any schema change):
+    CONFORMANT         119
+    PRE-SCHEMA         25
+    UNCONFORMANT       16
+    LEGACY_SCHEMA      12
+    NO_TABLE           1
+
+⛔ THE LEGACY_SCHEMA PATH IS THE POINT, and it is separate from the failure
+   count. walk_register_lint._apply_version_status: a register declaring a
+   version OLDER than the validator's, and already non-conformant, is
+   demoted to LEGACY_SCHEMA rather than reported UNCONFORMANT.
+   declared schema versions across the population:
+       0.1          14
+       0.1-draft    1
+       0.2          13
+       0.3          120
+       UNDECLARED   25
+   validator is at 0.3. At 0.4, every register
+   declaring 0.1/0.2/0.3 becomes 'older' and takes the LEGACY_SCHEMA path;
+   only the UNDECLARED ones and any declaring 0.4 would report UNCONFORMANT.
+
+⚠️ AND THE cycle_check WARN REACHES THE VERDICT PATH — reported separately:
+   cycle_check._REGISTER_SILENT_STATUSES = {CONFORMANT, PRE-SCHEMA,
+   LEGACY_SCHEMA}. LEGACY_SCHEMA is SILENT, so the demotion suppresses the
+   WARN entirely; UNCONFORMANT emits one. Migration noise is therefore
+   bounded by the UNDECLARED count (25), not by the
+   166 registers lacking the column.
+
+==============================================================================
+## ITEM 6 / Q4 — CAN THE OBSERVER RECONSTRUCT THE SEQUENCE?
+==============================================================================
+⛔ COVERAGE and AGREEMENT are reported SEPARATELY. A plan whose commits
+   carry no lens token is NO-RECORD, not a disagreement.
+
+plans with body walk data            : 134
+  COVERAGE — commits carry lens rows : 4  (3%)
+  NO-RECORD — no lens commit at all  : 130  (97%)
+
+  of the 4 covered, AGREEMENT with the body's walk-set:
+    agree    : 1
+    disagree : 3
+      diagnostic-register-coverage.md: observer [1, 2, 3] vs body [1, 2]
+      executable-u-qa-predicate-align.md: observer [1, 2, 3, 7, 8, 9, 10, 11, 13] vs body [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17]
+      executable-verdict-signal.md: observer [1] vs body [1, 2]
+
+⛔ THIS BOUNDS THE WHOLE PROPOSAL. A Cycle Log computed from the observer
+   today would be EMPTY for 130 of 134 plans, because
+   the observer is a convention followed by a minority of commits (P5:
+   75 of 596). The observer proves ORDER where it exists; it cannot be the
+   source of a record it does not cover.
+
+==============================================================================
+## ITEM 7 / Q5 — DOES THREAD 152 BLOCK? Answered from the FUNCTION.
+==============================================================================
+A projection needs a CURRENCY check: something must prove the emitted block
+still matches the source it was derived from. The only body<->register
+comparison in the system is cycle_check._compute_coherence. Its source:
+
+    def _compute_coherence(parsed, plan_path):
+        """Compute the coherence field value for --emit-manifest."""
+        ref = parsed.get("walk_register_ref")
+        if not ref:
+            return "N/A (no register declared)"
+        git_root = _find_git_root(plan_path)
+        if not git_root:
+            return "N/A"
+        reg_path = git_root / ref
+        if not reg_path.exists():
+            return "N/A"
+        walk_data = parsed.get("walk_data", {})
+        total_walks = max(walk_data.keys()) if walk_data else 0
+        if total_walks == 0:
+            return "N/A"
+        try:
+            reg_text = reg_path.read_text(encoding="utf-8")
+            walks_with_rows = 0
+            for wn in range(1, total_walks + 1):
+                if re.search(rf"\b[Ww]alk\s+{wn}\b|\bw{wn}\b", reg_text):
+                    walks_with_rows += 1
+            return f"{walks_with_rows}/{total_walks} walks have register rows"
+        except Exception:
+            return "N/A"
+    
+    
+
+MEASURED BEHAVIOUR, not the docstring:
+    diagnostic-370.md: 'N/A'
+    executable-371.md: 'N/A'
+    executable-376.md: 'N/A'
+    executable-379.md: 'N/A'
+    diagnostic-u-predicate-divergence.md: 'N/A'
+    executable-lessons-destination-v2.md: 'N/A'
+    executable-memory-destination-and-gate.md: 'N/A'
+    -> every plan with an empty body and a resolvable register: 7, all returning N/A
+
+THREE DEFECTS, each disqualifying for a currency check:
+  1. `if total_walks == 0: return "N/A"` — it is DISABLED by exactly the
+     state a stale projection would present (a body that emits nothing).
+  2. the walk-matching regex is `\b[Ww]alk\s+N\b|\bwN\b`, which matches any
+     wNN token. Gate-2 week names (gate2-pt-w28-a, forge-cycle-w29) score as
+     walks; no cycle in the corpus ran 20 walks.
+  3. it runs ONLY under --emit-manifest — once, at freeze. A projection
+     drifts DURING a cycle; a check that runs at the end cannot catch it.
+
+⛔ ANSWER: NO CURRENT CHECK CAN VERIFY A PROJECTION IS CURRENT.
+   Thread 152 is therefore a PRECONDITION, not an adjacent fix. Making the
+   Cycle Log a projection while its only currency check is disabled by the
+   empty case, contaminated in its matcher, and run once at freeze would
+   replace a record that is WRONG 23 times in 71 with one that is wrong
+   silently and unmeasurably. This plan does not soften that.
+
+END OF RAW OUTPUT (Step 1)
