@@ -300,33 +300,13 @@ def check_assert_2(parsed, plan_path):
                 resolved_path = candidate
             register_result = "PASS" if resolved else "UNRESOLVED"
         else:
-            git_root = _find_git_root(plan_path)
-            # Step 2: git_root / ref
-            if git_root:
-                candidate = git_root / ref
-                try:
-                    resolved = candidate.exists()
-                except OSError:  # C-2: oversized path component (thread 52)
-                    resolved = False
-                if resolved:
-                    resolved_path = candidate
-                    register_result = "PASS"
-            # Step 3: governance root fallback
-            if not resolved:
-                try:
-                    from bellows_root import resolve_governance_root
-                    gov_root = resolve_governance_root()
-                except ImportError:
-                    gov_root = None
-                if gov_root:
-                    candidate = gov_root / ref
-                    try:
-                        resolved = candidate.exists()
-                    except OSError:
-                        resolved = False
-                    if resolved:
-                        resolved_path = candidate
-                        register_result = "PASS"
+            # Steps 2-4 live in _resolve_register_ref — ONE resolver, because two
+            # copies diverged the moment the shop-root step was added to only one.
+            candidate = _resolve_register_ref(ref, plan_path)
+            if candidate is not None:
+                resolved = True
+                resolved_path = candidate
+                register_result = "PASS"
             if not resolved:
                 register_result = "UNRESOLVED"
 
@@ -647,6 +627,53 @@ def _extract_tier_from_plan(plan_text, dc_block):
     return None
 
 
+def _resolve_register_ref(ref, plan_path):
+    """The ONE register-ref resolver. Returns a Path that exists, or None.
+
+    ⛔ There were TWO. check_assert_2 walked absolute -> git_root -> gov_root, and
+    _compute_coherence walked git_root only. Adding the shop-root step to the first
+    left the second still reporting "does not resolve" for the same file — the
+    ship-one-copy class (LESSONS 2026-08-08: a value that lives in every tool that
+    reads it fails its own tooling when only one copy moves). Both now call this.
+
+    Step 4 is the shop root, and it exists because the two machine layouts put bellows
+    on opposite sides of the governance root (bellows_root.resolve_governance_root):
+        shop : <root>/{COMPANY.md, bellows/, ...}          — bellows UNDER the root
+        mini : ~/Developer/{eluvian-governance/, bellows/} — bellows BESIDE it
+    `bellows/knowledge/research/<file>` is exactly right under the shop shape, where
+    step 3 resolves it; on the mini the same ref needs the root's PARENT. Measured
+    2026-09-06 (thread 153): 22 plans carry that form — 18 Done/, 4 halted — all
+    failing here while the file sits on disk. The RECORDS ARE NOT DEFECTIVE; they were
+    written correctly for the machine that wrote them, which is why this is a resolver
+    step and not an edit to 22 shipped plans.
+    """
+    def _ok(c):
+        try:
+            return c.exists()
+        except OSError:  # C-2: oversized path component (thread 52)
+            return False
+
+    cand = Path(ref)
+    if cand.is_absolute():
+        return cand if _ok(cand) else None
+
+    git_root = _find_git_root(plan_path)
+    if git_root and _ok(git_root / ref):
+        return git_root / ref
+
+    try:
+        from bellows_root import resolve_governance_root
+        gov_root = resolve_governance_root()
+    except Exception:
+        gov_root = None
+    if gov_root:
+        if _ok(gov_root / ref):
+            return gov_root / ref
+        if _ok(gov_root.parent / ref):          # step 4 — the shop root
+            return gov_root.parent / ref
+    return None
+
+
 def _compute_coherence(parsed, plan_path):
     """Compute the coherence field — the ONLY body-vs-register reconciliation there is.
 
@@ -682,11 +709,8 @@ def _compute_coherence(parsed, plan_path):
     ref = parsed.get("walk_register_ref")
     if not ref:
         return "N/A (no register declared)"
-    git_root = _find_git_root(plan_path)
-    if not git_root:
-        return "N/A (no git root above the plan)"
-    reg_path = git_root / ref
-    if not reg_path.exists():
+    reg_path = _resolve_register_ref(ref, plan_path)
+    if reg_path is None:
         return "N/A (register ref does not resolve on this machine)"
     walk_data = parsed.get("walk_data", {})
     total_walks = max(walk_data.keys()) if walk_data else 0
