@@ -83,7 +83,12 @@ done-on-another-machine-and-not-pulled (measured 2026-08-24).
    `python3 lessons-forge/scripts/project_status_markers.py --db <live db>
    --lessons LESSONS.md --apply` (on the machine that holds the live DB; use
    `--snapshot <dump.sql>` elsewhere) and let it stamp the DB's status. Planner
-   working-pattern lessons → the memory repo. **Then add a line to `shop_next_session.md`:**
+   working-pattern lessons go to `LESSONS.md` LIKE ANY OTHER — ⛔ the memory repo is for what
+   CANNOT be codified (identity, working preferences, pointers), and nothing else (CEO ruling
+   2026-09-02, PLANNER_TEMPLATE v4.99). The test is not whose loop it is: if a future Planner
+   could be told it in a document, the document is the destination — a lesson held only in
+   memory is invisible to the forge, so it cannot be routed, codified or counted.
+   **Then add a line to `shop_next_session.md`:**
    `Lessons-swept: <today's date> [sid: <first-8-of-session-id>] — <one-line delta, or 'none'>`
    (the stop-hook lock verifies the NEWEST such line carries THIS session's id;
    the debt hook checks for today's date. Your session prefix is the first 8
