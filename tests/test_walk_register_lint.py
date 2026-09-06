@@ -684,3 +684,48 @@ def test_rows_never_empty_on_exemption_path(tmp_path):
     status, rows, shapes = validate_file(p)
     assert status in (STATUS_LEGACY_SCHEMA, STATUS_CONFORMANT), f"unexpected status {status!r}"
     assert len(rows) >= 2, "rows must never be empty on the exemption path"
+
+
+def test_id_bearing_findings_table_without_fold_marker_is_recognised():
+    """Thread 135 — a findings table is recognised structurally, not by vocabulary.
+
+    ⛔ The real header from `walk-register-qa-predeclaration-2026-09-03.md` carries
+    NO fold-marker column at all, so widening FOLD_MARKERS could never have reached
+    it. `finding` + `id` is the structural signal."""
+    assert is_fold_table(["id", "lens/source", "class", "origin", "finding"])
+    assert is_fold_table(["id", "finding", "disposition"])
+    assert is_fold_table(["id", "finding", "verified"])
+    assert is_fold_table(["id", "finding"])
+
+
+def test_recognition_stays_a_superset_no_over_match():
+    """The `id` arm must not make `finding` optional, nor recognise non-findings tables.
+
+    A bare `id` table and a prose table both stay unrecognised; the previously
+    recognised marker forms all still are."""
+    assert not is_fold_table(["id", "walk", "note"]), "id alone must not qualify"
+    assert not is_fold_table(["id", "decision", "owner"]), "no finding column"
+    assert not is_fold_table(["term", "definition"])
+    for marker in ("fold", "resolution", "pre_fold_text"):
+        assert is_fold_table(["finding", marker]), f"{marker} form regressed"
+
+
+def test_markerless_id_register_is_not_a_whole_file_silent_skip(tmp_path):
+    """⛔ The cost of the false negative was the WHOLE FILE, not one table.
+
+    NO_TABLE is a silent skip — it emits no warning — so a marker-less v0.3
+    register had every one of its rows go unvalidated with nothing in the output
+    to say so. Measured on the real register: NO_TABLE with 0 rows -> 38 rows."""
+    p = _write_register(tmp_path, "walk-register-test.md", """\
+        # Walk Register — test
+
+        **schema_version:** `0.3`
+
+        | id | lens/source | class | origin | finding |
+        |---|---|---|---|---|
+        | W1-1 | weak spots | record | pre-existing | bad count |
+        | W1-2 | destruction | record | fold-introduced | stale ref |
+        """)
+    status, rows, shapes = validate_file(p)
+    assert status != STATUS_NO_TABLE, "marker-less findings table silently skipped the whole file"
+    assert len(rows) == 2, f"expected both rows validated, got {len(rows)}"

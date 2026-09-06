@@ -68,8 +68,28 @@ def normalize_column(name):
 
 
 def is_fold_table(header_cells):
+    """A findings table: a `finding` column plus EITHER a fold marker OR an `id`.
+
+    The `id` arm was added 2026-09-05 (thread 135). Requiring `finding` AND a
+    FOLD_MARKERS name made a table structurally invisible whenever its resolution
+    column carried an unlisted spelling — and the corpus uses many. Measured:
+    `walk-register-qa-predeclaration-2026-09-03.md` declares schema 0.3, carries
+    SEVEN id-bearing tables and 38 rowed finding-ids, and returned NO_TABLE for the
+    whole file, so not one row was validated. Its header is
+    `id | lens/source | class | origin | finding` — it has no fold-marker column at
+    ALL, so extending the marker vocabulary would not have reached it.
+
+    ⛔ An `id` column is the structural signal a vocabulary cannot go stale against:
+    the census measured 75 prefix-bound id families across 31 shapes, so new
+    spellings are the norm, not the exception. Over 172 registers this recognises
+    633 tables against the previous 608 — a strict SUPERSET, +25, every one of them
+    inspected and a genuine findings table. NO_TABLE is a silent skip, not a
+    warning, which is why a false negative here costs whole files.
+    """
     normalized = {normalize_column(c) for c in header_cells}
-    return "finding" in normalized and bool(normalized & FOLD_MARKERS)
+    if "finding" not in normalized:
+        return False
+    return bool(normalized & FOLD_MARKERS) or "id" in normalized
 
 
 def split_table_row(line):
