@@ -648,29 +648,71 @@ def _extract_tier_from_plan(plan_text, dc_block):
 
 
 def _compute_coherence(parsed, plan_path):
-    """Compute the coherence field value for --emit-manifest."""
+    """Compute the coherence field — the ONLY body-vs-register reconciliation there is.
+
+    ⛔ EVERY NON-ANSWER NAMES ITSELF, and the empty-body case is no longer one of them.
+    Measured 2026-09-06 over the plan corpus: this function returned N/A on 118 plans
+    and scored 51, of which 51 were perfect and ZERO disagreed. A measure that has
+    never once disagreed is reporting on its own construction (thread 152; the
+    `vacuous verdict` class in GLOSSARY).
+
+    The worst arm was `total_walks == 0 -> "N/A"`: a body declaring no walks beside a
+    register full of rows is EXACTLY the drift coherence exists to detect, and it was
+    the one state guaranteed to say nothing. It is now SUSPECT, which is a finding.
+
+    ⚠️ Two different N/A paths converge on the empty-body population and only one of
+    them is this thread's: 14 plans have an empty body and a declared register ref, but
+    only 3 of those refs RESOLVE on this machine — the other 11 are thread 153's
+    shop-layout refs, and they exit at the unresolvable arm above, not here. Each arm
+    now says which it was, so the two are separable in the record.
+
+    ⚠️ SCOPE: the walk-token matcher is UNCHANGED. Thread 152 reports it false-matching
+    Gate-2 week tokens (`w28`, `w29`); measured, it cannot — the loop is bounded by
+    `total_walks` (17 at corpus maximum) and `\bw2\b` does not match `w28`, because the
+    trailing `\b` fails against `8`. Simulated across all 173 registers: ZERO matches on
+    a w>=20 token. That contamination is real in the BACKWARD comparison run as analysis
+    (scanning a register for every wN token), not in this function. Left alone on
+    purpose: changing a matcher that was measured correct would be a fix on a false
+    premise.
+
+    ⚠️ What this value is NOT: a coverage measure. It counts body walks whose NUMBER is
+    mentioned somewhere in the register text; it says nothing about whether those walks'
+    findings have rows. `walk_register_lint` owns row shape and states its own basis.
+    """
     ref = parsed.get("walk_register_ref")
     if not ref:
         return "N/A (no register declared)"
     git_root = _find_git_root(plan_path)
     if not git_root:
-        return "N/A"
+        return "N/A (no git root above the plan)"
     reg_path = git_root / ref
     if not reg_path.exists():
-        return "N/A"
+        return "N/A (register ref does not resolve on this machine)"
     walk_data = parsed.get("walk_data", {})
     total_walks = max(walk_data.keys()) if walk_data else 0
-    if total_walks == 0:
-        return "N/A"
     try:
         reg_text = reg_path.read_text(encoding="utf-8")
+        try:
+            _, reg_rows, _ = _validate_register(reg_path)
+            n_rows = len(reg_rows)
+        except Exception:
+            n_rows = -1
+        rows_note = f"{n_rows} register rows" if n_rows >= 0 else "register rows uncounted"
+
+        if total_walks == 0:
+            if n_rows > 0:
+                return (f"SUSPECT: body declares NO walks while the register carries "
+                        f"{n_rows} rows")
+            return f"N/A (body declares no walks; {rows_note})"
+
         walks_with_rows = 0
         for wn in range(1, total_walks + 1):
             if re.search(rf"\b[Ww]alk\s+{wn}\b|\bw{wn}\b", reg_text):
                 walks_with_rows += 1
-        return f"{walks_with_rows}/{total_walks} walks have register rows"
-    except Exception:
-        return "N/A"
+        return (f"{walks_with_rows}/{total_walks} body walks named in the register "
+                f"({rows_note}; walk-token match, NOT row coverage)")
+    except Exception as e:
+        return f"N/A (register unreadable: {type(e).__name__})"
 
 
 def emit_manifest(plan_path):
