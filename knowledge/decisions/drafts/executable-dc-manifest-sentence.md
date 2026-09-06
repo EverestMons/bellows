@@ -4,6 +4,19 @@
 
 **auto_close:** false
 
+
+---
+
+# ⛔⛔ RETIRED — its subject SHIPPED. Do not walk, deposit, or clone.
+
+**CEO direction 2026-09-06.** This plan's subject landed as **`DRAFTING_CYCLE.md` v2.24**, whose changelog row carries THIS PLAN'S OWN SLUG: *"2.24 (2026-09-02): slug `dc-manifest-sentence-2026-09-02`; thread 67 — DC 2.17's four DECLARED deferrals on the manifest-stanza sentence (§3), reconciled to the enforcing code as READ on 2026-09-02."* Doctrine is now at v2.25.
+
+⛔ **It is gate-clean and must still not be deposited** — measured 2026-09-06: `cycle_check` **BAR_MET**, `plan_lint` **0 FAIL**. Depositing it would re-apply proposals already codified. **Green gates attest the plan's own cycle converged; they say nothing about the world the plan would act on** (thread 157).
+
+**Kept for the reasoning it carries**, not as work.
+
+---
+
 **Slug:** `dc-manifest-sentence-2026-09-02`
 
 **Depends on:** the CEO, 2026-09-02 evening ("proceed as recommended" — the thread-95 sequence opens with threads 67, 72, 74, before the W=29 tranches and the by-enforcer move); tuyere thread 67 (the four defects, one edit to one sentence; opened 2026-08-31 from the 2.17 cold read); DC History row 2.17 (the DECLARED DEFERRALS this edit discharges); `Done/executable-100026.md` in bellows (`gate2-pt-w28-b`, closed 2026-09-02 20:31 — the clone origin and the newest same-class plan: doctrine prose onto a governance-root file by a committed builder, DEV → QA, the A0 ladder with path-scoped re-entry, the HEAD-numstat discriminator) minus its DB half; the 2.17 reconcile plan `governance/knowledge/decisions/drafts/executable-doctrine-manifest-reconcile.md` (the same file, the same sentence's sibling, by kind — its gate-baseline Item 4 carried here as P6); the builder `governance/knowledge/decisions/drafts/build-dc-manifest-sentence-2026-09-02.py` (committed `f0ab037d` after the scouts', execution and capstone rounds; digest below). Walk register: `/Users/marklehn/Developer/eluvian-governance/governance/knowledge/research/walk-register-dc-manifest-sentence-2026-09-02.md`.

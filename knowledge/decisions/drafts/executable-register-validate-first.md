@@ -4,6 +4,21 @@
 
 **auto_close:** false
 
+
+---
+
+# ⛔⛔ RETIRED — its subject SHIPPED. Do not walk, deposit, or clone.
+
+**CEO direction 2026-09-06.** This plan's subject landed as **`Done/executable-100030.md`**, shipped in commit **`32053b9` — *"fix(register-enforcement): [100030] Step 1 DEV — validate first, exempt second"*** (2026-09-03).
+
+⛔ **Gate-clean and still not depositable** — measured 2026-09-06: `cycle_check` **BAR_MET**, `plan_lint` **0 FAIL** (thread 157).
+
+⚠️ **`scripts/walk_register_lint.py` has since moved twice more** — `2a1e153` (findings tables recognised structurally) and `9c77f95` (CONFORMANT states its BASIS) — so this plan's measurements of that file are stale in a second way, independent of having shipped.
+
+**Kept for the reasoning it carries**, not as work.
+
+---
+
 **Depends on:** plan **100029** (HALTED at step 1 today; its code is on main and this plan corrects it — the halt verdict specifies this follow-up); exec-100025 (Done 2026-09-02 — the clone origin: a corrective plan that closed a kill-map gap, and the plan that discharged 100022's two survivors); thread 103; thread 97 (`mutation_check` takes ONE target per manifest — not blocking here, only the reason for the split).
 
 ## Why this exists

@@ -4,6 +4,21 @@
 
 **auto_close:** false
 
+
+---
+
+# ⛔⛔ RETIRED — its subject SHIPPED. Do not walk, deposit, or clone.
+
+**CEO direction 2026-09-06.** This plan's subject landed as commit **`386b06f` — *"[100025] checker-kill-gap-2026-09-02: the two discriminating tests (M2 negation overlap, M3 oversized backticked ref); manifests re-pointed"***.
+
+⛔ **ALL FOUR of its declared Deposits already exist on disk**, every one committed in `386b06f`: the dev-log, `knowledge/mutants/checker-defects-cycle_check.json`, `…/propagation-check-propagation_check.json`, `…/propagation-check-run_check.json`. `tests/test_cycle_check.py:1060` carries `test_58_negation_unmet_not_a_claim`, the M2 test.
+
+⛔ **Gate-clean and still not depositable** — measured 2026-09-06: `cycle_check` **BAR_MET**, `plan_lint` **0 FAIL**. ⚠️ **This is thread 157's cleanest instance: every declared deposit present, and nothing in the admission path asks.**
+
+**Kept for the reasoning it carries**, not as work.
+
+---
+
 **Slug:** `checker-kill-gap-2026-09-02`
 
 **Depends on:** tuyere thread 92; plan 100022 (`checker-defects-2026-09-02`, halted 2026-09-02 16:55 at QA on its own Item 2.5 — the fixes are on main at bellows `e088d05`, verified: fail-before/pass-after 12/12, corpus canaries 19/19 BAR_MET, the five fixtures as pinned, suite `1782 passed`; the debt is coverage, not code); Rule 106 (the kill map: a mutant that survives is a missing test); the CEO, 2026-09-02 ("Let's proceed on these as though it were night").

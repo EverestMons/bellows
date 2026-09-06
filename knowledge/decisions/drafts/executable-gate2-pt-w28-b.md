@@ -4,6 +4,21 @@
 
 **auto_close:** false
 
+
+---
+
+# ⛔⛔ RETIRED — its subject SHIPPED. Do not walk, deposit, or clone.
+
+**CEO direction 2026-09-06.** This plan's subject landed as **`PLANNER_TEMPLATE.md` v4.98**, whose History row carries THIS PLAN'S OWN SLUG and the same proposal list: *"v4.98: Gate 2, cycle W=28 PT tranche two (`gate2-pt-w28-b-2026-09-02`; proposals 415, 417, 421, 422, 425, 431, 435, 437)."*
+
+⛔ **Gate-clean and still not depositable** — measured 2026-09-06: `cycle_check` **BAR_MET**, `plan_lint` **0 FAIL**. Depositing it would re-codify eight proposals already in the template (thread 157).
+
+⚠️ **Its sibling `executable-gate2-pt-w28-a` shipped as v4.97** and sits at `ESCALATE:claimed-close-unmet`; the pair's asymmetry is a record artifact, not an ordering signal.
+
+**Kept for the reasoning it carries**, not as work.
+
+---
+
 **Slug:** `gate2-pt-w28-b-2026-09-02`
 
 **Depends on:** the CEO, 2026-09-02 evening ("One plan of 8" — tranche two lands the eight remaining W=28 accepted proposals in ONE tranche, the plan-540 precedent, after the W=29 Gate 1 packet's flips were applied at 18:54); tuyere thread 76 (the twelve accepted; four landed by tranche one, these eight remain); the non-author Gate 1 packet `gate1-packet-2026-09-01.md` (session 352aa9ee; rows 415/417/421/422/425/431/435/437 routed `codify` with their homes); `Done/executable-100021.md` in bellows (tranche one, `gate2-pt-w28-a-2026-09-02`, closed 2026-09-02 — the clone origin and the newest same-class plan: doctrine prose onto `PLANNER_TEMPLATE.md` by a committed builder, then a scoped CAS flip in the lessons DB) and `Done/executable-540.md` in governance (the multi-site EXTENSION form the builder's E2–E6 clone); the builder `governance/knowledge/decisions/drafts/build-gate2-pt-w28-b-2026-09-02.py` (committed `917ad5c0` after the two scouts' and the capstone's rounds — S1-4, S1c, S1h, S1i, S3-1/S3-10; digest below). Walk register: `/Users/marklehn/Developer/eluvian-governance/governance/knowledge/research/walk-register-gate2-pt-w28-b-2026-09-02.md`.
