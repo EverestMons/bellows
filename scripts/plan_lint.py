@@ -22,6 +22,7 @@ BELLOWS_ROOT = Path(__file__).parent.parent.resolve()
 sys.path.insert(0, str(BELLOWS_ROOT))
 
 import gates
+import cycle_check
 
 RECOGNIZED_DISPATCH_MODES = {"bellows", "manual_bootstrap"}
 # Mirrored from bellows.py header_says_pause — do not invent
@@ -584,6 +585,26 @@ def lint(plan_path):
         stanza_end_m = re.search(r'^(?:## |---)', plan_text[stanza_start:], re.MULTILINE)
         stanza_text = plan_text[stanza_start:stanza_start + stanza_end_m.start()] if stanza_end_m else plan_text[stanza_start:]
 
+        # (f-stanza) ⛔ UNEMITTED vs INCOMPLETE. A heading whose stanza parses to ZERO
+        # fields is not "ten missing fields" — it is a manifest no consumer can read:
+        # cycle_check.parse_manifest_stanza returns {} and depositor._parse_plan falls
+        # back to gates._extract_plan_required_deposits, narrowing the write set. That
+        # is the 2026-09-03 failed-open deposit (LESSONS 413): four writes became two,
+        # every one under knowledge/, so the infra rule never fired, the plan classed
+        # app-feature and AUTO-CLEARED past the shop-infra human release act — while
+        # this check emitted ten WARNs and exit 0.
+        #
+        # ⚠️ Conditioned on a CLOSURE CLAIM, and that condition is load-bearing: a plan
+        # mid-cycle carries `*(emitted at BAR_MET)*` legitimately, and FAILing every walk
+        # of every cycle is how a FAIL gets trained into background noise. Measured over
+        # 617 plans (2026-09-05): 8 carry a heading that parses to zero fields; exactly
+        # ONE claims closure, and it is halted-executable-100031.md — the plan the
+        # incident came from. The other 7 keep their WARNs.
+        #
+        # The closure predicate and the DC block are cycle_check's own, not a local copy:
+        # a second implementation of "does this claim closure" is a divergence waiting to
+        # happen, and cycle_check is the enforcer that already blocks BAR_MET on this
+        # (its _manifest_validation_keys arm B).
         stanza_fields = {}
         s_current_key = None
         s_current_val = None
@@ -628,6 +649,28 @@ def lint(plan_path):
                     f" — DC work should declare the mutants that prove the OLD tool"
                     f" fails the NEW tests (advisory)"
                 )
+
+        if not stanza_fields:
+            _claims_closure = False
+            try:
+                _blocks = cycle_check.extract_dc_blocks(plan_text)
+                if len(_blocks) == 1:
+                    _claims_closure = cycle_check.parse_block(_blocks[0])["claims_closure"]
+            except Exception:
+                _claims_closure = False   # never let the probe decide the verdict
+            if _claims_closure:
+                # ⛔ results.append alone does NOT fail the lint — the exit code is
+                # driven by all_passed, a separate flag. A FAIL that leaves it True
+                # prints like a failure and exits 0, and depositor.py:508 only reads
+                # FAIL: lines when returncode != 0, so it would be invisible there.
+                all_passed = False
+                results.append((
+                    "FAIL", "(f) manifest",
+                    "'## Cycle Manifest' heading present but the stanza parses to ZERO "
+                    "fields, and the cycle CLAIMS CLOSURE — the manifest is unemitted. "
+                    "cycle_check.parse_manifest_stanza returns {} and depositor._parse_plan "
+                    "falls back to prose deposits, narrowing the write set and the class",
+                ))
 
         _STANZA_REQUIRED = [
             "tier", "target", "class", "reads", "writes",
