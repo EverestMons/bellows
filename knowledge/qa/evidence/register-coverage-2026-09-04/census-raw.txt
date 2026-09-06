@@ -957,3 +957,102 @@ Found while keeping the two axes apart. walk_register_lint.is_fold_table:70-72 -
      not gated on is_fold_table.
 
 END OF RAW OUTPUT (Step 1)
+
+==============================================================================
+## RE-VERIFICATION 2026-09-06 — the P3 pin went stale; the CLAIM did not
+==============================================================================
+⛔ Appended, not rewritten. Everything above is the as-of record and stands.
+
+TRIGGER: scripts/walk_register_lint.py changed after this census ran.
+  pinned at Step 1 : e50b63a1bd403375f423e20ae08d3509c35c674721f7c06e3264714a12838aec
+  now              : 80f7580a24ab65a3a96bd9658e77722de3ecbcab64d8f8c42d31d85e03e1c182
+  9c77f95 2026-09-05 23:35:35 -0500  walk_register_lint: CONFORMANT states its BASIS — the third vacuous verdict
+  2a1e153 2026-09-05 19:37:05 -0500  walk_register_lint: recognise findings tables structurally, not by vocabulary
+  This census committed at 2026-09-05 19:12; 2a1e153 landed 19:37 (+25 min).
+  ⛔ THE PIN DID ITS JOB — a re-run HALTS on the mismatch, which is what P3
+     exists for. It is a claim about a FILE, and the file moved.
+
+THE CLAIM, RE-TESTED AGAINST THE NEW FILE (Item 1's halt condition):
+  'walk_register_lint checks the id column for PRESENCE and never reads the
+   cell's VALUE; it has no notion of finding identity.'
+
+  REQUIRED_COLUMNS, current file:
+    31:REQUIRED_COLUMNS = [
+    32-    "id", "walk", "lens", "sub_question", "origin",
+    33-    "finding", "pre_fold_text", "resolution",
+    34-]
+    35-
+  every read of a row cell's VALUE, current file:
+    238:    pft_idx = REQUIRED_COLUMNS.index("pre_fold_text")
+    242:            val = row_cells[i].strip()
+    249:    pft_val = row_cells[pft_idx].strip()
+    251:        f_idx = REQUIRED_COLUMNS.index("finding")
+    252:        r_idx = REQUIRED_COLUMNS.index("resolution")
+    254:            VERBATIM_ELLIPSIS_MARKER in row_cells[i]
+    -> pre_fold_text truncation, finding/resolution ellipsis marker, and one
+       generic EMPTINESS test. Same six sites as at Step 1. The id cell's
+       value is still never read.
+  what the two new commits added:
+    2a1e153  is_fold_table now accepts an 'id' column as a structural signal:
+      120:    if "finding" not in normalized:
+      121-        return False
+      122-    return bool(normalized & FOLD_MARKERS) or "id" in normalized
+             -> reads a HEADER's column NAME, not a cell's value.
+    9c77f95  coverage_basis(text, rows) -> len(rows) plus a prose scrape for
+             'N findings'. Its own docstring: 'This does NOT add a coverage
+             check.' -> counts rows; reads no id.
+  ⛔ CLAIM HOLDS. NO HALT. The premise of this plan is intact.
+
+DOES ANY DEPOSITED NUMBER MOVE? MEASURED BY RE-RUNNING, NOT ASSERTED.
+  Method: the committed instrument, unmodified except for its output path,
+  re-run against the NEW lint over the same 172 registers; both PASS 2 tables
+  diffed line by line.
+
+  SUBTOTALS TABLE: byte-identical (diff empty).
+  Per-register diff over all 172, whole instrument section:
+    189c189
+    < walk-register-diagnostic-bare-entry-ruling.md              0.3    CONFORMANT      25   129    42    2   34 rowed
+    ---
+    > walk-register-diagnostic-bare-entry-ruling.md              0.3    UNCONFORMANT    25   129    42    2   34 rowed
+    301c301
+    < walk-register-memory-destination-and-gate-2026-09-03.md    0.3    CONFORMANT       4    19    11    7    0 rowed
+    ---
+    > walk-register-memory-destination-and-gate-2026-09-03.md    0.3    UNCONFORMANT     4    19    11    7    0 rowed
+    315c315
+    < walk-register-qa-predeclaration-2026-09-03.md              0.3    NO_TABLE         7    38    17    9    0 rowed
+    ---
+    > walk-register-qa-predeclaration-2026-09-03.md              0.3    UNCONFORMANT     7    38    17    9    0 rowed
+    394c394
+    < walk-register-qa-predeclaration-2026-09-03.md  [schema 0.3, lint NO_TABLE]
+    ---
+    > walk-register-qa-predeclaration-2026-09-03.md  [schema 0.3, lint UNCONFORMANT]
+    414c414
+    < walk-register-memory-destination-and-gate-2026-09-03.md  [schema 0.3, lint CONFORMANT]
+    ---
+    > walk-register-memory-destination-and-gate-2026-09-03.md  [schema 0.3, lint UNCONFORMANT]
+    446c446
+    < walk-register-diagnostic-bare-entry-ruling.md  [schema 0.3, lint CONFORMANT]
+    ---
+    > walk-register-diagnostic-bare-entry-ruling.md  [schema 0.3, lint UNCONFORMANT]
+
+  RESULT: exactly 3 registers of 172 change, and ONLY in the lint_status
+  column. Every count — rowed ids 2866, orphans 103 strict / 164 all,
+  unreadable 57, no_table 20, unscannable 11, and both percentages — is
+  UNCHANGED.
+  ⛔ WHY IT IS IMMUNE, and this was a design choice, not luck: the instrument
+     selects id-bearing tables with '"id" in [normalize_column(c) for c in hdr]'
+     and never routes through is_fold_table. The commit that changed table
+     recognition therefore cannot reach any count in this census.
+
+  ⚠️ The NO_TABLE -> UNCONFORMANT change on walk-register-qa-predeclaration-
+     2026-09-03.md is THIS CENSUS'S OWN INCIDENTAL FINDING BEING CLOSED.
+     2a1e153 cites this census in its docstring ('the census measured 75
+     prefix-bound id families across 31 shapes'). Its 38 rows are now
+     validated instead of the whole file being skipped.
+
+ACTIONS TAKEN: P3 re-pinned to the new digest in the plan, WITH the claim
+re-test recorded beside it; a SUPERSESSION section added to the research
+note. ⛔ Re-pin only after re-testing the claim — a bare digest bump converts
+a premise check into a rubber stamp.
+
+END OF RE-VERIFICATION
