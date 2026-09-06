@@ -121,9 +121,26 @@ The sequence, in order:
    Ordering contract from the tool's own docstring: the receipt precedes staging,
    because the daemon claims within seconds of a file becoming claimable. It also
    spawns the detached `gate_watcher`, which logs to `logs/watch/<name>.log`.
-2. **Verify BY PARSING, not by reading** — `_parse_plan(plan_text)` returns
-   `(writes, reads, declared_class)`, in that order. Feed the **writes** to
-   `_assign_class` and confirm it equals the manifest's declared `class:`.
+2. **Verify BY PARSING, not by reading.** Both are **instance methods on
+   `class Depositor`**, not module functions, so instantiate one first.
+   `_parse_plan(plan_text)` takes the plan's TEXT (not its path) and returns
+   `(writes, reads, declared_class)`, in that order. Feed the **writes** —
+   and the **project root**, which is required — to `_assign_class`, then
+   confirm the result equals the manifest's declared `class:`.
+
+   ```
+   w, r, dc = dep._parse_plan(plan_text)
+   print(w)                       # ⛔ look at it before trusting the answer
+   dep._assign_class(w, "/Users/marklehn/Developer/bellows")
+   ```
+
+   ⛔ **Print `w`.** Two different mistakes both return `app-feature` — the
+   AUTO-CLEARING class — and neither announces itself: feeding `_assign_class`
+   the *reads* (the tuple is `writes` FIRST), and omitting the project root.
+   The second is no longer possible — `project_root` lost its `""` default on
+   2026-09-05 and a missing argument is now a TypeError (thread 138) — but the
+   tuple mis-order still yields a confident wrong class, and only looking at
+   `w` catches it.
    ⚠️ Check the returned counts against the manifest's own declared paths: if
    `writes` does not match, the manifest stanza did not parse and the fallback
    (`gates._extract_plan_required_deposits`) ran — that is the 2026-09-03

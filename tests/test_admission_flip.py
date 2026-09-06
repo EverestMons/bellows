@@ -306,25 +306,25 @@ class TestClassAdversarial:
     def test_shop_infra_knowledge_exempt_is_readonly(self, tmp_path):
         dep = self._dep(tmp_path)
         assert dep._assign_class(
-            ["bellows/knowledge/research/bar.md"]
+            ["bellows/knowledge/research/bar.md"], ""
         ) == "read-only"
 
     def test_mixed_infra_and_app_is_shop_infra(self, tmp_path):
         dep = self._dep(tmp_path)
         assert dep._assign_class(
-            ["bellows/runner.py", "src/app.py"]
+            ["bellows/runner.py", "src/app.py"], ""
         ) == "shop-infra"
 
     def test_register_plus_infra_is_shop_infra(self, tmp_path):
         dep = self._dep(tmp_path)
         assert dep._assign_class(
-            ["knowledge/decisions/register-cycles.md", "bellows/depositor.py"]
+            ["knowledge/decisions/register-cycles.md", "bellows/depositor.py"], ""
         ) == "shop-infra"
 
     def test_governance_root_file_is_shop_infra(self, tmp_path):
         dep = self._dep(tmp_path)
-        assert dep._assign_class(["ELUVIAN_PATH.md"]) == "shop-infra"
-        assert dep._assign_class(["LESSONS.md"]) == "shop-infra"
+        assert dep._assign_class(["ELUVIAN_PATH.md"], "") == "shop-infra"
+        assert dep._assign_class(["LESSONS.md"], "") == "shop-infra"
 
     def test_knowledge_subdir_not_research_in_infra_project(self, tmp_path):
         d = tmp_path / "bellows" / "knowledge" / "decisions"

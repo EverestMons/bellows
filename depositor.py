@@ -263,7 +263,22 @@ class Depositor:
     # Class assignment
     # ------------------------------------------------------------------
 
-    def _assign_class(self, writes, project_root=""):
+    def _assign_class(self, writes, project_root):
+        """Derive a plan's admission class from its WRITE set.
+
+        ⛔ `project_root` is REQUIRED and has no default. It used to default to
+        `""`, which made `project_is_infra` (:271) unconditionally False, so the
+        infra rule below could never fire and the call returned `app-feature` —
+        the AUTO-CLEARING class. Production always passed it (:168), so the cost
+        landed entirely on the verification recipe humans and agents run by hand:
+        the documented check silently returned the fail-open answer. Measured
+        2026-09-05 (thread 138): 13 call sites omitted it, and five separate plan
+        drafts carry defensive prose warning about it.
+
+        A missing argument is now a TypeError rather than a wrong class. Passing
+        `""` is still legal and still means "no project context" — but it has to
+        be written down, where a reviewer can see it.
+        """
         if not writes:
             return None
 

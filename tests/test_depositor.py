@@ -154,23 +154,46 @@ class TestClassAssignment:
 
     def test_read_only_class(self, tmp_path):
         dep = self._dep(tmp_path)
-        assert dep._assign_class(["knowledge/research/foo.md"]) == "read-only"
-        assert dep._assign_class(["bellows/knowledge/research/bar.md"]) == "read-only"
-        assert dep._assign_class(["scratch/tmp.txt"]) == "read-only"
+        assert dep._assign_class(["knowledge/research/foo.md"], "") == "read-only"
+        assert dep._assign_class(["bellows/knowledge/research/bar.md"], "") == "read-only"
+        assert dep._assign_class(["scratch/tmp.txt"], "") == "read-only"
 
     def test_register_writing_class(self, tmp_path):
         dep = self._dep(tmp_path)
-        assert dep._assign_class(["knowledge/decisions/register-cycles.md"]) == "register-writing"
-        assert dep._assign_class(["DRAFTING_CYCLE.md"]) == "shop-infra"
+        assert dep._assign_class(["knowledge/decisions/register-cycles.md"], "") == "register-writing"
+        assert dep._assign_class(["DRAFTING_CYCLE.md"], "") == "shop-infra"
 
     def test_shop_infra_class(self, tmp_path):
         dep = self._dep(tmp_path)
-        assert dep._assign_class(["bellows/depositor.py"]) == "shop-infra"
-        assert dep._assign_class(["bellows/bellows.py", "bellows/status.py"]) == "shop-infra"
+        assert dep._assign_class(["bellows/depositor.py"], "") == "shop-infra"
+        assert dep._assign_class(["bellows/bellows.py", "bellows/status.py"], "") == "shop-infra"
 
     def test_empty_writes_returns_none(self, tmp_path):
         dep = self._dep(tmp_path)
-        assert dep._assign_class([]) is None
+        assert dep._assign_class([], "") is None
+
+    def test_project_root_is_required_not_defaulted(self, tmp_path):
+        """Thread 138 — omitting project_root must RAISE, not answer.
+
+        It defaulted to "", which made project_is_infra unconditionally False, so
+        the infra rule could not fire and the call returned `app-feature` — the
+        AUTO-CLEARING class. Production always passed it, so the whole cost fell
+        on the by-hand verification recipe, which silently returned the fail-open
+        answer for a plan that should HOLD."""
+        dep = self._dep(tmp_path)
+        with pytest.raises(TypeError):
+            dep._assign_class(["bellows/depositor.py"])
+
+    def test_omitting_project_context_is_the_fail_open_direction(self, tmp_path):
+        """⛔ Why the default was dangerous rather than merely wrong.
+
+        The SAME write set derives the auto-clearing class without project
+        context and the HOLDING class with it. `""` stays legal — it honestly
+        means "no project context" — but it must now be written down."""
+        dep = self._dep(tmp_path)
+        writes = ["/Users/x/Developer/bellows/tools/mutation_check.py"]
+        assert dep._assign_class(writes, "") == "app-feature"
+        assert dep._assign_class(writes, "/Users/x/Developer/bellows") == "shop-infra"
 
 
 # ---------------------------------------------------------------------------
