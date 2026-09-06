@@ -30,14 +30,23 @@ RECOGNIZED_PAUSE_TOKENS = {"always", "after_step_1", "after_qa_step", "qa_and_te
 
 
 def _parse_qa_steps(qa_steps_raw):
-    """Parse qa_steps header value into a set of ints, mirroring gates._gate_is_qa_step."""
+    """Delegates to `gates.parse_qa_steps` — THE single reader of this field.
+
+    ⛔ This used to be a SECOND parser of the `qa_steps` header, and the two
+    disagreed: this one stripped brackets, gates' did not (threads 116/121/122,
+    FO-2). Keeping two readers in sync by editing both is what produced the
+    divergence; delegating is what makes it unrepresentable.
+
+    Preserves this function's historical contract for its existing callers:
+    always a set, with absent/malformed collapsing to set(). Callers that need
+    to distinguish "absent" from "declared none" must call gates.parse_qa_steps
+    directly, which returns None for absent.
+    """
     try:
-        if isinstance(qa_steps_raw, list):
-            return {int(x) for x in qa_steps_raw}
-        s = str(qa_steps_raw).strip().strip("[]")
-        return {int(tok.strip()) for tok in s.split(",") if tok.strip()}
+        parsed = gates.parse_qa_steps(qa_steps_raw)
     except (ValueError, TypeError):
         return set()
+    return set() if parsed is None else parsed
 
 
 _SHA_PAT = r'\bsha(?:sum|256(?:sum)?)\b'
@@ -304,6 +313,24 @@ def lint(plan_path):
                 has_qa = True
                 break
 
+    # (c) COMPENSATING CONTROL for FO-2's retirement (threads 119/121).
+    # gates._gate_is_qa_step no longer guesses from the step TITLE when the
+    # header is silent, so an undeclared QA step would otherwise reach dispatch
+    # ungated and unwarned — the existing cross-check below sits inside
+    # `if qa_steps_raw:` and never runs for this case. Catch it at AUTHORING,
+    # where the header is still editable.
+    if not str(qa_steps_raw).strip():
+        _undeclared_qa = [int(sn) for hl, sn in step_headers if "qa" in hl.lower()]
+        for _n in sorted(_undeclared_qa):
+            print(f"(c) WARN: step {_n} is QA-labeled but the plan declares no"
+                  f" qa_steps — it will NOT be Rule 20/22 gated at dispatch"
+                  f" (declare `qa_steps: {_n}`, or `none` if it is not a QA step)")
+    elif _parse_qa_steps(qa_steps_raw) == set() and \
+            str(qa_steps_raw).strip().lower() != "none" and \
+            str(qa_steps_raw).strip() != _QA_STEPS_PLACEHOLDER:
+        print(f"(c) WARN: qa_steps={qa_steps_raw!r} is present but unparseable —"
+              f" every step will be treated as NOT a QA step at dispatch")
+
     if has_qa:
         banner = "Rule 20 — QA Self-Check Results"
         passed_line = "PASSED — SELF-CHECK PASSED"
@@ -395,12 +422,14 @@ def lint(plan_path):
     # The divergence between (u) and this gate is REAL but the counts were never
     # re-derived. Do not re-cite them.
     #
-    # ⛔ And do not "fix" (u) by pointing it here without a ruling. Diagnostic 100036
-    # Q6 measured that _parse_qa_steps is the CORRECT reference — it handles every
-    # corpus spelling — while gates._gate_is_qa_step fails on the `[2]` form and masks
-    # it with keyword detection. Converging (u) onto this gate would converge it onto
-    # the defective side. (u) is WARN-only, so the divergence costs noise, not
-    # correctness; that is why 102 closed without a code change.
+    # ⛔ HISTORICAL NOTE, now discharged. Diagnostic 100036 Q6 measured that
+    # _parse_qa_steps was the CORRECT reference — it handled every corpus spelling —
+    # while gates._gate_is_qa_step failed on the `[2]` form and masked it with keyword
+    # detection, so converging (u) onto that gate would have converged it onto the
+    # defective side. That divergence is GONE as of 2026-09-06 (FO-2): both now read
+    # gates.parse_qa_steps, and the keyword fallback is retired. The two sides can no
+    # longer disagree, so the reason not to converge (u) no longer applies — but
+    # converging it is still a ruling, not a tidy-up.
     _v_test_scope = header.get("test_scope", "") if header else ""
     if _v_test_scope.strip().lower().startswith("none"):
         for hl, sn_str in step_headers:

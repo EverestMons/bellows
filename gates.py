@@ -160,8 +160,9 @@ def _parse_plan_header(plan_text):
     # the first h1 let the banner consume the header slot and returned {}. Measured
     # 2026-09-05 (thread 131): 4 of 617 plans, 3 of them live drafts. Emptiness is not
     # an admission interlock — no gate fails on it — so the cost was silent: with no
-    # header, `_gate_is_qa_step` skips its `qa_steps` field entirely and decides on
-    # whether the step heading contains "QA".
+    # header, `_gate_is_qa_step` sees no `qa_steps` field at all. Since 2026-09-06
+    # (FO-2) that means NOT-QA rather than a guess from the step heading, so an
+    # empty header now silently DISABLES QA gating instead of silently faking it.
     if not next((s for s in (ln.strip() for ln in lines) if s), "").startswith("# "):
         return {}
     for i, line in enumerate(lines):
@@ -853,27 +854,73 @@ def _gate_qa_test_result(is_qa_step, plan_text, step_number, project_path, parse
         })
 
 
-def _gate_is_qa_step(plan_text, step_number, plan_header=None):
-    # Primary: check plan_header for qa_steps field
-    if plan_header:
-        qa_steps_raw = plan_header.get("qa_steps", "")
-        if qa_steps_raw:
-            try:
-                # Handle YAML list case (e.g., [2, 4]) and string case (e.g., "2,4")
-                if isinstance(qa_steps_raw, list):
-                    return step_number in [int(x) for x in qa_steps_raw]
-                qa_step_numbers = [int(s.strip()) for s in str(qa_steps_raw).split(",") if s.strip()]
-                return step_number in qa_step_numbers
-            except (ValueError, TypeError):
-                logger.warning("qa_steps field malformed: %r — falling back to keyword detection", qa_steps_raw)
+QA_STEPS_NONE = "none"
 
-    # Fallback: keyword detection on step header (existing behavior)
-    plan_text = strip_fenced_code_blocks(plan_text)
-    pattern = rf"^## STEP {step_number}\b[^\n]*"
-    match = re.search(pattern, plan_text, re.MULTILINE | re.IGNORECASE)
-    if match:
-        return "qa" in match.group(0).lower()
-    return False
+
+def parse_qa_steps(qa_steps_raw):
+    """THE canonical reader of the `qa_steps` header field. One parser, one place.
+
+    Returns:
+        None      — the field is ABSENT or blank (no declaration was made)
+        set()     — declared as "none" (an explicit, empty declaration)
+        {ints}    — the declared step numbers
+    Raises ValueError when the field is PRESENT but unparseable, so a malformed
+    declaration is loud rather than silently empty.
+
+    ⛔ Before 2026-09-06 there were TWO readers of this one field and they
+    disagreed. `plan_lint._parse_qa_steps` stripped brackets; this module split
+    on commas without stripping them, so `qa_steps: [2]` raised here, fell back
+    to guessing from the step TITLE, and the two tools returned different
+    answers for the same plan. Measured over 12 spelling x title combinations,
+    5 diverged (threads 116/121/122, FO-2 of the thread-119 census). plan_lint
+    now delegates here, which is what makes the divergence unrepresentable
+    rather than merely fixed.
+    """
+    if isinstance(qa_steps_raw, list):
+        return {int(x) for x in qa_steps_raw}
+    s = str(qa_steps_raw or "").strip()
+    if not s:
+        return None
+    if s.lower() == QA_STEPS_NONE:
+        return set()
+    s = s.strip("[]").strip()
+    if not s:
+        return set()
+    return {int(tok.strip()) for tok in s.split(",") if tok.strip()}
+
+
+def _gate_is_qa_step(plan_text, step_number, plan_header=None):
+    """Is `step_number` a QA step? Read from the DECLARATION only.
+
+    ⛔ FO-2 (threads 119/121). This used to guess from the step heading when the
+    field was absent or unparseable — a fail-open that returned confident wrong
+    answers: `qa_steps: none` beside a step titled "QA" was gated AS QA, and a
+    declared `[2]` stopped being QA the moment the step was retitled. The guess
+    was an undeclared, non-expiring ADOPTION grace, and adoption has arrived:
+    declaration rose 0% (2026-04) to 74% (2026-09), and the plans it actually
+    rescued fell to ZERO in 2026-07 and 2026-09 (163 lifetime saves, effectively
+    all 2026-04/05 legacy that `gates` will never run against again — it runs at
+    dispatch, never over Done/).
+
+    Silence now means NOT-QA here, and the omission is caught at AUTHORING time
+    by plan_lint's absent-declaration arm, where the author can still fix it.
+    ⚠️ `plan_text` is retained for call-site compatibility and is deliberately
+    unused: reading it is what made this gate guess.
+    """
+    del plan_text  # see docstring — reading it is the defect
+    raw = (plan_header or {}).get("qa_steps", "")
+    try:
+        declared = parse_qa_steps(raw)
+    except (ValueError, TypeError):
+        logger.warning(
+            "qa_steps field malformed: %r — step %s treated as NOT a QA step. "
+            "No keyword fallback (FO-2); plan_lint flags this at authoring.",
+            raw, step_number,
+        )
+        return False
+    if declared is None:
+        return False
+    return step_number in declared
 
 
 def _rule20_block_path():

@@ -19,7 +19,11 @@ def _clean_parsed():
     }
 
 
-PLAN_TEXT = """## STEP 1 — DEV (Developer)
+PLAN_TEXT = """# bellows — executable: fixture
+
+**Date:** 2026-09-06 | **Project:** bellows | **qa_steps:** 2 | **Execution:** Step 1
+
+## STEP 1 — DEV (Developer)
 
 > Build gates.py and verdict.py in the bellows root directory.
 
@@ -595,7 +599,11 @@ def test_deposit_exists_still_fails_on_genuinely_missing_path_with_new_format():
 
 # --- Rule 20 self-check verification gate ---
 
-QA_PLAN_TEXT = """## STEP 1 — DEV (Developer)
+QA_PLAN_TEXT = """# bellows — executable: fixture
+
+**Date:** 2026-09-06 | **Project:** bellows | **qa_steps:** 2 | **Execution:** Step 1
+
+## STEP 1 — DEV (Developer)
 
 > Build gates.py in the bellows root directory.
 >
@@ -1785,22 +1793,80 @@ def test_qa_steps_field_multi_step():
     assert gates._gate_is_qa_step(plan_text, 3, plan_header=header) is True
 
 
-def test_qa_steps_field_absent_falls_back_to_keyword():
-    """No qa_steps field, header contains 'QA' → True (preserves existing behavior)."""
+def test_qa_steps_field_absent_is_not_qa():
+    """FO-2 (threads 119/121): an ABSENT declaration is not a licence to guess.
+
+    This previously asserted the OPPOSITE — a step titled "QA" with no qa_steps
+    field was gated as QA by keyword. That guess was an undeclared adoption
+    grace: it returned the wrong answer whenever a QA step was retitled, and by
+    2026-09 the plans it rescued had fallen to zero. Silence now means not-QA,
+    and plan_lint warns at authoring time instead.
+    """
     plan_text = "## STEP 2 — Bellows QA\n\nVerify deliverables.\n"
-    header = {}
-    assert gates._gate_is_qa_step(plan_text, 2, plan_header=header) is True
+    assert gates._gate_is_qa_step(plan_text, 2, plan_header={}) is False
+    assert gates._gate_is_qa_step(plan_text, 2, plan_header={"qa_steps": "2"}) is True
 
 
-def test_qa_steps_field_malformed_falls_back_to_keyword(caplog):
-    """qa_steps: 'step 2' (malformed), header contains 'QA' → True with warning."""
+def test_qa_steps_declared_none_is_not_qa_even_when_step_titled_qa():
+    """The defect the FO-2 diagnostic found and the census had not named.
+    `qa_steps: none` beside a step titled "QA" used to raise on int('none'), fall
+    through to keyword detection, and gate the step AS QA — the inverse of what
+    the author declared. Live in 5 corpus plans when measured."""
+    plan_text = "## STEP 2 — Bellows QA\n\nVerify deliverables.\n"
+    assert gates._gate_is_qa_step(plan_text, 2, plan_header={"qa_steps": "none"}) is False
+
+
+def test_bracketed_qa_steps_no_longer_depends_on_the_step_title():
+    """The divergence itself: gates split on commas without stripping brackets, so
+    `[2]` raised and the verdict came from the TITLE — retitle the step and it
+    flipped while plan_lint still said True. 5 of 12 spelling x title combinations
+    diverged."""
+    for title in ("QA", "Beta"):
+        plan_text = f"## STEP 2 — {title}\n\nbody\n"
+        assert gates._gate_is_qa_step(plan_text, 2, plan_header={"qa_steps": "[2]"}) is True
+        assert gates._gate_is_qa_step(plan_text, 2, plan_header={"qa_steps": "[2, 3]"}) is True
+
+
+def test_parse_qa_steps_distinguishes_absent_from_declared_none():
+    """None (no declaration) and set() (declared none) are DIFFERENT answers;
+    collapsing them is what let silence read as an explicit choice."""
+    import pytest as _pytest
+    assert gates.parse_qa_steps("") is None
+    assert gates.parse_qa_steps(None) is None
+    assert gates.parse_qa_steps("   ") is None
+    assert gates.parse_qa_steps("none") == set()
+    assert gates.parse_qa_steps("NONE") == set()
+    assert gates.parse_qa_steps("2") == {2}
+    assert gates.parse_qa_steps("[2]") == {2}
+    assert gates.parse_qa_steps("[2, 3]") == {2, 3}
+    assert gates.parse_qa_steps([2, 4]) == {2, 4}
+    with _pytest.raises(ValueError):
+        gates.parse_qa_steps("step 2")
+
+
+def test_the_two_readers_cannot_disagree():
+    """The root fix: plan_lint delegates to gates.parse_qa_steps, so a divergence
+    is unrepresentable. Guards a future edit that re-forks the parser."""
+    import sys, pathlib
+    sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent.parent / "scripts"))
+    from plan_lint import _parse_qa_steps
+    for spelling in ("2", "[2]", "[2, 3]", "none", "", "   ", "1,2", "step 2"):
+        try:
+            canonical = gates.parse_qa_steps(spelling)
+        except ValueError:
+            canonical = None
+        assert _parse_qa_steps(spelling) == (canonical or set()), spelling
+
+
+def test_qa_steps_field_malformed_is_not_qa_and_warns(caplog):
+    """A malformed declaration is loud and NOT-QA — it used to be loud and guessed."""
     import logging
     plan_text = "## STEP 2 — Bellows QA\n\nVerify deliverables.\n"
     header = {"qa_steps": "step 2"}
     with caplog.at_level(logging.WARNING):
         result = gates._gate_is_qa_step(plan_text, 2, plan_header=header)
-    assert result is True
-    assert any("qa_steps field malformed" in record.message for record in caplog.records)
+    assert result is False
+    assert any("qa_steps field malformed" in r.message for r in caplog.records)
 
 
 def test_qa_steps_field_yaml_list():

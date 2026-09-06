@@ -29,10 +29,13 @@ def test_header_list_form():
     assert gates.qa_mandate_suffix(plan, 3, header) == ""
 
 
-def test_keyword_fallback_no_header():
+def test_no_declaration_injects_no_mandate():
+    """FO-2: with no qa_steps declaration the mandate is not injected by guessing
+    at the step title. All three production callers in bellows.py pass the parsed
+    header, so this bare-call shape is a test artifact, not a dispatch path."""
     plan = "## STEP 1 — DEV\ndo dev\n## STEP 3 — QA\ndo qa\n"
-    result = gates.qa_mandate_suffix(plan, 3)
-    assert result == gates.QA_MANDATE_SUFFIX
+    assert gates.qa_mandate_suffix(plan, 3) == ""
+    assert gates.qa_mandate_suffix(plan, 3, {"qa_steps": "3"}) == gates.QA_MANDATE_SUFFIX
 
 
 def test_no_step_heading_returns_empty():
