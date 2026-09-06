@@ -195,6 +195,57 @@ _CLAUSE_MARKERS = ("supersede", "re-derive", "rederive", "yours ", "recorded",
                    "record", "measured", "measure and")
 
 
+_CHANGELOG_SLUG_RE = re.compile(r"slug\s+([a-z0-9][\w-]{6,})")
+
+
+def _check_shipped_doctrine_tranche(plan_path):
+    """(x) WARN when this plan's OWN slug already names a shipped doctrine changelog row.
+
+    Thread 157: nothing in the admission path asks whether a plan's work has ALREADY
+    BEEN DONE. `cycle_check` BAR_MET attests that the plan's own cycle converged; it
+    says nothing about the world the plan would act on. Measured 2026-09-06: of 7
+    gate-clean drafts, FOUR had shipped — two of them doctrine tranches that would have
+    re-applied proposals already codified into PT v4.98 and DC v2.24.
+
+    ⛔ NARROW ON PURPOSE. Thread 157 lists three detection signals; measured against the
+    four known-shipped drafts, only this one discriminates:
+        (a) all declared deposits exist on disk   21 hits, 4 true, 17 FALSE (81%)
+        (b) THIS CHECK                             1 hit,  1 true,  0 false
+        (c) a Done/ plan with the same stem        0 hits — its own example pairs
+            register-validate-first with Done/executable-100030, same SUBJECT and a
+            different name, which no mechanical stem match finds
+        (d) (a) AND the slug in a commit subject  20 hits, 4 true, 16 false — degenerate,
+            because every walked draft appears in its own `draft(<slug>):` commits
+    (a) and (d) must NOT ship as rules at those rates. This catches 1 of the 4, and it
+    is the highest-harm one; the general remedy is the retirement ritual (2bb7b20's
+    precedent), not a gate.
+
+    ⚠️ Keyed on the FILENAME, never on prose. 27 of 35 drafts MENTION some changelog
+    slug — citing a shipped tranche is normal — so a text match is degenerate. An
+    earlier cut of this measurement keyed on the first `slug X` in the body and got the
+    right answer by luck, because that file's first mention happened to be its own.
+    """
+    try:
+        stem = re.sub(r"^(executable|diagnostic|qa)-", "", Path(plan_path).stem)
+        if not stem:
+            return
+        from bellows_root import resolve_governance_root
+        gov = resolve_governance_root()
+        text = ""
+        for name in ("DRAFTING_CYCLE.md", "PLANNER_TEMPLATE.md"):
+            f = gov / name
+            if f.is_file():
+                text += f.read_text(encoding="utf-8", errors="replace")
+        for slug in set(_CHANGELOG_SLUG_RE.findall(text)):
+            if slug == stem or slug.startswith(stem + "-20"):
+                print(f"(x) WARN: this plan's own slug names a SHIPPED doctrine "
+                      f"changelog row (`slug {slug}`) — its subject may already be "
+                      f"codified; verify before depositing (thread 157)")
+                return
+    except Exception:
+        return  # advisory only — never let this decide a verdict
+
+
 def _check_bare_constants(plan_text):
     """(r) WARN-FIRST: a probe constant (== / >= / <= N) inside a STEP block
     with no supersede-class clause on the line or within 2 lines either side.
@@ -1039,6 +1090,7 @@ def lint(plan_path):
         print(f"(q) WARN: check errored ({e})")
 
     _check_bare_constants(plan_text)
+    _check_shipped_doctrine_tranche(plan_path)
 
     for status, check, detail in results:
         print(f"{status}: {check} — {detail}")
