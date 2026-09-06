@@ -490,6 +490,18 @@ def run_check(plan_path, warnings=None):
             except Exception:
                 pass  # never let an advisory path change the verdict
 
+        # Thread 156: the T0 arm. A floor-tier plan carries no walks BY DESIGN, so the
+        # empty-walk_data path is where its close belongs — but only when it states the
+        # lens-4 result §3 requires. Refusing on silence is the safeguard (ruling 119).
+        _t0_ok, _t0_detail = _t0_close(text, blocks[0] if blocks else None)
+        if _t0_ok:
+            return "BAR_MET", 0
+        if _t0_detail and warnings is not None:
+            warnings.append(f"WARN: {_t0_detail} — DRAFTING_CYCLE §3 collapses a T0 "
+                            f"Cycle Log to `**cycle_tier:** T0 (no trigger); "
+                            f"integration-vs-record pass: <result>`, and the RESULT is "
+                            f"what makes the close checkable (thread 156)")
+
         # ⛔ THREAD 151's SECOND ASYMMETRY IS DELIBERATELY LEFT OPEN. A plan CLAIMING
         # CLOSURE with an empty body is told CONTINUE, bypassing the closure check at
         # :553 which blocks on every other path. That looks like the same defect —
@@ -641,6 +653,46 @@ def _manifest_validation_keys(plan_text):
         for part in validation_val.split(",")
         if "=" in part
     )
+
+
+# Thread 156 — the T0 deposit arm. DRAFTING_CYCLE §1 sanctions a floor tier whose
+# terminal instruction is "then DEPOSIT", and §3 collapses its Cycle Log to one line:
+#   **cycle_tier:** T0 (no trigger); integration-vs-record pass: <result>
+# There was no BAR_MET arm reachable without walk data, so the tier's own instruction
+# was unreachable by construction: measured 2026-09-06, 13 plans declare T0 and ZERO
+# reach BAR_MET. §6's coordinate-doctrine-and-gate clause, violated and declared nowhere.
+_T0_PASS_RE = re.compile(r"integration-vs-record pass:\s*([^\n)]*)", re.IGNORECASE)
+
+
+def _t0_close(plan_text, dc_block):
+    """(ok, detail) — may a T0 plan close without walks?
+
+    ⛔ KEYED ON A POSITIVE REQUIREMENT, never on the absence of walks. Ruling 119: a
+    gate reading a DECLARATION is defeated by silence, so this one refuses on silence
+    — a plan declaring T0 and stating no integration-vs-record RESULT does not close.
+    That is the whole safeguard, and it is why the discriminator is the declared lens-4
+    result rather than "T0 and no walk data", which any plan could satisfy by writing
+    nothing.
+
+    ⚠️ It does NOT verify the tier is DESERVED — whether a trigger fired is not checked
+    here. Nothing checks it anywhere today (plan_lint only asserts cycle_tier matches
+    T[012]), so this adds no exposure that did not already exist; it makes the
+    consequence visible at deposit instead of invisible. Verifying the tier against the
+    trigger set is a separate, larger question.
+
+    A `<result>` placeholder is refused like any other silence — the same shape as the
+    unemitted Cycle Manifest, where a heading with a placeholder body passed every gate.
+    """
+    tier = _extract_tier_from_plan(plan_text, dc_block)
+    if tier != "T0":
+        return False, None
+    m = _T0_PASS_RE.search(plan_text or "")
+    if not m:
+        return False, "declares T0 but states no integration-vs-record result"
+    res = m.group(1).strip().rstrip(".;,").strip()
+    if not res or res.startswith("<"):
+        return False, "declares T0 and leaves the integration-vs-record result empty"
+    return True, res
 
 
 def _extract_tier_from_plan(plan_text, dc_block):
