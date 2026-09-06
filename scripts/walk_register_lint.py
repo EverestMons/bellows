@@ -67,6 +67,36 @@ def normalize_column(name):
     return name.lower().replace("-", "_").replace(" ", "_")
 
 
+_FINDING_DECL_RE = re.compile(r"(\d+)\s+findings?\b", re.IGNORECASE)
+
+
+def coverage_basis(text, rows):
+    """What the status RESTS ON — never a coverage verdict, only its absence declared.
+
+    ⛔ CONFORMANT means `no row warned` (validate_file: UNCONFORMANT if any_warn else
+    CONFORMANT). It is true of an EMPTY register, and was true of one carrying schema
+    rows for 14 of 48 findings — quoted in freeze records and to the CEO as "the
+    register is in order" (thread 135, cold-panel CAPSTONE 2026-09-04).
+
+    This does NOT add a coverage check. The corpus cannot support one yet: only 34 of
+    173 registers carry a closure line, only 21 both close and declare a count, and the
+    counts live in prose headings ("SEAT 1 — DISCOVERY. 18 findings"), not a field. A
+    verdict built on that heuristic would be guessing. So the remedy here is the one
+    the shop already codified for this class — see GLOSSARY `vacuous verdict`: state
+    the BASIS, so a reader can see what the verdict could not have failed on.
+    `fold_check` (e5ecd4c) and `cycle_check` (eff3c36) took this repair; this is the
+    third of the three measured instances.
+
+    Returns a string appended to the summary line. `declared` is reported ONLY as the
+    register's own prose claim, explicitly unreconciled.
+    """
+    decls = [int(m.group(1)) for m in _FINDING_DECL_RE.finditer(text)]
+    basis = f"rows={len(rows)} shape-only; coverage NOT checked"
+    if decls:
+        basis += f"; register's prose declares up to {max(decls)} findings (unreconciled)"
+    return basis
+
+
 def is_fold_table(header_cells):
     """A findings table: a `finding` column plus EITHER a fold marker OR an `id`.
 
@@ -416,7 +446,12 @@ def main():
             print(f"ERROR reading {fp}: {e}", file=sys.stderr)
             continue
         shape_str = " ; ".join(shapes) if shapes else "(none)"
-        print(f"{fp.name}\t{file_status}\tshapes: {shape_str}", file=sys.stderr)
+        try:
+            basis = coverage_basis(fp.read_text(errors="replace"), rows)
+        except Exception:
+            basis = f"rows={len(rows)} shape-only; coverage NOT checked"
+        print(f"{fp.name}\t{file_status}\tBASIS: {basis}\tshapes: {shape_str}",
+              file=sys.stderr)
         for rd in rows:
             print(make_tsv_row(rd))
 

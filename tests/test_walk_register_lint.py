@@ -729,3 +729,54 @@ def test_markerless_id_register_is_not_a_whole_file_silent_skip(tmp_path):
     status, rows, shapes = validate_file(p)
     assert status != STATUS_NO_TABLE, "marker-less findings table silently skipped the whole file"
     assert len(rows) == 2, f"expected both rows validated, got {len(rows)}"
+
+
+def test_coverage_basis_states_what_conformant_rests_on():
+    """Thread 135 — CONFORMANT attests row SHAPE, never coverage.
+
+    It is true of an EMPTY register, and was true of one carrying rows for 14 of 48
+    findings while being quoted in freeze records as "the register is in order"."""
+    from walk_register_lint import coverage_basis
+    rows = [{"id": "f1"}, {"id": "f2"}]
+    b = coverage_basis("## Walk 1 — 2 findings\n", rows)
+    assert "rows=2" in b
+    assert "coverage NOT checked" in b, "the absence of a coverage check must be stated"
+
+
+def test_coverage_basis_surfaces_the_registers_own_declared_count():
+    """The counts live in prose headings ('SEAT 1 — DISCOVERY. 18 findings'), so they
+    are reported as the register's CLAIM and explicitly unreconciled — this adds no
+    coverage verdict, only its basis."""
+    from walk_register_lint import coverage_basis
+    text = "### SEAT 1 — DISCOVERY. 18 findings\n### SEAT 2 — EXECUTION. 16 findings\n"
+    b = coverage_basis(text, [{"id": "f1"}])
+    assert "declares up to 18" in b, b
+    assert "unreconciled" in b, "a prose count must never read as a reconciled number"
+
+
+def test_coverage_basis_without_any_declared_count():
+    from walk_register_lint import coverage_basis
+    b = coverage_basis("no counts here at all\n", [{"id": "f1"}])
+    assert "rows=1" in b and "coverage NOT checked" in b
+    assert "declares up to" not in b
+
+
+def test_coverage_basis_is_emitted_but_changes_no_status(tmp_path):
+    """⛔ Purely additive. Measured over 173 registers: 0 status changes."""
+    p = _write_register(tmp_path, "walk-register-test.md", """\
+        # Walk Register — test
+
+        **schema_version:** `0.3`
+
+        ## Walk 1 — 9 findings
+
+        | id | walk | lens | sub_question | origin | finding | pre_fold_text | resolution |
+        |---|---|---|---|---|---|---|---|
+        | f1 | 1 | Weak spots | 1.1 | pre-existing | bad count | the bytes | fixed |
+        """)
+    status, rows, shapes = validate_file(p)
+    assert status == STATUS_CONFORMANT, "the basis emitter must not move the verdict"
+
+    from walk_register_lint import coverage_basis
+    b = coverage_basis(p.read_text(), rows)
+    assert "rows=1" in b and "declares up to 9" in b, b
