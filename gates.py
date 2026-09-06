@@ -215,6 +215,47 @@ def _extract_header_fields(header_line):
     return result
 
 
+
+# --- thread 80: the declared plan->thread link -------------------------------
+# ONE parser, used by plan_lint (g) and by the close-transition enqueue. Two
+# copies of a parser diverge the moment one moves — measured 2026-09-06, when a
+# register resolver gained a step in check_assert_2 and _compute_coherence kept
+# reporting "does not resolve" for the same file.
+# ⛔ NO SEPARATE LINE REGEX. The first cut of this carried its own `^\*\*Discharges:\*\*`
+# matcher and MISSED the field entirely, because a plan header is PIPE-SEPARATED on one
+# line — `**Date:** … | **Project:** … | **Discharges:** thread 80` — which never starts
+# a line. `_parse_plan_header` already extracts it, and already handles the multi-line
+# bold form too. Two parsers for one field is the defect fixed hours earlier in this same
+# session (a register resolver gained a step in one consumer while the other kept
+# reporting the file unresolvable); it was committed again here, in the code that adds
+# the test forbidding it. One parser: the header's.
+_DISCHARGES_ID_RE = re.compile(r"\bthread[ \t]+(\d+)\b", re.IGNORECASE)
+
+
+def parse_discharges(plan_text):
+    """Parse the `**Discharges:** thread 75[, thread 73]` header field (thread 80).
+
+    Returns (ids, residue). `ids` are the integer thread ids in order; `residue` is
+    what remained after removing every `thread <int>` token and its separators, so a
+    non-empty residue means the field said something this parser did not understand
+    and the caller WARNs rather than guessing. Returns (None, None) when the field is
+    absent — it is presence-OPTIONAL.
+
+    ⛔ INTEGER IDS, EXACT MATCH, no fuzzy resolution. Thread 80 names the hazard by
+    example: the `scope_check` ancestor-dir class, a match loose enough to hit what
+    nobody meant. A link that silently resolves to the WRONG thread is worse than no
+    link, because the reminder then arrives against a thread the plan never touched.
+    The loose plural form `threads 75 and 73` is REFUSED, not guessed at.
+    """
+    header = _parse_plan_header(plan_text or "")
+    if not header or "discharges" not in header:
+        return None, None
+    raw = str(header.get("discharges") or "")
+    ids = [int(x) for x in _DISCHARGES_ID_RE.findall(raw)]
+    residue = _DISCHARGES_ID_RE.sub("", raw).replace(",", " ").replace("and", " ").strip()
+    return ids, residue
+
+
 def check(parsed, plan_text, step_number, project_path, files_changed=None, wt_path=None):
     """Run all gates and return a result dict.
 

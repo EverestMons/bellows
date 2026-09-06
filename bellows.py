@@ -1424,6 +1424,9 @@ def run_plan(plan_path: str, config: dict, response_server: server.ResponseServe
             lifecycle.mark_plan_state(plan_id, "closed", closed_at=datetime.now().isoformat(), plan_doc_ref=_done_doc_ref) if plan_id else None
             _retire_receipts(plan_id)
             plan_claim.release_for_plan(plan_id, "completion: auto-close", config, _log)
+            # Thread 80: the declared plan->thread link. Completion transitions ONLY —
+            # a halted or aborted plan has discharged nothing.
+            plan_claim.enqueue_thread_reviews(plan_id, done_path, config, _log)
             notifier.notify_plan_complete(plan_name, total_cost)
             _log("EVENT", f"✅ AUTO-CLOSED", slug=slug_for(plan_name))
             return
@@ -3077,6 +3080,7 @@ class Bellows:
                                 lifecycle.mark_plan_state(_lc_plan_id, "closed", closed_at=datetime.now().isoformat(), plan_doc_ref=_done_doc_ref) if _lc_plan_id else None
                                 _retire_receipts(_lc_plan_id)
                                 plan_claim.release_for_plan(_lc_plan_id, "completion: continue-to-done", self.config, _log)
+                                plan_claim.enqueue_thread_reviews(_lc_plan_id, done_path, self.config, _log)
                                 notifier.notify_plan_complete(original_name, 0.0)
                                 _log("EVENT", f"verdict continue-to-done", slug=slug_for(original_name))
                             else:

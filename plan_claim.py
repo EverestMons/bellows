@@ -7,6 +7,8 @@ Seam contract (exec-100001): python -m tuyere.claims claim <slug> --plan-class <
 R4a mandate: completion-release at every terminal transition.
 """
 
+import datetime as _dt
+import json
 import logging
 import os
 import subprocess
@@ -201,3 +203,95 @@ def release_for_plan(plan_id, reason, config, log=None):
     if not _release_errored:
         log("ERROR", f"release_for_plan failed for {slug}: {detail}")
         _release_errored = True
+
+
+def enqueue_thread_reviews(plan_id, plan_path, config, log=None):
+    """Thread 80 — one tuyere review INTENT per `**Discharges:** thread N` id.
+
+    CEO decisions 2026-09-06: the review item is an INTENT, so it goes through the
+    standard workflow; and an enqueue failure FAILS OPENLY.
+
+    ⛔ FAILING OPENLY IS NOT LOGGING. `release_for_plan` above logs its failure ONCE
+    — a module-global `_release_errored` suppresses every later one — which is how a
+    failure gets swept under the rug. This writes a DURABLE artefact into
+    `receipts/` instead, and `wrap_check` already blocks the wrap on uncommitted
+    files there. A lost reminder is worse than no reminder, because the reader stops
+    expecting to check by hand.
+
+    It does NOT hold the plan's close: holding a completed plan over a bookkeeping
+    fault is a large consequence for a small one. The artefact is the guarantee.
+
+    Nothing auto-closes a thread. The intent asks "close it?" and the CEO answers.
+    """
+    if log is None:
+        log = _default_log
+    try:
+        text = Path(plan_path).read_text(encoding="utf-8", errors="replace")
+    except Exception as e:
+        log("ERROR", f"enqueue_thread_reviews: cannot read {plan_path}: {e}")
+        return
+    try:
+        import gates
+        ids, residue = gates.parse_discharges(text)
+    except Exception as e:
+        log("ERROR", f"enqueue_thread_reviews: parse failed: {e}")
+        return
+    if not ids:
+        return                      # field absent or empty — optional by design
+
+    checkout = _tuyere_checkout()
+    slug = Path(plan_path).stem
+    failed = []
+    for tid in ids:
+        note = (f"plan {plan_id} Done ({slug}); declared to discharge thread {tid} "
+                f"— close it?")
+        if checkout is None:
+            failed.append((tid, "tuyere checkout unresolvable"))
+            continue
+        try:
+            r = subprocess.run(
+                [str(checkout / ".venv" / "bin" / "python"), "-m", "tuyere.enqueue",
+                 "intent", "thread.review-discharge",
+                 "--target", json.dumps({"thread": tid, "plan_id": plan_id, "slug": slug}),
+                 "--note", note],
+                capture_output=True, text=True, timeout=15,
+            )
+            if r.returncode != 0:
+                failed.append((tid, (r.stderr or r.stdout).strip()[:160] or f"exit {r.returncode}"))
+            else:
+                log("EVENT", f"thread {tid}: review intent enqueued for {slug}")
+        except Exception as e:
+            failed.append((tid, f"{type(e).__name__}: {e}"))
+
+    if failed:
+        _record_unenqueued_reviews(plan_id, slug, failed, log)
+
+
+def _record_unenqueued_reviews(plan_id, slug, failed, log):
+    """Write the failure where the WRAP will find it — receipts/ is wrap-checked."""
+    for tid, detail in failed:
+        log("ERROR", f"thread {tid}: review intent NOT enqueued for {slug} — {detail}")
+    try:
+        root = Path(__file__).resolve().parent
+        d = root / "receipts"
+        d.mkdir(exist_ok=True)
+        stamp = _dt.datetime.now().strftime("%Y%m%dT%H%M%S")
+        f = d / f"unenqueued-thread-review-{slug}-{stamp}.md"
+        body = [
+            f"# UNENQUEUED THREAD REVIEW — plan {plan_id} ({slug})",
+            "",
+            "⛔ This plan declared `**Discharges:**` and the review intent(s) could NOT",
+            "be enqueued. The plan's close was NOT held (thread 80: report, do not hold),",
+            "so this file is the ONLY durable record — it exists so the failure is not",
+            "swept under the rug. `wrap_check` blocks the wrap while it is uncommitted.",
+            "",
+            "**To discharge:** enqueue the intent by hand, or close the thread at the",
+            "keyboard, then commit this file with what you did.",
+            "",
+        ]
+        for tid, detail in failed:
+            body.append(f"- thread **{tid}** — {detail}")
+        f.write_text("\n".join(body) + "\n", encoding="utf-8")
+        log("ERROR", f"wrote {f.name} — the wrap will block until it is committed")
+    except Exception as e:
+        log("ERROR", f"could not even record the unenqueued reviews: {e}")

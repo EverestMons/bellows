@@ -198,6 +198,35 @@ _CLAUSE_MARKERS = ("supersede", "re-derive", "rederive", "yours ", "recorded",
 _CHANGELOG_SLUG_RE = re.compile(r"slug\s+([a-z0-9][\w-]{6,})")
 
 
+def _check_discharges(plan_text):
+    """(g) — the declared plan->thread link (thread 80).
+
+    `**Discharges:** thread 75[, thread 73]`, presence-OPTIONAL and warn-first,
+    on the (f-stanza) precedent. The field declares an INTENT TO DISCHARGE, never
+    a closure: at the plan's completion transition bellows enqueues a tuyere
+    review intent per id, and the CEO confirms or declines at the keyboard.
+    Nothing auto-closes — a plan often discharges only PART of a thread, and a
+    mis-declared field must not close the wrong one silently.
+
+    ⛔ Parsing lives in gates.parse_discharges, NOT here. Two copies of a parser
+    diverge the moment one moves (measured 2026-09-06: a register resolver gained
+    a step in one consumer and the other kept reporting the file unresolvable).
+    """
+    ids, residue = gates.parse_discharges(plan_text)
+    if ids is None:
+        return                      # field absent — optional by design
+    if residue:
+        print(f"(g) WARN: Discharges field has text this parser does not understand: "
+              f"{residue[:60]!r} — the form is `thread <id>[, thread <id>]`, integer "
+              f"ids only, exact match (a loose match links the WRONG thread)")
+    if not ids:
+        print("(g) WARN: Discharges field declares no thread id — omit the field "
+              "rather than leaving it empty")
+        return
+    print(f"(g) INFO: declares discharge of thread(s) {', '.join(str(i) for i in ids)} "
+          f"— a review intent is enqueued per id at plan close; nothing auto-closes")
+
+
 def _check_shipped_doctrine_tranche(plan_path):
     """(x) WARN when this plan's OWN slug already names a shipped doctrine changelog row.
 
@@ -1090,6 +1119,7 @@ def lint(plan_path):
         print(f"(q) WARN: check errored ({e})")
 
     _check_bare_constants(plan_text)
+    _check_discharges(plan_text)
     _check_shipped_doctrine_tranche(plan_path)
 
     for status, check, detail in results:
