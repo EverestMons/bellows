@@ -54,10 +54,27 @@ done-on-another-machine-and-not-pulled (measured 2026-08-24).
    Ask: "what did this session teach that a future session on ANY project would
    want?" This is DISTINCT from the arc/baton narrative — recording the project arc
    is NOT a lessons sweep. Transferable shop-level lessons → `LESSONS.md`
-   (house format; not while a lessons-forge cycle plan sits un-run; verify the
-   prior last entry intact after append; classes-not-narratives — record the
-   transferable CLASS, never the session's story; never duplicate an
-   already-recorded class). **Marker on a new entry: `[status: pending]` — and
+   (house format; verify the prior last entry intact after append;
+   classes-not-narratives — record the transferable CLASS, never the session's
+   story; never duplicate an already-recorded class).
+
+   ⛔ **Guard (a) is MECHANICAL, and it is RE-TAKEN immediately before the write.**
+   Taken once at the top of the sweep, its window is unbounded wall-clock — and for
+   a plan paused at a verdict it spans the whole pause. Measured 2026-09-04: two
+   writers landed in that window on one day (this machine appended entries 419-423;
+   another machine then appended 424-425 and pushed, rejecting this machine's
+   commits). Both rebased cleanly, which is ordering luck, not a guarantee.
+
+       python3 bellows/tools/lessons_guard.py pin              # refuses if FROZEN; emits the sha
+       # ...compose the entry, then, as the LAST act before writing:
+       python3 bellows/tools/lessons_guard.py verify --sha <sha>
+
+   `verify` refuses (exit 2) if the corpus FROZE or if `LESSONS.md` moved since the
+   pin — another session here, or another machine's push. ⛔ **Exit 2 means do not
+   write**: re-read the file and re-take the pin. The tool scans all TWELVE
+   `decisions/` lanes from the shop root, not the single lane the doctrine text
+   names, and it treats `halted-`/`parked-` as PARKED (they do not freeze) while
+   `in-progress-` and `verdict-pending-` DO. **Marker on a new entry: `[status: pending]` — and
    ONLY that.** Since 2026-09-01 the `[status:]` marker is a projection of the
    forge DB's `lesson_proposals.status` (implemented / proposed / accepted /
    reference / rejected / superseded); `pending` is the one file-side value and
