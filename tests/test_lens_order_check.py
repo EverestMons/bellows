@@ -155,3 +155,45 @@ def test_ok_message_states_its_basis(tmp_path):
     assert r.returncode == 0
     assert "lens commit(s) across walks" in r.stdout
     assert "BASIS:" in r.stdout
+
+
+def test_slash_notation_is_two_lenses_not_one(tmp_path):
+    """⛔ `lens 1/4` is TWO lenses in one commit — the corpus uses this form.
+
+    Reading only the first number turned a BATCHED commit into a compliant
+    single-lens one: the exact breach the tool exists to catch, hidden by its own
+    parser. Measured 2026-09-06: fixing it took the corpus BATCHED count 1 -> 5."""
+    repo, plan = _repo(tmp_path, [
+        "drafting(fix): walk 1 lens 1/4 — 3 instruction folds",
+        "draft(fix): walk 2 LENS 1 — 0 findings",
+    ], walks=(1, 2))
+    r = _run(plan, repo)
+    assert r.returncode == 1, r.stdout
+    assert "BATCHED" in r.stdout
+    assert "lenses [1, 4] in ONE commit" in r.stdout, r.stdout
+
+
+def test_a_lens_passed_twice_in_one_walk_is_REPEATED(tmp_path):
+    """§2: 'one pass per lens per walk … Re-run a lens only on a SUBSEQUENT walk.'"""
+    repo, plan = _repo(tmp_path, [
+        "draft(fix): walk 1 LENS 1 — 2 folds",
+        "draft(fix): walk 1 LENS 2 — 1 fold",
+        "draft(fix): walk 1 LENS 1 — more folds",
+        "draft(fix): walk 2 LENS 1 — 0 findings",
+    ], walks=(1, 2))
+    r = _run(plan, repo)
+    assert r.returncode == 1, r.stdout
+    assert "REPEATED: walk 1" in r.stdout
+    assert "lens [1] passed more than once" in r.stdout
+
+
+def test_a_cont_commit_continues_one_pass_and_is_not_a_repeat(tmp_path):
+    """`lens 3 (cont)` continues the SAME pass across two commits. One pass, so it
+    is not a re-run — the distinction §2 draws between a pass and a subsequent walk."""
+    repo, plan = _repo(tmp_path, [
+        "draft(fix): walk 1 LENS 3 — three probe columns given",
+        "draft(fix): walk 1 LENS 3 (cont) — every probe column assigned",
+        "draft(fix): walk 2 LENS 1 — 0 findings",
+    ], walks=(1, 2))
+    r = _run(plan, repo)
+    assert "REPEATED" not in r.stdout, r.stdout

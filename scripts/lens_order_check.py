@@ -68,13 +68,25 @@ REQUIRED_LENSES = {
 }
 
 _WALK_RE = re.compile(r"\bwalk\s+(\d+)\b", re.IGNORECASE)
-_LENS_RE = re.compile(r"\blens\s+(\d+)", re.IGNORECASE)
+
+# ⛔ `lens 1/4` is TWO lenses in one commit, not lens 1. The corpus uses the slash
+# form (measured 2026-09-06: `lens 1/4` x2, `lens 3/5` x1), and reading only the
+# first number turned a BATCHED commit into a compliant single-lens one — the exact
+# breach this tool exists to catch, hidden by its own parser.
+_LENS_RE = re.compile(r"\blens\s+(\d+(?:\s*/\s*\d+)*)", re.IGNORECASE)
+
+# `lens 3 (cont)` continues the SAME pass across two commits. §2 says "one pass per
+# lens per walk"; a continuation is one pass, so it is not a repeat — but it is
+# recorded, because a fold set spanning commits is what the observer must not
+# silently smooth over.
+_CONT_RE = re.compile(r"\(cont\.?\)|\bcontinued\b", re.IGNORECASE)
 
 OK = "OK"
 BATCHED = "BATCHED"
 OUT_OF_ORDER = "OUT-OF-ORDER"
 INCOMPLETE = "INCOMPLETE"
 UNPROVEN = "UNPROVEN"
+REPEATED = "REPEATED"
 
 
 def commit_record(plan_path, repo):
@@ -102,7 +114,9 @@ def commit_record(plan_path, repo):
             continue
         sha, subject = line.split("\t", 1)
         w = _WALK_RE.search(subject)
-        lenses = [int(x) for x in _LENS_RE.findall(subject)]
+        lenses = []
+        for group in _LENS_RE.findall(subject):
+            lenses.extend(int(x) for x in re.split(r"\s*/\s*", group))
         if w and lenses:
             rows.append((int(w.group(1)), lenses, sha[:7], subject))
     return rows
@@ -141,6 +155,19 @@ def analyse(rows, walks, tier):
 
     for walk, entries in per_walk.items():
         seq = [l for lenses, _, _ in entries for l in lenses]
+
+        # §2: "one pass per lens per walk … Re-run a lens only on a SUBSEQUENT walk."
+        # A `(cont)` commit continues one pass and is not a repeat.
+        counted = [l for lenses, _, subj in entries
+                   for l in lenses if not _CONT_RE.search(subj)]
+        repeats = sorted({l for l in counted if counted.count(l) > 1})
+        if repeats:
+            findings.append((
+                REPEATED, walk,
+                f"lens {repeats} passed more than once in one walk — §2 allows one "
+                f"pass per lens per walk, and a re-run belongs on a SUBSEQUENT walk",
+            ))
+
         if seq != sorted(seq):
             findings.append((
                 OUT_OF_ORDER, walk,
