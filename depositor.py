@@ -485,7 +485,7 @@ class Depositor:
 
     def _rerun_validation(self, path, plan_text):
         result = {"hold": False, "reason": "",
-                  "cycle_check": None, "plan_lint": None}
+                  "cycle_check": None, "plan_lint": None, "lens_order": None}
 
         try:
             verdict, _ = cycle_check.run_check(Path(path))
@@ -524,6 +524,51 @@ class Depositor:
             result["hold"] = True
             result["reason"] = f"plan_lint:exception:{e}"
             return result
+
+        # DC computes the verdict; bellows consumes it. lens_order_check is §2.7's
+        # observer — the per-lens commit record that makes sequential execution
+        # PROVABLE, which doctrine appointed and nothing had built (cycle_check has no
+        # commit counting of any kind, measured 2026-09-06).
+        #
+        # ⛔ ONLY A PROVEN BREACH HOLDS. exit 1 means the record itself shows batched
+        # lenses, a non-ascending order, or a closed walk missing its tier's lens set.
+        # exit 2 is NO-RECORD — the per-lens convention is recent (75 of 653 commits
+        # touching decisions/ name a lens), and holding on absence would stop every
+        # deposit: of the 19 plans passing cycle_check and plan_lint today, 18 are
+        # NO-RECORD and ZERO are clean. Absence of evidence is recorded, never
+        # converted into a refusal.
+        #
+        # Subprocess, deliberately: a fresh interpreter reads the current instrument
+        # from disk, so a fix to it is live without a daemon restart — the split
+        # measured 2026-09-05, where in-process gates.check ran 31 hours of stale code
+        # while the plan_lint subprocess did not.
+        #
+        # ~110ms, inside the battery's cheap band (propagation_check 30 / plan_lint 60
+        # / fold_check 78), and it does not scale with mutant count — the cost that
+        # kept mutation_check out of the freeze path at 3589ms (CEO ruling, thread 117).
+        # ⚠️ It is NOT in the manifest's `validation:` line and must not be: that key
+        # set is a VERSIONED INTERFACE and extending it took 13 compliant plans to 0
+        # (same ruling). This gate reads the instrument directly instead.
+        lens_script = str(self._bellows_root / "scripts" / "lens_order_check.py")
+        try:
+            lo = subprocess.run(
+                [sys.executable, lens_script, str(path)],
+                capture_output=True, text=True, timeout=60,
+            )
+            if lo.returncode == 1:
+                breaches = [ln for ln in lo.stdout.splitlines()
+                            if ln.split(":")[0] in
+                            ("BATCHED", "OUT-OF-ORDER", "INCOMPLETE", "UNPROVEN")]
+                result["lens_order"] = f"breach_{len(breaches)}"
+                result["hold"] = True
+                result["reason"] = f"lens_order:{len(breaches)}_breach"
+                return result
+            result["lens_order"] = ("no_record" if lo.returncode == 2
+                                    else f"exit_{lo.returncode}")
+        except Exception as e:
+            # A broken observer must not silently accept a plan, nor block the lane on
+            # its own failure: record it and let the other gates decide.
+            result["lens_order"] = f"exception:{e}"
 
         manifest = cycle_check.parse_manifest_stanza(plan_text)
         if manifest:
