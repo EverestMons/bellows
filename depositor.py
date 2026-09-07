@@ -597,7 +597,8 @@ class Depositor:
             if lo.returncode == 1:
                 breaches = [ln for ln in lo.stdout.splitlines()
                             if ln.split(":")[0] in
-                            ("BATCHED", "OUT-OF-ORDER", "INCOMPLETE", "UNPROVEN")]
+                            ("BATCHED", "OUT-OF-ORDER", "INCOMPLETE", "UNPROVEN",
+                             "NO-RECORD")]  # NO-RECORD holds since v2.26 (thread 177)
                 result["lens_order"] = f"breach_{len(breaches)}"
                 result["hold"] = True
                 result["reason"] = f"lens_order:{len(breaches)}_breach"

@@ -58,13 +58,34 @@ def test_proven_breach_HOLDS(monkeypatch, passing_plan):
     assert r["lens_order"] == "breach_2"
 
 
-def test_NO_RECORD_does_not_hold(monkeypatch, passing_plan):
-    """⛔ Absence of evidence is recorded, never converted into a refusal."""
+def test_NO_RECORD_HOLDS(monkeypatch, passing_plan):
+    """⛔ REVISITED on a CHANGED PREMISE — CEO ruling 2026-09-07, thread 177.
+
+    This test's predecessor, test_NO_RECORD_does_not_hold, ratified "absence of
+    evidence is recorded, never converted into a refusal", on the measurement that
+    18 of the 19 plans at the bar were NO-RECORD and holding would stop every
+    deposit. That measurement was taken while the observer read only the plan file
+    and the lens record lived in the drafting repo — NO-RECORD meant "cannot see".
+    Since the walk register became the record (thread 163) it means "nothing there":
+    the plan declares lens walks and no commit anywhere proves one, which is the
+    fabricated-close shape. The observer now exits 1 for it, and the existing exit-1
+    arm here holds. Re-measured at the ruling: 12 of 13 plans at the bar would hold,
+    and 0 live lanes were affected.
+    """
+    monkeypatch.setattr(depositor_mod.subprocess, "run",
+                        _stub_run(1, "NO-RECORD: the plan declares lens walks but NO commit names a lens\n"))
+    r = _dep()._rerun_validation(passing_plan, "text")
+    assert r["hold"] is True, r
+    assert r["reason"] == "lens_order:1_breach"
+
+
+def test_a_tool_that_cannot_run_still_does_not_hold(monkeypatch, passing_plan):
+    """Exit 2 remains "could not run" (UNRUNNABLE): a broken or absent observer is
+    recorded and neither accepts nor blocks. Only NO-RECORD moved to exit 1."""
     monkeypatch.setattr(depositor_mod.subprocess, "run", _stub_run(2, ""))
     r = _dep()._rerun_validation(passing_plan, "text")
     assert r["hold"] is False, r
     assert r["lens_order"] == "no_record"
-    assert r["reason"] == ""
 
 
 def test_clean_record_passes(monkeypatch, passing_plan):

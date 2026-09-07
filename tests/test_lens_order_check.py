@@ -142,8 +142,11 @@ def test_declared_walks_with_no_lens_commit_REFUSES(tmp_path):
     does not exist — the vacuous-verdict class. Exit 2: could not run, never a pass."""
     repo, plan = _repo(tmp_path, ["draft(fix): v0 — initial"], walks=(1, 2))
     r = _run(plan, repo)
-    assert r.returncode == 2, r.stdout + r.stderr
-    assert "NO-RECORD" in r.stderr
+    # ⛔ Exit 1 since DRAFTING_CYCLE v2.26 (CEO ruling 2026-09-07, thread 177): a plan
+    # that declares lens walks with no commit proving one is HELD. It was exit 2 —
+    # "could not run" — while the observer was inert and NO-RECORD meant "cannot see".
+    assert r.returncode == 1, r.stdout + r.stderr
+    assert "NO-RECORD" in r.stdout
     assert "LENS-ORDER OK" not in r.stdout
 
 

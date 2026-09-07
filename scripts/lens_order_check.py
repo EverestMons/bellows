@@ -321,12 +321,26 @@ def main(argv=None):
         print("LENS-ORDER N/A — no lens walk declared and no lens commit; nothing to order yet")
         return 0
     if not rows and lens_walks:
-        print(f"BASIS: tier={tier or 'undeclared->T1'} "
+        # ⛔ NO-RECORD HOLDS — CEO ruling 2026-09-07 (thread 177), DRAFTING_CYCLE v2.26.
+        # This used to exit 2 and hold nothing, on the ratified reasoning that of the
+        # 19 plans at the bar 18 were NO-RECORD and "holding on absence would stop
+        # every deposit". That premise was measured while the observer was INERT —
+        # it read only the plan file, and the record lived in the drafting repo — so
+        # NO-RECORD then meant "cannot see", not "nothing there". Since the register
+        # became the record (thread 163) it means what it says: the plan declares lens
+        # walks and NO commit anywhere proves one. That is the fabricated-close shape,
+        # and it is held UNCONDITIONALLY — no date key, no register key, nothing to
+        # declare one's way past (Ruling 119). Measured at the ruling: 12 of the 13
+        # plans clearing the bar that day would hold; live lanes held 0, so the cost
+        # fell on re-deposits only. Pre-walk plans (no lens walk declared) and T0
+        # still return N/A above and are untouched. Exit 1 is what the depositor
+        # holds on; the verdict word is kept so the reason stays legible.
+        print(f"BASIS: source=none tier={tier or 'undeclared->T1'} "
               f"declared_walks={sorted(walks)} lens_commits=0")
-        print("LENS-ORDER NO-RECORD: the plan declares walks but NO commit names a "
-              "lens, so sequential execution is neither proven nor disproven. §2.7's "
-              "observer has nothing to read.", file=sys.stderr)
-        return 2
+        print("NO-RECORD: the plan declares lens walks but NO commit in the plan's "
+              "repo or its walk register names a lens — sequential execution is "
+              "unproven, and since DRAFTING_CYCLE v2.26 that HOLDS (thread 177).")
+        return 1
 
     findings, per_walk = analyse(rows, walks or set(), tier)
     basis = (f"source={record_src} "
