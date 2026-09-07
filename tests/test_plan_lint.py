@@ -3453,3 +3453,69 @@ def test_u_no_txt_warns():
     assert result.returncode == 0, f"Expected exit 0 (WARN only), got {result.returncode}"
     assert "(u)" in result.stdout
     assert "no .txt" in result.stdout
+
+
+# --- (m): a step that issues repo-relative commands must establish its root -------
+
+def _m_plan(step2_body):
+    return f"""\
+# Test Plan
+**Date:** 2026-09-07 | **Dispatch Mode:** bellows | **cycle_tier:** T1
+
+## STEP 1 — DEV
+
+> `cd "$(git rev-parse --show-toplevel)" && test -f x.py && echo TREE_OK`
+> `.venv/bin/python -m pytest tests/ -q`
+>
+> **Deposits:**
+> - `knowledge/development/dev-log.md`
+
+## STEP 2 — QA
+
+{step2_body}
+> **Deposits:**
+> - `knowledge/research/qa.txt`
+"""
+
+
+def test_m_warns_when_a_step_runs_relative_commands_without_a_root():
+    r = _run_lint(_m_plan("> `.venv/bin/python -m pytest tests/ -q > knowledge/research/qa.txt`\n"))
+    assert "(m) WARN: STEP 2" in r.stdout, r.stdout
+    assert "(m) WARN: STEP 1" not in r.stdout, "STEP 1 establishes the root"
+    # Advisory means (m) never MOVES the exit code. The fixture's QA step has no Rule 20
+    # banner, so check (c) FAILs it either way — asserting rc == 0 here measured (c),
+    # not (m), and an earlier version of this test did exactly that. Compare instead
+    # against the same plan with its root established, which silences (m) and nothing else.
+    rooted = _run_lint(_m_plan('> `cd "$(git rev-parse --show-toplevel)"`\n'
+                               "> `.venv/bin/python -m pytest tests/ -q > knowledge/research/qa.txt`\n"))
+    assert "(m)" not in rooted.stdout, rooted.stdout
+    assert r.returncode == rooted.returncode, "(m) changed the exit code"
+
+
+def test_m_is_silent_when_the_step_cds_to_toplevel():
+    r = _run_lint(_m_plan('> `cd "$(git rev-parse --show-toplevel)"`\n'
+                          "> `.venv/bin/python -m pytest tests/ -q`\n"))
+    assert "(m)" not in r.stdout, r.stdout
+
+
+def test_m_accepts_git_dash_C_absolute_as_the_root():
+    r = _run_lint(_m_plan("> `git -C /Users/x/Developer/tuyere diff --stat -- tuyere/db.py`\n"))
+    assert "(m)" not in r.stdout, r.stdout
+
+
+def test_m_ignores_path_mentions_that_are_not_commands():
+    """A deposit listing or a prose reference is not a command."""
+    r = _run_lint(_m_plan("> Touches `tuyere/db.py` and `tests/test_tuyere.py`; see knowledge/research/.\n"))
+    assert "(m)" not in r.stdout, r.stdout
+
+
+def test_m_ignores_fenced_expected_output():
+    """A fenced line of expected output carries a relative path but begins with no command."""
+    r = _run_lint(_m_plan("```\nFAILED tests/test_tuyere.py::test_x\n1 failed, 77 passed\n```\n"))
+    assert "(m)" not in r.stdout, r.stdout
+
+
+def test_m_scans_fenced_commands():
+    """Fenced blocks are the primary command carrier and must not be invisible."""
+    r = _run_lint(_m_plan("```\n.venv/bin/python -m pytest tests/ -q > knowledge/research/qa.txt\n```\n"))
+    assert "(m) WARN: STEP 2" in r.stdout, r.stdout

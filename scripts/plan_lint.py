@@ -227,6 +227,69 @@ def _check_discharges(plan_text):
           f"— a review intent is enqueued per id at plan close; nothing auto-closes")
 
 
+_M_STEP_RE = re.compile(r'^## STEP (\d+)\b.*?(?=^## STEP |\Z)', re.M | re.S | re.I)
+_M_FENCE_RE = re.compile(r'^```[^\n]*\n(.*?)^```[^\n]*$', re.M | re.S)
+_M_CMD = (r'(?:cd|git|python3?|\.venv/bin/python|pytest|shasum|cp|rm|mkdir|mv|cat|ls|'
+          r'grep|sed|awk|bash|sh|make|npm|node|touch|echo)')
+_M_CMDLINE_RE = re.compile(r'^\s*(?:\$ |> )?(' + _M_CMD + r'\b[^\n]*)$', re.M)
+_M_SPAN_RE = re.compile(r'`(' + _M_CMD + r' [^`\n]+)`')
+_M_REL_RE = re.compile(r'(?<![\w/.~-])(?:\.venv/|tests/|knowledge/|scripts/|src/|tuyere/|'
+                       r'bellows/|forge_lessons/|server/|-m \w+(?:\.\w+)?\b)')
+_M_ROOT_RE = re.compile(r'rev-parse --show-toplevel|\bcd (?:/|"?\$\(|~/)|\bgit -C (?:/|"?\$\()')
+
+
+def _check_step_root(plan_text):
+    """(m) WARN when a step issues repo-relative commands and never establishes the root.
+
+    Thread 174. LESSONS.md, 2026-08-08 — "The shell's cwd resets between calls — three
+    phase commits landed in the WRONG repo while printing success; cd-first plus a
+    toplevel assert is the whole fix" (`:3381` as of this writing): *every compound
+    touching a repo starts with `cd /abs/path` as its FIRST token — never trust cwd
+    persistence.* A dispatched step inherits no shell from the step before it, nor
+    do its items from each other, so a relative `.venv/bin/python`, `tests/`, or an
+    evidence redirect into `knowledge/research/` runs against whatever directory the
+    dispatch started in. Most fail loudly; the redirect does not — it lands the
+    receipt in the wrong tree while printing success, the lesson's own failure.
+
+    The lesson was codified and then RE-TRIPPED: the newest tuyere clone origin
+    carries the gap in its QA step, so every clone inherited it, and one cycle
+    rediscovered the same lesson in FOUR places across three walks (a grep found the
+    fourth in seconds). A codified lesson with no mechanical guard gets re-tripped.
+
+    WHAT COUNTS AS A COMMAND — calibrated, not guessed. Only lines that BEGIN with a
+    command word: inside fenced blocks, in a backtick span, or after `$ `. A bare
+    path mention in prose (`tuyere/db.py` as a deposit listing) is not a command,
+    and a fenced line of expected OUTPUT (`FAILED tests/test_x.py::…`) does not
+    begin with one — an earlier predicate counted both and fired on 76% of steps,
+    which is furniture (thread 117). `git -C <abs>` and `cd "$(git rev-parse
+    --show-toplevel)"` establish the root; so does an absolute `cd`.
+
+    MEASURED 2026-09-07 across 682 plans / 1200 steps with exactly these patterns:
+    710 steps issue relative commands, 379 of them establish no root — 31% of all
+    steps. Every sampled hit was a true positive (one is the clone origin's own QA
+    Item 1). That is the VIOLATION rate, not a noise rate: each line names the step,
+    the first offending command, and the one-line remedy, which is what an author
+    acts on. ONE line per step. Advisory — WARN only, never a verdict.
+    """
+    try:
+        for m in _M_STEP_RE.finditer(plan_text or ""):
+            step = m.group(0)
+            cmds = []
+            for f in _M_FENCE_RE.finditer(step):
+                cmds += _M_CMDLINE_RE.findall(f.group(1))
+            body = _M_FENCE_RE.sub("", step)
+            cmds += _M_SPAN_RE.findall(body) + _M_CMDLINE_RE.findall(body)
+            rel = [c for c in cmds if _M_REL_RE.search(c)]
+            if rel and not _M_ROOT_RE.search(step):
+                first = rel[0].strip()[:70]
+                print(f"(m) WARN: STEP {m.group(1)} issues repo-relative command(s) but never "
+                      f"establishes the root — first: {first!r} — a dispatched step inherits "
+                      f"no shell; start it with `cd \"$(git rev-parse --show-toplevel)\"` "
+                      f"and a TREE_OK assert (LESSONS.md 2026-08-08, thread 174)")
+    except Exception:
+        return  # advisory only — never let this decide a verdict
+
+
 def _check_shipped_doctrine_tranche(plan_path):
     """(x) WARN when this plan's OWN slug already names a shipped doctrine changelog row.
 
@@ -1190,6 +1253,7 @@ def lint(plan_path):
     _check_bare_constants(plan_text)
     _check_discharges(plan_text)
     _check_shipped_doctrine_tranche(plan_path)
+    _check_step_root(plan_text)
 
     for status, check, detail in results:
         print(f"{status}: {check} — {detail}")
