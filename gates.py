@@ -397,7 +397,8 @@ def _resolve_deposit_path(path, project_path, wt_path=None):
     Returns the resolved absolute path string if the path exists (as a file or
     directory) at any of the following, or None if not found:
       0. worktree-first (if wt_path provided and differs from project_path)
-      1. path as-is (absolute or CWD-relative)
+      1. path as-is — for ABSOLUTE paths only (a relative path tries the
+         project first; CWD-relative is the last resort, never the first — 144)
       2. os.path.join(project_path, path) — relative to project root
       3. os.path.join(os.path.dirname(project_path), path) — path includes project dir name
     """
@@ -421,11 +422,23 @@ def _resolve_deposit_path(path, project_path, wt_path=None):
         if os.path.isfile(wt_candidate) or os.path.isdir(wt_candidate):
             return wt_candidate
 
-    if os.path.isfile(path) or os.path.isdir(path):
-        return os.path.abspath(path)
+    # ⛔ A RELATIVE path resolves against the PROJECT before the process CWD
+    # (thread 144). Strategy 1 used to run first for every path, and the daemon's
+    # CWD is the bellows checkout — so a forge_lessons plan depositing `CLAUDE.md`
+    # was "verified" against bellows' own CLAUDE.md. Measured 2026-09-07 over 1137
+    # relative deposits in the Done corpus: 173 resolve via CWD, and 3 of those
+    # name a file that exists in BOTH trees and differ — every one a wrong-tree
+    # false positive on a gate that attests a deposit landed. The 170 others are
+    # bellows plans, where CWD and project coincide and the order is moot.
+    # Absolute paths keep strategy 1 first: they name their own tree.
+    if os.path.isabs(path):
+        if os.path.isfile(path) or os.path.isdir(path):
+            return os.path.abspath(path)
     p2 = os.path.join(project_path, path)
     if os.path.isfile(p2) or os.path.isdir(p2):
         return os.path.abspath(p2)
+    if not os.path.isabs(path) and (os.path.isfile(path) or os.path.isdir(path)):
+        return os.path.abspath(path)
     p3 = os.path.join(os.path.dirname(project_path), path)
     if os.path.isfile(p3) or os.path.isdir(p3):
         return os.path.abspath(p3)
