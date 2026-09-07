@@ -500,12 +500,35 @@ class Depositor:
 
             try:
                 text = Path(plan_file).read_text(encoding="utf-8")
-            except Exception:
+            except Exception as e:
+                # Legible, as thread 93 made the filename half: name the plan.
+                self._unresolved_in_flight = (
+                    f"plan {plan_id} ({plan_type}, {row['lifecycle_state']}) — "
+                    f"{plan_file} could not be read: {type(e).__name__}"
+                )
                 return None
 
             w, _, _ = self._parse_plan(text)
             if not w:
-                return None
+                # ⛔ Thread 162 — the SECOND fail-shut beside 93's. This used to
+                # `return None`, which holds EVERY new deposit as unresolvable, so an
+                # in-flight plan that declares no writes blocked the whole lane — and a
+                # read-only diagnostic declares no writes BY DESIGN. _parse_plan cannot
+                # tell "declares nothing" from "could not parse", but the file's
+                # STRUCTURE can: a plan with a manifest stanza or a STEP header and zero
+                # writes is an EMPTY write set, which collides with nothing. A file with
+                # neither is not a plan the collision check can reason about, and that
+                # stays a hold — named, so the reader knows which plan and why.
+                structured = bool(cycle_check.parse_manifest_stanza(text)) or bool(
+                    re.search(r"^## STEP \d+\b", text, re.MULTILINE | re.IGNORECASE))
+                if not structured:
+                    self._unresolved_in_flight = (
+                        f"plan {plan_id} ({plan_type}, {row['lifecycle_state']}) — "
+                        f"{os.path.basename(plan_file)} has no Cycle Manifest and no "
+                        f"STEP header, so its write set cannot be read (thread 162)"
+                    )
+                    return None
+                w = []
 
             proj = target_project
             if not os.path.isabs(proj):
