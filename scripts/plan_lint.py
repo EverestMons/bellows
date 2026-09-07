@@ -852,11 +852,21 @@ def lint(plan_path):
                 print("(f) WARN: Cycle Manifest non-read-only plan has empty or undeclared writes")
 
         validation_val = stanza_fields.get("validation", "")
-        if validation_val and validation_val != "<declare>":
-            if "cycle_check=" not in validation_val:
-                print("(f) WARN: Cycle Manifest validation missing cycle_check= entry")
-            if "plan_lint=" not in validation_val:
-                print("(f) WARN: Cycle Manifest validation missing plan_lint= entry")
+        if validation_val and validation_val not in ("<declare>", "N/A"):
+            # ⛔ ONE PARSER, shared with cycle_check (thread 171). This used to
+            # substring-test exactly TWO of the four required names, so a value
+            # merely CONTAINING "cycle_check=" and "plan_lint=" anywhere passed
+            # while cycle_check's subset test over PARSED keys still failed and
+            # silently downgraded BAR_MET. Measured across 682 plans, the old test
+            # fired on ZERO of them — it had never once caught anything.
+            _clean, _malformed = cycle_check.parse_validation_keys(validation_val)
+            for _k in sorted(cycle_check.MANIFEST_VALIDATION_KEYS - _clean):
+                print(f"(f) WARN: Cycle Manifest validation missing {_k}= entry "
+                      f"(Ruling 117 key set; cycle_check downgrades BAR_MET without it)")
+            if _malformed:
+                print(f"(f) WARN: Cycle Manifest validation has {len(_malformed)} "
+                      f"malformed key(s) parsed from prose, e.g. "
+                      f"{sorted(_malformed)[0][:60]!r} — a key=value list takes no commentary")
 
         # (s) Detector consequences: target_class=detector mechanizes state_space
         # and mutants as required follow-through. The declaration itself is authored

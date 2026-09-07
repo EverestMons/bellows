@@ -1196,3 +1196,52 @@ def test_contract_last_stdout_line_is_verdict(tmp_path):
     )
 
 
+
+
+# --- threads 171/172: ONE parser for the manifest validation key set -----------
+
+def test_parse_validation_keys_splits_clean_from_malformed():
+    """Prose preceding a `key=` inside one comma-part yields a MALFORMED key.
+
+    Measured on a real plan 2026-09-07: a prose-rich validation line parsed
+    "6 of them spurious from the stale KNOWN_PROJECTS at residue item 2. fold_check"
+    as a key name, so the Ruling 117 subset check failed while plan_lint (f)'s
+    weaker substring test stayed quiet.
+    """
+    # ⚠️ The malformed shape needs prose BEFORE the `=` in its own comma-part.
+    # Prose AFTER a `=` is swallowed into that key's VALUE and produces a MISSING
+    # key, not a malformed one — an earlier version of this test got that backwards
+    # and the test caught it. This string is the real one observed on a live plan.
+    clean, malformed = cycle_check.parse_validation_keys(
+        "cycle_check=CONTINUE, 6 of them spurious from the stale KNOWN_PROJECTS "
+        "at residue item 2. fold_check=NO-BASELINE, propagation_check=CLEAN"
+    )
+    assert "cycle_check" in clean and "propagation_check" in clean
+    assert "fold_check" not in clean, "prose before the key must not read as the key"
+    assert any(m.endswith("fold_check") and " " in m for m in malformed), malformed
+
+
+def test_parse_validation_keys_accepts_a_clean_list():
+    clean, malformed = cycle_check.parse_validation_keys(
+        "cycle_check=BAR_MET, plan_lint=0_FAIL, fold_check=CLEAN, propagation_check=CLEAN"
+    )
+    assert clean == cycle_check.MANIFEST_VALIDATION_KEYS
+    assert malformed == frozenset()
+
+
+def test_bar_met_downgrade_names_the_missing_key(tmp_path):
+    """The BAR_MET -> CONTINUE downgrade used to be SILENT (thread 172)."""
+    plan = tmp_path / "p.md"
+    plan.write_text(
+        "# P\n\n## Drafting Cycle\n**Tier:** T1\n**Walks:** 1.\n"
+        "- Weak spots: w1 dry.\n- Destruction: w1 dry.\n- Vulnerabilities: w1 dry.\n"
+        "- Integration-record: w1 dry.\n- ACID: w1 dry.\n**Closing:** walk 1 dry.\n"
+        "\n## Cycle Manifest\ntier: T1\ntarget: x.py\nclass: governed-tooling\n"
+        "reads: x.py\nwrites: x.py\nopen_forks: none\nwalks: 1\nyields: 0\n"
+        "validation: cycle_check=BAR_MET, plan_lint=0_FAIL\ncoherence: N/A\n"
+    )
+    warns = []
+    verdict, _ = cycle_check.run_check(plan, warnings=warns)
+    downgrades = [w for w in warns if "downgraded to CONTINUE" in w]
+    assert downgrades, f"downgrade was silent; warnings={warns}"
+    assert "fold_check" in downgrades[0] and "propagation_check" in downgrades[0]

@@ -593,6 +593,25 @@ def run_check(plan_path, warnings=None, basis=False):
         stored = _manifest_validation_keys(text)
         if stored is not None and not MANIFEST_VALIDATION_KEYS.issubset(stored):
             verdict = "CONTINUE"
+            # ⛔ SAY WHY (thread 172). This downgrade used to be silent: an author
+            # saw BAR_MET become CONTINUE with nothing naming the cause, and if they
+            # had also satisfied plan_lint (f)'s weaker substring test they saw
+            # nothing at all. Not a habituation risk under thread 117 — it fires
+            # ONLY when a downgrade actually happens, and it explains an existing
+            # behaviour rather than adding a new always-on line.
+            if warnings is not None:
+                _clean, _malformed = parse_validation_keys(
+                    (parse_manifest_stanza(text) or {}).get("validation", "")
+                )
+                missing = sorted(MANIFEST_VALIDATION_KEYS - stored)
+                msg = ("WARN: BAR_MET downgraded to CONTINUE — Cycle Manifest "
+                       "validation is missing required key(s): %s (Ruling 117)"
+                       % ", ".join(missing))
+                if _malformed:
+                    msg += ("; and %d malformed key(s) parsed from prose, e.g. %r — "
+                            "a key=value list takes no commentary"
+                            % (len(_malformed), sorted(_malformed)[0][:60]))
+                warnings.append(msg)
 
     # ⛔ OPT-IN ONLY (thread 178). The default output stays BYTE-IDENTICAL on every
     # path, because thread 117 MEASURED that a checker speaking on every run trains
@@ -640,6 +659,31 @@ def parse_manifest_stanza(plan_text):
     return fields
 
 
+def parse_validation_keys(validation_val):
+    """Split a manifest `validation:` value into (clean_keys, malformed_keys).
+
+    ⛔ ONE PARSER, TWO CONSUMERS — this function and `plan_lint` (f) both read it.
+    Before 2026-09-07 they did not: (f) substring-tested exactly TWO of the four
+    required names while this module subset-tested all four against PARSED keys,
+    so a prose-rich value containing the substrings `cycle_check=` and `plan_lint=`
+    silenced (f) while the Ruling 117 interface stayed breached (thread 171).
+
+    A key is MALFORMED when it contains whitespace, which happens when prose
+    precedes a `key=` inside the same comma-delimited part — measured on a real
+    plan, one parsed key was the whole clause
+    "6 of them spurious from the stale KNOWN_PROJECTS at residue item 2. fold_check".
+    Malformed keys are returned SEPARATELY rather than dropped in silence, so the
+    caller can say why a subset check failed instead of only that it did (thread 172).
+    """
+    clean, malformed = set(), set()
+    for part in (validation_val or "").split(","):
+        if "=" not in part:
+            continue
+        key = part.split("=")[0].strip()
+        (malformed if (not key or " " in key or "\t" in key) else clean).add(key)
+    return frozenset(clean), frozenset(malformed)
+
+
 def _manifest_validation_keys(plan_text):
     """Return the frozenset of key names in the stored validation: line, or None to skip.
 
@@ -661,11 +705,8 @@ def _manifest_validation_keys(plan_text):
         return frozenset()  # validation field absent or empty
     if validation_val == "<declare>" or validation_val == "N/A":
         return None  # explicit skip values — not a parse failure
-    return frozenset(
-        part.split("=")[0].strip()
-        for part in validation_val.split(",")
-        if "=" in part
-    )
+    clean, _malformed = parse_validation_keys(validation_val)
+    return clean
 
 
 # Thread 156 — the T0 deposit arm. DRAFTING_CYCLE §1 sanctions a floor tier whose

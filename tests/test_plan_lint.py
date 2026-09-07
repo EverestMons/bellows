@@ -3170,7 +3170,7 @@ writes: bellows/scripts/example.py, bellows/tests/test_example.py
 open_forks: none
 walks: 2
 yields: 1, 0
-validation: cycle_check=BAR_MET, plan_lint=0_FAIL
+validation: cycle_check=BAR_MET, plan_lint=0_FAIL, fold_check=CLEAN, propagation_check=CLEAN
 coherence: N/A (no register declared)
 
 ## STEP 1 — DEV
