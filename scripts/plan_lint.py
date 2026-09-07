@@ -781,6 +781,44 @@ def lint(plan_path):
                     "falls back to prose deposits, narrowing the write set and the class",
                 ))
 
+        # (h) Thread 69 — a parenthetical annotation inside writes:/reads:.
+        # The depositor splits these fields on COMMA, so `ELUVIAN_PATH.md (root,
+        # absolute, own commit)` parses to 'ELUVIAN_PATH.md (root', 'absolute',
+        # 'own commit)'. Three consequences, all silent: the real path is MANGLED so
+        # the writes-intersect-writes collision query can never match the actual file;
+        # the garbage tokens are fed to the collision queries AS paths; and
+        # _assign_class can return the right class for the WRONG REASON, since a bare
+        # token with no '/' and not under knowledge/ trips the shop-infra arm — the
+        # CEO hold then fires off the word 'absolute' rather than off the governance
+        # path. Measured on executable-548, SHIPPED 2026-08-26.
+        #
+        # ⛔ FAIL, not WARN, and the reason is what it corrupts: this is not a style
+        # slip, it silently disarms the two gates that protect the CEO — collision
+        # detection and class assignment — while every other gate stays green. Ruling
+        # 119: no optional gates. Zero false positives in 1161 corpus entries, and the
+        # only affected plan is already shipped, so nothing live is blocked.
+        #
+        # ⚠️ ONLY the paren half of thread 69's proposed predicate is built. Its other
+        # half — "no '/' and no '.md'" — was measured at 69 hits and ZERO true
+        # positives: `gates.py`, `depositor.py`, `lifecycle.py`, `bellows.py`,
+        # `lifecycle.db` are legitimate repo-root paths. Shipping it would have been a
+        # 100%-false-positive rule in a blocking gate.
+        for _f in ("writes", "reads"):
+            _v = stanza_fields.get(_f, "")
+            if not _v or _v.startswith("<"):
+                continue
+            _bad = [e.strip() for e in _v.split(",")
+                    if ("(" in e or ")" in e) and e.strip()]
+            if _bad:
+                all_passed = False
+                results.append((
+                    "FAIL", f"(h) manifest {_f}",
+                    f"parenthetical annotation in a path list: {_bad[0][:48]!r} — the "
+                    f"depositor splits {_f}: on COMMA, so an annotation becomes garbage "
+                    f"'paths' and MANGLES the real one, silently defeating the collision "
+                    f"query and the class assignment. Put the note outside the stanza",
+                ))
+
         _STANZA_REQUIRED = [
             "tier", "target", "class", "reads", "writes",
             "open_forks", "walks", "yields", "validation", "coherence",
