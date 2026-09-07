@@ -252,7 +252,18 @@ def parse_discharges(plan_text):
         return None, None
     raw = str(header.get("discharges") or "")
     ids = [int(x) for x in _DISCHARGES_ID_RE.findall(raw)]
-    residue = _DISCHARGES_ID_RE.sub("", raw).replace(",", " ").replace("and", " ").strip()
+    # ⛔ Word-boundaried (thread 167). `.replace("and", " ")` was an UNANCHORED
+    # substring replace, so it ate those three letters INSIDE words — measured on a
+    # live plan, "command half only" came back as "comm  half only", and "standard
+    # handling, understand the brand" as "st ard h ling  underst  the br".
+    # ⚠️ The ID regex above stays STRICT and is deliberately not widened: the loose
+    # plural form is REFUSED by design (see tests/test_thread_discharge_link.py), and
+    # the refusal is NOT silent — plan_lint (g) warns on any form it cannot parse and
+    # never fails the lint. Widening the parser here would remove that warning's
+    # subject while leaving the warning, which is worse than either.
+    residue = _DISCHARGES_ID_RE.sub("", raw)
+    residue = re.sub(r"\band\b", " ", residue, flags=re.IGNORECASE)
+    residue = residue.replace(",", " ").strip()
     return ids, residue
 
 

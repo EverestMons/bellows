@@ -165,3 +165,35 @@ def test_only_completion_transitions_enqueue():
         window = src[max(0, i - 400):i]
         assert "completion:" in window, f"enqueue wired at a non-completion transition: {ln.strip()}"
         assert "zero-step skip" not in window, "wired at the zero-step path (thread 19)"
+
+
+# --- thread 167: a residue that survives its own words -------------------------
+
+def _hdr(field):
+    return f"# T\n\n**Date:** 2026-09-07 | **Discharges:** {field} | **cycle_tier:** T1\n"
+
+
+def test_discharges_residue_keeps_words_containing_and():
+    """`.replace("and", " ")` was UNANCHORED and ate those letters inside words.
+
+    Measured on a live plan: "command half only" came back as "comm  half only".
+    """
+    _ids, residue = gates.parse_discharges(
+        _hdr("thread 7 — standard handling, understand the brand")
+    )
+    for word in ("standard", "handling", "understand", "brand"):
+        assert word in residue, f"{word!r} corrupted; residue={residue!r}"
+
+
+def test_discharges_strictness_is_preserved_by_the_residue_fix():
+    """⛔ REGRESSION GUARD on a RATIFIED refusal, not on a defect.
+
+    The loose plural form is refused BY DESIGN and plan_lint (g) warns on it.
+    A 2026-09-07 attempt to "fix" that refusal as if it were a silent failure was
+    caught by test_parse_discharges_is_strict and reverted; this pins the boundary
+    beside the residue change so the next reader meets the ruling, not the itch.
+    """
+    ids, _ = gates.parse_discharges(_hdr("threads 75 and 73"))
+    assert ids == [], "the loose plural form is REFUSED by design"
+    ids2, _ = gates.parse_discharges(_hdr("thread 75, thread 73"))
+    assert ids2 == [75, 73], "the sanctioned repeated-singular form must still parse"

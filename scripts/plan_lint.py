@@ -1033,7 +1033,28 @@ def lint(plan_path):
 
     # (o) Path checks — two sub-rules
     REPO_ROOTS = {'knowledge', 'scripts', 'tests', 'src', 'web', 'engines', 'agents', 'verdicts', 'logs', 'governance'}
-    KNOWN_PROJECTS = {'anvil', 'bellows', 'governance', 'invoice-pulse', 'lessons-forge', 'forge'}
+    # ⛔ DERIVED, with a static floor (thread 168). The hardcoded set omitted
+    # `tuyere` and `forge_lessons` — TWO OF THE THREE projects bellows actually
+    # watches — so checks (o1) and (o2) misfired on every tuyere plan for the
+    # CORRECT deposit form: measured 2026-09-07, 6 spurious WARNs on a live draft
+    # and 8 on executable-100004, a SHIPPED, closed, gate-clean plan. ⚠️ The cost is
+    # not the warning, it is the noise: six spurious WARNs per plan is how a real
+    # one stops being read, which this shop measured directly when plan_lint (f)
+    # reported a live Ruling 117 breach on five consecutive runs unheard.
+    # The floor keeps names that are not watched projects (governance, anvil,
+    # invoice-pulse) and the config supplies whatever the daemon watches today, so
+    # adding a watched project no longer requires editing this line.
+    KNOWN_PROJECTS = {'anvil', 'bellows', 'governance', 'invoice-pulse',
+                      'lessons-forge', 'forge', 'tuyere', 'forge_lessons'}
+    try:
+        import json as _json
+        _cfg = Path(__file__).resolve().parent.parent / "config.json"
+        for _wp in _json.loads(_cfg.read_text()).get("watched_projects", []):
+            _name = Path(_wp).parent.parent.name if _wp.endswith("decisions") else None
+            if _name:
+                KNOWN_PROJECTS.add(_name)
+    except Exception:
+        pass  # never let config absence change a lint verdict
     try:
         from bellows_root import resolve_governance_root as _resolve_gov
         SHOP_ROOT = str(_resolve_gov())  # the governance root on THIS machine (name kept for the (o1) read below)
