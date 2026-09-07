@@ -235,3 +235,29 @@ def test_report_line_format(tmp_path):
     first = r.stdout.splitlines()[0]
     assert first.startswith("declared symbols: "), first
     assert "(values:" in first, first
+
+
+def test_restated_ignores_a_pin_value_that_is_a_line_reference(tmp_path):
+    """Thread 182: pin P5 = 98 was reported restated at a line reading `threads.py:98`.
+
+    declared_values masks line refs, dates, hex and identifiers in the VALUE cell;
+    the prose scan applied none of those masks, so any numeral collision fired.
+    """
+    plan = _plan_text(
+        ["| P5 | open threads | **98** | census |"],
+        prose="`_transition` already calls `conn.commit()` at `threads.py:98`, so commit as the siblings do.\n",
+    )
+    r = _run(plan, tmp_path)
+    assert "restated unqualified" not in r.stdout, r.stdout
+
+
+def test_restated_still_fires_on_a_bare_restatement(tmp_path):
+    """Negative control: a genuine bare restatement must still be reported, or the
+    mask has hidden the class it was meant to spare. Measured on the corpus at the
+    fix: 371 lines vanished under a covering mask, 0 without one."""
+    plan = _plan_text(
+        ["| P5 | open threads | **98** | census |"],
+        prose="There are 98 open threads, so plan for that many rows.\n",
+    )
+    r = _run(plan, tmp_path)
+    assert "restated unqualified" in r.stdout, r.stdout

@@ -175,7 +175,12 @@ def detect_restated(region, decls):
             for val in vals:
                 if len(val) < 2:      # 1-digit values are too common to be signal
                     continue
-                for m in re.finditer(r"(?<![\d\w`])" + re.escape(val) + r"(?![\d\w])", line):
+                # ⛔ Mask the SAME exclusions on the prose line that declared_values
+                # applies to the value cell (thread 182). Without this, a pin value
+                # colliding with a line reference fired: pin P5 = 98 was reported
+                # "restated unqualified" at a line reading `threads.py:98`.
+                masked_line = _mask_exclusions(line)
+                for m in re.finditer(r"(?<![\d\w`])" + re.escape(val) + r"(?![\d\w])", masked_line):
                     ctx = low[max(0, m.start() - 90): m.end() + 90]
                     if any(q in ctx for q in QUALIFIERS):
                         continue
