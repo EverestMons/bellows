@@ -142,10 +142,15 @@ class Depositor:
             })
             return
 
+        self._unresolved_in_flight = None
         in_flight_writes = self._resolve_in_flight_writes()
         if in_flight_writes is None:
+            # Thread 93: name WHICH plan and WHY. The bare message read as a
+            # resolution FAILURE when the usual cause is that a plan is paused at a
+            # verdict — a wait, not a fault — and gave the reader nothing to act on.
             self._hold(path, "unresolvable_in_flight", {
-                "detail": "an in-flight plan file could not be resolved",
+                "detail": (self._unresolved_in_flight
+                           or "an in-flight plan file could not be resolved"),
             })
             return
 
@@ -423,7 +428,8 @@ class Depositor:
             conn = sqlite3.connect(f"file:{self._db_path}?mode=ro", uri=True)
             conn.row_factory = sqlite3.Row
             rows = conn.execute(
-                "SELECT id, type, target_project, deposit_placeholder_name, plan_doc_ref "
+                "SELECT id, type, target_project, deposit_placeholder_name, plan_doc_ref, "
+                "lifecycle_state "
                 "FROM plans WHERE lifecycle_state IN ('in_progress', 'claimed', 'awaiting_verdict')"
             ).fetchall()
             conn.close()
@@ -438,25 +444,58 @@ class Depositor:
             placeholder = row["deposit_placeholder_name"]
             doc_ref = row["plan_doc_ref"]
 
-            in_progress_name = f"in-progress-{plan_type}-{plan_id}.md"
+            # ⛔ Thread 93: an AWAITING_VERDICT plan's file is named
+            # `verdict-pending-<base>` (bellows.py:1092), and none of the three
+            # original candidates named it — so every new deposit held as
+            # `unresolvable_in_flight` for the whole length of any verdict pause.
+            # Measured 2026-09-02: staging a plan while 100023 sat in
+            # awaiting_verdict produced exactly that hold, and the message read as a
+            # resolution failure rather than as a wait.
+            #
+            # ⚠️ BOTH BASE FORMS ARE REAL, which the thread's suggested fix
+            # (`verdict-pending-<type>-<id>.md` alone) would have missed: bellows
+            # builds the pause name from the plan's BASE FILENAME (:1092) while the
+            # depositor constructs the id form here, and the two coincide only for
+            # id-named plans. A slug-named plan pauses as
+            # `verdict-pending-executable-my-slug.md`. So the candidates are the
+            # cross product of the in-flight prefixes with both base names.
+            #
+            # `halted-`/`parked-` are deliberately absent: this query selects only
+            # in_progress / claimed / awaiting_verdict, and a halted plan is PARKED,
+            # not pending. (The thread guessed a `paused-` prefix; the real set is
+            # in-progress- / verdict-pending- / halted- / parked-.)
+            id_name = f"{plan_type}-{plan_id}.md"
+            bases = [id_name] + ([placeholder] if placeholder and placeholder != id_name else [])
+            names = []
+            for prefix in ("in-progress-", "verdict-pending-"):
+                names.extend(prefix + b for b in bases)
+            names.extend(bases)          # the bare deposited name, as before
+
             plan_file = None
-            for d in self._watched_dirs():
-                candidate = os.path.join(d, in_progress_name)
-                if os.path.isfile(candidate):
-                    plan_file = candidate
-                    break
-            if not plan_file and placeholder:
+            for name in names:
                 for d in self._watched_dirs():
-                    candidate = os.path.join(d, placeholder)
+                    candidate = os.path.join(d, name)
                     if os.path.isfile(candidate):
                         plan_file = candidate
                         break
+                if plan_file:
+                    break
             if not plan_file and doc_ref and target_project:
                 candidate = os.path.join(target_project, doc_ref)
                 if os.path.isfile(candidate):
                     plan_file = candidate
 
             if not plan_file:
+                # Fail-SHUT is kept deliberately: without the file we cannot know this
+                # plan's writes, so we cannot check a collision against it, and
+                # admitting on an unknown write set would be a fail-open in the gate
+                # that exists to catch overlaps. But the hold now NAMES the plan and
+                # its state, because "an in-flight plan file could not be resolved"
+                # gave the reader nothing to act on.
+                self._unresolved_in_flight = (
+                    f"plan {plan_id} ({plan_type}, {row['lifecycle_state']}) — tried "
+                    f"{', '.join(names)}"
+                )
                 return None
 
             try:
