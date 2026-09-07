@@ -421,7 +421,7 @@ def check_plateau(walk_data, current_walk, instruction_counts):
     return consecutive >= 3
 
 
-def run_check(plan_path, warnings=None):
+def run_check(plan_path, warnings=None, basis=False):
     """Main entry. Returns (verdict, exit_code).
 
     warnings: optional list; register WARN strings are appended when supplied.
@@ -544,18 +544,21 @@ def run_check(plan_path, warnings=None):
     # from "none declared" unless it is stated. Emitted on ESCALATE only — the
     # CONTINUE/BAR_MET paths stay byte-identical, because a checker that speaks on
     # every run trains the reader to skim it (thread 117's habituation finding).
+    def _basis_line():
+        restr = parsed["restructuring_walks"]
+        return (
+            "BASIS: current_walk=%s instruction_counts=%s restructuring_walks=%s"
+            % (
+                current_walk,
+                {k: instruction_counts[k] for k in sorted(instruction_counts)},
+                (sorted(restr) if restr else "EMPTY — none declared in the plan BODY; "
+                 "this arm had no data to evaluate"),
+            )
+        )
+
     def _escalate(tag):
         if warnings is not None:
-            restr = parsed["restructuring_walks"]
-            warnings.append(
-                "BASIS: current_walk=%s instruction_counts=%s restructuring_walks=%s"
-                % (
-                    current_walk,
-                    {k: instruction_counts[k] for k in sorted(instruction_counts)},
-                    (sorted(restr) if restr else "EMPTY — none declared in the plan BODY; "
-                     "this arm had no data to evaluate"),
-                )
-            )
+            warnings.append(_basis_line())
         return tag, 1
 
     if current_walk in parsed["restructuring_walks"]:
@@ -590,6 +593,16 @@ def run_check(plan_path, warnings=None):
         stored = _manifest_validation_keys(text)
         if stored is not None and not MANIFEST_VALIDATION_KEYS.issubset(stored):
             verdict = "CONTINUE"
+
+    # ⛔ OPT-IN ONLY (thread 178). The default output stays BYTE-IDENTICAL on every
+    # path, because thread 117 MEASURED that a checker speaking on every run trains
+    # the reader to skim it — the habituation this Planner reproduced by walking past
+    # five consecutive plan_lint (f) WARNs over a live contract breach. This emission
+    # is what an operator ASKS for when a verdict needs explaining; it is the only
+    # basis the tail exits can produce, since the three ESCALATE arms above return
+    # through _escalate() and never reach here.
+    if basis and warnings is not None:
+        warnings.append(_basis_line())
 
     if parsed["claims_closure"] and verdict == "CONTINUE" and not parsed["has_unparseable"]:
         return "ESCALATE:claimed-close-unmet", 1
@@ -937,6 +950,12 @@ def emit_manifest(plan_path):
 
 
 def main():
+    # --basis is stripped BEFORE the argv contract below is evaluated, so every
+    # existing invocation form keeps its exact arity (thread 178).
+    want_basis = "--basis" in sys.argv
+    if want_basis:
+        sys.argv = [a for a in sys.argv if a != "--basis"]
+
     if len(sys.argv) == 3 and sys.argv[1] == "--emit-manifest":
         plan_path = Path(sys.argv[2])
         if not plan_path.exists():
@@ -945,14 +964,14 @@ def main():
         sys.exit(emit_manifest(plan_path))
 
     if len(sys.argv) != 2:
-        print("Usage: cycle_check.py [--emit-manifest] <plan.md>", file=sys.stderr)
+        print("Usage: cycle_check.py [--emit-manifest] [--basis] <plan.md>", file=sys.stderr)
         sys.exit(2)
     plan_path = Path(sys.argv[1])
     if not plan_path.exists():
         print(f"ERROR: {plan_path} not found", file=sys.stderr)
         sys.exit(2)
     verdict_warnings = []
-    verdict, code = run_check(plan_path, warnings=verdict_warnings)
+    verdict, code = run_check(plan_path, warnings=verdict_warnings, basis=want_basis)
     if verdict is None:
         sys.exit(2)
     for w in verdict_warnings:
