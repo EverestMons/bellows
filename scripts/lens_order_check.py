@@ -100,7 +100,7 @@ def commit_record(plan_path, repo):
         rel = os.path.relpath(str(plan_path), str(repo))
         out = subprocess.run(
             ["git", "-C", str(repo), "log", "--follow", "--reverse",
-             "--format=%H%x09%s", "--", rel],
+             "--format=%H%x09%cI%x09%s", "--", rel],
             capture_output=True, text=True, timeout=60,
         )
     except Exception as e:
@@ -110,16 +110,63 @@ def commit_record(plan_path, repo):
 
     rows = []
     for line in out.stdout.strip().split("\n"):
-        if "\t" not in line:
+        if line.count("\t") < 2:
             continue
-        sha, subject = line.split("\t", 1)
+        sha, when, subject = line.split("\t", 2)
         w = _WALK_RE.search(subject)
         lenses = []
         for group in _LENS_RE.findall(subject):
             lenses.extend(int(x) for x in re.split(r"\s*/\s*", group))
         if w and lenses:
-            rows.append((int(w.group(1)), lenses, sha[:7], subject))
+            rows.append((int(w.group(1)), lenses, sha[:7], subject, when, sha))
     return rows
+
+
+def _repo_of(path):
+    """Nearest ancestor holding a .git, or None."""
+    d = Path(path).resolve()
+    d = d if d.is_dir() else d.parent
+    while d != d.parent:
+        if (d / ".git").exists():
+            return d
+        d = d.parent
+    return None
+
+
+def register_commit_record(plan_text, plan_path):
+    """Lens commits recorded against the plan's WALK REGISTER, in ITS repo.
+
+    ⛔ THE REGISTER IS THE RECORD, and reading only the plan file lost it twice.
+    (1) A DRY lens folds nothing into the plan, so it leaves no plan commit — the
+    observer reported INCOMPLETE for a walk that genuinely ran all five lenses, and
+    since BAR_MET requires a dry walk it was blind to precisely the closing walk a
+    fabricated close would imitate (thread 165). (2) The standard pipeline drafts in
+    governance and deposits into a project, so a deposited plan's lens commits live
+    in ANOTHER REPO and `git log` over the deposited path returns nothing — measured
+    2026-09-07 at 28 commits in eluvian-governance against 0 in tuyere, which is why
+    lens order was provable for 0 of 19 plans at the bar (thread 163).
+
+    The register ref survives BOTH: it is a field in the plan, it points at the
+    drafting repo, and a dry lens still appends its row to it. Resolution reuses
+    `cycle_check._resolve_register_ref` — the ONE resolver — rather than growing a
+    second, which is the defect class this shop has already paid for twice.
+    """
+    blocks = cycle_check.extract_dc_blocks(plan_text or "")
+    if len(blocks) != 1:
+        return [], None
+    ref = cycle_check.parse_block(blocks[0]).get("walk_register_ref")
+    if not ref:
+        return [], None
+    resolved = cycle_check._resolve_register_ref(ref, Path(plan_path))
+    if not resolved:
+        return [], None
+    repo = _repo_of(resolved)
+    if not repo:
+        return [], None
+    try:
+        return commit_record(resolved, repo), resolved
+    except RuntimeError:
+        return [], resolved
 
 
 def declared_walks(plan_text):
@@ -144,7 +191,7 @@ def analyse(rows, walks, tier):
     per_walk = {}
     findings = []
 
-    for walk, lenses, sha, subject in rows:
+    for walk, lenses, sha, subject, *_meta in rows:
         per_walk.setdefault(walk, []).append((lenses, sha, subject))
         if len(lenses) > 1:
             findings.append((
@@ -181,7 +228,15 @@ def analyse(rows, walks, tier):
     # register-coverage declares walks [1,2] while its commits reach walk 3.
     seen_walks = set(walks or set()) | set(per_walk)
     in_progress = max(seen_walks) if seen_walks else None
-    for walk in sorted(walks or per_walk):
+    # ⛔ THE UNION, not the declared set (thread 164). This loop used to read
+    # `sorted(walks or per_walk)`, so a declared-walks set took precedence and the
+    # commit record was never consulted for WHICH walks to check. Measured on a real
+    # plan: deleting one walk's STATUS bullet from the Cycle Log returned NO FINDINGS
+    # while the commits proving that walk ran sat untouched in history — Ruling 119's
+    # "a gate reading a declaration is defeated by silence", inside the observer built
+    # to enforce lens order. The correct union was already computed one line above and
+    # used only for the in-progress boundary.
+    for walk in sorted(seen_walks):
         if walk == 0:
             continue          # walk 0 is the context pin, not a lens walk
         if walk == in_progress:
@@ -220,6 +275,31 @@ def main(argv=None):
     tier = tier_of(text)
     try:
         rows = commit_record(plan_path, repo)
+        # ⛔ UNION the plan's record with the WALK REGISTER's (threads 163 + 165).
+        # Deduplicated by FULL SHA — a commit touching both files appears in both
+        # logs and would otherwise read as a REPEATED lens — then ordered by commit
+        # TIME, so a merged sequence across two repos still reflects the order the
+        # passes actually happened in rather than the order the logs were read.
+        reg_rows, reg_path = register_commit_record(plan_path.read_text(errors="replace"),
+                                                   plan_path)
+        if reg_rows:
+            by_sha = {}
+            for r in list(rows) + list(reg_rows):   # plan order, then register order
+                by_sha.setdefault(r[5], r)
+            # ⛔ Sort by TIME ALONE, and rely on the sort being STABLE.
+            # An earlier key of (time, walk) re-sorted by walk number whenever
+            # timestamps tied, which scrambled the within-walk commit order the
+            # order check reads — measured on executable-507, whose 16 lens commits
+            # all carry 2026-08-24T11:18:09 and which was reported OUT-OF-ORDER
+            # purely as an artifact of that. %cI has SECOND resolution, so ties are
+            # real; stability preserves each source's own `git log --reverse` order
+            # underneath them, which is the true order for a single-source record.
+            merged = list(by_sha.values())
+            merged.sort(key=lambda r: r[4])
+            rows = merged
+            record_src = f"plan+register ({reg_path.name})" if reg_path else "plan"
+        else:
+            record_src = "plan only — no resolvable walk register"
     except RuntimeError as e:
         print(f"LENS-ORDER UNRUNNABLE: {e}", file=sys.stderr)
         return 2
@@ -249,7 +329,8 @@ def main(argv=None):
         return 2
 
     findings, per_walk = analyse(rows, walks or set(), tier)
-    basis = (f"tier={tier or 'undeclared->T1'} "
+    basis = (f"source={record_src} "
+             f"tier={tier or 'undeclared->T1'} "
              f"declared_walks={sorted(walks) if walks is not None else 'UNPARSEABLE'} "
              f"lens_commits={len(rows)} walks_with_lens_commits={sorted(per_walk)}")
 

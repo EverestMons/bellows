@@ -8,6 +8,7 @@ built: cycle_check has no commit counting of any kind.
 ⛔ Every fixture is a REAL git repo under tmp_path. The tool reads history, so a
 fixture that fakes the history tests nothing.
 """
+import os
 import subprocess
 import sys
 from pathlib import Path
@@ -197,3 +198,135 @@ def test_a_cont_commit_continues_one_pass_and_is_not_a_repeat(tmp_path):
     ], walks=(1, 2))
     r = _run(plan, repo)
     assert "REPEATED" not in r.stdout, r.stdout
+
+
+# --- threads 163 + 164 + 165: the WALK REGISTER is the record -------------------
+
+def _repo_with_register(tmp_path, steps, walks=(1,)):
+    """A repo whose plan and walk register are committed SEPARATELY, IN ORDER.
+
+    `steps` is an ordered list of (subject, target) where target is "plan" or "reg".
+    ⚠️ The order is the point: lens passes happen in sequence regardless of WHICH
+    file each one touches, and an earlier version of this helper committed every
+    plan step before every register step — producing a genuine 1,3,5,2,4 sequence
+    and a correct OUT-OF-ORDER that looked like a bug in the tool.
+    """
+    repo = tmp_path / "r"
+    (repo / "knowledge" / "decisions" / "drafts").mkdir(parents=True)
+    (repo / "knowledge" / "research").mkdir(parents=True)
+    _git(repo.parent, "init", "-q", str(repo))
+    _git(repo, "config", "user.email", "t@t")
+    _git(repo, "config", "user.name", "T")
+    plan = repo / "knowledge" / "decisions" / "drafts" / "executable-fixture.md"
+    reg = repo / "knowledge" / "research" / "walk-register-fixture.md"
+    body = _plan_text("T1", walks).replace(
+        "**Walks:**",
+        "**Walk register:** knowledge/research/walk-register-fixture.md\n**Walks:**")
+    plan.write_text(body)
+    reg.write_text("# Walk Register — fixture\n")
+    _git(repo, "add", "-A")
+    _git(repo, "commit", "-q", "-m", "seed")
+    for i, (subj, target) in enumerate(steps):
+        if target == "plan":
+            plan.write_text(body + f"\n<!-- p{i} -->\n")
+            _git(repo, "add", str(plan))
+        else:
+            reg.write_text(reg.read_text() + f"\nrow {i}\n")
+            _git(repo, "add", str(reg))
+        # ⚠️ EXPLICIT, INCREASING commit dates. `%cI` has SECOND resolution, so a
+        # fixture that commits in a tight loop lands every commit in the same second
+        # and the merged order falls back to insertion order — which made an earlier
+        # version of this test read [1,3,5,2,4] and fail against correct code. Real
+        # cycles are minutes apart; the fixture must not be tighter than reality.
+        when = f"2026-09-07T10:{i:02d}:00-05:00"
+        subprocess.run(
+            ["git", "-C", str(repo), "commit", "-q", "-m", subj],
+            capture_output=True, text=True,
+            env={**os.environ, "GIT_AUTHOR_DATE": when, "GIT_COMMITTER_DATE": when})
+    return repo, plan
+
+
+def test_a_dry_lens_is_visible_through_the_register(tmp_path):
+    """⛔ Thread 165. A DRY lens folds nothing into the plan, so it leaves no plan
+    commit. Reading only the plan reported INCOMPLETE for a walk that ran all five —
+    and since BAR_MET requires a dry walk, the observer was blind to exactly the
+    closing walk a fabricated close would imitate."""
+    repo, plan = _repo_with_register(tmp_path, [
+        ("draft(f): walk 1 lens 1 — 1 fold", "plan"),
+        ("draft(f): walk 1 lens 2 — DRY", "reg"),      # dry: register only
+        ("draft(f): walk 1 lens 3 — 1 fold", "plan"),
+        ("draft(f): walk 1 lens 4 — DRY", "reg"),      # dry: register only
+        ("draft(f): walk 1 lens 5 — 1 fold", "plan"),
+    ])
+    r = _run(plan, repo)
+    assert r.returncode == 0, r.stdout + r.stderr
+    assert "LENS-ORDER OK" in r.stdout, r.stdout
+    assert "source=plan+register" in r.stdout, r.stdout
+
+
+def test_plan_only_would_have_reported_incomplete(tmp_path):
+    """The negative control for the test above — without the register ref, the same
+    three plan commits are all the record there is, and the walk IS incomplete."""
+    repo, plan = _repo(tmp_path, [
+        "draft(f): walk 1 lens 1 — 1 fold",
+        "draft(f): walk 1 lens 3 — 1 fold",
+        "draft(f): walk 1 lens 5 — 1 fold",
+        "draft(f): walk 2 lens 1 — 1 fold",
+    ], walks=(1, 2))
+    r = _run(plan, repo)
+    assert r.returncode == 1, r.stdout + r.stderr
+    assert "INCOMPLETE" in r.stdout, r.stdout
+
+
+def test_a_commit_touching_both_files_is_not_a_repeated_lens(tmp_path):
+    """Dedupe is by FULL SHA. A commit touching plan AND register appears in both
+    logs, and counting it twice would read as a REPEATED lens."""
+    repo = tmp_path / "r"
+    (repo / "knowledge" / "decisions" / "drafts").mkdir(parents=True)
+    (repo / "knowledge" / "research").mkdir(parents=True)
+    _git(repo.parent, "init", "-q", str(repo))
+    _git(repo, "config", "user.email", "t@t")
+    _git(repo, "config", "user.name", "T")
+    plan = repo / "knowledge" / "decisions" / "drafts" / "executable-fixture.md"
+    reg = repo / "knowledge" / "research" / "walk-register-fixture.md"
+    body = _plan_text("T1", (1,)).replace(
+        "**Walks:**", "**Walk register:** knowledge/research/walk-register-fixture.md\n**Walks:**")
+    plan.write_text(body)
+    reg.write_text("# Walk Register — fixture\n")
+    _git(repo, "add", "-A")
+    _git(repo, "commit", "-q", "-m", "seed")
+    for lens in (1, 2, 3, 4, 5):
+        plan.write_text(body + f"\n<!-- lens {lens} -->\n")
+        reg.write_text(reg.read_text() + f"\nrow {lens}\n")
+        _git(repo, "add", "-A")               # ONE commit, BOTH files
+        _git(repo, "commit", "-q", "-m", f"draft(f): walk 1 lens {lens} — 1 fold")
+    r = _run(plan, repo)
+    assert r.returncode == 0, r.stdout + r.stderr
+    assert "REPEATED" not in r.stdout, r.stdout
+    assert "lens_commits=5" in r.stdout, r.stdout
+
+
+def test_an_undeclared_walk_is_still_checked(tmp_path):
+    """⛔ Thread 164 — the observer must not be defeated by SILENCE in the Cycle Log.
+
+    The loop used to read `sorted(walks or per_walk)`, so a declared-walks set took
+    precedence and the commit record was never consulted for WHICH walks to check.
+    Measured on a live plan: deleting one walk's STATUS bullet returned NO FINDINGS
+    while the commits proving that walk ran sat untouched in history — Ruling 119's
+    "a gate reading a declaration is defeated by silence", reproduced inside the
+    observer built to enforce lens order.
+
+    Here the Cycle Log declares walks 1 and 3 only. Walk 2 HAS commits and is
+    incomplete; walk 3 is the in-progress boundary and is exempt. A checker reading
+    the declared set alone sees nothing wrong.
+    """
+    repo, plan = _repo(tmp_path, [
+        "draft(f): walk 1 lens 1 — 1 fold", "draft(f): walk 1 lens 2 — 1 fold",
+        "draft(f): walk 1 lens 3 — 1 fold", "draft(f): walk 1 lens 4 — 1 fold",
+        "draft(f): walk 1 lens 5 — 1 fold",
+        "draft(f): walk 2 lens 1 — 1 fold",          # walk 2: UNDECLARED, incomplete
+        "draft(f): walk 3 lens 1 — 1 fold",          # walk 3: in progress, exempt
+    ], walks=(1, 3))
+    r = _run(plan, repo)
+    assert r.returncode == 1, f"undeclared walk 2 was not checked\n{r.stdout}{r.stderr}"
+    assert "INCOMPLETE: walk 2" in r.stdout, r.stdout
