@@ -5608,3 +5608,47 @@ class TestForwardAppendPositiveControl:
             content = f.read()
         rows = [ln for ln in content.splitlines() if ln.startswith("| ") and not ln.startswith("| #") and not ln.startswith("|---")]
         assert len(rows) == 2
+
+
+def test_t1_auto_close_true_without_substrate_pauses_for_verdict():
+    """Thread 183 — a substrate-less T1 plan with auto_close: true must NOT close itself.
+
+    Before: effective_auto_close was the header's own field and nothing else, so a
+    plan declaring no register reached BAR_MET on N/A asserts and closed on its own
+    say-so — the fabricated-close shape DRAFTING_CYCLE §2 names. Now the substrate
+    gate forces the flag False and the plan falls to the verdict-request path.
+    Sibling test above (a diagnostic with no tier) must still auto-close: N/A.
+    """
+    with tempfile.TemporaryDirectory() as tmp:
+        decisions_dir = os.path.join(tmp, "proj", "knowledge", "decisions")
+        os.makedirs(decisions_dir)
+        plan_path = os.path.join(decisions_dir, "executable-nosub-2026-09-07.md")
+        with open(plan_path, "w") as f:
+            f.write("# executable: no substrate\n\n**Date:** 2026-09-07 | **Project:** proj | "
+                    "**cycle_tier:** T1 | **auto_close:** true\n\n## Drafting Cycle\n\n**Tier:** T1\n"
+                    "**Walks:** 1\n- Weak spots: w1 dry.\n- Destruction: w1 dry.\n- Vulnerabilities: w1 dry.\n"
+                    "- Integration-record: w1 dry.\n- ACID: w1 dry.\n**Closing:** w1 dry.\n\n## STEP 1 — do it\n")
+        clear_plan_for_test(plan_path)
+        config = {"default_model": "claude-sonnet-4-6", "pushover": {"app_key": "", "user_key": ""},
+                  "callback_port": 5999, "step_timeout_seconds": 600}
+        clean_parsed = {"session_id": "s", "is_error": False, "stop_reason": "end_turn", "result_text": "",
+                        "cost_usd": 0.05, "permission_denials": [], "receipt_status": "Complete",
+                        "ceo_flags": [], "escalate": False}
+        clean_gates = {"passed": True, "failures": [], "is_qa_step": False, "files_changed": [],
+                       "plan_header": {"auto_close": "true", "cycle_tier": "T1"},
+                       "verdict_requested": {"requested": False, "body": None}}
+        with patch("bellows.runner.run_step", return_value=clean_parsed), \
+             patch("bellows.gates.check", return_value=clean_gates), \
+             patch("bellows.notifier.notify_plan_complete"), \
+             patch("bellows.verdict.log_to_ledger") as mock_ledger, \
+             patch("bellows._capture_git_diff", return_value=""), \
+             patch("bellows._create_worktree", return_value="/tmp/wt"), \
+             patch("bellows._teardown_worktree"), \
+             patch("bellows.record_run"), \
+             patch("bellows.validators.validate_at_claim", return_value={"rejected": False, "reject_reason": "", "warnings": []}):
+            bellows.run_plan(plan_path, config, MagicMock())
+        assert not os.path.isfile(os.path.join(decisions_dir, "Done", "executable-1.md")), \
+            "a substrate-less T1 plan closed itself"
+        assert any(n.startswith("verdict-pending-") for n in os.listdir(decisions_dir)), os.listdir(decisions_dir)
+        for call in mock_ledger.call_args_list:
+            assert call[0][3] != "auto-close"

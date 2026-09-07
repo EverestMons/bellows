@@ -472,6 +472,7 @@ import server
 import validators
 import lifecycle
 import depositor
+import substrate_check  # scripts/ is on the path once depositor has imported (thread 183)
 
 
 def _retire_receipts(plan_id):
@@ -1186,6 +1187,26 @@ def run_plan(plan_path: str, config: dict, response_server: server.ResponseServe
             str(header.get("auto_close", "false")).lower() == "true"
             or header.get("pause_for_verdict") == "on_failure"
         )
+        # ⛔ SUBSTRATE GATE (thread 183). DRAFTING_CYCLE §2's auto-advance clause makes
+        # the substrate — a committed, lint-clean walk register; a per-walk commit per
+        # walk; a fold_check baseline — a HARD precondition on BOTH auto-advance and
+        # auto-close, because a substrate-less BAR_MET is indistinguishable from a
+        # fabricated close. Nothing mechanized it: this flag was the header's own
+        # auto_close field and nothing else. It feeds both the pause arm below and
+        # the auto-close arm, so forcing it False routes the plan to the existing
+        # verdict-request path — which IS doctrine's "manual, CEO-confirmed" close.
+        # N/A (no T1/T2 tier) leaves the flag alone. FAIL-SHUT on an exception: a
+        # gate that cannot establish its fact refuses (GLOSSARY `fail-shut`).
+        if effective_auto_close:
+            try:
+                _sub_present, _sub_detail = substrate_check.substrate_status(plan_path)
+            except Exception as _sub_e:
+                _sub_present, _sub_detail = False, f"substrate check raised {type(_sub_e).__name__}: {_sub_e}"
+            if _sub_present is False:
+                _log("PAUSE", f"⏸️ auto-close REFUSED — drafting-cycle substrate absent: {_sub_detail} "
+                              f"(DRAFTING_CYCLE §2 auto-advance clause; thread 183) — the close is CEO-confirmed",
+                     slug=slug_for(plan_name))
+                effective_auto_close = False
 
         while not is_final_step(current_step, total_steps):
             # Check gates: if failed, QA step, verdict-request file, or header says pause
