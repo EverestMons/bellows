@@ -1799,7 +1799,15 @@ def test_override_gate_tool_writes_all_matching_rows():
 
         sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "tools"))
         from clear_plan import override_gate
-        result = override_gate("executable-99", "1", "scope_check", "CEO approved", db_path=db_path)
+        # Thread 123: the ref must name an existing DURABLE file (not a temp path), so the
+        # test writes one under the repo's receipts/ and removes it afterwards.
+        ref_file = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "receipts", f"_test-e4-override-ref-{os.getpid()}.md")
+        with open(ref_file, "w") as rf:
+            rf.write("CEO approved\n")
+        try:
+            result = override_gate("executable-99", "1", "scope_check", ref_file, db_path=db_path)
+        finally:
+            os.unlink(ref_file)
         assert result is True
 
         conn = sqlite3.connect(db_path)
