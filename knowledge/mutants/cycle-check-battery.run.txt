@@ -1,12 +1,20 @@
 PYTHON: /Users/marklehn/Developer/bellows/.venv/bin/python
-HEAD: d22dce03a8e5a736b68cb1ae1885858f2684c397
+HEAD: bc7a45ba589fec513b2b276b1be02bcc75561e6e
 TARGET: scripts/cycle_check.py sha256=0e675df6fedb
 
 MUTANT M1-drop-plan-lint-downgrade: KILLED — suite caught the defect
 MUTANT M2-drop-fold-drift-downgrade: KILLED — suite caught the defect
 MUTANT M3-always-launch-fold-check: KILLED — suite caught the defect
 MUTANT M4-suppress-battery-line-for-continue: KILLED — suite caught the defect
+MUTANT M5-battery-on-escalate: KILLED — suite caught the defect
+MUTANT M6-vacuous-treated-as-drift: KILLED — suite caught the defect
+MUTANT M7-vacuous-token-mismatch: KILLED — suite caught the defect
+MUTANT M8-drift-mapped-to-na: KILLED — suite caught the defect
+MUTANT M9-emitter-runs-battery-twice: KILLED — suite caught the defect
+MUTANT M10-drop-fold-warn-when-both-fire: KILLED — suite caught the defect
+MUTANT M11-skip-battery-when-warnings-none: KILLED — suite caught the defect
+MUTANT M12-ignore-beside-file: KILLED — suite caught the defect
 
 LIVE-TREE UNCHANGED: scripts/cycle_check.py sha256=0e675df6fedb
 
-MUTATION: 4 killed, 0 survived, 0 error
+MUTATION: 12 killed, 0 survived, 0 error

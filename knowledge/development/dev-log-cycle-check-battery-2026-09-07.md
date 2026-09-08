@@ -6,31 +6,15 @@
 
 ---
 
-## P10 Blast Radius
+## P10 — blast radius (verbatim)
 
-P10 = the four CONTINUE/BAR_MET return sites inside `run_check`. Every site
-that previously returned a bare `"CONTINUE"` or `"BAR_MET"` string now calls
-`_apply_battery(plan_path, verdict, warnings, battery=battery)`. ESCALATE
-arms are untouched.
+population: every `.md` under the shop's `knowledge/decisions/` trees (Done, drafts and the live lanes) = **2080 files**, run 2026-09-07 in 224 s. Normal-path verdicts: `ESCALATE:unparseable` 1717 · `claimed-close-unmet` 175 · `CONTINUE` 147 · **`BAR_MET` 24** · other ESCALATE 16. **plan_lint arm: 0 of the 24 BAR_MET plans carry a FAIL** (881 of 2080 do overall — none at the bar). **propagation arm, had it been one: 22 of 24 non-zero** (21 `DIVERGENT`, 1 `NOT_RUN`) — the measurement that keeps it informational. **DRIFT arm: 16 of 24 have no baseline beside them (Done plans) → `NO_BASELINE`; of the 8 drafts with one: 6 DRIFT, 1 CLEAN, 1 VACUOUS** — all six DRIFTs are shipped or superseded plans' drafts left on disk, and the one live-lane BAR_MET file is `halted-executable-100029.md` (no baseline). **Live blast radius: zero on both arms.**
 
-Files modified:
-
-| file | change |
-|------|--------|
-| `scripts/cycle_check.py` | +3 functions (`resolve_fold_baseline`, `run_battery`, `_apply_battery`); 4 return sites updated; `emit_manifest` private subprocess blocks replaced with single `run_battery` call; `run_check` signature: `battery=None` kwarg |
-| `scripts/substrate_check.py` | Leg 3 rewritten to call `cycle_check.resolve_fold_baseline` instead of its own inline baseline logic |
-| `tests/test_cycle_check_battery.py` | New file, 16 tests |
-| `tests/test_cycle_check.py` | `_make_plan` / `_build_ss_plan` / 2 fixtures updated for plan_lint compliance; 2 assertions adapted to P8 multi-line stdout |
-| `tests/test_cycle_check_manifest_provenance.py` | 3 helpers updated for plan_lint compliance; `test_no_subprocess_spawned` rewritten — ruling 189 |
-| `knowledge/mutants/cycle-check-battery.json` | New, 4 mutants |
-| `knowledge/mutants/cycle-check-battery.run.txt` | New, mutation run output |
-
-No other scripts import `cycle_check._apply_battery` or `cycle_check.run_battery` —
-blast radius is entirely contained in the two scripts files and their test files.
+> Thread 195 repair (2026-09-08): the section above is the plan's P10 value cell pasted verbatim; the DEV step's original text under this heading described `run_check`'s four return sites, which is not P10. The blast radius was measured at walk 0 of the origin cycle (2026-09-07) and not re-run at DEV.
 
 ---
 
-## Cost Before / After
+## Cost — before/after (median of 3)
 
 Measured on a BAR_MET plan with a complete Cycle Manifest, no fold baseline,
 no walk register (propagation_check returns NOT_RUN, fold_check returns
@@ -41,6 +25,7 @@ NO_BASELINE without launching a subprocess):
 | 1 | 0.050 s | 0.127 s |
 | 2 | 0.060 s | 0.099 s |
 | 3 | 0.068 s | 0.099 s |
+| **median** | **0.060 s** | **0.099 s** |
 
 Delta: ~0.03–0.06 s per invocation. Two subprocesses launch for a plan
 without a fold baseline (`plan_lint.py` + `propagation_check.py`); a plan
@@ -55,7 +40,7 @@ subprocess count at deposit time is unchanged: 3 (or 2 without baseline).
 
 ---
 
-## P8 Overturned Clause
+## P8 — the overturned clause
 
 P8 (plan 100033, DC:253): "verdict is always the ONLY stdout line emitted by
 cycle_check."
@@ -75,7 +60,7 @@ Test coverage of the new contract:
 
 ---
 
-## Mutation Run
+## Mutation run
 
 See `knowledge/mutants/cycle-check-battery.run.txt` for raw output.
 
@@ -89,3 +74,5 @@ Four mutants targeting the battery integration:
 | M4-suppress-battery-line-for-continue | gates BATTERY: line on `verdict=="BAR_MET"` | `test_continue_plan_lint_fail_no_downgrade_warn` | KILLED |
 
 Result: 4 killed, 0 survived, 0 error. Full output in `cycle-check-battery.run.txt`.
+
+> Thread 195 repair (2026-09-08): the seven mutants Item 6 named and the DEV step dropped were added as M5–M12 (with the VACUOUS-token mutant), every anchor count-1 and every selector collected, and the runner re-run into the deposit file: `MUTATION: 12 killed, 0 survived, 0 error`.

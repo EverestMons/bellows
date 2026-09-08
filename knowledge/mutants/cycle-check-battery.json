@@ -1,34 +1,90 @@
 {
-    "target": "scripts/cycle_check.py",
-    "_note": "Plan 100042: four mutants covering the battery integration — downgrade logic, BATTERY: line emission, fold_check baseline launch guard. 0 ERROR required.",
-    "mutants": [
-        {
-            "name": "M1-drop-plan-lint-downgrade",
-            "why": "Removing the plan_lint downgrade check allows a plan with lint FAILs to reach BAR_MET unchallenged. test_bar_met_plan_lint_fail_downgrades expects CONTINUE when plan_lint returns 1_FAIL; without this branch it gets BAR_MET.",
-            "anchor": "        plan_lint_val = b[\"plan_lint\"]\n        plan_lint_fail = plan_lint_val.endswith(\"_FAIL\") and plan_lint_val != \"0_FAIL\"\n        fold_drift = b[\"fold_check\"] == \"DRIFT\"\n        if plan_lint_fail or fold_drift:",
-            "replacement": "        fold_drift = b[\"fold_check\"] == \"DRIFT\"\n        if fold_drift:",
-            "expect_fail": "tests/test_cycle_check_battery.py::test_bar_met_plan_lint_fail_downgrades"
-        },
-        {
-            "name": "M2-drop-fold-drift-downgrade",
-            "why": "Removing the fold_check=DRIFT downgrade allows a plan with a drifted fold baseline to reach BAR_MET. test_bar_met_fold_check_drift_downgrades expects CONTINUE when fold_check returns DRIFT; without this branch it gets BAR_MET.",
-            "anchor": "        plan_lint_val = b[\"plan_lint\"]\n        plan_lint_fail = plan_lint_val.endswith(\"_FAIL\") and plan_lint_val != \"0_FAIL\"\n        fold_drift = b[\"fold_check\"] == \"DRIFT\"\n        if plan_lint_fail or fold_drift:",
-            "replacement": "        plan_lint_val = b[\"plan_lint\"]\n        plan_lint_fail = plan_lint_val.endswith(\"_FAIL\") and plan_lint_val != \"0_FAIL\"\n        if plan_lint_fail:",
-            "expect_fail": "tests/test_cycle_check_battery.py::test_bar_met_fold_check_drift_downgrades"
-        },
-        {
-            "name": "M3-always-launch-fold-check",
-            "why": "Removing the baseline guard (if baseline_path is not None) causes fold_check to be launched even when no baseline exists — the subprocess fails and fold_val becomes N/A instead of NO_BASELINE. test_bar_met_no_baseline_unaffected expects fold_check=NO_BASELINE; this mutant produces N/A and breaks the BATTERY: line assertion.",
-            "anchor": "    if baseline_path is not None:\n        try:\n            fc_r = subprocess.run(\n                [sys.executable, str(scripts_dir / \"fold_check.py\"),\n                 str(plan_path), \"--baseline\", str(baseline_path)],",
-            "replacement": "    if True:\n        try:\n            fc_r = subprocess.run(\n                [sys.executable, str(scripts_dir / \"fold_check.py\"),\n                 str(plan_path), \"--baseline\", str(baseline_path)],",
-            "expect_fail": "tests/test_cycle_check_battery.py::test_bar_met_no_baseline_unaffected"
-        },
-        {
-            "name": "M4-suppress-battery-line-for-continue",
-            "why": "Gating the BATTERY: line on verdict=='BAR_MET' hides the battery result for CONTINUE exits entirely. test_continue_plan_lint_fail_no_downgrade_warn asserts exactly one BATTERY: line is present in warnings; the mutation produces zero — the suite catches it.",
-            "anchor": "    if warnings is not None:\n        warnings.append(battery_line)\n\n    if verdict == \"BAR_MET\":",
-            "replacement": "    if warnings is not None and verdict == \"BAR_MET\":\n        warnings.append(battery_line)\n\n    if verdict == \"BAR_MET\":",
-            "expect_fail": "tests/test_cycle_check_battery.py::test_continue_plan_lint_fail_no_downgrade_warn"
-        }
-    ]
+  "target": "scripts/cycle_check.py",
+  "_note": "Plan 100042: four mutants covering the battery integration — downgrade logic, BATTERY: line emission, fold_check baseline launch guard. 0 ERROR required. Thread 195 (2026-09-08): M5–M12 added — the seven mutants Item 6 named that the DEV step dropped, plus the VACUOUS-token mutant.",
+  "mutants": [
+    {
+      "name": "M1-drop-plan-lint-downgrade",
+      "why": "Removing the plan_lint downgrade check allows a plan with lint FAILs to reach BAR_MET unchallenged. test_bar_met_plan_lint_fail_downgrades expects CONTINUE when plan_lint returns 1_FAIL; without this branch it gets BAR_MET.",
+      "anchor": "        plan_lint_val = b[\"plan_lint\"]\n        plan_lint_fail = plan_lint_val.endswith(\"_FAIL\") and plan_lint_val != \"0_FAIL\"\n        fold_drift = b[\"fold_check\"] == \"DRIFT\"\n        if plan_lint_fail or fold_drift:",
+      "replacement": "        fold_drift = b[\"fold_check\"] == \"DRIFT\"\n        if fold_drift:",
+      "expect_fail": "tests/test_cycle_check_battery.py::test_bar_met_plan_lint_fail_downgrades"
+    },
+    {
+      "name": "M2-drop-fold-drift-downgrade",
+      "why": "Removing the fold_check=DRIFT downgrade allows a plan with a drifted fold baseline to reach BAR_MET. test_bar_met_fold_check_drift_downgrades expects CONTINUE when fold_check returns DRIFT; without this branch it gets BAR_MET.",
+      "anchor": "        plan_lint_val = b[\"plan_lint\"]\n        plan_lint_fail = plan_lint_val.endswith(\"_FAIL\") and plan_lint_val != \"0_FAIL\"\n        fold_drift = b[\"fold_check\"] == \"DRIFT\"\n        if plan_lint_fail or fold_drift:",
+      "replacement": "        plan_lint_val = b[\"plan_lint\"]\n        plan_lint_fail = plan_lint_val.endswith(\"_FAIL\") and plan_lint_val != \"0_FAIL\"\n        if plan_lint_fail:",
+      "expect_fail": "tests/test_cycle_check_battery.py::test_bar_met_fold_check_drift_downgrades"
+    },
+    {
+      "name": "M3-always-launch-fold-check",
+      "why": "Removing the baseline guard (if baseline_path is not None) causes fold_check to be launched even when no baseline exists — the subprocess fails and fold_val becomes N/A instead of NO_BASELINE. test_bar_met_no_baseline_unaffected expects fold_check=NO_BASELINE; this mutant produces N/A and breaks the BATTERY: line assertion.",
+      "anchor": "    if baseline_path is not None:\n        try:\n            fc_r = subprocess.run(\n                [sys.executable, str(scripts_dir / \"fold_check.py\"),\n                 str(plan_path), \"--baseline\", str(baseline_path)],",
+      "replacement": "    if True:\n        try:\n            fc_r = subprocess.run(\n                [sys.executable, str(scripts_dir / \"fold_check.py\"),\n                 str(plan_path), \"--baseline\", str(baseline_path)],",
+      "expect_fail": "tests/test_cycle_check_battery.py::test_bar_met_no_baseline_unaffected"
+    },
+    {
+      "name": "M4-suppress-battery-line-for-continue",
+      "why": "Gating the BATTERY: line on verdict=='BAR_MET' hides the battery result for CONTINUE exits entirely. test_continue_plan_lint_fail_no_downgrade_warn asserts exactly one BATTERY: line is present in warnings; the mutation produces zero — the suite catches it.",
+      "anchor": "    if warnings is not None:\n        warnings.append(battery_line)\n\n    if verdict == \"BAR_MET\":",
+      "replacement": "    if warnings is not None and verdict == \"BAR_MET\":\n        warnings.append(battery_line)\n\n    if verdict == \"BAR_MET\":",
+      "expect_fail": "tests/test_cycle_check_battery.py::test_continue_plan_lint_fail_no_downgrade_warn"
+    },
+    {
+      "name": "M5-battery-on-escalate",
+      "why": "Running the battery inside _escalate would launch tools on ESCALATE arms; test 7 asserts zero battery-tool launches there.",
+      "anchor": "    def _escalate(tag):\n",
+      "replacement": "    def _escalate(tag):\n        _apply_battery(plan_path, tag, warnings, battery=battery)\n",
+      "expect_fail": "tests/test_cycle_check_battery.py::test_escalate_exits_spawn_no_tools"
+    },
+    {
+      "name": "M6-vacuous-treated-as-drift",
+      "why": "Mapping the VACUOUS exit to DRIFT would withhold the bar at every honest dry close; test 4 asserts BAR_MET unaffected on VACUOUS.",
+      "anchor": "                fold_val = \"VACUOUS\"\n",
+      "replacement": "                fold_val = \"DRIFT\"\n",
+      "expect_fail": "tests/test_cycle_check_battery.py::test_bar_met_fold_check_vacuous_unaffected"
+    },
+    {
+      "name": "M7-vacuous-token-mismatch",
+      "why": "Matching a different token than the machine-readable FOLD-CHECK VACUOUS prefix drops the VACUOUS state to NO_BASELINE; test 8 asserts the emitter writes VACUOUS for it.",
+      "anchor": "\"FOLD-CHECK VACUOUS\" in fc_r.stdout",
+      "replacement": "\"FOLD-CHECK CLEAN\" in fc_r.stdout",
+      "expect_fail": "tests/test_cycle_check_battery.py::test_emit_manifest_validation_keys_and_fold_check_values"
+    },
+    {
+      "name": "M8-drift-mapped-to-na",
+      "why": "Mapping rc 1 back to N/A is the thread-190 conflation; test 3 asserts DRIFT downgrades and test 8 asserts the emitter writes DRIFT.",
+      "anchor": "            elif fc_r.returncode == 1:\n                fold_val = \"DRIFT\"\n",
+      "replacement": "            elif fc_r.returncode == 1:\n                fold_val = \"N/A\"\n",
+      "expect_fail": "tests/test_cycle_check_battery.py::test_bar_met_fold_check_drift_downgrades"
+    },
+    {
+      "name": "M9-emitter-runs-battery-twice",
+      "why": "Dropping the battery= hand-off makes emit_manifest launch every tool twice; test 12 asserts exactly once.",
+      "anchor": "        verdict, _ = run_check(plan_path, battery=b)\n",
+      "replacement": "        verdict, _ = run_check(plan_path)\n",
+      "expect_fail": "tests/test_cycle_check_battery.py::test_emit_manifest_launches_each_tool_once"
+    },
+    {
+      "name": "M10-drop-fold-warn-when-both-fire",
+      "why": "Suppressing the fold_check WARN when plan_lint also fails collapses the both-fire case to one line; test 3 covers the both-fire assertion.",
+      "anchor": "            if fold_drift and warnings is not None:\n",
+      "replacement": "            if fold_drift and not plan_lint_fail and warnings is not None:\n",
+      "expect_fail": "tests/test_cycle_check_battery.py::test_bar_met_fold_check_drift_downgrades"
+    },
+    {
+      "name": "M11-skip-battery-when-warnings-none",
+      "why": "Skipping the battery when no warnings list is passed makes the verdict depend on the call shape (the #100040 defect); test 15 asserts three call shapes agree.",
+      "anchor": "    b = battery if battery is not None else run_battery(plan_path)\n",
+      "replacement": "    if warnings is None and battery is None:\n        return verdict, {\"plan_lint\": \"N/A\", \"fold_check\": \"N/A\", \"propagation_check\": \"N/A\"}\n    b = battery if battery is not None else run_battery(plan_path)\n",
+      "expect_fail": "tests/test_cycle_check_battery.py::test_verdict_independent_of_call_shape"
+    },
+    {
+      "name": "M12-ignore-beside-file",
+      "why": "Ignoring the beside-the-plan baseline breaks the undeclared-plan path (the M7 survivor of #100041); test 16 asserts beside-only resolves.",
+      "anchor": "    if beside.exists():\n        return beside, False\n",
+      "replacement": "    if beside.exists():\n        return None, False\n",
+      "expect_fail": "tests/test_cycle_check_battery.py::test_beside_only_fallback"
+    }
+  ]
 }
