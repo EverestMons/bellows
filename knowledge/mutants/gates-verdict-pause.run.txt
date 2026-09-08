@@ -1,0 +1,32 @@
+PYTHON: /Users/marklehn/Developer/bellows/.venv/bin/python
+HEAD: 62ee37a9bbb931fa8b86c4d1a8d25709a5e382d6
+TARGET: gates.py sha256=0cb1301cb74d
+TARGET: verdict.py sha256=e435d8585b86
+
+MUTANT restore-basename-arm: KILLED — suite caught the defect
+MUTANT prose-under-declared-scope: KILLED — suite caught the defect
+MUTANT drop-one-segment-file-tolerance: KILLED — suite caught the defect
+MUTANT drop-deposits-union: KILLED — suite caught the defect
+MUTANT deposits-alone-set-declared: KILLED — suite caught the defect
+MUTANT drop-absolute-entry-normalization: KILLED — suite caught the defect
+MUTANT drop-prefix-tolerance: KILLED — suite caught the defect
+MUTANT select-first-txt-path: KILLED — suite caught the defect
+MUTANT drop-no-summary-fail: KILLED — suite caught the defect
+MUTANT drop-suite-tie-break: KILLED — suite caught the defect
+MUTANT skip-node-existence-check: KILLED — suite caught the defect
+MUTANT drop-qa-only-guard-65: KILLED — suite caught the defect
+MUTANT treat-marker-as-hedge: KILLED — suite caught the defect
+MUTANT widen-exemption-to-bare-word: KILLED — suite caught the defect
+MUTANT accept-survivor: KILLED — suite caught the defect
+MUTANT drop-manifest-without-run-arm: KILLED — suite caught the defect
+MUTANT read-manifest-from-scope-only: KILLED — suite caught the defect
+MUTANT drop-n-ge-1: KILLED — suite caught the defect
+MUTANT read-first-mutation-line: KILLED — suite caught the defect
+MUTANT delete-quoted-test-nodes-exist-row: KILLED — suite caught the defect
+MUTANT delete-mutation-result-row: KILLED — suite caught the defect
+MUTANT swap-new-gates-order: KILLED — suite caught the defect
+
+LIVE-TREE UNCHANGED: gates.py sha256=0cb1301cb74d
+LIVE-TREE UNCHANGED: verdict.py sha256=e435d8585b86
+
+MUTATION: 22 killed, 0 survived, 0 error
