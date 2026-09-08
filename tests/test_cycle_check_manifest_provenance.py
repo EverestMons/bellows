@@ -236,35 +236,53 @@ def test_validation_empty_blocks(tmp_path):
     assert code == 0
 
 
-# ---------- no subprocess added on the normal path ----------
+# ---------- battery launch count on the normal path (ruled rewrite — thread 189) ----------
 
 def test_no_subprocess_spawned(tmp_path):
-    """The manifest key-set gate adds zero subprocess launches (cycle_check runs constantly)."""
-    # Baseline: same DC block, no manifest stanza
-    plan_no_stanza = _make_plan_no_manifest(tmp_path, _BAR_MET_DC, "baseline.md")
-    # Gate-firing plan: manifest with missing key
-    plan_missing_key = _make_plan_with_manifest(
-        tmp_path, _BAR_MET_DC,
-        "cycle_check=BAR_MET, plan_lint=0_FAIL, fold_check=PASS",
-        "gate.md",
-    )
+    """P8 ruled rewrite: count battery launches by BASENAME.
+
+    Thread 189 overturns Done/executable-100033.md's MUST-PRESERVE for
+    CONTINUE/BAR_MET exits.  ESCALATE exits still spawn zero tool launches.
+    The counter dispatches on basename so git reads at :73/:349 cannot perturb it.
+    On a CONTINUE/BAR_MET exit: plan_lint.py + propagation_check.py always launch;
+    fold_check.py launches only when a baseline resolved (2 without, 3 with).
+    """
+    from pathlib import Path as _Path
 
     original_run = subprocess.run
-    calls = {"baseline": 0, "gate": 0}
+    battery_tools = frozenset({"plan_lint.py", "fold_check.py", "propagation_check.py"})
 
-    def counter_baseline(*args, **kwargs):
-        calls["baseline"] += 1
-        return original_run(*args, **kwargs)
+    def _count(plan):
+        counts = {"n": 0}
 
-    def counter_gate(*args, **kwargs):
-        calls["gate"] += 1
-        return original_run(*args, **kwargs)
+        def counting_run(cmd, **kw):
+            if cmd and len(cmd) >= 2 and cmd[0] == sys.executable:
+                if _Path(cmd[1]).name in battery_tools:
+                    counts["n"] += 1
+                    # Return a stub so the real tool is not invoked
+                    name = _Path(cmd[1]).name
+                    class _R:
+                        returncode = 0
+                        stdout = ""
+                        stderr = ""
+                    return _R()
+            return original_run(cmd, **kw)
 
-    with patch.object(subprocess, "run", side_effect=counter_baseline):
-        cycle_check.run_check(plan_no_stanza)
+        with patch.object(subprocess, "run", side_effect=counting_run):
+            cycle_check.run_check(plan, warnings=[])
+        return counts["n"]
 
-    with patch.object(subprocess, "run", side_effect=counter_gate):
-        cycle_check.run_check(plan_missing_key)
+    # BAR_MET without baseline: plan_lint + propagation_check = 2
+    plan_no_baseline = _make_plan_with_manifest(tmp_path, _BAR_MET_DC, _FULL_VALIDATION, "no_bl.md")
+    assert _count(plan_no_baseline) == 2
 
-    # The gate must not add any subprocess calls beyond the baseline
-    assert calls["gate"] == calls["baseline"]
+    # BAR_MET with baseline: plan_lint + fold_check + propagation_check = 3
+    plan_with_baseline = _make_plan_with_manifest(tmp_path, _BAR_MET_DC, _FULL_VALIDATION, "with_bl.md")
+    baseline = tmp_path / ".with_bl.md.foldcheck.json"
+    baseline.write_text("{}", encoding="utf-8")
+    assert _count(plan_with_baseline) == 3
+
+    # ESCALATE: zero battery launches
+    plan_escalate = _make_plan_no_manifest(tmp_path, "", "esc.md")
+    plan_escalate.write_text("# Plan\n\nno DC block\n", encoding="utf-8")
+    assert _count(plan_escalate) == 0
