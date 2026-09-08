@@ -89,7 +89,7 @@ UNPROVEN = "UNPROVEN"
 REPEATED = "REPEATED"
 
 
-def commit_record(plan_path, repo):
+def commit_record(plan_path, repo, source="plan"):
     """(walk, [lens...], sha, subject) per commit touching the plan, OLDEST FIRST.
 
     --follow because a plan is renamed twice on its way through the pipeline
@@ -118,8 +118,57 @@ def commit_record(plan_path, repo):
         for group in _LENS_RE.findall(subject):
             lenses.extend(int(x) for x in re.split(r"\s*/\s*", group))
         if w and lenses:
-            rows.append((int(w.group(1)), lenses, sha[:7], subject, when, sha))
+            rows.append((int(w.group(1)), lenses, sha[:7], subject, when, sha, source))
     return rows
+
+
+def commit_record_paths(repo, paths):
+    """ONE git log over several paths in ONE repo — git's own order, exact.
+
+    Used when the plan and its walk register live in the same repo, which is every
+    standard-pipeline plan while it is being drafted. No merge, so no tie-breaking:
+    the first real run after the register became the record (thread NNN) showed a
+    register-only lens 3 and a plan-only lens 4 committed in the same second, and
+    the time-merge's insertion-order tie-break put 4 before 3 — a false breach the
+    depositor would have held on. `--follow` is not accepted with several paths;
+    renames happen only at deposit, when the plan changes repo anyway.
+    """
+    rels = [os.path.relpath(str(p), str(repo)) for p in paths]
+    out = subprocess.run(
+        ["git", "-C", str(repo), "log", "--reverse", "--format=%H%x09%cI%x09%s", "--", *rels],
+        capture_output=True, text=True, timeout=60,
+    )
+    if out.returncode != 0:
+        raise RuntimeError(f"git log exit {out.returncode}: {out.stderr.strip()[:200]}")
+    rows = []
+    for line in out.stdout.strip().split("\n"):
+        if line.count("\t") < 2:
+            continue
+        sha, when, subject = line.split("\t", 2)
+        w = _WALK_RE.search(subject)
+        lenses = []
+        for group in _LENS_RE.findall(subject):
+            lenses.extend(int(x) for x in re.split(r"\s*/\s*", group))
+        if w and lenses:
+            rows.append((int(w.group(1)), lenses, sha[:7], subject, when, sha, "plan+register"))
+    return rows
+
+
+def _merge_by_time(plan_rows, reg_rows):
+    """Cross-repo merge. Same-source ties keep that source's own order (git's, exact);
+    a tie between DIFFERENT sources carries no ordering evidence and is ordered by lens
+    — the benign reading — so it can never manufacture a breach. executable-507's 16
+    same-second commits, all one source, keep their true [1, 4, 3, 5] and still fault."""
+    seen=set(); a=[r for r in plan_rows if not (r[5] in seen or seen.add(r[5]))]
+    b=[r for r in reg_rows if not (r[5] in seen or seen.add(r[5]))]
+    out=[]; i=j=0
+    while i < len(a) and j < len(b):
+        if a[i][4] < b[j][4]:   out.append(a[i]); i+=1
+        elif b[j][4] < a[i][4]: out.append(b[j]); j+=1
+        else:                    # cross-source tie: lower lens first
+            if min(a[i][1]) <= min(b[j][1]): out.append(a[i]); i+=1
+            else:                              out.append(b[j]); j+=1
+    return out + a[i:] + b[j:]
 
 
 def _repo_of(path):
@@ -164,7 +213,7 @@ def register_commit_record(plan_text, plan_path):
     if not repo:
         return [], None
     try:
-        return commit_record(resolved, repo), resolved
+        return commit_record(resolved, repo, source="register"), resolved
     except RuntimeError:
         return [], resolved
 
@@ -283,21 +332,13 @@ def main(argv=None):
         reg_rows, reg_path = register_commit_record(plan_path.read_text(errors="replace"),
                                                    plan_path)
         if reg_rows:
-            by_sha = {}
-            for r in list(rows) + list(reg_rows):   # plan order, then register order
-                by_sha.setdefault(r[5], r)
-            # ⛔ Sort by TIME ALONE, and rely on the sort being STABLE.
-            # An earlier key of (time, walk) re-sorted by walk number whenever
-            # timestamps tied, which scrambled the within-walk commit order the
-            # order check reads — measured on executable-507, whose 16 lens commits
-            # all carry 2026-08-24T11:18:09 and which was reported OUT-OF-ORDER
-            # purely as an artifact of that. %cI has SECOND resolution, so ties are
-            # real; stability preserves each source's own `git log --reverse` order
-            # underneath them, which is the true order for a single-source record.
-            merged = list(by_sha.values())
-            merged.sort(key=lambda r: r[4])
-            rows = merged
-            record_src = f"plan+register ({reg_path.name})" if reg_path else "plan"
+            reg_repo = _repo_of(reg_path) if reg_path else None
+            if reg_repo and reg_repo.resolve() == Path(repo).resolve():
+                rows = commit_record_paths(repo, [plan_path, reg_path])   # ONE log, git's order
+            else:
+                rows = _merge_by_time(rows, reg_rows)
+            record_src = (f"plan+register, one log ({reg_path.name})" if reg_repo and reg_repo.resolve() == Path(repo).resolve()
+                          else f"plan+register, merged by time ({reg_path.name})")
         else:
             record_src = "plan only — no resolvable walk register"
     except RuntimeError as e:

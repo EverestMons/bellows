@@ -205,7 +205,7 @@ def test_a_cont_commit_continues_one_pass_and_is_not_a_repeat(tmp_path):
 
 # --- threads 163 + 164 + 165: the WALK REGISTER is the record -------------------
 
-def _repo_with_register(tmp_path, steps, walks=(1,)):
+def _repo_with_register(tmp_path, steps, walks=(1,), same_second=None):
     """A repo whose plan and walk register are committed SEPARATELY, IN ORDER.
 
     `steps` is an ordered list of (subject, target) where target is "plan" or "reg".
@@ -242,6 +242,8 @@ def _repo_with_register(tmp_path, steps, walks=(1,)):
         # version of this test read [1,3,5,2,4] and fail against correct code. Real
         # cycles are minutes apart; the fixture must not be tighter than reality.
         when = f"2026-09-07T10:{i:02d}:00-05:00"
+        if same_second and i in same_second:      # force a shared commit second
+            when = f"2026-09-07T10:{min(same_second):02d}:00-05:00"
         subprocess.run(
             ["git", "-C", str(repo), "commit", "-q", "-m", subj],
             capture_output=True, text=True,
@@ -333,3 +335,32 @@ def test_an_undeclared_walk_is_still_checked(tmp_path):
     r = _run(plan, repo)
     assert r.returncode == 1, f"undeclared walk 2 was not checked\n{r.stdout}{r.stderr}"
     assert "INCOMPLETE: walk 2" in r.stdout, r.stdout
+
+
+# --- same-second ties between a register-only lens and a plan-only lens -----------
+
+def test_same_repo_same_second_register_only_lens_keeps_git_order(tmp_path):
+    """A register-only lens 3 and a plan-only lens 4 committed in the SAME second, 3
+    first. The time-merge's insertion-order tie-break put 4 before 3 — a false breach
+    on a live plan. In one repo git's own log over both paths is exact."""
+    repo, plan = _repo_with_register(tmp_path, [
+        ("draft(f): walk 1 lens 1 — 1 fold", "plan"),
+        ("draft(f): walk 1 lens 2 — 1 fold", "plan"),
+        ("draft(f): walk 1 lens 3 — DRY", "reg"),
+        ("draft(f): walk 1 lens 4 — 1 fold", "plan"),
+        ("draft(f): walk 1 lens 5 — 1 fold", "plan"),
+    ], same_second=(2, 3))
+    r = _run(plan, repo)
+    assert r.returncode == 0, r.stdout + r.stderr
+    assert "one log" in r.stdout, r.stdout
+
+
+def test_cross_source_tie_is_not_disorder_but_a_real_descent_still_is():
+    """Pure merge check: a cross-source tie carries no ordering evidence."""
+    P = lambda lens, when: (1, [lens], "aaaaaaa", "s", when, f"sha-p{lens}", "plan")
+    R = lambda lens, when: (1, [lens], "bbbbbbb", "s", when, f"sha-r{lens}", "register")
+    import lens_order_check as lo
+    tie = lo._merge_by_time([P(1,"t1"), P(4,"t3")], [R(3,"t3")])
+    assert [r[1][0] for r in tie] == [1, 3, 4]            # tied 3/4 -> benign order
+    real = lo._merge_by_time([P(1,"t1"), P(4,"t2")], [R(3,"t3")])
+    assert [r[1][0] for r in real] == [1, 4, 3]           # distinct times -> true order kept
