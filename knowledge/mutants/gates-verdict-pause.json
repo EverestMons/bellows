@@ -1,0 +1,181 @@
+{
+  "target": "gates.py",
+  "mutants": [
+    {
+      "name": "restore-basename-arm",
+      "why": "the basename arm `basename in declared_files` was deleted because it let prose-mentioned filenames clear a declared Scope; restoring it must break test 4's assertion that other/test_x.py is not authorized by a declared tests/test_x.py",
+      "anchor": "            file_match = any(\n                d == fpath or (\"/' in d and d.split(\"/\", 1)[1] == fpath)",
+      "replacement": "            file_match = any(\n                d == fpath or basename == d or (\"/' in d and d.split(\"/\", 1)[1] == fpath)",
+      "target": "gates.py",
+      "expect_fail": "tests/test_gates_verdict_pause.py::test_4_scope_matching_rules"
+    },
+    {
+      "name": "prose-under-declared-scope",
+      "why": "the declared-mode block restricts to declared paths only; removing `if declared:` and always falling through to prose arms re-introduces the 100040 defect — prose-mentioned test_cycle_check.py clears again",
+      "anchor": "        if declared:\n            # Declared-mode: only declared paths clear",
+      "replacement": "        if False:\n            # Declared-mode: only declared paths clear",
+      "target": "gates.py",
+      "expect_fail": "tests/test_gates_verdict_pause.py::test_1_declared_scope_prose_mention_fails"
+    },
+    {
+      "name": "drop-one-segment-file-tolerance",
+      "why": "the one-segment declared-side tolerance lets bellows/tests/test_x.py authorize tests/test_x.py; dropping it means the bellows/ prefix form stops working",
+      "anchor": "                d == fpath or (\"/\" in d and d.split(\"/\", 1)[1] == fpath)",
+      "replacement": "                d == fpath",
+      "target": "gates.py",
+      "expect_fail": "tests/test_gates_verdict_pause.py::test_4_scope_matching_rules"
+    },
+    {
+      "name": "drop-deposits-union",
+      "why": "Scope ∪ Deposits builds the declared set; dropping the Deposits loop means paths only in the Deposits block no longer authorize changed files",
+      "anchor": "        for p in _extract_deposits_block_paths(st):",
+      "replacement": "        for p in []:",
+      "target": "gates.py",
+      "expect_fail": "tests/test_gates_verdict_pause.py::test_4_scope_matching_rules"
+    },
+    {
+      "name": "deposits-alone-set-declared",
+      "why": "`declared` must be determined from Scope blocks only — a plan with a Deposits block but no Scope must stay in legacy prose-arm mode (P3); computing declared from Scope OR Deposits blocks triggers declared-mode on legacy plans with deposits",
+      "anchor": "    declared = bool(scope_files_raw or scope_prefixes_raw)",
+      "replacement": "    declared = bool(scope_files_raw or scope_prefixes_raw or any(_extract_deposits_block_paths(st) for st in all_step_texts))",
+      "target": "gates.py",
+      "expect_fail": "tests/test_gates_verdict_pause.py::test_3_no_scope_block_prose_authorizes_passes"
+    },
+    {
+      "name": "drop-absolute-entry-normalization",
+      "why": "absolute Scope entries under project_path must normalize to project-relative form (P14); dropping normalization makes /project/tuyere/claims.py fail to match tuyere/claims.py",
+      "anchor": "        declared_files = {\n            d[len(abs_project):] if os.path.isabs(d) and d.startswith(abs_project) else d",
+      "replacement": "        declared_files = {\n            d",
+      "target": "gates.py",
+      "expect_fail": "tests/test_gates_verdict_pause.py::test_19_absolute_entry_normalization"
+    },
+    {
+      "name": "drop-prefix-tolerance",
+      "why": "prefix declared entries also get a one-segment tolerance (bellows/knowledge/… declares knowledge/…); dropping it means bellows/knowledge/qa/evidence/s/ stops authorizing knowledge/qa/evidence/s/full-suite.txt",
+      "anchor": "                fpath.startswith(p) or (\n                    \"/\" in p.rstrip(\"/\") and fpath.startswith(p.split(\"/\", 1)[1])",
+      "replacement": "                fpath.startswith(p)",
+      "target": "gates.py",
+      "expect_fail": "tests/test_gates_verdict_pause.py::test_20_prefix_tolerance_declared_side_only"
+    },
+    {
+      "name": "select-first-txt-path",
+      "why": "content-based selection must replace the old txt_paths[0] fallback; restoring txt_paths[0] makes the gate pick probes-raw.txt (no summary) when no basename says full-suite",
+      "anchor": "    suite_matches = [(p, r, c) for p, r, c in summary_matches if \"suite\" in os.path.basename(p)]\n    evidence_path, resolved, content = suite_matches[0] if suite_matches else summary_matches[0]",
+      "replacement": "    suite_matches = []\n    evidence_path, resolved, content = summary_matches[0]",
+      "target": "gates.py",
+      "expect_fail": "tests/test_gates_verdict_pause.py::test_5_qa_test_result_probe_first_suite_second_reads_suite"
+    },
+    {
+      "name": "drop-no-summary-fail",
+      "why": "when no .txt contains a summary the gate must FAIL naming all inspected files; dropping the failure makes it silently return, leaving a clean result on a suite that has no summary",
+      "anchor": "        failures.append({\"gate\": \"qa_test_result\", \"evidence\": f\"no pytest summary in any .txt deposit: {inspected}\"})\n        return",
+      "replacement": "        return",
+      "target": "gates.py",
+      "expect_fail": "tests/test_gates_verdict_pause.py::test_7_qa_test_result_no_summary_fails"
+    },
+    {
+      "name": "drop-suite-tie-break",
+      "why": "when several .txt files carry a summary, the one with 'suite' in its basename wins; dropping the tie-break picks the first match regardless of basename",
+      "anchor": "    suite_matches = [(p, r, c) for p, r, c in summary_matches if \"suite\" in os.path.basename(p)]",
+      "replacement": "    suite_matches = []",
+      "target": "gates.py",
+      "expect_fail": "tests/test_gates_verdict_pause.py::test_6_qa_test_result_suite_basename_wins"
+    },
+    {
+      "name": "skip-node-existence-check",
+      "why": "every tests/…::Name quoted in a QA deposit must exist in the worktree; skipping the check lets non-existent nodes pass silently (the 100005 defect)",
+      "anchor": "            if not re.search(rf\"\\b(?:def|class)\\s+{re.escape(final_segment)}\\b\", src):",
+      "replacement": "            if False:",
+      "target": "gates.py",
+      "expect_fail": "tests/test_gates_verdict_pause.py::test_8_quoted_node_missing_fails"
+    },
+    {
+      "name": "drop-qa-only-guard-65",
+      "why": "the quoted-node check is QA-only; removing the `if not is_qa_step: return` guard makes it run on DEV steps too, and the test asserts it adds nothing on a DEV step",
+      "anchor": "def _gate_quoted_test_nodes_exist(is_qa_step, plan_text, step_number, project_path, parsed, failures, wt_path=None):\n    \"\"\"Gate 65: every tests/…::Name token quoted in QA deposits must exist in the worktree.\"\"\"\n    if not is_qa_step:\n        return",
+      "replacement": "def _gate_quoted_test_nodes_exist(is_qa_step, plan_text, step_number, project_path, parsed, failures, wt_path=None):\n    \"\"\"Gate 65: every tests/…::Name token quoted in QA deposits must exist in the worktree.\"\"\"\n    if False:\n        return",
+      "target": "gates.py",
+      "expect_fail": "tests/test_gates_verdict_pause.py::test_17_dev_step_adds_nothing_and_two_missing_nodes_one_failure"
+    },
+    {
+      "name": "treat-marker-as-hedge",
+      "why": "the LESSONS marker form `[status: pending]` must be stripped before the hedging check; not stripping it means the marker itself fires (d), which the CEO ruled exempt (thread 136)",
+      "anchor": "            row = re.sub(r\"\\[?status:\\s*pending\\]?\", \"\", line, flags=re.I)",
+      "replacement": "            row = line",
+      "target": "gates.py",
+      "expect_fail": "tests/test_gates_verdict_pause.py::test_11_marker_form_pending_not_a_hedge"
+    },
+    {
+      "name": "widen-exemption-to-bare-word",
+      "why": "only the bracketed marker form `[status: pending]` is exempt — the bare word 'pending' must still fire as a hedge; widening the strip to the bare word silences a genuine hedge",
+      "anchor": "            row = re.sub(r\"\\[?status:\\s*pending\\]?\", \"\", line, flags=re.I)",
+      "replacement": "            row = re.sub(r\"pending\", \"\", line, flags=re.I)",
+      "target": "gates.py",
+      "expect_fail": "tests/test_gates_verdict_pause.py::test_12_bare_word_pending_fires_and_detail_cell_is_silent"
+    },
+    {
+      "name": "accept-survivor",
+      "why": "a mutation run with 1 or more survivors must fail; dropping the survived check lets a run ending '12 killed, 1 survived, 0 error' pass",
+      "anchor": "        if survived != 0 or errors != 0 or killed < 1:",
+      "replacement": "        if errors != 0 or killed < 1:",
+      "target": "gates.py",
+      "expect_fail": "tests/test_gates_verdict_pause.py::test_13_mutation_result_pass_and_fail"
+    },
+    {
+      "name": "drop-manifest-without-run-arm",
+      "why": "a mutant manifest declared in a step without a co-deposit run file must fail; dropping this check lets a Scope-declared .json without a .run.txt pass silently (100041's shape)",
+      "anchor": "    if json_declared and not run_paths:",
+      "replacement": "    if False:",
+      "target": "gates.py",
+      "expect_fail": "tests/test_gates_verdict_pause.py::test_14_manifest_without_run_fails"
+    },
+    {
+      "name": "read-manifest-from-scope-only",
+      "why": "the manifest-without-run check must read from Scope OR Deposits block (C15); reading from Scope only misses a .json declared only in the Deposits block",
+      "anchor": "    all_declared = set(scope_files) | set(dep_block_paths)",
+      "replacement": "    all_declared = set(scope_files)",
+      "target": "gates.py",
+      "expect_fail": "tests/test_gates_verdict_pause.py::test_14_manifest_without_run_fails"
+    },
+    {
+      "name": "drop-n-ge-1",
+      "why": "`0 killed, 0 survived, 0 error` must fail (N ≥ 1); dropping the `killed < 1` term lets a zero-kill run pass",
+      "anchor": "        if survived != 0 or errors != 0 or killed < 1:",
+      "replacement": "        if survived != 0 or errors != 0:",
+      "target": "gates.py",
+      "expect_fail": "tests/test_gates_verdict_pause.py::test_18_mutation_n_ge_1_and_last_line_read"
+    },
+    {
+      "name": "read-first-mutation-line",
+      "why": "the gate must read the LAST MUTATION: line (a run may have multiple); reading the first instead means a final clean line after a bad one is ignored",
+      "anchor": "        last_mutation_line = None\n        for raw_line in content.splitlines():\n            stripped = raw_line.strip()\n            if stripped.startswith(\"MUTATION:\"):\n                last_mutation_line = stripped",
+      "replacement": "        last_mutation_line = None\n        for raw_line in content.splitlines():\n            stripped = raw_line.strip()\n            if stripped.startswith(\"MUTATION:\") and last_mutation_line is None:\n                last_mutation_line = stripped",
+      "target": "gates.py",
+      "expect_fail": "tests/test_gates_verdict_pause.py::test_18_mutation_n_ge_1_and_last_line_read"
+    },
+    {
+      "name": "delete-quoted-test-nodes-exist-row",
+      "why": "verdict._KNOWN_GATES must list quoted_test_nodes_exist so the table renders a row for it; deleting the row means the gate's PASS and FAIL are never shown",
+      "anchor": "        (\"quoted_test_nodes_exist\", \"quoted_test_nodes_exist\", \"Every quoted test node exists in the worktree\"),",
+      "replacement": "",
+      "target": "verdict.py",
+      "expect_fail": "tests/test_gates_verdict_pause.py::test_16_dispatch_order_and_verdict_table"
+    },
+    {
+      "name": "delete-mutation-result-row",
+      "why": "verdict._KNOWN_GATES must list mutation_result so the table renders a row for it; deleting the row means the gate's PASS and FAIL are never shown",
+      "anchor": "        (\"mutation_result\", \"mutation_result\", \"Mutation run clean, or none declared\"),",
+      "replacement": "",
+      "target": "verdict.py",
+      "expect_fail": "tests/test_gates_verdict_pause.py::test_16_dispatch_order_and_verdict_table"
+    },
+    {
+      "name": "swap-new-gates-order",
+      "why": "the dispatch order in check() must be: …scope_check, quoted_test_nodes_exist, mutation_result; swapping them violates the pinned order test 16 asserts",
+      "anchor": "    # Gate 9: quoted test nodes exist (QA steps only)\n    _gate_quoted_test_nodes_exist(is_qa_step, plan_text, step_number, project_path, parsed, failures, wt_path=wt_path)\n    # Gate 10: mutation result\n    _gate_mutation_result(plan_text, step_number, project_path, parsed, failures, wt_path=wt_path)",
+      "replacement": "    # Gate 9: mutation result\n    _gate_mutation_result(plan_text, step_number, project_path, parsed, failures, wt_path=wt_path)\n    # Gate 10: quoted test nodes exist (QA steps only)\n    _gate_quoted_test_nodes_exist(is_qa_step, plan_text, step_number, project_path, parsed, failures, wt_path=wt_path)",
+      "target": "gates.py",
+      "expect_fail": "tests/test_gates_verdict_pause.py::test_16_dispatch_order_and_verdict_table"
+    }
+  ]
+}

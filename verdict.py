@@ -120,6 +120,9 @@ def _build_verification_results_table(gate_result, parsed, step_number, total_st
         ("scope_check", "scope_check", "All changes within plan scope"),
         ("rule_20_self_check", "rule_20_self_check", None),
         ("rule_22_verification", "rule_22_verification", None),
+        ("qa_test_result", "qa_test_result", "pytest summary clean, or not a QA step"),
+        ("quoted_test_nodes_exist", "quoted_test_nodes_exist", "Every quoted test node exists in the worktree"),
+        ("mutation_result", "mutation_result", "Mutation run clean, or none declared"),
     ]
 
     failures_by_gate = {}

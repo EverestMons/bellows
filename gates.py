@@ -307,7 +307,11 @@ def check(parsed, plan_text, step_number, project_path, files_changed=None, wt_p
     # Gate 7: file change audit (informational)
     _gate_file_change_audit(files_changed)
     # Gate 8: scope check
-    _gate_scope_check(plan_text, step_number, files_changed, failures)
+    _gate_scope_check(plan_text, step_number, files_changed, failures, project_path=project_path)
+    # Gate 9: quoted test nodes exist (QA steps only)
+    _gate_quoted_test_nodes_exist(is_qa_step, plan_text, step_number, project_path, parsed, failures, wt_path=wt_path)
+    # Gate 10: mutation result
+    _gate_mutation_result(plan_text, step_number, project_path, parsed, failures, wt_path=wt_path)
     vr = parsed.get("verdict_requested", {})
     requested = vr.get("requested", False)
     request_body = vr.get("reason")
@@ -823,7 +827,9 @@ def _gate_rule_22_verification(is_qa_step, plan_text, step_number, project_path,
     if in_data and current_table_has_positive_row:
         failures.extend(current_table_failures)
 
-    # (d) No hedging keywords in positive-status rows (section-scoped, cell-scoped)
+    # (d) No hedging keywords in positive-status rows (section-scoped, cell-scoped).
+    # Strip the LESSONS marker form `[status: pending]` before the keyword scan
+    # so `pending` in the marker token is not treated as a hedge (CEO ruling, thread 136).
     in_verification_section_d = False
     for i, line in enumerate(lines, 1):
         stripped_d = line.strip()
@@ -833,8 +839,9 @@ def _gate_rule_22_verification(is_qa_step, plan_text, step_number, project_path,
         if not in_verification_section_d:
             continue
         if _is_positive_status_row(line):
+            row = re.sub(r"\[?status:\s*pending\]?", "", line, flags=re.I)
             for kw in HEDGING_KEYWORDS:
-                if _hedging_in_status_vicinity(line, kw):
+                if _hedging_in_status_vicinity(row, kw):
                     failures.append({
                         "gate": "rule_22_verification",
                         "evidence": f"(d) Hedging keyword '{kw}' in positive-status row: {line.strip()[:120]}. See {qa_report_path} line {i}.",
@@ -868,20 +875,29 @@ def _gate_qa_test_result(is_qa_step, plan_text, step_number, project_path, parse
         failures.append({"gate": "qa_test_result", "evidence": "no .txt evidence deposit found — cannot certify test result; pausing"})
         return
 
-    preferred = [p for p in txt_paths if "full-suite" in os.path.basename(p)]
-    evidence_path = preferred[0] if preferred else txt_paths[0]
+    # Content-based selection (43): scan each .txt for a pytest summary line;
+    # choose the first whose basename contains 'suite', else the first match;
+    # if none carry a summary, FAIL naming every .txt inspected.
+    summary_matches = []
+    for p in txt_paths:
+        r = _resolve_deposit_path(p, project_path, wt_path=wt_path)
+        if r is None:
+            continue  # gate 5 (deposit_exists) already names it missing
+        try:
+            with open(r, "r", encoding="utf-8") as f:
+                c = f.read()
+        except (FileNotFoundError, UnicodeDecodeError, OSError):
+            continue
+        if _PYTEST_SUMMARY_RE.search(c):
+            summary_matches.append((p, r, c))
 
-    resolved = _resolve_deposit_path(evidence_path, project_path, wt_path=wt_path)
-    if resolved is None:
-        failures.append({"gate": "qa_test_result", "evidence": f"evidence file unreadable: {evidence_path} (file not found)"})
+    if not summary_matches:
+        inspected = ", ".join(txt_paths)
+        failures.append({"gate": "qa_test_result", "evidence": f"no pytest summary in any .txt deposit: {inspected}"})
         return
 
-    try:
-        with open(resolved, "r", encoding="utf-8") as f:
-            content = f.read()
-    except (FileNotFoundError, UnicodeDecodeError, OSError) as e:
-        failures.append({"gate": "qa_test_result", "evidence": f"evidence file unreadable: {evidence_path} ({e})"})
-        return
+    suite_matches = [(p, r, c) for p, r, c in summary_matches if "suite" in os.path.basename(p)]
+    evidence_path, resolved, content = suite_matches[0] if suite_matches else summary_matches[0]
 
     summary_line = None
     for line in content.splitlines():
@@ -1022,7 +1038,31 @@ def _gate_file_change_audit(files_changed):
     return files_changed
 
 
-def _gate_scope_check(plan_text, step_number, files_changed, failures):
+def _extract_deposits_block_paths(step_text):
+    """Extract deposit paths from block/inline forms only — no prose fallback.
+
+    Used by _gate_scope_check to build the declared set (Scope ∪ Deposits).
+    The prose `Deposit … to X` fallback never counts as a declaration (f25).
+    """
+    block_match = re.search(r'[> ]*\*\*Deposits:\*\*\s*\n(?:[> ]*\n)*((?:[> ]*-\s+.*\n?)+)', step_text)
+    if block_match:
+        block_text = block_match.group(1)
+        paths = []
+        for m in re.finditer(r'-\s+`([^`]+)`', block_text):
+            paths.append(_strip_trailing_parenthetical(m.group(1)))
+        return _filter_transient_paths(paths)
+    inline_match = re.search(r'[> ]*\*\*Deposits:\*\*[ \t]+(.+)', step_text)
+    if inline_match:
+        inline_text = inline_match.group(1)
+        paths = []
+        for m in re.finditer(r'`-\s+([^`]+)`', inline_text):
+            paths.append(_strip_trailing_parenthetical(m.group(1)))
+        if paths:
+            return _filter_transient_paths(paths)
+    return []
+
+
+def _gate_scope_check(plan_text, step_number, files_changed, failures, project_path=None):
     if not files_changed:
         return
 
@@ -1036,13 +1076,38 @@ def _gate_scope_check(plan_text, step_number, files_changed, failures):
         return
     union_text = "\n".join(all_step_texts)
 
-    # Build union of declared scope across all steps
-    declared_files = set()
-    declared_prefixes = set()
+    # `declared` is determined from Scope blocks ONLY — a plan with a Deposits
+    # block but no Scope block stays in legacy prose-arm mode (P3, f25).
+    scope_files_raw = set()
+    scope_prefixes_raw = set()
     for st in all_step_texts:
         files, prefixes = _extract_plan_scope(st)
-        declared_files.update(files)
-        declared_prefixes.update(prefixes)
+        scope_files_raw.update(files)
+        scope_prefixes_raw.update(prefixes)
+
+    declared = bool(scope_files_raw or scope_prefixes_raw)
+
+    # Full declared set: Scope blocks ∪ Deposits blocks (block/inline only)
+    declared_files = set(scope_files_raw)
+    declared_prefixes = set(scope_prefixes_raw)
+    for st in all_step_texts:
+        for p in _extract_deposits_block_paths(st):
+            if p.endswith("/"):
+                declared_prefixes.add(p)
+            else:
+                declared_files.add(p)
+
+    # Normalize absolute declared entries to project-relative form (P14)
+    if project_path:
+        abs_project = os.path.abspath(project_path) + os.sep
+        declared_files = {
+            d[len(abs_project):] if os.path.isabs(d) and d.startswith(abs_project) else d
+            for d in declared_files
+        }
+        declared_prefixes = {
+            p[len(abs_project):] if os.path.isabs(p) and p.startswith(abs_project) else p
+            for p in declared_prefixes
+        }
 
     # Retain current step text for evidence display
     step_text = _extract_step_text(plan_text, step_number) or ""
@@ -1054,37 +1119,163 @@ def _gate_scope_check(plan_text, step_number, files_changed, failures):
             continue
         if any(basename.startswith(p) for p in SCOPE_ALLOWLIST_PREFIXES):
             continue
-        # Declared **Scope:** block: exact file match or prefix match
-        if fpath in declared_files or basename in declared_files:
-            continue
-        if any(fpath.startswith(p) for p in declared_prefixes):
-            continue
-        if fpath in union_text or basename in union_text:
-            continue
-        # Directory-mention authorization (BACKLOG 2026-05-28 scope_check FP):
-        # accept a changed file when an ANCESTOR directory of its OWN path —
-        # written with a trailing slash and at least 2 path segments deep
-        # (>= 1 slash) — appears in the union text. Covers Deposits blocks /
-        # step prose that name a deposit directory (e.g. an evidence dir) but
-        # reference its child files only collectively. The depth guard stops a
-        # shallow single-segment mention (e.g. "web/") from blanket-authorizing
-        # everything beneath it. Ancestors are derived from fpath itself, so
-        # only a genuine parent of the changed file can match.
-        parent = os.path.dirname(fpath)
-        authorized_by_dir = False
-        while parent:
-            if parent.count("/") >= 1 and (parent + "/") in union_text:
-                authorized_by_dir = True
-                break
-            parent = os.path.dirname(parent)
-        if authorized_by_dir:
-            continue
+
+        if declared:
+            # Declared-mode: only declared paths clear — Scope ∪ Deposits,
+            # exact or with ONE extra leading segment on the declared side.
+            # The basename arm is deleted — nothing floats on the changed side.
+            file_match = any(
+                d == fpath or ("/" in d and d.split("/", 1)[1] == fpath)
+                for d in declared_files
+            )
+            if file_match:
+                continue
+            prefix_match = any(
+                fpath.startswith(p) or (
+                    "/" in p.rstrip("/") and fpath.startswith(p.split("/", 1)[1])
+                )
+                for p in declared_prefixes
+            )
+            if prefix_match:
+                continue
+        else:
+            # Legacy prose-mention and ancestor-directory arms (undeclared plans)
+            if fpath in union_text or basename in union_text:
+                continue
+            # Directory-mention authorization (BACKLOG 2026-05-28 scope_check FP):
+            # accept a changed file when an ANCESTOR directory of its OWN path —
+            # written with a trailing slash and at least 2 path segments deep
+            # (>= 1 slash) — appears in the union text.
+            parent = os.path.dirname(fpath)
+            authorized_by_dir = False
+            while parent:
+                if parent.count("/") >= 1 and (parent + "/") in union_text:
+                    authorized_by_dir = True
+                    break
+                parent = os.path.dirname(parent)
+            if authorized_by_dir:
+                continue
+
         out_of_scope.append(fpath)
 
     if out_of_scope:
         context = step_text[:200]
-        scope_note = "; not in declared **Scope:** block" if (declared_files or declared_prefixes) else ""
+        scope_note = "; not in declared **Scope:** block" if declared else ""
         failures.append({
             "gate": "scope_check",
             "evidence": f"out-of-scope files: {', '.join(out_of_scope)} | plan step context: {context}{scope_note}",
         })
+
+
+_TEST_NODE_RE = re.compile(
+    r"(tests/[\w/.-]+\.py)::([\w]+(?:::[\w]+)*)(?:\[[^\]]*\])?"
+)
+
+
+def _gate_quoted_test_nodes_exist(is_qa_step, plan_text, step_number, project_path, parsed, failures, wt_path=None):
+    """Gate 65: every tests/…::Name token quoted in QA deposits must exist in the worktree."""
+    if not is_qa_step:
+        return
+
+    step_text = _extract_step_text(plan_text, step_number)
+    if not step_text:
+        return
+
+    deposit_paths = _extract_plan_required_deposits(step_text)
+    md_paths = [p for p in deposit_paths if p.endswith(".md")]
+    if not md_paths:
+        receipt_paths = _extract_agent_declared_deposits(parsed)
+        md_paths = [p for p in receipt_paths if p.endswith(".md")]
+
+    base_path = wt_path if wt_path else project_path
+    missing_nodes = []
+
+    for md_path in md_paths:
+        resolved = _resolve_deposit_path(md_path, project_path, wt_path=wt_path)
+        if resolved is None:
+            continue
+        try:
+            with open(resolved, "r", encoding="utf-8") as f:
+                text = f.read()
+        except (FileNotFoundError, UnicodeDecodeError, OSError):
+            continue
+
+        for rel_path, node_chain in _TEST_NODE_RE.findall(text):
+            test_file = os.path.join(base_path, rel_path)
+            if not os.path.isfile(test_file):
+                missing_nodes.append(f"{rel_path}::{node_chain}")
+                continue
+            final_segment = node_chain.split("::")[-1]
+            try:
+                with open(test_file, "r", encoding="utf-8") as f:
+                    src = f.read()
+            except (FileNotFoundError, UnicodeDecodeError, OSError):
+                missing_nodes.append(f"{rel_path}::{node_chain}")
+                continue
+            if not re.search(rf"\b(?:def|class)\s+{re.escape(final_segment)}\b", src):
+                missing_nodes.append(f"{rel_path}::{node_chain}")
+
+    if missing_nodes:
+        failures.append({
+            "gate": "quoted_test_nodes_exist",
+            "evidence": f"quoted test node(s) not found in worktree: {', '.join(missing_nodes)}",
+        })
+
+
+def _gate_mutation_result(plan_text, step_number, project_path, parsed, failures, wt_path=None):
+    """Gate 192: mutation run declared in deposits must be clean (N killed, 0 survived, 0 error)."""
+    step_text = _extract_step_text(plan_text, step_number)
+    if not step_text:
+        return
+
+    deposit_paths = _extract_plan_required_deposits(step_text)
+    if not deposit_paths:
+        deposit_paths = _extract_agent_declared_deposits(parsed)
+
+    scope_files, _ = _extract_plan_scope(step_text)
+    dep_block_paths = _extract_deposits_block_paths(step_text)
+
+    run_paths = [p for p in deposit_paths if re.search(r"knowledge/mutants/.*\.run\.txt$", p)]
+    all_declared = set(scope_files) | set(dep_block_paths)
+    json_declared = [p for p in all_declared if re.search(r"knowledge/mutants/.*\.json$", p)]
+
+    # A mutant manifest declared without a .run.txt Deposit in the same step fails
+    if json_declared and not run_paths:
+        for jp in json_declared:
+            failures.append({
+                "gate": "mutation_result",
+                "evidence": (
+                    f"mutant manifest {jp} declared without a .run.txt Deposit in this step"
+                    f" — deposit the run in the step that names the manifest"
+                ),
+            })
+        return
+
+    for run_path in run_paths:
+        resolved = _resolve_deposit_path(run_path, project_path, wt_path=wt_path)
+        if resolved is None:
+            continue
+        try:
+            with open(resolved, "r", encoding="utf-8") as f:
+                content = f.read()
+        except (FileNotFoundError, UnicodeDecodeError, OSError) as e:
+            failures.append({"gate": "mutation_result", "evidence": f"run file unreadable: {run_path} ({e})"})
+            continue
+
+        last_mutation_line = None
+        for raw_line in content.splitlines():
+            stripped = raw_line.strip()
+            if stripped.startswith("MUTATION:"):
+                last_mutation_line = stripped
+
+        if last_mutation_line is None:
+            failures.append({"gate": "mutation_result", "evidence": f"no MUTATION: line in {run_path}"})
+            continue
+
+        m = re.fullmatch(r"MUTATION:\s*(\d+)\s+killed,\s*(\d+)\s+survived,\s*(\d+)\s+error", last_mutation_line)
+        if not m:
+            failures.append({"gate": "mutation_result", "evidence": f"unexpected MUTATION: format in {run_path}: {last_mutation_line}"})
+            continue
+        killed, survived, errors = int(m.group(1)), int(m.group(2)), int(m.group(3))
+        if survived != 0 or errors != 0 or killed < 1:
+            failures.append({"gate": "mutation_result", "evidence": f"mutation check failed in {run_path}: {last_mutation_line}"})
