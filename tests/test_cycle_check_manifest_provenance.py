@@ -93,20 +93,6 @@ def _make_plan_no_manifest(tmp_path, dc_block, filename="plan.md"):
     return plan
 
 
-@pytest.fixture(autouse=True)
-def _stub_battery(monkeypatch):
-    """Stub run_battery for all in-process tests in this module.
-
-    These tests verify the manifest-key gate; the battery is tested in
-    test_cycle_check_battery.py.  Without the stub, lint-failing fixtures
-    (no plan header) downgrade BAR_MET and mask the gate's behaviour.
-    """
-    monkeypatch.setattr(
-        cycle_check, "run_battery",
-        lambda p: {"plan_lint": "0_FAIL", "fold_check": "NO_BASELINE", "propagation_check": "CLEAN"},
-    )
-
-
 # ==================== FO-1 regression tests (plan 100037) ====================
 
 # Test 1 (100037): ## Cycle Manifest heading whose stanza does not parse → CONTINUE.
@@ -253,19 +239,10 @@ def test_validation_empty_blocks(tmp_path):
 # ---------- no subprocess added on the normal path ----------
 
 def test_no_subprocess_spawned(tmp_path):
-    """The manifest key-set gate adds zero battery-tool launches beyond the baseline.
-
-    Counts only plan_lint.py / fold_check.py / propagation_check.py by BASENAME
-    so incidental git subprocess calls in check_assert_2 do not perturb the tally.
-
-    CONTINUE/BAR_MET exits each call run_battery (plan_lint + propagation_check;
-    fold_check only when a baseline resolves).  ESCALATE exits call nothing.
-    Both fixtures here are CONTINUE exits with no baseline, so each call exactly
-    2 battery-tool subprocess launches.
-    """
-    _BATTERY_TOOLS = {"plan_lint.py", "fold_check.py", "propagation_check.py"}
-
+    """The manifest key-set gate adds zero subprocess launches (cycle_check runs constantly)."""
+    # Baseline: same DC block, no manifest stanza
     plan_no_stanza = _make_plan_no_manifest(tmp_path, _BAR_MET_DC, "baseline.md")
+    # Gate-firing plan: manifest with missing key
     plan_missing_key = _make_plan_with_manifest(
         tmp_path, _BAR_MET_DC,
         "cycle_check=BAR_MET, plan_lint=0_FAIL, fold_check=PASS",
@@ -273,24 +250,21 @@ def test_no_subprocess_spawned(tmp_path):
     )
 
     original_run = subprocess.run
-    counts = {"baseline": 0, "gate": 0}
+    calls = {"baseline": 0, "gate": 0}
 
-    def counter(slot):
-        def _run(cmd, **kw):
-            if isinstance(cmd, (list, tuple)) and cmd:
-                import os as _os
-                if _os.path.basename(str(cmd[0])) in _BATTERY_TOOLS:
-                    counts[slot] += 1
-            return original_run(cmd, **kw)
-        return _run
+    def counter_baseline(*args, **kwargs):
+        calls["baseline"] += 1
+        return original_run(*args, **kwargs)
 
-    with patch.object(subprocess, "run", side_effect=counter("baseline")):
+    def counter_gate(*args, **kwargs):
+        calls["gate"] += 1
+        return original_run(*args, **kwargs)
+
+    with patch.object(subprocess, "run", side_effect=counter_baseline):
         cycle_check.run_check(plan_no_stanza)
 
-    with patch.object(subprocess, "run", side_effect=counter("gate")):
+    with patch.object(subprocess, "run", side_effect=counter_gate):
         cycle_check.run_check(plan_missing_key)
 
-    assert counts["gate"] == counts["baseline"], (
-        f"manifest gate added battery-tool subprocess calls: "
-        f"baseline={counts['baseline']} gate={counts['gate']}"
-    )
+    # The gate must not add any subprocess calls beyond the baseline
+    assert calls["gate"] == calls["baseline"]

@@ -54,20 +54,6 @@ def _make_plan(tmp_path, dc_block, filename="plan.md", include_manifest=True):
     return plan
 
 
-@pytest.fixture(autouse=True)
-def _stub_battery(monkeypatch):
-    """Stub run_battery for all in-process tests in this module.
-
-    These tests verify run_check's logic; the battery itself is tested in
-    test_cycle_check_battery.py.  The stub returns a clean dict so lint-failing
-    fixtures (no plan header) do not downgrade BAR_MET verdicts.
-    """
-    monkeypatch.setattr(
-        cycle_check, "run_battery",
-        lambda p: {"plan_lint": "0_FAIL", "fold_check": "NO_BASELINE", "propagation_check": "CLEAN"},
-    )
-
-
 # ---------- unparseable ----------
 
 
@@ -585,23 +571,15 @@ def test_assert_3_baseline_exists(tmp_path, monkeypatch):
 
 
 def test_cli_exit_codes(tmp_path):
-    bar_met_plan = tmp_path / "bar.md"
-    bar_met_plan.write_text(
-        "# Plan — CLI exit-code test\n"
-        "**Date:** 2026-09-08 | **Project:** bellows | **Dispatch Mode:** bellows | **pause_for_verdict:** always\n\n"
-        "## Drafting Cycle\n"
+    bar_met_plan = _make_plan(tmp_path, (
         "- Weak spots: w1 2 folded — instruction 2 / record 0; w2 dry.\n"
         "- Destruction: w1 dry; w2 dry.\n"
-        "## End\n"
-        + _MANIFEST_STANZA,
-        encoding="utf-8",
-    )
+    ), "bar.md")
     r = subprocess.run(
         [sys.executable, str(SCRIPTS / "cycle_check.py"), str(bar_met_plan)],
         capture_output=True, text=True,
     )
-    # BATTERY: line precedes the verdict (P6 stdout contract); last line is the verdict
-    assert r.stdout.strip().splitlines()[-1] == "BAR_MET"
+    assert r.stdout.strip() == "BAR_MET"
     assert r.returncode == 0
 
     escalate_plan = _make_plan(tmp_path, (
@@ -658,9 +636,7 @@ def test_emit_manifest_well_formed(tmp_path):
     """
     plan = tmp_path / "plan.md"
     plan.write_text(
-        "# Plan — emit-manifest test\n"
-        "**Date:** 2026-09-08 | **Project:** bellows | **Dispatch Mode:** bellows | **pause_for_verdict:** always\n\n"
-        "## Drafting Cycle\n"
+        "# Plan\n\n## Drafting Cycle\n"
         "**Tier:** T1\n"
         "- Weak spots: w1 2 folded — instruction 2 / record 0; w2 dry.\n"
         "- Destruction: w1 1 folded — instruction 1 / record 0; w2 dry.\n"
@@ -1176,7 +1152,7 @@ def test_assert2_valid_register_no_warn(tmp_path, monkeypatch):
     verdict, code = cycle_check.run_check(plan, warnings=warnings)
     assert verdict == "BAR_MET"
     assert code == 0
-    assert not any(w.startswith("WARN:") for w in warnings), "no WARN must be collected for a valid register"
+    assert len(warnings) == 0, "no WARN must be collected for a valid register"
 
 
 def test_contract_last_stdout_line_is_verdict(tmp_path):
@@ -1197,9 +1173,7 @@ def test_contract_last_stdout_line_is_verdict(tmp_path):
     )
     plan = tmp_path / "plan.md"
     plan.write_text(
-        "# Plan — stdout contract test\n"
-        "**Date:** 2026-09-08 | **Project:** bellows | **Dispatch Mode:** bellows | **pause_for_verdict:** always\n\n"
-        "## Drafting Cycle\n"
+        f"# Plan\n\n## Drafting Cycle\n"
         f"**Walk register:** {reg}\n"
         "- Weak spots: w1 1 folded — instruction 1 / record 0; w2 dry.\n"
         "**Closing:** BAR MET\n"
