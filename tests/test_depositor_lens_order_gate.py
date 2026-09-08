@@ -41,7 +41,7 @@ def _stub_run(returncode, stdout=""):
 def passing_plan(monkeypatch):
     """cycle_check BAR_MET and plan_lint clean, so the lens_order step is REACHED."""
     monkeypatch.setattr(depositor_mod.cycle_check, "run_check",
-                        lambda p: ("BAR_MET", 0))
+                        lambda p, warnings=None: ("BAR_MET", 0))
     monkeypatch.setattr(depositor_mod.cycle_check, "parse_manifest_stanza",
                         lambda t: {})
     return pathlib.Path("plan.md")
@@ -112,7 +112,7 @@ def test_a_broken_observer_neither_accepts_nor_blocks(monkeypatch, passing_plan)
 def test_earlier_gates_short_circuit_before_lens_order(monkeypatch):
     """cycle_check runs FIRST; a plan it holds must never reach the observer."""
     monkeypatch.setattr(depositor_mod.cycle_check, "run_check",
-                        lambda p: ("CONTINUE", 1))
+                        lambda p, warnings=None: ("CONTINUE", 1))
     called = {"n": 0}
 
     def _count(cmd, **kw):

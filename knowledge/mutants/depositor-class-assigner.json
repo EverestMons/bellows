@@ -1,0 +1,89 @@
+{
+  "target": "depositor.py",
+  "mutants": [
+    {
+      "name": "restore-bare-filename-arm",
+      "why": "the deleted bare-filename arm made every bare write shop-infra (defect 42); restoring it must break test 1 case 1 (app.py from invoice-pulse)",
+      "anchor": "            # Main infra test: infra or UNKNOWN repo, rel not under knowledge/",
+      "replacement": "            if \"/\" not in normalized and not normalized.startswith(\"knowledge/\"):\n                has_shop_infra = True\n            # Main infra test: infra or UNKNOWN repo, rel not under knowledge/",
+      "expect_fail": "tests/test_depositor_class_assigner.py::TestThirteenCases::test_1_thirteen_cases"
+    },
+    {
+      "name": "unknown-repo-is-non-infra",
+      "why": "UNKNOWN must fail shut — treating it as non-infra lets an unplaceable path auto-clear (E1); must break test 4's fail-shut assertions",
+      "anchor": "            if repo == \"UNKNOWN\" or repo in infra_set:",
+      "replacement": "            if repo in infra_set:",
+      "expect_fail": "tests/test_depositor_class_assigner.py::TestRootEmptyFailsShut::test_4_root_empty_fails_shut"
+    },
+    {
+      "name": "drop-governance-existence-redirect",
+      "why": "the governance-existence redirect (E5) is what makes a bare DRAFTING_CYCLE.md filed from tuyere resolve to governance and hold; dropping it lets it auto-clear",
+      "anchor": "        # Governance-existence redirect (E5)",
+      "replacement": "        # Governance-existence redirect (E5) — dropped",
+      "expect_fail": "tests/test_depositor_class_assigner.py::TestGovernanceExistenceRedirect::test_3_governance_existence_redirect"
+    },
+    {
+      "name": "drop-governance-knowledge-exemption",
+      "why": "governance/knowledge/ must be exempt from the infra test just as knowledge/ is; dropping it makes governance knowledge writes shop-infra (breaks test 5's absolute governance knowledge path assertion)",
+      "anchor": "                if not rel.startswith(\"knowledge/\") and not rel.startswith(\"governance/knowledge/\"):",
+      "replacement": "                if not rel.startswith(\"knowledge/\"):",
+      "expect_fail": "tests/test_depositor_class_assigner.py::TestKnowledgeExemption::test_5_knowledge_exemption"
+    },
+    {
+      "name": "ignore-config-extension",
+      "why": "config['shop_infra_projects'] must extend the floor; ignoring it means custom infra repos (my_forge) never hold, breaking test 9's extension assertion",
+      "anchor": "        return floor | set(extra)",
+      "replacement": "        return floor  # config extension ignored",
+      "expect_fail": "tests/test_depositor_class_assigner.py::TestFloorCannotBeDisabled::test_9_floor_cannot_be_disabled"
+    },
+    {
+      "name": "floor-from-config-only",
+      "why": "the hardcoded floor must not be disableable; making the floor empty means config={} or config={'shop_infra_projects': []} leaves no infra names, breaking test 9's floor assertions",
+      "anchor": "        floor = _SHOP_INFRA_PROJECTS_FLOOR",
+      "replacement": "        floor = frozenset()  # hardcoded floor dropped",
+      "expect_fail": "tests/test_depositor_class_assigner.py::TestFloorCannotBeDisabled::test_9_floor_cannot_be_disabled"
+    },
+    {
+      "name": "drop-warnings-pass-through",
+      "why": "thread 199: _rerun_validation must pass a warnings list to cycle_check.run_check so the DRIFT cause appears in the hold sidecar; dropping the kwarg means warnings are never collected",
+      "anchor": "            verdict, _ = cycle_check.run_check(Path(path), warnings=w)",
+      "replacement": "            verdict, _ = cycle_check.run_check(Path(path))",
+      "expect_fail": "tests/test_depositor_class_assigner.py::TestRereunValidationWarnings::test_11_rerun_validation_warnings"
+    },
+    {
+      "name": "drop-name-floor",
+      "why": "the name floor (fork 5) makes GOVERNANCE.md shop-infra in any repo; dropping it lets a plan touching GOVERNANCE.md auto-clear from a non-infra project",
+      "anchor": "            if rel_path.name in _GOVERNANCE_SURFACE_NAMES and not rel_path.parent.parts:",
+      "replacement": "            if False:  # name floor dropped",
+      "expect_fail": "tests/test_depositor_class_assigner.py::TestGovernanceSurfaceNameFloor::test_10_governance_surface_name_floor"
+    },
+    {
+      "name": "name-floor-on-raw-write-not-rel",
+      "why": "the name floor must test rel (the resolver-derived relative path), not the raw write spelling (E4); testing the raw write means <parent>/tuyere/GOVERNANCE.md from bellows would not trigger the floor",
+      "anchor": "            rel_path = Path(rel) if rel else Path(\".\")",
+      "replacement": "            rel_path = Path(normalized) if normalized else Path(\".\")",
+      "expect_fail": "tests/test_depositor_class_assigner.py::TestGovernanceSurfaceNameFloor::test_10_governance_surface_name_floor"
+    },
+    {
+      "name": "declare-is-project-file",
+      "why": "the literal <declare> must be UNKNOWN in every context (E8); treating it as the project's own file lets a plan with <declare> writes auto-clear instead of holding",
+      "anchor": "        if path == \"<declare>\":",
+      "replacement": "        if False and path == \"<declare>\":",
+      "expect_fail": "tests/test_depositor_class_assigner.py::TestRootEmptyFailsShut::test_4_root_empty_fails_shut"
+    },
+    {
+      "name": "governance-identity-by-name-not-resolver",
+      "why": "governance must be identified by the resolver (resolve_governance_root()), never by directory name (E6); removing the resolver-based detection means a governance root named 'GitHub' is not recognised as governance",
+      "anchor": "                    return (\"eluvian-governance\", str(p_res.relative_to(G)))",
+      "replacement": "                    pass  # governance identity by resolver removed",
+      "expect_fail": "tests/test_depositor_class_assigner.py::TestAbsolutePathByResolvers::test_2_absolute_path_by_resolvers"
+    },
+    {
+      "name": "every-project-under-G-is-governance",
+      "why": "on the shop shape, only G itself and G/governance are governance, not every checkout under G (C1); using is_relative_to(G) makes invoice-pulse and tuyere checkouts look like governance, misclassifying relative writes from them",
+      "anchor": "            is_gov = (proj_res == G or proj_res.is_relative_to(gov_lane))",
+      "replacement": "            is_gov = proj_res.is_relative_to(G)",
+      "expect_fail": "tests/test_depositor_class_assigner.py::TestAbsolutePathByResolvers::test_2_absolute_path_by_resolvers"
+    }
+  ]
+}

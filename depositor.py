@@ -38,10 +38,10 @@ _REGISTER_PATTERNS = (
     re.compile(r"(?:^|/)DRAFTING_CYCLE\.md$"),
 )
 
-_SHOP_INFRA_CODE_DIRS = ("bellows/", "forge/", "lessons-forge/", "anvil/")
-_SHOP_INFRA_KNOWLEDGE_EXEMPTIONS = tuple(
-    d + "knowledge/" for d in _SHOP_INFRA_CODE_DIRS
-)
+_GOVERNANCE_SURFACE_NAMES = frozenset({"GOVERNANCE.md", "MACHINE_SETUP.md", "COMPANY.md"})
+_SHOP_INFRA_PROJECTS_FLOOR = frozenset({
+    "bellows", "forge", "forge_lessons", "lessons-forge", "anvil", "eluvian-governance"
+})
 
 _BENIGN_LINT_CHECK_LETTERS = {"c", "d"}
 
@@ -268,11 +268,138 @@ class Depositor:
     # Class assignment
     # ------------------------------------------------------------------
 
+    def _infra_projects(self):
+        """Return the set of infra project names: floor ∪ config extension.
+
+        The floor (`_SHOP_INFRA_PROJECTS_FLOOR`) is hardcoded and cannot be
+        disabled. `config["shop_infra_projects"]` extends it only — a machine
+        with a differently-named checkout adds its name here. A value that is
+        not a list of strings is silently ignored (the floor stands).
+        """
+        floor = _SHOP_INFRA_PROJECTS_FLOOR
+        extra = self.config.get("shop_infra_projects", [])
+        if not isinstance(extra, list) or not all(isinstance(s, str) for s in extra):
+            return floor
+        return floor | set(extra)
+
+    def _resolve_write(self, path, project_root):
+        """Resolve a write path to (repo_token, rel).
+
+        repo_token values:
+          None       — out-of-tree (~/... or ../...); maps to the None bucket
+          "UNKNOWN"  — cannot place; fails shut → shop-infra in _assign_class
+          <name>     — repo name (e.g. "bellows", "eluvian-governance")
+
+        rel is the path relative to the repo root (str).
+
+        Resolution rules (see plan 100043 for full spec):
+          - <declare> is UNKNOWN in every context (E8)
+          - ~/... or ../... → (None, path) out-of-tree (C2)
+          - project_root == "" fires FIRST, no filesystem checks (C4, f1):
+              leading segment in infra set → that repo; else UNKNOWN
+          - Absolute path: resolve via G/P per the shop/mini shape (E9)
+          - Relative path: check leading-segment infra redirect, then
+            governance-existence redirect (E5), then filing project identity
+        """
+        import bellows_root as _br
+
+        if path == "<declare>":
+            return ("UNKNOWN", path)
+
+        if path.startswith("~/") or path.startswith("../"):
+            return (None, path)
+
+        if project_root == "":
+            norm = os.path.normpath(path.lstrip("/") if os.path.isabs(path) else path)
+            parts = Path(norm).parts
+            if parts and parts[0] in self._infra_projects():
+                rel = str(Path(*parts[1:])) if len(parts) > 1 else ""
+                return (parts[0], rel)
+            return ("UNKNOWN", norm)
+
+        G = _br.resolve_governance_root().resolve()
+        P = _br.resolve_projects_parent().resolve()
+        shop_shape = (G == P)
+
+        if os.path.isabs(path):
+            p_res = Path(path).resolve()
+            if shop_shape:
+                try:
+                    rel_g = p_res.relative_to(G)
+                    parts = rel_g.parts
+                    if not parts:
+                        return ("UNKNOWN", path)
+                    if len(parts) == 1:
+                        return ("eluvian-governance", str(rel_g))
+                    if parts[0] == "governance":
+                        return ("eluvian-governance", str(rel_g))
+                    return (parts[0], str(Path(*parts[1:])))
+                except ValueError:
+                    return ("UNKNOWN", path)
+            else:
+                try:
+                    return ("eluvian-governance", str(p_res.relative_to(G)))
+                except ValueError:
+                    pass
+                try:
+                    rel_p = p_res.relative_to(P)
+                    parts = rel_p.parts
+                    if len(parts) == 1:
+                        return ("UNKNOWN", str(rel_p))
+                    return (parts[0], str(Path(*parts[1:])))
+                except ValueError:
+                    return ("UNKNOWN", path)
+
+        # Relative path
+        norm = os.path.normpath(path)
+        parts = Path(norm).parts
+        infra_set = self._infra_projects()
+
+        # Leading-segment infra redirect (when path doesn't exist under the project)
+        if parts and parts[0] in infra_set:
+            if not (Path(project_root) / norm).exists():
+                rel = str(Path(*parts[1:])) if len(parts) > 1 else ""
+                return (parts[0], rel)
+
+        # Governance-existence redirect (E5)
+        if not (Path(project_root) / norm).exists():
+            if (G / norm).exists():
+                return ("eluvian-governance", norm)
+
+        # Filing project identity (E7, C1)
+        proj_res = Path(project_root).resolve()
+        if shop_shape:
+            gov_lane = G / "governance"
+            is_gov = (proj_res == G or proj_res.is_relative_to(gov_lane))
+        else:
+            is_gov = (proj_res == G or proj_res.is_relative_to(G / "governance"))
+
+        if is_gov:
+            return ("eluvian-governance", norm)
+
+        try:
+            if shop_shape:
+                rel_proj = proj_res.relative_to(G)
+                proj_parts = rel_proj.parts
+                if not proj_parts:
+                    return ("UNKNOWN", norm)
+                if proj_parts[0] == "governance":
+                    return ("eluvian-governance", norm)
+                return (proj_parts[0], norm)
+            else:
+                rel_proj = proj_res.relative_to(P)
+                return (rel_proj.parts[0], norm)
+        except ValueError:
+            # project_root is outside the projects parent (e.g. /tmp in tests that
+            # do not monkeypatch the resolver).  Fall back to the checkout's basename
+            # so that non-infra, non-governance repos still resolve correctly.
+            return (Path(project_root).name, norm)
+
     def _assign_class(self, writes, project_root):
         """Derive a plan's admission class from its WRITE set.
 
         ⛔ `project_root` is REQUIRED and has no default. It used to default to
-        `""`, which made `project_is_infra` (:271) unconditionally False, so the
+        `""`, which made `project_is_infra` unconditionally False, so the
         infra rule below could never fire and the call returned `app-feature` —
         the AUTO-CLEARING class. Production always passed it (:168), so the cost
         landed entirely on the verification recipe humans and agents run by hand:
@@ -287,13 +414,11 @@ class Depositor:
         if not writes:
             return None
 
-        project_name = os.path.basename(project_root.rstrip(os.sep))
-        project_is_infra = (project_name + "/") in _SHOP_INFRA_CODE_DIRS
-
         all_read_only = True
         all_out_of_tree = True
         has_register = False
         has_shop_infra = False
+        infra_set = self._infra_projects()
 
         for p in writes:
             normalized = p.lstrip("/")
@@ -311,17 +436,17 @@ class Depositor:
                 if pat.search(normalized):
                     has_register = True
 
-            for code_dir in _SHOP_INFRA_CODE_DIRS:
-                if normalized.startswith(code_dir):
-                    if not any(normalized.startswith(ex)
-                              for ex in _SHOP_INFRA_KNOWLEDGE_EXEMPTIONS):
-                        has_shop_infra = True
+            repo, rel = self._resolve_write(p, project_root)
 
-            if "/" not in normalized and not normalized.startswith("knowledge/"):
+            # Name floor (fork 5): GOVERNANCE.md etc. at a repo root → shop-infra in ANY repo
+            rel_path = Path(rel) if rel else Path(".")
+            if rel_path.name in _GOVERNANCE_SURFACE_NAMES and not rel_path.parent.parts:
                 has_shop_infra = True
 
-            if project_is_infra and not normalized.startswith("knowledge/"):
-                has_shop_infra = True
+            # Main infra test: infra or UNKNOWN repo, rel not under knowledge/
+            if repo == "UNKNOWN" or repo in infra_set:
+                if not rel.startswith("knowledge/") and not rel.startswith("governance/knowledge/"):
+                    has_shop_infra = True
 
         if all_read_only:
             return "read-only"
@@ -549,9 +674,11 @@ class Depositor:
         result = {"hold": False, "reason": "",
                   "cycle_check": None, "plan_lint": None, "lens_order": None}
 
+        w = []
         try:
-            verdict, _ = cycle_check.run_check(Path(path))
+            verdict, _ = cycle_check.run_check(Path(path), warnings=w)
             result["cycle_check"] = verdict
+            result["warnings"] = w
             if verdict != "BAR_MET":
                 result["hold"] = True
                 result["reason"] = f"cycle_check:{verdict}"
@@ -559,6 +686,7 @@ class Depositor:
         except Exception as e:
             result["hold"] = True
             result["reason"] = f"cycle_check:exception:{e}"
+            result["warnings"] = w
             return result
 
         lint_script = str(self._bellows_root / "scripts" / "plan_lint.py")

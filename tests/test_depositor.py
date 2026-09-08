@@ -184,15 +184,16 @@ class TestClassAssignment:
         with pytest.raises(TypeError):
             dep._assign_class(["bellows/depositor.py"])
 
-    def test_omitting_project_context_is_the_fail_open_direction(self, tmp_path):
-        """⛔ Why the default was dangerous rather than merely wrong.
+    def test_omitting_project_context_fails_shut(self, tmp_path):
+        """⛔ An absolute path this shop cannot place never auto-clears (E1).
 
-        The SAME write set derives the auto-clearing class without project
-        context and the HOLDING class with it. `""` stays legal — it honestly
-        means "no project context" — but it must now be written down."""
+        `""` stays legal — it honestly means "no project context" — but it
+        fails SHUT: both with no context and with a project root whose parent
+        differs from the known projects parent, the path resolves to an UNKNOWN
+        repo, which is shop-infra. Proven by test 0 in the class-assigner suite."""
         dep = self._dep(tmp_path)
         writes = ["/Users/x/Developer/bellows/tools/mutation_check.py"]
-        assert dep._assign_class(writes, "") == "app-feature"
+        assert dep._assign_class(writes, "") == "shop-infra"
         assert dep._assign_class(writes, "/Users/x/Developer/bellows") == "shop-infra"
 
 
