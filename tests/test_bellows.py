@@ -5652,3 +5652,30 @@ def test_t1_auto_close_true_without_substrate_pauses_for_verdict():
         assert any(n.startswith("verdict-pending-") for n in os.listdir(decisions_dir)), os.listdir(decisions_dir)
         for call in mock_ledger.call_args_list:
             assert call[0][3] != "auto-close"
+
+
+def test_zero_step_skip_closes_the_plan_row_and_retires_receipts():
+    """Thread 19: the zero-step skip exit used to return without marking the plan closed
+    or retiring its deposit receipt — the plans row stayed active forever."""
+    import tempfile
+    from unittest.mock import MagicMock, patch
+    import bellows
+    from tests.conftest import clear_plan_for_test
+    with tempfile.TemporaryDirectory() as tmp:
+        decisions_dir = os.path.join(tmp, "proj", "knowledge", "decisions"); os.makedirs(os.path.join(decisions_dir, "Done"))
+        plan_path = os.path.join(decisions_dir, "executable-zero-2026-09-08.md")
+        with open(plan_path, "w") as f:
+            f.write("# no steps here\n\nA malformed executable with no ## STEP headers.\n")
+        clear_plan_for_test(plan_path)
+        config = {"default_model": "claude-sonnet-4-6", "pushover": {"app_key": "", "user_key": ""}, "callback_port": 5999, "step_timeout_seconds": 600}
+        with patch("bellows.notifier.notify_plan_skipped"), \
+             patch("bellows.plan_claim.release_for_plan") as release, \
+             patch("bellows.lifecycle.mark_plan_state") as mark, \
+             patch("bellows._retire_receipts") as retire, \
+             patch("bellows.validators.validate_at_claim", return_value={"rejected": False, "reject_reason": "", "warnings": []}):
+            bellows.run_plan(plan_path, config, MagicMock())
+        assert release.called, "the claim release at the skip exit must still run"
+        closed = [c for c in mark.call_args_list if len(c.args) > 1 and c.args[1] == "closed"]
+        assert closed, f"the skip exit must mark the plan closed; calls: {mark.call_args_list}"
+        assert retire.called, "the skip exit must retire the deposit receipt"
+        assert retire.call_args.args[0] == closed[0].args[0], "same plan id for both"

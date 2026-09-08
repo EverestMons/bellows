@@ -1061,8 +1061,15 @@ def run_plan(plan_path: str, config: dict, response_server: server.ResponseServe
         if total_steps == 0:
             _log("WARN", f"⚠️ SKIPPED — no ## STEP headers — not a standard executable", slug=slug_for(plan_name))
             notifier.notify_plan_skipped(plan_name)
-            shutil.move(plan_path, os.path.join(plan_dir, "Done", base_filename))
+            _skip_done = os.path.join(plan_dir, "Done", base_filename)
+            shutil.move(plan_path, _skip_done)
             _delete_shadow(plan_filename)
+            # Thread 19: this exit used to leave the plans row active and the deposit
+            # receipt un-retired — the auto-close exit does both (see the close path).
+            if plan_id:
+                lifecycle.mark_plan_state(plan_id, "closed", closed_at=datetime.now().isoformat(),
+                                          plan_doc_ref=os.path.relpath(_skip_done, project_path))
+                _retire_receipts(plan_id)
             plan_claim.release_for_plan(plan_id, "completion: zero-step skip", config, _log)
             return
         _log("INFO", f"plan has {total_steps} steps", slug=slug_for(plan_name))
