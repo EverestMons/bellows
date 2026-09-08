@@ -194,3 +194,9 @@ Rule 20 — QA Self-Check Results
 ============================================================
 PASSED — SELF-CHECK PASSED — all evidence files present, no hedging keywords found.
 ```
+
+---
+
+## Record note — thread 106 (2026-09-08, CEO-directed notation)
+
+This plan's step 1 did NOT end on its own. It was terminated by signal: `kill -TERM 43045` sent at 2026-09-03T21:09:38Z (29:04 elapsed), CEO-authorized, because the daemon's stop path refuses while a step is `running` and `issue_verdict.py` refuses with no verdict-request file yet — there was no clean way to stop a mid-flight step. The TERM made step 1 end and write its verdict-request; a pre-armed watcher issued the `stop` verdict, which the daemon consumed normally, so the lifecycle reads as a clean halt (`halted`, worktree torn down, `verdicts/resolved/processed-verdict-100031-step-1.md`). A reader seeing step 1 `awaiting_verdict` with `step_ended_at 2026-09-03T16:09:38` would otherwise infer a normal pause. The deposit defect the verdict names (an unemitted Cycle Manifest → NO MANIFEST → narrow write set → `app-feature` → auto-clear) is accurate as far as it goes; this note supplies the missing fact. Appended, not edited — Rule 102: record errors are routed, never patched unrouted; thread 106 is the route.
