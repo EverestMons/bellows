@@ -167,6 +167,17 @@ def override_gate(plan_id_or_slug, step, gate, ref, db_path=None, pending_dir=No
     import lifecycle
 
     step = int(step)
+    # Thread 123: the justification is the most audit-critical field the system
+    # writes — the point where a gate stops being mandatory. It must name a file
+    # that exists and is DURABLE: a session scratchpad or /tmp path dies with the
+    # session and leaves a dead pointer nobody can correct.
+    ref_path = Path(ref) if os.path.isabs(str(ref)) else Path(_BELLOWS_ROOT) / str(ref)
+    if not str(ref).strip() or not ref_path.is_file():
+        return _fail(f"--ref must name an existing file (relative to the bellows root or absolute); got {ref!r}")
+    _resolved = str(ref_path.resolve())
+    if _resolved.startswith(("/tmp/", "/private/tmp/", "/var/folders/")):
+        return _fail(f"--ref must be durable — {ref} lives under a temp directory; commit the justification "
+                     "(e.g. under verdicts/resolved/ or receipts/) and reference that path")
     id_match = re.fullmatch(r"(?:(?:diagnostic|executable|qa)-)?(\d+)", plan_id_or_slug)
 
     if id_match:
@@ -184,8 +195,35 @@ def override_gate(plan_id_or_slug, step, gate, ref, db_path=None, pending_dir=No
         )
         rows = cur.fetchall()
         if not rows:
+            # Thread 123: write-once had no correction path — a bad ref could never be
+            # re-pointed. An already-overridden triple takes a NEW ref and says so.
+            prior = conn.execute(
+                """SELECT ge.id, ge.override_ref FROM gate_events ge
+                   JOIN steps s ON ge.step_id = s.id
+                   WHERE s.plan_id = ? AND s.step_number = ?
+                     AND ge.gate_name = ? AND ge.result = 'fail'
+                     AND ge.overridden = 1""",
+                (plan_id, step, gate),
+            ).fetchall()
+            if prior:
+                old_refs = sorted({str(r[1]) for r in prior})
+                conn.execute(
+                    """UPDATE gate_events SET override_ref = ?
+                       WHERE id IN (
+                           SELECT ge.id FROM gate_events ge
+                           JOIN steps s ON ge.step_id = s.id
+                           WHERE s.plan_id = ? AND s.step_number = ?
+                             AND ge.gate_name = ? AND ge.result = 'fail'
+                             AND ge.overridden = 1
+                       )""",
+                    (ref, plan_id, step, gate),
+                )
+                conn.commit(); conn.close()
+                print(f"override_ref CORRECTED for plan={plan_id} step={step} gate={gate}: {old_refs} -> {ref}")
+                print("(the override itself stands; only its justification pointer moved — thread 123)")
+                return True
             conn.close()
-            return _fail(f"no unoverridden fail rows for plan={plan_id} step={step} gate={gate}")
+            return _fail(f"no fail rows for plan={plan_id} step={step} gate={gate} — nothing to override or correct")
         conn.execute(
             """UPDATE gate_events SET overridden = 1, override_ref = ?
                WHERE id IN (
