@@ -54,7 +54,7 @@ _FULL_VALIDATION = (
 def _make_plan_with_manifest(tmp_path, dc_block, validation_line, filename="plan.md"):
     plan = tmp_path / filename
     content = (
-        f"# Plan\n\n## Drafting Cycle\n{dc_block}\n"
+        f"# Plan\n**dispatch_mode:** bellows\n\n## Drafting Cycle\n{dc_block}\n"
         "## Cycle Manifest\n"
         "tier: T1\n"
         "target: scripts/cycle_check.py\n"
@@ -75,7 +75,7 @@ def _make_plan_unparseable_manifest(tmp_path, dc_block, filename="plan.md"):
     """## Cycle Manifest heading present but content is the pre-emission placeholder."""
     plan = tmp_path / filename
     plan.write_text(
-        f"# Plan\n\n## Drafting Cycle\n{dc_block}\n"
+        f"# Plan\n**dispatch_mode:** bellows\n\n## Drafting Cycle\n{dc_block}\n"
         "## Cycle Manifest\n\n"
         "*(emitted at BAR_MET)*\n\n"
         "## STEP 1 — DEV\n\n> content\n",
@@ -87,7 +87,7 @@ def _make_plan_unparseable_manifest(tmp_path, dc_block, filename="plan.md"):
 def _make_plan_no_manifest(tmp_path, dc_block, filename="plan.md"):
     plan = tmp_path / filename
     plan.write_text(
-        f"# Plan\n\n## Drafting Cycle\n{dc_block}\n## End\n",
+        f"# Plan\n**dispatch_mode:** bellows\n\n## Drafting Cycle\n{dc_block}\n## End\n",
         encoding="utf-8",
     )
     return plan
@@ -236,29 +236,49 @@ def test_validation_empty_blocks(tmp_path):
     assert code == 0
 
 
-# ---------- no subprocess added on the normal path ----------
+# ---------- battery subprocess count on the normal path ----------
 
 def test_no_subprocess_spawned(tmp_path):
-    """The manifest key-set gate adds zero subprocess launches (cycle_check runs constantly)."""
-    # Baseline: same DC block, no manifest stanza
+    """Ruling 189 (thread 189): CONTINUE/BAR_MET exits now spawn the battery
+    (plan_lint, propagation_check; fold_check when a baseline exists).
+    The manifest key-set gate does NOT add battery launches beyond those the
+    battery itself requires — both the no-stanza and gate-firing plans run the
+    same set of battery tools.
+
+    Before ruling 189, zero subprocesses were launched on the normal path
+    (plan 100033's no-subprocess clause). Ruling 189 overturned that clause
+    for CONTINUE/BAR_MET exits; ESCALATE exits remain zero-subprocess.
+    The original invariant (gate adds nothing) still holds at the BATTERY level:
+    both plans launch the same tools.
+    """
     plan_no_stanza = _make_plan_no_manifest(tmp_path, _BAR_MET_DC, "baseline.md")
-    # Gate-firing plan: manifest with missing key
     plan_missing_key = _make_plan_with_manifest(
         tmp_path, _BAR_MET_DC,
         "cycle_check=BAR_MET, plan_lint=0_FAIL, fold_check=PASS",
         "gate.md",
     )
 
+    _BATTERY_TOOLS = {"plan_lint.py", "fold_check.py", "propagation_check.py"}
     original_run = subprocess.run
-    calls = {"baseline": 0, "gate": 0}
+    calls: dict = {"baseline": [], "gate": []}
 
-    def counter_baseline(*args, **kwargs):
-        calls["baseline"] += 1
-        return original_run(*args, **kwargs)
+    def counter_baseline(cmd, *args, **kwargs):
+        for arg in cmd:
+            try:
+                if Path(arg).name in _BATTERY_TOOLS:
+                    calls["baseline"].append(Path(arg).name)
+            except Exception:
+                pass
+        return original_run(cmd, *args, **kwargs)
 
-    def counter_gate(*args, **kwargs):
-        calls["gate"] += 1
-        return original_run(*args, **kwargs)
+    def counter_gate(cmd, *args, **kwargs):
+        for arg in cmd:
+            try:
+                if Path(arg).name in _BATTERY_TOOLS:
+                    calls["gate"].append(Path(arg).name)
+            except Exception:
+                pass
+        return original_run(cmd, *args, **kwargs)
 
     with patch.object(subprocess, "run", side_effect=counter_baseline):
         cycle_check.run_check(plan_no_stanza)
@@ -266,5 +286,13 @@ def test_no_subprocess_spawned(tmp_path):
     with patch.object(subprocess, "run", side_effect=counter_gate):
         cycle_check.run_check(plan_missing_key)
 
-    # The gate must not add any subprocess calls beyond the baseline
-    assert calls["gate"] == calls["baseline"]
+    # Both plans exit via CONTINUE/BAR_MET → same battery launches
+    # (ruling 189: the gate does not add extra launches beyond the battery)
+    assert sorted(calls["gate"]) == sorted(calls["baseline"]), (
+        f"gate plan launched different battery tools: baseline={calls['baseline']}, "
+        f"gate={calls['gate']}"
+    )
+    # Battery must fire (ruling 189 — not zero)
+    assert len(calls["baseline"]) > 0, (
+        "ruling 189: CONTINUE/BAR_MET exits must launch the battery"
+    )

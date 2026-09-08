@@ -421,14 +421,18 @@ def check_plateau(walk_data, current_walk, instruction_counts):
     return consecutive >= 3
 
 
-def run_check(plan_path, warnings=None, basis=False):
+def run_check(plan_path, warnings=None, basis=False, battery=None):
     """Main entry. Returns (verdict, exit_code).
 
-    warnings: optional list; register WARN strings are appended when supplied.
-    All 43 existing call sites pass no kwarg and remain byte-for-byte unaffected.
+    warnings: optional list; WARN/BATTERY strings are appended when supplied.
+    All existing call sites pass no kwarg and remain byte-for-byte unaffected.
     Only main()'s verdict path passes a list so it can print WARNs before the verdict.
-    Do NOT pass warnings on the --emit-manifest path (:562): that call only fills the
+    Do NOT pass warnings on the --emit-manifest path: that call only fills the
     manifest validation: field and must not inject advisory text into the artifact.
+
+    battery: optional pre-computed dict from run_battery(); when None, run_battery()
+    is called at each CONTINUE/BAR_MET exit. emit_manifest computes it once and
+    passes battery=b to avoid running the three tools twice.
     """
     try:
         text = plan_path.read_text(encoding="utf-8")
@@ -495,7 +499,8 @@ def run_check(plan_path, warnings=None, basis=False):
         # lens-4 result §3 requires. Refusing on silence is the safeguard (ruling 119).
         _t0_ok, _t0_detail = _t0_close(text, blocks[0] if blocks else None)
         if _t0_ok:
-            return "BAR_MET", 0
+            _t0_verdict, _ = _apply_battery(plan_path, "BAR_MET", warnings, battery=battery)
+            return _t0_verdict, 0
         if _t0_detail and warnings is not None:
             warnings.append(f"WARN: {_t0_detail} — DRAFTING_CYCLE §3 collapses a T0 "
                             f"Cycle Log to `**cycle_tier:** T0 (no trigger); "
@@ -510,11 +515,13 @@ def run_check(plan_path, warnings=None, basis=False):
         # "none walk -> CONTINUE, no walk data DOMINATES close/reg", and 8 cells assert
         # it. Closing it flipped all 8. Changing a ratified precedence is a design
         # decision for the CEO, not a bug fix; recorded rather than taken.
-        return "CONTINUE", 0
+        _nw_verdict, _ = _apply_battery(plan_path, "CONTINUE", warnings, battery=battery)
+        return _nw_verdict, 0
 
     current_walk = max(walk_data.keys())
     if current_walk == 0:
-        return "CONTINUE", 0
+        _w0_verdict, _ = _apply_battery(plan_path, "CONTINUE", warnings, battery=battery)
+        return _w0_verdict, 0
 
     a1 = check_assert_1(parsed)
     a2_reg, a2_uncom, a2_git, a2_warn = check_assert_2(parsed, plan_path)
@@ -626,6 +633,7 @@ def run_check(plan_path, warnings=None, basis=False):
     if parsed["claims_closure"] and verdict == "CONTINUE" and not parsed["has_unparseable"]:
         return "ESCALATE:claimed-close-unmet", 1
 
+    verdict, _ = _apply_battery(plan_path, verdict, warnings, battery=battery)
     return verdict, 0
 
 
@@ -808,6 +816,144 @@ def _resolve_register_ref(ref, plan_path):
     return None
 
 
+def resolve_fold_baseline(plan_path, manifest=None):
+    """Resolve the fold_check baseline for plan_path. ONE resolver.
+
+    Resolution order:
+      1. manifest fold_baseline: field → via _resolve_register_ref (same as register)
+      2. beside-the-plan: plan_path.parent / f".{plan_path.name}.foldcheck.json"
+
+    Returns (path_or_None, declared) where declared=True when fold_baseline: was
+    present in the manifest. A declared field that doesn't resolve returns (None, True)
+    — NO_BASELINE with no silent fallback to beside-the-plan. That is the boundary:
+    if you declared it you own it; the beside-only path is only for undeclared plans.
+    """
+    if manifest is None:
+        try:
+            text = plan_path.read_text(encoding="utf-8")
+            manifest = parse_manifest_stanza(text) or {}
+        except Exception:
+            manifest = {}
+
+    fb_ref = (manifest.get("fold_baseline") or "").strip()
+    if fb_ref and fb_ref != "<declare>":
+        resolved = _resolve_register_ref(fb_ref, plan_path)
+        if resolved and resolved.is_file():
+            return resolved, True
+        return None, True  # declared but doesn't resolve → NO_BASELINE
+
+    # No declared fold_baseline — try beside the plan
+    beside = plan_path.parent / f".{plan_path.name}.foldcheck.json"
+    if beside.exists():
+        return beside, False
+    return None, False
+
+
+def run_battery(plan_path, manifest=None):
+    """Run plan_lint, fold_check, propagation_check on plan_path (in-cycle battery).
+
+    Returns dict with keys plan_lint, fold_check, propagation_check.
+    All tools launched with sys.executable as a subprocess (not -m).
+    fold_check is only launched when a baseline is resolved.
+    """
+    scripts_dir = Path(__file__).resolve().parent
+
+    # plan_lint: count FAIL: lines in stdout
+    try:
+        lint_r = subprocess.run(
+            [sys.executable, str(scripts_dir / "plan_lint.py"), str(plan_path)],
+            capture_output=True, text=True, timeout=30,
+        )
+        fail_count = lint_r.stdout.count("FAIL:")
+        lint_val = f"{fail_count}_FAIL"
+    except Exception:
+        lint_val = "N/A"
+
+    # fold_check — only launch when a baseline is resolved; pass --baseline explicitly
+    baseline_path, _declared = resolve_fold_baseline(plan_path, manifest=manifest)
+    if baseline_path is not None:
+        try:
+            fc_r = subprocess.run(
+                [sys.executable, str(scripts_dir / "fold_check.py"),
+                 str(plan_path), "--baseline", str(baseline_path)],
+                capture_output=True, text=True, timeout=30,
+            )
+            if fc_r.returncode == 0:
+                fold_val = "PASS"
+            elif fc_r.returncode == 1:
+                fold_val = "DRIFT"
+            elif fc_r.returncode == 2 and "FOLD-CHECK VACUOUS" in fc_r.stdout:
+                fold_val = "VACUOUS"
+            else:
+                fold_val = "NO_BASELINE"
+        except Exception:
+            fold_val = "N/A"
+    else:
+        fold_val = "NO_BASELINE"
+
+    # propagation_check
+    try:
+        pc_r = subprocess.run(
+            [sys.executable, str(scripts_dir / "propagation_check.py"), str(plan_path)],
+            capture_output=True, text=True, timeout=30,
+        )
+        if pc_r.returncode == 0:
+            pc_val = "CLEAN"
+        elif pc_r.returncode == 1:
+            pm = re.search(r'DIVERGENCES:\s*(\d+)', pc_r.stdout)
+            pc_val = f"DIVERGENT:{pm.group(1)}" if pm else "DIVERGENT:?"
+        elif pc_r.returncode == 2:
+            pc_val = "NOT_RUN"
+        else:
+            pc_val = "N/A"
+    except Exception:
+        pc_val = "N/A"
+
+    return {"plan_lint": lint_val, "fold_check": fold_val, "propagation_check": pc_val}
+
+
+def _apply_battery(plan_path, verdict, warnings, battery=None):
+    """Run battery, emit BATTERY line, and downgrade BAR_MET when warranted.
+
+    Returns (verdict, battery_dict). The battery runs even when warnings=None;
+    warnings controls only where lines go, not whether the verdict is affected.
+
+    Downgrade rules (BAR_MET only):
+      plan_lint N_FAIL (N>0) → CONTINUE + WARN naming the count
+      fold_check=DRIFT       → CONTINUE + WARN naming the file change
+    When both fire: two separate WARN lines, plan_lint's first.
+    ESCALATE exits never reach this function.
+    """
+    b = battery if battery is not None else run_battery(plan_path)
+
+    battery_line = (
+        f"BATTERY: plan_lint={b['plan_lint']} "
+        f"fold_check={b['fold_check']} "
+        f"propagation_check={b['propagation_check']}"
+    )
+    if warnings is not None:
+        warnings.append(battery_line)
+
+    if verdict == "BAR_MET":
+        plan_lint_val = b["plan_lint"]
+        plan_lint_fail = plan_lint_val.endswith("_FAIL") and plan_lint_val != "0_FAIL"
+        fold_drift = b["fold_check"] == "DRIFT"
+        if plan_lint_fail or fold_drift:
+            verdict = "CONTINUE"
+            if plan_lint_fail and warnings is not None:
+                warnings.append(
+                    f"WARN: BAR_MET downgraded to CONTINUE — battery: plan_lint={plan_lint_val}"
+                    f" — fix the FAIL(s) plan_lint names before the next walk"
+                )
+            if fold_drift and warnings is not None:
+                warnings.append(
+                    "WARN: BAR_MET downgraded to CONTINUE — battery: fold_check=DRIFT"
+                    " — if the change is INTENDED, re-save the baseline and say so in the fold's record"
+                )
+
+    return verdict, b
+
+
 def _compute_coherence(parsed, plan_path):
     """Compute the coherence field — the ONLY body-vs-register reconciliation there is.
 
@@ -901,55 +1047,13 @@ def emit_manifest(plan_path):
             yields_parts.append(str(ic))
         yields_str = ", ".join(yields_parts) if yields_ok else "N/A"
 
-        verdict, _ = run_check(plan_path)
+        b = run_battery(plan_path)
+        verdict, _ = run_check(plan_path, battery=b)
         if verdict is None:
             verdict = "N/A"
-
-        try:
-            lint_r = subprocess.run(
-                [sys.executable, str(Path(__file__).resolve().parent / "plan_lint.py"),
-                 str(plan_path)],
-                capture_output=True, text=True, timeout=30,
-            )
-            fail_count = lint_r.stdout.count("FAIL:")
-            lint_val = f"{fail_count}_FAIL"
-        except Exception:
-            lint_val = "N/A"
-
-        baseline = plan_path.parent / f".{plan_path.name}.foldcheck.json"
-        if baseline.exists():
-            try:
-                fc_r = subprocess.run(
-                    [sys.executable,
-                     str(Path(__file__).resolve().parent / "fold_check.py"),
-                     str(plan_path)],
-                    capture_output=True, text=True, timeout=30,
-                )
-                fold_verdict = "PASS" if fc_r.returncode == 0 else "N/A"
-            except Exception:
-                fold_verdict = "N/A"
-        else:
-            fold_verdict = "N/A"
-
-        try:
-            pc_r = subprocess.run(
-                [sys.executable,
-                 str(Path(__file__).resolve().parent / "propagation_check.py"),
-                 str(plan_path)],
-                capture_output=True, text=True, timeout=30,
-            )
-            if pc_r.returncode == 0:
-                pc_val = "CLEAN"
-            elif pc_r.returncode == 1:
-                import re as _re
-                pm = _re.search(r'DIVERGENCES:\s*(\d+)', pc_r.stdout)
-                pc_val = f"DIVERGENT:{pm.group(1)}" if pm else "DIVERGENT:?"
-            elif pc_r.returncode == 2:
-                pc_val = "NOT_RUN"
-            else:
-                pc_val = "N/A"
-        except Exception:
-            pc_val = "N/A"
+        lint_val = b["plan_lint"]
+        fold_verdict = b["fold_check"]
+        pc_val = b["propagation_check"]
 
         validation_str = (
             f"cycle_check={verdict}, plan_lint={lint_val}, "

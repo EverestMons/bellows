@@ -48,7 +48,7 @@ def _make_plan(tmp_path, dc_block, filename="plan.md", include_manifest=True):
     plan = tmp_path / filename
     tail = _MANIFEST_STANZA if include_manifest else ""
     plan.write_text(
-        f"# Plan\n\n## Drafting Cycle\n{dc_block}\n## End\n{tail}",
+        f"# Plan\n**dispatch_mode:** bellows\n\n## Drafting Cycle\n{dc_block}\n## End\n{tail}",
         encoding="utf-8",
     )
     return plan
@@ -579,7 +579,8 @@ def test_cli_exit_codes(tmp_path):
         [sys.executable, str(SCRIPTS / "cycle_check.py"), str(bar_met_plan)],
         capture_output=True, text=True,
     )
-    assert r.stdout.strip() == "BAR_MET"
+    # Contract (P8): verdict is always the LAST stdout line; BATTERY line may precede it
+    assert r.stdout.strip().splitlines()[-1] == "BAR_MET"
     assert r.returncode == 0
 
     escalate_plan = _make_plan(tmp_path, (
@@ -636,7 +637,7 @@ def test_emit_manifest_well_formed(tmp_path):
     """
     plan = tmp_path / "plan.md"
     plan.write_text(
-        "# Plan\n\n## Drafting Cycle\n"
+        "# Plan\n**dispatch_mode:** bellows\n\n## Drafting Cycle\n"
         "**Tier:** T1\n"
         "- Weak spots: w1 2 folded — instruction 2 / record 0; w2 dry.\n"
         "- Destruction: w1 1 folded — instruction 1 / record 0; w2 dry.\n"
@@ -862,7 +863,7 @@ def _build_ss_plan(tmp_path, walk, close, reg, *, monkeypatch=None):
     dc_block = f"{reg_lines}{walk_lines}{close_lines}"
     plan = tmp_path / f"plan_{walk}_{close}_{reg}.md"
     plan.write_text(
-        f"# Plan\n\n## Drafting Cycle\n{dc_block}\n## End\n{_MANIFEST_STANZA}",
+        f"# Plan\n**dispatch_mode:** bellows\n\n## Drafting Cycle\n{dc_block}\n## End\n{_MANIFEST_STANZA}",
         encoding="utf-8",
     )
     return plan
@@ -1152,7 +1153,9 @@ def test_assert2_valid_register_no_warn(tmp_path, monkeypatch):
     verdict, code = cycle_check.run_check(plan, warnings=warnings)
     assert verdict == "BAR_MET"
     assert code == 0
-    assert len(warnings) == 0, "no WARN must be collected for a valid register"
+    # Ruling 189: a BATTERY: line is now expected; verify NO WARN lines for valid register
+    warn_lines = [w for w in warnings if w.startswith("WARN:")]
+    assert len(warn_lines) == 0, "no WARN must be collected for a valid register"
 
 
 def test_contract_last_stdout_line_is_verdict(tmp_path):
@@ -1173,7 +1176,7 @@ def test_contract_last_stdout_line_is_verdict(tmp_path):
     )
     plan = tmp_path / "plan.md"
     plan.write_text(
-        f"# Plan\n\n## Drafting Cycle\n"
+        f"# Plan\n**dispatch_mode:** bellows\n\n## Drafting Cycle\n"
         f"**Walk register:** {reg}\n"
         "- Weak spots: w1 1 folded — instruction 1 / record 0; w2 dry.\n"
         "**Closing:** BAR MET\n"

@@ -1,0 +1,12 @@
+PYTHON: /Users/marklehn/Developer/bellows/.venv/bin/python
+HEAD: d22dce03a8e5a736b68cb1ae1885858f2684c397
+TARGET: scripts/cycle_check.py sha256=0e675df6fedb
+
+MUTANT M1-drop-plan-lint-downgrade: KILLED — suite caught the defect
+MUTANT M2-drop-fold-drift-downgrade: KILLED — suite caught the defect
+MUTANT M3-always-launch-fold-check: KILLED — suite caught the defect
+MUTANT M4-suppress-battery-line-for-continue: KILLED — suite caught the defect
+
+LIVE-TREE UNCHANGED: scripts/cycle_check.py sha256=0e675df6fedb
+
+MUTATION: 4 killed, 0 survived, 0 error

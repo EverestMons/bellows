@@ -103,14 +103,14 @@ def substrate_status(plan_path):
     # register ref through the ONE resolver — and walk 0 records it when it arms the
     # baseline. Beside-the-plan remains the fallback for a same-repo cycle.
     manifest = cycle_check.parse_manifest_stanza(text) or {}
-    fb_ref = (manifest.get("fold_baseline") or "").strip()
-    if fb_ref and fb_ref != "<declare>":
-        fb = cycle_check._resolve_register_ref(fb_ref, plan_path)
-        if not fb or not Path(fb).is_file():
+    resolved_baseline, declared = cycle_check.resolve_fold_baseline(plan_path, manifest=manifest)
+    if resolved_baseline is None:
+        fb_ref = (manifest.get("fold_baseline") or "").strip()
+        if declared:
             missing.append(f"baseline: manifest fold_baseline `{fb_ref}` does not resolve to a file")
-    elif not fold_check.baseline_path(plan_path, None).exists():
-        missing.append("baseline: no fold_check baseline beside the plan and no `fold_baseline:` "
-                       "in the Cycle Manifest (a cross-repo deposit needs the field — thread 185)")
+        else:
+            missing.append("baseline: no fold_check baseline beside the plan and no `fold_baseline:` "
+                           "in the Cycle Manifest (a cross-repo deposit needs the field — thread 185)")
 
     if missing:
         return False, "; ".join(missing)
