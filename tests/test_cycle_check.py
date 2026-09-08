@@ -579,9 +579,7 @@ def test_cli_exit_codes(tmp_path):
         [sys.executable, str(SCRIPTS / "cycle_check.py"), str(bar_met_plan)],
         capture_output=True, text=True,
     )
-    # Battery runs on the normal path (plan 100040); last line is the verdict.
-    last_line = r.stdout.strip().splitlines()[-1] if r.stdout.strip() else ""
-    assert last_line in ("BAR_MET", "CONTINUE"), f"unexpected verdict: {last_line!r}"
+    assert r.stdout.strip() == "BAR_MET"
     assert r.returncode == 0
 
     escalate_plan = _make_plan(tmp_path, (
@@ -664,7 +662,7 @@ def test_emit_manifest_well_formed(tmp_path):
     assert "tier: T1" in output
     assert "walks: 2" in output
     assert "yields: 3, 0" in output
-    assert "cycle_check=" in output  # battery may downgrade to CONTINUE (plan 100040)
+    assert "cycle_check=BAR_MET" in output
     assert "plan_lint=" in output
     assert "fold_check=" in output
     assert "coherence: N/A" in output
@@ -1128,12 +1126,9 @@ def test_assert2_invalid_register_warns_verdict_unchanged(tmp_path, monkeypatch)
 
     warnings = []
     verdict, code = cycle_check.run_check(plan, warnings=warnings)
-    # Battery may downgrade BAR_MET→CONTINUE on fixture plans (plan 100040).
-    # The register warning must still appear regardless of verdict.
+    assert verdict == "BAR_MET", f"verdict must be unchanged; got {verdict!r}"
     assert code == 0
-    assert any("walk register" in w.lower() for w in warnings), (
-        "a WARN must be collected for an invalid register"
-    )
+    assert len(warnings) > 0, "a WARN must be collected for an invalid register"
 
 
 def test_assert2_valid_register_no_warn(tmp_path, monkeypatch):
@@ -1155,11 +1150,9 @@ def test_assert2_valid_register_no_warn(tmp_path, monkeypatch):
 
     warnings = []
     verdict, code = cycle_check.run_check(plan, warnings=warnings)
+    assert verdict == "BAR_MET"
     assert code == 0
-    # Battery may add BATTERY: line (plan 100040); check specifically that
-    # no register-related WARN was collected for a valid register.
-    register_warns = [w for w in warnings if "walk register" in w.lower() and "WARN:" in w]
-    assert len(register_warns) == 0, f"no register WARN for valid register; got: {warnings}"
+    assert len(warnings) == 0, "no WARN must be collected for a valid register"
 
 
 def test_contract_last_stdout_line_is_verdict(tmp_path):
@@ -1194,14 +1187,12 @@ def test_contract_last_stdout_line_is_verdict(tmp_path):
     lines = result.stdout.strip().splitlines()
     assert lines, "cycle_check must emit at least one stdout line"
     last_line = lines[-1].strip()
-    # Battery may print BATTERY:/WARN: before the verdict and may downgrade
-    # BAR_MET→CONTINUE (plan 100040). The contract is: the verdict is LAST.
-    assert last_line in ("BAR_MET", "CONTINUE") or last_line.startswith("ESCALATE:"), (
-        f"last stdout line must be a bare verdict token; got {last_line!r}\n"
+    assert last_line == "BAR_MET", (
+        f"last stdout line must be bare verdict token; got {last_line!r}\n"
         f"full stdout:\n{result.stdout}"
     )
     assert any("WARN" in ln for ln in lines[:-1]), (
-        "a WARN must appear on stdout before the verdict"
+        "a WARN must appear on stdout before the verdict for the NO_TABLE register"
     )
 
 

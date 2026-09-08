@@ -96,17 +96,21 @@ def substrate_status(plan_path):
         except Exception as e:
             missing.append(f"per-walk commits: record unreadable ({type(e).__name__})")
 
-    # Leg 3 — a fold_check baseline. Uses the ONE resolver from cycle_check so
-    # substrate_status and run_battery always agree on the baseline path (test 13).
+    # Leg 3 — a fold_check baseline. The baseline is named after the DRAFT and lives
+    # beside it, so a plan deposited into another repo cannot find it by position
+    # (thread 185, the same class as 163). DRAFTING_CYCLE v2.28: the Cycle Manifest
+    # may carry `fold_baseline:` — the baseline's path, resolved exactly like the
+    # register ref through the ONE resolver — and walk 0 records it when it arms the
+    # baseline. Beside-the-plan remains the fallback for a same-repo cycle.
     manifest = cycle_check.parse_manifest_stanza(text) or {}
-    fb_path, fb_declared = cycle_check.resolve_fold_baseline(plan_path, manifest)
-    if fb_path is None:
-        if fb_declared:
-            fb_ref = (manifest.get("fold_baseline") or "").strip()
+    fb_ref = (manifest.get("fold_baseline") or "").strip()
+    if fb_ref and fb_ref != "<declare>":
+        fb = cycle_check._resolve_register_ref(fb_ref, plan_path)
+        if not fb or not Path(fb).is_file():
             missing.append(f"baseline: manifest fold_baseline `{fb_ref}` does not resolve to a file")
-        else:
-            missing.append("baseline: no fold_check baseline beside the plan and no `fold_baseline:` "
-                           "in the Cycle Manifest (a cross-repo deposit needs the field — thread 185)")
+    elif not fold_check.baseline_path(plan_path, None).exists():
+        missing.append("baseline: no fold_check baseline beside the plan and no `fold_baseline:` "
+                       "in the Cycle Manifest (a cross-repo deposit needs the field — thread 185)")
 
     if missing:
         return False, "; ".join(missing)
