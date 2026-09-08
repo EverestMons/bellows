@@ -417,6 +417,9 @@ class TestFloorCannotBeDisabled:
         db_path = str(tmp_path / "lifecycle.db")
         init_lifecycle_db(db_path)
 
+        troot = str(P / "tuyere")
+        os.makedirs(troot, exist_ok=True)
+
         for cfg in ({}, {"shop_infra_projects": []}, {"shop_infra_projects": None},
                     {"shop_infra_projects": "not-a-list"}):
             dep = dep_mod.Depositor(
@@ -425,21 +428,25 @@ class TestFloorCannotBeDisabled:
                 config=cfg,
                 lifecycle_db_path=db_path,
             )
+            # root "" assertions (UNKNOWN → shop-infra regardless of floor)
             assert dep._assign_class(["bellows/x.py"], "") == "shop-infra", cfg
             assert dep._assign_class(["forge/x.py"], "") == "shop-infra", cfg
             assert dep._assign_class(["forge_lessons/x.py"], "") == "shop-infra", cfg
             assert dep._assign_class(["lessons-forge/x.py"], "") == "shop-infra", cfg
             assert dep._assign_class(["anvil/x.py"], "") == "shop-infra", cfg
             assert dep._assign_class(["eluvian-governance/x.py"], "") == "shop-infra", cfg
+            # non-"" root assertions: leading-segment redirect requires the floor to be populated
+            assert dep._assign_class(["bellows/x.py"], troot) == "shop-infra", cfg
 
-        # config extension adds a name
+        # config extension adds a name; tested with a non-"" root so the redirect
+        # actually fires (root "" falls back to UNKNOWN→shop-infra and masks the defect)
         dep_ext = dep_mod.Depositor(
             disk_preflight_fn=lambda: True,
             shutting_down_check=lambda: False,
             config={"shop_infra_projects": ["my_forge"]},
             lifecycle_db_path=db_path,
         )
-        assert dep_ext._assign_class(["my_forge/x.py"], "") == "shop-infra"
+        assert dep_ext._assign_class(["my_forge/x.py"], troot) == "shop-infra"
         assert dep_ext._assign_class(["bellows/x.py"], "") == "shop-infra"
 
 

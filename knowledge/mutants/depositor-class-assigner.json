@@ -18,8 +18,8 @@
     {
       "name": "drop-governance-existence-redirect",
       "why": "the governance-existence redirect (E5) is what makes a bare DRAFTING_CYCLE.md filed from tuyere resolve to governance and hold; dropping it lets it auto-clear",
-      "anchor": "        # Governance-existence redirect (E5)",
-      "replacement": "        # Governance-existence redirect (E5) — dropped",
+      "anchor": "            if (G / norm).exists():",
+      "replacement": "            if False:  # governance-existence redirect dropped",
       "expect_fail": "tests/test_depositor_class_assigner.py::TestGovernanceExistenceRedirect::test_3_governance_existence_redirect"
     },
     {
