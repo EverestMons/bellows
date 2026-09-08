@@ -1,0 +1,20 @@
+PYTHON: /Users/marklehn/Developer/bellows/.venv/bin/python
+HEAD: 2b9f0cb6b61069e96b74b0a31a94985652b009b9
+TARGET: depositor.py sha256=0979c2486c1f
+
+MUTANT restore-bare-filename-arm: KILLED — suite caught the defect
+MUTANT unknown-repo-is-non-infra: KILLED — suite caught the defect
+MUTANT drop-governance-existence-redirect: KILLED — suite caught the defect
+MUTANT drop-governance-knowledge-exemption: KILLED — suite caught the defect
+MUTANT ignore-config-extension: KILLED — suite caught the defect
+MUTANT floor-from-config-only: KILLED — suite caught the defect
+MUTANT drop-warnings-pass-through: KILLED — suite caught the defect
+MUTANT drop-name-floor: KILLED — suite caught the defect
+MUTANT name-floor-on-raw-write-not-rel: KILLED — suite caught the defect
+MUTANT declare-is-project-file: KILLED — suite caught the defect
+MUTANT governance-identity-by-name-not-resolver: KILLED — suite caught the defect
+MUTANT every-project-under-G-is-governance: KILLED — suite caught the defect
+
+LIVE-TREE UNCHANGED: depositor.py sha256=0979c2486c1f
+
+MUTATION: 12 killed, 0 survived, 0 error
