@@ -1814,7 +1814,7 @@ def test_override_gate_tool_writes_all_matching_rows():
         rows = conn.execute("SELECT overridden, override_ref FROM gate_events WHERE gate_name='scope_check' AND result='fail'").fetchall()
         conn.close()
         assert all(r[0] == 1 for r in rows), "All matching rows must be overridden"
-        assert all(r[1] == "CEO approved" for r in rows), "All matching rows must have override_ref"
+        assert all(r[1] == ref_file for r in rows), "All matching rows must carry the durable override_ref"
 
 
 def test_override_gate_tool_refuses_no_match():
