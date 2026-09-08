@@ -151,6 +151,30 @@ def test_no_declared_threads_writes_nothing(tmp_path, monkeypatch):
     assert set(receipts.glob("unenqueued-thread-review-*")) == before
 
 
+def test_the_enqueue_subprocess_runs_from_the_tuyere_checkout(tmp_path, monkeypatch):
+    """⛔ `-m tuyere.enqueue` resolves the package from cwd — tuyere is not installed
+    into its venv — and the daemon's cwd is bellows. The first live close to carry a
+    Discharges field (plan 100039, 2026-09-07) failed openly on exactly this:
+    ModuleNotFoundError: No module named 'tuyere'. release_for_plan already passed
+    cwd; this pins its sibling to the same rule (thread 187)."""
+    plan = tmp_path / "executable-fixture.md"
+    plan.write_text("# t\n\n**Discharges:** thread 80\n")
+    checkout = tmp_path / "tuyere"
+    monkeypatch.setattr(plan_claim, "_tuyere_checkout", lambda: checkout)
+    seen = []
+    def fake_run(cmd, **kw):
+        seen.append((cmd, kw))
+        return subprocess.CompletedProcess(cmd, 0, stdout="intent 1\n", stderr="")
+    monkeypatch.setattr(plan_claim.subprocess, "run", fake_run)
+    logs = []
+    plan_claim.enqueue_thread_reviews(999, plan, {"x": 1}, lambda lvl, m, **k: logs.append((lvl, m)))
+    assert len(seen) == 1, seen
+    cmd, kw = seen[0]
+    assert kw.get("cwd") == str(checkout), kw
+    assert cmd[:3] == [str(checkout / ".venv" / "bin" / "python"), "-m", "tuyere.enqueue"]
+    assert any(l == "EVENT" for l, _ in logs), logs
+
+
 # ---- transitions ----------------------------------------------------------
 
 def test_only_completion_transitions_enqueue():

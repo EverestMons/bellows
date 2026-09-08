@@ -254,7 +254,10 @@ def enqueue_thread_reviews(plan_id, plan_path, config, log=None):
                  "intent", "thread.review-discharge",
                  "--target", json.dumps({"thread": tid, "plan_id": plan_id, "slug": slug}),
                  "--note", note],
-                capture_output=True, text=True, timeout=15,
+                # cwd MATTERS: `tuyere` is importable only from its checkout root and the
+                # daemon runs from bellows — the sibling above passes it; this one did not,
+                # and the first live close (plan 100039, 2026-09-07) failed openly on it.
+                cwd=str(checkout), capture_output=True, text=True, timeout=15,
             )
             if r.returncode != 0:
                 failed.append((tid, (r.stderr or r.stdout).strip()[:160] or f"exit {r.returncode}"))
