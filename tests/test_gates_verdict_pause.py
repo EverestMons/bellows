@@ -107,18 +107,24 @@ def test_2_declared_scope_all_declared_passes():
 def test_3_no_scope_block_prose_authorizes_passes():
     """No Scope block + prose authorizes gates.py / verdict.py → passes.
 
-    PLAN_TEXT_NO_SCOPE is the legacy fixture — prose arms must survive for
-    undeclared plans (P3). A Deposits block alone does NOT make `declared` True.
+    A Deposits block alone (no Scope block) must NOT trigger declared-mode (P3, f25).
     """
-    # A Deposits block without a Scope block must NOT trigger declared-mode.
-    plan_with_deposits_no_scope = PLAN_TEXT_NO_SCOPE + (
-        "\n> **Deposits:**\n> - `knowledge/qa/evidence/report.md`\n"
-    )
+    # Deposits inside STEP 1 but no Scope block → prose arms still apply
+    plan_with_deposits_no_scope = """# plan
+**Date:** 2026-09-06 | **Project:** bellows | **qa_steps:** none
+
+## STEP 1 — DEV
+
+> Build gates.py and verdict.py in the bellows root directory.
+>
+> **Deposits:**
+> - `knowledge/qa/evidence/report.md`
+"""
     failures = []
     gates._gate_scope_check(plan_with_deposits_no_scope, 1, ["gates.py", "verdict.py"], failures)
-    assert failures == []
+    assert failures == [], f"Deposits-only plan must use prose arms, got: {failures}"
 
-    # Ancestor-directory mention also passes
+    # Ancestor-directory mention also passes (no Scope block)
     plan_dir = """# plan
 **Date:** 2026-09-08 | **Project:** bellows | **qa_steps:** none
 
@@ -294,9 +300,13 @@ def test_5_qa_test_result_probe_first_suite_second_reads_suite(tmp_path):
 
 
 def test_6_qa_test_result_suite_basename_wins(tmp_path):
-    """Multiple summary-bearing .txt files → the one with 'suite' in basename wins."""
+    """Multiple summary-bearing .txt files → the one with 'suite' in basename wins.
+
+    other-results.txt has a failure; full-suite-results.txt is clean.
+    The 'suite' tie-break must pick the suite file or the gate fires on the failure.
+    """
     other = tmp_path / "other-results.txt"
-    other.write_text("5 passed in 0.5s\n")
+    other.write_text("1 failed, 4 passed in 0.5s\n")  # has a failure
     suite = tmp_path / "full-suite-results.txt"
     suite.write_text("100 passed in 5.0s\n")
 
@@ -304,7 +314,7 @@ def test_6_qa_test_result_suite_basename_wins(tmp_path):
     parsed = _clean_parsed()
     failures = []
     gates._gate_qa_test_result(True, plan, 2, str(tmp_path), parsed, failures, wt_path=str(tmp_path))
-    assert failures == []
+    assert failures == [], f"Expected PASS reading suite file, got: {failures}"
 
 
 def test_7_qa_test_result_no_summary_fails(tmp_path):

@@ -4,8 +4,8 @@
     {
       "name": "restore-basename-arm",
       "why": "the basename arm `basename in declared_files` was deleted because it let prose-mentioned filenames clear a declared Scope; restoring it must break test 4's assertion that other/test_x.py is not authorized by a declared tests/test_x.py",
-      "anchor": "            file_match = any(\n                d == fpath or (\"/' in d and d.split(\"/\", 1)[1] == fpath)",
-      "replacement": "            file_match = any(\n                d == fpath or basename == d or (\"/' in d and d.split(\"/\", 1)[1] == fpath)",
+      "anchor": "                d == fpath or (\"/\" in d and d.split(\"/\", 1)[1] == fpath)",
+      "replacement": "                d == fpath or basename == d or (\"/\" in d and d.split(\"/\", 1)[1] == fpath)",
       "target": "gates.py",
       "expect_fail": "tests/test_gates_verdict_pause.py::test_4_scope_matching_rules"
     },
@@ -52,16 +52,16 @@
     {
       "name": "drop-prefix-tolerance",
       "why": "prefix declared entries also get a one-segment tolerance (bellows/knowledge/… declares knowledge/…); dropping it means bellows/knowledge/qa/evidence/s/ stops authorizing knowledge/qa/evidence/s/full-suite.txt",
-      "anchor": "                fpath.startswith(p) or (\n                    \"/\" in p.rstrip(\"/\") and fpath.startswith(p.split(\"/\", 1)[1])",
-      "replacement": "                fpath.startswith(p)",
+      "anchor": "                fpath.startswith(p) or (\n                    \"/\" in p.rstrip(\"/\") and fpath.startswith(p.split(\"/\", 1)[1])\n                )",
+      "replacement": "                fpath.startswith(p)\n                ",
       "target": "gates.py",
       "expect_fail": "tests/test_gates_verdict_pause.py::test_20_prefix_tolerance_declared_side_only"
     },
     {
       "name": "select-first-txt-path",
-      "why": "content-based selection must replace the old txt_paths[0] fallback; restoring txt_paths[0] makes the gate pick probes-raw.txt (no summary) when no basename says full-suite",
-      "anchor": "    suite_matches = [(p, r, c) for p, r, c in summary_matches if \"suite\" in os.path.basename(p)]\n    evidence_path, resolved, content = suite_matches[0] if suite_matches else summary_matches[0]",
-      "replacement": "    suite_matches = []\n    evidence_path, resolved, content = summary_matches[0]",
+      "why": "content-based selection filters out files without a summary before choosing; bypassing the filter makes every .txt go into the candidate list, so probes-raw.txt (no summary) is picked first and the gate fires on missing summary",
+      "anchor": "        if _PYTEST_SUMMARY_RE.search(c):",
+      "replacement": "        if True:",
       "target": "gates.py",
       "expect_fail": "tests/test_gates_verdict_pause.py::test_5_qa_test_result_probe_first_suite_second_reads_suite"
     },
@@ -75,9 +75,9 @@
     },
     {
       "name": "drop-suite-tie-break",
-      "why": "when several .txt files carry a summary, the one with 'suite' in its basename wins; dropping the tie-break picks the first match regardless of basename",
-      "anchor": "    suite_matches = [(p, r, c) for p, r, c in summary_matches if \"suite\" in os.path.basename(p)]",
-      "replacement": "    suite_matches = []",
+      "why": "when several .txt files carry a summary the one with 'suite' in basename wins; test 6's non-suite file has a failure so dropping the tie-break causes the gate to read the failure file and fire",
+      "anchor": "    suite_matches = [(p, r, c) for p, r, c in summary_matches if \"suite\" in os.path.basename(p)]\n    evidence_path, resolved, content = suite_matches[0] if suite_matches else summary_matches[0]",
+      "replacement": "    suite_matches = []\n    evidence_path, resolved, content = summary_matches[0]",
       "target": "gates.py",
       "expect_fail": "tests/test_gates_verdict_pause.py::test_6_qa_test_result_suite_basename_wins"
     },
