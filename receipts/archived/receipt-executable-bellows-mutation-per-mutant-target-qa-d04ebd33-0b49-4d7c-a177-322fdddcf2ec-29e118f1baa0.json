@@ -1,0 +1,8 @@
+{
+  "slug": "executable-bellows-mutation-per-mutant-target-qa",
+  "content_hash": "29e118f1baa0d5cd91d7185effdf824064cec060702a76474b3a98c16c52dd3f",
+  "session_id": "d04ebd33-0b49-4d7c-a177-322fdddcf2ec",
+  "armed_at": "2026-09-08T21:19:16.039995",
+  "watcher": "gate_watcher.py spawned detached (pid 56462); log: logs/watch/executable-bellows-mutation-per-mutant-target-qa.md.log",
+  "attestation_boundary": "This receipt proves the watcher was ARMED at write time. It does NOT prove the watcher stayed alive. Liveness of a session-local monitor is not externally verifiable."
+}
