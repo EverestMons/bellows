@@ -79,26 +79,64 @@ def test_no_ref_declared_emits_no_new_warn(tmp_path):
     assert not any("UNRESOLVABLE" in w for w in warns), warns
 
 
-def test_claiming_closure_with_an_empty_body_stays_CONTINUE_by_RATIFIED_precedence(tmp_path):
-    """⛔ CHARACTERISATION, not endorsement — and it pins a decision, not an accident.
+def test_claiming_closure_with_an_empty_body_ESCALATES_by_ruling_213(tmp_path):
+    """Ruling 213 (thread 213, 2026-09-08): a closure claim with NO walk data ESCALATES.
 
-    Thread 151's second asymmetry is real: the closure check sits BELOW the empty-body
-    early return, so a plan claiming closure with no walks is told CONTINUE, bypassing
-    a condition that blocks on every other path. It LOOKS like the same defect as the
-    silent register.
+    Thread 158 measured the asymmetry: the closure check at :633 returns
+    ESCALATE:claimed-close-unmet whenever a plan claims closure and verdict is CONTINUE —
+    except on the empty-walk path, where the early return answered CONTINUE first. It was
+    ratified by eight state-space cells, so changing it needed a ruling. The CEO ruled:
+    change it. The Tier-2 table's eight cells and this test move together."""
+    repo = tmp_path / "r"
+    (repo / "knowledge" / "decisions" / "drafts").mkdir(parents=True)
+    import subprocess as _sp
+    _sp.run(["git", "init", "-q", str(repo)], capture_output=True, check=True)
+    reg = tmp_path / "register.md"
+    reg.write_text("# walk register\n")
+    p = repo / "knowledge" / "decisions" / "drafts" / "executable-fix.md"
+    p.write_text(
+        "# bellows — executable: fixture\n\n"
+        "**Date:** 2026-09-09 | **Project:** bellows | **cycle_tier:** T1\n\n"
+        "## Drafting Cycle\n\n"
+        f"**Walk register:** {reg}\n"
+        "**Closing:** ✅ BAR MET at walk 1.\n\n"
+        "## STEP 1 — do it\n"
+    )
+    verdict, warns = _run(p)
+    assert verdict == "ESCALATE:claimed-close-unmet", verdict
 
-    It is RATIFIED. The Tier-2 state-space table in test_cycle_check.py force-classifies
-    rule 2 as "none walk -> CONTINUE, no walk data DOMINATES close/reg" (_WALK_DIM: "no
-    walk lines -> CONTINUE regardless"), and EIGHT cells assert it. Closing the bypass
-    flipped all eight. Changing a ratified precedence is a design decision for the CEO,
-    not a bug fix.
 
-    This test exists so the next reader who spots the asymmetry finds the ruling instead
-    of re-fixing it. If the precedence is ever changed, this test and those eight cells
-    move together."""
-    plan = _plan(tmp_path, ref="knowledge/research/walk-register-absent.md",
-                 closing="BAR MET at walk 1.")
-    verdict, warns = _run(plan)
-    assert verdict == "CONTINUE", verdict
-    # ...but it is no longer SILENT, which is the half thread 151 actually closes.
-    assert any("UNRESOLVABLE" in w for w in warns), warns
+def test_T0_claiming_closure_without_a_result_ESCALATES(tmp_path):
+    """Ruling 213, consequence (change 1's ⚠️): the T0 arm fires BEFORE the new closure
+    check only when the T0 plan states a lens-4 result. A T0 that claims closure but
+    has NO result falls past the T0 arm and hits the new empty-walk check — thread 158's
+    asymmetry, now blocked, holds even on the floor tier."""
+    def _make(name, cycle_line, closing):
+        p = tmp_path / name
+        p.write_text(
+            "# bellows — executable: a doc edit\n\n"
+            "**Date:** 2026-09-09 | **Project:** bellows | **cycle_tier:** T0\n\n"
+            "## Drafting Cycle\n\n"
+            f"{cycle_line}\n"
+            f"**Closing:** {closing}\n\n"
+            "## STEP 1 — do it\n"
+        )
+        return p
+
+    warns = []
+    verdict, _ = cc.run_check(
+        _make("t0-claim-no-result.md",
+              "**cycle_tier:** T0 (no trigger)",
+              "✅ BAR MET"),
+        warnings=warns,
+    )
+    assert verdict == "ESCALATE:claimed-close-unmet", verdict
+
+    warns2 = []
+    verdict2, _ = cc.run_check(
+        _make("t0-claim-with-result.md",
+              "**cycle_tier:** T0 (no trigger); integration-vs-record pass: dry.",
+              "✅ BAR MET"),
+        warnings=warns2,
+    )
+    assert verdict2 == "BAR_MET", verdict2

@@ -507,14 +507,13 @@ def run_check(plan_path, warnings=None, basis=False, battery=None):
                             f"integration-vs-record pass: <result>`, and the RESULT is "
                             f"what makes the close checkable (thread 156)")
 
-        # ⛔ THREAD 151's SECOND ASYMMETRY IS DELIBERATELY LEFT OPEN. A plan CLAIMING
-        # CLOSURE with an empty body is told CONTINUE, bypassing the closure check at
-        # :553 which blocks on every other path. That looks like the same defect —
-        # but it is RATIFIED: the Tier-2 state-space table (tests/test_cycle_check.py,
-        # _WALK_DIM "no walk lines -> CONTINUE regardless") force-classifies rule 2 as
-        # "none walk -> CONTINUE, no walk data DOMINATES close/reg", and 8 cells assert
-        # it. Closing it flipped all 8. Changing a ratified precedence is a design
-        # decision for the CEO, not a bug fix; recorded rather than taken.
+        # Ruling 213 (thread 213, 2026-09-08): a closure claim with no walk data ESCALATES.
+        # Thread 158 measured the asymmetry — the closure check at :633 blocks on every
+        # other path, but the early return here answered CONTINUE first; the eight
+        # state-space cells that ratified the gap are flipped in the same commit.
+        if parsed["claims_closure"] and not parsed["has_unparseable"]:
+            return "ESCALATE:claimed-close-unmet", 1
+
         _nw_verdict, _ = _apply_battery(plan_path, "CONTINUE", warnings, battery=battery)
         return _nw_verdict, 0
 

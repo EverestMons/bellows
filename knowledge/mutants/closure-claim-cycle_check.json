@@ -1,0 +1,20 @@
+{
+  "target": "scripts/cycle_check.py",
+  "_note": "Plan 100053: two mutants covering ruling 213 — the empty-walk closure check (thread 213, 2026-09-09).",
+  "mutants": [
+    {
+      "name": "M1-delete-ruling-213-check",
+      "why": "Deleting the empty-walk closure check allows a plan claiming closure with no walk data to slip past and return CONTINUE instead of ESCALATE:claimed-close-unmet. test_claiming_closure_with_an_empty_body_ESCALATES_by_ruling_213 expects the escalation; without the check it gets CONTINUE.",
+      "anchor": "        if parsed[\"claims_closure\"] and not parsed[\"has_unparseable\"]:\n            return \"ESCALATE:claimed-close-unmet\", 1\n\n        _nw_verdict, _ = _apply_battery(plan_path, \"CONTINUE\", warnings, battery=battery)\n        return _nw_verdict, 0",
+      "replacement": "        _nw_verdict, _ = _apply_battery(plan_path, \"CONTINUE\", warnings, battery=battery)\n        return _nw_verdict, 0",
+      "expect_fail": "tests/test_cycle_check_empty_body_silence.py::test_claiming_closure_with_an_empty_body_ESCALATES_by_ruling_213"
+    },
+    {
+      "name": "M2-check-before-T0-arm",
+      "why": "Moving the closure check above the T0 arm causes a T0 plan claiming closure with a result to ESCALATE instead of reaching BAR_MET. The second half of test_T0_claiming_closure_without_a_result_ESCALATES asserts claim+result→BAR_MET; this mutant returns ESCALATE:claimed-close-unmet before the T0 arm can fire.",
+      "anchor": "        _t0_ok, _t0_detail = _t0_close(text, blocks[0] if blocks else None)\n        if _t0_ok:",
+      "replacement": "        if parsed[\"claims_closure\"] and not parsed[\"has_unparseable\"]:\n            return \"ESCALATE:claimed-close-unmet\", 1\n        _t0_ok, _t0_detail = _t0_close(text, blocks[0] if blocks else None)\n        if _t0_ok:",
+      "expect_fail": "tests/test_cycle_check_empty_body_silence.py::test_T0_claiming_closure_without_a_result_ESCALATES"
+    }
+  ]
+}

@@ -774,7 +774,7 @@ def test_emit_manifest_propagation_field(tmp_path):
 # Every cell is force-classified; a cell absent from the table is a coverage gap.
 
 _WALK_DIM = [
-    "none",            # no walk lines → CONTINUE regardless
+    "none",            # no walk lines — CONTINUE unless closure claimed (ruling 213)
     "plain_walk",      # - Walk N: K folds — no lens line → C-1 → ESCALATE:unparseable
     "lens_spaced",     # - Weak spots: w1 dry — standard spaced form
     "lens_hyphen",     # - Weak-spots: w1 dry — hyphenated form (63)
@@ -798,22 +798,25 @@ _REG_DIM = [
 # Force-classify every cell: (walk, close, reg) → expected_verdict
 # Rules applied in priority order:
 #   1. plain_walk → ESCALATE:unparseable (C-1, dominates everything)
-#   2. none walk → CONTINUE (no walk data, dominates close/reg)
+#   2. none walk + claim close → ESCALATE:claimed-close-unmet (ruling 213)
+#      none walk + non-claim close → CONTINUE
 #   3. unresolvable reg + lens walk → ESCALATE:assert-fail:2 (C-3)
-#   4. dry lens walk + claim close → ESCALATE:claimed-close-unmet (58)
+#   4. dry lens walk + claim close → BAR_MET (verdict==BAR_MET before the guard at :633)
 #   5. dry lens walk + non-claim close → BAR_MET
 _EXPECTED: dict[tuple, str] = {}
 for _w, _c, _r in itertools.product(_WALK_DIM, _CLOSE_DIM, _REG_DIM):
     if _w == "plain_walk":
         _EXPECTED[(_w, _c, _r)] = "ESCALATE:unparseable"
     elif _w == "none":
-        _EXPECTED[(_w, _c, _r)] = "CONTINUE"
+        if _c in ("bar_met", "met_the_bar"):
+            _EXPECTED[(_w, _c, _r)] = "ESCALATE:claimed-close-unmet"
+        else:
+            _EXPECTED[(_w, _c, _r)] = "CONTINUE"
     elif _r == "unresolvable":
         _EXPECTED[(_w, _c, _r)] = "ESCALATE:assert-fail:2"
     elif _c in ("bar_met", "met_the_bar"):
-        # dry walk + claim → escalate (the walk IS dry so verdict would be BAR_MET
-        # but claim_closure triggers escalation only when verdict==CONTINUE — at BAR_MET
-        # with claims_closure: the escalation guard is NOT triggered, so this returns BAR_MET)
+        # dry walk + claim — verdict is BAR_MET so the guard at :633 (verdict==CONTINUE)
+        # does NOT fire; the result is BAR_MET unchanged
         _EXPECTED[(_w, _c, _r)] = "BAR_MET"
     else:
         _EXPECTED[(_w, _c, _r)] = "BAR_MET"
