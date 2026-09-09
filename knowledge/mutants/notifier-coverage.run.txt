@@ -1,0 +1,15 @@
+PYTHON: /Users/marklehn/Developer/bellows/.venv/bin/python
+HEAD: f5c82a4ab1c914d1b907d09cafedf73e613840eb
+TARGET: notifier.py sha256=b76467d3507f
+
+MUTANT notify-event-drops-disabled-check: KILLED — suite caught the defect
+MUTANT event-default-unknown-true: KILLED — suite caught the defect
+MUTANT invert-dedupe-gate: KILLED — suite caught the defect
+MUTANT drop-ownership-guard: KILLED — suite caught the defect
+MUTANT ignore-plan-scoped-flag: KILLED — suite caught the defect
+MUTANT watcher-key-4tuple: KILLED — suite caught the defect
+MUTANT mark-live-pops-wrong-key: KILLED — suite caught the defect
+
+LIVE-TREE UNCHANGED: notifier.py sha256=b76467d3507f
+
+MUTATION: 7 killed, 0 survived, 0 error
