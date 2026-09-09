@@ -5,10 +5,10 @@
 ........................................................................ [ 17%]
 ........................................................................ [ 20%]
 ........................................................................ [ 24%]
-.......................................F................................ [ 27%]
+........................................................................ [ 27%]
 ........................................................................ [ 31%]
 ........................................................................ [ 34%]
-......................FF................................................ [ 37%]
+........................................................................ [ 37%]
 .................s...................................................... [ 41%]
 ........................................................................ [ 44%]
 ........................................................................ [ 48%]
@@ -28,22 +28,4 @@
 ........................................................................ [ 96%]
 ........................................................................ [ 99%]
 ..                                                                       [100%]
-=================================== FAILURES ===================================
-_____________ TestRenderRunningState.test_running_header_and_panes _____________
-tests/test_dashboard.py:120: in test_running_header_and_panes
-    assert "sha 6274d1a" in lines[0]
-E   AssertionError: assert 'sha 6274d1a' in '● Bellows RUNNING  pid 17920  HEAD —  bellows.py@6274d1a  up 6m'
-___ TestGateEventsAreMechanicalImage.test_single_failure_produces_exact_rows ___
-tests/test_gate_transaction_mechanization.py:67: in test_single_failure_produces_exact_rows
-    assert len(rows) == 7
-E   AssertionError: assert 10 == 7
-E    +  where 10 = len([('deposit_exists', 'pass'), ('mutation_result', 'pass'), ('no_errors', 'pass'), ('no_permission_denials', 'pass'), ('qa_test_result', 'pass'), ('quoted_test_nodes_exist', 'pass'), ...])
-__ TestGateEventsAreMechanicalImage.test_all_failures_produces_zero_pass_rows __
-tests/test_gate_transaction_mechanization.py:100: in test_all_failures_produces_zero_pass_rows
-    assert pass_count == 0
-E   assert 3 == 0
-=========================== short test summary info ============================
-FAILED tests/test_dashboard.py::TestRenderRunningState::test_running_header_and_panes
-FAILED tests/test_gate_transaction_mechanization.py::TestGateEventsAreMechanicalImage::test_single_failure_produces_exact_rows
-FAILED tests/test_gate_transaction_mechanization.py::TestGateEventsAreMechanicalImage::test_all_failures_produces_zero_pass_rows
-3 failed, 2086 passed, 1 skipped in 73.50s (0:01:13)
+2089 passed, 1 skipped in 73.30s (0:01:13)

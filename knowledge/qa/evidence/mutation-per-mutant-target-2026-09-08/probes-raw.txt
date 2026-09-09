@@ -1,0 +1,80 @@
+=== P2: git show --stat f00a9e0 ===
+commit f00a9e086e5f60f514c3e01fb90a5bc2db2852bf
+Author: Mark Lehn <22526702+EverestMons@users.noreply.github.com>
+Date:   Thu Sep 3 16:01:17 2026 -0500
+
+    fix(mutation_check): [100031] Step 1 DEV — honour per-mutant target, refuse unknown keys, name file in anchor mismatch
+
+    Restructures main()'s per-file handling across five sites: per-target
+    pristine cache, sandbox_target computed per mutant, live-sha guard
+    extended to all distinct targets, uncommitted-changes warning per target,
+    TARGET header per target. Adds unknown-key refusal (underscore-prefix
+    exempt). Names the file searched in anchor-mismatch messages. Extends
+    mutation_check.json with 5 new mutants (2 safety-critical). 9 new tests,
+    20 total.
+
+    Co-Authored-By: Claude Sonnet 4.6 <noreply@anthropic.com>
+
+ .../mutation-per-mutant-target-dev-2026-09-03.md   | 119 +++++++++
+ knowledge/mutants/mutation_check.json              |  35 +++
+ tests/test_mutation_check.py                       | 266 +++++++++++++++++++++
+ tools/mutation_check.py                            | 118 ++++++---
+ 4 files changed, 510 insertions(+), 28 deletions(-)
+
+=== P2: grep count old tool (b143604) — mutant.get("target") occurrences ===
+$ git show b143604:tools/mutation_check.py | grep -c 'mutant.get("target")'
+0
+
+=== P2: grep count HEAD — mutant.get("target") occurrences ===
+$ grep -c 'mutant.get("target")' tools/mutation_check.py
+1
+
+=== P2: sha256 of tools/mutation_check.py at HEAD ===
+sha256: 1063e817ff24b1 (first 14 hex digits)
+
+=== P3: pytest --collect-only -q tests/test_mutation_check.py ===
+tests/test_mutation_check.py::test_killed_when_mutant_breaks_the_test
+tests/test_mutation_check.py::test_survived_when_suite_cannot_see_the_change
+tests/test_mutation_check.py::test_empty_selector_is_error_not_killed
+tests/test_mutation_check.py::test_baseline_failure_is_error_not_killed
+tests/test_mutation_check.py::test_anchor_not_unique_is_error
+tests/test_mutation_check.py::test_live_tree_untouched
+tests/test_mutation_check.py::test_mutants_do_not_compound
+tests/test_mutation_check.py::test_timeout_is_error_not_killed
+tests/test_mutation_check.py::test_same_byte_length_mutation_is_killed
+tests/test_mutation_check.py::test_bytecode_isolation_env_is_set
+tests/test_mutation_check.py::test_consecutive_same_length_mutants_are_both_killed
+tests/test_mutation_check.py::test_per_mutant_target_applies_to_that_file
+tests/test_mutation_check.py::test_mutant_without_target_falls_back_to_manifest_target
+tests/test_mutation_check.py::test_no_per_mutant_targets_behaves_identically
+tests/test_mutation_check.py::test_per_mutant_target_missing_file_is_error
+tests/test_mutation_check.py::test_unknown_per_mutant_key_is_error
+tests/test_mutation_check.py::test_anchor_mismatch_message_names_file
+tests/test_mutation_check.py::test_per_mutant_target_scoring_unchanged
+tests/test_mutation_check.py::test_two_mutants_same_target_pristine_cache_correct
+tests/test_mutation_check.py::test_report_names_the_auditing_interpreter
+tests/test_mutation_check.py::test_baseline_failure_names_the_interpreter_and_hints
+tests/test_mutation_check.py::test_python_flag_selects_the_interpreter
+tests/test_mutation_check.py::test_refuses_an_absolute_top_level_target
+tests/test_mutation_check.py::test_refuses_a_traversing_per_mutant_target
+tests/test_mutation_check.py::test_a_legitimate_relative_target_is_untouched
+tests/test_mutation_check.py::test_live_tree_guard_covers_all_targets
+
+26 tests collected in 0.01s
+
+=== P4: run mutation_check.json under HEAD's tool ===
+PYTHON: /Users/marklehn/Developer/bellows/.venv/bin/python
+HEAD: 751ab87a9199ea8e95c987e06a6c9ba433b6998d
+TARGET: tools/mutation_check.py sha256=1063e817ff24
+
+MUTANT score-any-nonzero-as-killed: KILLED — suite caught the defect
+MUTANT drop-baseline-control: KILLED — suite caught the defect
+MUTANT drop-per-mutant-target-lookup: KILLED — suite caught the defect
+MUTANT drop-unknown-key-refusal: KILLED — suite caught the defect
+MUTANT drop-filename-from-anchor-mismatch: KILLED — suite caught the defect
+MUTANT revert-pristine-cache-to-single-read: KILLED — suite caught the defect
+MUTANT revert-live-sha-guard-to-top-level-only: KILLED — suite caught the defect
+
+LIVE-TREE UNCHANGED: tools/mutation_check.py sha256=1063e817ff24
+
+MUTATION: 7 killed, 0 survived, 0 error
