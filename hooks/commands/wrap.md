@@ -80,8 +80,11 @@ done-on-another-machine-and-not-pulled (measured 2026-08-24).
    reference / rejected / superseded); `pending` is the one file-side value and
    means "no DB row yet — not ingested". Never write `learned`/`codified`, and
    never set a DB value by hand: after the next forge ingest, run
-   `python3 lessons-forge/scripts/project_status_markers.py --db <live db>
-   --lessons LESSONS.md --apply` (on the machine that holds the live DB; use
+   `python3 <forge-checkout>/scripts/project_status_markers.py --db <live db>
+   --lessons LESSONS.md --apply` — `<forge-checkout>` is the lessons-forge repo as
+   laid out on THIS machine (`~/Developer/forge_lessons` on the mini, which holds
+   the live DB; `lessons-forge/` under the governance root on the Air — thread 145)
+   (on the machine that holds the live DB; use
    `--snapshot <dump.sql>` elsewhere) and let it stamp the DB's status. Planner
    working-pattern lessons go to `LESSONS.md` LIKE ANY OTHER — ⛔ the memory repo is for what
    CANNOT be codified (identity, working preferences, pointers), and nothing else (CEO ruling
