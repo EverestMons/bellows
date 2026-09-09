@@ -135,6 +135,7 @@ def assemble_state(bellows_root, child_proc=None):
     # Header data
     pid = None
     sha = status.get_sha(bellows_root)
+    head = status.get_head_sha(bellows_root)
     uptime = None
     if daemon_running:
         pid = status.get_daemon_pid(lock_path)
@@ -192,6 +193,7 @@ def assemble_state(bellows_root, child_proc=None):
         "daemon_running": daemon_running,
         "pid": pid,
         "sha": sha,
+        "head": head,
         "uptime": uptime,
         "in_flight_rows": in_flight_rows,
         "awaiting_rows": awaiting_rows,
@@ -261,7 +263,7 @@ def render_screen(state, height, width, mode="normal", has_colors=False):
     # --- Header (row 0) ---
     if state["child_alive"] or state["daemon_running"]:
         header = status.render_daemon_header(
-            True, state["pid"], state["sha"], state["uptime"]
+            True, state["pid"], state["sha"], state["uptime"], head=state.get("head")
         )
         rows.append((_fit(header, width), attr_header_run))
     else:

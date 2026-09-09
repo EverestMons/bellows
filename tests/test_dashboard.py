@@ -117,7 +117,8 @@ class TestRenderRunningState:
         assert len(rows) == 50
         assert "\u25cf Bellows RUNNING" in lines[0]
         assert "pid 17920" in lines[0]
-        assert "sha 6274d1a" in lines[0]
+        assert "bellows.py@6274d1a" in lines[0]  # thread 104: the file-scoped sha under its own label
+        assert "HEAD " in lines[0]
         assert "up 6m" in lines[0]
 
         joined = "\n".join(lines)

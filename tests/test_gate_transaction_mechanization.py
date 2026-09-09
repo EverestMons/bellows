@@ -20,6 +20,10 @@ STANDARD_GATES = [
     "scope_check",
     "rule_20_self_check",
     "rule_22_verification",
+    # thread 210 (plan 100045 fork 5): the three verdict-pause gates get PASS rows too
+    "qa_test_result",
+    "quoted_test_nodes_exist",
+    "mutation_result",
 ]
 
 
@@ -64,7 +68,7 @@ class TestGateEventsAreMechanicalImage:
         ).fetchall()
         conn.close()
 
-        assert len(rows) == 7
+        assert len(rows) == len(STANDARD_GATES)
 
         row_dict = {name: result for name, result in rows}
         assert row_dict["scope_check"] == "fail"
@@ -98,7 +102,7 @@ class TestGateEventsAreMechanicalImage:
         conn.close()
 
         assert pass_count == 0
-        assert total == 7
+        assert total == len(STANDARD_GATES)
 
 
 class TestGatesCheckIsDeterministic:
