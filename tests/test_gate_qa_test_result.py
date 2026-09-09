@@ -112,21 +112,21 @@ class TestNoSummaryLineFailsClosed:
         plan = _make_plan()
         failures = _run_gate(tmp_path, plan, 2, "")
         assert len(failures) == 1
-        assert "no parseable pytest summary" in failures[0]["evidence"]
+        assert "no pytest summary in any .txt deposit" in failures[0]["evidence"]
 
     def test_no_equals_line(self, tmp_path):
         plan = _make_plan()
         evidence = "some random output\ncollected 10 items\nall done\n"
         failures = _run_gate(tmp_path, plan, 2, evidence)
         assert len(failures) == 1
-        assert "no parseable pytest summary" in failures[0]["evidence"]
+        assert "no pytest summary in any .txt deposit" in failures[0]["evidence"]
 
     def test_summary_without_passed(self, tmp_path):
         plan = _make_plan()
         evidence = _make_evidence("========================= no tests ran =========================")
         failures = _run_gate(tmp_path, plan, 2, evidence)
         assert len(failures) == 1
-        assert "no parseable pytest summary" in failures[0]["evidence"]
+        assert "no pytest summary in any .txt deposit" in failures[0]["evidence"]
 
 
 class TestErrorFormFailsClosed:
