@@ -1,0 +1,68 @@
+{
+  "target": "bellows.py",
+  "mutants": [
+    {
+      "name": "M1-behind-not-checked",
+      "why": "ignoring the behind count means a checkout 1 behind origin passes as current — test 2 asserts (False, '1 behind / 0 ahead')",
+      "anchor": "    if behind == 0 and ahead == 0:",
+      "replacement": "    if ahead == 0:",
+      "expect_fail": "tests/test_checkout_sync.py::test_checkout_behind"
+    },
+    {
+      "name": "M2-ahead-not-checked",
+      "why": "ignoring the ahead count means a checkout 1 ahead of origin passes as current — test 3 asserts (False, '0 behind / 1 ahead')",
+      "anchor": "    if behind == 0 and ahead == 0:",
+      "replacement": "    if behind == 0:",
+      "expect_fail": "tests/test_checkout_sync.py::test_checkout_ahead"
+    },
+    {
+      "name": "M3-failed-fetch-returns-true",
+      "why": "swallowing a non-zero fetch exit and returning True violates the fail-closed contract — test 4 asserts (False, 'fetch failed: ...')",
+      "anchor": "            return (False, f\"fetch failed: {first_err}\")",
+      "replacement": "            return (True, f\"M3: fetch failed but swallowed: {first_err}\")",
+      "expect_fail": "tests/test_checkout_sync.py::test_checkout_no_remote_fails_closed"
+    },
+    {
+      "name": "M4-push-skipped-in-teardown",
+      "why": "without the push call, origin/main does not advance after merge — test 7 asserts origin sha equals project sha",
+      "anchor": "        ok, push_detail = _push_main(project_path, main_branch)",
+      "replacement": "        ok, push_detail = True, \"M4: push skipped\"",
+      "expect_fail": "tests/test_checkout_sync.py::test_teardown_pushes_to_origin"
+    },
+    {
+      "name": "M5-rejected-push-swallowed",
+      "why": "if the rejected push is not turned into a WorktreeTeardownError, the worktree is silently removed — test 8 asserts WorktreeTeardownError with 'worktree_teardown_push_rejected'",
+      "anchor": "                f\"worktree_teardown_push_rejected: push rejected — push of {main_branch}\"",
+      "replacement": "                f\"M5-swallowed — {main_branch}\"",
+      "expect_fail": "tests/test_checkout_sync.py::test_teardown_push_rejected_raises"
+    },
+    {
+      "name": "M6-wire-a-writes-no-hold",
+      "why": "if the stale-checkout hold_reason is wrong, the sidecar check in test 9 fails — test 9 asserts hold_reason == 'stale-checkout'",
+      "anchor": "                    json.dump({\"hold_reason\": \"stale-checkout\", \"detail\": _cic_detail,",
+      "replacement": "                    json.dump({\"hold_reason\": \"M6-wrong-reason\", \"detail\": _cic_detail,",
+      "expect_fail": "tests/test_checkout_sync.py::test_wire_point_a_stale_checkout"
+    },
+    {
+      "name": "M7-push-uses-force",
+      "why": "a --force push overwrites origin unconditionally — test 10 asserts '--force' is absent from _push_main source",
+      "anchor": "            [\"git\", \"--no-pager\", \"push\", \"origin\", branch],",
+      "replacement": "            [\"git\", \"--no-pager\", \"push\", \"--force\", \"origin\", branch],",
+      "expect_fail": "tests/test_checkout_sync.py::test_no_force_rebase_reset_in_helpers"
+    },
+    {
+      "name": "M8-wire-c-push-rejected-not-retryable",
+      "why": "without 'worktree_teardown_push_rejected' in the retry allowlist, a push-rejected failure is not retried — test 13 asserts the teardown retry succeeds and clears the failure",
+      "anchor": "            for m in (\"worktree_teardown_dirty_tree\", \"worktree_teardown_push_rejected\"))",
+      "replacement": "            for m in (\"worktree_teardown_dirty_tree\",))",
+      "expect_fail": "tests/test_checkout_sync.py::test_wire_point_c_retry_admits_push_rejected"
+    },
+    {
+      "name": "M9-head-check-removed",
+      "why": "without the HEAD-branch guard a side-branch checkout is not detected as stale — test 14 asserts (False, 'HEAD is on side, not main')",
+      "anchor": "        if head != b:",
+      "replacement": "        if False:  # M9: HEAD check removed",
+      "expect_fail": "tests/test_checkout_sync.py::test_head_not_on_main_branch"
+    }
+  ]
+}

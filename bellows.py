@@ -998,6 +998,20 @@ def run_plan(plan_path: str, config: dict, response_server: server.ResponseServe
                 if bellows is not None:
                     bellows._seen.discard(verdict.slug_from_path(plan_path))
                 return
+            # Wire point A: refuse claim if checkout is not current with origin
+            _cic_ok, _cic_detail = _checkout_is_current(project_path, slug_for(plan_name))
+            if not _cic_ok:
+                hold_name = "hold-" + base_filename
+                hold_path = os.path.join(plan_dir, hold_name)
+                hold_json = os.path.splitext(hold_path)[0] + ".hold.json"
+                with open(hold_json, "w") as _hf:
+                    json.dump({"hold_reason": "stale-checkout", "detail": _cic_detail,
+                               "held_at": datetime.now().isoformat()}, _hf, indent=2)
+                os.rename(plan_path, hold_path)
+                _log("WARN", f"⚠️ HOLD — {_cic_detail}", slug=slug_for(plan_name))
+                if bellows is not None:
+                    bellows._seen.discard(verdict.slug_from_path(plan_path))
+                return
             if not plan_claim.claim_gate(base_filename, content_hash, config, _log,
                                           os.path.basename(project_path)):
                 if bellows is not None:
@@ -2016,6 +2030,104 @@ def _append_forward_row(project_path, plan_id, item_text):
     )
 
 
+def _main_branch(project_path: str, slug=None) -> str:
+    """Detect main branch via origin/HEAD symbolic-ref; fallback to 'main'."""
+    try:
+        result = subprocess.run(
+            ["git", "--no-pager", "symbolic-ref", "--short", "refs/remotes/origin/HEAD"],
+            cwd=project_path, capture_output=True, text=True, timeout=10,
+        )
+        if result.returncode == 0 and result.stdout.strip():
+            detected = result.stdout.strip()
+            if detected.startswith("origin/"):
+                detected = detected[len("origin/"):]
+            return detected
+        else:
+            _log("WARN", f"⚠ could not detect main branch, falling back to 'main'", slug=slug)
+    except Exception:
+        _log("WARN", f"⚠ could not detect main branch, falling back to 'main'", slug=slug)
+    return "main"
+
+
+def _checkout_is_current(project_path: str, slug=None, fetch_timeout: int = 30) -> tuple:
+    """Check if project_path's checkout is current with origin/<main_branch>.
+
+    Returns (ok: bool, detail: str). Never raises.
+    Skips network calls for in-place projects (no .git at project_path).
+    """
+    if not os.path.exists(os.path.join(project_path, ".git")):
+        return (True, "not a git repo — in-place")
+    b = _main_branch(project_path, slug)
+    try:
+        head_r = subprocess.run(
+            ["git", "--no-pager", "rev-parse", "--abbrev-ref", "HEAD"],
+            cwd=project_path, capture_output=True, text=True, timeout=10,
+        )
+        head = head_r.stdout.strip() if head_r.returncode == 0 else ""
+        if head != b:
+            return (False, f"stale checkout: HEAD is on {head}, not {b}")
+    except Exception as e:
+        return (False, f"fetch failed: {e}")
+    try:
+        fetch_r = subprocess.run(
+            ["git", "--no-pager", "fetch", "origin", b],
+            cwd=project_path, capture_output=True, text=True, timeout=fetch_timeout,
+        )
+        if fetch_r.returncode != 0:
+            first_err = next(
+                (line for line in fetch_r.stderr.splitlines() if line.strip()),
+                fetch_r.stderr.strip(),
+            )
+            return (False, f"fetch failed: {first_err}")
+    except subprocess.TimeoutExpired:
+        return (False, "fetch failed: timeout")
+    except OSError as e:
+        return (False, f"fetch failed: {e}")
+    try:
+        behind_r = subprocess.run(
+            ["git", "--no-pager", "rev-list", "--count", f"{b}..origin/{b}"],
+            cwd=project_path, capture_output=True, text=True, timeout=10,
+        )
+        ahead_r = subprocess.run(
+            ["git", "--no-pager", "rev-list", "--count", f"origin/{b}..{b}"],
+            cwd=project_path, capture_output=True, text=True, timeout=10,
+        )
+        behind = int(behind_r.stdout.strip()) if behind_r.returncode == 0 else 0
+        ahead = int(ahead_r.stdout.strip()) if ahead_r.returncode == 0 else 0
+    except Exception as e:
+        return (False, f"fetch failed: {e}")
+    if behind == 0 and ahead == 0:
+        return (True, "current")
+    return (
+        False,
+        f"stale checkout: {b} is {behind} behind / {ahead} ahead of origin/{b}"
+        f" — pull (behind) or push (ahead) on this checkout;"
+        f" the hold releases itself on the next poll that finds it current",
+    )
+
+
+def _push_main(project_path: str, branch: str) -> tuple:
+    """Push branch to origin. Returns (ok: bool, detail: str). Never raises."""
+    try:
+        result = subprocess.run(
+            ["git", "--no-pager", "push", "origin", branch],
+            cwd=project_path, capture_output=True, text=True, timeout=60,
+        )
+        if result.returncode == 0:
+            return (True, (result.stdout + result.stderr).strip())
+        first_err = next(
+            (line for line in result.stderr.splitlines() if line.strip()),
+            result.stderr.strip(),
+        )
+        rest = result.stderr.strip()
+        detail = (first_err + "\n" + rest).strip() if rest and rest != first_err else first_err
+        return (False, detail)
+    except subprocess.TimeoutExpired:
+        return (False, "push failed: timeout")
+    except OSError as e:
+        return (False, f"push failed: {e}")
+
+
 def _teardown_worktree(project_path: str, wt_path: str, slug: str, plan_id: int = None) -> list:
     """Tear down a worktree: merge commits back to main, remove worktree and branch.
 
@@ -2027,21 +2139,7 @@ def _teardown_worktree(project_path: str, wt_path: str, slug: str, plan_id: int 
         return []
 
     # (a) Detect main branch
-    main_branch = "main"
-    try:
-        result = subprocess.run(
-            ["git", "--no-pager", "symbolic-ref", "--short", "refs/remotes/origin/HEAD"],
-            cwd=project_path, capture_output=True, text=True, timeout=10,
-        )
-        if result.returncode == 0 and result.stdout.strip():
-            detected = result.stdout.strip()
-            if detected.startswith("origin/"):
-                detected = detected[len("origin/"):]
-            main_branch = detected
-        else:
-            _log("WARN", f"⚠ could not detect main branch, falling back to 'main'", slug=slug)
-    except Exception:
-        _log("WARN", f"⚠ could not detect main branch, falling back to 'main'", slug=slug)
+    main_branch = _main_branch(project_path, slug)
 
     # Legacy-worktree migration: detect pre-merge-model detached-HEAD worktrees
     branch_name = f"bellows-wt/{slug}"
@@ -2217,6 +2315,23 @@ def _teardown_worktree(project_path: str, wt_path: str, slug: str, plan_id: int 
                 f"merge conflict on {branch_name} for slug {slug}: {result.stderr.strip()}"
             )
 
+    # Wire point B: push main to origin immediately after the merge (only when origin is configured)
+    _origin_r = subprocess.run(
+        ["git", "--no-pager", "remote", "get-url", "origin"],
+        cwd=project_path, capture_output=True, text=True, timeout=5,
+    )
+    if _origin_r.returncode == 0:
+        ok, push_detail = _push_main(project_path, main_branch)
+        if not ok:
+            raise WorktreeTeardownError(
+                f"worktree_teardown_push_rejected: push rejected — push of {main_branch}"
+                f" after merging {branch_name} for slug {slug} was refused: {push_detail}"
+                f" — someone landed on origin/{main_branch} outside a plan;"
+                f" on this checkout: git fetch origin && git merge origin/{main_branch}"
+                f" (resolve by hand), then re-issue continue"
+                f" — the retry merges (a no-op) and pushes again"
+            )
+
     # (d) Remove the worktree
     try:
         result = subprocess.run(
@@ -2271,7 +2386,11 @@ def _retry_recoverable_teardown(gate_result: dict, project_path: str, wt_path: s
         _log("INFO", f"worktree gone at {wt_path} — skipping teardown retry; leaving for Gap-1b", slug=slug)
         return []
 
-    if not all("worktree_teardown_dirty_tree" in (f.get("evidence") or "") for f in wt_fails):
+    if not all(
+        any(m in (f.get("evidence") or "")
+            for m in ("worktree_teardown_dirty_tree", "worktree_teardown_push_rejected"))
+        for f in wt_fails
+    ):
         _log("INFO", "non-dirty-tree teardown failure (content conflict) — not retrying; leaving for Gap-1b", slug=slug)
         return []
 
@@ -2730,6 +2849,44 @@ class Bellows:
             _log("WARN", f"cycle-nudge: evaluation failed: {e}")
 
     def _rescan(self, handler):
+        # Wire point A′: self-release stale-checkout holds (at most one per rescan, oldest first)
+        _sc_held = []
+        for _dp in self.config.get("watched_projects", []):
+            if not os.path.isdir(_dp):
+                continue
+            for _fn in os.listdir(_dp):
+                if not (_fn.startswith("hold-") and _fn.endswith(".hold.json")):
+                    continue
+                _sc_path = os.path.join(_dp, _fn)
+                try:
+                    with open(_sc_path) as _f:
+                        _sc_data = json.load(_f)
+                except Exception:
+                    continue
+                if _sc_data.get("hold_reason") != "stale-checkout":
+                    continue
+                _sc_held.append((_sc_data.get("held_at", ""), _sc_path, _fn, _dp))
+        if _sc_held:
+            _sc_held.sort(key=lambda x: x[0])
+            _sc_held_at, _sc_sidecar, _sc_fname, _sc_dp = _sc_held[0]
+            _sc_hold_base = _sc_fname[:-len(".hold.json")]
+            _sc_hold_file = _sc_hold_base + ".md"
+            _sc_hold_path = os.path.join(_sc_dp, _sc_hold_file)
+            _sc_bare_file = _sc_hold_file[len("hold-"):]
+            _sc_bare_path = os.path.join(_sc_dp, _sc_bare_file)
+            _sc_slug = verdict.slug_from_path(_sc_hold_path)
+            _sc_project = str(pathlib.Path(_sc_dp).parents[1])
+            _sc_ok, _sc_detail = _checkout_is_current(_sc_project, _sc_slug, fetch_timeout=10)
+            if _sc_ok:
+                if os.path.exists(_sc_bare_path):
+                    _log("WARN",
+                         f"⚠️ stale-checkout hold: cannot release — bare file already exists: {_sc_bare_file}",
+                         slug=_sc_slug)
+                else:
+                    os.rename(_sc_hold_path, _sc_bare_path)
+                    os.remove(_sc_sidecar)
+                    _log("EVENT", "stale-checkout hold released — checkout current", slug=_sc_slug)
+
         # Check for resolved verdicts
         self._consume_verdicts()
         # Resume parked plans whose session-limit reset time has passed
