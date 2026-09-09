@@ -1,0 +1,10 @@
+PYTHON: /Users/marklehn/Developer/bellows/.venv/bin/python
+HEAD: 54e8b850fc7cddf7edb67e8469b5de2f712a2c79
+TARGET: scripts/cycle_check.py sha256=536455bc8884
+
+MUTANT M1-delete-ruling-213-check: KILLED — suite caught the defect
+MUTANT M2-check-before-T0-arm: KILLED — suite caught the defect
+
+LIVE-TREE UNCHANGED: scripts/cycle_check.py sha256=536455bc8884
+
+MUTATION: 2 killed, 0 survived, 0 error

@@ -1,0 +1,13 @@
+PYTHON: /Users/marklehn/Developer/bellows/.venv/bin/python
+HEAD: 410bcd0bcccf50dc348af2e7a6f6e1beca259167
+TARGET: scripts/walk_register_lint.py sha256=8ac32275ba6c
+
+MUTANT M3-rows-must-equal-declared: KILLED — suite caught the defect
+MUTANT M4-highest-walk-judged: KILLED — suite caught the defect
+MUTANT M5-undeclared-becomes-covered: KILLED — suite caught the defect
+MUTANT M6-status-conformant-reverted: KILLED — suite caught the defect
+MUTANT M7-panel-rows-counted-as-walk-1: KILLED — suite caught the defect
+
+LIVE-TREE UNCHANGED: scripts/walk_register_lint.py sha256=8ac32275ba6c
+
+MUTATION: 5 killed, 0 survived, 0 error

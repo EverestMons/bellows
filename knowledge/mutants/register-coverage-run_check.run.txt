@@ -1,0 +1,9 @@
+PYTHON: /Users/marklehn/Developer/bellows/.venv/bin/python
+HEAD: df6acd35081d5cb3eb41ff3776274e0d3c081ae4
+TARGET: tools/run_check.py sha256=18cff59c6cba
+
+MUTANT M8-judge-register-ignores-incomplete: KILLED — suite caught the defect
+
+LIVE-TREE UNCHANGED: tools/run_check.py sha256=18cff59c6cba
+
+MUTATION: 1 killed, 0 survived, 0 error
