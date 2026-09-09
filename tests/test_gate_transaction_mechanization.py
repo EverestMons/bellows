@@ -24,6 +24,9 @@ STANDARD_GATES = [
     "qa_test_result",
     "quoted_test_nodes_exist",
     "mutation_result",
+    # plan 100052: two new gates added after mutation_result
+    "qa_nodes_match_suite",
+    "dev_log_declared_text",
 ]
 
 

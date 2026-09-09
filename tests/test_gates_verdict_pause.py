@@ -632,7 +632,7 @@ def test_15_no_mutant_files_gate_adds_nothing(tmp_path):
 # ---------------------------------------------------------------------------
 
 def test_16_dispatch_order_and_verdict_table():
-    """gates.check dispatch order unchanged; verdict table has the three new rows."""
+    """gates.check dispatch order ends with two new gates; verdict table has five new rows."""
     order = []
     gate_funcs = [
         "_gate_receipt_status",
@@ -648,6 +648,8 @@ def test_16_dispatch_order_and_verdict_table():
         "_gate_scope_check",
         "_gate_quoted_test_nodes_exist",
         "_gate_mutation_result",
+        "_gate_qa_nodes_match_suite",
+        "_gate_dev_log_declared_text",
     ]
 
     wrappers = {}
@@ -677,10 +679,12 @@ def test_16_dispatch_order_and_verdict_table():
         "_gate_scope_check",
         "_gate_quoted_test_nodes_exist",
         "_gate_mutation_result",
+        "_gate_qa_nodes_match_suite",
+        "_gate_dev_log_declared_text",
     ]
     assert order == expected_order, f"Dispatch order mismatch:\n  got: {order}\n  want: {expected_order}"
 
-    # Verdict table — PASS rows for the three new gates
+    # Verdict table — PASS rows for all five verdict-pause gates
     table_clean = verdict._build_verification_results_table(result, None, 1, 2)
 
     # Pre-existing rows byte-identical to pre-change capture
@@ -699,10 +703,14 @@ def test_16_dispatch_order_and_verdict_table():
     for row in pre_existing_rows:
         assert row in table_clean, f"Pre-existing row missing: {row!r}"
 
-    # New PASS rows
+    # Rows from plan 100045 (unchanged)
     assert "| qa_test_result | PASS | pytest summary clean, or not a QA step |" in table_clean
     assert "| quoted_test_nodes_exist | PASS | Every quoted test node exists in the worktree |" in table_clean
     assert "| mutation_result | PASS | Mutation run clean, or none declared |" in table_clean
+
+    # Two new rows (plan 100052)
+    assert "| qa_nodes_match_suite | PASS | Quoted nodes agree with the suite output, or not a QA step |" in table_clean
+    assert "| dev_log_declared_text | PASS | Declared headings and verbatim cells present, or none declared |" in table_clean
 
     # FAIL rows when failures present
     result_with_fails = dict(result)
@@ -710,19 +718,23 @@ def test_16_dispatch_order_and_verdict_table():
         {"gate": "qa_test_result", "evidence": "no summary in any .txt"},
         {"gate": "quoted_test_nodes_exist", "evidence": "test_foo not found"},
         {"gate": "mutation_result", "evidence": "1 survived"},
+        {"gate": "qa_nodes_match_suite", "evidence": "quoted FAILED, absent from suite: tests/x.py::test_x"},
+        {"gate": "dev_log_declared_text", "evidence": "heading missing: ## Cost"},
     ]
     table_fail = verdict._build_verification_results_table(result_with_fails, None, 1, 2)
     assert "| qa_test_result | FAIL | no summary in any .txt |" in table_fail
     assert "| quoted_test_nodes_exist | FAIL | test_foo not found |" in table_fail
     assert "| mutation_result | FAIL | 1 survived |" in table_fail
+    assert "| qa_nodes_match_suite | FAIL | quoted FAILED, absent from suite: tests/x.py::test_x |" in table_fail
+    assert "| dev_log_declared_text | FAIL | heading missing: ## Cost |" in table_fail
 
 
 # ---------------------------------------------------------------------------
 # Test 17: 65 on DEV step / two missing nodes
 # ---------------------------------------------------------------------------
 
-def test_17_dev_step_adds_nothing_and_two_missing_nodes_one_failure(tmp_path):
-    """65 on DEV step → adds nothing; QA receipt quoting TWO missing nodes → one failure listing both."""
+def test_17_dev_step_also_fires_and_two_missing_nodes_one_failure(tmp_path):
+    """211: DEV step with two missing nodes → one failure listing both (early return removed)."""
     test_file = tmp_path / "tests" / "test_foo.py"
     test_file.parent.mkdir(parents=True)
     test_file.write_text("def test_real():\n    pass\n")
@@ -736,15 +748,19 @@ def test_17_dev_step_adds_nothing_and_two_missing_nodes_one_failure(tmp_path):
 
     plan = _qa_plan_with_md_deposit("qa-report.md")
 
-    # DEV step: adds nothing
     parsed = _clean_parsed()
+
+    # DEV step: now fires (early return removed) — two missing nodes → one failure naming both
     failures_dev = []
     gates._gate_quoted_test_nodes_exist(
         False, plan, 2, str(tmp_path), parsed, failures_dev, wt_path=str(tmp_path)
     )
-    assert failures_dev == []
+    assert len(failures_dev) == 1
+    assert failures_dev[0]["gate"] == "quoted_test_nodes_exist"
+    assert "test_missing_one" in failures_dev[0]["evidence"]
+    assert "test_missing_two" in failures_dev[0]["evidence"]
 
-    # QA step: one failure listing both missing nodes
+    # QA step: same — one failure listing both missing nodes
     failures_qa = []
     gates._gate_quoted_test_nodes_exist(
         True, plan, 2, str(tmp_path), parsed, failures_qa, wt_path=str(tmp_path)

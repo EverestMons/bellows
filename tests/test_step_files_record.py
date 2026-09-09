@@ -8,6 +8,9 @@ import sys
 import pytest
 
 import lifecycle
+from test_gate_transaction_mechanization import STANDARD_GATES
+
+_N_STANDARD_GATES = len(STANDARD_GATES)
 
 _REPO_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 TOOL = os.path.join(_REPO_ROOT, "tools", "replay_scope_check.py")
@@ -98,7 +101,7 @@ def test_2_files_recorded_with_gate_rows(tmp_path):
     ).fetchone()[0]
     conn.close()
     assert paths_a == {"a.py", "b/c.md"}, f"case A paths: {paths_a}"
-    assert pass_count_a == 10, f"case A pass rows: {pass_count_a}"
+    assert pass_count_a == _N_STANDARD_GATES, f"case A pass rows: {pass_count_a}"
 
     # Case B: one FAIL, same files → two step_files rows + one FAIL row
     plan_id_b, step_id_b = _mint_step(db_path, step_number=1, placeholder="ph-b.md")
@@ -327,7 +330,7 @@ def test_6_step_files_failure_no_raise_gate_rows_present(tmp_path, monkeypatch):
         "SELECT COUNT(*) FROM step_files WHERE step_id = ?", (step_id,)
     ).fetchone()[0]
     conn.close()
-    assert gate_count == 10, f"gate rows missing after step_files failure: {gate_count}"
+    assert gate_count == _N_STANDARD_GATES, f"gate rows missing after step_files failure: {gate_count}"
     assert step_files_count == 0, f"step_files rows present after failure: {step_files_count}"
 
 

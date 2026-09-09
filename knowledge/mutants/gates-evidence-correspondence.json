@@ -1,0 +1,75 @@
+{
+  "target": "gates.py",
+  "mutants": [
+    {
+      "name": "select-qa-report-returns-first",
+      "why": "_select_qa_report scores files by banner and ## Verification lines and returns the highest-scoring path; bypassing scoring and always returning md_paths[0] means the banner-file wins only by accident — test 1 catches this when the first file has no banner and the second does",
+      "anchor": "    best_score = max(s for s, _, _ in scores)",
+      "replacement": "    best_score = -1",
+      "expect_fail": "tests/test_gates_evidence_correspondence.py::test_1_banner_wins"
+    },
+    {
+      "name": "restore-qa-only-guard-65",
+      "why": "thread 211 removed the QA-only early return from _gate_quoted_test_nodes_exist so it fires on every step; restoring the guard means DEV steps no longer fire and test_4's assertion that the gate catches missing nodes on a DEV step breaks",
+      "anchor": "    \"\"\"Gate 65: every tests/…::Name token quoted in any step's deposits must exist in the worktree.\"\"\"",
+      "replacement": "    \"\"\"Gate 65: every tests/…::Name token quoted in any step's deposits must exist in the worktree.\"\"\"\n    if not is_qa_step:\n        return",
+      "expect_fail": "tests/test_gates_evidence_correspondence.py::test_4_211_dev_step_missing_nodes"
+    },
+    {
+      "name": "skip-failed-marked-check",
+      "why": "_gate_qa_nodes_match_suite must verify that a FAILED-marked report line's node appears as FAILED/ERROR in the suite; replacing the check with `if False` silently passes a quoted-FAILED node absent from the suite",
+      "anchor": "        failed_marked = any(m in line for m in _FAILED_MARKERS)",
+      "replacement": "        failed_marked = False",
+      "expect_fail": "tests/test_gates_evidence_correspondence.py::test_7_203_failed_marked_absent"
+    },
+    {
+      "name": "invert-passed-marked-check",
+      "why": "_gate_qa_nodes_match_suite must verify that a PASSED-marked node does NOT appear as FAILED in the suite; inverting the check to `if not suite_fail_re.search` makes it fire when the suite is clean, not when it contradicts",
+      "anchor": "        passed_marked = any(m in line for m in _PASSED_MARKERS)",
+      "replacement": "        passed_marked = True",
+      "expect_fail": "tests/test_gates_evidence_correspondence.py::test_8_203_passed_marked_contradicted"
+    },
+    {
+      "name": "drop-verbose-detection",
+      "why": "_gate_qa_nodes_match_suite checks that quoted-PASSED nodes appear as PASSED in verbose suites; hardcoding is_verbose=False disables that check so a node absent from a verbose suite passes silently",
+      "anchor": "    is_verbose = bool(_VERBOSE_RA_RE.search(suite_content)) or bool(_VERBOSE_V_RE.search(suite_content))",
+      "replacement": "    is_verbose = False",
+      "expect_fail": "tests/test_gates_evidence_correspondence.py::test_10_203_verbose_suite"
+    },
+    {
+      "name": "heading-substring-not-full-line",
+      "why": "_gate_dev_log_declared_text arm (a) must match a declared heading as a full stripped line, not a substring; replacing the set-of-stripped-lines membership test with a plain substring check lets a partial heading pass when a heading is embedded in prose",
+      "anchor": "            heading in {line.strip() for line in content.splitlines()}",
+      "replacement": "            heading in content",
+      "expect_fail": "tests/test_gates_evidence_correspondence.py::test_12_196_arm_a"
+    },
+    {
+      "name": "verbatim-always-matches",
+      "why": "_gate_dev_log_declared_text arm (b) must compare the normalized pin value against the deposit section; replacing the comparison with True means any section under the right heading passes even with the wrong value",
+      "anchor": "        if in_section and norm_value in _norm",
+      "replacement": "        if in_section and True",
+      "expect_fail": "tests/test_gates_evidence_correspondence.py::test_13_196_arm_b"
+    },
+    {
+      "name": "drop-dev-log-declared-text-dispatch",
+      "why": "_gate_dev_log_declared_text must be dispatched from check(); removing the call means declared headings and verbatim cells are never verified — test 15 checks the dispatch order and detects its absence",
+      "anchor": "    # Gate 12: declared headings and verbatim cells present (every step)\n    _gate_dev_log_declared_text(plan_text, step_number, project_path, parsed, failures, wt_path=wt_path)",
+      "replacement": "    # Gate 12: declared headings and verbatim cells present (every step)\n    pass",
+      "expect_fail": "tests/test_gates_evidence_correspondence.py::test_15_dispatch_and_rows"
+    },
+    {
+      "name": "drop-verification-score",
+      "why": "_select_qa_report scores +1 for a line starting with '## Verification'; dropping this score means a file with only ## Verification and no banner ties with a zero-score file and the fallback md_paths[0] wins — test 3 catches this when the second file has ## Verification and should win",
+      "anchor": "                if line.startswith(\"## Verification\"):",
+      "replacement": "                if False:",
+      "expect_fail": "tests/test_gates_evidence_correspondence.py::test_3_scoring"
+    },
+    {
+      "name": "drop-suite-full-and-largest-passed-tiebreaks",
+      "why": "_select_summary_txt prefers files with 'suite'/'full' in basename, then breaks ties by largest passed count; removing both tiebreaks returns the first summary found, which fails test 17 when the suite file is second and the no-suite file has fewer passes",
+      "anchor": "    return max(summary_matches, key=lambda x: _passed_count(x[2]))",
+      "replacement": "    return summary_matches[0]",
+      "expect_fail": "tests/test_gates_evidence_correspondence.py::test_17_suite_selection_rule_21"
+    }
+  ]
+}

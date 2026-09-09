@@ -123,6 +123,8 @@ def _build_verification_results_table(gate_result, parsed, step_number, total_st
         ("qa_test_result", "qa_test_result", "pytest summary clean, or not a QA step"),
         ("quoted_test_nodes_exist", "quoted_test_nodes_exist", "Every quoted test node exists in the worktree"),
         ("mutation_result", "mutation_result", "Mutation run clean, or none declared"),
+        ("qa_nodes_match_suite", "qa_nodes_match_suite", "Quoted nodes agree with the suite output, or not a QA step"),
+        ("dev_log_declared_text", "dev_log_declared_text", "Declared headings and verbatim cells present, or none declared"),
     ]
 
     failures_by_gate = {}

@@ -308,10 +308,14 @@ def check(parsed, plan_text, step_number, project_path, files_changed=None, wt_p
     _gate_file_change_audit(files_changed)
     # Gate 8: scope check
     _gate_scope_check(plan_text, step_number, files_changed, failures, project_path=project_path)
-    # Gate 9: quoted test nodes exist (QA steps only)
+    # Gate 9: quoted test nodes exist (every step)
     _gate_quoted_test_nodes_exist(is_qa_step, plan_text, step_number, project_path, parsed, failures, wt_path=wt_path)
     # Gate 10: mutation result
     _gate_mutation_result(plan_text, step_number, project_path, parsed, failures, wt_path=wt_path)
+    # Gate 11: quoted node verdicts agree with suite output (QA steps only)
+    _gate_qa_nodes_match_suite(is_qa_step, plan_text, step_number, project_path, parsed, failures, wt_path=wt_path)
+    # Gate 12: declared headings and verbatim cells present (every step)
+    _gate_dev_log_declared_text(plan_text, step_number, project_path, parsed, failures, wt_path=wt_path)
     vr = parsed.get("verdict_requested", {})
     requested = vr.get("requested", False)
     request_body = vr.get("reason")
@@ -583,7 +587,8 @@ def _extract_plan_required_deposits(step_text):
 
     Returns a list preserving insertion order; for the block form, this equals the
     authoring order of bullets in the ``**Deposits:**`` block. Convention: the QA report
-    is the first ``.md`` entry in the block.
+    is the ``.md`` entry chosen by _select_qa_report (banner and ## Verification scoring;
+    md_paths[0] on ties or all-zero scores).
 
     Filters out `_staging_*` basenames (transient atomic-deposit filenames mentioned in
     step prose as part of describing the deposit mechanism, never persistent on disk).
@@ -666,6 +671,81 @@ def _extract_plan_scope(step_text):
     return (files, prefixes)
 
 
+def _select_qa_report(md_paths, project_path, wt_path=None):
+    """Choose the QA report from md_paths by content scoring.
+
+    Scores each path: +2 when a line's strip() equals the Rule 20 banner (whole line,
+    never substring); +1 for a line starting '## Verification'. Unresolvable or unreadable
+    paths score 0 and stay eligible. Returns (best_path, best_resolved) — best_resolved
+    may be None when the chosen file does not exist. Returns None only when md_paths is
+    empty. Every score 0 falls back to md_paths[0] (legacy position).
+    """
+    if not md_paths:
+        return None
+    banner = "Rule 20 — QA Self-Check Results"
+    scores = []
+    for p in md_paths:
+        score = 0
+        resolved = _resolve_deposit_path(p, project_path, wt_path=wt_path)
+        if resolved is not None:
+            try:
+                with open(resolved, "r", encoding="utf-8") as f:
+                    content = f.read()
+                for line in content.splitlines():
+                    if line.strip() == banner:
+                        score += 2
+                    if line.startswith("## Verification"):
+                        score += 1
+            except (FileNotFoundError, UnicodeDecodeError, OSError):
+                pass
+        scores.append((score, p, resolved))
+    best_score = max(s for s, _, _ in scores)
+    if best_score == 0:
+        first_resolved = _resolve_deposit_path(md_paths[0], project_path, wt_path=wt_path)
+        return (md_paths[0], first_resolved)
+    for score, p, resolved in scores:
+        if score == best_score:
+            return (p, resolved)
+
+
+def _select_summary_txt(txt_paths, project_path, wt_path=None):
+    """Choose the best pytest-summary .txt from txt_paths by content and name.
+
+    Scans each path for a _PYTEST_SUMMARY_RE match. Among those that carry a summary:
+    a basename containing 'suite' or 'full' wins; else the largest 'passed' count wins;
+    else the first match. Returns (path, resolved, content) or None when no .txt carries
+    a summary. Lifted from _gate_qa_test_result and widened by two tie-breaks (S7).
+    """
+    if not txt_paths:
+        return None
+    summary_matches = []
+    for p in txt_paths:
+        r = _resolve_deposit_path(p, project_path, wt_path=wt_path)
+        if r is None:
+            continue
+        try:
+            with open(r, "r", encoding="utf-8") as f:
+                c = f.read()
+        except (FileNotFoundError, UnicodeDecodeError, OSError):
+            continue
+        if _PYTEST_SUMMARY_RE.search(c):
+            summary_matches.append((p, r, c))
+    if not summary_matches:
+        return None
+    suite_full = [
+        (p, r, c) for p, r, c in summary_matches
+        if any(kw in os.path.basename(p) for kw in ("suite", "full"))
+    ]
+    if suite_full:
+        return suite_full[0]
+
+    def _passed_count(content):
+        m = re.search(r"(\d+)\s+passed", content)
+        return int(m.group(1)) if m else 0
+
+    return max(summary_matches, key=lambda x: _passed_count(x[2]))
+
+
 def _gate_rule_20_self_check(is_qa_step, plan_text, step_number, project_path, parsed, failures, wt_path=None):
     """Verify QA-deposited reports contain a Rule 20 self-check banner with PASSED status."""
     if not is_qa_step:
@@ -686,12 +766,10 @@ def _gate_rule_20_self_check(is_qa_step, plan_text, step_number, project_path, p
 
     banner = "Rule 20 — QA Self-Check Results"
 
-    # Item #7 fix (2026-05-24, Shape 7A): scope banner scan to the QA report (first .md deposit),
-    # matching the pattern used by _gate_rule_22_verification. Previously iterated ALL md_paths,
-    # which caused false-positives when a non-QA deposit (e.g., agent-prompt-feedback.md)
-    # contained the banner text as incidental prose.
-    qa_report_path = md_paths[0]
-    resolved = _resolve_deposit_path(qa_report_path, project_path, wt_path=wt_path)
+    # _select_qa_report chooses by content (banner and ## Verification scoring);
+    # falls back to md_paths[0] when all scores are 0, preserving legacy behaviour
+    # (Shape 7A: a banner inside a prose sentence scores 0, not 2).
+    qa_report_path, resolved = _select_qa_report(md_paths, project_path, wt_path=wt_path)
     if resolved is None:
         failures.append({"gate": "rule_20_self_check", "evidence": f"deposit file unreadable: {qa_report_path} (file not found)"})
         return
@@ -745,8 +823,7 @@ def _gate_rule_22_verification(is_qa_step, plan_text, step_number, project_path,
     if not md_paths:
         return
 
-    qa_report_path = md_paths[0]
-    resolved = _resolve_deposit_path(qa_report_path, project_path, wt_path=wt_path)
+    qa_report_path, resolved = _select_qa_report(md_paths, project_path, wt_path=wt_path)
     if resolved is None:
         return  # (a) already flagged missing file
 
@@ -875,29 +952,14 @@ def _gate_qa_test_result(is_qa_step, plan_text, step_number, project_path, parse
         failures.append({"gate": "qa_test_result", "evidence": "no .txt evidence deposit found — cannot certify test result; pausing"})
         return
 
-    # Content-based selection (43): scan each .txt for a pytest summary line;
-    # choose the first whose basename contains 'suite', else the first match;
-    # if none carry a summary, FAIL naming every .txt inspected.
-    summary_matches = []
-    for p in txt_paths:
-        r = _resolve_deposit_path(p, project_path, wt_path=wt_path)
-        if r is None:
-            continue  # gate 5 (deposit_exists) already names it missing
-        try:
-            with open(r, "r", encoding="utf-8") as f:
-                c = f.read()
-        except (FileNotFoundError, UnicodeDecodeError, OSError):
-            continue
-        if _PYTEST_SUMMARY_RE.search(c):
-            summary_matches.append((p, r, c))
-
-    if not summary_matches:
+    # Content-based selection: _select_summary_txt scans each .txt for a summary line,
+    # choosing by 'suite'/'full' basename, then largest passed count, then first match.
+    selected = _select_summary_txt(txt_paths, project_path, wt_path=wt_path)
+    if selected is None:
         inspected = ", ".join(txt_paths)
         failures.append({"gate": "qa_test_result", "evidence": f"no pytest summary in any .txt deposit: {inspected}"})
         return
-
-    suite_matches = [(p, r, c) for p, r, c in summary_matches if "suite" in os.path.basename(p)]
-    evidence_path, resolved, content = suite_matches[0] if suite_matches else summary_matches[0]
+    evidence_path, resolved, content = selected
 
     summary_line = None
     for line in content.splitlines():
@@ -1173,10 +1235,7 @@ _TEST_NODE_RE = re.compile(
 
 
 def _gate_quoted_test_nodes_exist(is_qa_step, plan_text, step_number, project_path, parsed, failures, wt_path=None):
-    """Gate 65: every tests/…::Name token quoted in QA deposits must exist in the worktree."""
-    if not is_qa_step:
-        return
-
+    """Gate 65: every tests/…::Name token quoted in any step's deposits must exist in the worktree."""
     step_text = _extract_step_text(plan_text, step_number)
     if not step_text:
         return
@@ -1279,3 +1338,201 @@ def _gate_mutation_result(plan_text, step_number, project_path, parsed, failures
         killed, survived, errors = int(m.group(1)), int(m.group(2)), int(m.group(3))
         if survived != 0 or errors != 0 or killed < 1:
             failures.append({"gate": "mutation_result", "evidence": f"mutation check failed in {run_path}: {last_mutation_line}"})
+
+
+# Marker sets for _gate_qa_nodes_match_suite (case-sensitive substring test).
+# A node NAME containing a marker string is unclassifiable (silently skipped).
+_FAILED_MARKERS = frozenset({"FAILED", "failed", "ERROR", "❌"})
+_PASSED_MARKERS = frozenset({"PASSED", "passed", "✅"})
+# Verbose-suite detection patterns.
+_VERBOSE_RA_RE = re.compile(r"^PASSED\s+tests/", re.MULTILINE)
+_VERBOSE_V_RE = re.compile(r"tests/\S+::\S+\s+PASSED")
+
+
+def _gate_qa_nodes_match_suite(is_qa_step, plan_text, step_number, project_path, parsed, failures, wt_path=None):
+    """203: quoted node verdicts in the QA report must agree with the suite output.
+
+    For every report line carrying a _TEST_NODE_RE match:
+    - failed-marked (FAILED/failed/ERROR/❌ in line) → node must appear in suite as
+      FAILED/ERROR line; absent → 'quoted FAILED, absent from suite'.
+    - passed-marked (PASSED/passed/✅ in line) → node must NOT appear in suite as
+      FAILED/ERROR; if suite is verbose it must also appear as PASSED; absent from
+      verbose suite → 'quoted PASSED, absent from verbose suite'.
+    - both or neither markers → unclassified, skipped.
+    One failure per gate run; evidence lists every offending node.
+    """
+    if not is_qa_step:
+        return
+
+    step_text = _extract_step_text(plan_text, step_number)
+    if not step_text:
+        return
+
+    deposit_paths = _extract_plan_required_deposits(step_text)
+    md_paths = [p for p in deposit_paths if p.endswith(".md")]
+    if not md_paths:
+        md_paths = [p for p in _extract_agent_declared_deposits(parsed) if p.endswith(".md")]
+
+    txt_paths = [p for p in deposit_paths if p.endswith(".txt")]
+    if not txt_paths:
+        txt_paths = [p for p in _extract_agent_declared_deposits(parsed) if p.endswith(".txt")]
+
+    if not md_paths or not txt_paths:
+        return  # rule_20 / qa_test_result already name the absence
+
+    report = _select_qa_report(md_paths, project_path, wt_path=wt_path)
+    suite = _select_summary_txt(txt_paths, project_path, wt_path=wt_path)
+    if report is None or suite is None:
+        return
+
+    _, report_resolved = report
+    _, _, suite_content = suite
+    if report_resolved is None:
+        return
+
+    try:
+        with open(report_resolved, "r", encoding="utf-8") as f:
+            report_content = f.read()
+    except (FileNotFoundError, UnicodeDecodeError, OSError):
+        return
+
+    is_verbose = bool(_VERBOSE_RA_RE.search(suite_content)) or bool(_VERBOSE_V_RE.search(suite_content))
+
+    offending = []
+    for line in report_content.splitlines():
+        nodes = _TEST_NODE_RE.findall(line)
+        if not nodes:
+            continue
+        failed_marked = any(m in line for m in _FAILED_MARKERS)
+        passed_marked = any(m in line for m in _PASSED_MARKERS)
+        if failed_marked == passed_marked:
+            continue  # both or neither → unclassified
+
+        for rel_path, node_chain in nodes:
+            node = f"{rel_path}::{node_chain}"
+            node_esc = re.escape(node)
+            suite_fail_re = re.compile(rf"^(FAILED|ERROR) {node_esc}(\[|\s|$)", re.MULTILINE)
+
+            if failed_marked:
+                if not suite_fail_re.search(suite_content):
+                    offending.append(f"quoted FAILED, absent from suite: {node}")
+            else:
+                if suite_fail_re.search(suite_content):
+                    offending.append(f"quoted PASSED, suite says FAILED: {node}")
+                elif is_verbose:
+                    v_re = re.compile(
+                        rf"^PASSED {node_esc}(\[|\s|$)|^{node_esc}(\[[^\]]*\])?\s+PASSED",
+                        re.MULTILINE,
+                    )
+                    if not v_re.search(suite_content):
+                        offending.append(f"quoted PASSED, absent from verbose suite: {node}")
+
+    if offending:
+        failures.append({
+            "gate": "qa_nodes_match_suite",
+            "evidence": "; ".join(offending),
+        })
+
+
+def _gate_dev_log_declared_text(plan_text, step_number, project_path, parsed, failures, wt_path=None):
+    """196: declared headings and verbatim cells must be present in the step's deposits.
+
+    Arm (a): **Headings:** lines declare headings that must appear as full stripped lines
+    in at least one .md deposit.
+    Arm (b): **Verbatim:** lines name a heading and a pin reference; the deposit's section
+    under that heading must contain the normalized pin value cell.
+    Steps with no declarations add nothing.
+    """
+    step_text = _extract_step_text(plan_text, step_number)
+    if not step_text:
+        return
+
+    deposit_paths = _extract_plan_required_deposits(step_text)
+    md_paths = [p for p in deposit_paths if p.endswith(".md")]
+    if not md_paths:
+        md_paths = [p for p in _extract_agent_declared_deposits(parsed) if p.endswith(".md")]
+
+    deposit_contents = []
+    for p in md_paths:
+        resolved = _resolve_deposit_path(p, project_path, wt_path=wt_path)
+        if resolved is None:
+            continue
+        try:
+            with open(resolved, "r", encoding="utf-8") as f:
+                deposit_contents.append(f.read())
+        except (FileNotFoundError, UnicodeDecodeError, OSError):
+            continue
+
+    def _norm(s):
+        s = re.sub(r"[`*]", "", s)
+        return " ".join(s.split())
+
+    # Arm (a): declared headings — must appear as full stripped lines in any deposit
+    for m in re.finditer(r"^\s*(?:>\s*)?\*\*Headings:\*\*(.*)$", step_text, re.MULTILINE):
+        heading_line = m.group(1)
+        for heading in re.findall(r"`(#{2,3} [^`]+)`", heading_line):
+            found = any(
+                heading in {line.strip() for line in content.splitlines()}
+                for content in deposit_contents
+            )
+            if not found:
+                failures.append({
+                    "gate": "dev_log_declared_text",
+                    "evidence": f"declared heading not found in any deposit: {heading}",
+                })
+
+    # Arm (b): verbatim cells — deposit section must contain normalized pin value
+    for m in re.finditer(
+        r"^\s*(?:>\s*)?\*\*Verbatim:\*\*\s*`(#{2,3} [^`]+)`\s*←\s*(P\d+)",
+        step_text, re.MULTILINE,
+    ):
+        heading = m.group(1)
+        pin_ref = m.group(2)
+
+        pin_match = re.search(rf"^\| {re.escape(pin_ref)} \|", plan_text, re.MULTILINE)
+        if not pin_match:
+            failures.append({
+                "gate": "dev_log_declared_text",
+                "evidence": f"pin row missing: {pin_ref}",
+            })
+            continue
+
+        row_end = plan_text.find("\n", pin_match.start())
+        pin_row = plan_text[pin_match.start():row_end] if row_end != -1 else plan_text[pin_match.start():]
+        cells = re.split(r"(?<!\\)\|", pin_row)
+        if len(cells) < 4:
+            failures.append({
+                "gate": "dev_log_declared_text",
+                "evidence": f"pin row malformed: {pin_ref}",
+            })
+            continue
+        norm_value = _norm(cells[3])
+
+        heading_found = False
+        section_matches = False
+        for content in deposit_contents:
+            in_section = False
+            section_lines = []
+            for line in content.splitlines():
+                if line.strip() == heading:
+                    in_section = True
+                    heading_found = True
+                    continue
+                if in_section:
+                    if re.match(r"^#{1,3} ", line):
+                        break
+                    section_lines.append(line)
+            if in_section and norm_value in _norm("\n".join(section_lines)):
+                section_matches = True
+                break
+
+        if not heading_found:
+            failures.append({
+                "gate": "dev_log_declared_text",
+                "evidence": f"heading missing: {heading}",
+            })
+        elif not section_matches:
+            failures.append({
+                "gate": "dev_log_declared_text",
+                "evidence": f"cell absent from section {heading!r}: {norm_value!r}",
+            })

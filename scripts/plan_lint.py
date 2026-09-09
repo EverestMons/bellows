@@ -531,7 +531,7 @@ def lint(plan_path):
         for n in sorted(qa_steps_set - qa_labeled_steps):
             print(f"WARN: qa_steps lists step {n} but step {n} is not QA-labeled — it will be gated as QA (plan-133 trap)")
 
-    # (u) QA Deposits order (WARN-only, thread 77): rule_20_self_check reads the first .md as the report
+    # (u) QA Deposits order (WARN-only, thread 77): rule_20_self_check chooses the QA report by content — banner, then ## Verification — and by position on ties; list the receipt first (thread 77)
     qa_steps_set_u = _parse_qa_steps(qa_steps_raw) if qa_steps_raw else set()
     for hl, sn_str in step_headers:
         sn = int(sn_str)
@@ -547,7 +547,7 @@ def lint(plan_path):
             first_basename = Path(md_entries[0]).name
             if 'receipt' not in first_basename:
                 print(f"(u) WARN: step {sn} Deposits: first .md is {first_basename!r}"
-                      f" — rule_20_self_check reads the first .md as the QA report (thread 77)")
+                      f" — rule_20_self_check chooses the QA report by content — banner, then ## Verification — and by position on ties; list the receipt first (thread 77)")
         if not any(d.endswith('.txt') for d in deps_u):
             print(f"(u) WARN: step {sn} Deposits: no .txt evidence entry (thread 77)")
 
