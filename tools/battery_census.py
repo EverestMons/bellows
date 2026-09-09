@@ -5,11 +5,13 @@ tools/battery_census.py — read-only census over the walk-register corpus.
 For each walk-register-*.md, emits one TSV row:
   slug, date, session, walks, finding_rows, fold_introduced, fold_rate,
   plan_lint, cycle_check, fold_check, propagation_check,
-  walk_register_lint, mutation_check, lifecycle_state, tableless
+  walk_register_lint, mutation_check, lifecycle_state, tableless,
+  lens_order, validation_line, coverage
 
 Recording codes per tool: verbatim / paraphrase / not_recorded
 
-Imports walk_register_lint (the shipped parser) for table extraction.
+Imports walk_register_lint (the shipped parser) for table extraction and
+coverage_verdict; imports lens_order_check for the lens_order column.
 Shims around the sub_q -> sub_question gap (disclosed walk 4: normalize_column
 does not map the live sub_q variant, defect in a shipped instrument).
 
@@ -17,16 +19,19 @@ Usage:
     python tools/battery_census.py [--registers DIR] [--db PATH] [--json]
 """
 
+import io
 import json
 import re
 import sqlite3
 import sys
+from contextlib import redirect_stderr, redirect_stdout
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 SCRIPTS = ROOT / "scripts"
 sys.path.insert(0, str(SCRIPTS))
 
+import lens_order_check as loc
 import walk_register_lint as wrl
 
 DEFAULT_REGISTERS = Path("/Users/marklehn/Developer/eluvian-governance/governance/knowledge/research")
@@ -52,7 +57,9 @@ SESSION_RE = re.compile(r"\(session\s+`([0-9a-f]{7,8})`")
 WALK_HEADING_RE = re.compile(r"^#{1,3}\s+Walk\s+(\d+)\b", re.MULTILINE)
 DATE_FROM_FNAME_RE = re.compile(r"(\d{4}-\d{2}-\d{2})\.md$")
 PLAN_LINE_RE = re.compile(r"\*\*Plan:\*\*\s+`[^`]*?([^/`]+\.md)`")
+DRAFT_LINE_RE = re.compile(r"\bDraft:\s+`[^`]*/([^/`]+\.md)`")
 FOLD_INTRODUCED_RE = re.compile(r"fold.introduced", re.IGNORECASE)
+VALIDATION_RE = re.compile(r"^validation: cycle_check=", re.MULTILINE)
 
 
 def extract_session(text):
@@ -66,11 +73,19 @@ def extract_walk_count(text):
 
 
 def extract_plan_placeholder(text):
-    """Extract deposit_placeholder_name from the **Plan:** line."""
+    """Extract deposit_placeholder_name from the **Plan:** line (bold format)."""
     m = PLAN_LINE_RE.search(text)
     if not m:
         return ""
     return m.group(1).strip()
+
+
+def extract_draft_placeholder(text):
+    """Extract deposit_placeholder_name from Draft: line, fallback to **Plan:** line."""
+    m = DRAFT_LINE_RE.search(text)
+    if m:
+        return m.group(1).strip()
+    return extract_plan_placeholder(text)
 
 
 def extract_tables_by_name(text):
@@ -156,31 +171,118 @@ def detect_battery(text):
 # ── lifecycle lookup ──────────────────────────────────────────────────────────
 
 def load_lifecycle(db_path):
-    """Return dict: deposit_placeholder_name -> lifecycle_state."""
+    """Return dict: deposit_placeholder_name -> (lifecycle_state, plan_doc_ref)."""
     db = Path(db_path)
     if not db.exists():
         return {}
     conn = sqlite3.connect(str(db))
     try:
         rows = conn.execute(
-            "SELECT deposit_placeholder_name, lifecycle_state FROM plans"
+            "SELECT deposit_placeholder_name, lifecycle_state, plan_doc_ref FROM plans"
         ).fetchall()
+    except sqlite3.OperationalError:
+        return {}
     finally:
         conn.close()
-    return {r[0]: r[1] for r in rows if r[0]}
+    return {r[0]: (r[1], r[2]) for r in rows if r[0]}
 
 
 def lookup_lifecycle(placeholder, lifecycle_map):
     if not placeholder:
         return "unknown"
-    if placeholder in lifecycle_map:
-        return lifecycle_map[placeholder]
+    entry = lifecycle_map.get(placeholder)
+    if entry:
+        return entry[0]
     # Try adding type prefixes
     for prefix in ("diagnostic-", "executable-", "qa-"):
         candidate = prefix + placeholder
         if candidate in lifecycle_map:
-            return lifecycle_map[candidate]
+            return lifecycle_map[candidate][0]
     return "unknown"
+
+
+def lookup_plan_doc_ref(placeholder, lifecycle_map):
+    """Return plan_doc_ref string or None."""
+    if not placeholder:
+        return None
+    entry = lifecycle_map.get(placeholder)
+    if entry:
+        return entry[1]
+    for prefix in ("diagnostic-", "executable-", "qa-"):
+        candidate = prefix + placeholder
+        if candidate in lifecycle_map:
+            return lifecycle_map[candidate][1]
+    return None
+
+
+# ── new-column helpers ────────────────────────────────────────────────────────
+
+_lens_order_cache: dict = {}
+
+
+def get_lens_order(plan_doc_ref, root):
+    """Run lens_order_check on the Done plan and return the verdict token."""
+    if not plan_doc_ref:
+        return "unresolved"
+    if plan_doc_ref in _lens_order_cache:
+        return _lens_order_cache[plan_doc_ref]
+    plan_path = root / plan_doc_ref
+    if not plan_path.exists():
+        _lens_order_cache[plan_doc_ref] = "unresolved"
+        return "unresolved"
+    buf = io.StringIO()
+    try:
+        with redirect_stdout(buf), redirect_stderr(io.StringIO()):
+            loc.main([str(plan_path)])
+    except Exception:
+        _lens_order_cache[plan_doc_ref] = "unresolved"
+        return "unresolved"
+    output = buf.getvalue()
+    verdict = "unresolved"
+    for line in output.splitlines():
+        if "LENS-ORDER OK" in line:
+            verdict = "OK"
+            break
+        elif "LENS-ORDER N/A" in line:
+            verdict = "N/A"
+            break
+        elif line.startswith("NO-RECORD"):
+            verdict = "NO-RECORD"
+            break
+        elif line.startswith("BATCHED"):
+            verdict = "BATCHED"
+            break
+        elif line.startswith("INCOMPLETE"):
+            verdict = "INCOMPLETE"
+            break
+        elif line.startswith("UNPROVEN"):
+            verdict = "UNPROVEN"
+            break
+    _lens_order_cache[plan_doc_ref] = verdict
+    return verdict
+
+
+def get_validation_line(plan_doc_ref, root):
+    """Return 'yes' if the Done plan carries validation: cycle_check=, else 'no'."""
+    if not plan_doc_ref:
+        return "no"
+    plan_path = root / plan_doc_ref
+    if not plan_path.exists():
+        return "no"
+    try:
+        text = plan_path.read_text(encoding="utf-8", errors="replace")
+    except Exception:
+        return "no"
+    return "yes" if VALIDATION_RE.search(text) else "no"
+
+
+def get_coverage(text, fp):
+    """Return the COVERAGE verdict token from walk_register_lint.coverage_verdict."""
+    try:
+        token, _ = wrl.coverage_verdict(text, fp)
+        return token
+    except Exception:
+        return "unresolved"
 
 
 # ── per-file processor ────────────────────────────────────────────────────────
@@ -190,6 +292,7 @@ COLUMNS = [
     "plan_lint", "cycle_check", "fold_check", "propagation_check",
     "walk_register_lint", "mutation_check",
     "lifecycle_state", "tableless",
+    "lens_order", "validation_line", "coverage",
 ]
 
 
@@ -204,12 +307,20 @@ def process_file(fp, lifecycle_map):
     placeholder = extract_plan_placeholder(text)
     lifecycle_state = lookup_lifecycle(placeholder, lifecycle_map)
 
+    # Draft placeholder (Draft: first, fallback to **Plan:**) for new columns
+    draft_placeholder = extract_draft_placeholder(text)
+    plan_doc_ref = lookup_plan_doc_ref(draft_placeholder, lifecycle_map)
+
     tables = extract_tables_by_name(text)
     tableless = len(tables) == 0
     finding_rows, fold_introduced = count_findings(tables)
     fold_rate = fold_introduced / finding_rows if finding_rows else 0.0
 
     battery = detect_battery(text)
+
+    lens_order = get_lens_order(plan_doc_ref, ROOT)
+    validation_line = get_validation_line(plan_doc_ref, ROOT)
+    coverage = get_coverage(text, fp)
 
     return {
         "slug": slug,
@@ -227,6 +338,9 @@ def process_file(fp, lifecycle_map):
         "mutation_check": battery["mutation_check"],
         "lifecycle_state": lifecycle_state,
         "tableless": "yes" if tableless else "no",
+        "lens_order": lens_order,
+        "validation_line": validation_line,
+        "coverage": coverage,
     }
 
 
