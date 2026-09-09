@@ -1,0 +1,11 @@
+# Override — plan 100052 STEP 2 — quoted_test_nodes_exist
+
+**Date:** 2026-09-09 | **Ruled by:** CEO (verdict question answered in session d04ebd33) | **Gate:** quoted_test_nodes_exist (the pre-100052 gate, live at this pause — the daemon restarts at close) | **Failure:** `quoted test node(s) not found in worktree: tests/test_consume_verdicts.py::test_retry_clears_dirty_tree_teardown_on_success, …test_retry_skips_content_conflict, …test_retry_skips_when_worktree_missing, …` (P4's four undefined ids)
+
+**What happened.** QA Item 3 ran the widened node gate over `reattempt-teardown-on-continue-resume-2026-06-04.md` and the receipt (line 19) pasted the gate's evidence VERBATIM — four `tests/…::test_retry_*` ids that do not exist in the worktree — although the STEP 2 head says the receipt names undefined nodes by METHOD NAME and elides the `tests/` prefix. The old node gate read the receipt and found them, as the plan's panel (C2) predicted it would.
+
+**Why the override is granted.** The ids are the very ones Item 3 exists to surface; the gate did what it was built to do on a receipt that documents a defect elsewhere. Nothing in the worktree is wrong; the suite is green (2129 passed / 1 skipped); every other row passes.
+
+**What is recorded against it, not excused.** (1) The QA's deviation from an explicit head rule — the same class as 100045's f23 guard, carried into this plan and still not followed: an instruction the agent reads is not a check (thread 196's own class, now mechanized for headings and cells but not for this). (2) Line 30 of the receipt also quotes `FAILED tests/test_checkout_sync.py::test_checkout_is_current_on_synced_repo` with the prefix intact; under the NEW 203 gate this shipped receipt would read as a failed-marked node absent from the suite — shipped artifacts are not re-gated, stated. (3) The plan's escape ("elide the prefix") depends on the agent; fork 1's exemption syntax is the mechanical form if the class recurs on a live receipt — this WAS a live receipt.
+
+**Files changed in the step:** `knowledge/qa/evidence/gates-evidence-correspondence-suite-2026-09-09.txt`, `knowledge/qa/evidence/gates-evidence-correspondence-qa-evidence-2026-09-09.md` — two, both declared.
