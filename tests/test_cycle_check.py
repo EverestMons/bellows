@@ -18,8 +18,19 @@ SCRIPTS = BELLOWS_ROOT / "scripts"
 sys.path.insert(0, str(SCRIPTS))
 
 # Force-load from the worktree's scripts/ so the full suite doesn't pick up
-# a stale version cached by depositor.py (which uses resolve_bellows_root()).
+# stale versions cached by depositor.py (which uses resolve_bellows_root() →
+# returns the canonical bellows root, not the worktree). walk_register_lint
+# must be evicted FIRST: cycle_check captures STATUS_CONFORMANT as a
+# module-level constant at import time; if the main-branch walk_register_lint
+# is in sys.modules when cycle_check is (re-)imported, _REG_CONFORMANT gets
+# "CONFORMANT". Later, test_walk_register_lint.py's importlib.reload updates
+# the module's __dict__ in place, so _validate_register.__globals__
+# ['STATUS_CONFORMANT'] becomes "SHAPE-OK" while _REG_CONFORMANT stays
+# "CONFORMANT" — the mismatch generates spurious WARNs.
 import importlib
+_WRL_PATH = str(SCRIPTS / "walk_register_lint.py")
+if "walk_register_lint" in sys.modules and sys.modules["walk_register_lint"].__file__ != _WRL_PATH:
+    del sys.modules["walk_register_lint"]
 if "cycle_check" in sys.modules and sys.modules["cycle_check"].__file__ != str(SCRIPTS / "cycle_check.py"):
     del sys.modules["cycle_check"]
 import cycle_check

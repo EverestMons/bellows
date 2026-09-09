@@ -35,15 +35,15 @@ checking plan…
 ESCALATE: step 2 exceeded threshold
 """
 
-# walk_register_lint stderr with UNCONFORMANT — from a lint run on a malformed register
+# walk_register_lint stderr with SHAPE-FAIL — from a lint run on a malformed register
 REGISTER_UNCONFORMANT_STDERR = (
-    "bad-register.md\tUNCONFORMANT\tshapes: missing columns\n"
+    "bad-register.md\tSHAPE-FAIL\tshapes: missing columns\n"
 )
 
-# walk_register_lint stderr with only CONFORMANT — from a clean lint run
+# walk_register_lint stderr with only SHAPE-OK — from a clean lint run
 # (provenance: walk_register_lint on walk-register-run-check-wrapper-2026-08-26.md)
 REGISTER_CONFORMANT_STDERR = (
-    "walk-register-run-check-wrapper-2026-08-26.md\tCONFORMANT\t"
+    "walk-register-run-check-wrapper-2026-08-26.md\tSHAPE-OK\t"
     "shapes: | id | walk | lens | sub_question | origin | finding "
     "| pre_fold_text | resolution |\n"
 )
@@ -81,12 +81,12 @@ class TestJudgeRegister:
         verdict, reason = judge_register("", REGISTER_UNCONFORMANT_STDERR, 0)
         assert verdict == "FAIL"
         assert "bad-register.md" in reason
-        assert "UNCONFORMANT" in reason
+        assert "SHAPE-FAIL" in reason
 
     def test_conformant_pass(self):
         verdict, reason = judge_register("", REGISTER_CONFORMANT_STDERR, 0)
         assert verdict == "PASS"
-        assert "CONFORMANT" in reason
+        assert "SHAPE-OK" in reason
 
     def test_empty_stderr_positive_control_fail(self):
         """The positive control — empty stderr means nothing was scanned."""
@@ -107,7 +107,7 @@ class TestJudgeRegister:
         25 registers in the corpus legitimately predate the schema declaration."""
         stderr = (
             "old-register.md\tPRE-SCHEMA\tshapes: (none)\n"
-            "good-register.md\tCONFORMANT\tshapes: | id | walk | ... |\n"
+            "good-register.md\tSHAPE-OK\tshapes: | id | walk | ... |\n"
         )
         verdict, reason = judge_register("", stderr, 0)
         assert verdict == "PASS"
@@ -134,7 +134,7 @@ class TestJudgeRegister:
         # Arm 2: legacy + conformant → PASS
         mixed = (
             "old.md\tLEGACY_SCHEMA\tshapes: (none)\n"
-            "new.md\tCONFORMANT\tshapes: | id | walk | ... |\n"
+            "new.md\tSHAPE-OK\tshapes: | id | walk | ... |\n"
         )
         verdict2, _ = judge_register("", mixed, 0)
         assert verdict2 == "PASS"
@@ -146,7 +146,7 @@ class TestJudgeRegister:
         _, reason = judge_register("", no_table_stderr, 0)
         assert "NO_TABLE" in reason
         # The message must reflect the status actually found, not a hardcoded label
-        assert "UNCONFORMANT" not in reason
+        assert "SHAPE-FAIL" not in reason
 
 
 # ---------------------------------------------------------------------------

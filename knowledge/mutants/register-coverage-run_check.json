@@ -1,0 +1,13 @@
+{
+  "target": "tools/run_check.py",
+  "_note": "Plan 100053: one mutant covering COVERAGE: INCOMPLETE detection in judge_register (thread 215, 2026-09-09).",
+  "mutants": [
+    {
+      "name": "M8-judge-register-ignores-incomplete",
+      "why": "Removing the 'incomplete' list and the INCOMPLETE check means a register with COVERAGE: INCOMPLETE lines is treated as PASS (all SHAPE-OK, no bad). test_judge_register_new_token_logic expects a FAIL verdict when COVERAGE: INCOMPLETE appears in stderr.",
+      "anchor": "    incomplete = [ln for ln in stderr.splitlines() if \"\\tCOVERAGE: INCOMPLETE\" in ln]\n    bad = shape_bad + incomplete",
+      "replacement": "    bad = shape_bad",
+      "expect_fail": "tests/test_run_check.py::test_judge_register_new_token_logic"
+    }
+  ]
+}

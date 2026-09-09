@@ -10,15 +10,15 @@ Exit 0 = the checker's OWN verdict channel says clean; 1 = it says failed;
 2 = usage error or the checker itself crashed. The final line is always
 `RUN_CHECK: <mode> VERDICT=PASS|FAIL — <reason>` on stdout.
 
-Channel facts (read from the checkers' source, 2026-08-26 / 2026-09-02):
+Channel facts (read from the checkers' source, 2026-08-26 / 2026-09-09):
 - cycle_check: verdict is the LAST STDOUT LINE (BAR_MET / CONTINUE /
   ESCALATE:*); its exit code is 0 for both BAR_MET and CONTINUE.
 - plan_lint: the exit code IS the channel; WARN lines are advisory.
 - walk_register_lint: per-file verdicts print on STDERR as
-  `<name>\t<CONFORMANT|UNCONFORMANT>\t…`; the lint path ALWAYS exits 0.
-  A PASS here additionally requires at least one CONFORMANT line — the
-  positive control: absence of UNCONFORMANT alone can mean nothing was
-  scanned (the negative-probe law, mechanized).
+  `<name>\t<SHAPE-OK|SHAPE-FAIL>\tCOVERAGE: <token> — <detail>\t…`; the
+  lint path ALWAYS exits 0. A PASS requires at least one SHAPE-OK line
+  (positive control) AND no SHAPE-FAIL, NO_TABLE, or COVERAGE: INCOMPLETE
+  line (negative-probe law).
 - propagation_check: exit 0 = CLEAN (no divergence found); exit 1 =
   divergence(s) reported; exit 2 = could not run (no symbol declarations
   parsed — NOT a clean result, never read as a pass).
@@ -63,17 +63,22 @@ def judge_propagation(stdout, stderr, rc):
 
 
 def judge_register(stdout, stderr, code):
-    bad = [ln for ln in stderr.splitlines() if "\tUNCONFORMANT" in ln or "\tNO_TABLE" in ln]
-    good = [ln for ln in stderr.splitlines() if "\tCONFORMANT" in ln]
+    shape_bad = [ln for ln in stderr.splitlines()
+                 if "\tSHAPE-FAIL" in ln or "\tNO_TABLE" in ln]
+    incomplete = [ln for ln in stderr.splitlines() if "\tCOVERAGE: INCOMPLETE" in ln]
+    bad = shape_bad + incomplete
+    good = [ln for ln in stderr.splitlines() if "\tSHAPE-OK" in ln]
     if bad:
-        statuses = sorted({ln.split("\t")[1] for ln in bad if len(ln.split("\t")) > 1})
-        label = "/".join(statuses) if statuses else "bad"
+        labels = sorted({ln.split("\t")[1] for ln in shape_bad if len(ln.split("\t")) > 1})
+        if incomplete:
+            labels.append("INCOMPLETE")
+        label = "/".join(labels) if labels else "bad"
         return "FAIL", f"{len(bad)} {label} file(s): " + "; ".join(
             ln.split("\t")[0] for ln in bad)
     if not good:
-        return "FAIL", ("no CONFORMANT line seen — nothing was scanned, or the "
+        return "FAIL", ("no SHAPE-OK line seen — nothing was scanned, or the "
                         "verdict channel moved (positive control failed)")
-    return "PASS", f"{len(good)} file(s) CONFORMANT, 0 bad"
+    return "PASS", f"{len(good)} file(s) SHAPE-OK, 0 bad"
 
 
 def main(argv):

@@ -1,0 +1,41 @@
+{
+  "target": "scripts/walk_register_lint.py",
+  "_note": "Plan 100053: five mutants covering coverage_verdict and the STATUS rename (thread 215, 2026-09-09).",
+  "mutants": [
+    {
+      "name": "M3-rows-must-equal-declared",
+      "why": "Changing 'actual < declared' to 'actual != declared' means rows that EXCEED declared folds are treated as short (INCOMPLETE) instead of COVERED. test_rows_exceed_declared_is_covered expects COVERED when four rows are counted against three declared folds.",
+      "anchor": "        if actual < declared:",
+      "replacement": "        if actual != declared:",
+      "expect_fail": "tests/test_register_coverage.py::test_rows_exceed_declared_is_covered"
+    },
+    {
+      "name": "M4-highest-walk-judged",
+      "why": "Removing the exclusion of the highest-numbered walk means the in-progress walk is reconciled. test_highest_walk_never_judged has zero w2 rows against four declared, so with the highest judged the verdict flips to INCOMPLETE.",
+      "anchor": "    completed = [w for w in declared_walks if w != highest]",
+      "replacement": "    completed = declared_walks",
+      "expect_fail": "tests/test_register_coverage.py::test_highest_walk_never_judged"
+    },
+    {
+      "name": "M5-undeclared-becomes-covered",
+      "why": "Replacing UNDECLARED with COVERED when the plan has no Draft: line would hide unresolvable plans. test_undeclared_no_draft_line expects UNDECLARED when neither --plan nor a Draft: line is present.",
+      "anchor": "        return (\"UNDECLARED\", \"plan not resolvable: no Draft: line\")",
+      "replacement": "        return (\"COVERED\", \"plan not resolvable: no Draft: line\")",
+      "expect_fail": "tests/test_register_coverage.py::test_undeclared_no_draft_line"
+    },
+    {
+      "name": "M6-status-conformant-reverted",
+      "why": "Reverting STATUS_CONFORMANT to 'CONFORMANT' means validate_file returns 'CONFORMANT' for a valid file and the stderr line says CONFORMANT instead of SHAPE-OK. test_stderr_line_format expects the SHAPE-OK token.",
+      "anchor": "STATUS_CONFORMANT = \"SHAPE-OK\"",
+      "replacement": "STATUS_CONFORMANT = \"CONFORMANT\"",
+      "expect_fail": "tests/test_register_coverage.py::test_stderr_line_format"
+    },
+    {
+      "name": "M7-panel-rows-counted-as-walk-1",
+      "why": "Counting panel-* walk cells as walk-1 rows instead of panel rows causes them to be reconciled against w1's declared folds and inflates the walk-1 row count. test_panel_and_walk0_rows_counted_not_reconciled expects panel rows in the detail, not walk reconciliation.",
+      "anchor": "            if _PANEL_WALK_RE.match(cell):\n                panel_rows += 1",
+      "replacement": "            if _PANEL_WALK_RE.match(cell):\n                rows_by_walk[1] = rows_by_walk.get(1, 0) + 1",
+      "expect_fail": "tests/test_register_coverage.py::test_panel_and_walk0_rows_counted_not_reconciled"
+    }
+  ]
+}

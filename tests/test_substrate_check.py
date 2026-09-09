@@ -6,6 +6,17 @@ import os, subprocess, sys
 from pathlib import Path
 BELLOWS_ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(BELLOWS_ROOT)); sys.path.insert(0, str(BELLOWS_ROOT / "scripts"))
+
+# Force-load from the worktree's scripts/. depositor.py (imported via
+# test_admission_flip.py → bellows.py) adds the canonical bellows scripts
+# (resolve_bellows_root() → config.json → main branch) to sys.path[0],
+# then bellows.py imports substrate_check from there. The main-branch copy
+# still has the old literal "CONFORMANT" rather than STATUS_CONFORMANT,
+# so it must be evicted and reimported from the worktree.
+import importlib
+_SC_PATH = str(BELLOWS_ROOT / "scripts" / "substrate_check.py")
+if "substrate_check" in sys.modules and sys.modules["substrate_check"].__file__ != _SC_PATH:
+    del sys.modules["substrate_check"]
 import substrate_check  # noqa: E402
 
 def _git(repo, *a, env=None):

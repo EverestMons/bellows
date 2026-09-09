@@ -420,7 +420,7 @@ def test_annotated_verbatim_ellipsis_is_ok(tmp_path):
         "| pin `abc…` matched | kept |\n"
     )
     status, rows, _ = validate_file(_v03_file(tmp_path, body))
-    assert status == "CONFORMANT"
+    assert status == "SHAPE-OK"
     assert rows[0]["note"] == "verbatim_ellipsis_annotated"
     assert rows[0]["row_status"] == "OK"
 
@@ -430,7 +430,7 @@ def test_unannotated_ellipsis_still_warns(tmp_path):
         "| f1 | 1 | ACID | 5.1 | pre-existing | elided | the guard ... elided | kept |\n"
     )
     status, rows, _ = validate_file(_v03_file(tmp_path, body))
-    assert status == "UNCONFORMANT"
+    assert status == "SHAPE-FAIL"
     assert rows[0]["note"] == "truncated_pre_fold_text"
 
 
@@ -438,7 +438,7 @@ def test_duplicate_row_warns_and_flips_status(tmp_path):
     row = "| f1 | 1 | ACID | 5.1 | pre-existing | dup | ADDITION | kept |\n"
     body = FOLD_HEADER + row + row
     status, rows, _ = validate_file(_v03_file(tmp_path, body))
-    assert status == "UNCONFORMANT"
+    assert status == "SHAPE-FAIL"
     assert any(r["note"] == "duplicate_row" for r in rows)
 
 
@@ -450,7 +450,7 @@ def test_repeated_table_header_is_not_duplicate_row(tmp_path):
         + "| f2 | 2 | ACID | 5.1 | pre-existing | b | ADDITION | kept |\n"
     )
     status, rows, _ = validate_file(_v03_file(tmp_path, body))
-    assert status == "CONFORMANT"
+    assert status == "SHAPE-OK"
     assert not any(r["note"] == "duplicate_row" for r in rows)
 
 
@@ -462,7 +462,7 @@ def test_headerless_rows_warn_and_flip_status(tmp_path):
         + "| f2 | 2 | ACID | 5.1 | pre-existing | detached | ADDITION | kept |\n"
     )
     status, rows, _ = validate_file(_v03_file(tmp_path, body))
-    assert status == "UNCONFORMANT"
+    assert status == "SHAPE-FAIL"
     assert any(r["note"] == "headerless_rows" for r in rows)
 
 
@@ -473,7 +473,7 @@ def test_adjacent_duplicate_line_is_advisory_only(tmp_path):
         + "the open tail line\nthe open tail line\n"
     )
     status, rows, _ = validate_file(_v03_file(tmp_path, body))
-    assert status == "CONFORMANT"
+    assert status == "SHAPE-OK"
     assert any(r["note"] == "duplicate_adjacent_line" for r in rows)
 
 
@@ -484,7 +484,7 @@ def test_fenced_pipe_rows_are_ignored_by_guards(tmp_path):
         + "```\n| x | x | x | x | x | x | x | x |\n| x | x | x | x | x | x | x | x |\n```\n"
     )
     status, rows, _ = validate_file(_v03_file(tmp_path, body))
-    assert status == "CONFORMANT"
+    assert status == "SHAPE-OK"
     assert not any(r["note"] in ("headerless_rows", "duplicate_row") for r in rows)
 
 
@@ -494,7 +494,7 @@ def test_fully_detached_rows_no_table_still_flagged(tmp_path):
         "| f1 | 1 | ACID | 5.1 | pre-existing | detached | ADDITION | kept |\n"
     )
     status, rows, _ = validate_file(_v03_file(tmp_path, body))
-    assert status == "UNCONFORMANT"
+    assert status == "SHAPE-FAIL"
     assert any(r["note"] == "headerless_rows" for r in rows)
 
 
@@ -740,7 +740,7 @@ def test_coverage_basis_states_what_conformant_rests_on():
     rows = [{"id": "f1"}, {"id": "f2"}]
     b = coverage_basis("## Walk 1 — 2 findings\n", rows)
     assert "rows=2" in b
-    assert "coverage NOT checked" in b, "the absence of a coverage check must be stated"
+    assert "coverage: see COVERAGE" in b, "the coverage pointer must be stated"
 
 
 def test_coverage_basis_surfaces_the_registers_own_declared_count():
@@ -757,7 +757,7 @@ def test_coverage_basis_surfaces_the_registers_own_declared_count():
 def test_coverage_basis_without_any_declared_count():
     from walk_register_lint import coverage_basis
     b = coverage_basis("no counts here at all\n", [{"id": "f1"}])
-    assert "rows=1" in b and "coverage NOT checked" in b
+    assert "rows=1" in b and "coverage: see COVERAGE" in b
     assert "declares up to" not in b
 
 

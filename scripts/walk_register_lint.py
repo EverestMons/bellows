@@ -15,11 +15,13 @@ import sys
 from pathlib import Path
 
 STATUS_PRE_SCHEMA = "PRE-SCHEMA"
-STATUS_CONFORMANT = "CONFORMANT"
-STATUS_UNCONFORMANT = "UNCONFORMANT"
+STATUS_CONFORMANT = "SHAPE-OK"
+STATUS_UNCONFORMANT = "SHAPE-FAIL"
+STATUS_SHAPE_OK = STATUS_CONFORMANT    # alias for new code
+STATUS_SHAPE_FAIL = STATUS_UNCONFORMANT  # alias for new code
 STATUS_NO_TABLE = "NO_TABLE"
-# Names must NOT start with CONFORMANT or NO_TABLE — judge_register classifies by
-# tab-prefixed substring and the name decides the semantics silently.
+# Names must NOT start with SHAPE-OK, SHAPE-FAIL, or NO_TABLE — judge_register
+# classifies by tab-prefixed substring and the name decides the semantics silently.
 STATUS_LEGACY_SCHEMA = "LEGACY_SCHEMA"   # declared version < validator; not a defect
 STATUS_FUTURE_SCHEMA = "FUTURE_SCHEMA"   # declared version > validator; too new to assess
 
@@ -91,10 +93,125 @@ def coverage_basis(text, rows):
     register's own prose claim, explicitly unreconciled.
     """
     decls = [int(m.group(1)) for m in _FINDING_DECL_RE.finditer(text)]
-    basis = f"rows={len(rows)} shape-only; coverage NOT checked"
+    basis = f"rows={len(rows)} shape-only; coverage: see COVERAGE"
     if decls:
         basis += f"; register's prose declares up to {max(decls)} findings (unreconciled)"
     return basis
+
+
+_DRAFT_LINE_RE = re.compile(r"Draft:\s*`([^`]+)`", re.MULTILINE)
+_PANEL_WALK_RE = re.compile(r"^panel(?:-\d+)?$", re.IGNORECASE)
+
+
+def _resolve_plan(register_path, draft_ref):
+    """Walk up from the register's directory until <ancestor>/<draft_ref> exists."""
+    p = Path(register_path).resolve().parent
+    while True:
+        candidate = p / draft_ref
+        if candidate.exists():
+            return candidate
+        parent = p.parent
+        if parent == p:
+            return None
+        p = parent
+
+
+def coverage_verdict(text, register_path, plan_path=None):
+    """Reconcile fold-table rows per walk against the plan's declared folds.
+
+    Returns (token, detail) where token is COVERED, INCOMPLETE, or UNDECLARED.
+    The highest-numbered declared walk is always excluded (ruling iv — in progress).
+    """
+    # 1. Resolve the plan
+    if plan_path is None:
+        m = _DRAFT_LINE_RE.search(text)
+        if not m:
+            return ("UNDECLARED", "plan not resolvable: no Draft: line")
+        draft_ref = m.group(1).strip()
+        plan_path = _resolve_plan(register_path, draft_ref)
+        if plan_path is None:
+            return ("UNDECLARED", f"plan not resolvable: {draft_ref}")
+
+    try:
+        plan_text = Path(plan_path).read_text(encoding="utf-8", errors="replace")
+    except Exception:
+        return ("UNDECLARED", f"plan not resolvable: {plan_path}")
+
+    # 2. Parse declared folds per walk (import inside to avoid circular import)
+    from cycle_yields import extract_dc_blocks
+    from cycle_check import parse_block as _parse_block
+    blocks = extract_dc_blocks(plan_text)
+    if not blocks:
+        return ("UNDECLARED", "plan declares no lens walks")
+    parsed = _parse_block(blocks[0])
+    walk_data = parsed.get("walk_data", {})
+    if not walk_data:
+        return ("UNDECLARED", "plan declares no lens walks")
+
+    # 3. Count rows per walk in the register's fold tables
+    tables, _ = extract_tables(text)
+    fold_tables = [(hdr, data, hl) for hdr, data, hl in tables if is_fold_table(hdr)]
+    if not fold_tables:
+        return ("UNDECLARED", "no fold table")
+
+    rows_by_walk: dict[int, int] = {}
+    panel_rows = 0
+    walk0_rows = 0
+    for hdr, data, _ in fold_tables:
+        norm = [normalize_column(c) for c in hdr]
+        if "walk" not in norm:
+            continue
+        walk_idx = norm.index("walk")
+        for _, rcells in data:
+            if walk_idx >= len(rcells):
+                continue
+            cell = rcells[walk_idx].strip()
+            if _PANEL_WALK_RE.match(cell):
+                panel_rows += 1
+            elif cell == "0":
+                walk0_rows += 1
+            else:
+                try:
+                    wn = int(cell)
+                    if wn > 0:
+                        rows_by_walk[wn] = rows_by_walk.get(wn, 0) + 1
+                except ValueError:
+                    panel_rows += 1
+
+    # 4. Reconcile completed walks (all except the highest declared)
+    declared_walks = sorted(walk_data.keys())
+    if not declared_walks:
+        return ("UNDECLARED", "plan declares no lens walks")
+    highest = max(declared_walks)
+    completed = [w for w in declared_walks if w != highest]
+
+    short = []
+    covered_parts = []
+    for w in completed:
+        declared = walk_data[w].get("total_folds", 0)
+        actual = rows_by_walk.get(w, 0)
+        if actual < declared:
+            short.append(f"w{w} rows={actual} declared={declared}")
+        else:
+            covered_parts.append(f"w{w} {actual}/{declared}")
+
+    extras = []
+    if panel_rows:
+        extras.append(f"panel rows {panel_rows}")
+    if walk0_rows:
+        extras.append(f"walk-0 rows {walk0_rows}")
+
+    in_progress = f"w{highest} in progress"
+
+    if short:
+        detail = "; ".join(short)
+        return ("INCOMPLETE", detail)
+
+    parts = covered_parts + [f"(rows ≥ declared on every completed walk; {in_progress}"]
+    if extras:
+        parts[-1] = parts[-1] + "; " + "; ".join(extras)
+    parts[-1] += ")"
+    return ("COVERED", " ".join(parts))
 
 
 def is_fold_table(header_cells):
@@ -416,16 +533,25 @@ def make_tsv_row(row_dict):
 
 
 def main():
-    if len(sys.argv) < 2:
+    args = sys.argv[1:]
+
+    # Accept --plan <path> before the target
+    cli_plan = None
+    if len(args) >= 2 and args[0] == "--plan":
+        cli_plan = Path(args[1])
+        args = args[2:]
+
+    if not args:
         print(
-            f"Usage: {sys.argv[0]} <path>\n\n"
-            "  <path>  a single walk-register file, or a directory\n"
-            "          to glob walk-register-*.md",
+            f"Usage: {sys.argv[0]} [--plan <path>] <path>\n\n"
+            "  --plan <path>  explicit plan path for coverage_verdict\n"
+            "  <path>         a single walk-register file, or a directory\n"
+            "                 to glob walk-register-*.md",
             file=sys.stderr,
         )
         sys.exit(0)
 
-    target = Path(sys.argv[1])
+    target = Path(args[0])
 
     if target.is_dir():
         files = sorted(target.glob("walk-register-*.md"))
@@ -445,13 +571,21 @@ def main():
         except Exception as e:
             print(f"ERROR reading {fp}: {e}", file=sys.stderr)
             continue
+        text = fp.read_text(errors="replace")
         shape_str = " ; ".join(shapes) if shapes else "(none)"
         try:
-            basis = coverage_basis(fp.read_text(errors="replace"), rows)
+            basis = coverage_basis(text, rows)
         except Exception:
-            basis = f"rows={len(rows)} shape-only; coverage NOT checked"
-        print(f"{fp.name}\t{file_status}\tBASIS: {basis}\tshapes: {shape_str}",
-              file=sys.stderr)
+            basis = f"rows={len(rows)} shape-only; coverage: see COVERAGE"
+        try:
+            cov_token, cov_detail = coverage_verdict(text, fp, plan_path=cli_plan)
+        except Exception:
+            cov_token, cov_detail = "UNDECLARED", "coverage_verdict raised"
+        print(
+            f"{fp.name}\t{file_status}\tCOVERAGE: {cov_token} — {cov_detail}"
+            f"\tBASIS: {basis}\tshapes: {shape_str}",
+            file=sys.stderr,
+        )
         for rd in rows:
             print(make_tsv_row(rd))
 

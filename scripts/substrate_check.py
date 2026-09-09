@@ -77,7 +77,7 @@ def substrate_status(plan_path):
                 status = walk_register_lint.validate_file(Path(reg))[0]
             except Exception as e:
                 status = f"lint raised {type(e).__name__}"
-            if status != "CONFORMANT":
+            if status != walk_register_lint.STATUS_CONFORMANT:
                 missing.append(f"register: walk_register_lint says {status}")
 
     # Leg 2 — a per-walk commit for every declared lens walk (plan repo ∪ register repo)
@@ -114,7 +114,7 @@ def substrate_status(plan_path):
 
     if missing:
         return False, "; ".join(missing)
-    return True, f"register committed + CONFORMANT, walks {sorted(walks)} proven, baseline present"
+    return True, f"register committed + SHAPE-OK, walks {sorted(walks)} proven, baseline present"
 
 
 if __name__ == "__main__":
