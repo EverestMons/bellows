@@ -24,9 +24,9 @@
     },
     {
       "name": "invert-passed-marked-check",
-      "why": "_gate_qa_nodes_match_suite must verify that a PASSED-marked node does NOT appear as FAILED in the suite; inverting the check to `if not suite_fail_re.search` makes it fire when the suite is clean, not when it contradicts",
+      "why": "_gate_qa_nodes_match_suite must verify that a PASSED-marked node does NOT appear as FAILED in the suite; setting passed_marked=False unconditionally means PASSED-marked lines are treated as unclassified (both False → skipped) so the gate never fires when a quoted-PASSED node is contradicted by the suite",
       "anchor": "        passed_marked = any(m in line for m in _PASSED_MARKERS)",
-      "replacement": "        passed_marked = True",
+      "replacement": "        passed_marked = False",
       "expect_fail": "tests/test_gates_evidence_correspondence.py::test_8_203_passed_marked_contradicted"
     },
     {

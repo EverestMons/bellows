@@ -1,0 +1,18 @@
+PYTHON: /Users/marklehn/Developer/bellows/.venv/bin/python
+HEAD: 91354d2aedbeed44255051a17e54f153dabd27e8
+TARGET: gates.py sha256=15f7dc2618b8
+
+MUTANT select-qa-report-returns-first: KILLED — suite caught the defect
+MUTANT restore-qa-only-guard-65: KILLED — suite caught the defect
+MUTANT skip-failed-marked-check: KILLED — suite caught the defect
+MUTANT invert-passed-marked-check: KILLED — suite caught the defect
+MUTANT drop-verbose-detection: KILLED — suite caught the defect
+MUTANT heading-substring-not-full-line: KILLED — suite caught the defect
+MUTANT verbatim-always-matches: KILLED — suite caught the defect
+MUTANT drop-dev-log-declared-text-dispatch: KILLED — suite caught the defect
+MUTANT drop-verification-score: KILLED — suite caught the defect
+MUTANT drop-suite-full-and-largest-passed-tiebreaks: KILLED — suite caught the defect
+
+LIVE-TREE UNCHANGED: gates.py sha256=15f7dc2618b8
+
+MUTATION: 10 killed, 0 survived, 0 error
