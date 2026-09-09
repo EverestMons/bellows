@@ -1,0 +1,8 @@
+{
+  "slug": "executable-bellows-closure-claim-and-register-coverage",
+  "content_hash": "218f7d3f2215bc50fe1a418612825e0f8718ab80ec2e54090cfe800ce797ab0d",
+  "session_id": "d04ebd33-0b49-4d7c-a177-322fdddcf2ec",
+  "armed_at": "2026-09-09T14:04:51.268784",
+  "watcher": "gate_watcher.py spawned detached (pid 78004); log: logs/watch/executable-bellows-closure-claim-and-register-coverage.md.log",
+  "attestation_boundary": "This receipt proves the watcher was ARMED at write time. It does NOT prove the watcher stayed alive. Liveness of a session-local monitor is not externally verifiable."
+}
