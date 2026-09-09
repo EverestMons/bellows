@@ -1,0 +1,8 @@
+{
+  "slug": "executable-bellows-gates-verdict-pause",
+  "content_hash": "136403c815084c5b8f5d79aacea4dcb36579b9c0e318594c1c97fb68c8cd8ad6",
+  "session_id": "d04ebd33-0b49-4d7c-a177-322fdddcf2ec",
+  "armed_at": "2026-09-08T18:22:20.183599",
+  "watcher": "gate_watcher.py spawned detached (pid 10819); log: logs/watch/executable-bellows-gates-verdict-pause.md.log",
+  "attestation_boundary": "This receipt proves the watcher was ARMED at write time. It does NOT prove the watcher stayed alive. Liveness of a session-local monitor is not externally verifiable."
+}
