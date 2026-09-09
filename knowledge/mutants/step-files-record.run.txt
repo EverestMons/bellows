@@ -1,0 +1,15 @@
+PYTHON: /Users/marklehn/Developer/bellows/.venv/bin/python
+HEAD: 9ffb96cbdbf637bf6befd1a5489b76f12664ccc0
+TARGET: lifecycle.py sha256=f3fbfae998a8
+TARGET: tools/replay_scope_check.py sha256=e08623c40e2f
+
+MUTANT drop-delete-before-insert: KILLED — suite caught the defect
+MUTANT insert-only-first-path: KILLED — suite caught the defect
+MUTANT skip-write-when-passed: KILLED — suite caught the defect
+MUTANT tool-compare-recorded-to-itself: KILLED — suite caught the defect
+MUTANT tool-opens-without-mode-ro: KILLED — suite caught the defect
+
+LIVE-TREE UNCHANGED: lifecycle.py sha256=f3fbfae998a8
+LIVE-TREE UNCHANGED: tools/replay_scope_check.py sha256=e08623c40e2f
+
+MUTATION: 5 killed, 0 survived, 0 error
