@@ -68,8 +68,23 @@ def get_uptime(pid):
         return None
 
 
+def get_head_sha(bellows_root):
+    """Git short SHA of the checkout's HEAD — what a restart WOULD load (thread 104)."""
+    try:
+        result = subprocess.run(
+            ["git", "rev-parse", "--short", "HEAD"],
+            capture_output=True, text=True, timeout=5,
+            cwd=str(bellows_root)
+        )
+        return result.stdout.strip() or None
+    except Exception:
+        return None
+
+
 def get_sha(bellows_root):
-    """Git short SHA of most recent bellows.py commit."""
+    """Git short SHA of most recent bellows.py commit — FILE-scoped: it moves only
+    when bellows.py itself is committed to, and says nothing about daemon
+    freshness (thread 104). Rendered under its own label, never as "the sha"."""
     try:
         result = subprocess.run(
             ["git", "log", "-1", "--format=%h", "--", "bellows.py"],
@@ -115,13 +130,20 @@ def truncate(text, max_len):
 # Section renderers
 # ---------------------------------------------------------------------------
 
-def render_daemon_header(running, pid, sha, uptime):
-    """Render the daemon status header line."""
+def render_daemon_header(running, pid, sha, uptime, head=None):
+    """Render the daemon status header line.
+
+    `head` is the checkout's HEAD (repo-derived); `sha` is the last commit that
+    touched bellows.py (file-scoped) and is labelled as such — thread 104: the
+    bare `sha` label was read twice as the running daemon's checkout state.
+    Neither is the sha the daemon LOADED; `up` (process start) is the daemon's
+    own fact, and a HEAD newer than that start is the staleness signal."""
     if not running:
         return "\u25cb Bellows STOPPED"
     parts = ["\u25cf Bellows RUNNING"]
     parts.append(f"pid {pid}" if pid else "pid \u2014")
-    parts.append(f"sha {sha}" if sha else "sha \u2014")
+    parts.append(f"HEAD {head}" if head else "HEAD \u2014")
+    parts.append(f"bellows.py@{sha}" if sha else "bellows.py@\u2014")
     parts.append(f"up {uptime}" if uptime else "up \u2014")
     return "  ".join(parts)
 
@@ -264,12 +286,13 @@ def main():
     # Daemon header
     pid = None
     sha = get_sha(bellows_root)
+    head = get_head_sha(bellows_root)
     uptime = None
     if daemon_running:
         pid = get_daemon_pid(str(lock_path))
         if pid:
             uptime = get_uptime(pid)
-    print(render_daemon_header(daemon_running, pid, sha, uptime))
+    print(render_daemon_header(daemon_running, pid, sha, uptime, head=head))
     print()
 
     in_flight = query_in_flight(str(db_path))

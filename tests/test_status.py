@@ -225,11 +225,18 @@ class TestDaemonHeader:
     """Daemon header renders correctly for running and stopped states."""
 
     def test_running_header(self):
-        header = status.render_daemon_header(True, 48231, "5077b92", "2h 16m")
+        header = status.render_daemon_header(True, 48231, "5077b92", "2h 16m", head="1e5a38e")
         assert "\u25cf Bellows RUNNING" in header
         assert "pid 48231" in header
-        assert "sha 5077b92" in header
+        assert "HEAD 1e5a38e" in header
+        assert "bellows.py@5077b92" in header
+        assert " sha " not in header  # thread 104: the bare label invited the misreading
         assert "up 2h 16m" in header
+
+    def test_running_header_without_head(self):
+        header = status.render_daemon_header(True, 48231, "5077b92", "2h 16m")
+        assert "HEAD \u2014" in header
+        assert "bellows.py@5077b92" in header
 
     def test_stopped_header(self):
         header = status.render_daemon_header(False, None, None, None)
