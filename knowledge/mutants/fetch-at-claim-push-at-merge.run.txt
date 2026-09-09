@@ -1,0 +1,17 @@
+PYTHON: /Users/marklehn/Developer/bellows/.venv/bin/python
+HEAD: 492f50d76c414716f021aa32180d456bae44180e
+TARGET: bellows.py sha256=654b0c32fa54
+
+MUTANT M1-behind-not-checked: KILLED — suite caught the defect
+MUTANT M2-ahead-not-checked: KILLED — suite caught the defect
+MUTANT M3-failed-fetch-returns-true: KILLED — suite caught the defect
+MUTANT M4-push-skipped-in-teardown: KILLED — suite caught the defect
+MUTANT M5-rejected-push-swallowed: KILLED — suite caught the defect
+MUTANT M6-wire-a-writes-no-hold: KILLED — suite caught the defect
+MUTANT M7-push-uses-force: KILLED — suite caught the defect
+MUTANT M8-wire-c-push-rejected-not-retryable: KILLED — suite caught the defect
+MUTANT M9-head-check-removed: KILLED — suite caught the defect
+
+LIVE-TREE UNCHANGED: bellows.py sha256=654b0c32fa54
+
+MUTATION: 9 killed, 0 survived, 0 error
