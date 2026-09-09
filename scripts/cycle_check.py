@@ -30,7 +30,7 @@ from walk_register_lint import (
     STATUS_PRE_SCHEMA as _REG_PRE_SCHEMA,
     STATUS_LEGACY_SCHEMA as _REG_LEGACY_SCHEMA,
 )
-# Statuses that do not warrant a register WARN: CONFORMANT (valid), PRE-SCHEMA (pre-dates
+# Statuses that do not warrant a register WARN: SHAPE-OK (valid), PRE-SCHEMA (pre-dates
 # schema, not a defect), LEGACY_SCHEMA (honest old-version record, not a defect).
 _REGISTER_SILENT_STATUSES = frozenset({_REG_CONFORMANT, _REG_PRE_SCHEMA, _REG_LEGACY_SCHEMA})
 
