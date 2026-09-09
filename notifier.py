@@ -199,8 +199,11 @@ def _dedupe(key: tuple) -> bool:
 
 
 def mark_machine_live(machine: str) -> None:
-    """Clear the watcher_down dedupe for a machine so a new episode pages once."""
-    _dedupe_memo.pop((machine, "-", "watcher_down"), None)
+    """Clear the watcher_down dedupe so a new stale episode pages once."""
+    hostname = socket.gethostname()
+    for k in list(_dedupe_memo.keys()):
+        if k[:3] == (hostname, "-", "watcher_down"):
+            _dedupe_memo.pop(k, None)
 
 
 # --- Ownership signal (change 2) ---
@@ -379,27 +382,12 @@ def notify_disk_low(free_gb: float, threshold_gb: float) -> bool:
 def notify_watcher_down(machine: str, status: str, age_seconds: float) -> bool:
     """Page when tuyere's liveness poll finds a watcher stale or down.
 
-    Uses a machine-keyed 3-tuple dedupe; mark_machine_live() clears it so
-    each new stale episode pages exactly once.
+    Every page passes through the one gate (notify_event). mark_machine_live()
+    clears the dedupe so each new stale episode pages exactly once.
     """
-    event = "watcher_down"
-    if not _notifications_enabled():
-        _log("INFO", f"notifier: {event} {machine} not paged — disabled")
-        return False
-    events_cfg = _config.get("events", {})
-    if not events_cfg.get(event, _DEFAULT_EVENTS.get(event, False)):
-        _log("INFO", f"notifier: {event} {machine} not paged — event off")
-        return False
-    key = (machine, "-", "watcher_down")
-    if not _dedupe(key):
-        _log("INFO", f"notifier: {event} {machine} not paged — deduped")
-        return False
-    result = push(
-        _app_key, _user_key,
+    return notify_event(
+        "watcher_down", None,
         f"Bellows — Watcher {status.title()}",
         f"Machine: {machine}\nStatus: {status}\nAge: {int(age_seconds)}s",
-        priority=1,
+        priority=1, plan_scoped=False, detail_key=status,
     )
-    if result:
-        _log("INFO", f"notifier: {event} {machine} paged")
-    return result

@@ -38,6 +38,7 @@ def isolate_lifecycle_db(monkeypatch, tmp_path):
 
 @pytest.fixture(autouse=True)
 def _clear_notifier_dedupe():
+    # Added by plan 100054; declared here by plan 100055.
     import notifier
     notifier._dedupe_memo.clear()
     yield

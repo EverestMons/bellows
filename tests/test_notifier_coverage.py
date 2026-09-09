@@ -362,6 +362,28 @@ def test_8_watcher_down_episodes(monkeypatch):
     notifier.notify_watcher_down("air", "stale", 320)
     assert len(push_calls) == 2
 
+    # Route check: notify_watcher_down must reach push only through notify_event.
+    notify_event_calls = []
+
+    def _capture_notify_event(event, plan_slug, title, message, **kwargs):
+        notify_event_calls.append({
+            "event": event,
+            "plan_slug": plan_slug,
+            "plan_scoped": kwargs.get("plan_scoped"),
+            "detail_key": kwargs.get("detail_key"),
+        })
+        return True
+
+    notifier._dedupe_memo.clear()
+    monkeypatch.setattr(notifier, "notify_event", _capture_notify_event)
+    notifier.notify_watcher_down("air", "stale", 330)
+    assert len(notify_event_calls) == 1, (
+        f"expected notify_event called once, got {len(notify_event_calls)}"
+    )
+    assert notify_event_calls[0]["event"] == "watcher_down"
+    assert notify_event_calls[0]["plan_scoped"] is False
+    assert notify_event_calls[0]["detail_key"] == "stale"
+
 
 # ---------------------------------------------------------------------------
 # Test 9: Sites — depositor class_hold, stale-checkout, push-rejected pins

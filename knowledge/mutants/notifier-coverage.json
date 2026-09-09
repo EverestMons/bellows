@@ -38,16 +38,16 @@
         },
         {
             "name": "watcher-key-4tuple",
-            "why": "notify_watcher_down must use a 3-tuple key (machine, '-', 'watcher_down') so mark_machine_live's pop hits the same slot; a 4-tuple key never matches the pop and the dedupe persists after mark_machine_live",
-            "anchor": "    key = (machine, \"-\", \"watcher_down\")",
-            "replacement": "    key = (machine, \"-\", \"watcher_down\", \"\")",
+            "why": "mark_machine_live must match notify_event's 4-tuple key prefix (hostname, '-', 'watcher_down'); a mismatched prefix check leaves the dedupe entry intact and the second episode is silently eaten; re-anchored 2026-09-09 (notify_watcher_down now routes through notify_event)",
+            "anchor": "        if k[:3] == (hostname, \"-\", \"watcher_down\"):",
+            "replacement": "        if k[:3] == (hostname, \"-\", \"watcher_down\", \"\"):",
             "expect_fail": "tests/test_notifier_coverage.py::test_8_watcher_down_episodes"
         },
         {
             "name": "mark-live-pops-wrong-key",
-            "why": "mark_machine_live must pop the same 3-tuple key that notify_watcher_down writes; popping a different key leaves the dedupe entry intact and the second episode is silently eaten",
-            "anchor": "    _dedupe_memo.pop((machine, \"-\", \"watcher_down\"), None)",
-            "replacement": "    _dedupe_memo.pop((machine, \"-\", \"watcher_down\", \"\"), None)",
+            "why": "mark_machine_live must actually remove the matched key from _dedupe_memo; replacing pop with get reads the value but leaves the entry intact so the second episode is silently eaten; re-anchored 2026-09-09",
+            "anchor": "            _dedupe_memo.pop(k, None)",
+            "replacement": "            _dedupe_memo.get(k, None)",
             "expect_fail": "tests/test_notifier_coverage.py::test_8_watcher_down_episodes"
         }
     ]
