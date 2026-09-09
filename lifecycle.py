@@ -137,6 +137,14 @@ def init_lifecycle_db(db_path=None):
             override_ref TEXT
         )
     """)
+    conn.execute("""
+        CREATE TABLE IF NOT EXISTS step_files (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            step_id INTEGER NOT NULL REFERENCES steps(id),
+            path TEXT NOT NULL,
+            UNIQUE(step_id, path)
+        )
+    """)
     # --- Daemon-owned ledgers Phase 1: prompt_feedback table ---
     conn.execute("""
         CREATE TABLE IF NOT EXISTS prompt_feedback (
@@ -531,6 +539,16 @@ def record_gate_events(step_id, gate_result, db_path=None):
                     (step_id, gname),
                 )
         conn.commit()
+        try:
+            files = gate_result.get("files_changed") or []
+            conn.execute("DELETE FROM step_files WHERE step_id = ?", (step_id,))
+            conn.executemany(
+                "INSERT OR IGNORE INTO step_files (step_id, path) VALUES (?, ?)",
+                [(step_id, p) for p in files],
+            )
+            conn.commit()
+        except Exception as e:
+            _warn(f"record_gate_events: step_files failed for step_id {step_id}: {e}")
         conn.close()
     except Exception as e:
         _warn(f"record_gate_events failed for step_id {step_id}: {e}")

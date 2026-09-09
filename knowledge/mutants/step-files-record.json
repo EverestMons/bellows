@@ -1,0 +1,45 @@
+{
+  "target": "lifecycle.py",
+  "mutants": [
+    {
+      "name": "drop-delete-before-insert",
+      "why": "without the DELETE the second record_gate_events call on the same step_id accumulates rows instead of replacing — test 4 asserts exactly one row after the second call",
+      "anchor": "            conn.execute(\"DELETE FROM step_files WHERE step_id = ?\", (step_id,))",
+      "replacement": "            pass  # M1: DROP DELETE",
+      "target": "lifecycle.py",
+      "expect_fail": "tests/test_step_files_record.py::test_4_replace_on_re_evaluation"
+    },
+    {
+      "name": "insert-only-first-path",
+      "why": "truncating the files list to the first element means only one step_files row is written when two or more files are recorded — test 2 asserts both a.py and b/c.md are present",
+      "anchor": "                [(step_id, p) for p in files],",
+      "replacement": "                [(step_id, p) for p in files[:1]],",
+      "target": "lifecycle.py",
+      "expect_fail": "tests/test_step_files_record.py::test_2_files_recorded_with_gate_rows"
+    },
+    {
+      "name": "skip-write-when-passed",
+      "why": "guarding the step_files write behind gate_result['passed'] means files are not recorded for passing steps — test 2 case A asserts two rows are written for a passing gate result",
+      "anchor": "            files = gate_result.get(\"files_changed\") or []",
+      "replacement": "            files = [] if gate_result.get(\"passed\") else (gate_result.get(\"files_changed\") or [])",
+      "target": "lifecycle.py",
+      "expect_fail": "tests/test_step_files_record.py::test_2_files_recorded_with_gate_rows"
+    },
+    {
+      "name": "tool-compare-recorded-to-itself",
+      "why": "comparing recorded to recorded (instead of now) means all steps appear identical — test 5 asserts FLIPS: 1 is printed",
+      "anchor": "        if recorded != \"none\" and recorded != now:",
+      "replacement": "        if recorded != \"none\" and recorded != recorded:",
+      "target": "tools/replay_scope_check.py",
+      "expect_fail": "tests/test_step_files_record.py::test_5_tool_flip_and_read_only"
+    },
+    {
+      "name": "tool-opens-without-mode-ro",
+      "why": "opening the db without mode=ro allows writes and changes mtime — test 5 asserts mtime is unchanged after the tool run",
+      "anchor": "    db_uri = f\"file:{args.db}?mode=ro\"",
+      "replacement": "    db_uri = args.db; conn = sqlite3.connect(db_uri); conn.execute(\"VACUUM\"); conn.close(); db_uri = args.db",
+      "target": "tools/replay_scope_check.py",
+      "expect_fail": "tests/test_step_files_record.py::test_5_tool_flip_and_read_only"
+    }
+  ]
+}
