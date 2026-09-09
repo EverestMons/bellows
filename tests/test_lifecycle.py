@@ -458,6 +458,23 @@ class TestRecordGateEvents:
         assert gate_dict["deposit_exists"] == ("fail", "file missing")
         assert gate_dict["receipt_status"] == ("pass", None)
 
+    def test_pass_rows_for_the_verdict_pause_gates(self):
+        """Thread 210: qa_test_result, quoted_test_nodes_exist and mutation_result get
+        PASS rows when they do not fail, and a FAIL row (no PASS row) when they do."""
+        pid = lifecycle.mint_and_claim("executable", "/proj", "T", "bellows", "small", 2, "d.md")
+        step_id = lifecycle.record_step_start(pid, 2)
+        lifecycle.record_gate_events(step_id, {"failures": [
+            {"gate": "mutation_result", "evidence": "MUTATION: 1 killed, 1 survived, 0 error"}], "passed": False})
+        conn = sqlite3.connect(lifecycle.LIFECYCLE_DB_PATH)
+        rows = conn.execute("SELECT gate_name, result FROM gate_events WHERE step_id = ?", (step_id,)).fetchall()
+        conn.close()
+        seen = {}
+        for name, result in rows:
+            seen.setdefault(name, []).append(result)
+        assert seen["qa_test_result"] == ["pass"]
+        assert seen["quoted_test_nodes_exist"] == ["pass"]
+        assert seen["mutation_result"] == ["fail"]
+
     def test_noop_on_none_step_id(self):
         lifecycle.record_gate_events(None, {"failures": []})
 

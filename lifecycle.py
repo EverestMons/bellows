@@ -519,6 +519,9 @@ def record_gate_events(step_id, gate_result, db_path=None):
             "receipt_status", "no_errors", "no_permission_denials",
             "deposit_exists", "scope_check", "rule_20_self_check",
             "rule_22_verification",
+            # Thread 210 (plan 100045's fork 5): the gate 100045 rewrote and the two it
+            # added were FAIL-row-only here — a pass left no trace in gate_events.
+            "qa_test_result", "quoted_test_nodes_exist", "mutation_result",
         ]
         for gname in standard_gates:
             if gname not in failure_gates:
