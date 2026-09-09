@@ -415,11 +415,7 @@ def _disk_preflight(config: dict) -> bool:
         _log("ERROR", f"disk preflight FAILED: {free_gb:.2f} GB free < {min_free_gb} GB threshold — claim skipped")
         if not _disk_low_notified:
             _disk_low_notified = True
-            app_key = config.get("pushover", {}).get("app_key", "")
-            user_key = config.get("pushover", {}).get("user_key", "")
-            if app_key and user_key:
-                notifier.push(app_key, user_key, "Bellows — Disk Low",
-                              f"Free: {free_gb:.2f} GB, threshold: {min_free_gb} GB — claims paused")
+            notifier.notify_disk_low(free_gb, min_free_gb)
         return False
     if _disk_low_notified:
         _disk_low_notified = False
@@ -518,6 +514,29 @@ def _retire_receipts(plan_id):
             shutil.move(str(receipt_path), str(archived / receipt_path.name))
     except Exception as e:
         _log("WARN", f"receipt retirement failed for plan {plan_id}: {e}")
+
+
+def _receipt_slug(plan_id) -> Optional[str]:
+    """Resolve the receipt slug for a plan_id by querying lifecycle.db.
+
+    Returns the deposit_placeholder_name (without .md) or None on any failure.
+    Mirrors _retire_receipts' DB query so notify_event receives the correct key.
+    """
+    if not plan_id:
+        return None
+    try:
+        conn = sqlite3.connect(str(BELLOWS_ROOT / "lifecycle.db"))
+        row = conn.execute(
+            "SELECT deposit_placeholder_name FROM plans WHERE id = ?",
+            (plan_id,),
+        ).fetchone()
+        conn.close()
+        if not row or not row[0]:
+            return None
+        placeholder = row[0]
+        return placeholder[:-3] if placeholder.endswith(".md") else placeholder
+    except Exception:
+        return None
 
 
 def load_config(path: str = "config.json") -> dict:
@@ -852,7 +871,7 @@ def _maybe_park_session_limit(
         record_run(db_path, halted_path, project_path,
                    parsed.get("session_id", ""), current_step, "Halted",
                    parsed.get("cost_usd", 0.0), plan_slug)
-        notifier.notify_plan_halted(base_filename)
+        notifier.notify_plan_halted(base_filename, plan_slug=plan_slug)
         return True
 
     # Rename in-progress → parked (restart-safe ordering: rename first)
@@ -1009,6 +1028,7 @@ def run_plan(plan_path: str, config: dict, response_server: server.ResponseServe
                                "held_at": datetime.now().isoformat()}, _hf, indent=2)
                 os.rename(plan_path, hold_path)
                 _log("WARN", f"⚠️ HOLD — {_cic_detail}", slug=slug_for(plan_name))
+                notifier.notify_checkout_stale(plan_slug, _cic_detail)
                 if bellows is not None:
                     bellows._seen.discard(verdict.slug_from_path(plan_path))
                 return
@@ -1270,7 +1290,8 @@ def run_plan(plan_path: str, config: dict, response_server: server.ResponseServe
                 except Exception:
                     logging.getLogger("bellows").warning(f"lifecycle: failed to write awaiting_verdict for plan {plan_id}")
                 notifier.notify_verdict_request(
-                    app_key, user_key, plan_name, current_step, gate_result["failures"]
+                    app_key, user_key, plan_name, current_step, gate_result["failures"],
+                    plan_slug=plan_slug,
                 )
                 record_run(db_path, plan_path, project_path,
                            parsed.get("session_id", ""), current_step, "VerdictPending", parsed["cost_usd"], plan_slug)
@@ -1405,7 +1426,8 @@ def run_plan(plan_path: str, config: dict, response_server: server.ResponseServe
             except Exception:
                 logging.getLogger("bellows").warning(f"lifecycle: failed to write awaiting_verdict for plan {plan_id}")
             notifier.notify_verdict_request(
-                app_key, user_key, plan_name, current_step, gate_result["failures"]
+                app_key, user_key, plan_name, current_step, gate_result["failures"],
+                plan_slug=plan_slug,
             )
             record_run(db_path, plan_path, project_path,
                        parsed.get("session_id", ""), current_step, "VerdictPending", parsed["cost_usd"], plan_slug)
@@ -1475,7 +1497,7 @@ def run_plan(plan_path: str, config: dict, response_server: server.ResponseServe
 
     except Exception as e:
         _log("ERROR", f"❌ FAILED: {e}", slug=slug_for(plan_name))
-        notifier.notify_failure(app_key, user_key, plan_name, current_step if 'current_step' in dir() else 0, str(e))
+        notifier.notify_failure(app_key, user_key, plan_name, current_step if 'current_step' in dir() else 0, str(e), plan_slug=plan_slug if 'plan_slug' in dir() else None)
 
 
 def _capture_git_diff(project_path: str) -> str:
@@ -2706,6 +2728,9 @@ class Bellows:
         self._seen = set()
         self._cycle_nudge_last_eval: float = 0.0
         self._cycle_nudge_suppressed_ts: Optional[str] = None
+        self._liveness_last_poll: float = 0.0
+
+        notifier.init_notifications(config)
 
         self.depositor = depositor.Depositor(
             disk_preflight_fn=_disk_preflight,
@@ -2848,6 +2873,50 @@ class Bellows:
         except Exception as e:
             _log("WARN", f"cycle-nudge: evaluation failed: {e}")
 
+    def _poll_liveness(self) -> None:
+        """Poll tuyere liveness and page on stale/down machines (change 7).
+
+        Runs at most once per liveness_poll_seconds (default 300). Stalls the
+        rescan by at most 15 s (the subprocess timeout) once per poll interval.
+        Never raises; every failure produces one WARN and returns.
+        """
+        now = time.time()
+        interval = self.config.get("liveness_poll_seconds", 300)
+        if now - self._liveness_last_poll < interval:
+            return
+        self._liveness_last_poll = now
+
+        checkout = plan_claim._tuyere_checkout()
+        if checkout is None:
+            _log("WARN", "liveness poll: tuyere checkout unresolvable")
+            return
+
+        try:
+            result = subprocess.run(
+                [str(checkout / ".venv" / "bin" / "python"),
+                 "-m", "tuyere.control", "liveness", "--json"],
+                cwd=str(checkout), capture_output=True, text=True, timeout=15,
+            )
+            if result.returncode != 0:
+                _log("WARN", f"liveness poll: exit {result.returncode}")
+                return
+            rows = json.loads(result.stdout)
+        except subprocess.TimeoutExpired:
+            _log("WARN", "liveness poll: timeout")
+            return
+        except Exception as exc:
+            _log("WARN", f"liveness poll: {exc}")
+            return
+
+        for row in rows:
+            machine = row.get("machine", "")
+            status = row.get("status", "")
+            age = row.get("age_seconds", 0)
+            if status in ("stale", "down"):
+                notifier.notify_watcher_down(machine, status, age)
+            elif status == "live":
+                notifier.mark_machine_live(machine)
+
     def _rescan(self, handler):
         # Wire point A′: self-release stale-checkout holds (at most one per rescan, oldest first)
         _sc_held = []
@@ -2921,6 +2990,8 @@ class Bellows:
                             target=self.depositor.evaluate,
                             args=(full_path,), daemon=True,
                         ).start()
+
+        self._poll_liveness()
 
     _RECHECK_SKIP = object()
 
@@ -3230,7 +3301,7 @@ class Bellows:
                                 lifecycle.mark_plan_state(_lc_plan_id, "halted", closed_at=datetime.now().isoformat(), plan_doc_ref=_halt_doc_ref) if _lc_plan_id else None
                                 _retire_receipts(_lc_plan_id)
                                 plan_claim.release_for_plan(_lc_plan_id, "halt: rejected verdict", self.config, _log)
-                                notifier.notify_plan_halted(original_name)
+                                notifier.notify_plan_halted(original_name, plan_slug=_receipt_slug(_lc_plan_id))
                                 break
                             is_diag = original_name.startswith("diagnostic-")
                             # Fallback chain: shadow → verdict metadata → load_file
@@ -3302,7 +3373,7 @@ class Bellows:
                             _retire_receipts(_lc_plan_id)
                             plan_claim.release_for_plan(_lc_plan_id, "halt: stop verdict", self.config, _log)
                             _log("EVENT", f"verdict stop — halting", slug=slug_for(original_name))
-                            notifier.notify_plan_halted(original_name)
+                            notifier.notify_plan_halted(original_name, plan_slug=_receipt_slug(_lc_plan_id))
                         break  # only one match per verdict
                 if plan_matched:
                     break  # also break directory loop

@@ -1,0 +1,54 @@
+{
+    "target": "notifier.py",
+    "mutants": [
+        {
+            "name": "notify-event-drops-disabled-check",
+            "why": "notify_event must refuse all events when notifications.enabled=false; dropping the _notifications_enabled guard lets pushes fire even when the user has disabled them",
+            "anchor": "    if not _notifications_enabled():\n        _log(\"INFO\", f\"notifier: {event} {plan_slug} not paged — disabled\")\n        return False\n    events_cfg = _config.get(\"events\", {})\n    if not events_cfg.get(event, _DEFAULT_EVENTS.get(event, False)):",
+            "replacement": "    if False:\n        _log(\"INFO\", f\"notifier: {event} {plan_slug} not paged — disabled\")\n        return False\n    events_cfg = _config.get(\"events\", {})\n    if not events_cfg.get(event, _DEFAULT_EVENTS.get(event, False)):",
+            "expect_fail": "tests/test_notifier_coverage.py::test_2_notify_event_refusals"
+        },
+        {
+            "name": "event-default-unknown-true",
+            "why": "unknown events must default to False (the ruled-closed table; change 1); returning True makes every undeclared event page, which inverts the silence-is-safety invariant",
+            "anchor": "    return events.get(event_name, _DEFAULT_EVENTS.get(event_name, False))",
+            "replacement": "    return events.get(event_name, _DEFAULT_EVENTS.get(event_name, True))",
+            "expect_fail": "tests/test_notifier_coverage.py::test_1_defaults_table"
+        },
+        {
+            "name": "invert-dedupe-gate",
+            "why": "the dedupe gate must suppress a repeat push within the window; inverting the condition sends on repeat and suppresses the first — every first page is eaten and every repeat fires",
+            "anchor": "    if not _dedupe(key):\n        _log(\"INFO\", f\"notifier: {event} {plan_slug} not paged — deduped\")\n        return False",
+            "replacement": "    if _dedupe(key):\n        _log(\"INFO\", f\"notifier: {event} {plan_slug} not paged — deduped\")\n        return False",
+            "expect_fail": "tests/test_notifier_coverage.py::test_3_dedupe"
+        },
+        {
+            "name": "drop-ownership-guard",
+            "why": "ownership suppression must fire when plan_scoped=True and a live session owns the plan; dropping the guard sends the push even when a session is attended",
+            "anchor": "    if plan_scoped and plan_slug:\n        owned, why = owned_by_live_session(plan_slug)\n        if owned:\n            _log(\"INFO\", f\"notifier: {event} {plan_slug} not paged — {why}\")\n            return False",
+            "replacement": "    if False:\n        owned, why = owned_by_live_session(plan_slug)\n        if owned:\n            _log(\"INFO\", f\"notifier: {event} {plan_slug} not paged — {why}\")\n            return False",
+            "expect_fail": "tests/test_notifier_coverage.py::test_4_ownership_attended"
+        },
+        {
+            "name": "ignore-plan-scoped-flag",
+            "why": "non-plan-scoped events (class_hold, disk_low, watcher_down) must bypass the ownership check regardless of session attendance; dropping plan_scoped from the condition subjects them to suppression",
+            "anchor": "    if plan_scoped and plan_slug:",
+            "replacement": "    if plan_slug:",
+            "expect_fail": "tests/test_notifier_coverage.py::test_7_not_plan_scoped_pages"
+        },
+        {
+            "name": "watcher-key-4tuple",
+            "why": "notify_watcher_down must use a 3-tuple key (machine, '-', 'watcher_down') so mark_machine_live's pop hits the same slot; a 4-tuple key never matches the pop and the dedupe persists after mark_machine_live",
+            "anchor": "    key = (machine, \"-\", \"watcher_down\")",
+            "replacement": "    key = (machine, \"-\", \"watcher_down\", \"\")",
+            "expect_fail": "tests/test_notifier_coverage.py::test_8_watcher_down_episodes"
+        },
+        {
+            "name": "mark-live-pops-wrong-key",
+            "why": "mark_machine_live must pop the same 3-tuple key that notify_watcher_down writes; popping a different key leaves the dedupe entry intact and the second episode is silently eaten",
+            "anchor": "    _dedupe_memo.pop((machine, \"-\", \"watcher_down\"), None)",
+            "replacement": "    _dedupe_memo.pop((machine, \"-\", \"watcher_down\", \"\"), None)",
+            "expect_fail": "tests/test_notifier_coverage.py::test_8_watcher_down_episodes"
+        }
+    ]
+}

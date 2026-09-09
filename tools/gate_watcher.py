@@ -139,45 +139,12 @@ def _log_line(log_path, line):
 
 
 def _push_pause(name, cur, db_path=None):
-    """Deliver a Pushover push for a plan entering awaiting-verdict.
+    """Log a pause transition; the daemon is the sole pager (MACHINE_SETUP v1.7).
 
-    Returns a log line string; never raises.
+    Returns a log line string; never raises. The watcher keeps reading, logging
+    and exiting exactly as before — only this push line changes.
     """
-    try:
-        import json
-        resolved_db = os.path.abspath(db_path or _DB)
-        cfg_path = os.path.join(os.path.dirname(resolved_db), "config.json")
-        with open(cfg_path) as fh:
-            cfg = json.load(fh)
-    except Exception:
-        return "WATCH: push skipped (no config.json beside the DB)"
-    try:
-        sys.path.insert(0, _ROOT)
-        import notifier
-        notifier.init_notifications(cfg)
-        if not cfg.get("notifications", {}).get("enabled", True):
-            return "WATCH: push skipped (notifications disabled)"
-        app_key = cfg.get("pushover", {}).get("app_key", "")
-        user_key = cfg.get("pushover", {}).get("user_key", "")
-        if not app_key or not user_key:
-            return "WATCH: push skipped (pushover keys empty)"
-        pending = cur.get("pending") or []
-        step = 0
-        for p in pending:
-            m = re.match(r"^verdict-request-\d+-step-(\d+)\.md$", p)
-            if m:
-                step = int(m.group(1))
-                break
-        try:
-            ok = notifier.notify_verdict_request(
-                app_key, user_key, name, step,
-                [{"gate": g} for g in (cur.get("gate_failures") or [])]
-            )
-        except Exception as e:
-            return "WATCH: push skipped (" + type(e).__name__ + ")"
-        return "WATCH: push sent" if ok else "WATCH: push skipped (pushover returned false)"
-    except Exception as e:
-        return "WATCH: push skipped (" + type(e).__name__ + ")"
+    return "WATCH: push skipped (the daemon is the pager — MACHINE_SETUP v1.7)"
 
 
 def main(argv):

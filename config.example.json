@@ -17,12 +17,20 @@
     "enabled": true,
     "events": {
       "verdict_needed": true,
-      "failure": true,
-      "plan_complete": true,
       "plan_halted": true,
-      "plan_skipped": true,
-      "queue_empty": true
+      "failure": true,
+      "disk_low": true,
+      "class_hold": true,
+      "checkout_stale": true,
+      "watcher_down": true,
+      "plan_complete": false,
+      "plan_skipped": false,
+      "queue_empty": false,
+      "cycle_nudge": false
     },
-    "coalesce_window_seconds": 30
+    "coalesce_window_seconds": 30,
+    "attended_window_seconds": 600,
+    "dedupe_window_seconds": 3600,
+    "liveness_poll_seconds": 300
   }
 }

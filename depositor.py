@@ -28,6 +28,10 @@ import cycle_check  # noqa: E402 — scripts/ must be on path first
 import gates  # noqa: E402
 import lifecycle  # noqa: E402
 import status  # noqa: E402
+try:
+    import notifier as _notifier
+except ImportError:
+    _notifier = None
 
 log = logging.getLogger("bellows.depositor")
 
@@ -190,6 +194,13 @@ class Depositor:
             self._hold(path, f"class:{assigned_class}", {
                 "class_assigned": assigned_class,
             })
+            _slug = os.path.basename(path)
+            if _slug.startswith("ready-"):
+                _slug = _slug[len("ready-"):]
+            if _slug.endswith(".md"):
+                _slug = _slug[:-3]
+            if _notifier is not None:
+                _notifier.notify_class_hold(_slug, assigned_class)
         else:
             in_flight_2 = self._resolve_in_flight_writes()
             sibling_2 = self._scan_sibling_writes(path)

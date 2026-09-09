@@ -34,3 +34,11 @@ def isolate_lifecycle_db(monkeypatch, tmp_path):
     db_path = str(tmp_path / "lifecycle.db")
     monkeypatch.setattr(lifecycle, "LIFECYCLE_DB_PATH", db_path)
     lifecycle.init_lifecycle_db(db_path)
+
+
+@pytest.fixture(autouse=True)
+def _clear_notifier_dedupe():
+    import notifier
+    notifier._dedupe_memo.clear()
+    yield
+    notifier._dedupe_memo.clear()
