@@ -148,6 +148,21 @@ class TestJudgeRegister:
         # The message must reflect the status actually found, not a hardcoded label
         assert "SHAPE-FAIL" not in reason
 
+    def test_judge_register_new_token_logic(self):
+        """Test 7 — COVERAGE: INCOMPLETE in stderr is bad (thread 215).
+
+        A register file may be SHAPE-OK (valid structure) but INCOMPLETE coverage
+        — it has fewer fold rows than declared. judge_register must treat such a
+        line as a FAIL, not as a clean pass.
+        """
+        stderr = (
+            "good-register.md\tSHAPE-OK\tCOVERAGE: COVERED — w1 3/3\n"
+            "partial-register.md\tSHAPE-OK\tCOVERAGE: INCOMPLETE — w1 rows=1 declared=3\n"
+        )
+        verdict, reason = judge_register("", stderr, 0)
+        assert verdict == "FAIL"
+        assert "INCOMPLETE" in reason
+
 
 # ---------------------------------------------------------------------------
 # judge_propagation — four cases from real checker output (M3 kill target)
