@@ -1,0 +1,9 @@
+verdict: continue
+
+Plan #100050 (bellows — executable: FETCH AT CLAIM, PUSH AT MERGE; thread 231, superseding 228), STEP 1 (DEV).
+
+CEO ruling 2026-09-09: CONTINUE. Verified on main (base e94efda → 492f50d, 8d4bb57; merged by the running daemon, unpushed as its code still does): bellows.py +171/−14 (`_main_branch` lifted; `_checkout_is_current(project_path, slug=None, fetch_timeout=30)` and `_push_main`; wire point A before `claim_gate` writing the sidecar then the rename; A′ as `_rescan`'s first arm — one held plan per rescan, oldest `held_at` first, `fetch_timeout=10`, project = `parents[1]` of the lane, no-overwrite guard, rename then sidecar removal; B raising `worktree_teardown_push_rejected` with the hand-merge text; C widening the retry allowlist), tests/test_checkout_sync.py +581 (15 tests), knowledge/mutants/fetch-at-claim-push-at-merge.json +68 and .run.txt +17 (`MUTATION: 9 killed, 0 survived, 0 error`; `HEAD:` 492f50d76c414716f021aa32180d456bae44180e = the json's commit), the dev-log +93 with the four headings (cost: median 36.7 ms on the local fixture). Five files over two commits. `git diff origin/main..main -- tests/test_worktree.py tests/test_bellows.py tests/test_teardown_recording.py` → EMPTY; added bellows.py lines carrying `--force|rebase|reset` → 0. All 14 gate rows PASS.
+
+DEVIATION (recorded, accepted): wire point B runs the push only when `git remote get-url origin` succeeds — added mid-step (event 752) so the 23 remote-less `test_worktree.py` fixtures keep merging unchanged, which the plan's own post-condition requires. A live project without `origin` is already HELD at claim (`fetch failed`, test 4), so the daemon never reaches the skip. The plan's text says the push always runs; the code's guard is narrower and is now the record.
+
+STEP 2 note: QA Item 2's live tuple will read `main is 0 behind / 2 ahead` until the close push — expected, not a failure.

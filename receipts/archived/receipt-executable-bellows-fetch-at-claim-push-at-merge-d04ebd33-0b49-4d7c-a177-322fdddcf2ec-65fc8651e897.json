@@ -1,0 +1,8 @@
+{
+  "slug": "executable-bellows-fetch-at-claim-push-at-merge",
+  "content_hash": "65fc8651e8972ee8b96b777b11f1a9912d95d065e2dcbf077b662ba2711a652e",
+  "session_id": "d04ebd33-0b49-4d7c-a177-322fdddcf2ec",
+  "armed_at": "2026-09-09T09:19:18.424602",
+  "watcher": "gate_watcher.py spawned detached (pid 80179); log: logs/watch/executable-bellows-fetch-at-claim-push-at-merge.md.log",
+  "attestation_boundary": "This receipt proves the watcher was ARMED at write time. It does NOT prove the watcher stayed alive. Liveness of a session-local monitor is not externally verifiable."
+}
