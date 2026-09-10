@@ -1,0 +1,16 @@
+PYTHON: /Users/marklehn/Developer/bellows/.venv/bin/python
+HEAD: 7afd77711e8f9ce8591caa497d5c756b4b9b9ed5
+TARGET: hooks/eluvian/_common.py sha256=c50543ee793a
+TARGET: hooks/eluvian/wrap_arm_hook.py sha256=38be721ccf05
+
+MUTANT hook-regrows-local-default-root: KILLED — suite caught the defect
+MUTANT default-root-fallback-wrong-candidate: KILLED — suite caught the defect
+MUTANT hooklog-raises-on-unwritable: KILLED — suite caught the defect
+MUTANT emit-wrong-event-name: KILLED — suite caught the defect
+MUTANT arm-hook-missing-sys-path-insert: KILLED — suite caught the defect
+MUTANT validate-session-id-widens-charset: KILLED — suite caught the defect
+
+LIVE-TREE UNCHANGED: hooks/eluvian/_common.py sha256=c50543ee793a
+LIVE-TREE UNCHANGED: hooks/eluvian/wrap_arm_hook.py sha256=38be721ccf05
+
+MUTATION: 6 killed, 0 survived, 0 error
