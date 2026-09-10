@@ -1,0 +1,8 @@
+{
+  "slug": "diagnostic-bellows-drafting-battery-reprice",
+  "content_hash": "d59406af1462b7dad267bf37b1514af951639e26ef7ac5cd7ac932657a2b1535",
+  "session_id": "d04ebd33-0b49-4d7c-a177-322fdddcf2ec",
+  "armed_at": "2026-09-09T18:34:19.858787",
+  "watcher": "gate_watcher.py spawned detached (pid 30266); log: logs/watch/diagnostic-bellows-drafting-battery-reprice.md.log",
+  "attestation_boundary": "This receipt proves the watcher was ARMED at write time. It does NOT prove the watcher stayed alive. Liveness of a session-local monitor is not externally verifiable."
+}
