@@ -1,0 +1,24 @@
+PYTHON: /Users/marklehn/Developer/bellows/.venv/bin/python
+HEAD: f0760af9f63caa3bed73e3aeb1867edb1fa3b554
+TARGET: scripts/lens_commit.py sha256=f9f8017ef410
+TARGET: scripts/lens_order_check.py sha256=84ac14b15738
+
+MUTANT dry-append-removed: KILLED — suite caught the defect
+MUTANT cycle-only-guard-removed: KILLED — suite caught the defect
+MUTANT no-row-refusal-removed: KILLED — suite caught the defect
+MUTANT draft-dropped-from-to-add: KILLED — suite caught the defect
+MUTANT duplicate-guard-removed: KILLED — suite caught the defect
+MUTANT in-head-check-reverted-to-ls-files: KILLED — suite caught the defect
+MUTANT vacuity-refusal-removed: KILLED — suite caught the defect
+MUTANT plumbing-flags-dropped: KILLED — suite caught the defect
+MUTANT walk-shape-dropped-from-accepted-set: KILLED — suite caught the defect
+MUTANT draft-from-fold-baseline-returns-none-always: KILLED — suite caught the defect
+MUTANT leading-dot-not-stripped: KILLED — suite caught the defect
+MUTANT note-removed: KILLED — suite caught the defect
+MUTANT identity-tie-removed: KILLED — suite caught the defect
+MUTANT osr-try-except-removed: KILLED — suite caught the defect
+
+LIVE-TREE UNCHANGED: scripts/lens_commit.py sha256=f9f8017ef410
+LIVE-TREE UNCHANGED: scripts/lens_order_check.py sha256=84ac14b15738
+
+MUTATION: 14 killed, 0 survived, 0 error

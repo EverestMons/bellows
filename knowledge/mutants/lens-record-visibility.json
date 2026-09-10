@@ -4,8 +4,8 @@
     {
       "name": "dry-append-removed",
       "why": "removing the DRY-line append means --dry commits leave no register row; l6 asserts the register ends with the DRY line",
-      "anchor": "        if args.dry and not register_changed:\n            dry_line = (f\"**Walk {walk_n} lens {lens_n} — {LENS_NAMES[lens_n]}\"\n                        f\" — DRY, basis:** {desc}\")\n            register_path.write_text(\n                register_path.read_text(encoding=\"utf-8\") + dry_line + \"\\n\",\n                encoding=\"utf-8\",\n            )",
-      "replacement": "        pass  # mutant: DRY append removed",
+      "anchor": "    if args.dry and not register_changed:\n        dry_line = (f\"**Walk {walk_n} lens {lens_n} — {LENS_NAMES[lens_n]}\"\n                    f\" — DRY, basis:** {desc}\")\n        register_path.write_text(\n            register_path.read_text(encoding=\"utf-8\") + dry_line + \"\\n\",\n            encoding=\"utf-8\",\n        )",
+      "replacement": "    pass  # mutant: DRY append removed",
       "expect_fail": "tests/test_lens_commit.py::test_l6_dry_lens_appends_row_and_commits_three_files"
     },
     {
