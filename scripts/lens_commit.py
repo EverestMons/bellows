@@ -3,18 +3,22 @@
 
 Usage:
     lens_commit.py <draft> --register <path> --walk <N> --lens <N> --desc <text>
-                           [--allow-yield-rising]
+                           [--dry] [--allow-yield-rising]
 
 Steps:
+    0. record       — in HEAD, diff facts (draft / register / cycle-only / vacuity /
+                      duplicate); every record FAIL fires here
     1. baseline     — fold_check --save-baseline on draft
     2. lint         — walk_register_lint gate (SHAPE-OK, no COVERAGE: INCOMPLETE)
     3. cycle        — cycle_check BAR_MET gate (yield-rising handling)
     4. assert       — subject lens name checked against internal table
-    5. commit       — git add register + baseline, commit with composed subject
+    5. commit       — git add draft + register + baseline; --dry writes the DRY line
+                      when the register is unchanged; a fold without a register row refuses
 """
 
 import argparse
 import os
+import re
 import subprocess
 import sys
 from pathlib import Path
@@ -40,6 +44,22 @@ _NAMES = {
 
 _YIELD_RISING_WALK_CEILING = 6  # walk >= 7 refuses even with --allow-yield-rising
 
+# Cycle-Log-only shapes a dry lens may change (panel D1 census of 235 dry commits).
+# A content line is cycle-only if, after its diff sign, it is blank or matches one
+# of these three patterns.
+_CYCLE_LINE_RE = re.compile(
+    r"^(?:"
+    r"- (?:Weak spots|Destruction|Vulnerabilities|Integration-record|ACID):"
+    r"|\*\*Walk \d+ — "   # em-dash
+    r"|walks: \d+$"
+    r")"
+)
+
+
+def _is_cycle_line(rest):
+    """True when the content after the diff sign is blank or a cycle-record-only shape."""
+    return not rest.strip() or bool(_CYCLE_LINE_RE.match(rest))
+
 
 def run_checker(script, *args):
     """Seam: run a checker subprocess. Returns (returncode, combined_output)."""
@@ -62,6 +82,8 @@ def main(argv=None):
     ap.add_argument("--walk", required=True, type=int, help="Walk number")
     ap.add_argument("--lens", required=True, type=int, help="Lens number (1-5)")
     ap.add_argument("--desc", required=True, help="Short description suffix for the subject")
+    ap.add_argument("--dry", action="store_true",
+                    help="Attest this is a dry lens; the tool appends the DRY register row")
     ap.add_argument("--allow-yield-rising", action="store_true",
                     help="Allow lens commit when yield-rising detected (walk <= 6 only)")
     args = ap.parse_args(argv)
@@ -81,6 +103,124 @@ def main(argv=None):
     if lens_n not in LENS_NAMES:
         print(f"ERROR: lens {lens_n} not in table (1–5)", file=sys.stderr)
         return 1
+
+    # Resolve paths used throughout — every step-0 git call takes resolved absolute paths
+    slug = draft_path.stem
+    draft_resolved = draft_path.resolve()
+    register_resolved = register_path.resolve()
+    repo_dir = draft_resolved.parent
+
+    # Step 0: record — in HEAD, diff facts; every record FAIL fires here, before any
+    # baseline write can mask the author's state (the --allow-yield-rising WARN lands
+    # inside step 3; step 0 is earlier, so the facts are clean)
+    r_root = subprocess.run(
+        ["git", "-C", str(repo_dir), "rev-parse", "--show-toplevel"],
+        capture_output=True, text=True,
+    )
+    if r_root.returncode != 0:
+        print(f"LENS-COMMIT: record FAIL — no git repo above {draft_path}")
+        return 1
+    root = Path(r_root.stdout.strip())
+
+    # (i) both files must be in HEAD — HEAD:<root-relative path>
+    draft_rel = os.path.relpath(str(draft_resolved), str(root))
+    r = subprocess.run(
+        ["git", "-C", str(root), "cat-file", "-e", f"HEAD:{draft_rel}"],
+        capture_output=True,
+    )
+    if r.returncode != 0:
+        print(f"LENS-COMMIT: record FAIL — {draft_path.name} is not committed; "
+              f"commit the walk-0 state first")
+        return 1
+    register_rel = os.path.relpath(str(register_resolved), str(root))
+    r = subprocess.run(
+        ["git", "-C", str(root), "cat-file", "-e", f"HEAD:{register_rel}"],
+        capture_output=True,
+    )
+    if r.returncode != 0:
+        print(f"LENS-COMMIT: record FAIL — {register_path.name} is not committed; "
+              f"commit the walk-0 state first")
+        return 1
+
+    # (ii) diff facts
+    r = subprocess.run(
+        ["git", "-C", str(repo_dir), "diff", "--quiet", "HEAD", "--",
+         str(draft_resolved)],
+        capture_output=True,
+    )
+    if r.returncode not in (0, 1):
+        print(f"LENS-COMMIT: record FAIL — git diff --quiet exit {r.returncode} "
+              f"on {draft_path.name}")
+        return 1
+    draft_changed = r.returncode == 1
+
+    r = subprocess.run(
+        ["git", "-C", str(repo_dir), "diff", "--quiet", "HEAD", "--",
+         str(register_resolved)],
+        capture_output=True,
+    )
+    if r.returncode not in (0, 1):
+        print(f"LENS-COMMIT: record FAIL — git diff --quiet exit {r.returncode} "
+              f"on {register_path.name}")
+        return 1
+    register_changed = r.returncode == 1
+
+    # (v) duplicate guard — scoped to THIS draft's slug (governance is a multi-draft repo)
+    r_head = subprocess.run(
+        ["git", "-C", str(repo_dir), "log", "--format=%s", "-1", "HEAD"],
+        capture_output=True, text=True,
+    )
+    head_subject = r_head.stdout.strip() if r_head.returncode == 0 else ""
+    dup_prefix = f"draft({slug}): walk {walk_n} lens {lens_n}"
+    reg_text_check = register_path.read_text(encoding="utf-8")
+    dup_in_reg = f"**Walk {walk_n} lens {lens_n} —" in reg_text_check
+    if head_subject.startswith(dup_prefix) or dup_in_reg:
+        print(f"LENS-COMMIT: record FAIL — walk {walk_n} lens {lens_n} is already on the record")
+        return 1
+
+    # (iii) parse draft diff for cycle-only check (plumbing flags defeat color.ui/diff.external)
+    draft_cycle_only = True
+    content_line_parsed = False
+    first_offending = ""
+    if draft_changed:
+        r_diff = subprocess.run(
+            ["git", "-C", str(repo_dir),
+             "-c", "color.ui=false", "-c", "diff.external=",
+             "diff", "--no-color", "--no-ext-diff", "--no-prefix", "-U0",
+             "HEAD", "--", str(draft_resolved)],
+            capture_output=True, text=True,
+        )
+        for line in r_diff.stdout.split("\n"):
+            if not line:
+                continue
+            if line[0] not in ("+", "-"):
+                continue
+            if line.startswith("+++ ") or line.startswith("--- "):
+                continue
+            content_line_parsed = True
+            rest = line[1:]
+            if not _is_cycle_line(rest):
+                draft_cycle_only = False
+                first_offending = rest[:80]
+                break
+
+    # (iv) vacuity check
+    if draft_changed and not content_line_parsed:
+        print("LENS-COMMIT: record FAIL — the draft changed but its diff could not be read")
+        return 1
+
+    # Record rule (refusals fire at step 0)
+    if args.dry:
+        if not draft_cycle_only:
+            print(f"LENS-COMMIT: record FAIL — --dry, but the draft changed beyond "
+                  f"its cycle record: {first_offending}")
+            return 1
+    else:
+        if not register_changed:
+            print(f"LENS-COMMIT: record FAIL — the register carries no row for "
+                  f"walk {walk_n} lens {lens_n}; write the fold row (§2.7), "
+                  f"or pass --dry for a dry lens")
+            return 1
 
     # Step 1: fold_check --save-baseline
     rc, out = run_checker("fold_check.py", "--save-baseline", str(draft_path))
@@ -124,12 +264,18 @@ def main(argv=None):
         print(f"LENS-COMMIT: assert FAIL — LENS_NAMES[{lens_n}]={composed_name!r} != expected {expected_name!r}")
         return 1
 
-    slug = draft_path.stem
     subject = f"draft({slug}): walk {walk_n} lens {lens_n} — {composed_name}: {desc}"
 
-    # Step 5: commit
-    repo_dir = draft_path.parent
-    to_add = [str(register_path.resolve())]
+    # Step 5: commit — draft + register + baseline; --dry writes DRY line when register unchanged
+    if args.dry and not register_changed:
+        dry_line = (f"**Walk {walk_n} lens {lens_n} — {LENS_NAMES[lens_n]}"
+                    f" — DRY, basis:** {desc}")
+        register_path.write_text(
+            register_path.read_text(encoding="utf-8") + dry_line + "\n",
+            encoding="utf-8",
+        )
+
+    to_add = [str(draft_resolved), str(register_resolved)]
     bpath = _baseline_path(draft_path)
     if bpath.is_file():
         to_add.append(str(bpath.resolve()))

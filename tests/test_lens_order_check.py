@@ -364,3 +364,231 @@ def test_cross_source_tie_is_not_disorder_but_a_real_descent_still_is():
     assert [r[1][0] for r in tie] == [1, 3, 4]            # tied 3/4 -> benign order
     real = lo._merge_by_time([P(1,"t1"), P(4,"t2")], [R(3,"t3")])
     assert [r[1][0] for r in real] == [1, 4, 3]           # distinct times -> true order kept
+
+
+# --- cross-repo: deposited-copy reads OK through fold_baseline -------------------
+
+# The #265 shape: w1 l1 plan+reg, w1 l2 plan-only (dry), w1 l3 plan+reg,
+# w1 l4 plan-only, w1 l5 plan-only, w2 l1 plan+reg.
+_STEPS_265 = [
+    ("draft(executable-fixture): walk 1 lens 1 — fold", "both"),
+    ("draft(executable-fixture): walk 1 lens 2 — DRY", "plan"),
+    ("draft(executable-fixture): walk 1 lens 3 — fold", "both"),
+    ("draft(executable-fixture): walk 1 lens 4 — DRY", "plan"),
+    ("draft(executable-fixture): walk 1 lens 5 — DRY", "plan"),
+    ("draft(executable-fixture): walk 2 lens 1 — fold", "both"),
+]
+
+
+def _two_repos(tmp_path, steps, with_fold_baseline=True, foreign=False):
+    """Build repo A (drafting) and repo B (project) for deposited-copy tests.
+
+    Repo A holds the plan under knowledge/decisions/drafts/executable-fixture.md with
+    an ABSOLUTE walk register ref and a committed baseline. Repo B holds a one-commit
+    copy of A's plan under knowledge/decisions/executable-fixture.md.
+
+    Returns (repo_a, repo_b, plan_a, plan_b, reg_a).
+    """
+    repo_a = tmp_path / "governance"
+    repo_b = tmp_path / "project"
+
+    (repo_a / "knowledge" / "decisions" / "drafts").mkdir(parents=True)
+    (repo_a / "knowledge" / "research").mkdir(parents=True)
+
+    _git(repo_a.parent, "init", "-q", str(repo_a))
+    _git(repo_a, "config", "user.email", "t@t")
+    _git(repo_a, "config", "user.name", "T")
+
+    plan_a = repo_a / "knowledge" / "decisions" / "drafts" / "executable-fixture.md"
+    reg_a = repo_a / "knowledge" / "research" / "walk-register-fixture.md"
+    baseline_a = (
+        repo_a / "knowledge" / "decisions" / "drafts"
+        / ".executable-fixture.md.foldcheck.json"
+    )
+
+    # Absolute register ref — a relative ref resolves to nothing from repo B's git root
+    walk_reg_ref = str(reg_a.resolve())
+
+    per = "w1 1 folded — instruction 1 / record 0; w2 1 folded — instruction 1 / record 0"
+    walk_lines = "\n".join(
+        f"- {name}: {per}."
+        for name in ("Weak spots", "Destruction", "Vulnerabilities",
+                     "Integration-record", "ACID")
+    )
+    manifest = (
+        "\n## Cycle Manifest\n"
+        "tier: T1\ntarget: scripts/something.py\nclass: shop-infra\n"
+        "reads: test\nwrites: test\nopen_forks: none\n"
+        "walks: 2\nyields: 1, 0\nvalidation: <declare>\ncoherence: <declare>\n"
+    )
+    if with_fold_baseline:
+        if foreign:
+            other_baseline = (
+                repo_a / "knowledge" / "decisions" / "drafts"
+                / ".executable-other.md.foldcheck.json"
+            )
+            manifest += f"fold_baseline: {other_baseline.resolve()}\n"
+        else:
+            manifest += f"fold_baseline: {baseline_a.resolve()}\n"
+
+    body = (
+        "# bellows — executable: fixture\n\n"
+        "**Date:** 2026-09-06 | **Project:** bellows | **cycle_tier:** T1\n\n"
+        "## Drafting Cycle\n\n"
+        f"**Tier:** T1\n"
+        f"**Walk register:** {walk_reg_ref}\n"
+        "**Walks:** 2\n"
+        f"{walk_lines}\n"
+        "**Closing:** in progress.\n"
+    ) + manifest
+
+    plan_a.write_text(body, encoding="utf-8")
+    reg_a.write_text("# Walk Register — fixture\n", encoding="utf-8")
+    baseline_a.write_text("{}", encoding="utf-8")
+
+    if foreign:
+        # Create a second complete cycle so the identity-tie check has something to compare
+        other_plan = (
+            repo_a / "knowledge" / "decisions" / "drafts" / "executable-other.md"
+        )
+        other_reg = repo_a / "knowledge" / "research" / "walk-register-other.md"
+        other_baseline = (
+            repo_a / "knowledge" / "decisions" / "drafts"
+            / ".executable-other.md.foldcheck.json"
+        )
+        other_reg_ref = str(other_reg.resolve())
+        other_body = (
+            "# bellows — executable: other\n\n"
+            "**Date:** 2026-09-06 | **Project:** bellows | **cycle_tier:** T1\n\n"
+            "## Drafting Cycle\n\n"
+            "**Tier:** T1\n"
+            f"**Walk register:** {other_reg_ref}\n"
+            "**Walks:** 1\n"
+            f"{walk_lines}\n"
+            "**Closing:** in progress.\n"
+            "\n## Cycle Manifest\n"
+            "tier: T1\ntarget: scripts/other.py\nclass: shop-infra\n"
+            "reads: test\nwrites: test\nopen_forks: none\n"
+            "walks: 1\nyields: 1\nvalidation: <declare>\ncoherence: <declare>\n"
+        )
+        other_plan.write_text(other_body, encoding="utf-8")
+        other_reg.write_text("# Walk Register — other\n", encoding="utf-8")
+        other_baseline.write_text("{}", encoding="utf-8")
+
+    _git(repo_a, "add", "-A")
+    _git(repo_a, "commit", "-q", "-m", "seed")
+
+    for i, (subj, target) in enumerate(steps):
+        when = f"2026-09-07T10:{i:02d}:00-05:00"
+        if target in ("plan", "both"):
+            plan_a.write_text(body + f"\n<!-- p{i} -->\n", encoding="utf-8")
+            _git(repo_a, "add", str(plan_a))
+        if target in ("reg", "both"):
+            reg_a.write_text(reg_a.read_text(encoding="utf-8") + f"\nrow {i}\n",
+                             encoding="utf-8")
+            _git(repo_a, "add", str(reg_a))
+        subprocess.run(
+            ["git", "-C", str(repo_a), "commit", "-q", "-m", subj],
+            capture_output=True, text=True,
+            env={**os.environ, "GIT_AUTHOR_DATE": when, "GIT_COMMITTER_DATE": when},
+        )
+
+    (repo_b / "knowledge" / "decisions").mkdir(parents=True)
+    _git(repo_b.parent, "init", "-q", str(repo_b))
+    _git(repo_b, "config", "user.email", "t@t")
+    _git(repo_b, "config", "user.name", "T")
+    plan_b = repo_b / "knowledge" / "decisions" / "executable-fixture.md"
+    plan_b.write_text(body, encoding="utf-8")
+    _git(repo_b, "add", "-A")
+    _git(repo_b, "commit", "-q", "-m", "deposit executable-fixture")
+
+    return repo_a, repo_b, plan_a, plan_b, reg_a
+
+
+def test_o1_deposited_copy_reads_ok_through_fold_baseline(tmp_path):
+    """A deposited copy (no lens commits in project repo) reads LENS-ORDER OK by following
+    fold_baseline: to the drafting repo's ONE log over the draft and the register."""
+    _, repo_b, _, plan_b, _ = _two_repos(tmp_path, _STEPS_265)
+    r = _run(plan_b, repo_b)
+    assert r.returncode == 0, r.stdout + r.stderr
+    assert "LENS-ORDER OK" in r.stdout
+    assert "source=draft+register, one log via fold_baseline (executable-fixture.md)" in r.stdout
+
+
+def test_o2_without_fold_baseline_merges_by_time_and_holds(tmp_path):
+    """Negative control: copy without fold_baseline: falls back to time-merge (3 register
+    commits, walk 1 incomplete) — today's reading preserved where the pointer is absent."""
+    _, repo_b, _, plan_b, _ = _two_repos(tmp_path, _STEPS_265, with_fold_baseline=False)
+    r = _run(plan_b, repo_b)
+    assert r.returncode == 1
+    assert "INCOMPLETE: walk 1" in r.stdout
+    assert "merged by time" in r.stdout
+
+
+def test_o3_fold_baseline_nonexistent_no_traceback(tmp_path):
+    """fold_baseline: naming a nonexistent file: no change to verdict (time-merge), no crash."""
+    _, repo_b, _, plan_b, _ = _two_repos(tmp_path, _STEPS_265)
+    import re as _re
+    text = plan_b.read_text(encoding="utf-8")
+    plan_b.write_text(
+        _re.sub(r"fold_baseline: .*\n", "fold_baseline: /nonexistent/.plan.foldcheck.json\n",
+                text),
+        encoding="utf-8",
+    )
+    _git(repo_b, "add", str(plan_b))
+    _git(repo_b, "commit", "-q", "-m", "nonexistent fold_baseline")
+    r = _run(plan_b, repo_b)
+    assert r.returncode == 1
+    assert "INCOMPLETE" in r.stdout
+    assert "merged by time" in r.stdout
+    assert "Traceback" not in r.stderr
+
+
+def test_o4_draft_missing_note_and_fallback(tmp_path):
+    """Baseline resolves but derived draft deleted → 'missing' NOTE to stderr, fallback."""
+    _, repo_b, plan_a, plan_b, _ = _two_repos(tmp_path, _STEPS_265)
+    plan_a.unlink()
+    r = _run(plan_b, repo_b)
+    assert r.returncode == 1
+    assert "merged by time" in r.stdout
+    assert "NOTE: fold_baseline resolved;" in r.stderr
+    assert "Traceback" not in r.stderr
+
+
+def test_o4b_draft_is_directory_missing_note(tmp_path):
+    """Derived draft path is a directory: is_file() False → 'missing' NOTE, no traceback."""
+    _, repo_b, plan_a, plan_b, _ = _two_repos(tmp_path, _STEPS_265)
+    plan_a.unlink()
+    plan_a.mkdir()
+    r = _run(plan_b, repo_b)
+    assert r.returncode == 1
+    assert "merged by time" in r.stdout
+    assert "NOTE: fold_baseline resolved;" in r.stderr
+    assert "Traceback" not in r.stderr
+
+
+def test_o4c_draft_unreadable_note_and_no_traceback(tmp_path):
+    """chmod 000 on derived draft: OSError caught → 'unreadable' NOTE, no traceback."""
+    _, repo_b, plan_a, plan_b, _ = _two_repos(tmp_path, _STEPS_265)
+    plan_a.chmod(0)
+    try:
+        r = _run(plan_b, repo_b)
+    finally:
+        plan_a.chmod(0o644)
+    assert r.returncode == 1
+    assert "merged by time" in r.stdout
+    assert "NOTE: fold_baseline resolved;" in r.stderr
+    assert "(unreadable)" in r.stderr
+    assert "Traceback" not in r.stderr
+
+
+def test_o5_foreign_pointer_register_ref_differs(tmp_path):
+    """fold_baseline: pointing to another plan's baseline: identity tie fails,
+    NOTE 'register ref differs' to stderr, verdict unchanged (time-merge), no REPEATED."""
+    _, repo_b, _, plan_b, _ = _two_repos(tmp_path, _STEPS_265, foreign=True)
+    r = _run(plan_b, repo_b)
+    assert r.returncode == 1
+    assert "INCOMPLETE: walk 1" in r.stdout
+    assert "merged by time" in r.stdout
+    assert "REPEATED" not in r.stdout
+    assert "register ref differs" in r.stderr

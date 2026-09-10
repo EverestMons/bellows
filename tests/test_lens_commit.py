@@ -4,6 +4,7 @@ All fixtures are constructed under tmp_path inside a git init repo.
 run_checker is the seam for checker subprocess calls.
 """
 
+import re
 import subprocess
 import sys
 from pathlib import Path
@@ -94,7 +95,7 @@ def test_l1_subject_lens_name(tmp_path):
 
     rc = lens_commit.main([
         str(plan), "--register", str(register),
-        "--walk", "1", "--lens", "3", "--desc", "test fixture",
+        "--walk", "1", "--lens", "3", "--desc", "test fixture", "--dry",
     ])
     assert rc == 0
 
@@ -142,7 +143,7 @@ def test_l3_yield_rising(tmp_path, monkeypatch):
     # Without flag: refuses
     rc = lens_commit.main([
         str(plan), "--register", str(register),
-        "--walk", "4", "--lens", "1", "--desc", "test",
+        "--walk", "4", "--lens", "1", "--desc", "test", "--dry",
     ])
     assert rc == 1
 
@@ -150,7 +151,7 @@ def test_l3_yield_rising(tmp_path, monkeypatch):
     rc = lens_commit.main([
         str(plan), "--register", str(register),
         "--walk", "4", "--lens", "1", "--desc", "test",
-        "--allow-yield-rising",
+        "--allow-yield-rising", "--dry",
     ])
     assert rc == 0
     reg_text = register.read_text(encoding="utf-8")
@@ -176,7 +177,7 @@ def test_l4_yield_rising_walk7_refused(tmp_path, monkeypatch):
     rc = lens_commit.main([
         str(plan), "--register", str(register),
         "--walk", "7", "--lens", "1", "--desc", "test",
-        "--allow-yield-rising",
+        "--allow-yield-rising", "--dry",
     ])
     assert rc == 1
 
@@ -202,3 +203,209 @@ def test_l5_incomplete_coverage_refuses(tmp_path, monkeypatch):
         "--walk", "1", "--lens", "1", "--desc", "test",
     ])
     assert rc == 1
+
+
+# ---- l6: --dry with a cycle-record-only change commits all three files ----
+
+
+def test_l6_dry_lens_appends_row_and_commits_three_files(tmp_path, capsys):
+    """--dry with a Cycle-Log-only change: DRY row appended, draft+register+baseline committed."""
+    plan, register = _make_lens_fixture(tmp_path)
+    text = plan.read_text(encoding="utf-8")
+    plan.write_text(
+        text.replace("- Destruction: w1 dry.", "- Destruction: w1 dry; w2 dry."),
+        encoding="utf-8",
+    )
+    rc = lens_commit.main([
+        str(plan), "--register", str(register),
+        "--walk", "1", "--lens", "2", "--desc", "dry", "--dry",
+    ])
+    assert rc == 0
+    reg_text = register.read_text(encoding="utf-8").rstrip()
+    assert reg_text.endswith("**Walk 1 lens 2 — Destruction — DRY, basis:** dry")
+    shown = _git(tmp_path, "show", "--name-only", "--format=", "HEAD").stdout.split()
+    assert "plan.md" in shown
+    assert "register.md" in shown
+    assert ".plan.md.foldcheck.json" in shown
+
+
+# ---- l7: fold without a register row refuses at step 0 ----
+
+
+def test_l7_fold_without_row_refuses(tmp_path, capsys):
+    """Non-dry commit with no register row refuses; no commit made."""
+    plan, register = _make_lens_fixture(tmp_path)
+    plan.write_text(plan.read_text(encoding="utf-8") + "\nextra fold line\n", encoding="utf-8")
+    count_before = int(_git(tmp_path, "rev-list", "--count", "HEAD").stdout.strip())
+    rc = lens_commit.main([
+        str(plan), "--register", str(register),
+        "--walk", "1", "--lens", "2", "--desc", "fold",
+    ])
+    assert rc == 1
+    out = capsys.readouterr().out
+    assert "LENS-COMMIT: record FAIL" in out
+    count_after = int(_git(tmp_path, "rev-list", "--count", "HEAD").stdout.strip())
+    assert count_after == count_before
+
+
+# ---- l7b: --dry over a real fold refuses and quotes the offending line ----
+
+
+def test_l7b_dry_over_fold_refuses(tmp_path, capsys):
+    """--dry but draft changed beyond cycle record: refuses and quotes the offending line."""
+    plan, register = _make_lens_fixture(tmp_path)
+    plan.write_text(plan.read_text(encoding="utf-8") + "\nextra fold line\n", encoding="utf-8")
+    rc = lens_commit.main([
+        str(plan), "--register", str(register),
+        "--walk", "1", "--lens", "2", "--desc", "fold", "--dry",
+    ])
+    assert rc == 1
+    out = capsys.readouterr().out
+    assert "record FAIL — --dry, but the draft changed beyond its cycle record:" in out
+    assert "extra fold line" in out
+
+
+# ---- l7c: plumbing flags make the diff readable regardless of git config ----
+
+
+@pytest.mark.parametrize("config_key,config_val", [
+    ("color.ui", "always"),
+    ("diff.external", "/usr/bin/true"),
+])
+def test_l7c_env_plumbing_reads_diff(tmp_path, capsys, config_key, config_val):
+    """color.ui=always or diff.external do not defeat the plumbing-flag diff read.
+    The refusal is l7b's 'beyond its cycle record', never the vacuity message."""
+    plan, register = _make_lens_fixture(tmp_path)
+    _git(tmp_path, "config", config_key, config_val)
+    plan.write_text(plan.read_text(encoding="utf-8") + "\nextra fold line\n", encoding="utf-8")
+    rc = lens_commit.main([
+        str(plan), "--register", str(register),
+        "--walk", "1", "--lens", "2", "--desc", "fold", "--dry",
+    ])
+    assert rc == 1
+    out = capsys.readouterr().out
+    assert "record FAIL — --dry, but the draft changed beyond its cycle record:" in out
+    assert "the draft changed but its diff could not be read" not in out
+
+
+# ---- l6b: walk-closing shape (per-walk summary + walks: N) is admitted ----
+
+
+def test_l6b_walk_closing_shape_admitted(tmp_path):
+    """The walk-closing ACID dry lens shape passes the cycle-only guard."""
+    plan, register = _make_lens_fixture(tmp_path)
+    # First: commit walks: 0 as the walk-0 state (panel E2)
+    text = plan.read_text(encoding="utf-8")
+    plan.write_text(text.replace("walks: <declare>", "walks: 0"), encoding="utf-8")
+    _git(tmp_path, "add", "plan.md")
+    _git(tmp_path, "commit", "-m", "walk-0 state: walks: 0")
+    # Walk-closing edit: Destruction line + per-walk summary + walks: 0 → 1
+    text = plan.read_text(encoding="utf-8")
+    text = text.replace("- Destruction: w1 dry.", "- Destruction: w1 dry; w2 dry.")
+    text = text.replace("walks: 0", "walks: 1")
+    text = text.replace(
+        "- ACID: w1 dry.\n\n## Cycle Manifest\n",
+        "- ACID: w1 dry.\n**Walk 1 — dry.**\n\n## Cycle Manifest\n",
+    )
+    plan.write_text(text, encoding="utf-8")
+    rc = lens_commit.main([
+        str(plan), "--register", str(register),
+        "--walk", "1", "--lens", "5", "--desc", "walk-close", "--dry",
+    ])
+    assert rc == 0
+
+
+# ---- l8: fold with a register row commits all three files ----
+
+
+def test_l8_fold_with_row_commits_three_files(tmp_path):
+    """A non-dry commit with a register row: draft + register + baseline in HEAD after commit."""
+    plan, register = _make_lens_fixture(tmp_path)
+    plan.write_text(plan.read_text(encoding="utf-8") + "\nextra fold line\n", encoding="utf-8")
+    register.write_text(
+        register.read_text(encoding="utf-8")
+        + "| f1 | 1 | 2 | q | v0 | finding | text | folded |\n",
+        encoding="utf-8",
+    )
+    rc = lens_commit.main([
+        str(plan), "--register", str(register),
+        "--walk", "1", "--lens", "2", "--desc", "fold",
+    ])
+    assert rc == 0
+    shown = _git(tmp_path, "show", "--name-only", "--format=", "HEAD").stdout.split()
+    assert "plan.md" in shown
+    assert "register.md" in shown
+    assert ".plan.md.foldcheck.json" in shown
+
+
+# ---- l9: register not in HEAD — in-HEAD check refuses ----
+
+
+def test_l9_register_not_committed_refuses(tmp_path, capsys):
+    """Register git-added but never committed: in-HEAD check refuses."""
+    for cmd in [
+        ["git", "-C", str(tmp_path), "init"],
+        ["git", "-C", str(tmp_path), "config", "user.name", "Test"],
+        ["git", "-C", str(tmp_path), "config", "user.email", "test@test.com"],
+    ]:
+        subprocess.run(cmd, capture_output=True)
+    plan = tmp_path / "plan.md"
+    plan.write_text(_INITIAL_PLAN, encoding="utf-8")
+    _git(tmp_path, "add", "plan.md")
+    _git(tmp_path, "commit", "-m", "initial — plan only")
+    register = tmp_path / "register.md"
+    register.write_text(_REGISTER, encoding="utf-8")
+    _git(tmp_path, "add", "register.md")   # staged, never committed
+    rc = lens_commit.main([
+        str(plan), "--register", str(register),
+        "--walk", "1", "--lens", "2", "--desc", "test", "--dry",
+    ])
+    assert rc == 1
+    out = capsys.readouterr().out
+    assert "record FAIL" in out
+    assert "is not committed" in out
+
+
+# ---- l10: duplicate --dry run refused on second invocation ----
+
+
+def test_l10_duplicate_dry_run_refuses(tmp_path, capsys):
+    """Running --dry twice for the same walk/lens refuses on the second run."""
+    plan, register = _make_lens_fixture(tmp_path)
+    text = plan.read_text(encoding="utf-8")
+    plan.write_text(
+        text.replace("- Destruction: w1 dry.", "- Destruction: w1 dry; w2 dry."),
+        encoding="utf-8",
+    )
+    rc1 = lens_commit.main([
+        str(plan), "--register", str(register),
+        "--walk", "1", "--lens", "2", "--desc", "dry", "--dry",
+    ])
+    assert rc1 == 0
+    capsys.readouterr()
+    rc2 = lens_commit.main([
+        str(plan), "--register", str(register),
+        "--walk", "1", "--lens", "2", "--desc", "dry", "--dry",
+    ])
+    assert rc2 == 1
+    out = capsys.readouterr().out
+    assert "record FAIL — walk 1 lens 2 is already on the record" in out
+    reg_text = register.read_text(encoding="utf-8")
+    assert reg_text.count("**Walk 1 lens 2 —") == 1
+
+
+# ---- l11: mode-change-only diff → vacuity refusal ----
+
+
+def test_l11_mode_change_vacuity_refuses(tmp_path, capsys):
+    """chmod with core.filemode=true: diff shows changed but no content lines → vacuity fails."""
+    plan, register = _make_lens_fixture(tmp_path)
+    _git(tmp_path, "config", "core.filemode", "true")
+    plan.chmod(0o755)
+    rc = lens_commit.main([
+        str(plan), "--register", str(register),
+        "--walk", "1", "--lens", "2", "--desc", "test", "--dry",
+    ])
+    assert rc == 1
+    out = capsys.readouterr().out
+    assert "record FAIL — the draft changed but its diff could not be read" in out

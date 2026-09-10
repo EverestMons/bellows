@@ -1,0 +1,108 @@
+{
+  "target": "scripts/lens_commit.py",
+  "mutants": [
+    {
+      "name": "dry-append-removed",
+      "why": "removing the DRY-line append means --dry commits leave no register row; l6 asserts the register ends with the DRY line",
+      "anchor": "        if args.dry and not register_changed:\n            dry_line = (f\"**Walk {walk_n} lens {lens_n} — {LENS_NAMES[lens_n]}\"\n                        f\" — DRY, basis:** {desc}\")\n            register_path.write_text(\n                register_path.read_text(encoding=\"utf-8\") + dry_line + \"\\n\",\n                encoding=\"utf-8\",\n            )",
+      "replacement": "        pass  # mutant: DRY append removed",
+      "expect_fail": "tests/test_lens_commit.py::test_l6_dry_lens_appends_row_and_commits_three_files"
+    },
+    {
+      "name": "cycle-only-guard-removed",
+      "why": "without the cycle-only check, --dry over a real body fold would proceed; l7b asserts refusal and the 'beyond its cycle record' message",
+      "anchor": "        if not draft_cycle_only:\n            print(f\"LENS-COMMIT: record FAIL — --dry, but the draft changed beyond \"\n                  f\"its cycle record: {first_offending}\")\n            return 1",
+      "replacement": "        pass  # mutant: cycle-only guard removed",
+      "expect_fail": "tests/test_lens_commit.py::test_l7b_dry_over_fold_refuses"
+    },
+    {
+      "name": "no-row-refusal-removed",
+      "why": "without the no-row check, a fold without a register row would silently commit; l7 asserts rc=1 and 'record FAIL'",
+      "anchor": "        if not register_changed:\n            print(f\"LENS-COMMIT: record FAIL — the register carries no row for \"\n                  f\"walk {walk_n} lens {lens_n}; write the fold row (§2.7), \"\n                  f\"or pass --dry for a dry lens\")\n            return 1",
+      "replacement": "        pass  # mutant: no-row refusal removed",
+      "expect_fail": "tests/test_lens_commit.py::test_l7_fold_without_row_refuses"
+    },
+    {
+      "name": "draft-dropped-from-to-add",
+      "why": "original bug: draft was absent from to_add; l8 asserts 'plan.md' in git show --name-only HEAD",
+      "anchor": "    to_add = [str(draft_resolved), str(register_resolved)]",
+      "replacement": "    to_add = [str(register_resolved)]",
+      "expect_fail": "tests/test_lens_commit.py::test_l8_fold_with_row_commits_three_files"
+    },
+    {
+      "name": "duplicate-guard-removed",
+      "why": "without the duplicate guard, running --dry twice writes two DRY lines; l10 asserts second run rc=1 and one DRY line",
+      "anchor": "    if head_subject.startswith(dup_prefix) or dup_in_reg:\n        print(f\"LENS-COMMIT: record FAIL — walk {walk_n} lens {lens_n} is already on the record\")\n        return 1",
+      "replacement": "    pass  # mutant: duplicate guard removed",
+      "expect_fail": "tests/test_lens_commit.py::test_l10_duplicate_dry_run_refuses"
+    },
+    {
+      "name": "in-head-check-reverted-to-ls-files",
+      "why": "ls-files answers the INDEX so a git-add'd-but-not-committed register passes it; l9 asserts refusal for a staged-only register",
+      "anchor": "    r = subprocess.run(\n        [\"git\", \"-C\", str(root), \"cat-file\", \"-e\", f\"HEAD:{register_rel}\"],\n        capture_output=True,\n    )\n    if r.returncode != 0:\n        print(f\"LENS-COMMIT: record FAIL — {register_path.name} is not committed; \"\n              f\"commit the walk-0 state first\")\n        return 1",
+      "replacement": "    r = subprocess.run(\n        [\"git\", \"-C\", str(repo_dir), \"ls-files\", \"--error-unmatch\",\n         str(register_resolved)],\n        capture_output=True,\n    )\n    if r.returncode != 0:\n        print(f\"LENS-COMMIT: record FAIL — {register_path.name} is not committed; \"\n              f\"commit the walk-0 state first\")\n        return 1",
+      "expect_fail": "tests/test_lens_commit.py::test_l9_register_not_committed_refuses"
+    },
+    {
+      "name": "vacuity-refusal-removed",
+      "why": "without vacuity check, a mode-only change passes --dry silently; l11 asserts 'diff could not be read'",
+      "anchor": "    if draft_changed and not content_line_parsed:\n        print(\"LENS-COMMIT: record FAIL — the draft changed but its diff could not be read\")\n        return 1",
+      "replacement": "    pass  # mutant: vacuity refusal removed",
+      "expect_fail": "tests/test_lens_commit.py::test_l11_mode_change_vacuity_refuses"
+    },
+    {
+      "name": "plumbing-flags-dropped",
+      "why": "without -c color.ui=false -c diff.external= --no-color --no-ext-diff, the diff under color.ui=always carries no +/- content lines and the vacuity refusal fires where l7b's refusal is asserted",
+      "anchor": "        r_diff = subprocess.run(\n            [\"git\", \"-C\", str(repo_dir),\n             \"-c\", \"color.ui=false\", \"-c\", \"diff.external=\",\n             \"diff\", \"--no-color\", \"--no-ext-diff\", \"--no-prefix\", \"-U0\",\n             \"HEAD\", \"--\", str(draft_resolved)],",
+      "replacement": "        r_diff = subprocess.run(\n            [\"git\", \"-C\", str(repo_dir),\n             \"diff\", \"-U0\",\n             \"HEAD\", \"--\", str(draft_resolved)],",
+      "expect_fail": "tests/test_lens_commit.py::test_l7c_env_plumbing_reads_diff[color.ui-always]"
+    },
+    {
+      "name": "walk-shape-dropped-from-accepted-set",
+      "why": "without the '**Walk N — ' pattern, the walk-closing per-walk summary line fails the cycle-only guard; l6b asserts rc=0",
+      "anchor": "    r\"^(?:\"\n    r\"- (?:Weak spots|Destruction|Vulnerabilities|Integration-record|ACID):\"\n    r\"|\\*\\*Walk \\d+ — \"   # em-dash\n    r\"|walks: \\d+$\"\n    r\")\"",
+      "replacement": "    r\"^(?:\"\n    r\"- (?:Weak spots|Destruction|Vulnerabilities|Integration-record|ACID):\"\n    r\"|walks: \\d+$\"\n    r\")\"",
+      "expect_fail": "tests/test_lens_commit.py::test_l6b_walk_closing_shape_admitted"
+    },
+    {
+      "name": "draft-from-fold-baseline-returns-none-always",
+      "why": "if the helper always returns (None, None), a deposited copy can never reach the drafting repo's log; o1 asserts LENS-ORDER OK via fold_baseline",
+      "target": "scripts/lens_order_check.py",
+      "anchor": "def _draft_from_fold_baseline(plan_path):",
+      "replacement": "def _draft_from_fold_baseline(plan_path):\n    return None, None\n\ndef _draft_from_fold_baseline_orig(plan_path):",
+      "expect_fail": "tests/test_lens_order_check.py::test_o1_deposited_copy_reads_ok_through_fold_baseline"
+    },
+    {
+      "name": "leading-dot-not-stripped",
+      "why": "matching r'^(.*)\\.foldcheck\\.json$' instead of r'^\\.(.*)...' includes the leading dot in the draft name; o1 asserts rc=0 (derived draft never found → time-merge → INCOMPLETE)",
+      "target": "scripts/lens_order_check.py",
+      "anchor": "    m = re.match(r\"^\\.(.*?)\\.foldcheck\\.json$\", bl.name)",
+      "replacement": "    m = re.match(r\"^(.*?)\\.foldcheck\\.json$\", bl.name)",
+      "expect_fail": "tests/test_lens_order_check.py::test_o1_deposited_copy_reads_ok_through_fold_baseline"
+    },
+    {
+      "name": "note-removed",
+      "why": "without printing the NOTE, o4 cannot see 'fold_baseline resolved;' in stderr",
+      "target": "scripts/lens_order_check.py",
+      "anchor": "                if note:\n                    print(f\"NOTE: fold_baseline resolved; {note}\", file=sys.stderr)",
+      "replacement": "                pass  # mutant: NOTE removed",
+      "expect_fail": "tests/test_lens_order_check.py::test_o4_draft_missing_note_and_fallback"
+    },
+    {
+      "name": "identity-tie-removed",
+      "why": "without the register-ref identity tie, a foreign baseline whose plan has all-5-lens commits would union in those commits and manufacture REPEATED; o5 asserts REPEATED not in stdout",
+      "target": "scripts/lens_order_check.py",
+      "anchor": "                                if draft_ref and plan_ref and draft_ref == plan_ref:",
+      "replacement": "                                if True:  # mutant: identity tie removed",
+      "expect_fail": "tests/test_lens_order_check.py::test_o5_foreign_pointer_register_ref_differs"
+    },
+    {
+      "name": "osr-try-except-removed",
+      "why": "without the OSError try/except, chmod-000 raises PermissionError uncaught → subprocess exit 1 as lens_order:0_breach; o4c asserts 'Traceback' not in stderr",
+      "target": "scripts/lens_order_check.py",
+      "anchor": "                try:\n                    draft, note = _draft_from_fold_baseline(plan_path)\n                    if draft:\n                        draft_repo = _repo_of(draft)\n                        if draft_repo and draft_repo.resolve() == reg_repo.resolve():\n                            draft_text = draft.read_text(errors=\"replace\")",
+      "replacement": "                if True:\n                    draft, note = _draft_from_fold_baseline(plan_path)\n                    if draft:\n                        draft_repo = _repo_of(draft)\n                        if draft_repo and draft_repo.resolve() == reg_repo.resolve():\n                            draft_text = draft.read_text(errors=\"replace\")",
+      "expect_fail": "tests/test_lens_order_check.py::test_o4c_draft_unreadable_note_and_no_traceback"
+    }
+  ]
+}

@@ -182,6 +182,31 @@ def _repo_of(path):
     return None
 
 
+def _draft_from_fold_baseline(plan_path):
+    """Derive the drafting-repo draft from the plan's fold_baseline: pointer.
+
+    Returns (draft, None) when draft.is_file(),
+            (None, note) when the baseline resolves but the derived draft is missing,
+            (None, None) when nothing resolved or the baseline name does not match.
+
+    The note text is already in the form 'draft <path> not used (<reason>)' so
+    callers can print 'NOTE: fold_baseline resolved; {note}' directly.
+    """
+    try:
+        bl, _declared = cycle_check.resolve_fold_baseline(plan_path)
+    except Exception:
+        return None, None
+    if bl is None:
+        return None, None
+    m = re.match(r"^\.(.*?)\.foldcheck\.json$", bl.name)
+    if not m:
+        return None, None
+    draft = bl.parent / m.group(1)
+    if not draft.is_file():
+        return None, f"draft {draft} not used (missing)"
+    return draft, None
+
+
 def register_commit_record(plan_text, plan_path):
     """Lens commits recorded against the plan's WALK REGISTER, in ITS repo.
 
@@ -335,10 +360,46 @@ def main(argv=None):
             reg_repo = _repo_of(reg_path) if reg_path else None
             if reg_repo and reg_repo.resolve() == Path(repo).resolve():
                 rows = commit_record_paths(repo, [plan_path, reg_path])   # ONE log, git's order
+                record_src = f"plan+register, one log ({reg_path.name})"
             else:
+                # Cross-repo: try to reach the drafting-repo's one log via fold_baseline:
+                record_src = f"plan+register, merged by time ({reg_path.name})"
                 rows = _merge_by_time(rows, reg_rows)
-            record_src = (f"plan+register, one log ({reg_path.name})" if reg_repo and reg_repo.resolve() == Path(repo).resolve()
-                          else f"plan+register, merged by time ({reg_path.name})")
+                draft = None
+                note = None
+                try:
+                    draft, note = _draft_from_fold_baseline(plan_path)
+                    if draft:
+                        draft_repo = _repo_of(draft)
+                        if draft_repo and draft_repo.resolve() == reg_repo.resolve():
+                            draft_text = draft.read_text(errors="replace")
+                            draft_blocks = cycle_check.extract_dc_blocks(draft_text)
+                            plan_blocks = cycle_check.extract_dc_blocks(text)
+                            if len(draft_blocks) == 1 and len(plan_blocks) == 1:
+                                draft_ref = cycle_check.parse_block(
+                                    draft_blocks[0]).get("walk_register_ref")
+                                plan_ref = cycle_check.parse_block(
+                                    plan_blocks[0]).get("walk_register_ref")
+                                if draft_ref and plan_ref and draft_ref == plan_ref:
+                                    rows = commit_record_paths(
+                                        reg_repo, [draft, reg_path])
+                                    record_src = (
+                                        f"draft+register, one log via fold_baseline"
+                                        f" ({draft.name})"
+                                    )
+                                    note = None
+                                else:
+                                    note = (f"draft {draft.name} not used "
+                                            f"(register ref differs)")
+                            else:
+                                note = f"draft {draft} not used (unreadable)"
+                        else:
+                            note = f"draft {draft.name} not used (other repo)"
+                except OSError:
+                    note = (f"draft {draft.name if draft is not None else '<unresolved>'}"
+                            f" not used (unreadable)")
+                if note:
+                    print(f"NOTE: fold_baseline resolved; {note}", file=sys.stderr)
         else:
             record_src = "plan only — no resolvable walk register"
     except RuntimeError as e:
