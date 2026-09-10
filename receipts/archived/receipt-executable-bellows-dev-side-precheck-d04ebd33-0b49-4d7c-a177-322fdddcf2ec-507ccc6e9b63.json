@@ -1,0 +1,8 @@
+{
+  "slug": "executable-bellows-dev-side-precheck",
+  "content_hash": "507ccc6e9b632911df70520d195787bc6cba2a32520bdc97f9e597b2a019d013",
+  "session_id": "d04ebd33-0b49-4d7c-a177-322fdddcf2ec",
+  "armed_at": "2026-09-10T07:42:26.318144",
+  "watcher": "gate_watcher.py spawned detached (pid 73715); log: logs/watch/executable-bellows-dev-side-precheck.md.log",
+  "attestation_boundary": "This receipt proves the watcher was ARMED at write time. It does NOT prove the watcher stayed alive. Liveness of a session-local monitor is not externally verifiable."
+}

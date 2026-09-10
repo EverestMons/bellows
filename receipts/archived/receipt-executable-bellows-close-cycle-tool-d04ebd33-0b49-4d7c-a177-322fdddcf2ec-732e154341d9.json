@@ -1,0 +1,8 @@
+{
+  "slug": "executable-bellows-close-cycle-tool",
+  "content_hash": "732e154341d9bd82a7ba10e845b206a9f04f791957a425f1c7861871486b8d0c",
+  "session_id": "d04ebd33-0b49-4d7c-a177-322fdddcf2ec",
+  "armed_at": "2026-09-10T07:42:31.407609",
+  "watcher": "gate_watcher.py spawned detached (pid 73745); log: logs/watch/executable-bellows-close-cycle-tool.md.log",
+  "attestation_boundary": "This receipt proves the watcher was ARMED at write time. It does NOT prove the watcher stayed alive. Liveness of a session-local monitor is not externally verifiable."
+}
