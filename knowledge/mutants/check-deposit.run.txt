@@ -1,0 +1,14 @@
+PYTHON: /Users/marklehn/Developer/bellows/.venv/bin/python
+HEAD: 27d5f58b511124a356eb8e3b361a7a73fd5e35a1
+TARGET: tools/check_deposit.py sha256=20e3ed020ee2
+
+MUTANT invert-exit-code: KILLED — suite caught the defect
+MUTANT wrong-files-deposited-header: KILLED — suite caught the defect
+MUTANT warn-sets-exit-code: KILLED — suite caught the defect
+MUTANT drop-generic-cap: KILLED — suite caught the defect
+MUTANT drop-one-gate-from-tuple: KILLED — suite caught the defect
+MUTANT precheck-constant-zero: KILLED — suite caught the defect
+
+LIVE-TREE UNCHANGED: tools/check_deposit.py sha256=20e3ed020ee2
+
+MUTATION: 6 killed, 0 survived, 0 error

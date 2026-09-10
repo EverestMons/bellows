@@ -1,0 +1,47 @@
+{
+  "target": "tools/check_deposit.py",
+  "mutants": [
+    {
+      "name": "invert-exit-code",
+      "why": "return 1 on zero failures and 0 on failures inverts the entire gate signal; t1 expects exit 1 on failure",
+      "anchor": "    return 1 if failures else 0",
+      "replacement": "    return 0 if failures else 1",
+      "expect_fail": "tests/test_check_deposit.py::TestT1DevLogMissingHeading::test_t1"
+    },
+    {
+      "name": "wrong-files-deposited-header",
+      "why": "changing the ### Files Deposited header breaks the round-trip through _extract_agent_declared_deposits; t7 tests the synthesis formula",
+      "anchor": "    result_text = \"### Files Deposited\\n\" + \"\".join(f\"- `{p}`\\n\" for p in deposits)",
+      "replacement": "    result_text = \"### Deposited Files\\n\" + \"\".join(f\"- `{p}`\\n\" for p in deposits)",
+      "expect_fail": "tests/test_check_deposit.py::TestT7ParsedSynthesisRoundTrip::test_t7"
+    },
+    {
+      "name": "warn-sets-exit-code",
+      "why": "WARN lines must never affect the exit code; setting return to 1 on any warn line would break t8",
+      "anchor": "    return 1 if failures else 0",
+      "replacement": "    return 1 if failures or warn_lines else 0",
+      "expect_fail": "tests/test_check_deposit.py::TestT8DependentsWarn::test_t8"
+    },
+    {
+      "name": "drop-generic-cap",
+      "why": "removing the >25 generic cap means all files are listed; t9 expects the (generic, N files) form",
+      "anchor": "        if len(external) > 25:",
+      "replacement": "        if False:",
+      "expect_fail": "tests/test_check_deposit.py::TestT9GenericCapOver25::test_t9"
+    },
+    {
+      "name": "drop-one-gate-from-tuple",
+      "why": "GATES must be the exact 5-tuple in order; dropping one gate breaks the identity check in t6",
+      "anchor": "    gates._gate_rule_22_verification,\n    gates._gate_quoted_test_nodes_exist,\n    gates._gate_mutation_result,\n    gates._gate_qa_nodes_match_suite,\n    gates._gate_dev_log_declared_text,",
+      "replacement": "    gates._gate_rule_22_verification,\n    gates._gate_quoted_test_nodes_exist,\n    gates._gate_mutation_result,\n    gates._gate_dev_log_declared_text,",
+      "expect_fail": "tests/test_check_deposit.py::TestT6GatesIdentity::test_t6"
+    },
+    {
+      "name": "precheck-constant-zero",
+      "why": "printing PRECHECK: 0 failure(s) regardless of actual failures masks all gate results; t1 expects 1 failure(s)",
+      "anchor": "    print(f\"PRECHECK: {len(failures)} failure(s) — {plan_basename} step {args.step}\")",
+      "replacement": "    print(f\"PRECHECK: 0 failure(s) — {plan_basename} step {args.step}\")",
+      "expect_fail": "tests/test_check_deposit.py::TestT1DevLogMissingHeading::test_t1"
+    }
+  ]
+}
