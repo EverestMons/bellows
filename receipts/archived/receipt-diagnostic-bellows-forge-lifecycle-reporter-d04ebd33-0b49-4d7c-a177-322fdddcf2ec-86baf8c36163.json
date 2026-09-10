@@ -1,0 +1,8 @@
+{
+  "slug": "diagnostic-bellows-forge-lifecycle-reporter",
+  "content_hash": "86baf8c361638614a7b50c34d2eb68a44106e5d2b8b52659d7edfe8a377bc9fa",
+  "session_id": "d04ebd33-0b49-4d7c-a177-322fdddcf2ec",
+  "armed_at": "2026-09-09T22:02:09.175319",
+  "watcher": "gate_watcher.py spawned detached (pid 77285); log: logs/watch/diagnostic-bellows-forge-lifecycle-reporter.md.log",
+  "attestation_boundary": "This receipt proves the watcher was ARMED at write time. It does NOT prove the watcher stayed alive. Liveness of a session-local monitor is not externally verifiable."
+}

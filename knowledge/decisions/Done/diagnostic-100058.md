@@ -1,0 +1,93 @@
+# bellows — diagnostic: RUN FORGE'S LIFECYCLE RECONSTRUCTION REPORTER READ-ONLY AGAINST TODAY'S lifecycle.db — does the June reporter still parse the September DB, does it agree with a twelve-line SQL baseline on the per-step timing table the CEO asked for, and what does that table say about why plans take longer (thread 256; forge parks after)
+
+**Date:** 2026-09-09 | **Project:** bellows | **Tier:** Small | **Dispatch Mode:** bellows | **cycle_tier:** T1 | **Test Scope:** none (read-only diagnostic; writes one research doc, one TSV and a dev-log) | **Execution:** Step 1 (DIAGNOSTIC) | **pause_for_verdict:** after_step_1 | **Discharges:** none
+
+**auto_close:** false
+
+**Post-close:** no restart, no doctrine. The doc is the input to two Planner acts the CEO already ruled (2026-09-09): forge parks to a pointer after this runs (thread 256), and the timing question is answered from the table, not from hand-measured minutes. This plan recommends nothing.
+
+**Depends on:** the CEO's ruling of 2026-09-09 (session d04ebd33): evidence before implementation — forge's reporter is not adopted, ported or de-hardcoded by this plan; it is RUN, on a scratch copy, and compared with the trivial baseline (LESSONS 2026-09-09: price a tool against the trivial baseline on the known instance). Clone origin by kind and layout: `Done/diagnostic-100057.md` (one DIAGNOSTIC step, numbered questions, doc + TSV as Planner-commit deposits, no recommendation).
+
+**Tier computed (§1):** **T1** — T-1 fires (a read across three repos: forge's source, bellows' lifecycle DB and step logs, governance's records); T-6 does not (no doctrine, gate or instrument change); T-2 does not (the DB is copied with `.backup` to a temp dir and opened `immutable=1`; the live file is never opened).
+
+## CEO Context
+
+Forge (`~/Developer/forge`, "Prompt Forge") is the dormant ancestor of lessons-forge: last commit 2026-07-22, status frozen at June. Its Reporting Phase 2 (plan 10, 2026-06-12) shipped a lifecycle reconstruction reporter and a live-status query that read bellows' `lifecycle.db` under a read-only contract — per plan: steps with cost, turns and duration, gate events, commits, deposits, verdicts, derivation lineage. The CEO asked on 2026-09-09 why plans take longer; the Planner answered from hand-measured minutes (DEV 15–82, one DEV about 29 full-suite runs at 76 s). The DB holds the answer as data: `steps.duration_s`, `turns`, `cost_usd` for 98 steps. Thread 256 (the forge salvage) asks whether the June reporter still runs against the September DB and what it adds over a direct query, before forge parks. Walk 0 found the DB also carries a record residue the reporter surfaces and the status CLI does not: 16 steps still `awaiting_verdict` on plans that closed, and a `role` column no code has ever written.
+
+## Numbers discipline — measured 2026-09-09 by the Planner (bellows `af5ec62`, forge `f0939a6`, governance `48456f1a`; scratch DB via `sqlite3 lifecycle.db ".backup <tmp>/lifecycle-scratch.db"`, opened `?immutable=1`)
+
+| # | pin | value | how to re-derive |
+|---|---|---|---|
+| P1 | ⛔ the reporter runs on the mini, on today's DB | forge has NO venv here; with a scratch venv (`python3 -m venv`, `pytest`), `pytest src/test_reporter.py -q` → `20 passed in 0.15s`; `reporter.generate_reconstruction_data(100057, <scratch>)` returns keys `commits, deposits, derivations, gate_events, plan, plan_file_exists, plan_file_path, steps, totals, verdicts`, `steps` = one row (`step_number 1, status awaiting_verdict, cost_usd 1.95, turns 55, duration_s 858.6`), `plan_file_path None` (its resolver reads `config.GITHUB_ROOT`, the Air's old layout); `reporter.get_live_plans_status(<scratch>)` → 0 rows (nothing in flight — correct) | Item 1 |
+| P2 | ⛔ the baseline, one query | plans ≥ 100040 joined to steps: 25 step rows (24 with a duration; 100051's `running` row has none); by step: avg 22.3 min, min 4.3, max 82.4, avg turns 76, cost 86.12 USD; the longest: 100053 step 1 82.4 min / 264 turns / 12.20 USD; 100052 step 1 48.3 / 165 / 7.82; 100041 step 1 41.7 / 113 / 5.33; QA steps (step 2) 4.5–14.2 min | Item 2's SQL, verbatim in the doc |
+| P3 | ⛔ the residue the reporter exposes | `steps.status × plans.lifecycle_state` for plans ≥ 100000: complete/closed 67, **awaiting_verdict/closed 16**, complete/halted 6, awaiting_verdict/halted 5, running/abandoned 1 (100051); `steps.role`: 0 of 99 non-null; mechanism: `lifecycle.record_step_end` is called at `bellows.py:1219` and `:1378` with `status="complete" if gate_result["passed"] else "awaiting_verdict"`, and `_consume_verdicts` (`bellows.py:3157`) never writes the step row again — a continue verdict closes the plan and leaves the step's status at the pause value | Item 3 |
+| P4 | live references to forge | `git grep` over bellows, tuyere and governance code and doctrine for `Developer/forge`, `forge.db`, `"forge"` (excluding `forge_lessons`/`lessons-forge`): no live code path — hits are a June architecture doc, a test fixture path, three 2026-07 processed verdicts, one LESSONS entry and a May design doc; `forge/src/config.py:47`: `LIFECYCLE_DB_PATH = GITHUB_ROOT / "bellows" / "lifecycle.db"` | Item 5 |
+| P5 | the schema both readers rest on | `steps(id, plan_id, step_number, role, status, step_started_at, step_ended_at, cost_usd, turns, duration_s, log_ref)`; `plans(id, type, target_project, title, dispatch_mode, tier, lifecycle_state, total_steps, deposit_placeholder_name, created_at, closed_at, plan_doc_ref)`; `verdicts(id, plan_id, step_number, outcome, pause_reason_code, decided_by, verdict_file_ref, disposition_summary)`; `gate_events(id, step_id, gate_name, result, reason_code, overridden, override_ref)`; every table the reporter's SQL names (`plans, steps, commits, deposits, verdicts, gate_events, derivations`) exists | `pragma_table_info` |
+| P6 | in-flight; class; interpreter | none (daemon pid 70398 on `af5ec62`, restarted 20:52 with the v1.7 notifier); the plan writes a dev-log under `knowledge/development/` and two governance research files — no infra write outside `knowledge/` → the assigner returns **app-feature** (auto-clears; verified by the depositor's parse at deposit and recorded here); the step builds a scratch venv under `mktemp -d` (forge's reporter imports its own `config`, `db`, `scorer`; the walk-0 venv with `pytest` alone sufficed) | `python3 status.py`; `_assign_class` |
+| P7 | the question this answers | CEO, 2026-09-09: "these plans are taking a significantly longer amount of time — why?"; the Planner's hand answer: DEV 15–82 min, one DEV (100053) ~29 full-suite runs at 76 s each; the step log `logs/<ts>-step.json` `raw_output` for 100057 carried 35 `pytest` mentions in 14 min | this session's transcript; the doc quotes both |
+
+## MUST-PRESERVE
+
+- ⛔ **Read-only over every repo and the live DB.** The live `lifecycle.db` is copied with `.backup` and never opened; the copy is opened `immutable=1`; no lane file, no lifecycle row, no lifecycle import, no forge code change; the only files written are the three deposits and the scratch dir.
+- ⛔ **No recommendation.** The doc answers Q1–Q6 and ends with "What this does not establish"; the two acts that follow are already ruled.
+- ⛔ **Both readers on the same rows:** every number the reporter yields is printed beside the baseline SQL's number for the same step, and a disagreement is reported as measured, never reconciled by hand.
+
+## Drafting Cycle
+
+**Tier:** **T1** — T-1 fires. **Walk register:** /Users/marklehn/Developer/eluvian-governance/governance/knowledge/research/walk-register-forge-lifecycle-reporter-2026-09-09.md
+**Walks:** walk 0 pinned (P1–P7 measured on bellows `af5ec62`, forge `f0939a6`; clone-diff against `Done/diagnostic-100057.md` run: FACTS, ARTEFACTS, STRUCTURE); `fold_check --save-baseline` ARMED on v0 before any fold; re-saved after every intended edit.
+
+**Closing:** WARM close after walk 2 — thread 256's first act, a judged stop. Two walks: instruction 2 → 0 (walk 1 folded two). T1, no panel. Deposit via `ready-`; class app-feature auto-clears; the daemon claims. Close acts: the Planner commits the two governance deposits at the wrap, files the P3 residue as a thread from the doc, and parks forge to a pointer (thread 256).
+- Weak spots:          w1 1 folded — instruction 1 / record 0
+- Destruction:         w1 dry
+- Vulnerabilities:     w1 1 folded — instruction 1 / record 0
+- Integration-record:  w1 dry
+- ACID:                w1 dry
+- Weak spots:          w2 dry
+- Destruction:         w2 dry
+- Vulnerabilities:     w2 dry
+- Integration-record:  w2 dry
+- ACID:                w2 dry
+**Walk 2 — DRY, all five lenses, one commit per lens. Instruction 0 on a full pass: the WARM close meets the bar (§2) — a judged stop (2 findings over one warm walk plus f0; yield 2 → 0). T1: no panel owed.**
+**Walk 1 — two folds across two lenses (instruction 2 / record 0), three lenses dry; one commit per lens.**
+
+## Cycle Manifest
+tier: T1
+target: knowledge/development/dev-log-forge-lifecycle-reporter-2026-09-09.md
+class: app-feature
+reads: forge/src/reporter.py, forge/src/config.py, forge/src/test_reporter.py, forge/reports/reconstruction-7.md, lifecycle.py, bellows.py, logs/*-step.json, knowledge/decisions/Done/diagnostic-100057.md, knowledge/decisions/Done/*.md
+writes: knowledge/development/dev-log-forge-lifecycle-reporter-2026-09-09.md, governance/knowledge/research/forge-lifecycle-reporter-2026-09-09.md, governance/knowledge/research/forge-lifecycle-reporter-2026-09-09.tsv
+open_forks: 1. the step-status residue (P3) as a bellows defect thread — `_consume_verdicts` writes `complete` on the terminal continue — filed by the Planner from the doc, not fixed here; 2. a twelve-line `tools/step_timing.py` in bellows if Q4 shows the reporter adds nothing the CEO reads; 3. forge parks to a pointer naming threads 256/257/258 and the reporter's functions by file:line, after the doc
+walks: 2
+yields: 2, 0
+validation: cycle_check=BAR_MET, plan_lint=0_FAIL, fold_check=VACUOUS, propagation_check=DIVERGENT:15
+coherence: 2/2 body walks named in the register (3 register rows; walk-token match, NOT row coverage)
+fold_baseline: governance/knowledge/decisions/drafts/.diagnostic-bellows-forge-lifecycle-reporter.md.foldcheck.json
+
+---
+
+## STEP 1 — DIAGNOSTIC: six questions, two readers on one scratch copy of the DB
+
+> ⛔ **Every item starts by re-establishing the root** — `cd "$(git rev-parse --show-toplevel)" && test -f gates.py && echo TREE_OK` — HALT unless TREE_OK. ⛔ **Read-only:** never run the daemon, `run_plan`, a claim; never import `lifecycle`; never open `/Users/marklehn/Developer/bellows/lifecycle.db` — Item 0 copies it once and every query below runs on the copy; the forge checkout is `/Users/marklehn/Developer/forge` (read it, change nothing); step logs are read from `/Users/marklehn/Developer/bellows/logs/` (the canonical checkout's, not this worktree's).
+>
+> **Scope:**
+> - `knowledge/development/dev-log-forge-lifecycle-reporter-2026-09-09.md`
+>
+> **Item 0 — the scratch copy and the interpreter.** `T=$(mktemp -d /tmp/forge-reporter.XXXXXX) && sqlite3 /Users/marklehn/Developer/bellows/lifecycle.db ".backup $T/lifecycle-scratch.db" && python3 -m venv "$T/venv" && "$T/venv/bin/pip" -q install pytest` — record `$T` in the dev-log; every Python call below is `"$T/venv/bin/python"` with `sys.path.insert(0, "/Users/marklehn/Developer/forge")` and `from src import reporter`; every direct query opens `sqlite3.connect(f"file:{T}/lifecycle-scratch.db?immutable=1", uri=True)`.
+> **Item 1 — re-derive P1 and P5 and HALT on a mechanism mismatch** (P2–P4, P7 are re-measured below; a count that moved because the DB moved is reported as both figures, not a mismatch). `cd /Users/marklehn/Developer/forge && "$T/venv/bin/python" -m pytest src/test_reporter.py -q -p no:cacheprovider`, paste the summary; `generate_reconstruction_data(100057, Path(scratch))` — paste the key list and the `steps` row; `get_live_plans_status(Path(scratch))` — paste the count; `pragma_table_info` for the four P5 tables — paste the column lists.
+> **Item 2 — Q1: the reporter on today's DB, per function, per plan.** Run `generate_reconstruction_data` for 100051, 100053, 100054, 100056, 100057 and for the June plan 7 (the shape the reporter was built on); for each, which of `plan_file_exists`, every `deposits[*].exists`/`landed`, every `commits[*]` resolution and every `verdicts[*]` resolution comes back present, and which comes back missing with the path it tried (P4: the resolvers read the Air's `GITHUB_ROOT`). Then `write_reconstruction_report(data, Path(T))` for 100057 — the file is written under `$T` only — and paste its `## Steps` table. Q1's answer: which functions run unchanged on the September DB, which return correct data with wrong resolutions, and which fail — three lists, no fourth.
+> **Item 3 — Q2: the timing table, two readers.** (a) The baseline, verbatim in the doc: `SELECT p.id, p.type, s.step_number, s.status, s.duration_s, s.turns, s.cost_usd, s.step_started_at, s.step_ended_at FROM plans p JOIN steps s ON s.plan_id = p.id WHERE p.id >= 100040 ORDER BY p.id, s.step_number` — paste every row (P2 says 25); (b) the reporter's `steps` and `totals` for each of those plans; (c) one table with both readers' `duration_s`, `turns`, `cost_usd` per step and a `match` column — every row must match — `duration_s` within 0.01 s, `turns` and `cost_usd` exactly — or the mismatch is the finding, printed with both values. Then the answer to P7: per step, DEV (step 1 of an executable) vs QA (step 2) vs diagnostic; min / median / max minutes; and beside each DEV step the count of `pytest` mentions in its step log's `raw_output` (`logs/<ts>-step.json`, matched by `steps.log_ref` when it is non-null, else by the log whose filename timestamp `<ts>` lies within `[step_started_at, step_ended_at]` — nearest to the start on a tie — and recorded as `none` when no log qualifies, with the count of such steps stated), so the doc can say whether duration tracks suite runs — state the correlation as a number with its n, not as a sentence.
+> **Item 4 — Q3: the residue (P3).** Re-run the status × state query for plans ≥ 100000; list the 16 closed-plan steps still `awaiting_verdict` with plan id, step and the verdict outcome recorded in `verdicts` for that step; quote `bellows.py:1219` and `:1378` (the `record_step_end` calls) and the fact that `_consume_verdicts` (`bellows.py:3157`) contains no `record_step_end` call (grep count 0 inside the function body — paste the grep); count `role` non-null (P3: 0 of 99) and quote the reporter's own footnote for it (`_Note: Role assignment not yet instrumented._`, `reports/reconstruction-7.md`). Q3's answer: the reporter's step table is right about the DB and the DB is wrong about the steps — stated with the numbers.
+> **Item 5 — Q4: what the reporter adds over the twelve lines, priced.** For 100053 and 100057 list every field the reconstruction carries that the baseline SQL does not (derivation lineage, per-step gate events with `overridden`/`override_ref`, commits, deposits with `landed`, verdict dispositions, the totals row) and for each say whether the same fact is one more JOIN on the same DB (write the JOIN) or requires the reporter's resolver (a filesystem read). Then the adoption cost, as facts: forge's `config.GITHUB_ROOT` constant and every path derived from it (P4), the `resolve_bellows_root()` idiom bellows tools use, and the line count of a bellows `tools/step_timing.py` that prints Item 3(a)'s table (write it in the doc as a code block, do NOT deposit it under bellows — the fork is the Planner's).
+> **Item 6 — Q5: the park.** From P4: the pointer a parked forge needs — the three salvage threads (256, 257, 258) by number and title, the reporter's five lifecycle functions by `src/reporter.py:<line>`, the maturity ladder's location (`PROJECT_BRIEF.md` Module 3), the Lab's staleness audit (`src/lab.py`, the experiment's name), and the fact that no live code path references the repo. Q6: the diagnostic's own cost — wall-clock of Item 0 (backup + venv) and of Items 2–4, in seconds.
+> **Item 7 — write the research doc** `/Users/marklehn/Developer/eluvian-governance/governance/knowledge/research/forge-lifecycle-reporter-2026-09-09.md` answering Q1–Q6 in order, each section opening with the raw line it rests on (a pytest summary, a query, a key list), and the TSV `forge-lifecycle-reporter-2026-09-09.tsv` — one row per step for plans ≥ 100040, columns `plan_id, type, step, status_db, plan_state, duration_s_sql, duration_s_reporter, turns, cost_usd, pytest_mentions, gate_failures, match`; end with "What this does not establish" (at least: one DB, one machine; `pytest` mentions count the word, not the runs; the role column is empty so DEV/QA is inferred from step number; the reporter's resolvers were judged on a layout they were not written for).
+> **Item 8 — dev-log** with the headings declared below (the `dev_log_declared_text` gate reads them at the pause); `## Pins re-derived (P1–P3)` opens with P2's value cell pasted verbatim, whole, to its last character — ⛔ the cell ends with the words `QA steps (step 2) 4.5–14.2 min`; paste through those words, then stop. **Commit** the dev-log alone (message tagged with the plan id and `thread 256`), gated on the FULL suite (`.venv/bin/python -m pytest -q` from the worktree root — nothing under bellows changed but the rule is the rule), path-scoped to the Scope list; the two governance files are Planner-commit deposits. Last act, after the commit: `[ -n "$T" ] && [ -d "$T" ] && rm -rf "$T"`.
+> **Headings:** `## Pins re-derived (P1–P3)`; `## The reporter on today's DB (Q1)`; `## Q1–Q6 in one table`; `## What the doc does not establish`
+> **Verbatim:** `## Pins re-derived (P1–P3)` ← P2
+>
+> **Deposits:**
+> - `knowledge/development/dev-log-forge-lifecycle-reporter-2026-09-09.md`
+> - `/Users/marklehn/Developer/eluvian-governance/governance/knowledge/research/forge-lifecycle-reporter-2026-09-09.md`
+> - `/Users/marklehn/Developer/eluvian-governance/governance/knowledge/research/forge-lifecycle-reporter-2026-09-09.tsv`
+>
+> **Post-conditions:** the doc answers six questions with both readers' numbers on every step and ends without a recommendation; the TSV has one row per step for plans ≥ 100040 (P2: 25) with the `match` column filled; the dev-log's four headings present as full lines with P2's cell whole; one bellows commit carrying the dev-log only; the live `lifecycle.db` was never opened (the doc quotes the `.backup` line and the `immutable=1` URI); nothing written under forge, under any lane, or under `$T` that survives the step.

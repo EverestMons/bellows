@@ -1,0 +1,8 @@
+{
+  "slug": "diagnostic-governance-doctrine-staleness-census",
+  "content_hash": "0b9309d26e67380379bd9d62b5cb18f0a5643500032dde1ccece6613db156b81",
+  "session_id": "d04ebd33-0b49-4d7c-a177-322fdddcf2ec",
+  "armed_at": "2026-09-09T22:18:44.717621",
+  "watcher": "gate_watcher.py spawned detached (pid 86074); log: logs/watch/diagnostic-governance-doctrine-staleness-census.md.log",
+  "attestation_boundary": "This receipt proves the watcher was ARMED at write time. It does NOT prove the watcher stayed alive. Liveness of a session-local monitor is not externally verifiable."
+}
