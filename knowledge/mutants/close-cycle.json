@@ -1,0 +1,58 @@
+{
+  "target": "scripts/close_cycle.py",
+  "_note": "Plan 100061: mutation contract for close_cycle.py and lens_commit.py — the two 2026-09-09 riders retired as code.",
+  "mutants": [
+    {
+      "name": "M1-drop-coherence-from-splice-keys",
+      "why": "Removing 'coherence' from _SPLICE_KEYS makes _splice_keys raise 'emitter missing keys: coherence' because the emitter outputs it but it's not in the extraction loop. The splice step fails and close_cycle returns 1; test_c1_happy_path expects 0.",
+      "anchor": "_SPLICE_KEYS = (\"yields\", \"validation\", \"coherence\")",
+      "replacement": "_SPLICE_KEYS = (\"yields\", \"validation\")",
+      "expect_fail": "tests/test_close_cycle.py::test_c1_happy_path"
+    },
+    {
+      "name": "M2-no-op-splice-write",
+      "why": "Replacing the spliced value with the original line makes the splice a no-op: the plan still carries '<declare>' placeholders. Step 6 STORED==LIVE then sees stored='validation: <declare>' vs live='validation: cycle_check=BAR_MET,...' and fails; test_c1_happy_path expects rc 0.",
+      "anchor": "new_lines.append(emit_vals[key] + \"\\n\")",
+      "replacement": "new_lines.append(ln)",
+      "expect_fail": "tests/test_close_cycle.py::test_c1_happy_path"
+    },
+    {
+      "name": "M3-flip-stored-live-comparison",
+      "why": "Flipping != to == in the stored==live guard makes it fail when stored and live MATCH (the happy path) and succeed when they diverge (the tamper case). test_c1_happy_path sees rc 1; test_c4_stored_live_mismatch sees rc 0 instead of 1.",
+      "anchor": "    if stored_val != live_val:",
+      "replacement": "    if stored_val == live_val:",
+      "expect_fail": "tests/test_close_cycle.py::test_c1_happy_path"
+    },
+    {
+      "name": "M4-battery-checks-CONTINUE-not-BAR_MET",
+      "why": "Changing the battery's cycle_check assertion to look for 'CONTINUE' makes it always fire (cycle_check correctly returns BAR_MET, so the new check's NOT-prefix triggers). Battery always fails; test_c1_happy_path expects rc 0.",
+      "anchor": "    if not last.startswith(\"BAR_MET\"):",
+      "replacement": "    if not last.startswith(\"CONTINUE\"):",
+      "expect_fail": "tests/test_close_cycle.py::test_c1_happy_path"
+    },
+    {
+      "name": "M5-lens-assert-self-comparison",
+      "why": "Replacing the assert's right-hand side with composed_name makes it a tautology (always equal to itself). When test_l2_assert_checks_name patches LENS_NAMES[3]='WrongName', the script composes 'WrongName' and asserts 'WrongName' != 'WrongName' — False — so no refusal; test_l2 expects rc 1.",
+      "anchor": "    if composed_name != expected_name:",
+      "replacement": "    if composed_name != composed_name:",
+      "target": "scripts/lens_commit.py",
+      "expect_fail": "tests/test_lens_commit.py::test_l2_assert_checks_name"
+    },
+    {
+      "name": "M6-yield-rising-ceiling-inverted",
+      "why": "Flipping > to < in the walk ceiling check means walk 7 (>6) is no longer refused; the script commits instead. test_l4_yield_rising_walk7_refused expects rc 1 but gets 0.",
+      "anchor": "        if walk_n > _YIELD_RISING_WALK_CEILING:",
+      "replacement": "        if walk_n < _YIELD_RISING_WALK_CEILING:",
+      "target": "scripts/lens_commit.py",
+      "expect_fail": "tests/test_lens_commit.py::test_l4_yield_rising_walk7_refused"
+    },
+    {
+      "name": "M7-lint-gate-inverted",
+      "why": "Inverting 'SHAPE-OK' not in out to 'SHAPE-OK' in out makes the lint gate refuse when the register IS conformant and pass when it is not. test_l1_subject_lens_name's valid register is refused; rc 1 instead of 0.",
+      "anchor": "    if \"SHAPE-OK\" not in out:",
+      "replacement": "    if \"SHAPE-OK\" in out:",
+      "target": "scripts/lens_commit.py",
+      "expect_fail": "tests/test_lens_commit.py::test_l1_subject_lens_name"
+    }
+  ]
+}
