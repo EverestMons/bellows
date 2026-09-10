@@ -18,8 +18,9 @@ the memory repo (a git repo on the shop machine; a plain directory on the mini).
 3. **Assert the environment:**
    - **cwd** is `$ELUVIAN_WRAP_ROOT` (the governance root)
    - **bellows daemon** is RUNNING — verify with `python3 <bellows>/status.py`
-     (on the mini, STOPPED is the correct, deliberate state — report it as such,
-     not as a failure; the live daemon is the shop machine's)
+     (the mini is the SERVER and runs the live daemon since 2026-09-02 — RUNNING is the
+     deliberate state there; a shop machine with no daemon reports STOPPED as such, not
+     as a failure; MACHINE_SETUP §0)
    - **wrap debt** — run `python3 <bellows>/hooks/eluvian/wrap_check.py` READ-ONLY (report its output, arm nothing)
    - **parked arcs** — report every line containing `⏸`, `PARKED`, or `RESUME AT` from the head of `$ELUVIAN_WRAP_ROOT/shop_next_session.md`
 
