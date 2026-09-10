@@ -137,3 +137,16 @@ def test_qa_steps_none_with_banner_exit_zero():
     c_fails = [l for l in result.stdout.splitlines() if "(c)" in l and "FAIL" in l]
     assert not c_fails, f"Unexpected (c) FAIL:\n{result.stdout}"
     assert result.returncode == 0, f"Expected exit 0, got {result.returncode}:\n{result.stdout}"
+
+
+# Test 11 (100064): absent qa_steps + QA heading + banner present → (y) FAIL, not (c) WARN.
+def test_absent_qa_steps_with_qa_heading_and_banner_is_FAIL():
+    """No qa_steps field + QA step heading + banner present → (y) FAIL naming step 2; no (c) WARN: step line."""
+    plan = _make_plan(qa_steps_value=None, step_headers=["DEV", "QA"], banner=True)
+    result = _run_lint(plan)
+    assert result.returncode == 1, f"Expected exit 1, got {result.returncode}:\n{result.stdout}"
+    y_fails = [l for l in result.stdout.splitlines() if l.startswith("FAIL: (y) undeclared QA step")]
+    assert y_fails, f"Expected FAIL: (y) undeclared QA step line, got:\n{result.stdout}"
+    assert any("step 2" in l for l in y_fails), f"Expected step 2 named in (y) FAIL, got:\n{y_fails}"
+    c_step_warns = [l for l in result.stdout.splitlines() if "(c) WARN: step" in l]
+    assert not c_step_warns, f"Unexpected (c) WARN: step line(s):\n{result.stdout}"

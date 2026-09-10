@@ -465,9 +465,11 @@ def lint(plan_path):
     if not str(qa_steps_raw).strip():
         _undeclared_qa = [int(sn) for hl, sn in step_headers if "qa" in hl.lower()]
         for _n in sorted(_undeclared_qa):
-            print(f"(c) WARN: step {_n} is QA-labeled but the plan declares no"
-                  f" qa_steps — it will NOT be Rule 20/22 gated at dispatch"
-                  f" (declare `qa_steps: {_n}`, or `none` if it is not a QA step)")
+            results.append(("FAIL", "(y) undeclared QA step",
+                            f"step {_n} is QA-labeled but the plan declares no"
+                            f" qa_steps — it will NOT be Rule 20/22 gated at dispatch"
+                            f" (declare `qa_steps: {_n}`, or `none` if it is not a QA step)"))
+            all_passed = False
     elif _parse_qa_steps(qa_steps_raw) == set() and \
             str(qa_steps_raw).strip().lower() != "none" and \
             str(qa_steps_raw).strip() != _QA_STEPS_PLACEHOLDER:

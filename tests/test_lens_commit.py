@@ -409,3 +409,49 @@ def test_l11_mode_change_vacuity_refuses(tmp_path, capsys):
     assert rc == 1
     out = capsys.readouterr().out
     assert "record FAIL — the draft changed but its diff could not be read" in out
+
+
+# ---- l12: plan_lint WARN lines echoed; exit unchanged ----
+
+
+def test_l12_plan_lint_warn_echo(tmp_path, capsys):
+    """Unedited fixture with --dry: plan_lint WARN lines echoed; exit 0 and commit OK."""
+    plan, register = _make_lens_fixture(tmp_path)
+    rc = lens_commit.main([
+        str(plan), "--register", str(register),
+        "--walk", "1", "--lens", "1", "--desc", "echo-test", "--dry",
+    ])
+    out = capsys.readouterr().out
+    warn_lines = [l for l in out.splitlines() if "plan_lint WARN — (f) WARN:" in l]
+    assert warn_lines, f"Expected LENS-COMMIT: plan_lint WARN — (f) WARN: line, got:\n{out}"
+    assert rc == 0, f"Expected exit 0, got {rc}:\n{out}"
+    assert any("commit OK" in l for l in out.splitlines()), f"Expected commit OK, got:\n{out}"
+
+
+# ---- l13: plan_lint FAIL echoed; step-3 gate refuses; no commit ----
+
+
+def test_l13_plan_lint_fail_refuses(tmp_path, capsys):
+    """QA section + no qa_steps: plan_lint FAIL echoed; cycle gate refuses; no new commit."""
+    plan, register = _make_lens_fixture(tmp_path)
+    log_before = _git(tmp_path, "log", "--oneline").stdout.strip().count("\n")
+    banner = "Rule 20 — QA Self-Check Results\nPASSED — SELF-CHECK PASSED\n"
+    plan.write_text(
+        plan.read_text(encoding="utf-8") + f"\n## STEP 1 — QA\n\n> Do the work.\n\n{banner}",
+        encoding="utf-8",
+    )
+    register.write_text(
+        register.read_text(encoding="utf-8")
+        + "| f1 | 1 | 1 | q | v0 | finding | text | folded |\n",
+        encoding="utf-8",
+    )
+    rc = lens_commit.main([
+        str(plan), "--register", str(register),
+        "--walk", "1", "--lens", "1", "--desc", "fail-test",
+    ])
+    out = capsys.readouterr().out
+    fail_lines = [l for l in out.splitlines() if "plan_lint FAIL — FAIL: (y) undeclared QA step" in l]
+    assert fail_lines, f"Expected LENS-COMMIT: plan_lint FAIL — FAIL: (y)... line, got:\n{out}"
+    assert rc == 1, f"Expected exit 1, got {rc}:\n{out}"
+    log_after = _git(tmp_path, "log", "--oneline").stdout.strip().count("\n")
+    assert log_after == log_before, f"Expected no new commit, log changed:\n{_git(tmp_path, 'log', '--oneline').stdout}"

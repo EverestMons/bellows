@@ -2227,7 +2227,10 @@ Read the plan at knowledge/decisions/in-progress-executable-<id>.md (the daemon 
 **Closing:** the cycle ran walk 1 (lenses 1–4, 9 findings), ACID 1 (5), the full five-seat sequential cold panel (9 · 8 · 8 · 6 · 10 — all author-verified, no decay), and a confirming pass that closed dry after one descriptive correction. §2's dry condition is NOT claimed — this is a judged stop at panel completion, the stop every plan in this arc has closed on. The record above is the evidence.
 '''
     result = _run_lint(plan)
-    assert result.returncode == 0, f"Expected exit 0, got {result.returncode}\nstdout: {result.stdout}"
+    assert result.returncode == 1, f"Expected exit 1 (plan 306 has ## STEP 2 — QA and no qa_steps), got {result.returncode}\nstdout: {result.stdout}"
+    assert all(l.startswith("FAIL: (y)") for l in result.stdout.splitlines() if l.startswith("FAIL:")), (
+        f"Unexpected non-(y) FAIL rows:\n{result.stdout}"
+    )
     j_warns = [l for l in result.stdout.splitlines() if "(j) WARN" in l]
     k_warns = [l for l in result.stdout.splitlines() if "(k) WARN" in l]
     l_warns = [l for l in result.stdout.splitlines() if "(l) WARN" in l]

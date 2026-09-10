@@ -10,6 +10,7 @@ Steps:
                       duplicate); every record FAIL fires here
     1. baseline     — fold_check --save-baseline on draft
     2. lint         — walk_register_lint gate (SHAPE-OK, no COVERAGE: INCOMPLETE)
+    2b. lint        — plan_lint WARN/FAIL echo (never refuses; gate stays with step 3)
     3. cycle        — cycle_check BAR_MET gate (yield-rising handling)
     4. assert       — subject lens name checked against internal table
     5. commit       — git add draft + register + baseline; --dry writes the DRY line
@@ -237,6 +238,14 @@ def main(argv=None):
     if "COVERAGE: INCOMPLETE" in out:
         print(f"LENS-COMMIT: lint FAIL — COVERAGE: INCOMPLETE")
         return 1
+
+    # Step 2b: plan_lint WARN/FAIL echo — never refuses; gate stays with step 3
+    _lint_rc, _lint_out = run_checker("plan_lint.py", str(draft_path))
+    for _line in _lint_out.splitlines():
+        if re.match(r"^(\([a-z0-9]+\) )?WARN: ", _line.strip()):
+            print(f"LENS-COMMIT: plan_lint WARN — {_line}")
+        elif _line.startswith("FAIL: "):
+            print(f"LENS-COMMIT: plan_lint FAIL — {_line}")
 
     # Step 3: cycle_check gate
     rc, out = run_checker("cycle_check.py", str(draft_path))

@@ -269,3 +269,65 @@ def test_c6_commit(tmp_path, capsys):
     assert "plan.md" in tree
     assert "register.md" in tree
     assert ".plan.md.foldcheck.json" in tree
+
+
+# ---- c7: plan_lint WARN lines echoed before battery verdict ----
+
+
+def test_c7_plan_lint_warn_echo(tmp_path, capsys):
+    """plan_lint WARN lines echoed as CLOSE-WARN:; c1 step sequence and exit 0 unchanged."""
+    plan, register = _make_fixture(tmp_path)
+    closing = _closing_file(tmp_path)
+
+    rc = close_cycle.main([
+        str(plan), "--closing-file", str(closing), "--register", str(register),
+    ])
+
+    out = capsys.readouterr().out
+    warn_lines = [l for l in out.splitlines() if l.startswith("CLOSE-WARN: plan_lint —")]
+    assert warn_lines, f"Expected CLOSE-WARN: plan_lint — line, got:\n{out}"
+    steps = [l.split()[1] for l in out.splitlines() if l.startswith("CLOSE:")]
+    assert steps == [
+        "closing", "baseline", "emit", "splice", "baseline",
+        "stored==live", "battery", "commit(skipped)",
+    ], f"unexpected step sequence: {steps}"
+    assert rc == 0
+
+
+# ---- c8: plan_lint FAIL in battery → CLOSE: battery FAIL with (y) row ----
+
+
+def test_c8_plan_lint_fail_battery_refuses(tmp_path, monkeypatch, capsys):
+    """Monkeypatched plan_lint exit 1 with (y) row → CLOSE: battery FAIL naming the row; rc 1."""
+    plan, register = _make_fixture(tmp_path)
+    closing = _closing_file(tmp_path)
+
+    _real = close_cycle.run_checker
+    _fail_out = (
+        "FAIL: (y) undeclared QA step — step 1 is QA-labeled but the plan declares no"
+        " qa_steps — it will NOT be Rule 20/22 gated at dispatch"
+        " (declare `qa_steps: 1`, or `none` if it is not a QA step)\n"
+    )
+
+    def fake(script, *args):
+        if script == "plan_lint.py":
+            return 1, _fail_out
+        return _real(script, *args)
+
+    monkeypatch.setattr(close_cycle, "run_checker", fake)
+
+    rc = close_cycle.main([
+        str(plan), "--closing-file", str(closing), "--register", str(register),
+        "--dry-run",
+    ])
+
+    out = capsys.readouterr().out
+    battery_fail = [l for l in out.splitlines() if l.startswith("CLOSE: battery FAIL")]
+    assert battery_fail, f"Expected CLOSE: battery FAIL line, got:\n{out}"
+    assert any("plan_lint: exit 1" in l for l in battery_fail), (
+        f"Expected plan_lint: exit 1 in battery FAIL, got:\n{battery_fail}"
+    )
+    assert any("(y) undeclared QA step" in l for l in battery_fail), (
+        f"Expected (y) FAIL row in battery FAIL, got:\n{battery_fail}"
+    )
+    assert rc == 1

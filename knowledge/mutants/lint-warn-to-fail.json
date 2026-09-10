@@ -1,0 +1,44 @@
+{
+  "target": "scripts/plan_lint.py",
+  "mutants": [
+    {
+      "name": "wrong-letter-c",
+      "why": "the benign set is {c, d}; a (c)-lettered FAIL is swallowed at deposit and release — every consumer that counts non-benign FAILs must see (y)",
+      "anchor": "\"(y) undeclared QA step\"",
+      "replacement": "\"(c) undeclared QA step\"",
+      "expect_fail": "tests/test_plan_lint_qa_steps_none.py::test_absent_qa_steps_with_qa_heading_and_banner_is_FAIL"
+    },
+    {
+      "name": "remove-fail-echo-lens",
+      "why": "lens_commit must echo FAIL lines so authors see the plan_lint FAIL before cycle_check refuses; removing the echo hides it",
+      "target": "scripts/lens_commit.py",
+      "anchor": "            print(f\"LENS-COMMIT: plan_lint FAIL — {_line}\")",
+      "replacement": "            pass",
+      "expect_fail": "tests/test_lens_commit.py::test_l13_plan_lint_fail_refuses"
+    },
+    {
+      "name": "remove-warn-echo-lens",
+      "why": "lens_commit must echo WARN lines so authors see plan_lint WARNs at commit time; removing the echo hides them",
+      "target": "scripts/lens_commit.py",
+      "anchor": "            print(f\"LENS-COMMIT: plan_lint WARN — {_line}\")",
+      "replacement": "            pass",
+      "expect_fail": "tests/test_lens_commit.py::test_l12_plan_lint_warn_echo"
+    },
+    {
+      "name": "remove-fail-rows-close",
+      "why": "the battery FAIL message must include the FAIL rows so the author can see the (y) row; clearing fail_rows drops the diagnostic",
+      "target": "scripts/close_cycle.py",
+      "anchor": "        fail_rows = [l for l in out.splitlines() if l.startswith(\"FAIL: \")]",
+      "replacement": "        fail_rows = []",
+      "expect_fail": "tests/test_close_cycle.py::test_c8_plan_lint_fail_battery_refuses"
+    },
+    {
+      "name": "remove-warn-echo-close",
+      "why": "close_cycle must echo plan_lint WARN lines before its battery verdict so authors see WARNs at close time; removing the echo hides them",
+      "target": "scripts/close_cycle.py",
+      "anchor": "            print(f\"CLOSE-WARN: plan_lint — {_line}\")",
+      "replacement": "            pass",
+      "expect_fail": "tests/test_close_cycle.py::test_c7_plan_lint_warn_echo"
+    }
+  ]
+}

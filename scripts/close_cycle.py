@@ -141,8 +141,15 @@ def _run_battery(draft_path, register_path, git_plan=None):
         failures.append(f"cycle_check: expected BAR_MET, got {last!r}")
 
     rc, out = run_checker("plan_lint.py", str(draft_path))
+    for _line in out.splitlines():
+        if re.match(r"^(\([a-z0-9]+\) )?WARN: ", _line.strip()):
+            print(f"CLOSE-WARN: plan_lint — {_line}")
     if rc != 0:
-        failures.append(f"plan_lint: exit {rc}")
+        fail_rows = [l for l in out.splitlines() if l.startswith("FAIL: ")]
+        failures.append(
+            f"plan_lint: exit {rc} — {' | '.join(fail_rows)}" if fail_rows
+            else f"plan_lint: exit {rc}"
+        )
 
     rc, out = run_checker("lens_order_check.py", str(git_plan))
     if "LENS-ORDER OK" not in out and "LENS-ORDER N/A" not in out:
