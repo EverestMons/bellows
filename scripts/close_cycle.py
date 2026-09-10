@@ -96,6 +96,15 @@ def _splice_keys(draft_text, emit_stdout):
     return "".join(new_lines), None
 
 
+def _strip_field(path, key):
+    """Remove lines starting with 'key: ' from path (in-place)."""
+    text = path.read_text(encoding="utf-8")
+    new_lines = [ln for ln in text.splitlines(keepends=True)
+                 if not ln.startswith(f"{key}: ")]
+    if len(new_lines) != len(text.splitlines(keepends=True)):
+        path.write_text("".join(new_lines), encoding="utf-8")
+
+
 def _baseline_path(draft_path):
     p = Path(draft_path)
     return p.parent / f".{p.name}.foldcheck.json"
@@ -281,11 +290,15 @@ def main(argv=None):
     ap.add_argument("--commit", action="store_true", help="Commit after completion")
     ap.add_argument("--dry-run", action="store_true",
                     help="Run steps 1–7 on temp copies; touch nothing")
+    ap.add_argument("--git-plan", default=None,
+                    help="Path used for lens_order_check in --dry-run (must be inside a git "
+                         "repo with lens commits; defaults to draft)")
     args = ap.parse_args(argv)
 
     draft_path = Path(args.draft)
     closing_file = Path(args.closing_file)
     register_path = Path(args.register) if args.register else None
+    git_plan_override = Path(args.git_plan) if args.git_plan else None
 
     if not draft_path.is_file():
         print(f"ERROR: draft not found: {draft_path}", file=sys.stderr)
@@ -301,6 +314,12 @@ def main(argv=None):
         try:
             draft_copy = Path(tmp_dir) / draft_path.name
             shutil.copy2(draft_path, draft_copy)
+            # Strip fold_baseline: declarations from the copy. A declared path resolves
+            # to the live (post-splice) governance baseline, which causes fold_check to
+            # return DRIFT in step 3 because the plan content is pre-splice. Without the
+            # declaration, resolve_fold_baseline falls through to the beside-the-plan
+            # baseline saved by step 2, which is always VACUOUS (content == baseline).
+            _strip_field(draft_copy, "fold_baseline")
             reg_copy = None
             if register_path:
                 reg_copy = Path(tmp_dir) / register_path.name
@@ -319,7 +338,8 @@ def main(argv=None):
             subprocess.run(["git", "-C", tmp_dir, "commit", "-qm", "dryrun-fixture"],
                            capture_output=True)
             return _run_close(draft_copy, closing_text, reg_copy,
-                              do_commit=False, dry_run=True, git_plan=draft_path)
+                              do_commit=False, dry_run=True,
+                              git_plan=git_plan_override or draft_path)
         finally:
             shutil.rmtree(tmp_dir, ignore_errors=True)
     else:
