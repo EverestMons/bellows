@@ -1,0 +1,17 @@
+PYTHON: /Users/marklehn/Developer/bellows/.venv/bin/python
+HEAD: 94472088c78b8178d335fae16f6cce26d90e79a5
+TARGET: scripts/close_cycle.py sha256=4a90181fc0a1
+TARGET: scripts/lens_commit.py sha256=b7d92bb92291
+TARGET: scripts/plan_lint.py sha256=dda148800fc7
+
+MUTANT wrong-letter-c: KILLED — suite caught the defect
+MUTANT remove-fail-echo-lens: KILLED — suite caught the defect
+MUTANT remove-warn-echo-lens: KILLED — suite caught the defect
+MUTANT remove-fail-rows-close: KILLED — suite caught the defect
+MUTANT remove-warn-echo-close: KILLED — suite caught the defect
+
+LIVE-TREE UNCHANGED: scripts/close_cycle.py sha256=4a90181fc0a1
+LIVE-TREE UNCHANGED: scripts/lens_commit.py sha256=b7d92bb92291
+LIVE-TREE UNCHANGED: scripts/plan_lint.py sha256=dda148800fc7
+
+MUTATION: 5 killed, 0 survived, 0 error
