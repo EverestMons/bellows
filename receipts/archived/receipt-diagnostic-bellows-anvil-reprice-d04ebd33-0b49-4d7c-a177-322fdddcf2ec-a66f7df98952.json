@@ -1,0 +1,8 @@
+{
+  "slug": "diagnostic-bellows-anvil-reprice",
+  "content_hash": "a66f7df9895269e627d5d6528ca903ab1f8a366ee7e32173d1d382d9a0d8220f",
+  "session_id": "d04ebd33-0b49-4d7c-a177-322fdddcf2ec",
+  "armed_at": "2026-09-09T20:01:28.369750",
+  "watcher": "gate_watcher.py spawned detached (pid 52941); log: logs/watch/diagnostic-bellows-anvil-reprice.md.log",
+  "attestation_boundary": "This receipt proves the watcher was ARMED at write time. It does NOT prove the watcher stayed alive. Liveness of a session-local monitor is not externally verifiable."
+}
