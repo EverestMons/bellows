@@ -1,0 +1,17 @@
+PYTHON: /Users/marklehn/Developer/bellows/.venv/bin/python
+HEAD: 849c784b81d4eaa4fd888a11576545122be722be
+TARGET: scripts/close_cycle.py sha256=513db934dd4c
+TARGET: scripts/lens_commit.py sha256=73c57a70ce82
+
+MUTANT M1-drop-coherence-from-splice-keys: KILLED — suite caught the defect
+MUTANT M2-no-op-splice-write: KILLED — suite caught the defect
+MUTANT M3-flip-stored-live-comparison: KILLED — suite caught the defect
+MUTANT M4-battery-checks-CONTINUE-not-BAR_MET: KILLED — suite caught the defect
+MUTANT M5-lens-assert-self-comparison: KILLED — suite caught the defect
+MUTANT M6-yield-rising-ceiling-inverted: KILLED — suite caught the defect
+MUTANT M7-lint-gate-inverted: KILLED — suite caught the defect
+
+LIVE-TREE UNCHANGED: scripts/close_cycle.py sha256=513db934dd4c
+LIVE-TREE UNCHANGED: scripts/lens_commit.py sha256=73c57a70ce82
+
+MUTATION: 7 killed, 0 survived, 0 error
