@@ -16,21 +16,8 @@ import subprocess
 import sys
 from pathlib import Path
 
-# Machine layouts differ (shop machine: ~/Developer/GitHub; Mac mini:
-# ~/Developer/eluvian-governance). Same override name as the wrap hooks.
-def _default_root() -> Path:
-    """The governance root when $ELUVIAN_WRAP_ROOT is unset: the two known homes,
-    admitted only by their COMPANY.md marker; the first if neither holds it — a
-    hook must never crash a session. Duplicated verbatim in the four hooks by
-    design: they are standalone files copied into ~/.claude/eluvian/, and a
-    shared module would be one more file to install (test_hook_default_root
-    asserts the four bodies stay identical). Plan hooks-de-hardcode, 2026-09-02."""
-    for cand in (Path.home() / "Developer" / "eluvian-governance",
-                 Path.home() / "Developer" / "GitHub"):
-        if (cand / "COMPANY.md").is_file():
-            return cand
-    return Path.home() / "Developer" / "eluvian-governance"
-
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from _common import _default_root, _log_path, hooklog, emit
 
 _GOV_ROOT = Path(os.environ.get("ELUVIAN_WRAP_ROOT") or _default_root())
 _DOCTRINE = _GOV_ROOT / "ELUVIAN_PATH.md"
@@ -43,35 +30,8 @@ _STATUS_PY = next(
      if p.exists()),
     _GOV_ROOT / "bellows" / "status.py",
 )
-_DEFAULT_LOG = Path("/Users/marklehn/.claude/eluvian/hooks.log")
 
 _PARKED_RE = re.compile(r"⏸|PARKED|RESUME AT", re.IGNORECASE)
-
-
-def _log_path():
-    return Path(os.environ.get("ELUVIAN_HOOKS_LOG") or str(_DEFAULT_LOG))
-
-
-def hooklog(event, detail=""):
-    try:
-        ts = datetime.datetime.now().isoformat(timespec="seconds")
-        with _log_path().open("a") as f:
-            f.write(f"{ts}\t{event}\t{detail}\n")
-    except Exception:
-        pass
-
-
-def emit(context):
-    out = {}
-    if context:
-        out = {
-            "hookSpecificOutput": {
-                "hookEventName": "SessionStart",
-                "additionalContext": context,
-            }
-        }
-    print(json.dumps(out))
-    sys.exit(0)
 
 
 _SYNC_TIMEOUT = 5

@@ -64,6 +64,7 @@ def _make_passcheck_dir(tmp_path):
         "import sys\nprint('wrap_check: OK')\nsys.exit(0)\n"
     )
     shutil.copy2(HOOKS_DIR / "wrap_stop_hook.py", d / "wrap_stop_hook.py")
+    shutil.copy2(HOOKS_DIR / "_common.py", d / "_common.py")
     return d
 
 

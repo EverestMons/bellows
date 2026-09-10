@@ -1,8 +1,10 @@
 """Tests for hook _default_root() — the marker-verified fallback (plan hooks-de-hardcode, 2026-09-02)."""
 from __future__ import annotations
 
+import importlib
 import importlib.util
 import inspect
+import sys
 from pathlib import Path
 
 import pytest
@@ -61,16 +63,17 @@ def test_c_no_marker(tmp_path, monkeypatch):
         assert result == expected, f"{name}: expected {expected}, got {result}"
 
 
-def test_d_four_bodies_identical(monkeypatch):
-    """(d) The _default_root source is identical across all four hooks."""
-    monkeypatch.delenv("ELUVIAN_WRAP_ROOT", raising=False)
-    monkeypatch.delenv("ELUVIAN_WRAP_BELLOWS", raising=False)
-    monkeypatch.delenv("ELUVIAN_WRAP_TUYERE", raising=False)
-    modules = [_load_hook(name) for name in HOOK_NAMES]
-    sources = [inspect.getsource(mod._default_root) for mod in modules]
-    for i, src in enumerate(sources[1:], 1):
-        assert src == sources[0], (
-            f"_default_root source mismatch: {HOOK_NAMES[0]} vs {HOOK_NAMES[i]}"
+def test_d_four_hooks_bind_the_shared_helper():
+    """(d) The four hooks import _default_root from _common, not define it locally."""
+    sys.path.insert(0, str(HOOKS_DIR))
+    common = importlib.import_module("_common")
+    for name in HOOK_NAMES:
+        mod = _load_hook(name)
+        assert mod._default_root is common._default_root, (
+            f"{name}._default_root is not the shared _common._default_root"
+        )
+        assert "def _default_root" not in Path(HOOKS_DIR / f"{name}.py").read_text(), (
+            f"{name} has a local 'def _default_root' — must be removed after extraction"
         )
 
 

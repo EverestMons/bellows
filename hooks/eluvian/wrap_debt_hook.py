@@ -22,37 +22,12 @@ import subprocess
 import sys
 from pathlib import Path
 
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from _common import _log_path, hooklog, emit, _VALID_SESSION_ID
+
 CHECK = Path(__file__).with_name("wrap_check.py")
-_DEFAULT_LOG = Path("/Users/marklehn/.claude/eluvian/hooks.log")
 
 _BELLOWS_DISPATCH_ALLOW = {"1", "true", "yes"}
-_VALID_SESSION_ID = re.compile(r"^[A-Za-z0-9-]+$")
-
-
-def _log_path():
-    return Path(os.environ.get("ELUVIAN_HOOKS_LOG") or str(_DEFAULT_LOG))
-
-
-def hooklog(event, detail=""):
-    try:
-        ts = datetime.datetime.now().isoformat(timespec="seconds")
-        with _log_path().open("a") as f:
-            f.write(f"{ts}\t{event}\t{detail}\n")
-    except Exception:
-        pass
-
-
-def emit(context):
-    out = {}
-    if context:
-        out = {
-            "hookSpecificOutput": {
-                "hookEventName": "SessionStart",
-                "additionalContext": context,
-            }
-        }
-    print(json.dumps(out))
-    sys.exit(0)
 
 
 def _parse_session_id(raw):

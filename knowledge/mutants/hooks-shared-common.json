@@ -1,0 +1,49 @@
+{
+  "target": "hooks/eluvian/_common.py",
+  "mutants": [
+    {
+      "name": "hook-regrows-local-default-root",
+      "why": "a hook that re-adds a local def _default_root bypasses the shared module; s1's grep finds ^def _default_root and fails",
+      "target": "hooks/eluvian/wrap_arm_hook.py",
+      "anchor": "sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))\nfrom _common import _default_root, _log_path, hooklog, _validate_session_id",
+      "replacement": "sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))\nfrom _common import _default_root, _log_path, hooklog, _validate_session_id\ndef _default_root():\n    return __import__('pathlib').Path.home() / 'Developer' / 'eluvian-governance'",
+      "expect_fail": "tests/test_hooks_shared_common.py::test_s1_shared_names_in_common_not_in_hooks"
+    },
+    {
+      "name": "default-root-fallback-wrong-candidate",
+      "why": "swapping candidate order makes the fallback (no-marker case) return GitHub instead of eluvian-governance; test_c_no_marker asserts eluvian-governance",
+      "anchor": "    return Path.home() / \"Developer\" / \"eluvian-governance\"",
+      "replacement": "    return Path.home() / \"Developer\" / \"GitHub\"",
+      "expect_fail": "tests/test_hook_default_root.py::test_c_no_marker"
+    },
+    {
+      "name": "hooklog-raises-on-unwritable",
+      "why": "removing the except swallow means hooklog raises on an unwritable log path; s3 tests that hooklog never raises",
+      "anchor": "    except Exception:\n        pass",
+      "replacement": "    except Exception:\n        raise",
+      "expect_fail": "tests/test_hooks_shared_common.py::test_s3_hooklog_writes_and_swallows"
+    },
+    {
+      "name": "emit-wrong-event-name",
+      "why": "naming Stop instead of SessionStart produces wrong JSON; s4 asserts hookEventName == SessionStart",
+      "anchor": "                \"hookEventName\": \"SessionStart\",",
+      "replacement": "                \"hookEventName\": \"Stop\",",
+      "expect_fail": "tests/test_hooks_shared_common.py::test_s4_emit_outputs_json_and_exits"
+    },
+    {
+      "name": "arm-hook-missing-sys-path-insert",
+      "why": "without sys.path.insert the hook cannot find _common when loaded by path (spec_from_file_location); test_c_no_marker path-loads all four hooks and exec_module fails on ImportError",
+      "target": "hooks/eluvian/wrap_arm_hook.py",
+      "anchor": "sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))\nfrom _common import _default_root, _log_path, hooklog, _validate_session_id",
+      "replacement": "from _common import _default_root, _log_path, hooklog, _validate_session_id",
+      "expect_fail": "tests/test_hook_default_root.py::test_c_no_marker"
+    },
+    {
+      "name": "validate-session-id-widens-charset",
+      "why": "admitting . and / in _VALID_SESSION_ID lets ../etc/passwd pass validation; test_invalid_charset_arms_bare sends that string and asserts only the bare sentinel exists",
+      "anchor": "_VALID_SESSION_ID = re.compile(r\"^[A-Za-z0-9-]+$\")",
+      "replacement": "_VALID_SESSION_ID = re.compile(r\"^[A-Za-z0-9./-]+$\")",
+      "expect_fail": "tests/test_wrap_sentinel.py::TestSessionIdFallback::test_invalid_charset_arms_bare"
+    }
+  ]
+}

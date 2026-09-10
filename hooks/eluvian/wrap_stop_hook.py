@@ -31,44 +31,18 @@ import sys
 import time
 from pathlib import Path
 
-def _default_root() -> Path:
-    """The governance root when $ELUVIAN_WRAP_ROOT is unset: the two known homes,
-    admitted only by their COMPANY.md marker; the first if neither holds it — a
-    hook must never crash a session. Duplicated verbatim in the four hooks by
-    design: they are standalone files copied into ~/.claude/eluvian/, and a
-    shared module would be one more file to install (test_hook_default_root
-    asserts the four bodies stay identical). Plan hooks-de-hardcode, 2026-09-02."""
-    for cand in (Path.home() / "Developer" / "eluvian-governance",
-                 Path.home() / "Developer" / "GitHub"):
-        if (cand / "COMPANY.md").is_file():
-            return cand
-    return Path.home() / "Developer" / "eluvian-governance"
-
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from _common import _default_root, _log_path, hooklog, _validate_session_id
 
 _DEFAULT_ROOT = _default_root()
 CHECK = Path(__file__).with_name("wrap_check.py")
-_DEFAULT_LOG = Path("/Users/marklehn/.claude/eluvian/hooks.log")
 
 _BELLOWS_DISPATCH_ALLOW = {"1", "true", "yes"}
-_VALID_SESSION_ID = re.compile(r"^[A-Za-z0-9-]+$")
 _STALE_SECONDS = 14400  # 4 hours — generous; a wrap takes minutes
 
 
 def _wrap_root():
     return Path(os.environ.get("ELUVIAN_WRAP_ROOT") or str(_DEFAULT_ROOT))
-
-
-def _log_path():
-    return Path(os.environ.get("ELUVIAN_HOOKS_LOG") or str(_DEFAULT_LOG))
-
-
-def hooklog(event, detail=""):
-    try:
-        ts = datetime.datetime.now().isoformat(timespec="seconds")
-        with _log_path().open("a") as f:
-            f.write(f"{ts}\t{event}\t{detail}\n")
-    except Exception:
-        pass
 
 
 def allow():
@@ -79,16 +53,6 @@ def allow():
 def block(reason):
     print(json.dumps({"decision": "block", "reason": reason}))
     sys.exit(0)
-
-
-def _validate_session_id(raw_id):
-    """Return raw_id if non-empty and [A-Za-z0-9-] only, else None."""
-    if not raw_id or not isinstance(raw_id, str):
-        return None
-    raw_id = raw_id.strip()
-    if not raw_id or not _VALID_SESSION_ID.match(raw_id):
-        return None
-    return raw_id
 
 
 def _extract_session_id(raw_stdin):

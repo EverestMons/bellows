@@ -38,21 +38,8 @@ import sys
 from datetime import datetime as dt
 from pathlib import Path
 
-# Machine layouts differ (shop machine: ~/Developer/GitHub; Mac mini:
-# ~/Developer/eluvian-governance). Same override names as the arm/stop hooks.
-def _default_root() -> Path:
-    """The governance root when $ELUVIAN_WRAP_ROOT is unset: the two known homes,
-    admitted only by their COMPANY.md marker; the first if neither holds it — a
-    hook must never crash a session. Duplicated verbatim in the four hooks by
-    design: they are standalone files copied into ~/.claude/eluvian/, and a
-    shared module would be one more file to install (test_hook_default_root
-    asserts the four bodies stay identical). Plan hooks-de-hardcode, 2026-09-02."""
-    for cand in (Path.home() / "Developer" / "eluvian-governance",
-                 Path.home() / "Developer" / "GitHub"):
-        if (cand / "COMPANY.md").is_file():
-            return cand
-    return Path.home() / "Developer" / "eluvian-governance"
-
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from _common import _default_root
 
 ROOT = Path(os.environ.get("ELUVIAN_WRAP_ROOT") or _default_root())
 
