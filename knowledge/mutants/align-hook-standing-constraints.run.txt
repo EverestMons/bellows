@@ -1,0 +1,14 @@
+PYTHON: /Users/marklehn/Developer/bellows/.venv/bin/python
+HEAD: 0132ec76df9942291da0bb5743b7466bd4458f96
+TARGET: hooks/eluvian/eluvian_align_hook.py sha256=5cd7dfb25b53
+
+MUTANT cap-removed: KILLED — suite caught the defect
+MUTANT except-reraises: KILLED — suite caught the defect
+MUTANT heading-dropped: KILLED — suite caught the defect
+MUTANT composer-drops-constraints: KILLED — suite caught the defect
+MUTANT absent-line-dropped: KILLED — suite caught the defect
+MUTANT main-forces-none: KILLED — suite caught the defect
+
+LIVE-TREE UNCHANGED: hooks/eluvian/eluvian_align_hook.py sha256=5cd7dfb25b53
+
+MUTATION: 6 killed, 0 survived, 0 error
