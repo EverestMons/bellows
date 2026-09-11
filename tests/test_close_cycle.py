@@ -128,6 +128,7 @@ def test_c1_happy_path(tmp_path, capsys):
     ], f"unexpected step sequence: {steps}"
     assert rc == 0
     plan_text = plan.read_text(encoding="utf-8")
+    assert "walks: <declare>" not in plan_text
     assert "yields: <declare>" not in plan_text
     assert "validation: <declare>" not in plan_text
     assert "coherence: <declare>" not in plan_text
@@ -190,7 +191,11 @@ def test_c3_dry_run_order(tmp_path, capsys):
 
 
 def test_c4_stored_live_mismatch(tmp_path, monkeypatch, capsys):
-    """After step 5, tampering with the stored validation: line causes stored==live to fail."""
+    """After step 5, tampering cycle_check= in stored validation: line causes stored==live to fail.
+
+    The tamper changes cycle_check=BAR_MET→CONTINUE (not only propagation_check), so the
+    fixed-point re-splice is not triggered and the mismatch is a hard failure.
+    """
     plan, register = _make_fixture(tmp_path)
     closing = _closing_file(tmp_path)
 
@@ -331,3 +336,134 @@ def test_c8_plan_lint_fail_battery_refuses(tmp_path, monkeypatch, capsys):
         f"Expected (y) FAIL row in battery FAIL, got:\n{battery_fail}"
     )
     assert rc == 1
+
+
+# ---- c9: walks: spliced from emitter — walks: <declare> does not survive close ----
+
+
+def test_c9_walks_spliced(tmp_path, capsys):
+    """close splices walks: from the emitter — walks: <declare> does not survive close."""
+    plan, register = _make_fixture(tmp_path)
+    closing = _closing_file(tmp_path)
+
+    rc = close_cycle.main([
+        str(plan), "--closing-file", str(closing), "--register", str(register),
+    ])
+
+    assert rc == 0
+    plan_text = plan.read_text(encoding="utf-8")
+    assert "walks: <declare>" not in plan_text
+    assert "walks: 1" in plan_text
+
+
+# ---- c10: propagation_check-only drift re-splices once → stored==live OK ----
+
+
+def test_c10_propagation_check_fixed_point(tmp_path, monkeypatch, capsys):
+    """A propagation_check-only drift re-splices once; the second pass is byte-equal → OK."""
+    plan, register = _make_fixture(tmp_path)
+    closing = _closing_file(tmp_path)
+
+    real_run_checker = close_cycle.run_checker
+    emit_calls = [0]
+
+    def fake(script, *args):
+        if script == "cycle_check.py" and "--emit-manifest" in args:
+            rc, out = real_run_checker(script, *args)
+            emit_calls[0] += 1
+            pc = "DIVERGENT:10" if emit_calls[0] == 1 else "DIVERGENT:14"
+            out = re.sub(r"propagation_check=\S+", f"propagation_check={pc}", out)
+            return rc, out
+        return real_run_checker(script, *args)
+
+    monkeypatch.setattr(close_cycle, "run_checker", fake)
+
+    rc = close_cycle.main([
+        str(plan), "--closing-file", str(closing), "--register", str(register),
+    ])
+
+    out = capsys.readouterr().out
+    assert rc == 0
+    assert "stored==live NOTE — propagation_check moved" in out
+    assert "DIVERGENT:10" in out
+    assert "DIVERGENT:14" in out
+    assert "stored==live OK" in out
+    plan_text = plan.read_text(encoding="utf-8")
+    assert "propagation_check=DIVERGENT:14" in plan_text
+
+
+# ---- c10b: after re-splice, a second propagation drift → stored==live FAIL ----
+
+
+def test_c10b_fixed_point_second_comparison_fails(tmp_path, monkeypatch, capsys):
+    """After the re-splice, a third emit that still moves propagation_check → stored==live FAIL."""
+    plan, register = _make_fixture(tmp_path)
+    closing = _closing_file(tmp_path)
+
+    real_run_checker = close_cycle.run_checker
+    emit_calls = [0]
+
+    def fake(script, *args):
+        if script == "cycle_check.py" and "--emit-manifest" in args:
+            rc, out = real_run_checker(script, *args)
+            emit_calls[0] += 1
+            if emit_calls[0] == 1:
+                pc = "DIVERGENT:10"
+            elif emit_calls[0] == 2:
+                pc = "DIVERGENT:14"
+            else:
+                pc = "DIVERGENT:99"
+            out = re.sub(r"propagation_check=\S+", f"propagation_check={pc}", out)
+            return rc, out
+        return real_run_checker(script, *args)
+
+    monkeypatch.setattr(close_cycle, "run_checker", fake)
+
+    rc = close_cycle.main([
+        str(plan), "--closing-file", str(closing), "--register", str(register),
+    ])
+
+    out = capsys.readouterr().out
+    assert rc == 1
+    assert "stored==live NOTE — propagation_check moved" in out
+    assert "stored==live FAIL" in out
+
+
+# ---- c11: cycle_check= drift (not only propagation_check) → stored==live FAIL, no NOTE ----
+
+
+def test_c11_cycle_check_drift_fails(tmp_path, monkeypatch, capsys):
+    """A cycle_check= token drift in the re-emit → stored==live FAIL with no NOTE.
+
+    Pins that a real drift (not merely propagation_check) is still refused after the
+    fixed-point logic is added — the one re-splice is only for propagation_check moves.
+    """
+    plan, register = _make_fixture(tmp_path)
+    closing = _closing_file(tmp_path)
+
+    real_run_checker = close_cycle.run_checker
+    emit_calls = [0]
+
+    def fake(script, *args):
+        if script == "cycle_check.py" and "--emit-manifest" in args:
+            rc, out = real_run_checker(script, *args)
+            emit_calls[0] += 1
+            if emit_calls[0] == 1:
+                out = re.sub(r"cycle_check=\w+", "cycle_check=BAR_MET", out)
+                out = re.sub(r"propagation_check=\S+", "propagation_check=DIVERGENT:10", out)
+            else:
+                out = re.sub(r"cycle_check=\w+", "cycle_check=CONTINUE", out)
+                out = re.sub(r"propagation_check=\S+", "propagation_check=DIVERGENT:14", out)
+            return rc, out
+        return real_run_checker(script, *args)
+
+    monkeypatch.setattr(close_cycle, "run_checker", fake)
+
+    rc = close_cycle.main([
+        str(plan), "--closing-file", str(closing), "--register", str(register),
+    ])
+
+    out = capsys.readouterr().out
+    assert rc == 1
+    assert "stored==live FAIL" in out
+    assert "NOTE" not in out

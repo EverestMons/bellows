@@ -1,0 +1,12 @@
+PYTHON: /Users/marklehn/Developer/bellows/.venv/bin/python
+HEAD: b2864cc5ae4f08c4e40f750e143243bed423899a
+TARGET: scripts/close_cycle.py sha256=c367bb3f16da
+
+MUTANT M1-walks-dropped-from-splice-keys: KILLED — suite caught the defect
+MUTANT M2-re-splice-skipped: KILLED — suite caught the defect
+MUTANT M3-token-comparison-widened-to-always-re-splice: KILLED — suite caught the defect
+MUTANT M4-second-comparison-removed: KILLED — suite caught the defect
+
+LIVE-TREE UNCHANGED: scripts/close_cycle.py sha256=c367bb3f16da
+
+MUTATION: 4 killed, 0 survived, 0 error
