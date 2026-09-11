@@ -370,6 +370,86 @@ def test_lint_titlecase_step_no_qa_steps_warns_only():
     assert "(e)" not in result.stdout
 
 
+def test_lint_executable_h3_headings_no_qa_steps_fails(tmp_path):
+    """(e-e) executable-x.md with ### Step N H3 headings, no qa_steps → (e) FAIL, exit 1."""
+    plan = """\
+# bellows — something
+**Date:** 2026-09-11 | **Dispatch Mode:** bellows | **Execution:** Step 1 (DEV) → Step 2 (QA) | **pause_for_verdict:** after_qa_step
+
+### Step 1 — DEV
+
+> Do the work.
+
+### Step 2 — QA
+
+> Verify.
+"""
+    path = tmp_path / "executable-x.md"
+    path.write_text(plan)
+    result = subprocess.run(
+        [sys.executable, LINT_SCRIPT, str(path)], capture_output=True, text=True, timeout=30
+    )
+    assert result.returncode == 1, f"Expected exit 1, got {result.returncode}\nstdout: {result.stdout}"
+    assert "(e)" in result.stdout
+
+
+def test_lint_executable_uppercase_headings_no_qa_steps_no_e_fail(tmp_path):
+    """(e-f) executable-x.md with ## STEP N uppercase headings, no qa_steps → no (e) row, exit 0."""
+    plan = """\
+# bellows — something
+**Date:** 2026-09-11 | **Dispatch Mode:** bellows | **Execution:** Step 1 (DEV) | **pause_for_verdict:** after_qa_step | **cycle_tier:** T1
+
+## STEP 1 — DEV
+
+> Do the work.
+"""
+    path = tmp_path / "executable-x.md"
+    path.write_text(plan)
+    result = subprocess.run(
+        [sys.executable, LINT_SCRIPT, str(path)], capture_output=True, text=True, timeout=30
+    )
+    assert "(e)" not in result.stdout
+    assert result.returncode == 0, f"Expected exit 0, got {result.returncode}\nstdout: {result.stdout}"
+
+
+def test_lint_diagnostic_no_headings_no_e_fail(tmp_path):
+    """(e-g) diagnostic-x.md with no headings and no qa_steps → no (e) row, exit 0."""
+    plan = """\
+# Diagnostic
+**Date:** 2026-09-11 | **Dispatch Mode:** bellows | **Execution:** Step 1 (DIAGNOSTIC) | **pause_for_verdict:** always
+
+## Context
+
+Some analysis goes here.
+"""
+    path = tmp_path / "diagnostic-x.md"
+    path.write_text(plan)
+    result = subprocess.run(
+        [sys.executable, LINT_SCRIPT, str(path)], capture_output=True, text=True, timeout=30
+    )
+    assert result.returncode == 0, f"Expected exit 0, got {result.returncode}\nstdout: {result.stdout}"
+    assert "(e)" not in result.stdout
+
+
+def test_lint_ready_executable_no_headings_fails(tmp_path):
+    """(e-h) ready-executable-x.md with zero headings → (e) FAIL, exit 1."""
+    plan = """\
+# bellows — something
+**Date:** 2026-09-11 | **Dispatch Mode:** bellows | **Execution:** Step 1 (DEV) | **pause_for_verdict:** after_qa_step
+
+## CEO Context
+
+No step headings here.
+"""
+    path = tmp_path / "ready-executable-x.md"
+    path.write_text(plan)
+    result = subprocess.run(
+        [sys.executable, LINT_SCRIPT, str(path)], capture_output=True, text=True, timeout=30
+    )
+    assert result.returncode == 1, f"Expected exit 1, got {result.returncode}\nstdout: {result.stdout}"
+    assert "(e)" in result.stdout
+
+
 # --- Drafting Cycle self-check (DRAFTING_CYCLE.md §4) ---
 
 # Compliant T2 fixture — real Drafting Cycle block from executable-270.md

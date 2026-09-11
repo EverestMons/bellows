@@ -1,0 +1,11 @@
+PYTHON: /Users/marklehn/Developer/bellows/.venv/bin/python
+HEAD: 941bdf35b5c0dd06486f3c423517d0498fc5e041
+TARGET: scripts/plan_lint.py sha256=2a2554fce26d
+
+MUTANT m1-arm-keyed-on-qa_steps-again: KILLED — suite caught the defect
+MUTANT m2-is_executable-reads-execution-field: KILLED — suite caught the defect
+MUTANT m3-lifecycle-prefix-strip-removed: KILLED — suite caught the defect
+
+LIVE-TREE UNCHANGED: scripts/plan_lint.py sha256=2a2554fce26d
+
+MUTATION: 3 killed, 0 survived, 0 error
