@@ -1,0 +1,17 @@
+PYTHON: /Users/marklehn/Developer/bellows/.venv/bin/python
+HEAD: 543b5f546767b8bac27a4d492dcb04bdb10b3da0
+TARGET: gates.py sha256=dfd914eaad5f
+TARGET: lifecycle.py sha256=56d2e61170b9
+TARGET: verdict.py sha256=a358442d58e6
+
+MUTANT warn-appends-to-failures: KILLED — suite caught the defect
+MUTANT own-step-set-from-union: KILLED — suite caught the defect
+MUTANT verdict-row-always-pass: KILLED — suite caught the defect
+MUTANT ledger-reason-code-always-null: KILLED — suite caught the defect
+MUTANT fail-dominance-removed: KILLED — suite caught the defect
+
+LIVE-TREE UNCHANGED: gates.py sha256=dfd914eaad5f
+LIVE-TREE UNCHANGED: lifecycle.py sha256=56d2e61170b9
+LIVE-TREE UNCHANGED: verdict.py sha256=a358442d58e6
+
+MUTATION: 5 killed, 0 survived, 0 error
