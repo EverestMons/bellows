@@ -1,0 +1,10 @@
+PYTHON: /Users/marklehn/Developer/bellows/.venv/bin/python
+HEAD: db3569ff45466bc0aeb48adace9d02a6268b04ab
+TARGET: hooks/eluvian/wrap_debt_hook.py sha256=16d52ba903e5
+
+MUTANT condition-removed: KILLED — suite caught the defect
+MUTANT condition-inverted: KILLED — suite caught the defect
+
+LIVE-TREE UNCHANGED: hooks/eluvian/wrap_debt_hook.py sha256=16d52ba903e5
+
+MUTATION: 2 killed, 0 survived, 0 error
