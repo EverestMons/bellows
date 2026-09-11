@@ -650,7 +650,7 @@ class TestHoldSlugFix:
         orig_receipts_dir = dr._RECEIPTS_DIR
         dr._RECEIPTS_DIR = str(receipts_dir)
         try:
-            result = dr.write_receipt(hold_path, "test-session-16")
+            result = dr.write_receipt(hold_path, "test-session-16", spawn_watcher=False)
         finally:
             dr._RECEIPTS_DIR = orig_receipts_dir
 
@@ -681,6 +681,7 @@ class TestHoldSlugFix:
 
         claimable = os.path.join(decisions_dir, "diagnostic-holdfix.md")
         assert os.path.exists(claimable), "re-eval should clear after hold-path receipt"
+        assert dr._SPAWN_CALLS == []
 
 
 # ---------------------------------------------------------------------------
@@ -800,3 +801,31 @@ class TestPositiveRoutingGuard:
         result = cp.release_class_hold(hold_path)
         assert result is True
         assert not os.path.exists(hold_path)
+
+
+# ---------------------------------------------------------------------------
+# Test 24 (no-test-spawns-a-watcher — stub coverage)
+# ---------------------------------------------------------------------------
+
+class TestNoSpawn:
+    def test_24_default_spawn_reaches_the_stub(self, decisions_dir, tmp_path):
+        """Default write_receipt path reaches the autouse stub, not the real _spawn_watcher."""
+        import tools.deposit_receipt as dr
+
+        plan_text = _make_plan(writes=["knowledge/research/t24-spawn.md"])
+        hold_path = os.path.join(decisions_dir, "hold-diagnostic-t24-spawn.md")
+        with open(hold_path, "w") as f:
+            f.write(plan_text)
+
+        assert dr._spawn_watcher.__name__ == "_stub_spawn_watcher"
+
+        receipts_dir = tmp_path / "receipts_t24"
+        receipts_dir.mkdir(parents=True, exist_ok=True)
+        orig_receipts_dir = dr._RECEIPTS_DIR
+        dr._RECEIPTS_DIR = str(receipts_dir)
+        try:
+            dr.write_receipt(hold_path, "test-session-24")
+        finally:
+            dr._RECEIPTS_DIR = orig_receipts_dir
+
+        assert dr._SPAWN_CALLS == ["diagnostic-t24-spawn.md"]

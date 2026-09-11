@@ -43,3 +43,16 @@ def _clear_notifier_dedupe():
     notifier._dedupe_memo.clear()
     yield
     notifier._dedupe_memo.clear()
+
+
+@pytest.fixture(autouse=True)
+def isolate_watcher_spawn(monkeypatch):
+    import tools.deposit_receipt as _dr
+
+    def _stub_spawn_watcher(claimable_name):
+        _dr._SPAWN_CALLS.append(claimable_name)
+        return -1
+
+    monkeypatch.setattr(_dr, "_SPAWN_CALLS", [], raising=False)
+    monkeypatch.setattr(_dr, "_spawn_watcher", _stub_spawn_watcher)
+    yield
