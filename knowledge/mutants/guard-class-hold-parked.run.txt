@@ -1,0 +1,11 @@
+PYTHON: /Users/marklehn/Developer/bellows/.venv/bin/python
+HEAD: 3ba94616330d0037d46b837f02bd35fc10bbd097
+TARGET: tools/lessons_guard.py sha256=90bc8e0e864c
+
+MUTANT class-check-removed: KILLED — suite caught the defect
+MUTANT sidecar-read-removed: KILLED — suite caught the defect
+MUTANT missing-sidecar-parked: KILLED — suite caught the defect
+
+LIVE-TREE UNCHANGED: tools/lessons_guard.py sha256=90bc8e0e864c
+
+MUTATION: 3 killed, 0 survived, 0 error
