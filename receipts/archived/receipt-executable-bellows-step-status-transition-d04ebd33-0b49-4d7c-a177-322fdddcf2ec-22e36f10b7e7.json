@@ -1,0 +1,8 @@
+{
+  "slug": "executable-bellows-step-status-transition",
+  "content_hash": "22e36f10b7e740cb8b1034890cbcff8c20b3cdc87cf137f14043becceb9f870e",
+  "session_id": "d04ebd33-0b49-4d7c-a177-322fdddcf2ec",
+  "armed_at": "2026-09-11T08:00:37.789430",
+  "watcher": "gate_watcher.py spawned detached (pid 5213); log: logs/watch/executable-bellows-step-status-transition.md.log",
+  "attestation_boundary": "This receipt proves the watcher was ARMED at write time. It does NOT prove the watcher stayed alive. Liveness of a session-local monitor is not externally verifiable."
+}
