@@ -1,0 +1,45 @@
+{
+  "target": "lifecycle.py",
+  "mutants": [
+    {
+      "name": "drop-awaiting-verdict-filter",
+      "why": "removing AND status = 'awaiting_verdict' from the WHERE clause makes mark_step_complete update any status row; a complete row would be re-updated and rowcount would return 1 instead of 0, failing t2",
+      "target": "lifecycle.py",
+      "anchor": "               WHERE plan_id = ? AND step_number = ? AND status = 'awaiting_verdict'\"\"\"",
+      "replacement": "               WHERE plan_id = ? AND step_number = ?\"\"\"",
+      "expect_fail": "tests/test_lifecycle.py::TestMarkStepComplete::test_complete_row_returns_zero_unchanged"
+    },
+    {
+      "name": "drop-close-branch-mark-step-complete",
+      "why": "removing the mark_step_complete call from the close branch of _consume_verdicts means a continue-to-done verdict leaves the step row at awaiting_verdict, failing t6",
+      "target": "bellows.py",
+      "anchor": "                                if _lc_plan_id:\n                                    n = lifecycle.mark_step_complete(_lc_plan_id, step_number)\n                                    _log(\"INFO\", f\"lifecycle: step {step_number} marked complete ({n} row)\")\n                                lifecycle.mark_plan_state(_lc_plan_id, \"closed\",",
+      "replacement": "                                lifecycle.mark_plan_state(_lc_plan_id, \"closed\",",
+      "expect_fail": "tests/test_consume_verdicts.py::test_continue_to_done_marks_step_complete"
+    },
+    {
+      "name": "drop-advance-branch-mark-step-complete",
+      "why": "removing the mark_step_complete call from the advance branch of _consume_verdicts means a continue-advance verdict leaves the step row at awaiting_verdict, failing t7",
+      "target": "bellows.py",
+      "anchor": "                                    if _lc_plan_id:\n                                        n = lifecycle.mark_step_complete(_lc_plan_id, step_number)\n                                        _log(\"INFO\", f\"lifecycle: step {step_number} marked complete ({n} row)\")\n                                try:",
+      "replacement": "                                try:",
+      "expect_fail": "tests/test_consume_verdicts.py::test_continue_advance_marks_step_complete"
+    },
+    {
+      "name": "flip-complete-to-pending",
+      "why": "changing status = 'complete' to status = 'pending' in the UPDATE makes mark_step_complete set the wrong terminal state; the row reads pending not complete, failing t1",
+      "target": "lifecycle.py",
+      "anchor": "            \"\"\"UPDATE steps SET status = 'complete', step_ended_at = COALESCE(step_ended_at, ?)",
+      "replacement": "            \"\"\"UPDATE steps SET status = 'pending', step_ended_at = COALESCE(step_ended_at, ?)",
+      "expect_fail": "tests/test_lifecycle.py::TestMarkStepComplete::test_awaiting_verdict_row_flips_to_complete"
+    },
+    {
+      "name": "drop-closed-filter-in-reconcile",
+      "why": "removing AND p.lifecycle_state = 'closed' from the reconcile tool's --apply query makes it also flip halted/awaiting_verdict rows; t9 checks the halted row stays, and it would flip instead",
+      "target": "tools/reconcile_steps.py",
+      "anchor": "           WHERE s.status = 'awaiting_verdict' AND p.lifecycle_state = 'closed'",
+      "replacement": "           WHERE s.status = 'awaiting_verdict'",
+      "expect_fail": "tests/test_reconcile_steps.py::test_apply_flips_only_closed_awaiting"
+    }
+  ]
+}

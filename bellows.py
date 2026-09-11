@@ -3333,6 +3333,9 @@ class Bellows:
                                 _delete_shadow(original_name)
                                 _done_project_root = str(pathlib.Path(decisions_path).parents[1])
                                 _done_doc_ref = os.path.relpath(done_path, _done_project_root)
+                                if _lc_plan_id:
+                                    n = lifecycle.mark_step_complete(_lc_plan_id, step_number)
+                                    _log("INFO", f"lifecycle: step {step_number} marked complete ({n} row)")
                                 lifecycle.mark_plan_state(_lc_plan_id, "closed", closed_at=datetime.now().isoformat(), plan_doc_ref=_done_doc_ref) if _lc_plan_id else None
                                 _retire_receipts(_lc_plan_id)
                                 plan_claim.release_for_plan(_lc_plan_id, "completion: continue-to-done", self.config, _log)
@@ -3353,6 +3356,9 @@ class Bellows:
                                 else:
                                     next_step = step_number + 1
                                     _log("EVENT", f"verdict continue — resuming", slug=slug_for(original_name))
+                                    if _lc_plan_id:
+                                        n = lifecycle.mark_step_complete(_lc_plan_id, step_number)
+                                        _log("INFO", f"lifecycle: step {step_number} marked complete ({n} row)")
                                 try:
                                     lifecycle.mark_plan_state(_lc_plan_id, "in_progress")
                                 except Exception:

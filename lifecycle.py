@@ -498,6 +498,27 @@ def record_step_end(step_id, status="complete", cost_usd=None, turns=None,
         _warn(f"record_step_end failed for step_id {step_id}: {e}")
 
 
+def mark_step_complete(plan_id, step_number, db_path=None):
+    """Flip an awaiting_verdict step row to complete. Returns rowcount (0 or 1)."""
+    if plan_id is None:
+        return 0
+    try:
+        path = db_path or LIFECYCLE_DB_PATH
+        conn = sqlite3.connect(path)
+        cur = conn.execute(
+            """UPDATE steps SET status = 'complete', step_ended_at = COALESCE(step_ended_at, ?)
+               WHERE plan_id = ? AND step_number = ? AND status = 'awaiting_verdict'""",
+            (datetime.now().isoformat(), plan_id, step_number),
+        )
+        n = cur.rowcount
+        conn.commit()
+        conn.close()
+        return n
+    except Exception as e:
+        _warn(f"mark_step_complete failed for plan {plan_id} step {step_number}: {e}")
+        return 0
+
+
 def record_gate_events(step_id, gate_result, db_path=None):
     """Insert gate_events rows from a gate_result dict.
 

@@ -1837,4 +1837,142 @@ def test_override_gate_tool_refuses_no_match():
         assert result is False
 
 
+def test_continue_to_done_marks_step_complete():
+    """t6: a continue-to-done verdict flips the step row from awaiting_verdict to complete."""
+    import sqlite3
+    import lifecycle
 
+    with tempfile.TemporaryDirectory() as tmp:
+        tmp_path = Path(tmp)
+
+        decisions_dir = tmp_path / "proj" / "knowledge" / "decisions"
+        decisions_dir.mkdir(parents=True)
+        (decisions_dir / "Done").mkdir()
+
+        plan_filename = "qa-149.md"
+        verdict_pending_name = f"verdict-pending-{plan_filename}"
+        verdict_pending_path = decisions_dir / verdict_pending_name
+        verdict_pending_path.write_text("## STEP 1\nVerify stuff.\n")
+
+        verdicts_resolved = tmp_path / "verdicts" / "resolved"
+        verdicts_resolved.mkdir(parents=True)
+        (verdicts_resolved / "verdict-qa-149-step-1.md").write_text("continue\nApproved.")
+
+        pending_dir = tmp_path / "verdicts" / "pending"
+        pending_dir.mkdir(parents=True)
+        (pending_dir / "verdict-request-qa-149-step-1.md").write_text(
+            _make_verdict_request_content(
+                str(verdict_pending_path), step_number=1, total_steps=1,
+                gate_result_json={"failures": [], "files_changed": []}))
+
+        conn = sqlite3.connect(lifecycle.LIFECYCLE_DB_PATH)
+        conn.execute(
+            "INSERT INTO plans (id, type, target_project, title, dispatch_mode, tier, "
+            "lifecycle_state, total_steps, deposit_placeholder_name, created_at) "
+            "VALUES (149, 'qa', '/proj', 'T', 'bellows', 'small', 'awaiting_verdict', 1, 'qa-149.md', '2026-09-11')"
+        )
+        conn.commit()
+        conn.close()
+        step_id = lifecycle.record_step_start(149, 1)
+        lifecycle.record_step_end(step_id, status="awaiting_verdict")
+
+        config = {
+            "watched_projects": [str(decisions_dir)],
+            "default_model": "claude-sonnet-4-6",
+            "pushover": {"app_key": "", "user_key": ""},
+            "callback_port": 5999,
+        }
+        b = bellows.Bellows(config)
+
+        with patch("bellows.BELLOWS_ROOT", tmp_path), \
+             patch("bellows.verdict.check_verdict", return_value={
+                 "found": True, "verdict": "continue", "reason": "approved"
+             }), \
+             patch("bellows.verdict.log_to_ledger"), \
+             patch("bellows.notifier.push"), \
+             patch("bellows.lifecycle.record_verdict_outcome"), \
+             patch("bellows.lifecycle.get_overridden_gates_for_step", return_value=set()):
+            b._consume_verdicts()
+
+        conn = sqlite3.connect(lifecycle.LIFECYCLE_DB_PATH)
+        step_status = conn.execute(
+            "SELECT status FROM steps WHERE plan_id=149 AND step_number=1"
+        ).fetchone()[0]
+        plan_state = conn.execute(
+            "SELECT lifecycle_state FROM plans WHERE id=149"
+        ).fetchone()[0]
+        conn.close()
+
+        assert step_status == "complete"
+        assert plan_state == "closed"
+
+
+def test_continue_advance_marks_step_complete():
+    """t7: a continue-advance verdict flips step 1 to complete and re-dispatches at step 2."""
+    import sqlite3
+    import lifecycle
+
+    with tempfile.TemporaryDirectory() as tmp:
+        tmp_path = Path(tmp)
+
+        decisions_dir = tmp_path / "proj" / "knowledge" / "decisions"
+        decisions_dir.mkdir(parents=True)
+        (decisions_dir / "Done").mkdir()
+
+        plan_filename = "qa-149.md"
+        verdict_pending_name = f"verdict-pending-{plan_filename}"
+        verdict_pending_path = decisions_dir / verdict_pending_name
+        verdict_pending_path.write_text("## STEP 1\nVerify stuff.\n## STEP 2\nMore stuff.\n")
+
+        verdicts_resolved = tmp_path / "verdicts" / "resolved"
+        verdicts_resolved.mkdir(parents=True)
+        (verdicts_resolved / "verdict-qa-149-step-1.md").write_text("continue\nApproved.")
+
+        pending_dir = tmp_path / "verdicts" / "pending"
+        pending_dir.mkdir(parents=True)
+        (pending_dir / "verdict-request-qa-149-step-1.md").write_text(
+            _make_verdict_request_content(
+                str(verdict_pending_path), step_number=1, total_steps=2,
+                gate_result_json={"failures": [], "files_changed": []}))
+
+        conn = sqlite3.connect(lifecycle.LIFECYCLE_DB_PATH)
+        conn.execute(
+            "INSERT INTO plans (id, type, target_project, title, dispatch_mode, tier, "
+            "lifecycle_state, total_steps, deposit_placeholder_name, created_at) "
+            "VALUES (149, 'qa', '/proj', 'T', 'bellows', 'small', 'awaiting_verdict', 2, 'qa-149.md', '2026-09-11')"
+        )
+        conn.commit()
+        conn.close()
+        step_id = lifecycle.record_step_start(149, 1)
+        lifecycle.record_step_end(step_id, status="awaiting_verdict")
+
+        config = {
+            "watched_projects": [str(decisions_dir)],
+            "default_model": "claude-sonnet-4-6",
+            "pushover": {"app_key": "", "user_key": ""},
+            "callback_port": 5999,
+        }
+        b = bellows.Bellows(config)
+        mock_handle = MagicMock()
+
+        with patch("bellows.BELLOWS_ROOT", tmp_path), \
+             patch("bellows.verdict.check_verdict", return_value={
+                 "found": True, "verdict": "continue", "reason": "approved"
+             }), \
+             patch("bellows.verdict.log_to_ledger"), \
+             patch("bellows.notifier.push"), \
+             patch("bellows.lifecycle.record_verdict_outcome"), \
+             patch("bellows.lifecycle.get_overridden_gates_for_step", return_value=set()), \
+             patch.object(b, "handle_new_plan", mock_handle):
+            b._consume_verdicts()
+
+        conn = sqlite3.connect(lifecycle.LIFECYCLE_DB_PATH)
+        step_status = conn.execute(
+            "SELECT status FROM steps WHERE plan_id=149 AND step_number=1"
+        ).fetchone()[0]
+        conn.close()
+
+        assert step_status == "complete"
+        mock_handle.assert_called_once()
+        call_kwargs = mock_handle.call_args[1]
+        assert call_kwargs.get("resume_step") == 2

@@ -442,6 +442,68 @@ class TestRecordStepEnd:
         lifecycle.record_step_end(None, status="complete")
 
 
+class TestMarkStepComplete:
+    def test_awaiting_verdict_row_flips_to_complete(self):
+        pid = lifecycle.mint_and_claim("diagnostic", "/proj", "T", "bellows", "small", 1, "d.md")
+        step_id = lifecycle.record_step_start(pid, 1)
+        known_ts = "2026-09-11T01:00:00"
+        conn = sqlite3.connect(lifecycle.LIFECYCLE_DB_PATH)
+        conn.execute(
+            "UPDATE steps SET status = 'awaiting_verdict', step_ended_at = ? WHERE id = ?",
+            (known_ts, step_id),
+        )
+        conn.commit()
+        conn.close()
+        n = lifecycle.mark_step_complete(pid, 1)
+        assert n == 1
+        conn = sqlite3.connect(lifecycle.LIFECYCLE_DB_PATH)
+        row = conn.execute("SELECT status, step_ended_at FROM steps WHERE id = ?", (step_id,)).fetchone()
+        conn.close()
+        assert row[0] == "complete"
+        assert row[1] == known_ts
+
+    def test_complete_row_returns_zero_unchanged(self):
+        pid = lifecycle.mint_and_claim("diagnostic", "/proj", "T", "bellows", "small", 1, "d.md")
+        step_id = lifecycle.record_step_start(pid, 1)
+        lifecycle.record_step_end(step_id, status="complete")
+        n = lifecycle.mark_step_complete(pid, 1)
+        assert n == 0
+        conn = sqlite3.connect(lifecycle.LIFECYCLE_DB_PATH)
+        row = conn.execute("SELECT status FROM steps WHERE id = ?", (step_id,)).fetchone()
+        conn.close()
+        assert row[0] == "complete"
+
+    def test_running_row_returns_zero_unchanged(self):
+        pid = lifecycle.mint_and_claim("diagnostic", "/proj", "T", "bellows", "small", 1, "d.md")
+        step_id = lifecycle.record_step_start(pid, 1)
+        n = lifecycle.mark_step_complete(pid, 1)
+        assert n == 0
+        conn = sqlite3.connect(lifecycle.LIFECYCLE_DB_PATH)
+        row = conn.execute("SELECT status FROM steps WHERE id = ?", (step_id,)).fetchone()
+        conn.close()
+        assert row[0] == "running"
+
+    def test_none_plan_id_returns_zero_no_raise(self):
+        n = lifecycle.mark_step_complete(None, 1)
+        assert n == 0
+
+    def test_null_step_ended_at_gets_set_on_flip(self):
+        pid = lifecycle.mint_and_claim("diagnostic", "/proj", "T", "bellows", "small", 1, "d.md")
+        step_id = lifecycle.record_step_start(pid, 1)
+        conn = sqlite3.connect(lifecycle.LIFECYCLE_DB_PATH)
+        conn.execute(
+            "UPDATE steps SET status = 'awaiting_verdict', step_ended_at = NULL WHERE id = ?",
+            (step_id,),
+        )
+        conn.commit()
+        conn.close()
+        lifecycle.mark_step_complete(pid, 1)
+        conn = sqlite3.connect(lifecycle.LIFECYCLE_DB_PATH)
+        row = conn.execute("SELECT step_ended_at FROM steps WHERE id = ?", (step_id,)).fetchone()
+        conn.close()
+        assert row[0] is not None
+
+
 class TestRecordGateEvents:
     def test_records_pass_and_fail(self):
         pid = lifecycle.mint_and_claim("diagnostic", "/proj", "T", "bellows", "small", 1, "d.md")
