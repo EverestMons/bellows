@@ -432,7 +432,7 @@ def test_l12_plan_lint_warn_echo(tmp_path, capsys):
 
 
 def test_l13_plan_lint_fail_refuses(tmp_path, capsys):
-    """QA section + no qa_steps: plan_lint FAIL echoed; cycle gate refuses; no new commit."""
+    """QA section + no qa_steps: plan_lint FAIL echoed; the downgraded CONTINUE is accepted; one commit."""
     plan, register = _make_lens_fixture(tmp_path)
     log_before = _git(tmp_path, "log", "--oneline").stdout.strip().count("\n")
     banner = "Rule 20 — QA Self-Check Results\nPASSED — SELF-CHECK PASSED\n"
@@ -452,6 +452,109 @@ def test_l13_plan_lint_fail_refuses(tmp_path, capsys):
     out = capsys.readouterr().out
     fail_lines = [l for l in out.splitlines() if "plan_lint FAIL — FAIL: (y) undeclared QA step" in l]
     assert fail_lines, f"Expected LENS-COMMIT: plan_lint FAIL — FAIL: (y)... line, got:\n{out}"
-    assert rc == 1, f"Expected exit 1, got {rc}:\n{out}"
+    assert any(
+        "cycle WARN — WARN: BAR_MET downgraded to CONTINUE" in l for l in out.splitlines()
+    ), f"Expected cycle WARN echo, got:\n{out}"
+    assert any("cycle OK — CONTINUE" in l for l in out.splitlines()), (
+        f"Expected 'cycle OK — CONTINUE', got:\n{out}"
+    )
+    assert rc == 0, f"Expected exit 0, got {rc}:\n{out}"
     log_after = _git(tmp_path, "log", "--oneline").stdout.strip().count("\n")
-    assert log_after == log_before, f"Expected no new commit, log changed:\n{_git(tmp_path, 'log', '--oneline').stdout}"
+    assert log_after == log_before + 1, f"Expected one new commit, got:\n{_git(tmp_path, 'log', '--oneline').stdout}"
+
+
+# ---- l14: folding walk returns CONTINUE — accepted, cycle OK — CONTINUE printed ----
+
+
+def test_l14_continue_accepted_on_folding_walk(tmp_path, capsys):
+    """Folding walk: cycle_check returns CONTINUE; cycle OK — CONTINUE printed; commit made."""
+    plan, register = _make_lens_fixture(tmp_path)
+    plan.write_text(
+        plan.read_text(encoding="utf-8").replace(
+            "- Weak spots: w1 dry.",
+            "- Weak spots: w1 1 folded — instruction 1 / record 0.",
+        ),
+        encoding="utf-8",
+    )
+    register.write_text(
+        register.read_text(encoding="utf-8")
+        + "| f1 | 1 | 1 | q | v0 | finding | text | folded |\n",
+        encoding="utf-8",
+    )
+    rc = lens_commit.main([
+        str(plan), "--register", str(register),
+        "--walk", "1", "--lens", "1", "--desc", "folded",
+    ])
+    out = capsys.readouterr().out
+    assert rc == 0, f"Expected exit 0, got {rc}:\n{out}"
+    assert any("cycle OK — CONTINUE" in l for l in out.splitlines()), (
+        f"Expected 'cycle OK — CONTINUE' in output:\n{out}"
+    )
+    assert any("commit OK" in l for l in out.splitlines()), (
+        f"Expected 'commit OK' in output:\n{out}"
+    )
+    shown = _git(tmp_path, "show", "--name-only", "--format=", "HEAD").stdout.split()
+    assert "plan.md" in shown
+    assert "register.md" in shown
+    assert ".plan.md.foldcheck.json" in shown
+
+
+# ---- l15: ESCALATE:* still refuses (pins today's refusal of escalation) ----
+
+
+def test_l15_escalation_still_refuses(tmp_path, capsys, monkeypatch):
+    """ESCALATE:assert-fail is not CONTINUE or BAR_MET; cycle gate still refuses (pins today's refusal)."""
+    plan, register = _make_lens_fixture(tmp_path)
+
+    _real = lens_commit.run_checker
+
+    def fake_run_checker(script, *args):
+        if script == "cycle_check.py" and "--emit-manifest" not in args:
+            return 1, "ESCALATE:assert-fail:2\n"
+        return _real(script, *args)
+
+    monkeypatch.setattr(lens_commit, "run_checker", fake_run_checker)
+
+    rc = lens_commit.main([
+        str(plan), "--register", str(register),
+        "--walk", "1", "--lens", "1", "--desc", "escalation", "--dry",
+    ])
+    out = capsys.readouterr().out
+    assert rc == 1, f"Expected exit 1, got {rc}:\n{out}"
+    assert "cycle FAIL" in out, f"Expected cycle FAIL refusal, got:\n{out}"
+    assert "ESCALATE:assert-fail:2" in out, f"Expected escalation named in refusal, got:\n{out}"
+
+
+# ---- l16: WARN: lines from cycle_check echoed as LENS-COMMIT: cycle WARN — <line> ----
+
+
+def test_l16_downgrade_warn_echoed(tmp_path, capsys, monkeypatch):
+    """WARN: lines from cycle_check output echoed as 'LENS-COMMIT: cycle WARN — <line>'."""
+    plan, register = _make_lens_fixture(tmp_path)
+
+    _real = lens_commit.run_checker
+
+    def fake_run_checker(script, *args):
+        if script == "cycle_check.py" and "--emit-manifest" not in args:
+            return 0, (
+                "BATTERY: plan_lint=1_FAIL fold_check=VACUOUS propagation_check=NOT_RUN\n"
+                "WARN: BAR_MET downgraded to CONTINUE — battery: plan_lint=1_FAIL"
+                " — fix the FAIL(s) plan_lint names before the next walk\n"
+                "CONTINUE\n"
+            )
+        return _real(script, *args)
+
+    monkeypatch.setattr(lens_commit, "run_checker", fake_run_checker)
+
+    rc = lens_commit.main([
+        str(plan), "--register", str(register),
+        "--walk", "1", "--lens", "1", "--desc", "echo-test", "--dry",
+    ])
+    out = capsys.readouterr().out
+    assert rc == 0, f"Expected exit 0, got {rc}:\n{out}"
+    assert any(
+        "cycle WARN — WARN: BAR_MET downgraded to CONTINUE" in l for l in out.splitlines()
+    ), f"Expected WARN echo, got:\n{out}"
+    assert any("cycle OK — CONTINUE" in l for l in out.splitlines()), (
+        f"Expected 'cycle OK — CONTINUE', got:\n{out}"
+    )
