@@ -1,0 +1,15 @@
+PYTHON: /Users/marklehn/Developer/bellows/.venv/bin/python
+HEAD: 665b5f4dac7c0b57183810db976eddf7016fc1c4
+TARGET: bellows.py sha256=39c61f8c4add
+TARGET: lifecycle.py sha256=9ad5bd34673e
+
+MUTANT drop-dedupe-select: KILLED — suite caught the defect
+MUTANT drop-first-region-record-commits: KILLED — suite caught the defect
+MUTANT drop-while-loop-record-commits: KILLED — suite caught the defect
+MUTANT drop-reverse-flag: KILLED — suite caught the defect
+MUTANT flip-range-direction: KILLED — suite caught the defect
+
+LIVE-TREE UNCHANGED: bellows.py sha256=39c61f8c4add
+LIVE-TREE UNCHANGED: lifecycle.py sha256=9ad5bd34673e
+
+MUTATION: 5 killed, 0 survived, 0 error
