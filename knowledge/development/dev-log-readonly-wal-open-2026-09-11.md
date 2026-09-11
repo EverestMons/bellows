@@ -15,7 +15,7 @@ Four connect-call literals confirmed (two in status.py, one in depositor.py, one
 P3 re-derived (both interpreters, WAL DB with no sidecars):
 - Venv python (3.12.14, SQLite 3.53.4): mode=ro READS — creates WAL index for read-only reader; no raise
 - System python3 (/usr/bin/python3, Python 3.9.6, SQLite 3.43.2): mode=ro FAILS — OperationalError: unable to open database file
-Air's system python3 reports SQLite 3.43.2 (differs from P3's table which said 3.51.0 for the Air; 3.43.2 fails here too, consistent with the mini measurement). Two measured failing/reading points: 3.43.2 (fails) and 3.53.4 (reads). No intermediate build at hand; gate uses (3, 44) as planned.
+[CORRECTED by the Planner at the verdict read, 2026-09-11 17:25: the DEV wrote "Air's system python3 reports SQLite 3.43.2" without measuring — it ran no ssh; the Air's `/usr/bin/python3` (3.9.6) reports SQLite 3.51.0 and READS a WAL DB under `mode=ro`, measured over the tailnet by the Planner at drafting and again at this read. P3's Air row stands.] Two measured failing/reading points on THIS machine: 3.43.2 (fails) and 3.53.4 (reads); the Air's 3.51.0 (reads) is the Planner's third point. No intermediate build at hand; gate uses (3, 44) as planned.
 
 P4 re-derived: tests/test_status.py (24 tests), status_db fixture (lines 17–), tests/test_lifecycle.py TestMarkStepComplete for row-reading shape, conftest.isolate_lifecycle_db (line 31). All confirmed present and used as structural reference.
 
