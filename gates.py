@@ -307,7 +307,8 @@ def check(parsed, plan_text, step_number, project_path, files_changed=None, wt_p
     # Gate 7: file change audit (informational)
     _gate_file_change_audit(files_changed)
     # Gate 8: scope check
-    _gate_scope_check(plan_text, step_number, files_changed, failures, project_path=project_path)
+    warnings = []
+    _gate_scope_check(plan_text, step_number, files_changed, failures, project_path=project_path, warnings=warnings)
     # Gate 9: quoted test nodes exist (every step)
     _gate_quoted_test_nodes_exist(is_qa_step, plan_text, step_number, project_path, parsed, failures, wt_path=wt_path)
     # Gate 10: mutation result
@@ -327,6 +328,7 @@ def check(parsed, plan_text, step_number, project_path, files_changed=None, wt_p
         "files_changed": files_changed,
         "plan_header": header,
         "verdict_requested": {"requested": requested, "body": request_body},
+        "warnings": warnings,
     }
 
 
@@ -1124,7 +1126,7 @@ def _extract_deposits_block_paths(step_text):
     return []
 
 
-def _gate_scope_check(plan_text, step_number, files_changed, failures, project_path=None):
+def _gate_scope_check(plan_text, step_number, files_changed, failures, project_path=None, warnings=None):
     if not files_changed:
         return
 
@@ -1227,6 +1229,54 @@ def _gate_scope_check(plan_text, step_number, files_changed, failures, project_p
             "gate": "scope_check",
             "evidence": f"out-of-scope files: {', '.join(out_of_scope)} | plan step context: {context}{scope_note}",
         })
+
+    # Per-step reading: when declared and step > 1, name every union-cleared file
+    # that is not in THIS step's own Scope/Deposits. Never warns on allowlisted or
+    # union-failed files. passed is computed from failures alone (unchanged).
+    if declared and step_number > 1 and warnings is not None:
+        own_step_text = _extract_step_text(plan_text, step_number) or ""
+        own_files_raw, own_prefixes_raw = _extract_plan_scope(own_step_text)
+        own_files = set(own_files_raw)
+        own_prefixes = set(own_prefixes_raw)
+        for p in _extract_deposits_block_paths(own_step_text):
+            if p.endswith("/"):
+                own_prefixes.add(p)
+            else:
+                own_files.add(p)
+        if project_path:
+            abs_project = os.path.abspath(project_path) + os.sep
+            own_files = {
+                d[len(abs_project):] if os.path.isabs(d) and d.startswith(abs_project) else d
+                for d in own_files
+            }
+            own_prefixes = {
+                p[len(abs_project):] if os.path.isabs(p) and p.startswith(abs_project) else p
+                for p in own_prefixes
+            }
+        failed_set = set(out_of_scope)
+        for fpath in files_changed:
+            basename = os.path.basename(fpath)
+            if basename in SCOPE_ALLOWLIST:
+                continue
+            if any(basename.startswith(pfx) for pfx in SCOPE_ALLOWLIST_PREFIXES):
+                continue
+            if fpath in failed_set:
+                continue
+            file_match = any(
+                d == fpath or ("/" in d and d.split("/", 1)[1] == fpath)
+                for d in own_files
+            )
+            if file_match:
+                continue
+            prefix_match = any(
+                fpath.startswith(p) or (
+                    "/" in p.rstrip("/") and fpath.startswith(p.split("/", 1)[1])
+                )
+                for p in own_prefixes
+            )
+            if prefix_match:
+                continue
+            warnings.append({"gate": "scope_step", "evidence": fpath})
 
 
 _TEST_NODE_RE = re.compile(

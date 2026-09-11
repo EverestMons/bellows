@@ -1,0 +1,42 @@
+{
+  "target": "gates.py",
+  "mutants": [
+    {
+      "name": "warn-appends-to-failures",
+      "why": "the arm must append to warnings, never failures; appending to failures makes passed False on any earlier-step-only file, which t2 asserts is True",
+      "anchor": "            warnings.append({\"gate\": \"scope_step\", \"evidence\": fpath})",
+      "replacement": "            failures.append({\"gate\": \"scope_step\", \"evidence\": fpath})",
+      "expect_fail": "tests/test_scope_step.py::TestScopeStepArm::test_t2_step2_earlier_step_file_warns"
+    },
+    {
+      "name": "own-step-set-from-union",
+      "why": "own-step set must come from THIS step's text only; using the union text makes own == union so the arm can never fire; t2 expects a warn that the silenced arm never emits",
+      "anchor": "        own_step_text = _extract_step_text(plan_text, step_number) or \"\"",
+      "replacement": "        own_step_text = union_text",
+      "expect_fail": "tests/test_scope_step.py::TestScopeStepArm::test_t2_step2_earlier_step_file_warns"
+    },
+    {
+      "name": "verdict-row-always-pass",
+      "why": "the verdict row must emit WARN when warnings are present; changing WARN to PASS masks the reading; t7 asserts the WARN token",
+      "anchor": "                rows.append(f\"| {display_name} | WARN | {detail} |\")",
+      "replacement": "                rows.append(f\"| {display_name} | PASS | {detail} |\")",
+      "target": "verdict.py",
+      "expect_fail": "tests/test_scope_step.py::TestScopeStepVerdict::test_t7_warn_row_when_warnings_present"
+    },
+    {
+      "name": "ledger-reason-code-always-null",
+      "why": "reason_code must carry earlier-step-only paths for the census query; forcing NULL makes the ledger row unqueryable; t9 asserts the non-null value",
+      "anchor": "            reason = (\n                \"earlier-step-only: \" + \", \".join(w[\"evidence\"] for w in scope_step_warns)\n                if scope_step_warns else None\n            )",
+      "replacement": "            reason = None",
+      "target": "lifecycle.py",
+      "expect_fail": "tests/test_scope_step.py::TestScopeStepLedger::test_t9_scope_step_row_with_warning"
+    },
+    {
+      "name": "fail-dominance-removed",
+      "why": "a file the union fails must only appear in failures, never in warnings; removing the failed_set guard lets union-failed files also warn; t3 asserts warnings == []",
+      "anchor": "            if fpath in failed_set:\n                continue",
+      "replacement": "            if False:\n                continue",
+      "expect_fail": "tests/test_scope_step.py::TestScopeStepArm::test_t3_step2_undeclared_file_fails_not_warned"
+    }
+  ]
+}

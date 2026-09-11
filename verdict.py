@@ -118,6 +118,7 @@ def _build_verification_results_table(gate_result, parsed, step_number, total_st
         ("qa_step_detection", None, None),
         ("file_change_audit", None, None),
         ("scope_check", "scope_check", "All changes within plan scope"),
+        ("scope_step", None, None),
         ("rule_20_self_check", "rule_20_self_check", None),
         ("rule_22_verification", "rule_22_verification", None),
         ("qa_test_result", "qa_test_result", "pytest summary clean, or not a QA step"),
@@ -147,6 +148,15 @@ def _build_verification_results_table(gate_result, parsed, step_number, total_st
         if display_name == "file_change_audit":
             detail = f"{len(files_changed)} files modified"
             rows.append(f"| {display_name} | PASS | {detail} |")
+            continue
+        if display_name == "scope_step":
+            step_warns = [w for w in gate_result.get("warnings", []) if w.get("gate") == "scope_step"]
+            if step_warns:
+                files_list = ", ".join(w["evidence"] for w in step_warns)
+                detail = f"{len(step_warns)} file(s) declared by an earlier step only: {files_list}"
+                rows.append(f"| {display_name} | WARN | {detail} |")
+            else:
+                rows.append(f"| {display_name} | PASS | Every changed file is in this step's own Scope or Deposits |")
             continue
         if display_name == "rule_20_self_check":
             if failure_gate in failures_by_gate:

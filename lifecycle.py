@@ -552,14 +552,34 @@ def record_gate_events(step_id, gate_result, db_path=None):
             # added were FAIL-row-only here — a pass left no trace in gate_events.
             "qa_test_result", "quoted_test_nodes_exist", "mutation_result",
             "qa_nodes_match_suite", "dev_log_declared_text",
+            # Plan 100074: scope_step warn arm; reason_code carries earlier-step-only paths
+            # for census query: SELECT count(*) FROM gate_events WHERE gate_name='scope_step'
+            # AND reason_code IS NOT NULL
+            "scope_step",
         ]
         for gname in standard_gates:
             if gname not in failure_gates:
+                if gname == "scope_step":
+                    continue
                 conn.execute(
                     """INSERT INTO gate_events (step_id, gate_name, result, reason_code, overridden, override_ref)
                        VALUES (?, ?, 'pass', NULL, 0, NULL)""",
                     (step_id, gname),
                 )
+        if "scope_step" not in failure_gates:
+            scope_step_warns = [
+                w for w in gate_result.get("warnings", [])
+                if w.get("gate") == "scope_step"
+            ]
+            reason = (
+                "earlier-step-only: " + ", ".join(w["evidence"] for w in scope_step_warns)
+                if scope_step_warns else None
+            )
+            conn.execute(
+                """INSERT INTO gate_events (step_id, gate_name, result, reason_code, overridden, override_ref)
+                   VALUES (?, 'scope_step', 'pass', ?, 0, NULL)""",
+                (step_id, reason),
+            )
         conn.commit()
         try:
             files = gate_result.get("files_changed") or []
