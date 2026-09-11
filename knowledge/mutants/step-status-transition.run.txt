@@ -1,0 +1,17 @@
+PYTHON: /Users/marklehn/Developer/bellows/.venv/bin/python
+HEAD: 8398c44bac18d34191361e80628749c52ed58b94
+TARGET: bellows.py sha256=2a61ed51c06d
+TARGET: lifecycle.py sha256=1eb249541d65
+TARGET: tools/reconcile_steps.py sha256=4f389c46924c
+
+MUTANT drop-awaiting-verdict-filter: KILLED — suite caught the defect
+MUTANT drop-close-branch-mark-step-complete: KILLED — suite caught the defect
+MUTANT drop-advance-branch-mark-step-complete: KILLED — suite caught the defect
+MUTANT flip-complete-to-pending: KILLED — suite caught the defect
+MUTANT drop-closed-filter-in-reconcile: KILLED — suite caught the defect
+
+LIVE-TREE UNCHANGED: bellows.py sha256=2a61ed51c06d
+LIVE-TREE UNCHANGED: lifecycle.py sha256=1eb249541d65
+LIVE-TREE UNCHANGED: tools/reconcile_steps.py sha256=4f389c46924c
+
+MUTATION: 5 killed, 0 survived, 0 error
