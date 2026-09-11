@@ -1,0 +1,26 @@
+{
+  "target": "scripts/lens_commit.py",
+  "mutants": [
+    {
+      "name": "acceptance-narrowed",
+      "why": "narrowing the acceptance back to BAR_MET-only means CONTINUE is refused; a folding walk returns CONTINUE and l14 expects exit 0",
+      "anchor": "        if not last.startswith((\"BAR_MET\", \"CONTINUE\")):",
+      "replacement": "        if not last.startswith((\"BAR_MET\",)):",
+      "expect_fail": "tests/test_lens_commit.py::test_l14_continue_accepted_on_folding_walk"
+    },
+    {
+      "name": "acceptance-widened",
+      "why": "accepting any last line means even ESCALATE:assert-fail passes the gate; l15 expects exit 1 on that escalation",
+      "anchor": "        if not last.startswith((\"BAR_MET\", \"CONTINUE\")):\n            print(f\"LENS-COMMIT: cycle FAIL — expected BAR_MET or CONTINUE, got {last!r}\")\n            return 1",
+      "replacement": "        if False:\n            print(f\"LENS-COMMIT: cycle FAIL — expected BAR_MET or CONTINUE, got {last!r}\")\n            return 1",
+      "expect_fail": "tests/test_lens_commit.py::test_l15_escalation_still_refuses"
+    },
+    {
+      "name": "warn-echo-removed",
+      "why": "removing the WARN echo means downgrade lines from cycle_check are silently swallowed; l16 expects the LENS-COMMIT: cycle WARN — … line",
+      "anchor": "        for _cline in out.splitlines():\n            if _cline.startswith(\"WARN:\"):\n                print(f\"LENS-COMMIT: cycle WARN — {_cline}\")",
+      "replacement": "        if False:\n            pass",
+      "expect_fail": "tests/test_lens_commit.py::test_l16_downgrade_warn_echoed"
+    }
+  ]
+}

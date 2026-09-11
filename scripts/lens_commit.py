@@ -11,7 +11,7 @@ Steps:
     1. baseline     — fold_check --save-baseline on draft
     2. lint         — walk_register_lint gate (SHAPE-OK, no COVERAGE: INCOMPLETE)
     2b. lint        — plan_lint WARN/FAIL echo (never refuses; gate stays with step 3)
-    3. cycle        — cycle_check BAR_MET gate (yield-rising handling)
+    3. cycle        — cycle_check gate: CONTINUE or BAR_MET (yield-rising under --allow-yield-rising); its WARN lines echoed
     4. assert       — subject lens name checked against internal table
     5. commit       — git add draft + register + baseline; --dry writes the DRY line
                       when the register is unchanged; a fold without a register row refuses
@@ -261,10 +261,14 @@ def main(argv=None):
             register_path.read_text(encoding="utf-8") + warn, encoding="utf-8"
         )
     else:
+        for _cline in out.splitlines():
+            if _cline.startswith("WARN:"):
+                print(f"LENS-COMMIT: cycle WARN — {_cline}")
         last = out.strip().split("\n")[-1] if out.strip() else ""
-        if not last.startswith("BAR_MET"):
-            print(f"LENS-COMMIT: cycle FAIL — expected BAR_MET, got {last!r}")
+        if not last.startswith(("BAR_MET", "CONTINUE")):
+            print(f"LENS-COMMIT: cycle FAIL — expected BAR_MET or CONTINUE, got {last!r}")
             return 1
+        print(f"LENS-COMMIT: cycle OK — {last}")
 
     # Step 4: compose + assert subject
     composed_name = LENS_NAMES[lens_n]

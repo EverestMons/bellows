@@ -1,0 +1,11 @@
+PYTHON: /Users/marklehn/Developer/bellows/.venv/bin/python
+HEAD: e2259adc24e0c228ac307b6eb34c902576cb4c2b
+TARGET: scripts/lens_commit.py sha256=fc54553eba00
+
+MUTANT acceptance-narrowed: KILLED — suite caught the defect
+MUTANT acceptance-widened: KILLED — suite caught the defect
+MUTANT warn-echo-removed: KILLED — suite caught the defect
+
+LIVE-TREE UNCHANGED: scripts/lens_commit.py sha256=fc54553eba00
+
+MUTATION: 3 killed, 0 survived, 0 error
