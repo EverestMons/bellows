@@ -17,9 +17,9 @@
     },
     {
       "name": "missing-sidecar-parked",
-      "why": "treating a missing sidecar as parked means a hold- with no sidecar does not freeze; t-d has no sidecar and expects freezes=True — it would be parked instead",
+      "why": "explicitly parking when the sidecar is absent means a hold- with no sidecar does not freeze; t-d has no sidecar and expects freezes=True — it would be parked instead",
       "anchor": "                if sidecar.is_file():",
-      "replacement": "                if True:",
+      "replacement": "                if not sidecar.is_file():\n                    parked.append(f)\n                    continue\n                if True:",
       "expect_fail": "tests/test_lessons_guard.py::TestFreezePredicateTable::test_row[t-d]"
     }
   ]
