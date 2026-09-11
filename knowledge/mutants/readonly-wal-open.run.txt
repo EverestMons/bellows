@@ -1,0 +1,11 @@
+PYTHON: /Users/marklehn/Developer/bellows/.venv/bin/python
+HEAD: 03e6dd74e6db39f2efd32e06103f29aa3472a7ea
+TARGET: lifecycle.py sha256=68f67a54a1d9
+
+MUTANT fallback-removed: KILLED — suite caught the defect
+MUTANT mode-ro-removed: KILLED — suite caught the defect
+MUTANT query-only-dropped: KILLED — suite caught the defect
+
+LIVE-TREE UNCHANGED: lifecycle.py sha256=68f67a54a1d9
+
+MUTATION: 3 killed, 0 survived, 0 error
