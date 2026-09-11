@@ -1,0 +1,11 @@
+PYTHON: /Users/marklehn/Developer/bellows/.venv/bin/python
+HEAD: 14e4157080eb729546efe793ae22db708966fee2
+TARGET: scripts/lens_commit.py sha256=4cb05841e3c5
+
+MUTANT guard-removed: KILLED — suite caught the defect
+MUTANT walk-half-removed: KILLED — suite caught the defect
+MUTANT guard-widened-bare-lens: KILLED — suite caught the defect
+
+LIVE-TREE UNCHANGED: scripts/lens_commit.py sha256=4cb05841e3c5
+
+MUTATION: 3 killed, 0 survived, 0 error
