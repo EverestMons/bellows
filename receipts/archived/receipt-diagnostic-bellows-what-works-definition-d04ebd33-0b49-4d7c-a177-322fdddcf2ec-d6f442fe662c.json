@@ -1,0 +1,8 @@
+{
+  "slug": "diagnostic-bellows-what-works-definition",
+  "content_hash": "d6f442fe662cb1091173f0dc03718491a6337574fb0a8c82a918a8f0b423e562",
+  "session_id": "d04ebd33-0b49-4d7c-a177-322fdddcf2ec",
+  "armed_at": "2026-09-11T00:43:01.511354",
+  "watcher": "gate_watcher.py spawned detached (pid 36689); log: logs/watch/diagnostic-bellows-what-works-definition.md.log",
+  "attestation_boundary": "This receipt proves the watcher was ARMED at write time. It does NOT prove the watcher stayed alive. Liveness of a session-local monitor is not externally verifiable."
+}
