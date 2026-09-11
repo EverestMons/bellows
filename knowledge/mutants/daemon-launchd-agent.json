@@ -1,0 +1,35 @@
+{
+  "target": "bellows.py",
+  "mutants": [
+    {
+      "name": "start-new-session-dropped",
+      "why": "dropping start_new_session=True from the no-agent respawn leaves the daemon attached to the ssh session; t4 asserts the keyword is present",
+      "anchor": "            start_new_session=True,\n        )\n        print(\"restarted — new daemon spawned (detached)\")",
+      "replacement": "        )\n        print(\"restarted — new daemon spawned (detached)\")",
+      "expect_fail": "tests/test_daemon_agent.py::test_t4_restart_no_agent"
+    },
+    {
+      "name": "agent-loaded-branch-removed",
+      "why": "removing the _agent_loaded guard causes Popen under a loaded agent, spawning two daemons where the second exits on the flock; t3 asserts _kickstart is called and Popen is not",
+      "anchor": "    if _agent_loaded(label):\n        _kickstart(label)\n        print(\"restarted — agent kickstarted\")\n    else:\n        subprocess.Popen(",
+      "replacement": "    if False:\n        pass\n    else:\n        subprocess.Popen(",
+      "expect_fail": "tests/test_daemon_agent.py::test_t3_restart_agent_loaded"
+    },
+    {
+      "name": "keepalive-rendered-true",
+      "why": "rendering KeepAlive as always-true means a guarded stop (exit 0) is restarted by launchd; t1 asserts KeepAlive == {SuccessfulExit: False}",
+      "target": "scripts/com.eluvian.bellows-daemon.plist.template",
+      "anchor": "    <key>KeepAlive</key>\n    <dict>\n        <!-- A clean stop (exit 0) stays stopped; a crash is restarted. -->\n        <key>SuccessfulExit</key>\n        <false/>\n    </dict>",
+      "replacement": "    <key>KeepAlive</key><true/>",
+      "expect_fail": "tests/test_daemon_agent.py::test_t1_template_parses"
+    },
+    {
+      "name": "exit-timeout-below-drain",
+      "why": "ExitTimeOut below _DRAIN_TIMEOUT means launchd SIGKILLs before the daemon finishes draining in-flight threads; t1 asserts ExitTimeOut > _DRAIN_TIMEOUT",
+      "target": "scripts/com.eluvian.bellows-daemon.plist.template",
+      "anchor": "    <key>ExitTimeOut</key><integer>45</integer>",
+      "replacement": "    <key>ExitTimeOut</key><integer>29</integer>",
+      "expect_fail": "tests/test_daemon_agent.py::test_t1_template_parses"
+    }
+  ]
+}

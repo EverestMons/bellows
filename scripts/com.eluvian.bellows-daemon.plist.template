@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!--
+  TEMPLATE — not installable as-is. Two placeholders are rendered at install
+  time by scripts/install-daemon-agent.sh:
+    __BELLOWS_ROOT__  absolute path to the bellows checkout on this machine
+    __HOME__          absolute path to the user's home directory
+
+  Deliberately a template rather than a hardcoded literal because both paths
+  differ per machine (checkout location, username). Committing the literal
+  makes a new machine a manual edit; rendering it is the operator's act.
+-->
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>com.eluvian.bellows-daemon</string>
+    <key>ProgramArguments</key>
+    <array>
+        <string>__BELLOWS_ROOT__/.venv/bin/python</string>
+        <string>bellows.py</string>
+    </array>
+    <key>WorkingDirectory</key>
+    <string>__BELLOWS_ROOT__</string>
+    <key>StandardOutPath</key>
+    <string>__BELLOWS_ROOT__/logs/terminal/daemon-launchd.log</string>
+    <key>StandardErrorPath</key>
+    <string>__BELLOWS_ROOT__/logs/terminal/daemon-launchd.log</string>
+    <key>EnvironmentVariables</key>
+    <dict>
+        <!-- launchd gives agents an empty PATH; claude lives in ~/.local/bin -->
+        <key>PATH</key>
+        <string>__HOME__/.local/bin:/opt/homebrew/bin:/opt/homebrew/sbin:/usr/local/bin:/usr/bin:/bin</string>
+        <key>HOME</key>
+        <string>__HOME__</string>
+    </dict>
+    <key>RunAtLoad</key><true/>
+    <key>KeepAlive</key>
+    <dict>
+        <!-- A clean stop (exit 0) stays stopped; a crash is restarted. -->
+        <key>SuccessfulExit</key>
+        <false/>
+    </dict>
+    <!-- Must exceed bellows._DRAIN_TIMEOUT (30 s) so launchd waits for the
+         in-flight drain before escalating to SIGKILL. -->
+    <key>ExitTimeOut</key><integer>45</integer>
+    <key>ThrottleInterval</key><integer>30</integer>
+</dict>
+</plist>

@@ -21,6 +21,7 @@ import time
 from pathlib import Path
 
 from bellows_root import resolve_bellows_root
+import bellows
 import status
 
 # ---------------------------------------------------------------------------
@@ -203,6 +204,7 @@ def assemble_state(bellows_root, child_proc=None):
         "db_absent": db_absent,
         "log_absent": log_absent,
         "deposit_rows": deposit_rows,
+        "agent_loaded": bellows._agent_loaded(),
     }
 
 
@@ -261,16 +263,17 @@ def render_screen(state, height, width, mode="normal", has_colors=False):
     rows = []
 
     # --- Header (row 0) ---
+    _agent_suffix = "  [agent]" if state.get("agent_loaded") else ""
     if state["child_alive"] or state["daemon_running"]:
         header = status.render_daemon_header(
             True, state["pid"], state["sha"], state["uptime"], head=state.get("head")
-        )
+        ) + _agent_suffix
         rows.append((_fit(header, width), attr_header_run))
     else:
         if state["child_exit_code"] is not None:
-            header = f"\u25cb Bellows STOPPED (exited, code {state['child_exit_code']})"
+            header = f"\u25cb Bellows STOPPED (exited, code {state['child_exit_code']})" + _agent_suffix
         else:
-            header = status.render_daemon_header(False, None, state["sha"], None)
+            header = status.render_daemon_header(False, None, state["sha"], None) + _agent_suffix
         rows.append((_fit(header, width), attr_header_stop))
 
     # --- Separator ---
@@ -414,14 +417,19 @@ class CursesShell:
                 pass
 
     def _spawn_child(self):
-        """Spawn bellows.py as a subprocess."""
-        self.child = subprocess.Popen(
-            [sys.executable, "bellows.py"],
-            cwd=str(self.bellows_root),
-            stdout=subprocess.DEVNULL,
-            stderr=subprocess.DEVNULL,
-            stdin=subprocess.DEVNULL,
-        )
+        """Spawn bellows.py as a subprocess, or kickstart via the launchd agent."""
+        if bellows._agent_loaded():
+            bellows._kickstart("com.eluvian.bellows-daemon")
+            self.child = None  # viewer mode — no process to own
+        else:
+            self.child = subprocess.Popen(
+                [sys.executable, "bellows.py"],
+                cwd=str(self.bellows_root),
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL,
+                stdin=subprocess.DEVNULL,
+                start_new_session=True,
+            )
 
     def _terminate_child(self):
         """SIGTERM → wait → SIGKILL if needed. Returns True if child is dead."""

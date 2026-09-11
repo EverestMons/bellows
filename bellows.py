@@ -162,6 +162,55 @@ _STOP_SIGTERM_TIMEOUT = 5
 _STOP_SIGKILL_TIMEOUT = 2
 
 
+# --- LaunchAgent helpers ---
+
+def _agent_loaded(label="com.eluvian.bellows-daemon"):
+    """Return True if the named launchd agent is loaded for the current user."""
+    try:
+        result = subprocess.run(
+            ["launchctl", "print", f"gui/{os.getuid()}/{label}"],
+            capture_output=True, timeout=5,
+        )
+        return result.returncode == 0
+    except Exception:
+        return False
+
+
+def _kickstart(label):
+    """Kickstart the named launchd agent, replacing any running instance.
+
+    Returns (ok: bool, msg: str).
+    """
+    try:
+        result = subprocess.run(
+            ["launchctl", "kickstart", "-k", f"gui/{os.getuid()}/{label}"],
+            capture_output=True, text=True, timeout=10,
+        )
+        if result.returncode == 0:
+            return True, result.stdout.strip() or "kickstarted"
+        return False, result.stderr.strip() or f"kickstart failed (exit {result.returncode})"
+    except Exception as e:
+        return False, str(e)
+
+
+def _perform_restart():
+    """Restart the daemon: kickstart via the launchd agent if loaded, else spawn detached."""
+    label = "com.eluvian.bellows-daemon"
+    if _agent_loaded(label):
+        _kickstart(label)
+        print("restarted — agent kickstarted")
+    else:
+        subprocess.Popen(
+            [sys.executable, "bellows.py"],
+            cwd=str(BELLOWS_ROOT),
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+            stdin=subprocess.DEVNULL,
+            start_new_session=True,
+        )
+        print("restarted — new daemon spawned (detached)")
+
+
 def _discover_holder(lock_path):
     """Discover the lock holder via lsof. Returns (pid, error_msg).
 
@@ -3584,14 +3633,7 @@ if __name__ == "__main__":
         if not _success:
             sys.exit(1)
         if sys.argv[1] == "restart":
-            subprocess.Popen(
-                [sys.executable, "bellows.py"],
-                cwd=str(BELLOWS_ROOT),
-                stdout=subprocess.DEVNULL,
-                stderr=subprocess.DEVNULL,
-                stdin=subprocess.DEVNULL,
-            )
-            print("restarted — new daemon spawned")
+            _perform_restart()
         sys.exit(0)
 
     config = load_config()
