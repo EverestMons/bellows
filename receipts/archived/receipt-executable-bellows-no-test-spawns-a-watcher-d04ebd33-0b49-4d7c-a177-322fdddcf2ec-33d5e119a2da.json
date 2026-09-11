@@ -1,0 +1,8 @@
+{
+  "slug": "executable-bellows-no-test-spawns-a-watcher",
+  "content_hash": "33d5e119a2da136fdae01e4c8692cefeaa13a6c815b18ae18f5adaab40c366c2",
+  "session_id": "d04ebd33-0b49-4d7c-a177-322fdddcf2ec",
+  "armed_at": "2026-09-10T22:18:03.245222",
+  "watcher": "gate_watcher.py spawned detached (pid 93514); log: logs/watch/executable-bellows-no-test-spawns-a-watcher.md.log",
+  "attestation_boundary": "This receipt proves the watcher was ARMED at write time. It does NOT prove the watcher stayed alive. Liveness of a session-local monitor is not externally verifiable."
+}

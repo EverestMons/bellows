@@ -1,0 +1,3 @@
+continue
+
+continue — #100070 step 2 (QA), thread 274. Every gate passed (15/15, no FAIL rows). The (b) check ran on the SHIPPED tree from the canonical checkout after the merge (main fdbd7ae), READ before this verdict: a pid census around `pytest tests/test_depositor_receipts.py -k "test_16 or test_24"` → `2 passed`, new watcher pids `[]` (11 before, 11 after) — the spawn the suite used to leave behind is gone; `tests/conftest.py` carries `isolate_watcher_spawn` with `_stub_spawn_watcher` (`:49–57`). QA receipt: 2225 passed, one skip; Item 1's before/after census identical; Item 2's `comm` empty beside the DEV's pre-fix census; mutation run 2/2 killed; PASSED line from the block. Issued by the Planner under the CEO's standing delegation (session d04ebd33, 2026-09-10).

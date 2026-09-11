@@ -1,0 +1,8 @@
+{
+  "slug": "executable-bellows-close-cycle-walks-and-fixed-point",
+  "content_hash": "ca6c98e726cdb81b57a215de7f63a7a3c96dbb304a82d9c17233b45b42d71a42",
+  "session_id": "d04ebd33-0b49-4d7c-a177-322fdddcf2ec",
+  "armed_at": "2026-09-10T22:11:27.042451",
+  "watcher": "gate_watcher.py spawned detached (pid 84464); log: logs/watch/executable-bellows-close-cycle-walks-and-fixed-point.md.log",
+  "attestation_boundary": "This receipt proves the watcher was ARMED at write time. It does NOT prove the watcher stayed alive. Liveness of a session-local monitor is not externally verifiable."
+}
