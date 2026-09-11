@@ -1,0 +1,33 @@
+{
+  "target": "tools/check_deposit.py",
+  "mutants": [
+    {
+      "name": "skip-bullet-removal",
+      "why": "passing plan_text unchanged (no bullet removal) makes rule 22 (a) see the expected-missing paths and fail on them; t11 expects rc 0 with the bullets gone",
+      "anchor": "        plan_text_for_gates = _remove_deposit_bullets(plan_text, args.step, set(expect_missing))",
+      "replacement": "        plan_text_for_gates = plan_text",
+      "expect_fail": "tests/test_check_deposit.py::TestT11ExpectMissingFirstCommit::test_t11"
+    },
+    {
+      "name": "drop-mutation-gate-skip",
+      "why": "always calling _gate_mutation_result when a run file is expected missing causes a 'manifest without run' FAIL; t11 expects 0 failures",
+      "anchor": "    if not run_missing:",
+      "replacement": "    if True:",
+      "expect_fail": "tests/test_check_deposit.py::TestT11ExpectMissingFirstCommit::test_t11"
+    },
+    {
+      "name": "drop-present-path-guard",
+      "why": "removing the os.path.exists check lets the flag ride to the second commit undetected; t12 expects FAIL expect_missing when the dev-log is present",
+      "anchor": "            if os.path.exists(os.path.join(wt_path, p)):",
+      "replacement": "            if False:",
+      "expect_fail": "tests/test_check_deposit.py::TestT12ExpectMissingGuard::test_t12"
+    },
+    {
+      "name": "drop-undeclared-path-guard",
+      "why": "removing the all_deposits_norm check allows naming paths not in the step's Deposits block; t14 expects FAIL expect_missing for an undeclared path",
+      "anchor": "            if p not in all_deposits_norm:",
+      "replacement": "            if False:",
+      "expect_fail": "tests/test_check_deposit.py::TestT14ExpectMissingUndeclared::test_t14"
+    }
+  ]
+}

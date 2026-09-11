@@ -259,3 +259,95 @@ class TestT10FindReferencingFilesSwappable:
         assert "WARN dependents: alpha → consumer.py" in out
         # No FAIL lines (gates all pass on the empty-deposit plan)
         assert "FAIL" not in out
+
+
+# ─── --expect-missing tests (t11–t14) ───────────────────────────────────────
+
+_EM_DEV_LOG = "knowledge/development/dev-log-foo-2026-09-10.md"
+_EM_RUN_FILE = "knowledge/mutants/foo.run.txt"
+_EM_MANIFEST = "knowledge/mutants/foo.json"
+_EM_SRC = "tools/src.py"
+
+_EM_STEP_BODY = (
+    "> **Headings:** `## A`\n\n"
+    "> **Scope:**\n"
+    f"> - `{_EM_SRC}`\n"
+    f"> - `{_EM_MANIFEST}`\n\n"
+    "> **Deposits:**\n"
+    f"> - `{_EM_SRC}`\n"
+    f"> - `{_EM_DEV_LOG}`\n"
+    f"> - `{_EM_MANIFEST}`\n"
+    f"> - `{_EM_RUN_FILE}`\n"
+)
+
+
+def _setup_em_wt(wt: Path) -> None:
+    """Worktree with source file and manifest present; dev-log and run file absent."""
+    (wt / "tools").mkdir(parents=True)
+    (wt / "tools" / "src.py").write_text("# source\n")
+    (wt / "knowledge" / "mutants").mkdir(parents=True)
+    (wt / "knowledge" / "mutants" / "foo.json").write_text(
+        '{"target": "tools/src.py", "mutants": []}\n'
+    )
+
+
+class TestT11ExpectMissingFirstCommit:
+    """(t11) first-commit shape: dev-log and run file expected missing → rc 0, N/A lines, no FAIL."""
+
+    def test_t11(self, tmp_path, capsys):
+        wt = tmp_path / "wt"
+        _setup_em_wt(wt)
+        plan = _write_plan(tmp_path, _EM_STEP_BODY)
+        rc, out = _run(plan, 1, wt, capsys, extra=("--expect-missing", _EM_DEV_LOG, _EM_RUN_FILE))
+
+        assert rc == 0
+        assert "PRECHECK: 0 failure(s)" in out
+        assert "(expecting 2 missing)" in out
+        assert "mutation_result N/A" in out
+        assert "dev_log_declared_text N/A" in out
+        assert "FAIL" not in out
+
+
+class TestT12ExpectMissingGuard:
+    """(t12) present-path guard: dev-log exists in worktree → FAIL expect_missing, rc 1."""
+
+    def test_t12(self, tmp_path, capsys):
+        wt = tmp_path / "wt"
+        _setup_em_wt(wt)
+        # Write the dev-log — it now EXISTS
+        (wt / "knowledge" / "development").mkdir(parents=True)
+        (wt / "knowledge" / "development" / "dev-log-foo-2026-09-10.md").write_text(
+            "## A\n\nContent.\n"
+        )
+        plan = _write_plan(tmp_path, _EM_STEP_BODY)
+        rc, out = _run(plan, 1, wt, capsys, extra=("--expect-missing", _EM_DEV_LOG, _EM_RUN_FILE))
+
+        assert rc == 1
+        assert f"FAIL expect_missing: {_EM_DEV_LOG} is present" in out
+
+
+class TestT13ExpectMissingControl:
+    """(t13) control (flagless): t11 tree without --expect-missing → the two rule_22 FAILs."""
+
+    def test_t13(self, tmp_path, capsys):
+        wt = tmp_path / "wt"
+        _setup_em_wt(wt)
+        plan = _write_plan(tmp_path, _EM_STEP_BODY)
+        rc, out = _run(plan, 1, wt, capsys)  # no --expect-missing
+
+        assert rc == 1
+        assert f"FAIL rule_22_verification: (a) Plan-declared deposit missing: {_EM_DEV_LOG}" in out
+        assert f"FAIL rule_22_verification: (a) Plan-declared deposit missing: {_EM_RUN_FILE}" in out
+
+
+class TestT14ExpectMissingUndeclared:
+    """(t14) undeclared path in --expect-missing → FAIL expect_missing, rc 1."""
+
+    def test_t14(self, tmp_path, capsys):
+        wt = tmp_path / "wt"
+        wt.mkdir()
+        plan = _write_plan(tmp_path, "> Do something.\n")
+        rc, out = _run(plan, 1, wt, capsys, extra=("--expect-missing", "knowledge/x.md"))
+
+        assert rc == 1
+        assert "FAIL expect_missing: knowledge/x.md is not a Deposit of step 1" in out
