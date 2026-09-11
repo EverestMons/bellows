@@ -1,0 +1,26 @@
+{
+  "target": "scripts/lens_commit.py",
+  "mutants": [
+    {
+      "name": "guard-removed",
+      "why": "removing the desc guard means a --desc carrying 'lens 2' or 'walk 0' passes step 4 and commits; l17 expects exit 1 on 'QA lens 2'",
+      "anchor": "    if lens_order_check._LENS_RE.search(desc) or lens_order_check._WALK_RE.search(desc):\n        print(\n            f\"LENS-COMMIT: assert FAIL — --desc must not name a lens or walk number\"\n            f\" (the observer reads every token in the subject line): {desc}\"\n        )\n        return 1",
+      "replacement": "    if False:\n        return 1",
+      "expect_fail": "tests/test_lens_commit.py::test_l17_desc_with_lens_token_refused"
+    },
+    {
+      "name": "walk-half-removed",
+      "why": "removing the walk-RE arm means 'walk 0 seed' passes the guard; l18 expects exit 1 on that desc",
+      "anchor": "    if lens_order_check._LENS_RE.search(desc) or lens_order_check._WALK_RE.search(desc):",
+      "replacement": "    if lens_order_check._LENS_RE.search(desc):",
+      "expect_fail": "tests/test_lens_commit.py::test_l18_desc_with_walk_token_refused"
+    },
+    {
+      "name": "guard-widened-bare-lens",
+      "why": "widening the guard to refuse the bare word 'lens' (\\blens\\b) catches 'lens-2' which the observer never reads; l19 expects rc 0 on prose containing 'lens-2 style'",
+      "anchor": "    if lens_order_check._LENS_RE.search(desc) or lens_order_check._WALK_RE.search(desc):",
+      "replacement": "    if re.search(r'\\blens\\b', desc, re.IGNORECASE) or lens_order_check._WALK_RE.search(desc):",
+      "expect_fail": "tests/test_lens_commit.py::test_l19_desc_prose_without_token_admitted"
+    }
+  ]
+}

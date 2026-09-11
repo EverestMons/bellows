@@ -558,3 +558,63 @@ def test_l16_downgrade_warn_echoed(tmp_path, capsys, monkeypatch):
     assert any("cycle OK — CONTINUE" in l for l in out.splitlines()), (
         f"Expected 'cycle OK — CONTINUE', got:\n{out}"
     )
+
+
+# ---- l17: --desc naming a lens token is refused ----
+
+
+def test_l17_desc_with_lens_token_refused(tmp_path, capsys):
+    """--desc "QA lens 2" with --dry refuses before any commit; assert FAIL message emitted."""
+    plan, register = _make_lens_fixture(tmp_path)
+    count_before = _git(tmp_path, "rev-list", "--count", "HEAD").stdout.strip()
+
+    rc = lens_commit.main([
+        str(plan), "--register", str(register),
+        "--walk", "1", "--lens", "1", "--desc", "QA lens 2", "--dry",
+    ])
+    out = capsys.readouterr().out
+    assert rc == 1, f"Expected exit 1, got {rc}:\n{out}"
+    assert any(
+        "assert FAIL — --desc must not name a lens or walk number" in l
+        for l in out.splitlines()
+    ), f"Expected assert FAIL message, got:\n{out}"
+    count_after = _git(tmp_path, "rev-list", "--count", "HEAD").stdout.strip()
+    assert count_before == count_after, "No commit should be made on refusal"
+
+
+# ---- l18: --desc naming a walk token is refused ----
+
+
+def test_l18_desc_with_walk_token_refused(tmp_path, capsys):
+    """--desc "walk 0 seed" refuses before any commit; same assert FAIL message."""
+    plan, register = _make_lens_fixture(tmp_path)
+    count_before = _git(tmp_path, "rev-list", "--count", "HEAD").stdout.strip()
+
+    rc = lens_commit.main([
+        str(plan), "--register", str(register),
+        "--walk", "1", "--lens", "1", "--desc", "walk 0 seed", "--dry",
+    ])
+    out = capsys.readouterr().out
+    assert rc == 1, f"Expected exit 1, got {rc}:\n{out}"
+    assert any(
+        "assert FAIL — --desc must not name a lens or walk number" in l
+        for l in out.splitlines()
+    ), f"Expected assert FAIL message, got:\n{out}"
+    count_after = _git(tmp_path, "rev-list", "--count", "HEAD").stdout.strip()
+    assert count_before == count_after, "No commit should be made on refusal"
+
+
+# ---- l19: prose with "lenses", "walks", "lens-2" passes (no observer token) ----
+
+
+def test_l19_desc_prose_without_token_admitted(tmp_path, capsys):
+    """--desc with "lenses", "walks", "lens-2" in prose: no observer token, rc 0 and commit OK."""
+    plan, register = _make_lens_fixture(tmp_path)
+
+    rc = lens_commit.main([
+        str(plan), "--register", str(register),
+        "--walk", "1", "--lens", "1", "--desc", "lenses and walks in prose, lens-2 style", "--dry",
+    ])
+    out = capsys.readouterr().out
+    assert rc == 0, f"Expected exit 0, got {rc}:\n{out}"
+    assert any("commit OK" in l for l in out.splitlines()), f"Expected commit OK, got:\n{out}"

@@ -12,7 +12,7 @@ Steps:
     2. lint         — walk_register_lint gate (SHAPE-OK, no COVERAGE: INCOMPLETE)
     2b. lint        — plan_lint WARN/FAIL echo (never refuses; gate stays with step 3)
     3. cycle        — cycle_check gate: CONTINUE or BAR_MET (yield-rising under --allow-yield-rising); its WARN lines echoed
-    4. assert       — subject lens name checked against internal table
+    4. assert       — subject lens name checked against internal table; --desc must not name a lens or walk number
     5. commit       — git add draft + register + baseline; --dry writes the DRY line
                       when the register is unchanged; a fold without a register row refuses
 """
@@ -25,6 +25,8 @@ import sys
 from pathlib import Path
 
 SCRIPTS = Path(os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, str(SCRIPTS))
+import lens_order_check  # noqa: E402 — sibling module; ONE-copy rule (SCRIPTS on sys.path)
 
 LENS_NAMES = {
     1: "Weak spots",
@@ -275,6 +277,13 @@ def main(argv=None):
     expected_name = _NAMES[lens_n]
     if composed_name != expected_name:
         print(f"LENS-COMMIT: assert FAIL — LENS_NAMES[{lens_n}]={composed_name!r} != expected {expected_name!r}")
+        return 1
+
+    if lens_order_check._LENS_RE.search(desc) or lens_order_check._WALK_RE.search(desc):
+        print(
+            f"LENS-COMMIT: assert FAIL — --desc must not name a lens or walk number"
+            f" (the observer reads every token in the subject line): {desc}"
+        )
         return 1
 
     subject = f"draft({slug}): walk {walk_n} lens {lens_n} — {composed_name}: {desc}"
