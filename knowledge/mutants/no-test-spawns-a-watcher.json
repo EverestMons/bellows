@@ -1,0 +1,21 @@
+{
+  "target": "tests/conftest.py",
+  "mutants": [
+    {
+      "name": "drop-autouse-from-isolate-watcher-spawn",
+      "why": "removing autouse=True from the isolate_watcher_spawn fixture leaves _spawn_watcher unreplaced; t24's __name__ assertion fires before any real spawn and fails because the real function is named _spawn_watcher, not _stub_spawn_watcher",
+      "target": "tests/conftest.py",
+      "anchor": "@pytest.fixture(autouse=True)\ndef isolate_watcher_spawn(monkeypatch):",
+      "replacement": "@pytest.fixture\ndef isolate_watcher_spawn(monkeypatch):",
+      "expect_fail": "tests/test_depositor_receipts.py::TestNoSpawn::test_24_default_spawn_reaches_the_stub"
+    },
+    {
+      "name": "revert-t16-spawn-watcher-false",
+      "why": "removing spawn_watcher=False from t16's write_receipt call lets the stub record a call; the new assertion assert dr._SPAWN_CALLS == [] fails because the list contains 'diagnostic-holdfix.md'",
+      "target": "tests/test_depositor_receipts.py",
+      "anchor": "            result = dr.write_receipt(hold_path, \"test-session-16\", spawn_watcher=False)",
+      "replacement": "            result = dr.write_receipt(hold_path, \"test-session-16\")",
+      "expect_fail": "tests/test_depositor_receipts.py::TestHoldSlugFix::test_16_hold_prefix_receipt_satisfies_check"
+    }
+  ]
+}

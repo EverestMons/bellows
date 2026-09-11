@@ -1,0 +1,12 @@
+PYTHON: /Users/marklehn/Developer/bellows/.venv/bin/python
+HEAD: b7e7bbe5e779d3aa4e260e9928c0854fb659d01e
+TARGET: tests/conftest.py sha256=9ba2bc437140
+TARGET: tests/test_depositor_receipts.py sha256=9e8319268f68
+
+MUTANT drop-autouse-from-isolate-watcher-spawn: KILLED — suite caught the defect
+MUTANT revert-t16-spawn-watcher-false: KILLED — suite caught the defect
+
+LIVE-TREE UNCHANGED: tests/conftest.py sha256=9ba2bc437140
+LIVE-TREE UNCHANGED: tests/test_depositor_receipts.py sha256=9e8319268f68
+
+MUTATION: 2 killed, 0 survived, 0 error
