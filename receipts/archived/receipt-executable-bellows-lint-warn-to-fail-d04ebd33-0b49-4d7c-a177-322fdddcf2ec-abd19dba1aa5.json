@@ -1,0 +1,8 @@
+{
+  "slug": "executable-bellows-lint-warn-to-fail",
+  "content_hash": "abd19dba1aa509dfcc78e4ae8523968e2a71ebadd0f2e72d61131e09eb2d7769",
+  "session_id": "d04ebd33-0b49-4d7c-a177-322fdddcf2ec",
+  "armed_at": "2026-09-10T17:08:56.700008",
+  "watcher": "gate_watcher.py spawned detached (pid 42322); log: logs/watch/executable-bellows-lint-warn-to-fail.md.log",
+  "attestation_boundary": "This receipt proves the watcher was ARMED at write time. It does NOT prove the watcher stayed alive. Liveness of a session-local monitor is not externally verifiable."
+}

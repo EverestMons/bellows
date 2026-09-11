@@ -1,0 +1,3 @@
+continue
+
+continue — #100066 step 2 (QA), thread 267. Every gate passed (15/15, no FAIL rows). The (b) check ran on the SHIPPED hook through the live symlink (`cmp` identical to the merged file, main abcd85b) under the harness interpreter `/usr/bin/python3` with #100062's isolation set (scratch root, stub status.py, scratch lessons-forge/tuyere/memory, scratch hooks log): present → rc 0, `## Standing constraints` and `1. One commit per lens` in the injected context; absent → rc 0, the `not found under the governance root` pointer and no heading; both runs logged only to the scratch log. QA receipt: 2217 passed, one skip; mutation run 6/6 killed; PASSED line from the block. Issued by the Planner under the CEO's standing delegation (session d04ebd33, 2026-09-10).

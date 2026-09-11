@@ -1,0 +1,142 @@
+# bellows — `lens_commit.py` ACCEPTS A PLAIN `CONTINUE` AT ITS CYCLE GATE, PRINTS THE VERDICT IT ACCEPTED AND ECHOES `cycle_check`'s WARN LINES — the gate that let the tool commit only dry and yield-rising lenses, so every folding walk of three cycles went by hand (thread 266)
+
+**Date:** 2026-09-10 | **Project:** bellows | **Tier:** Small (one script edited at one gate, one test file extended, one mutation manifest, one dev-log) | **Dispatch Mode:** bellows | **cycle_tier:** T1 | **Test Scope:** full-suite (Rule 21 — the tool is run by every drafting cycle and its tests subprocess-run three checkers; `pytest tests/ -q`) | **Execution:** Step 1 (DEV) → Step 2 (QA) | **qa_steps:** 2 | **pause_for_verdict:** after_qa_step | **known_failures:** 0 | **Discharges:** thread 266
+
+**auto_close:** false
+
+**Post-close:** no restart (`lens_commit.py` is Planner-side, run per invocation; the daemon never loads it). No doctrine: DRAFTING_CYCLE:44 already says a walk advances on `CONTINUE` and :221 (v2.35) already names the tool's gates without the word BAR_MET — the tool's gate was narrower than its own plan (#100061 item 2: *`CONTINUE` or `BAR_MET`*, P5). After this ships the standing deviation "lens commits by hand — the tool refuses CONTINUE" ends: STANDING_CONSTRAINTS line 1's rule is met by the tool on every walk, and the next cycle's register says so.
+
+**Depends on:** bellows #100063 (Done 2026-09-10, thread 270 — the tool's step 0 record rule, which this plan does not touch and its tests must satisfy: `--dry` on an unedited fixture, a register row with a fold); bellows #100064 (thread 265, Done 2026-09-10 — it wrote `scripts/lens_commit.py` and `tests/test_lens_commit.py` before this plan; this draft was re-pinned to the file it left at walk 3; one of its tests, `test_l13_plan_lint_fail_refuses`, flips under this gate — item 2 re-specifies it); the CEO's order 265 → 266 → 267 → 264 (2026-09-10). Clone origin by kind: `Done/executable-100063.md` (Done 2026-09-10 — the same tool, the same test file, the same DEV/QA shape); by layout: the closed 270 draft.
+
+**Tier computed (§1):** **T1** — T-1 fires (one script, one test file, one manifest: two subsystems by the tools-and-tests rule 100061/100063 applied); T-6 does NOT fire — the tool is Planner-side, no gate the daemon reads changes (100061's reasoning; 100063 fired T-6 for the OBSERVER, which the depositor reads — this plan leaves the observer untouched); T-2 does not.
+
+## CEO Context
+
+`scripts/lens_commit.py` shipped in #100061 with a step-3 gate its plan described as *`CONTINUE` or `BAR_MET`* and its code wrote as `if not last.startswith("BAR_MET")` (P2). `cycle_check` returns `CONTINUE` for every walk that folded something (P4) — which is every warm walk — so the tool could commit only a dry lens or a yield-rising lens under `--allow-yield-rising`, the two cases #100061's tests exercised (thread 266). Measured on its first real use, 2026-09-10 11:34: `LENS-COMMIT: cycle FAIL — expected BAR_MET, got 'CONTINUE'`; reproduced today on a fixture with one folded lens and its register row (P1). Consequence on the record: the 270 cycle made all 30 of its lens commits by hand; the 265 cycle 21 of 30; both declared the deviation in their Cycle Logs (P5). #100063 added step 0 (the record rule) around this gate and left the gate itself as thread 266's. This plan is that one gate: accept `CONTINUE`, say which verdict was accepted, and echo the WARN lines `cycle_check` prints beside it (a `BAR_MET` downgraded to `CONTINUE` by a `plan_lint` FAIL or a `fold_check` DRIFT names its remedy on a WARN line — DRAFTING_CYCLE:44 calls that line a verdict input, not a line to skim).
+
+## What this changes
+
+1. **`scripts/lens_commit.py` step 3** (`:250–267` after #100064, whose step 2b — the `plan_lint` echo — sits at `:242–248` above it; the `else` branch `:263–266`, the gate `:265`): the acceptance becomes `last.startswith(("BAR_MET", "CONTINUE"))`; on acceptance the tool prints `LENS-COMMIT: cycle OK — {last}` (the verdict word, so the commit's transcript says CONTINUE or BAR_MET); the refusal becomes `LENS-COMMIT: cycle FAIL — expected BAR_MET or CONTINUE, got {last!r}` (every `ESCALATE:*` except yield-rising-under-the-flag still refuses — `ESCALATE:assert-fail:*`, `ESCALATE:unparseable`, `ESCALATE:uncommitted-walk`, `ESCALATE:claimed-close-unmet`, P4 — and so does an EMPTY last line: `cycle_check` exiting 2 with no stdout gives `last == ""`, which `startswith` rejects and the refusal prints as `got ''`). Before the verdict line, every stdout line of `cycle_check`'s output that starts with `WARN:` is printed as `LENS-COMMIT: cycle WARN — <line>` (the downgrade lines, `cycle_check.py:944`; STANDING_CONSTRAINTS line 7). The yield-rising branch is unchanged. The module docstring's step-3 line (`:14`, after #100064's `2b.` line at `:13`) becomes `3. cycle — cycle_check gate: CONTINUE or BAR_MET (yield-rising under --allow-yield-rising); its WARN lines echoed`.
+2. **`tests/test_lens_commit.py`** — three tests, failing-first, on `_make_lens_fixture` (16 tests after #100064 — l1–l11 plus its l12 `plan_lint_warn_echo` and l13 `plan_lint_fail_refuses`, P3; this plan's tests are numbered l14–l16): **l14** (the folding walk, REAL checkers): change the fixture's `- Weak spots: w1 dry.` to `- Weak spots: w1 1 folded — instruction 1 / record 0.` and append the row `| f1 | 1 | 1 | q | v0 | finding | text | folded |` to `register.md` (the record rule's fold-with-row shape, #100063 l8), no `--dry`, `--walk 1 --lens 1` → rc 0, stdout carries `LENS-COMMIT: cycle OK — CONTINUE` and `commit OK`, `git show --name-only --format= HEAD` lists `plan.md`, `register.md`, `.plan.md.foldcheck.json` (measured today: this exact shape returns a real `CONTINUE` and the shipped tool refuses it — P1). **l15** (an escalation still refuses): l3's `run_checker` monkeypatch pattern returning `(1, "ESCALATE:assert-fail:2\n")` for `cycle_check.py`, `--dry` → rc 1, `cycle FAIL — expected BAR_MET or CONTINUE, got 'ESCALATE:assert-fail:2'`, no commit. **l16** (the echo): the same pattern returning `(0, "BATTERY: plan_lint=1_FAIL fold_check=VACUOUS propagation_check=NOT_RUN\nWARN: BAR_MET downgraded to CONTINUE — battery: plan_lint=1_FAIL — fix the FAIL(s) plan_lint names before the next walk\nCONTINUE\n")`, `--dry` → rc 0, stdout carries `LENS-COMMIT: cycle WARN — WARN: BAR_MET downgraded to CONTINUE` and `cycle OK — CONTINUE`. The fifteen other existing tests stay green (l1/l3/l4 run under BAR_MET or the yield-rising branch; l5 refuses at step 2; l2 at step 4; #100063's nine at step 0 or step 5; #100064's l12 echoes a WARN under BAR_MET). ⛔ ONE existing test FLIPS under this gate and this plan re-specifies it: `test_l13_plan_lint_fail_refuses` (`tests/test_lens_commit.py:434`, #100064) appends a QA-titled step and a register row, runs `--walk 1 --lens 1` without `--dry`, and asserts the `plan_lint FAIL — FAIL: (y) undeclared QA step` echo, `rc == 1` and NO new commit — because `plan_lint`'s `(y)` FAIL downgrades BAR_MET to CONTINUE, which the shipped gate refuses. After this plan the tool ACCEPTS that CONTINUE (DRAFTING_CYCLE:44: a `plan_lint` FAIL withholds the BAR, not the lens commit), so the test's last two asserts become `rc == 0` and ONE new commit, its echo assert stays, and it gains `LENS-COMMIT: cycle WARN — WARN: BAR_MET downgraded to CONTINUE` and `cycle OK — CONTINUE` asserts; its docstring becomes *QA section + no qa_steps: plan_lint FAIL echoed; the downgraded CONTINUE is accepted; one commit*. The DEV re-pins those asserts in the same file (it is in Scope) and pastes the before/after; the `acceptance narrowed` mutant is killed by l14 and by l13.
+3. **`knowledge/mutants/lens-commit-accepts-continue.json`** — at least three mutants (`target: scripts/lens_commit.py`; every `expect_fail` a plain `tests/test_lens_commit.py::<test>` node id): the acceptance narrowed back to `("BAR_MET",)` (l14); the acceptance widened to accept any last line (l15); the WARN echo removed (l16).
+4. **Not changed:** step 0 (the record rule), steps 1–2 and 4–5, the yield-rising branch and its ceiling, `cycle_check.py`, `lens_order_check.py`, every other test. The diff touches two files plus the manifest, the run file and the dev-log.
+
+## Why this exists
+
+A tool that refuses the verdict every folding walk returns is a tool for dry walks only; the record of the two cycles that used it shows the cost — 51 hand commits under a declared deviation, and one of them carried the subject that read as a batched lens (thread 271). The gate's intent was #100061's own words; the code narrowed them, and the tests exercised only the two cases that passed. The echo is the standing rule applied to the one checker whose WARN lines change the bar (DRAFTING_CYCLE:44).
+
+## What this does NOT do
+
+- Does not make the tool advance walks, judge dryness, or write the Cycle Log line — the author still writes the lens line and the register row; step 0 checks them.
+- Does not refuse a `--desc` that names another lens or walk (thread 271 — its own small plan, the next in this tool's queue).
+- Does not touch the observer or the depositor; nothing daemon-loaded moves.
+
+## MUST-PRESERVE
+
+- ⛔ **Only CONTINUE joins BAR_MET.** Every `ESCALATE:*` refuses as today except yield-rising under the flag; l13 pins it.
+- ⛔ **The verdict word is printed, never inferred** — `cycle OK — CONTINUE` / `cycle OK — BAR_MET`; l12 reads it.
+- ⛔ **Suite green at both commits;** nothing outside the two files moves; the deposit waits for #100064's Done.
+
+## Numbers discipline — measured 2026-09-10 by the Planner (bellows `de7dd4f`, governance `ba3818d5`)
+
+| # | pin | value | how to re-derive |
+|---|---|---|---|
+| P1 | ⛔ the refusal, verbatim | thread 266 (2026-09-10 11:34, the hooks-shared-common cycle, walk 4 lens 1): `LENS-COMMIT: cycle FAIL — expected BAR_MET, got 'CONTINUE'`; reproduced 2026-09-10 on `_make_lens_fixture`'s shape with `- Weak spots: w1 1 folded — instruction 1 / record 0.` and one register row: `cycle_check` → `BATTERY: plan_lint=0_FAIL fold_check=NO_BASELINE propagation_check=NOT_RUN` then `CONTINUE`; `walk_register_lint` SHAPE-OK; `lens_commit.py plan.md --register register.md --walk 1 --lens 1 --desc probe` → `LENS-COMMIT: cycle FAIL — expected BAR_MET, got 'CONTINUE'` | the l12 shape in a scratch `git init`, the shipped tool |
+| P2 | ⛔ the gate | `scripts/lens_commit.py` at `f947741` (re-pinned after #100064): step 3 `:250–267` — `rc, out = run_checker("cycle_check.py", str(draft_path))` `:251`; the yield-rising branch `:252–262` (`_YIELD_RISING_WALK_CEILING = 6` `:46`); the `else` `:263–266`: `last = out.strip().split("\n")[-1] if out.strip() else ""` then `if not last.startswith("BAR_MET"): print(f"LENS-COMMIT: cycle FAIL — expected BAR_MET, got {last!r}"); return 1`; no success line is printed; the docstring step list `:9–15` (`2b. lint — plan_lint WARN/FAIL echo (never refuses; gate stays with step 3)` at `:13`, then `3. cycle — cycle_check BAR_MET gate (yield-rising handling)`) | `sed -n '9,14p;241,258p' scripts/lens_commit.py` |
+| P3 | ⛔ the tests as they stand | `tests/test_lens_commit.py`: 16 tests (l1–l5, l6, l6b, l7, l7b, l7c, l8, l9, l10, l11, and #100064's l12 `:417` and l13 `:434`), `_make_lens_fixture(tmp_path)` `:69` (plan = `_INITIAL_PLAN` with a Drafting Cycle block of five `wN dry.` lens lines and a manifest, register = `_REGISTER`, one `initial` commit), l3 `:130` and l4 `:164` monkeypatch `lens_commit.run_checker` for `cycle_check.py` only and pass `--dry`; l8 `:321` is the fold-with-row shape (a body edit plus one register row → three names in `--name-only`) | `grep -n 'def test_\|def _make' tests/test_lens_commit.py` |
+| P4 | ⛔ the verdicts | `scripts/cycle_check.py:1–7`: *Emits exactly one verdict to stdout: CONTINUE (exit 0), BAR_MET (exit 0), ESCALATE:* (exit 1)*; `run_check` `:424`; `CONTINUE` is the verdict of a non-dry current walk (`:517`, `:522`); the downgrade WARN `:944`: `WARN: BAR_MET downgraded to CONTINUE — battery: plan_lint=<n>_FAIL — fix the FAIL(s) plan_lint names before the next walk` (and its `fold_check` twin) | `sed -n 1,7p scripts/cycle_check.py`; `grep -nF 'downgraded' scripts/cycle_check.py` |
+| P5 | the record and the promise | #100061 item 2 (`Done/executable-100061.md:20`): *`cycle_check.py` gate (`CONTINUE` or `BAR_MET`; `ESCALATE:yield-rising` accepted ONLY with `--allow-yield-rising` …)* — the promise the code narrowed; the 270 cycle: 30 lens commits, all by hand, the deviation declared in its Cycle Log; the 265 cycle: 30 lens commits, 21 by hand (walks 1–4, walk 5 lens 1), the nine of walks 5–6 by the tool under `--dry` (BAR_MET or the yield-rising flag) | `git -C <governance> log --format=%s -- governance/knowledge/research/walk-register-<slug>.md \| grep -c 'lens [1-5]'`; the Cycle Logs' deviation sentences |
+| P6 | the mutation contract; class; in-flight | `tools/mutation_check.py`: manifest-driven, KILLED = exit 1 only, sandbox = `git archive HEAD`; run file `knowledge/mutants/<slug>.run.txt` ending `MUTATION: N killed, 0 survived, 0 error`; this plan writes `scripts/` and `tests/` → **shop-infra** (HOLDS, the CEO releases); in flight: none at deposit (#100064 Done 2026-09-10 — its `plan_lint` echo landed as step 2b, `:242–248`, above this gate; re-pinned at walk 3) | `python3 status.py` |
+
+## Drafting Cycle
+
+**Tier:** **T1** — T-1 fires. **Walk register:** /Users/marklehn/Developer/eluvian-governance/governance/knowledge/research/walk-register-lens-commit-accepts-continue-2026-09-10.md
+**Walks:** walk 0 pinned (P1–P6 measured on bellows `de7dd4f`; clone-diff against `Done/executable-100063.md` (kind) and the closed 270 draft (layout) run: FACTS, ARTEFACTS, STRUCTURE); `fold_check --save-baseline` ARMED on v0 before any fold; re-saved after every intended edit; every lens commit through `scripts/lens_commit.py` — the folding lenses by hand only while the gate this plan fixes refuses them, declared per commit.
+
+- Weak spots:          w1 4 folded — instruction 2 / record 2 (grep -F; the test count after #100064; the clone's register ref; post-conditions wording)
+- Weak spots:          w2 dry
+- Destruction:         w1 1 folded — instruction 1 / record 0 (#100064's (y)-echo lens test flips under this gate — re-specified, the interaction named)
+- Destruction:         w2 dry
+- Destruction:         w3 dry
+- Destruction:         w4 dry
+- Vulnerabilities:     w1 1 folded — record 1 (the empty-stdout case stated: refuses as `got ''`)
+- Vulnerabilities:     w2 dry
+- Vulnerabilities:     w3 dry
+- Vulnerabilities:     w4 dry
+- Integration-record:  w1 dry (DC:44 and :221 v2.35 read; #100061's promise at its line 20; STANDING_CONSTRAINTS 1 and 7; no precedent conflict)
+- Integration-record:  w2 dry
+- Integration-record:  w3 dry
+- Integration-record:  w4 dry
+- ACID:                w1 dry
+- ACID:                w2 dry
+- ACID:                w3 dry
+- ACID:                w4 dry
+- Weak spots:          w3 6 folded — instruction 3 / record 3 (the re-pin after #100064: step 3 at :250–267 and the 2b echo above it, 16 tests, this plan's tests l14–l16, the flipping test named from its real asserts, Depends-on and P6 closed)
+- Weak spots:          w4 dry
+
+**Closing:** WARM close after walk 4 — BAR MET (T1), thread 266's plan, re-closed 2026-09-10 for the deposit after bellows #100064 (thread 265) shipped its step 2b above this gate. Four walks: 6 → 0 → 6 (walk 3: the re-pin — step 3 at :250–267, the tests renamed past #100064's l12/l13, the flipping test `test_l13_plan_lint_fail_refuses` re-specified from its real asserts, the dependency closed) → 0 (walk 4 fully dry). Record form: walks 1 and 3 by hand (declared — the gate this plan fixes refused their CONTINUE; walk 1 lens 5 recorded after walk 2, ascending within its walk), walks 2 and 4 by `lens_commit.py --dry`; every commit touches the register; the tool run bare, its exit read. Deposit via `ready-`; HOLDS on class shop-infra, the CEO releases; the deposit-side observer run on a scratch copy before the receipt.
+
+## Cycle Manifest
+tier: T1
+target: scripts/lens_commit.py
+class: shop-infra
+reads: scripts/lens_commit.py, scripts/cycle_check.py, tests/test_lens_commit.py, tools/mutation_check.py, knowledge/decisions/Done/executable-100061.md, knowledge/decisions/Done/executable-100063.md, DRAFTING_CYCLE.md, STANDING_CONSTRAINTS.md
+writes: scripts/lens_commit.py, tests/test_lens_commit.py, knowledge/mutants/lens-commit-accepts-continue.json, knowledge/mutants/lens-commit-accepts-continue.run.txt, knowledge/development/dev-log-lens-commit-accepts-continue-2026-09-10.md, knowledge/qa/evidence/lens-commit-accepts-continue-qa-receipt-2026-09-10.md, knowledge/qa/evidence/lens-commit-accepts-continue-suite-2026-09-10.txt
+mutants: knowledge/mutants/lens-commit-accepts-continue.json
+open_forks: 1. thread 271 (`--desc` naming a lens or walk refuses) — the next plan on this tool; 2. the tool advancing to the next walk on CONTINUE (DRAFTING_CYCLE:44's auto-advance) — not a lens commit's job; 3. thread 269 (`close_cycle.py` splices `walks:` and re-reads after its own splice) — its own plan
+walks: 4
+yields: 3, 0, 3, 0
+validation: cycle_check=BAR_MET, plan_lint=0_FAIL, fold_check=VACUOUS, propagation_check=DIVERGENT:46
+coherence: 4/4 body walks named in the register (13 register rows; walk-token match, NOT row coverage)
+fold_baseline: governance/knowledge/decisions/drafts/.executable-bellows-lens-commit-accepts-continue.md.foldcheck.json
+
+---
+
+## STEP 1 — DEV (one gate, three tests; the mutation run; two commits)
+
+> ⛔ **Every item starts by re-establishing the root** — `cd "$(git rev-parse --show-toplevel)" && test -f gates.py && echo TREE_OK` — HALT unless TREE_OK. ⛔ **The interpreter is `/Users/marklehn/Developer/bellows/.venv/bin/python`, ABSOLUTE.** ⛔ Never run the daemon, `run_plan`, a claim; never import `lifecycle`. ⛔ Every deposit is written in THIS worktree (`"$(git rev-parse --show-toplevel)"`), never in the canonical checkout; the plan's own lane file lives in the canonical checkout at `/Users/marklehn/Developer/bellows/knowledge/decisions/in-progress-executable-<id>.md` (`<id>` from the prompt). ⛔ Every scratch git repo lives under pytest's `tmp_path` or `$T` — never a plan-shaped file under a real `knowledge/decisions/`.
+>
+> **Scope:**
+> - `scripts/lens_commit.py`
+> - `tests/test_lens_commit.py`
+> - `knowledge/mutants/lens-commit-accepts-continue.json`
+> - `knowledge/mutants/lens-commit-accepts-continue.run.txt`
+> - `knowledge/development/dev-log-lens-commit-accepts-continue-2026-09-10.md`
+>
+> **Item 1 — re-derive P2, P3 and P4 and HALT on a mechanism mismatch** (P1, P5, P6 are records; a line-number drift is not a mismatch — #100064 lands above this gate and moves it; a changed acceptance expression, a changed verdict vocabulary or a changed test count beyond #100064's additions is). Paste step 3 as it stands, the docstring's step list, the test count and l3's monkeypatch shape, and `cycle_check.py:1–7`, under the first declared heading. Then reproduce P1 on the l12 shape in `$T` with the shipped tool: the `cycle FAIL — expected BAR_MET, got 'CONTINUE'` line pasted; if the shipped tool already accepts CONTINUE, HALT — the premise is gone.
+> **Item 2 — write the failing tests FIRST:** *What this changes* 2 — l14, l15, l16, and the re-specified asserts of l13. Run the file: l14 red (rc 1, the refusal line, no `cycle OK`), l15 GREEN before the edit (it pins today's refusal of an escalation — say so), l16 red (no `cycle WARN` line), l13 red on its new asserts (rc 1 where 0 is now expected); every other existing test green. Paste under the second declared heading.
+> **Item 3 — the edit** as *What this changes* 1; then the file green (19 tests), then the FULL suite green (`N passed, 1 skipped` — `test_gate_watcher` skips in a worktree; a skip is not a failure).
+> **Item 4 — first commit**, gated on the FULL suite AND the pre-check, path-scoped: `/Users/marklehn/Developer/bellows/.venv/bin/python -m pytest tests/ -q && ( /Users/marklehn/Developer/bellows/.venv/bin/python tools/check_deposit.py /Users/marklehn/Developer/bellows/knowledge/decisions/in-progress-executable-<id>.md 1 --wt "$(git rev-parse --show-toplevel)" 2>&1 || true ) | grep -E '^(FAIL|PRECHECK)' && git add scripts/lens_commit.py tests/test_lens_commit.py knowledge/mutants/lens-commit-accepts-continue.json && git commit -F <msg-file> -- scripts/lens_commit.py tests/test_lens_commit.py knowledge/mutants/lens-commit-accepts-continue.json` — three files (the manifest rides this commit so the mutation run's `HEAD:` archive contains it); the message tagged with the plan id and `thread 266`. (The dev-log and the run file do not exist yet: the pre-check reports `rule_22_verification` and `dev_log_declared_text` failures — expected at the FIRST commit; the paste MUST contain the `PRECHECK:` line; thread 264 is the stage-aware flag the tool lacks.)
+> **Item 5 — the mutation run, REDIRECTED into `knowledge/mutants/lens-commit-accepts-continue.run.txt` (a Deposit):** `/Users/marklehn/Developer/bellows/.venv/bin/python tools/mutation_check.py knowledge/mutants/lens-commit-accepts-continue.json > knowledge/mutants/lens-commit-accepts-continue.run.txt 2>&1`; the last line must read `MUTATION: <n> killed, 0 survived, 0 error` with n ≥ 3 — a survivor is a test to write, not a mutant to delete.
+> **Item 6 — the dev-log** `knowledge/development/dev-log-lens-commit-accepts-continue-2026-09-10.md` under the four headings declared below; `## Pins re-derived (P2, P3, P4)` opens with P2's value cell pasted verbatim, whole, to its last character — ⛔ the VALUE cell (third column) ends with the words `` `3. cycle — cycle_check BAR_MET gate (yield-rising handling)`) ``; paste through those words, then stop. **Second commit**, gated on the FULL suite AND the run file AND the pre-check, path-scoped: `/Users/marklehn/Developer/bellows/.venv/bin/python -m pytest tests/ -q && grep -Eq 'MUTATION: ([3-9]|[1-9][0-9]+) killed, 0 survived, 0 error' knowledge/mutants/lens-commit-accepts-continue.run.txt && /Users/marklehn/Developer/bellows/.venv/bin/python tools/check_deposit.py /Users/marklehn/Developer/bellows/knowledge/decisions/in-progress-executable-<id>.md 1 --wt "$(git rev-parse --show-toplevel)" && git add knowledge/mutants/lens-commit-accepts-continue.run.txt knowledge/development/dev-log-lens-commit-accepts-continue-2026-09-10.md && git commit -F <msg-file> -- knowledge/mutants/lens-commit-accepts-continue.run.txt knowledge/development/dev-log-lens-commit-accepts-continue-2026-09-10.md` — two files.
+> **Headings:** `## Pins re-derived (P2, P3, P4)`; `## Failing-first (three red, one pinned, then green)`; `## The refusal reproduced (Item 1)`; `## Mutation run`
+> **Verbatim:** `## Pins re-derived (P2, P3, P4)` ← P2
+>
+> **Deposits:**
+> - `scripts/lens_commit.py`
+> - `tests/test_lens_commit.py`
+> - `knowledge/mutants/lens-commit-accepts-continue.json`
+> - `knowledge/mutants/lens-commit-accepts-continue.run.txt`
+> - `knowledge/development/dev-log-lens-commit-accepts-continue-2026-09-10.md`
+>
+> **Post-conditions:** three new tests green, l13 green on its re-specified asserts, and every other prior test green; the folding-walk fixture commits under a printed `cycle OK — CONTINUE`; an escalation still refuses; a downgrade WARN line is echoed; the mutation run's last line `n ≥ 3 killed, 0 survived, 0 error`; `git diff --stat main...HEAD` (three-dot) names exactly the five Scope files; the four declared headings present with P2's cell whole; `cycle_check.py` unchanged.
+
+## STEP 2 — QA (full suite + the tool committing a real folding lens on a scratch clone)
+
+> ⛔ **Every item starts by re-establishing the root** — `cd "$(git rev-parse --show-toplevel)" && test -f gates.py && echo TREE_OK` — HALT unless TREE_OK. Interpreter ABSOLUTE; read-only beyond the two evidence files. ⛔ THE INCIDENT MANDATE: no plan-shaped file under any real `knowledge/decisions/`; scratch only under `$T`.
+>
+> **Item 1 — full suite, REDIRECTED not piped:** `/Users/marklehn/Developer/bellows/.venv/bin/python -m pytest tests/ --tb=short -q > knowledge/qa/evidence/lens-commit-accepts-continue-suite-2026-09-10.txt 2>&1`; the summary line quoted in the receipt as `N passed` with the skip named as `one skip (test_gate_watcher, live-DB)` — never the word the Rule 20 block scans for.
+> **Item 2 — a real folding lens through the tool:** `T=$(mktemp -d)`; `git clone -q /Users/marklehn/Developer/eluvian-governance $T/gov` (a clone — the drafts' absolute `**Walk register:**` refs resolve to the LIVE registers from inside it, so step 3 reads live while steps 2 and 5 touch the clone's; nothing live is written); pick the clone's copy of THIS plan's draft and register; FIRST rewrite the clone draft's absolute `**Walk register:**` ref to the clone's own register path (so step 3's `cycle_check` reads the clone's register, not the live one — #100063 E8), then append a fold row (`| q1 | <next walk> | 1 | 1.1 | qa | rehearsal | text | folded |`) to the clone's register and change one word in the draft's body (a body change WITH a row — #100063's rule admits it); run `scripts/lens_commit.py <clone draft> --register <clone register> --walk <next walk> --lens 1 --desc "qa rehearsal"` — expected `LENS-COMMIT: cycle OK — CONTINUE` then `LENS-COMMIT: commit OK — …`, `git -C $T/gov show --name-only --format= HEAD` listing the draft, the register and the baseline; then the negative: a clone draft whose Drafting Cycle block is broken (delete its `**Tier:**` line) → `cycle FAIL — expected BAR_MET or CONTINUE, got 'ESCALATE:…'`, no commit. Paste both.
+> **Item 3 — production writes, stated exactly:** none outside the two evidence files; no lane file, no lifecycle row, no lifecycle import; the clone and every scratch dir removed (`[ -n "$T" ] && [ -d "$T" ] && rm -rf "$T"`).
+> **Item 4 — receipt** `knowledge/qa/evidence/lens-commit-accepts-continue-qa-receipt-2026-09-10.md`: `numstat` over the DEV commits (`<base>..<dev>`, five files); a `## Verification` table with one row per Item 1–3, each quoting the line it rests on — ⛔ the status cell holds exactly one token (`✅`) and no positive row's text carries a hedging keyword; then RUN the canonical Rule 20 block (`$ELUVIAN_WRAP_ROOT/RULE_20_SELF_CHECK_BLOCK.md`) with `plan_slug: lens-commit-accepts-continue-2026-09-10`, `qa_report_path` and `evidence_dir` absolute under `$(git rev-parse --show-toplevel)/knowledge/qa/evidence/`, `required_evidence_files: ["lens-commit-accepts-continue-suite-2026-09-10.txt"]`, and APPEND its stdout — the banner `Rule 20 — QA Self-Check Results` and the closing `PASSED — SELF-CHECK PASSED` line are the block's output, never hand-authored; a `FAILED` stdout goes into the receipt and the step STOPS (thread 262).
+> **Item 5 — commit**, path-scoped and gated: `grep -Eq '^[0-9]+ passed' knowledge/qa/evidence/lens-commit-accepts-continue-suite-2026-09-10.txt && ! grep -Eq '[0-9]+ (failed|error)' knowledge/qa/evidence/lens-commit-accepts-continue-suite-2026-09-10.txt && /Users/marklehn/Developer/bellows/.venv/bin/python tools/check_deposit.py /Users/marklehn/Developer/bellows/knowledge/decisions/in-progress-executable-<id>.md 2 --wt "$(git rev-parse --show-toplevel)" && git add knowledge/qa/evidence/lens-commit-accepts-continue-qa-receipt-2026-09-10.md knowledge/qa/evidence/lens-commit-accepts-continue-suite-2026-09-10.txt && git commit -F <msg-file> -- knowledge/qa/evidence/lens-commit-accepts-continue-qa-receipt-2026-09-10.md knowledge/qa/evidence/lens-commit-accepts-continue-suite-2026-09-10.txt`. ⛔ A QA step that finds it must change production code STOPS and requests a verdict (thread 262) rather than committing the change.
+>
+> **Deposits:**
+> - `knowledge/qa/evidence/lens-commit-accepts-continue-qa-receipt-2026-09-10.md`
+> - `knowledge/qa/evidence/lens-commit-accepts-continue-suite-2026-09-10.txt`
+>
+> **Scope:**
+> - `knowledge/qa/evidence/lens-commit-accepts-continue-qa-receipt-2026-09-10.md`
+> - `knowledge/qa/evidence/lens-commit-accepts-continue-suite-2026-09-10.txt`
+>
+> **Post-conditions:** the suite file's summary line is `N passed, 1 skipped` with N ≥ the DEV's count and no `failed`; Item 2's two runs pasted (a real `cycle OK — CONTINUE` commit; an escalation refused); the receipt's `## Verification` table has three rows and closes with the block's own PASSED line; one QA commit carrying the two evidence files.

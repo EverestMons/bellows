@@ -1,0 +1,8 @@
+{
+  "slug": "executable-bellows-check-deposit-expect-missing",
+  "content_hash": "a423ecc0e41ff2d72001e886ce870d73fc283fa37f5621fce60d628f7fa2f96b",
+  "session_id": "d04ebd33-0b49-4d7c-a177-322fdddcf2ec",
+  "armed_at": "2026-09-10T19:57:52.041809",
+  "watcher": "gate_watcher.py spawned detached (pid 96697); log: logs/watch/executable-bellows-check-deposit-expect-missing.md.log",
+  "attestation_boundary": "This receipt proves the watcher was ARMED at write time. It does NOT prove the watcher stayed alive. Liveness of a session-local monitor is not externally verifiable."
+}
