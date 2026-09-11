@@ -1,0 +1,12 @@
+PYTHON: /Users/marklehn/Developer/bellows/.venv/bin/python
+HEAD: e337129aeebdb3b60d24edac87ada6e12f2d7870
+TARGET: tools/check_deposit.py sha256=a63be12182f8
+
+MUTANT skip-bullet-removal: KILLED — suite caught the defect
+MUTANT drop-mutation-gate-skip: KILLED — suite caught the defect
+MUTANT drop-present-path-guard: KILLED — suite caught the defect
+MUTANT drop-undeclared-path-guard: KILLED — suite caught the defect
+
+LIVE-TREE UNCHANGED: tools/check_deposit.py sha256=a63be12182f8
+
+MUTATION: 4 killed, 0 survived, 0 error
