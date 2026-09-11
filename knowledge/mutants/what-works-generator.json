@@ -1,0 +1,42 @@
+{
+  "target": "src/what_works.py",
+  "mutants": [
+    {
+      "name": "stable-commits-uses-raw-length",
+      "why": "stable_commits must count only stability-checked commits, not all non-birth commits; the raw len formula inflates the count for functions with unstable commits and t4 expects exactly 1",
+      "anchor": "        stable_commits = sum(1 for _, is_stable in commits[:-1] if is_stable)",
+      "replacement": "        stable_commits = max(0, len(commits) - 1)",
+      "expect_fail": "tests/test_what_works.py::test_survived_stable_commits"
+    },
+    {
+      "name": "tie-rule-dropped",
+      "why": "ties must be broken by file::name ascending; dropping the tie key lets non-determinism pass undetected and t7 checks the order",
+      "anchor": "        key=lambda r: (-r.get(score_key, 0), f\"{r['file']}::{r['name']}\"),",
+      "replacement": "        key=lambda r: -r.get(score_key, 0),",
+      "expect_fail": "tests/test_what_works.py::test_rank_tie_by_name"
+    },
+    {
+      "name": "glossary-guard-removed",
+      "why": "the guard must refuse GLOSSARY.md output paths; disabling the check lets the CLI write the glossary silently and t10 asserts exit 2",
+      "target": "scripts/what_works.py",
+      "anchor": "    if basename == \"GLOSSARY.md\":",
+      "replacement": "    if basename == \"__NEVER_MATCH__\":",
+      "expect_fail": "tests/test_what_works.py::test_cli_glossary_guard"
+    },
+    {
+      "name": "role-weights-all-one",
+      "why": "role weights must differentiate gate_checker from utility; setting all weights to 1.0 removes the distinction and t8 catches it",
+      "anchor": "    \"gate_checker\": 2.0,",
+      "replacement": "    \"gate_checker\": 1.0,",
+      "expect_fail": "tests/test_what_works.py::test_score_c_role_weight"
+    },
+    {
+      "name": "projects-parent-hardcoded",
+      "why": "PROJECTS_PARENT must be env-derived so paths work on every machine; hardcoding it breaks t2 on any machine whose parent is not /Users/marklehn/Developer/GitHub",
+      "target": "src/config.py",
+      "anchor": "PROJECTS_PARENT = os.environ.get(\"ANVIL_PROJECTS_PARENT\", os.path.dirname(ANVIL_RUNTIME_ROOT))",
+      "replacement": "PROJECTS_PARENT = \"/Users/marklehn/Developer/GitHub\"",
+      "expect_fail": "tests/test_what_works.py::test_scan_targets_bellows_path"
+    }
+  ]
+}

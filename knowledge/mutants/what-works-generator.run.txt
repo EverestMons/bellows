@@ -1,0 +1,17 @@
+PYTHON: /tmp/what-works-gen.1kii1f/venv/bin/python
+HEAD: d3b992029ac9913fe5e5d6e9307dd7e22bf6e711
+TARGET: scripts/what_works.py sha256=d54fb0a214ec
+TARGET: src/config.py sha256=c1a546c2278f
+TARGET: src/what_works.py sha256=a5b2cdfe38f3
+
+MUTANT stable-commits-uses-raw-length: KILLED — suite caught the defect
+MUTANT tie-rule-dropped: KILLED — suite caught the defect
+MUTANT glossary-guard-removed: KILLED — suite caught the defect
+MUTANT role-weights-all-one: KILLED — suite caught the defect
+MUTANT projects-parent-hardcoded: KILLED — suite caught the defect
+
+LIVE-TREE UNCHANGED: scripts/what_works.py sha256=d54fb0a214ec
+LIVE-TREE UNCHANGED: src/config.py sha256=c1a546c2278f
+LIVE-TREE UNCHANGED: src/what_works.py sha256=a5b2cdfe38f3
+
+MUTATION: 5 killed, 0 survived, 0 error
