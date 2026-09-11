@@ -446,6 +446,30 @@ def recover_half_claimed(decisions_dir, db_path=None, project_root=None,
 
 
 # ---------------------------------------------------------------------------
+# Read-only opener — WAL fallback for stopped-daemon state
+# ---------------------------------------------------------------------------
+
+def connect_readonly(db_path, timeout=5.0):
+    """Open lifecycle.db read-only.
+
+    Tries mode=ro first (preferred: no -shm creation).  On SQLite 3.43.2 (the
+    mini's system interpreter) a WAL database with no writer attached causes
+    SQLITE_CANTOPEN because mode=ro cannot create the -shm index.  When that
+    happens and the file exists, falls back to a plain connection under
+    PRAGMA query_only=1, which creates -shm but writes nothing else.
+    Any other error, or a missing file, propagates unchanged.
+    """
+    try:
+        return sqlite3.connect(f"file:{db_path}?mode=ro", uri=True, timeout=timeout)
+    except sqlite3.OperationalError as exc:
+        if "unable to open database file" not in str(exc) or not os.path.exists(db_path):
+            raise
+    conn = sqlite3.connect(db_path, timeout=timeout)
+    conn.execute("PRAGMA query_only = 1")
+    return conn
+
+
+# ---------------------------------------------------------------------------
 # Executable B — write helpers (log-and-continue: lifecycle writes NEVER raise)
 # ---------------------------------------------------------------------------
 

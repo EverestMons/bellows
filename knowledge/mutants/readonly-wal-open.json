@@ -1,0 +1,26 @@
+{
+  "target": "lifecycle.py",
+  "mutants": [
+    {
+      "name": "fallback-removed",
+      "why": "removing the fallback means a CANTOPEN on mode=ro propagates to every caller; t1 expects query_in_flight to return rows via the fallback, so it raises instead",
+      "anchor": "    except sqlite3.OperationalError as exc:\n        if \"unable to open database file\" not in str(exc) or not os.path.exists(db_path):\n            raise\n    conn = sqlite3.connect(db_path, timeout=timeout)\n    conn.execute(\"PRAGMA query_only = 1\")\n    return conn",
+      "replacement": "    except sqlite3.OperationalError:\n        raise",
+      "expect_fail": "tests/test_lifecycle_readonly.py::TestConnectReadonly::test_fallback_on_file_uri_error"
+    },
+    {
+      "name": "mode-ro-removed",
+      "why": "skipping the mode=ro attempt means the helper always uses a plain connection; t2 expects exactly one file: call (the mode=ro attempt) to be recorded, but gets zero",
+      "anchor": "    try:\n        return sqlite3.connect(f\"file:{db_path}?mode=ro\", uri=True, timeout=timeout)\n    except sqlite3.OperationalError as exc:\n        if \"unable to open database file\" not in str(exc) or not os.path.exists(db_path):\n            raise\n    conn = sqlite3.connect(db_path, timeout=timeout)",
+      "replacement": "    conn = sqlite3.connect(db_path, timeout=timeout)",
+      "expect_fail": "tests/test_lifecycle_readonly.py::TestConnectReadonly::test_uri_reads_when_writer_open"
+    },
+    {
+      "name": "query-only-dropped",
+      "why": "omitting PRAGMA query_only=1 allows the fallback connection to write; t4 expects INSERT to raise 'readonly' but it succeeds instead",
+      "anchor": "    conn.execute(\"PRAGMA query_only = 1\")\n    return conn",
+      "replacement": "    return conn",
+      "expect_fail": "tests/test_lifecycle_readonly.py::TestConnectReadonly::test_fallback_connection_is_readonly"
+    }
+  ]
+}

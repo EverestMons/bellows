@@ -1,7 +1,7 @@
 """Single-glance status CLI — read-only observer of Bellows lifecycle state.
 
 Renders exactly three elements: daemon header, IN-FLIGHT, AWAITING VERDICT.
-All DB access is read-only (?mode=ro). Never imports daemon internals.
+All DB access is read-only (?mode=ro), with the WAL fallback. Never imports daemon internals.
 """
 
 import datetime
@@ -13,6 +13,7 @@ import sys
 from pathlib import Path
 
 from bellows_root import resolve_bellows_root
+from lifecycle import connect_readonly
 
 
 # ---------------------------------------------------------------------------
@@ -222,13 +223,12 @@ def render_depositor_status(rows, max_rows=8):
 
 
 # ---------------------------------------------------------------------------
-# DB query helpers (importable — all read-only, ?mode=ro)
+# DB query helpers (importable — all read-only, ?mode=ro, with the WAL fallback)
 # ---------------------------------------------------------------------------
 
 def query_in_flight(db_path):
     """Return in-flight plan rows from lifecycle.db. Returns list of Row dicts."""
-    db_uri = f"file:{db_path}?mode=ro"
-    conn = sqlite3.connect(db_uri, uri=True)
+    conn = connect_readonly(db_path)
     conn.row_factory = sqlite3.Row
     rows = conn.execute("""
         SELECT p.id, p.type, p.target_project, p.title, p.total_steps,
@@ -248,8 +248,7 @@ def query_in_flight(db_path):
 
 def query_awaiting_verdict(db_path):
     """Return awaiting-verdict rows from lifecycle.db. Returns list of Row dicts."""
-    db_uri = f"file:{db_path}?mode=ro"
-    conn = sqlite3.connect(db_uri, uri=True)
+    conn = connect_readonly(db_path)
     conn.row_factory = sqlite3.Row
     rows = conn.execute("""
         SELECT v.plan_id, p.type, v.step_number, v.pause_reason_code, v.verdict_file_ref,

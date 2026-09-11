@@ -17,7 +17,7 @@ the memory repo (a git repo on the shop machine; a plain directory on the mini).
 
 3. **Assert the environment:**
    - **cwd** is `$ELUVIAN_WRAP_ROOT` (the governance root)
-   - **bellows daemon** is RUNNING — verify with `python3 <bellows>/status.py`
+   - **bellows daemon** is RUNNING — verify with `<bellows>/.venv/bin/python status.py`
      (the mini is the SERVER and runs the live daemon since 2026-09-02 — RUNNING is the
      deliberate state there; a shop machine with no daemon reports STOPPED as such, not
      as a failure; MACHINE_SETUP §0)

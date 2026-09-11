@@ -37,6 +37,9 @@ from datetime import datetime
 
 _HERE = os.path.dirname(os.path.abspath(__file__))
 _ROOT = os.path.dirname(_HERE)
+if _ROOT not in sys.path:
+    sys.path.insert(0, _ROOT)
+from lifecycle import connect_readonly  # noqa: E402
 _DB = os.path.join(_ROOT, "lifecycle.db")
 _WATCH_DIR = os.path.join(_ROOT, "logs", "watch")
 
@@ -62,7 +65,7 @@ def read_state(name, db_path=None, pending_dir=None, resolved_dir=None):
     pend = pending_dir or os.path.join(os.path.dirname(os.path.abspath(path)), "verdicts", "pending")
     res = resolved_dir or os.path.join(os.path.dirname(os.path.abspath(pend)), "resolved")
     try:
-        conn = sqlite3.connect(f"file:{path}?mode=ro", uri=True, timeout=5)
+        conn = connect_readonly(path, timeout=5)
     except sqlite3.Error:
         return None
     try:

@@ -561,7 +561,7 @@ class Depositor:
 
     def _resolve_in_flight_writes(self):
         try:
-            conn = sqlite3.connect(f"file:{self._db_path}?mode=ro", uri=True)
+            conn = lifecycle.connect_readonly(self._db_path)
             conn.row_factory = sqlite3.Row
             rows = conn.execute(
                 "SELECT id, type, target_project, deposit_placeholder_name, plan_doc_ref, "

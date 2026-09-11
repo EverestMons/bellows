@@ -36,6 +36,7 @@ def _make_state(**overrides):
         "child_alive": True,
         "child_exit_code": None,
         "db_absent": False,
+        "db_unreadable": False,
         "log_absent": False,
         "deposit_rows": [],
     }
@@ -214,9 +215,9 @@ class TestRenderDbAbsent:
         lines = _texts(rows)
         joined = "\n".join(lines)
 
-        assert "(no database)" in joined
+        assert "(no lifecycle.db)" in joined
         # Should appear in both IN-FLIGHT and AWAITING VERDICT
-        assert joined.count("(no database)") == 2
+        assert joined.count("(no lifecycle.db)") == 2
 
 
 # ---------------------------------------------------------------------------

@@ -26,7 +26,7 @@ per machine, same names the hooks read.
 
 **The wrap's FIRST action is a queue check, not the sentinel touch** (SESSION 59's
 measured lesson; mid-flight collisions measured again 2026-08-24): run
-`python3 <bellows>/status.py` and read IN-FLIGHT / AWAITING VERDICT. If any plan
+`<bellows>/.venv/bin/python status.py` and read IN-FLIGHT / AWAITING VERDICT. If any plan
 is mid-flight or verdict-pending on THIS machine, do not append to any artifact
 that plan is editing (baton, LESSONS.md, its project's files) — drive the plan
 to its pause or close first, or coordinate, and only then arm. A quiet queue →

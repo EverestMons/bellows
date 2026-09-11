@@ -145,6 +145,7 @@ def assemble_state(bellows_root, child_proc=None):
 
     # DB queries
     db_absent = not db_path.exists()
+    db_unreadable = False
     in_flight_rows = []
     awaiting_rows = []
     if not db_absent:
@@ -152,7 +153,7 @@ def assemble_state(bellows_root, child_proc=None):
             in_flight_rows = status.query_in_flight(str(db_path))
             awaiting_rows = status.query_awaiting_verdict(str(db_path))
         except Exception:
-            db_absent = True
+            db_unreadable = True
 
     # Log tail
     raw_lines = tail_session_log(log_dir)
@@ -202,6 +203,7 @@ def assemble_state(bellows_root, child_proc=None):
         "child_alive": child_alive,
         "child_exit_code": child_exit_code,
         "db_absent": db_absent,
+        "db_unreadable": db_unreadable,
         "log_absent": log_absent,
         "deposit_rows": deposit_rows,
         "agent_loaded": bellows._agent_loaded(),
@@ -281,7 +283,9 @@ def render_screen(state, height, width, mode="normal", has_colors=False):
 
     # --- IN-FLIGHT ---
     if state["db_absent"]:
-        in_flight_text = "IN-FLIGHT\n (no database)"
+        in_flight_text = "IN-FLIGHT\n (no lifecycle.db)"
+    elif state.get("db_unreadable"):
+        in_flight_text = "IN-FLIGHT\n (lifecycle.db unreadable)"
     else:
         in_flight_text = status.render_in_flight(
             state["in_flight_rows"], state["daemon_running"]
@@ -296,11 +300,13 @@ def render_screen(state, height, width, mode="normal", has_colors=False):
 
     # --- AWAITING VERDICT ---
     if state["db_absent"]:
-        awaiting_text = "AWAITING VERDICT\n (no database)"
+        awaiting_text = "AWAITING VERDICT\n (no lifecycle.db)"
+    elif state.get("db_unreadable"):
+        awaiting_text = "AWAITING VERDICT\n (lifecycle.db unreadable)"
     else:
         awaiting_text = status.render_awaiting_verdict(state["awaiting_rows"])
     awaiting_lines = awaiting_text.split("\n")
-    has_awaiting = bool(state["awaiting_rows"]) and not state["db_absent"]
+    has_awaiting = bool(state["awaiting_rows"]) and not state["db_absent"] and not state.get("db_unreadable")
     rows.append((_fit(awaiting_lines[0], width), attr_awaiting))
     for line in awaiting_lines[1:]:
         rows.append((_fit(line, width), attr_awaiting_row if has_awaiting else 0))
