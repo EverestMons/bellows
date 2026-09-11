@@ -1,0 +1,34 @@
+{
+  "target": "scripts/close_cycle.py",
+  "_note": "Plan 100069: walks added to _SPLICE_KEYS; step 6 made a fixed point (propagation_check-only drift re-splices once; any other token difference fails).",
+  "mutants": [
+    {
+      "name": "M1-walks-dropped-from-splice-keys",
+      "why": "Removing 'walks' from _SPLICE_KEYS leaves _splice_keys ignoring the emitter's walks: line, so walks: <declare> survives the close. test_c9_walks_spliced asserts walks: <declare> is gone after main(); with the mutant the assertion fails.",
+      "anchor": "_SPLICE_KEYS = (\"walks\", \"yields\", \"validation\", \"coherence\")",
+      "replacement": "_SPLICE_KEYS = (\"yields\", \"validation\", \"coherence\")",
+      "expect_fail": "tests/test_close_cycle.py::test_c9_walks_spliced"
+    },
+    {
+      "name": "M2-re-splice-skipped",
+      "why": "Passing an empty string to _splice_keys causes it to return 'draft missing keys: ...' immediately. The error branch prints CLOSE: stored==live FAIL and returns 1; test_c10_propagation_check_fixed_point expects rc 0.",
+      "anchor": "            new_text, err = _splice_keys(text, live_out)",
+      "replacement": "            new_text, err = _splice_keys(\"\", live_out)",
+      "expect_fail": "tests/test_close_cycle.py::test_c10_propagation_check_fixed_point"
+    },
+    {
+      "name": "M3-token-comparison-widened-to-always-re-splice",
+      "why": "Removing the diff_keys == {'propagation_check'} guard makes any difference trigger the re-splice. c11's fake changes cycle_check= on the second call; the re-splice updates stored to cycle_check=CONTINUE, the third emit returns CONTINUE too, so the second comparison passes and rc=0. test_c11_cycle_check_drift_fails expects rc 1.",
+      "anchor": "        if s_tok.keys() == l_tok.keys() and diff_keys == {\"propagation_check\"}:",
+      "replacement": "        if s_tok.keys() == l_tok.keys() and True:",
+      "expect_fail": "tests/test_close_cycle.py::test_c11_cycle_check_drift_fails"
+    },
+    {
+      "name": "M4-second-comparison-removed",
+      "why": "Replacing stored_val2 != live_val2 with False makes the second comparison never fire; after the re-splice the tool always continues to stored==live OK regardless of the third emit. c10b's fake returns DIVERGENT:99 on the third call so the second comparison should catch it; with the mutant rc=0 instead of the expected 1.",
+      "anchor": "            if stored_val2 != live_val2:",
+      "replacement": "            if False:",
+      "expect_fail": "tests/test_close_cycle.py::test_c10b_fixed_point_second_comparison_fails"
+    }
+  ]
+}

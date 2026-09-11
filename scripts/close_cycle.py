@@ -9,9 +9,9 @@ Steps (printed as CLOSE: <step> OK/FAIL):
     1. closing      — replace the **Closing:** line
     2. baseline     — fold_check --save-baseline
     3. emit         — cycle_check --emit-manifest (captured)
-    4. splice       — yields/validation/coherence keys spliced from emitter
+    4. splice       — walks/yields/validation/coherence by key
     5. baseline     — fold_check --save-baseline (again)
-    6. stored==live — emitter re-run; validation: line compared byte-for-byte
+    6. stored==live — re-emit and compare; one re-splice when only propagation_check moved
     7. battery      — cycle_check BAR_MET, plan_lint 0_FAIL,
                       lens_order_check LENS-ORDER OK, walk_register_lint SHAPE-OK
     8. commit       — git add + commit (or skipped)
@@ -27,7 +27,7 @@ import tempfile
 from pathlib import Path
 
 SCRIPTS = Path(os.path.dirname(os.path.abspath(__file__)))
-_SPLICE_KEYS = ("yields", "validation", "coherence")
+_SPLICE_KEYS = ("walks", "yields", "validation", "coherence")
 
 
 def run_checker(script, *args):
@@ -56,12 +56,20 @@ def _replace_closing_line(text, closing_text):
     return "".join(lines), None
 
 
+def _parse_validation_tokens(line):
+    """Parse 'validation: k=v, k=v, …' → {key: full-token-string, …}."""
+    if not line:
+        return {}
+    val = line[len("validation: "):]
+    return {p.split("=", 1)[0]: p for p in val.split(", ") if "=" in p}
+
+
 def _splice_keys(draft_text, emit_stdout):
-    """Splice yields/validation/coherence from emitter output into the draft.
+    """Splice walks/yields/validation/coherence from emitter output into the draft.
 
     Returns (new_text, error_or_None). The ## Cycle Manifest header line and
     any other emitter lines (tier, target, …) are silently ignored — only the
-    three splice keys are written.
+    four splice keys are written.
     """
     emit_vals = {}
     for line in emit_stdout.splitlines():
@@ -211,7 +219,7 @@ def _run_close(draft_path, closing_text, register_path, do_commit, dry_run, git_
     print("CLOSE: baseline OK")
     after_step("baseline")
 
-    # Step 6: STORED == LIVE
+    # Step 6: STORED == LIVE — re-emit and compare; one re-splice when only propagation_check moved
     rc, live_out = run_checker("cycle_check.py", "--emit-manifest", str(draft_path))
     stored_val = None
     live_val = None
@@ -224,8 +232,43 @@ def _run_close(draft_path, closing_text, register_path, do_commit, dry_run, git_
             live_val = ln
             break
     if stored_val != live_val:
-        print(f"CLOSE: stored==live FAIL — stored {stored_val!r} != live {live_val!r}")
-        return 1
+        s_tok = _parse_validation_tokens(stored_val or "")
+        l_tok = _parse_validation_tokens(live_val or "")
+        diff_keys = {k for k in (s_tok.keys() | l_tok.keys()) if s_tok.get(k) != l_tok.get(k)}
+        if s_tok.keys() == l_tok.keys() and diff_keys == {"propagation_check"}:
+            s_pc = s_tok["propagation_check"].split("=", 1)[1]
+            l_pc = l_tok["propagation_check"].split("=", 1)[1]
+            print(
+                f"CLOSE: stored==live NOTE — propagation_check moved {s_pc}→{l_pc}"
+                f" (the spliced lines are counted); re-splicing once"
+            )
+            text = draft_path.read_text(encoding="utf-8")
+            new_text, err = _splice_keys(text, live_out)
+            if err:
+                print(f"CLOSE: stored==live FAIL — re-splice error: {err}")
+                return 1
+            draft_path.write_text(new_text, encoding="utf-8")
+            rc2, _ = run_checker("fold_check.py", "--save-baseline", str(draft_path))
+            if rc2 != 0:
+                print(f"CLOSE: stored==live FAIL — baseline after re-splice exit {rc2}")
+                return 1
+            rc2, live_out2 = run_checker("cycle_check.py", "--emit-manifest", str(draft_path))
+            stored_val2 = None
+            live_val2 = None
+            for ln in draft_path.read_text(encoding="utf-8").splitlines():
+                if ln.startswith("validation: "):
+                    stored_val2 = ln
+                    break
+            for ln in live_out2.splitlines():
+                if ln.startswith("validation: "):
+                    live_val2 = ln
+                    break
+            if stored_val2 != live_val2:
+                print(f"CLOSE: stored==live FAIL — stored {stored_val2!r} != live {live_val2!r}")
+                return 1
+        else:
+            print(f"CLOSE: stored==live FAIL — stored {stored_val!r} != live {live_val!r}")
+            return 1
     print("CLOSE: stored==live OK")
     after_step("stored==live")
 
