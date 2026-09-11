@@ -43,6 +43,26 @@ def _parse_session_id(raw):
     return "unknown"
 
 
+def _compose_debt_message(checklist: str) -> str:
+    if "[R2/registry]" in checklist:
+        header = (
+            "⚠️ UNVERIFIED SESSION DEBT — the report below carries the registry's note "
+            "that a wrap may already have completed (elsewhere, or against a tree this "
+            "machine has not pulled). Read that note first; fetch before judging:"
+        )
+    else:
+        header = (
+            "⚠️ UNWRAPPED SESSION DEBT DETECTED. A prior session ended without "
+            "completing the wrap ritual. Resolve this BEFORE starting new work:"
+        )
+    return (
+        f"{header}\n\n"
+        f"{checklist}\n\n"
+        "This is not a fresh-session state. Treat it as a wrap in progress: "
+        "you may run `/wrap` to arm the completion lock and finish the ritual."
+    )
+
+
 def main():
     try:
         raw = sys.stdin.read()
@@ -72,13 +92,7 @@ def main():
 
     hooklog("SessionStart", f"DEBT-injected sid={session_id}")
     checklist = (res.stdout or "").strip()
-    emit(
-        "⚠️ UNWRAPPED SESSION DEBT DETECTED. A prior session ended without "
-        "completing the wrap ritual. Resolve this BEFORE starting new work:\n\n"
-        f"{checklist}\n\n"
-        "This is not a fresh-session state. Treat it as a wrap in progress: "
-        "you may run `/wrap` to arm the completion lock and finish the ritual."
-    )
+    emit(_compose_debt_message(checklist))
 
 
 if __name__ == "__main__":

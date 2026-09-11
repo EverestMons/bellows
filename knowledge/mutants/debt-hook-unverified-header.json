@@ -1,0 +1,19 @@
+{
+  "target": "hooks/eluvian/wrap_debt_hook.py",
+  "mutants": [
+    {
+      "name": "condition-removed",
+      "why": "removing the registry check always takes the asserting-header branch; t1 expects the unverified header when the registry line is present",
+      "anchor": "    if \"[R2/registry]\" in checklist:",
+      "replacement": "    if False:",
+      "expect_fail": "tests/test_wrap_hooks.py::TestDebtHookComposeMessage::test_registry_line_yields_unverified_header"
+    },
+    {
+      "name": "condition-inverted",
+      "why": "inverting the condition routes the no-registry checklist to the unverified header; t2 expects the asserting header when the registry line is absent",
+      "anchor": "    if \"[R2/registry]\" in checklist:",
+      "replacement": "    if \"[R2/registry]\" not in checklist:",
+      "expect_fail": "tests/test_wrap_hooks.py::TestDebtHookComposeMessage::test_no_registry_line_yields_asserting_header"
+    }
+  ]
+}

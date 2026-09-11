@@ -1,4 +1,5 @@
 """Targeted tests for the wrap-hook daemon exemption (plan 496, Step 2)."""
+import importlib.util
 import json
 import os
 import subprocess
@@ -446,3 +447,33 @@ class TestTriggerFence:
         })
         out = json.loads(result.stdout)
         assert out == {}, f"'{prompt}' should NOT arm but did"
+
+
+# ---- _compose_debt_message (plan 100077, thread 9) ---------------------------
+
+def _load_debt_hook():
+    path = HOOKS_DIR / "wrap_debt_hook.py"
+    spec = importlib.util.spec_from_file_location("_test_wrap_debt_hook", path)
+    mod = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(mod)
+    return mod
+
+
+class TestDebtHookComposeMessage:
+    def test_registry_line_yields_unverified_header(self):
+        checklist = (
+            "[2r/receipts] OK …\n"
+            "[R2/registry] wrap(s) recorded today per the shared registry:\n"
+            "  …"
+        )
+        mod = _load_debt_hook()
+        msg = mod._compose_debt_message(checklist)
+        assert msg.startswith("⚠️ UNVERIFIED SESSION DEBT")
+        assert checklist in msg
+
+    def test_no_registry_line_yields_asserting_header(self):
+        checklist = "[2r/receipts] OK …\n[3b/lessons] No Lessons-swept: 2026-09-11 line"
+        mod = _load_debt_hook()
+        msg = mod._compose_debt_message(checklist)
+        assert msg.startswith("⚠️ UNWRAPPED SESSION DEBT DETECTED")
+        assert "⚠️ UNVERIFIED SESSION DEBT" not in msg
