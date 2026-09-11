@@ -1,0 +1,26 @@
+{
+    "target": "scripts/plan_lint.py",
+    "mutants": [
+        {
+            "name": "m1-arm-keyed-on-qa_steps-again",
+            "why": "Thread 13: the new (e) arm must fire when an executable has zero uppercase headings regardless of qa_steps. Reverting it to key on qa_steps causes an executable with H3 headings and no qa_steps to lint clean (exit 0) when it should FAIL.",
+            "anchor": "    if not step_headers and _is_executable(plan_path, header):",
+            "replacement": "    if not step_headers and header.get(\"qa_steps\"):",
+            "expect_fail": "tests/test_plan_lint.py::test_lint_executable_h3_headings_no_qa_steps_fails"
+        },
+        {
+            "name": "m2-is_executable-reads-execution-field",
+            "why": "Thread 13: _is_executable must key on the plan KIND (basename / Type: field), not the Execution: field. Diagnostics carry Execution: too; reading that field incorrectly marks them as executable and fires a false (e) FAIL.",
+            "anchor": "    return header.get(\"type\", \"\").strip().lower() == \"executable\"",
+            "replacement": "    return header.get(\"type\", \"\").strip().lower() == \"executable\" or bool(header.get(\"execution\"))",
+            "expect_fail": "tests/test_plan_lint.py::test_lint_diagnostic_no_headings_no_e_fail"
+        },
+        {
+            "name": "m3-lifecycle-prefix-strip-removed",
+            "why": "Thread 13: the lifecycle prefix must be stripped before the basename check so that ready-executable-x.md is recognised as an executable. Removing the strip causes ready-executable-x.md to fail the startswith check and exit 0 when it should FAIL.",
+            "anchor": "    bare = _LIFECYCLE_PREFIX_RE.sub(\"\", stem)",
+            "replacement": "    bare = stem",
+            "expect_fail": "tests/test_plan_lint.py::test_lint_ready_executable_no_headings_fails"
+        }
+    ]
+}

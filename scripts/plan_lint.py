@@ -28,6 +28,10 @@ RECOGNIZED_DISPATCH_MODES = {"bellows", "manual_bootstrap"}
 # Mirrored from bellows.py header_says_pause — do not invent
 RECOGNIZED_PAUSE_TOKENS = {"always", "after_step_1", "after_qa_step", "qa_and_terminal", "on_failure"}
 
+_LIFECYCLE_PREFIX_RE = re.compile(
+    r'^(?:ready|hold|in-progress|verdict-pending|halted|parallel-\d+)-'
+)
+
 
 def _parse_qa_steps(qa_steps_raw):
     """Delegates to `gates.parse_qa_steps` — THE single reader of this field.
@@ -375,6 +379,20 @@ def _check_bare_constants(plan_text):
     return len(warns)
 
 
+def _is_executable(plan_path, header) -> bool:
+    """True when the plan is an executable (not a diagnostic or QA plan).
+
+    Checks the basename after stripping a lifecycle prefix, then falls back to
+    the legacy **Type:** header field. The **Execution:** field is intentionally
+    NOT used — diagnostics carry it too.
+    """
+    stem = Path(plan_path).name
+    bare = _LIFECYCLE_PREFIX_RE.sub("", stem)
+    if bare.startswith("executable-"):
+        return True
+    return header.get("type", "").strip().lower() == "executable"
+
+
 def lint(plan_path):
     plan_text = Path(plan_path).read_text(encoding="utf-8")
     results = []
@@ -417,6 +435,11 @@ def lint(plan_path):
 
     # (e) Step heading case guard: catch vacuous-pass from title-case headings
     ci_step_headers = re.findall(r'^(##\s+step\s+(\d+)\b[^\n]*)', clean_text, re.IGNORECASE | re.MULTILINE)
+    if not step_headers and _is_executable(plan_path, header):
+        results.append(("FAIL", "(e) step heading format",
+            "executable plan parses zero uppercase '## STEP N' headings — "
+            "no step can be scoped, deposited or gated; the daemon runs nothing as written"))
+        all_passed = False
     if not step_headers and header.get("qa_steps"):
         msg = "header declares qa_steps but no uppercase '## STEP N' heading found — step checks (b)/(d) were skipped (vacuous pass)"
         if ci_step_headers:
