@@ -1,0 +1,26 @@
+{
+  "target": "tools/lessons_guard.py",
+  "mutants": [
+    {
+      "name": "class-check-removed",
+      "why": "removing startswith(\"class:\") parks every sidecar-bearing hold regardless of reason; t-b has stale-checkout sidecar and expects freezes=True — a stale hold would be parked instead, failing the assertion",
+      "anchor": "                        if isinstance(reason, str) and reason.startswith(\"class:\"):",
+      "replacement": "                        if reason is not None:",
+      "expect_fail": "tests/test_lessons_guard.py::TestFreezePredicateTable::test_row[t-b]"
+    },
+    {
+      "name": "sidecar-read-removed",
+      "why": "replacing the hold- branch condition with False means the sidecar is never read; a class hold freezes as before this plan; t-a has a class sidecar and expects freezes=False — it would freeze instead",
+      "anchor": "            if re.match(r\"^(?:parallel-\\d+-)?hold-\", name):",
+      "replacement": "            if False:",
+      "expect_fail": "tests/test_lessons_guard.py::TestFreezePredicateTable::test_row[t-a]"
+    },
+    {
+      "name": "missing-sidecar-parked",
+      "why": "treating a missing sidecar as parked means a hold- with no sidecar does not freeze; t-d has no sidecar and expects freezes=True — it would be parked instead",
+      "anchor": "                if sidecar.is_file():",
+      "replacement": "                if True:",
+      "expect_fail": "tests/test_lessons_guard.py::TestFreezePredicateTable::test_row[t-d]"
+    }
+  ]
+}

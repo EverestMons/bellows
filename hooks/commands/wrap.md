@@ -74,7 +74,7 @@ done-on-another-machine-and-not-pulled (measured 2026-08-24).
    write**: re-read the file and re-take the pin. The tool scans all TWELVE
    `decisions/` lanes from the shop root, not the single lane the doctrine text
    names, and it treats `halted-`/`parked-` as PARKED (they do not freeze) while
-   `in-progress-` and `verdict-pending-` DO. **Marker on a new entry: `[status: pending]` — and
+   `in-progress-` and `verdict-pending-` DO, and, since bellows #100076 (thread 278), a `hold-` deposit whose sidecar says `hold_reason: class:…` — a plan awaiting the CEO's release. **Marker on a new entry: `[status: pending]` — and
    ONLY that.** Since 2026-09-01 the `[status:]` marker is a projection of the
    forge DB's `lesson_proposals.status` (implemented / proposed / accepted /
    reference / rejected / superseded); `pending` is the one file-side value and

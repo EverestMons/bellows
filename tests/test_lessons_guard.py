@@ -7,6 +7,7 @@ dispatchable plan.
 """
 
 import hashlib
+import json
 import subprocess
 import sys
 from pathlib import Path
@@ -19,7 +20,7 @@ sys.path.insert(0, str(BELLOWS_ROOT / "tools"))
 import lessons_guard as lg  # noqa: E402
 
 
-def _shop(tmp_path, lane_files=(), lessons_text="# LESSONS\n\n## 2026-01-01: a\n"):
+def _shop(tmp_path, lane_files=(), sidecars=None, lessons_text="# LESSONS\n\n## 2026-01-01: a\n"):
     """A synthetic shop: eleven flat repos plus governance's nested lane."""
     (tmp_path / "eluvian-governance").mkdir()
     gov_lane = tmp_path / "eluvian-governance" / "governance" / "knowledge" / "decisions"
@@ -30,6 +31,11 @@ def _shop(tmp_path, lane_files=(), lessons_text="# LESSONS\n\n## 2026-01-01: a\n
     (bell_lane / "drafts").mkdir()
     for name in lane_files:
         (bell_lane / name).write_text("plan body\n")
+    if sidecars:
+        for name, data in sidecars.items():
+            sidecar_name = name[:-3] + ".hold.json"
+            content = json.dumps(data) if isinstance(data, dict) else data
+            (bell_lane / sidecar_name).write_text(content)
     (tmp_path / "eluvian-governance" / "LESSONS.md").write_text(lessons_text)
     return tmp_path
 
@@ -53,31 +59,91 @@ def test_lanes_found_at_both_depths(tmp_path, monkeypatch):
     assert len(lanes) == 2
 
 
-@pytest.mark.parametrize("name,freezes", [
-    # deposited-but-un-run: these freeze
-    ("executable-100031.md", True),
-    ("diagnostic-582.md", True),
-    ("qa-thing.md", True),
-    ("hold-executable-100031.md", True),
-    ("ready-executable-100031.md", True),
-    ("parallel-2-executable-x.md", True),
-    # doctrine names these two explicitly / by the window they span
-    ("in-progress-executable-100031.md", True),
-    ("verdict-pending-executable-100031.md", True),
-    # PARKED, not pending — doctrine: a halted-* artifact does not freeze
-    ("halted-executable-100031.md", False),
-    ("parked-executable-100031.md", False),
-    ("obsolete-executable-fuel.md", False),
-    # share the lane but are not cycle plans
-    ("roadmap-codebase-health-2026-04-03.md", False),
-    ("runbook-floor-only-migration.md", False),
-    ("sa-blueprint-action-queue.md", False),
-    ("reporting-phase2-cycle-query.md", False),
-])
-def test_freeze_predicate_table(tmp_path, name, freezes):
-    shop = _shop(tmp_path, lane_files=[name])
-    got = [p.name for p in lg.freezing_plans(shop)]
-    assert (name in got) is freezes, f"{name}: expected freezes={freezes}, got {got}"
+class TestFreezePredicateTable:
+    @pytest.mark.parametrize("name,freezes,sidecar", [
+        # deposited-but-un-run: these freeze
+        ("executable-100031.md", True, None),
+        ("diagnostic-582.md", True, None),
+        ("qa-thing.md", True, None),
+        pytest.param("hold-executable-100031.md", True, None, id="t-d"),
+        ("ready-executable-100031.md", True, None),
+        ("parallel-2-executable-x.md", True, None),
+        # doctrine names these two explicitly / by the window they span
+        ("in-progress-executable-100031.md", True, None),
+        ("verdict-pending-executable-100031.md", True, None),
+        # PARKED, not pending — doctrine: a halted-* artifact does not freeze
+        ("halted-executable-100031.md", False, None),
+        ("parked-executable-100031.md", False, None),
+        ("obsolete-executable-fuel.md", False, None),
+        # share the lane but are not cycle plans
+        ("roadmap-codebase-health-2026-04-03.md", False, None),
+        ("runbook-floor-only-migration.md", False, None),
+        ("sa-blueprint-action-queue.md", False, None),
+        ("reporting-phase2-cycle-query.md", False, None),
+        # new rows: class sidecar → parked (not frozen)
+        pytest.param(
+            "hold-executable-100031.md", False,
+            {"hold_reason": "class:shop-infra", "held_at": "2026-09-11T00:00:00", "class_assigned": "shop-infra"},
+            id="t-a",
+        ),
+        # stale-checkout sidecar → still freezes
+        pytest.param("hold-executable-100031.md", True, {"hold_reason": "stale-checkout"}, id="t-b"),
+        # held_pending_ceo_release → still freezes
+        pytest.param("hold-executable-100031.md", True, {"hold_reason": "held_pending_ceo_release"}, id="t-c"),
+        # sidecar is not JSON → fail-closed, freezes
+        pytest.param("hold-executable-100031.md", True, "not-json", id="t-e"),
+        # parallel-N-hold- with class sidecar → parked (not frozen)
+        pytest.param("parallel-2-hold-executable-x.md", False, {"hold_reason": "class:shop-infra"}, id="t-f"),
+    ])
+    def test_row(self, tmp_path, name, freezes, sidecar):
+        sidecars = {name: sidecar} if sidecar is not None else None
+        shop = _shop(tmp_path, lane_files=[name], sidecars=sidecars)
+        got = [p.name for p in lg.freezing_plans(shop)]
+        assert (name in got) is freezes, f"{name}: expected freezes={freezes}, got {got}"
+
+    def test_parked_class_holds(self, tmp_path):
+        """t-g: parked_class_holds returns exactly the class-held paths."""
+        sidecar = {"hold_reason": "class:shop-infra", "held_at": "2026-09-11T00:00:00", "class_assigned": "shop-infra"}
+        shop = _shop(
+            tmp_path,
+            lane_files=["hold-executable-100031.md"],
+            sidecars={"hold-executable-100031.md": sidecar},
+        )
+        parked = lg.parked_class_holds(shop)
+        assert len(parked) == 1
+        assert parked[0].name == "hold-executable-100031.md"
+        assert lg.freezing_plans(shop) == []
+
+    def test_pin_class_hold_not_frozen(self, tmp_path):
+        """t-h: pin with one class hold prints class-held: 1 and exits 0."""
+        sidecar = {"hold_reason": "class:shop-infra", "held_at": "2026-09-11T00:00:00", "class_assigned": "shop-infra"}
+        shop = _shop(
+            tmp_path,
+            lane_files=["hold-executable-100031.md"],
+            sidecars={"hold-executable-100031.md": sidecar},
+        )
+        r = _run(shop, "pin")
+        assert r.returncode == 0, r.stderr
+        assert "class-held: 1" in r.stdout
+        assert "frozen: no" in r.stdout
+
+    def test_pin_frozen_names_only_stale(self, tmp_path):
+        """t-i: pin with class hold + stale hold → exit 2, FROZEN names only stale."""
+        class_sidecar = {"hold_reason": "class:shop-infra", "held_at": "2026-09-11T00:00:00", "class_assigned": "shop-infra"}
+        stale_sidecar = {"hold_reason": "stale-checkout"}
+        shop = _shop(
+            tmp_path,
+            lane_files=["hold-executable-100031.md", "hold-executable-100032.md"],
+            sidecars={
+                "hold-executable-100031.md": class_sidecar,
+                "hold-executable-100032.md": stale_sidecar,
+            },
+        )
+        r = _run(shop, "pin")
+        assert r.returncode == 2
+        assert "FROZEN" in r.stderr
+        assert "hold-executable-100032.md" in r.stderr
+        assert "hold-executable-100031.md" not in r.stderr
 
 
 def test_done_and_drafts_do_not_freeze(tmp_path):

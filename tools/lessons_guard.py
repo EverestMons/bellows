@@ -34,6 +34,7 @@ every other repo's.
 
 import argparse
 import hashlib
+import json
 import os
 import re
 import sys
@@ -81,21 +82,45 @@ def decision_lanes(root: Path) -> list[Path]:
     return sorted(p for p in found if p.is_dir() and "/.git/" not in str(p))
 
 
-def freezing_plans(root: Path) -> list[Path]:
-    """Deposited-but-un-run cycle plans sitting in any lane. Empty = not frozen.
+def _scan(root: Path) -> tuple[list[Path], list[Path]]:
+    """Walk all lanes; return (freezing, parked_by_class).
 
-    Only files sitting DIRECTLY in the lane count — Done/ is complete and
-    drafts/ is not deposited.
+    A hold- file whose sidecar carries hold_reason: class:… is PARKED (the CEO's
+    release is owed, not a run). Fail-closed: no sidecar, unreadable JSON,
+    non-string reason, or reason not starting with "class:" → FREEZING.
     """
-    out = []
+    freezing: list[Path] = []
+    parked: list[Path] = []
     for lane in decision_lanes(root):
         for f in sorted(lane.glob("*.md")):
             name = f.name
             if name.startswith(_PARKED_PREFIXES):
                 continue
-            if _FREEZING_RE.match(name):
-                out.append(f)
-    return out
+            if not _FREEZING_RE.match(name):
+                continue
+            if re.match(r"^(?:parallel-\d+-)?hold-", name):
+                sidecar = f.parent / (f.stem + ".hold.json")
+                if sidecar.is_file():
+                    try:
+                        data = json.loads(sidecar.read_text())
+                        reason = data.get("hold_reason")
+                        if isinstance(reason, str) and reason.startswith("class:"):
+                            parked.append(f)
+                            continue
+                    except Exception:
+                        pass
+            freezing.append(f)
+    return freezing, parked
+
+
+def freezing_plans(root: Path) -> list[Path]:
+    """Deposited-but-un-run cycle plans sitting in any lane. Empty = not frozen."""
+    return _scan(root)[0]
+
+
+def parked_class_holds(root: Path) -> list[Path]:
+    """Class-held plans (hold- with class: sidecar). These do not freeze."""
+    return _scan(root)[1]
 
 
 def lessons_path() -> Path:
@@ -138,14 +163,14 @@ def main(argv=None) -> int:
         return 3
 
     lanes = decision_lanes(root)
-    plans = freezing_plans(root)
-    if plans:
-        _report_frozen(plans, root)
+    frozen, parked = _scan(root)
+    if frozen:
+        _report_frozen(frozen, root)
         return 2
 
     now = sha_of(lessons)
     if args.cmd == "pin":
-        print(f"lanes: {len(lanes)}  frozen: no")
+        print(f"lanes: {len(lanes)}  frozen: no  class-held: {len(parked)}")
         print(now)
         return 0
 
@@ -157,7 +182,7 @@ def main(argv=None) -> int:
             file=sys.stderr,
         )
         return 2
-    print(f"lanes: {len(lanes)}  frozen: no  sha: unchanged — safe to write NOW")
+    print(f"lanes: {len(lanes)}  frozen: no  class-held: {len(parked)}  sha: unchanged — safe to write NOW")
     return 0
 
 
