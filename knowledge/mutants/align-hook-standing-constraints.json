@@ -1,0 +1,47 @@
+{
+  "target": "hooks/eluvian/eluvian_align_hook.py",
+  "mutants": [
+    {
+      "name": "cap-removed",
+      "why": "removing the cap returns all section lines; a3 expects exactly 40 and the truncation marker",
+      "anchor": "        lines = section_raw[:_STANDING_MAX_LINES]",
+      "replacement": "        lines = section_raw",
+      "expect_fail": "tests/test_align_hook_sync.py::test_a3_truncation"
+    },
+    {
+      "name": "except-reraises",
+      "why": "re-raising instead of fail-open makes _standing_constraints crash on OSError; a2 expects None on every failure",
+      "anchor": "    except Exception:  # fail-open (standing constraints)\n        return None",
+      "replacement": "    except Exception:  # fail-open (standing constraints)\n        raise",
+      "expect_fail": "tests/test_align_hook_sync.py::test_a2_fail_open"
+    },
+    {
+      "name": "heading-dropped",
+      "why": "dropping the ## heading prefix breaks the startswith assertion in a1",
+      "anchor": "        result = \"## Standing constraints\\n\" + \"\\n\".join(lines)",
+      "replacement": "        result = \"\\n\".join(lines)",
+      "expect_fail": "tests/test_align_hook_sync.py::test_a1_standing_constraints_synthetic"
+    },
+    {
+      "name": "composer-drops-constraints",
+      "why": "always skipping the constraints block means the heading never appears; a4 asserts it is present",
+      "anchor": "    if constraints is not None:",
+      "replacement": "    if False:",
+      "expect_fail": "tests/test_align_hook_sync.py::test_a4_compose_with_constraints"
+    },
+    {
+      "name": "absent-line-dropped",
+      "why": "omitting the not-found line means a5 cannot find 'not found under the governance root'",
+      "anchor": "        parts.append(\n            \"Standing constraints: STANDING_CONSTRAINTS.md not found under the\"\n            \" governance root — read PLANNER_TEMPLATE and DRAFTING_CYCLE before acting\"\n        )",
+      "replacement": "        pass",
+      "expect_fail": "tests/test_align_hook_sync.py::test_a5_compose_without_constraints"
+    },
+    {
+      "name": "main-forces-none",
+      "why": "forcing constraints=None in main means the hook never injects the heading; a7 asserts it is present",
+      "anchor": "    constraints = _standing_constraints(_GOV_ROOT)",
+      "replacement": "    constraints = None",
+      "expect_fail": "tests/test_align_hook_sync.py::test_a7_injected_present"
+    }
+  ]
+}

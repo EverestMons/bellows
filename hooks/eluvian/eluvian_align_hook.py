@@ -21,6 +21,8 @@ from _common import _default_root, _log_path, hooklog, emit
 
 _GOV_ROOT = Path(os.environ.get("ELUVIAN_WRAP_ROOT") or _default_root())
 _DOCTRINE = _GOV_ROOT / "ELUVIAN_PATH.md"
+_STANDING_FILE = "STANDING_CONSTRAINTS.md"
+_STANDING_MAX_LINES = 40
 _BATON = _GOV_ROOT / "shop_next_session.md"
 # bellows is a populated submodule on the shop machine, a sibling checkout on
 # the mini (the root's submodule dirs sit uninitialized there).
@@ -124,6 +126,56 @@ def _repo_sync(label, path):
         return (label, "fetch FAILED")
 
 
+def _standing_constraints(root):
+    try:
+        text = (root / _STANDING_FILE).read_text(encoding="utf-8")
+        all_lines = text.splitlines()
+        heading_idx = None
+        for i, line in enumerate(all_lines):
+            if line == "## Standing constraints":
+                heading_idx = i
+                break
+        if heading_idx is None:
+            return None
+        section_raw = []
+        for line in all_lines[heading_idx + 1:]:
+            if line.startswith("## "):
+                break
+            section_raw.append(line)
+        while section_raw and not section_raw[0].strip():
+            section_raw.pop(0)
+        while section_raw and not section_raw[-1].strip():
+            section_raw.pop()
+        lines = section_raw[:_STANDING_MAX_LINES]
+        result = "## Standing constraints\n" + "\n".join(lines)
+        if len(section_raw) > _STANDING_MAX_LINES:
+            n = len(section_raw) - _STANDING_MAX_LINES
+            result += f"\n… ({n} more lines not shown)"
+        return result
+    except Exception:  # fail-open (standing constraints)
+        return None
+
+
+def _compose_context(doctrine, daemon, parked, sync_line, constraints):
+    parts = [
+        f"Eluvian doctrine: {doctrine}",
+        f"Daemon: {daemon}",
+    ]
+    if parked:
+        parts.append(f"Parked arcs: {parked}")
+    parts.append(sync_line)
+    if constraints is not None:
+        parts.append("")
+        parts.append(constraints)
+    else:
+        parts.append(
+            "Standing constraints: STANDING_CONSTRAINTS.md not found under the"
+            " governance root — read PLANNER_TEMPLATE and DRAFTING_CYCLE before acting"
+        )
+    parts.append("Type /eluvian for the full alignment pass.")
+    return "\n".join(parts)
+
+
 def _daemon_status():
     try:
         res = subprocess.run(
@@ -170,13 +222,8 @@ def main():
 
     daemon = _daemon_status()
     parked = _parked_count()
+    constraints = _standing_constraints(_GOV_ROOT)
 
-    parts = [
-        f"Eluvian doctrine: {_DOCTRINE}",
-        f"Daemon: {daemon}",
-    ]
-    if parked:
-        parts.append(f"Parked arcs: {parked}")
     _resolved, _unresolved = _sync_repos()
     sync = [_repo_sync(l, p) for l, p in _resolved]
     problems = [(l, s) for l, s in sync
@@ -184,16 +231,17 @@ def main():
     problems += [(l, "NOT RESOLVED on this machine — not freshness-checked")
                  for l in _unresolved]
     if problems:
-        parts.append("⚠️ Sync: " + "; ".join(f"{l} {s}" for l, s in problems)
+        sync_line = ("⚠️ Sync: " + "; ".join(f"{l} {s}" for l, s in problems)
                      + " — run /eluvian to pull (ff-only) or resolve deliberately")
     else:
         unpushed = [f"{l} {s}" for l, s in sync if s.startswith("ahead")]
-        parts.append("Sync: core repos current"
+        sync_line = ("Sync: core repos current"
                      + (f" ({'; '.join(unpushed)})" if unpushed else "."))
-    parts.append("Type /eluvian for the full alignment pass.")
 
-    hooklog("SessionStart-align", f"parked={parked} sync={sync}")
-    emit("\n".join(parts))
+    context = _compose_context(str(_DOCTRINE), daemon, parked, sync_line, constraints)
+    c_count = "absent" if constraints is None else len(constraints.splitlines())
+    hooklog("SessionStart-align", f"parked={parked} sync={sync} constraints={c_count}")
+    emit(context)
 
 
 if __name__ == "__main__":
