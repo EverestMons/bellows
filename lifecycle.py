@@ -661,21 +661,41 @@ def record_deposits(step_id, deposits_list, db_path=None):
 
 
 def record_commits(step_id, repo, shas, db_path=None):
-    """Insert commits rows — one per SHA."""
+    """Insert commits rows — one per SHA, deduped within the plan.
+
+    Returns the number of rows inserted (0 on step_id is None, empty shas, or
+    any exception). The daemon never branches on this value.
+    """
     if step_id is None or not shas:
-        return
+        return 0
+    inserted = 0
+    seen_in_call = set()
     try:
         path = db_path or LIFECYCLE_DB_PATH
         conn = sqlite3.connect(path)
         for sha in shas:
+            if sha in seen_in_call:
+                continue
+            seen_in_call.add(sha)
+            exists = conn.execute(
+                "SELECT 1 FROM commits c JOIN steps s ON s.id = c.step_id "
+                "WHERE s.plan_id = (SELECT plan_id FROM steps WHERE id = ?) "
+                "AND c.repo = ? AND c.sha = ?",
+                (step_id, repo, sha),
+            ).fetchone()
+            if exists:
+                continue
             conn.execute(
                 "INSERT INTO commits (step_id, repo, sha, message_ref) VALUES (?, ?, ?, NULL)",
                 (step_id, repo, sha),
             )
+            inserted += 1
         conn.commit()
         conn.close()
     except Exception as e:
         _warn(f"record_commits failed for step_id {step_id}: {e}")
+        return 0
+    return inserted
 
 
 def record_verdict_request(plan_id, step_number, pause_reason_code=None,

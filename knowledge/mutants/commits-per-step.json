@@ -1,0 +1,45 @@
+{
+  "target": "lifecycle.py",
+  "mutants": [
+    {
+      "name": "drop-dedupe-select",
+      "why": "removing the plan-scoped SELECT means record_commits always inserts, so step 2 of a plan gets the shas already recorded under step 1; t1 asserts step 2 returns 1 and holds only c — without the dedupe it returns 3 and holds a, b, c",
+      "target": "lifecycle.py",
+      "anchor": "            exists = conn.execute(\n                \"SELECT 1 FROM commits c JOIN steps s ON s.id = c.step_id \"\n                \"WHERE s.plan_id = (SELECT plan_id FROM steps WHERE id = ?) \"\n                \"AND c.repo = ? AND c.sha = ?\",\n                (step_id, repo, sha),\n            ).fetchone()\n            if exists:\n                continue\n",
+      "replacement": "",
+      "expect_fail": "tests/test_lifecycle.py::TestRecordCommits::test_dedupes_within_a_plan"
+    },
+    {
+      "name": "drop-first-region-record-commits",
+      "why": "removing the record_commits call at the first step-end site means step 1's commits never land under step 1; t7 asserts step 1 has {s1a, s1b} — without this call the set is empty",
+      "target": "bellows.py",
+      "anchor": "        lifecycle.record_gate_events(_lc_step_id, gate_result)\n        lifecycle.record_commits(_lc_step_id, os.path.basename(project_path), _step_commit_shas(wt_path, pre_diff, post_diff))\n        _lc_deposits = _build_deposit_records(plan_text, header, project_path, wt_path)",
+      "replacement": "        lifecycle.record_gate_events(_lc_step_id, gate_result)\n        _lc_deposits = _build_deposit_records(plan_text, header, project_path, wt_path)",
+      "expect_fail": "tests/test_bellows.py::test_two_step_run_records_each_step_under_its_own_row"
+    },
+    {
+      "name": "drop-while-loop-record-commits",
+      "why": "removing the record_commits call at the while-loop step-end site means step 2's commits never land under step 2 from this site; t7's call_count assertion fires — _step_commit_shas is called 1 time not 2",
+      "target": "bellows.py",
+      "anchor": "            lifecycle.record_gate_events(_lc_step_id, gate_result)\n            lifecycle.record_commits(_lc_step_id, os.path.basename(project_path), _step_commit_shas(wt_path, pre_diff, post_diff))\n            _lc_deposits = _build_deposit_records(plan_text, header, project_path, wt_path)",
+      "replacement": "            lifecycle.record_gate_events(_lc_step_id, gate_result)\n            _lc_deposits = _build_deposit_records(plan_text, header, project_path, wt_path)",
+      "expect_fail": "tests/test_bellows.py::test_two_step_run_records_each_step_under_its_own_row"
+    },
+    {
+      "name": "drop-reverse-flag",
+      "why": "removing --reverse from rev-list returns shas newest-first; t4 asserts oldest-first order [sha1, sha2] — without --reverse the order is [sha2, sha1]",
+      "target": "bellows.py",
+      "anchor": "            [\"git\", \"--no-pager\", \"rev-list\", \"--reverse\", f\"{pre_sha}..{post_sha}\"],",
+      "replacement": "            [\"git\", \"--no-pager\", \"rev-list\", f\"{pre_sha}..{post_sha}\"],",
+      "expect_fail": "tests/test_worktree.py::test_step_commit_shas_range_in_order"
+    },
+    {
+      "name": "flip-range-direction",
+      "why": "writing the range as post..pre produces an empty rev-list (no commits are reachable from pre that are not in post); t4 asserts the two new shas are returned — with a flipped range the result is []",
+      "target": "bellows.py",
+      "anchor": "            [\"git\", \"--no-pager\", \"rev-list\", \"--reverse\", f\"{pre_sha}..{post_sha}\"],",
+      "replacement": "            [\"git\", \"--no-pager\", \"rev-list\", \"--reverse\", f\"{post_sha}..{pre_sha}\"],",
+      "expect_fail": "tests/test_worktree.py::test_step_commit_shas_range_in_order"
+    }
+  ]
+}

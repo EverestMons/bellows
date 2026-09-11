@@ -5679,3 +5679,157 @@ def test_zero_step_skip_closes_the_plan_row_and_retires_receipts():
         assert closed, f"the skip exit must mark the plan closed; calls: {mark.call_args_list}"
         assert retire.called, "the skip exit must retire the deposit receipt"
         assert retire.call_args.args[0] == closed[0].args[0], "same plan id for both"
+
+
+# ---------------------------------------------------------------------------
+# commits-per-step — each step's commits attributed to that step's row
+# ---------------------------------------------------------------------------
+
+def _make_fake_step_result():
+    return {
+        "session_id": "test-session",
+        "is_error": False,
+        "stop_reason": "end_turn",
+        "result_text": "",
+        "cost_usd": 0.01,
+        "permission_denials": [],
+        "receipt_status": "Complete",
+        "ceo_flags": [],
+        "escalate": False,
+    }
+
+
+def test_two_step_run_records_each_step_under_its_own_row():
+    """Both step-end sites fire in one run; each step's commits land only under that step."""
+    with tempfile.TemporaryDirectory() as tmp:
+        decisions_dir = os.path.join(tmp, "proj", "knowledge", "decisions")
+        os.makedirs(decisions_dir)
+        plan_filename = "executable-cps-2026-09-11.md"
+        plan_path = os.path.join(decisions_dir, plan_filename)
+        with open(plan_path, "w") as f:
+            f.write("## STEP 1\nDo step one.\n## STEP 2\nDo step two.\n")
+        clear_plan_for_test(plan_path)
+
+        config = {
+            "default_model": "claude-sonnet-4-6",
+            "pushover": {"app_key": "", "user_key": ""},
+            "callback_port": 5999,
+            "step_timeout_seconds": 600,
+        }
+
+        clean_gates = {
+            "passed": True,
+            "failures": [],
+            "is_qa_step": False,
+            "files_changed": [],
+            "plan_header": {"auto_close": "true", "pause_for_verdict": "on_failure", "model": "claude-sonnet-4-6"},
+            "verdict_requested": {"requested": False, "body": None},
+        }
+
+        mock_shas = MagicMock(side_effect=[["s1a", "s1b"], ["s2"]])
+        mock_teardown = MagicMock(return_value=["s1a", "s1b", "s2"])
+
+        with patch("bellows.runner.run_step", return_value=_make_fake_step_result()), \
+             patch("bellows.gates.check", return_value=clean_gates), \
+             patch("bellows.notifier.push"), \
+             patch("bellows.verdict.log_to_ledger"), \
+             patch("bellows._capture_git_diff", side_effect=["sha-1", "sha-2", "sha-3", "sha-4"]), \
+             patch("bellows._create_worktree", return_value="/tmp/wt"), \
+             patch("bellows._teardown_worktree", mock_teardown), \
+             patch("bellows._step_commit_shas", mock_shas), \
+             patch("bellows.record_run"), \
+             patch("bellows.validators.validate_at_claim",
+                   return_value={"rejected": False, "reject_reason": "", "warnings": []}):
+            response_server = MagicMock()
+            bellows.run_plan(plan_path, config, response_server)
+
+    conn = lifecycle.LIFECYCLE_DB_PATH
+    _conn = __import__("sqlite3").connect(conn)
+    plan_id = _conn.execute(
+        "SELECT id FROM plans WHERE deposit_placeholder_name = ?", (plan_filename,)
+    ).fetchone()[0]
+    step1_shas = {r[0] for r in _conn.execute(
+        "SELECT sha FROM commits c JOIN steps s ON s.id = c.step_id "
+        "WHERE s.plan_id = ? AND s.step_number = 1", (plan_id,)
+    ).fetchall()}
+    step2_shas = {r[0] for r in _conn.execute(
+        "SELECT sha FROM commits c JOIN steps s ON s.id = c.step_id "
+        "WHERE s.plan_id = ? AND s.step_number = 2", (plan_id,)
+    ).fetchall()}
+    total = _conn.execute(
+        "SELECT count(*) FROM commits c JOIN steps s ON s.id = c.step_id WHERE s.plan_id = ?",
+        (plan_id,)
+    ).fetchone()[0]
+    _conn.close()
+    assert step1_shas == {"s1a", "s1b"}
+    assert step2_shas == {"s2"}
+    assert total == 3
+    assert mock_shas.call_count == 2
+
+
+def test_resumed_step_records_only_its_own_commits():
+    """A resumed step records only its own range; prior-step rows are left untouched."""
+    with tempfile.TemporaryDirectory() as tmp:
+        decisions_dir = os.path.join(tmp, "proj", "knowledge", "decisions")
+        os.makedirs(decisions_dir)
+
+        plan_id = lifecycle.mint_and_claim(
+            "executable", os.path.join(tmp, "proj"), "CPS resume test",
+            "bellows", "small", 2, "executable-cps-2026-09-11.md",
+        )
+        step1_id = lifecycle.record_step_start(plan_id, 1)
+        lifecycle.record_commits(step1_id, "proj", ["s1a", "s1b"])
+
+        inprogress_name = f"in-progress-executable-{plan_id}.md"
+        inprogress_path = os.path.join(decisions_dir, inprogress_name)
+        with open(inprogress_path, "w") as f:
+            f.write("## STEP 1\nDo step one.\n## STEP 2\nDo step two.\n")
+
+        config = {
+            "default_model": "claude-sonnet-4-6",
+            "pushover": {"app_key": "", "user_key": ""},
+            "callback_port": 5999,
+            "step_timeout_seconds": 600,
+        }
+
+        clean_gates = {
+            "passed": True,
+            "failures": [],
+            "is_qa_step": False,
+            "files_changed": [],
+            "plan_header": {"auto_close": "true", "pause_for_verdict": "on_failure", "model": "claude-sonnet-4-6"},
+            "verdict_requested": {"requested": False, "body": None},
+        }
+
+        mock_shas = MagicMock(return_value=["s2"])
+        mock_teardown = MagicMock(return_value=["s1a", "s1b", "s2"])
+
+        with patch("bellows.runner.run_step", return_value=_make_fake_step_result()), \
+             patch("bellows.gates.check", return_value=clean_gates), \
+             patch("bellows.notifier.push"), \
+             patch("bellows.verdict.log_to_ledger"), \
+             patch("bellows._capture_git_diff", return_value=""), \
+             patch("bellows._create_worktree", return_value="/tmp/wt"), \
+             patch("bellows._teardown_worktree", mock_teardown), \
+             patch("bellows._step_commit_shas", mock_shas), \
+             patch("bellows.record_run"):
+            response_server = MagicMock()
+            bellows.run_plan(inprogress_path, config, response_server, resume_step=2)
+
+    _conn = __import__("sqlite3").connect(lifecycle.LIFECYCLE_DB_PATH)
+    step2_shas = {r[0] for r in _conn.execute(
+        "SELECT sha FROM commits c JOIN steps s ON s.id = c.step_id "
+        "WHERE s.plan_id = ? AND s.step_number = 2", (plan_id,)
+    ).fetchall()}
+    step1_shas = {r[0] for r in _conn.execute(
+        "SELECT sha FROM commits c JOIN steps s ON s.id = c.step_id "
+        "WHERE s.plan_id = ? AND s.step_number = 1", (plan_id,)
+    ).fetchall()}
+    total = _conn.execute(
+        "SELECT count(*) FROM commits c JOIN steps s ON s.id = c.step_id WHERE s.plan_id = ?",
+        (plan_id,)
+    ).fetchone()[0]
+    _conn.close()
+    assert step2_shas == {"s2"}
+    assert step1_shas == {"s1a", "s1b"}
+    assert total == 3

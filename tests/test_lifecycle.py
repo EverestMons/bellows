@@ -576,6 +576,44 @@ class TestRecordCommits:
         step_id = lifecycle.record_step_start(pid, 1)
         lifecycle.record_commits(step_id, "bellows", [])
 
+    def test_dedupes_within_a_plan(self):
+        pid = lifecycle.mint_and_claim("diagnostic", "/proj", "T", "bellows", "small", 2, "d.md")
+        s1 = lifecycle.record_step_start(pid, 1)
+        n1 = lifecycle.record_commits(s1, "bellows", ["a", "b"])
+        assert n1 == 2
+        s2 = lifecycle.record_step_start(pid, 2)
+        n2 = lifecycle.record_commits(s2, "bellows", ["a", "b", "c"])
+        assert n2 == 1
+        conn = sqlite3.connect(lifecycle.LIFECYCLE_DB_PATH)
+        step2_shas = {r[0] for r in conn.execute("SELECT sha FROM commits WHERE step_id = ?", (s2,)).fetchall()}
+        step1_shas = {r[0] for r in conn.execute("SELECT sha FROM commits WHERE step_id = ?", (s1,)).fetchall()}
+        conn.close()
+        assert step2_shas == {"c"}
+        assert step1_shas == {"a", "b"}
+
+    def test_no_dedupe_across_plans(self):
+        pid1 = lifecycle.mint_and_claim("diagnostic", "/proj", "T", "bellows", "small", 1, "d1.md")
+        pid2 = lifecycle.mint_and_claim("diagnostic", "/proj", "T", "bellows", "small", 1, "d2.md")
+        s1 = lifecycle.record_step_start(pid1, 1)
+        s2 = lifecycle.record_step_start(pid2, 1)
+        lifecycle.record_commits(s1, "bellows", ["a"])
+        lifecycle.record_commits(s2, "bellows", ["a"])
+        conn = sqlite3.connect(lifecycle.LIFECYCLE_DB_PATH)
+        total = conn.execute("SELECT count(*) FROM commits WHERE sha = 'a'").fetchone()[0]
+        conn.close()
+        assert total == 2
+
+    def test_repeat_in_one_call_inserted_once(self):
+        pid = lifecycle.mint_and_claim("diagnostic", "/proj", "T", "bellows", "small", 1, "d.md")
+        s1 = lifecycle.record_step_start(pid, 1)
+        n = lifecycle.record_commits(s1, "bellows", ["a", "a"])
+        assert n == 1
+        conn = sqlite3.connect(lifecycle.LIFECYCLE_DB_PATH)
+        rows = conn.execute("SELECT sha FROM commits WHERE step_id = ?", (s1,)).fetchall()
+        conn.close()
+        assert len(rows) == 1
+        assert rows[0][0] == "a"
+
 
 class TestRecordVerdicts:
     def test_verdict_request_and_outcome(self):

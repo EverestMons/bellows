@@ -194,6 +194,53 @@ def test_teardown_merges_commits(git_repo):
         f"Merged commit not found on main: {result.stdout}"
 
 
+def test_step_commit_shas_range_in_order(git_repo):
+    """_step_commit_shas returns full 40-char shas oldest-first for the given range."""
+    base_sha = subprocess.run(
+        ["git", "rev-parse", "HEAD"], cwd=git_repo,
+        capture_output=True, text=True, check=True,
+    ).stdout.strip()
+
+    def _make_commit(msg):
+        path = os.path.join(git_repo, "f.txt")
+        with open(path, "a") as fh:
+            fh.write(msg + "\n")
+        subprocess.run(["git", "add", "f.txt"], cwd=git_repo, capture_output=True, text=True, check=True)
+        subprocess.run(["git", "commit", "-m", msg], cwd=git_repo, capture_output=True, text=True, check=True)
+        return subprocess.run(
+            ["git", "rev-parse", "HEAD"], cwd=git_repo,
+            capture_output=True, text=True, check=True,
+        ).stdout.strip()
+
+    sha1 = _make_commit("commit one")
+    sha2 = _make_commit("commit two")
+
+    result = bellows._step_commit_shas(git_repo, base_sha, sha2)
+    assert result == [sha1, sha2]
+    assert all(len(s) == 40 and all(c in "0123456789abcdef" for c in s) for s in result)
+
+
+def test_step_commit_shas_equal_shas_empty(git_repo):
+    """Equal pre and post sha → empty list."""
+    head = subprocess.run(
+        ["git", "rev-parse", "HEAD"], cwd=git_repo,
+        capture_output=True, text=True, check=True,
+    ).stdout.strip()
+    assert bellows._step_commit_shas(git_repo, head, head) == []
+
+
+def test_step_commit_shas_empty_sha_empty(git_repo):
+    """Empty pre or post sha → empty list without calling subprocess."""
+    head = subprocess.run(
+        ["git", "rev-parse", "HEAD"], cwd=git_repo,
+        capture_output=True, text=True, check=True,
+    ).stdout.strip()
+    with patch("bellows.subprocess.run") as mock_run:
+        assert bellows._step_commit_shas(git_repo, "", head) == []
+        assert bellows._step_commit_shas(git_repo, head, "") == []
+        mock_run.assert_not_called()
+
+
 def test_teardown_aborts_on_merge_conflict(git_repo):
     """Merge conflict must raise WorktreeTeardownError and leave worktree + branch alive."""
     wt_path = _create_worktree(git_repo, "conflict-test")

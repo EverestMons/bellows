@@ -1268,6 +1268,7 @@ def run_plan(plan_path: str, config: dict, response_server: server.ResponseServe
         lifecycle.record_step_end(_lc_step_id, status="complete" if gate_result["passed"] else "awaiting_verdict",
                                   cost_usd=parsed.get("cost_usd"), turns=parsed.get("turns"), duration_s=_lc_step_duration)
         lifecycle.record_gate_events(_lc_step_id, gate_result)
+        lifecycle.record_commits(_lc_step_id, os.path.basename(project_path), _step_commit_shas(wt_path, pre_diff, post_diff))
         _lc_deposits = _build_deposit_records(plan_text, header, project_path, wt_path)
         lifecycle.record_deposits(_lc_step_id, _lc_deposits)
 
@@ -1427,6 +1428,7 @@ def run_plan(plan_path: str, config: dict, response_server: server.ResponseServe
             lifecycle.record_step_end(_lc_step_id, status="complete" if gate_result["passed"] else "awaiting_verdict",
                                       cost_usd=parsed.get("cost_usd"), turns=parsed.get("turns"), duration_s=_lc_step_duration)
             lifecycle.record_gate_events(_lc_step_id, gate_result)
+            lifecycle.record_commits(_lc_step_id, os.path.basename(project_path), _step_commit_shas(wt_path, pre_diff, post_diff))
             _lc_deposits = _build_deposit_records(plan_text, header, project_path, wt_path)
             lifecycle.record_deposits(_lc_step_id, _lc_deposits)
 
@@ -1547,6 +1549,30 @@ def run_plan(plan_path: str, config: dict, response_server: server.ResponseServe
     except Exception as e:
         _log("ERROR", f"❌ FAILED: {e}", slug=slug_for(plan_name))
         notifier.notify_failure(app_key, user_key, plan_name, current_step if 'current_step' in dir() else 0, str(e), plan_slug=plan_slug if 'plan_slug' in dir() else None)
+
+
+def _step_commit_shas(wt_path: str, pre_sha: str, post_sha: str) -> list:
+    """Return commit shas in the range pre_sha..post_sha, oldest first.
+
+    Returns [] when either sha is empty or both are equal.
+    On non-zero exit or any exception, logs WARN and returns [] so the
+    merge-site fallback records the full list as before.
+    """
+    if not pre_sha or not post_sha or pre_sha == post_sha:
+        return []
+    try:
+        result = subprocess.run(
+            ["git", "--no-pager", "rev-list", "--reverse", f"{pre_sha}..{post_sha}"],
+            cwd=wt_path, capture_output=True, text=True, timeout=15,
+        )
+        if result.returncode != 0:
+            _log("WARN", f"_step_commit_shas: rev-list failed: {result.stderr.strip()}")
+            return []
+        lines = [line for line in result.stdout.splitlines() if line.strip()]
+        return lines
+    except Exception as e:
+        _log("WARN", f"_step_commit_shas: exception: {e}")
+        return []
 
 
 def _capture_git_diff(project_path: str) -> str:
