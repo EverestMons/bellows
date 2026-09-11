@@ -1,0 +1,14 @@
+PYTHON: /Users/marklehn/Developer/bellows/.venv/bin/python
+HEAD: 41cd3f7f15da21e3b2aa828a6204e68c8b4fd67a
+TARGET: bellows.py sha256=4ba571a56ee8
+TARGET: scripts/com.eluvian.bellows-daemon.plist.template sha256=d352e9eb9f54
+
+MUTANT start-new-session-dropped: KILLED — suite caught the defect
+MUTANT agent-loaded-branch-removed: KILLED — suite caught the defect
+MUTANT keepalive-rendered-true: KILLED — suite caught the defect
+MUTANT exit-timeout-below-drain: KILLED — suite caught the defect
+
+LIVE-TREE UNCHANGED: bellows.py sha256=4ba571a56ee8
+LIVE-TREE UNCHANGED: scripts/com.eluvian.bellows-daemon.plist.template sha256=d352e9eb9f54
+
+MUTATION: 4 killed, 0 survived, 0 error
