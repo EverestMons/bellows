@@ -1,0 +1,8 @@
+{
+  "slug": "executable-bellows-debt-hook-unverified-header",
+  "content_hash": "37218d8000630b50467fbd786ae050c58e900e8b1df954792d59e4852addfafd",
+  "session_id": "d04ebd33-0b49-4d7c-a177-322fdddcf2ec",
+  "armed_at": "2026-09-11T12:11:05.218514",
+  "watcher": "gate_watcher.py spawned detached (pid 29096); log: logs/watch/executable-bellows-debt-hook-unverified-header.md.log",
+  "attestation_boundary": "This receipt proves the watcher was ARMED at write time. It does NOT prove the watcher stayed alive. Liveness of a session-local monitor is not externally verifiable."
+}

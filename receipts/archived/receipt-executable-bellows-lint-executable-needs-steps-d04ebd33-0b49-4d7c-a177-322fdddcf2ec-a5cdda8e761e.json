@@ -1,0 +1,8 @@
+{
+  "slug": "executable-bellows-lint-executable-needs-steps",
+  "content_hash": "a5cdda8e761e46871e13b412d82b1ab3217b44c203f84232a8e0dd65f3489e13",
+  "session_id": "d04ebd33-0b49-4d7c-a177-322fdddcf2ec",
+  "armed_at": "2026-09-11T12:17:02.901647",
+  "watcher": "gate_watcher.py spawned detached (pid 30649); log: logs/watch/executable-bellows-lint-executable-needs-steps.md.log",
+  "attestation_boundary": "This receipt proves the watcher was ARMED at write time. It does NOT prove the watcher stayed alive. Liveness of a session-local monitor is not externally verifiable."
+}

@@ -1,0 +1,8 @@
+{
+  "slug": "executable-bellows-guard-class-hold-parked",
+  "content_hash": "86a02b0b3e75e7be43e8b5b0f329c37934b79b69d02c44e169910cd2a4a30914",
+  "session_id": "d04ebd33-0b49-4d7c-a177-322fdddcf2ec",
+  "armed_at": "2026-09-11T11:42:57.104091",
+  "watcher": "gate_watcher.py spawned detached (pid 99367); log: logs/watch/executable-bellows-guard-class-hold-parked.md.log",
+  "attestation_boundary": "This receipt proves the watcher was ARMED at write time. It does NOT prove the watcher stayed alive. Liveness of a session-local monitor is not externally verifiable."
+}

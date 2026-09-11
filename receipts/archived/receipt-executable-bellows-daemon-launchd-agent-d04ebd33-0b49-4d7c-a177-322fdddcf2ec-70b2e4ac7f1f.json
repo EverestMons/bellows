@@ -1,0 +1,8 @@
+{
+  "slug": "executable-bellows-daemon-launchd-agent",
+  "content_hash": "70b2e4ac7f1f8c736153b1d75ed248eb9300662063cea7db2f34d820a7648272",
+  "session_id": "d04ebd33-0b49-4d7c-a177-322fdddcf2ec",
+  "armed_at": "2026-09-11T13:21:12.303850",
+  "watcher": "gate_watcher.py spawned detached (pid 90942); log: logs/watch/executable-bellows-daemon-launchd-agent.md.log",
+  "attestation_boundary": "This receipt proves the watcher was ARMED at write time. It does NOT prove the watcher stayed alive. Liveness of a session-local monitor is not externally verifiable."
+}
