@@ -1,0 +1,18 @@
+PYTHON: /Users/marklehn/Developer/bellows/.venv/bin/python
+HEAD: 222252b2221297c7b724639b17866c39290210f5
+TARGET: tools/battery_census.py sha256=020007d2c9d2
+TARGET: tools/cycle_log_projection_census.py sha256=e344a1058c67
+TARGET: tools/qa_steps_parse_census.py sha256=c8b2e8c7290d
+TARGET: tools/register_coverage_census.py sha256=8ab657527f78
+
+MUTANT writer-guard-removed: KILLED — suite caught the defect
+MUTANT battery-absolute-default: KILLED — suite caught the defect
+MUTANT qa-steps-parse-help-crashes: KILLED — suite caught the defect
+MUTANT projection-required-removed: KILLED — suite caught the defect
+
+LIVE-TREE UNCHANGED: tools/battery_census.py sha256=020007d2c9d2
+LIVE-TREE UNCHANGED: tools/cycle_log_projection_census.py sha256=e344a1058c67
+LIVE-TREE UNCHANGED: tools/qa_steps_parse_census.py sha256=c8b2e8c7290d
+LIVE-TREE UNCHANGED: tools/register_coverage_census.py sha256=8ab657527f78
+
+MUTATION: 4 killed, 0 survived, 0 error
