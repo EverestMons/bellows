@@ -123,7 +123,7 @@ def test_c1_happy_path(tmp_path, capsys):
     out = capsys.readouterr().out
     steps = [l.split()[1] for l in out.splitlines() if l.startswith("CLOSE:")]
     assert steps == [
-        "closing", "baseline", "emit", "splice", "baseline",
+        "closing", "baseline", "emit", "splice", "prime", "baseline",
         "stored==live", "battery", "commit(skipped)",
     ], f"unexpected step sequence: {steps}"
     assert rc == 0
@@ -179,7 +179,7 @@ def test_c3_dry_run_order(tmp_path, capsys):
     out = capsys.readouterr().out
     steps = [l.split()[1] for l in out.splitlines() if l.startswith("CLOSE:")]
     assert steps == [
-        "closing", "baseline", "emit", "splice", "baseline",
+        "closing", "baseline", "emit", "splice", "prime", "baseline",
         "stored==live", "battery", "commit(skipped)",
     ]
     assert rc == 0
@@ -293,7 +293,7 @@ def test_c7_plan_lint_warn_echo(tmp_path, capsys):
     assert warn_lines, f"Expected CLOSE-WARN: plan_lint — line, got:\n{out}"
     steps = [l.split()[1] for l in out.splitlines() if l.startswith("CLOSE:")]
     assert steps == [
-        "closing", "baseline", "emit", "splice", "baseline",
+        "closing", "baseline", "emit", "splice", "prime", "baseline",
         "stored==live", "battery", "commit(skipped)",
     ], f"unexpected step sequence: {steps}"
     assert rc == 0
@@ -371,7 +371,7 @@ def test_c10_propagation_check_fixed_point(tmp_path, monkeypatch, capsys):
         if script == "cycle_check.py" and "--emit-manifest" in args:
             rc, out = real_run_checker(script, *args)
             emit_calls[0] += 1
-            pc = "DIVERGENT:10" if emit_calls[0] == 1 else "DIVERGENT:14"
+            pc = "DIVERGENT:10" if emit_calls[0] <= 2 else "DIVERGENT:14"
             out = re.sub(r"propagation_check=\S+", f"propagation_check={pc}", out)
             return rc, out
         return real_run_checker(script, *args)
@@ -407,9 +407,9 @@ def test_c10b_fixed_point_second_comparison_fails(tmp_path, monkeypatch, capsys)
         if script == "cycle_check.py" and "--emit-manifest" in args:
             rc, out = real_run_checker(script, *args)
             emit_calls[0] += 1
-            if emit_calls[0] == 1:
+            if emit_calls[0] <= 2:
                 pc = "DIVERGENT:10"
-            elif emit_calls[0] == 2:
+            elif emit_calls[0] == 3:
                 pc = "DIVERGENT:14"
             else:
                 pc = "DIVERGENT:99"
@@ -448,7 +448,7 @@ def test_c11_cycle_check_drift_fails(tmp_path, monkeypatch, capsys):
         if script == "cycle_check.py" and "--emit-manifest" in args:
             rc, out = real_run_checker(script, *args)
             emit_calls[0] += 1
-            if emit_calls[0] == 1:
+            if emit_calls[0] <= 2:
                 out = re.sub(r"cycle_check=\w+", "cycle_check=BAR_MET", out)
                 out = re.sub(r"propagation_check=\S+", "propagation_check=DIVERGENT:10", out)
             else:
@@ -467,3 +467,108 @@ def test_c11_cycle_check_drift_fails(tmp_path, monkeypatch, capsys):
     assert rc == 1
     assert "stored==live FAIL" in out
     assert "NOTE" not in out
+
+
+# ---- c12: closing file without **Closing:** label refused before any draft write ----
+
+
+def test_c12_closing_file_without_label_refused(tmp_path, capsys):
+    """A closing file without **Closing:** at start → rc 1 at step 1, draft byte-identical."""
+    plan, register = _make_fixture(tmp_path)
+    closing = _closing_file(tmp_path, text="WARM close after walk 1 — BAR MET (T1).")
+    plan_before = plan.read_text(encoding="utf-8")
+
+    rc = close_cycle.main([
+        str(plan), "--closing-file", str(closing), "--register", str(register),
+    ])
+
+    out = capsys.readouterr().out
+    steps = [l.split()[1] for l in out.splitlines() if l.startswith("CLOSE:")]
+    assert steps == ["closing"]
+    assert rc == 1
+    assert "**Closing:**" in out
+    assert plan.read_text(encoding="utf-8") == plan_before
+
+
+# ---- c13: placeholder manifest primes and closes in one run ----
+
+
+def test_c13_placeholder_manifest_primes_and_closes(tmp_path, monkeypatch, capsys):
+    """First emit on a placeholder manifest returns ESCALATE; prime re-emits → stored==live OK."""
+    plan, register = _make_fixture(tmp_path)
+    closing = _closing_file(tmp_path)
+
+    real_run_checker = close_cycle.run_checker
+    emit_calls = [0]
+
+    def fake(script, *args):
+        if script == "cycle_check.py" and "--emit-manifest" in args:
+            rc, out = real_run_checker(script, *args)
+            emit_calls[0] += 1
+            if emit_calls[0] == 1:
+                out = re.sub(r"cycle_check=[^,\s]+", "cycle_check=ESCALATE:claimed-close-unmet", out)
+            else:
+                out = re.sub(r"cycle_check=[^,\s]+", "cycle_check=BAR_MET", out)
+            return rc, out
+        return real_run_checker(script, *args)
+
+    monkeypatch.setattr(close_cycle, "run_checker", fake)
+
+    rc = close_cycle.main([
+        str(plan), "--closing-file", str(closing), "--register", str(register),
+    ])
+
+    out = capsys.readouterr().out
+    assert rc == 0
+    assert "CLOSE: prime OK" in out
+    assert "CLOSE: stored==live OK" in out
+    plan_text = plan.read_text(encoding="utf-8")
+    assert "cycle_check=BAR_MET" in plan_text
+
+
+# ---- c13b: filled manifest drift still fails — prime keyed on placeholders, not drift ----
+
+
+def test_c13b_filled_manifest_drift_still_fails(tmp_path, monkeypatch, capsys):
+    """No <declare> in manifest → prime skipped; a cycle_check drift still fails stored==live."""
+    plan, register = _make_fixture(tmp_path)
+    closing = _closing_file(tmp_path)
+
+    # Rewrite <declare> values to real values (working tree only, not committed)
+    text = plan.read_text(encoding="utf-8")
+    text = re.sub(r"^walks: <declare>$", "walks: 1", text, flags=re.MULTILINE)
+    text = re.sub(r"^yields: <declare>$", "yields: 0", text, flags=re.MULTILINE)
+    text = re.sub(
+        r"^validation: <declare>$",
+        "validation: cycle_check=BAR_MET, plan_lint=0_FAIL, fold_check=VACUOUS, propagation_check=N/A",
+        text, flags=re.MULTILINE,
+    )
+    text = re.sub(r"^coherence: <declare>$", "coherence: 1/1", text, flags=re.MULTILINE)
+    plan.write_text(text, encoding="utf-8")
+
+    real_run_checker = close_cycle.run_checker
+    emit_calls = [0]
+
+    def fake(script, *args):
+        if script == "cycle_check.py" and "--emit-manifest" in args:
+            rc, out = real_run_checker(script, *args)
+            emit_calls[0] += 1
+            if emit_calls[0] == 1:
+                out = re.sub(r"cycle_check=[^,\s]+", "cycle_check=ESCALATE:claimed-close-unmet", out)
+            else:
+                out = re.sub(r"cycle_check=[^,\s]+", "cycle_check=BAR_MET", out)
+            return rc, out
+        return real_run_checker(script, *args)
+
+    monkeypatch.setattr(close_cycle, "run_checker", fake)
+
+    rc = close_cycle.main([
+        str(plan), "--closing-file", str(closing), "--register", str(register),
+    ])
+
+    out = capsys.readouterr().out
+    steps = [l.split()[1] for l in out.splitlines() if l.startswith("CLOSE:")]
+    assert "prime" not in steps
+    assert "stored==live" in steps[-1]
+    assert "stored==live FAIL" in out
+    assert rc == 1

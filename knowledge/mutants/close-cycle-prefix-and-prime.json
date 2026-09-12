@@ -1,0 +1,34 @@
+{
+  "target": "scripts/close_cycle.py",
+  "_note": "Plan 100090: _replace_closing_line refuses a closing file without **Closing:** prefix; _run_close primes once when the manifest held placeholders at the splice (step 4b).",
+  "mutants": [
+    {
+      "name": "m1-label-refusal-removed",
+      "why": "Removing the label check makes _replace_closing_line accept any closing file. test_c12_closing_file_without_label_refused expects rc 1 at step 1 with the draft untouched; without the refusal the close runs past step 1 and rc is 0.",
+      "anchor": "    if not closing_text.lstrip().startswith(\"**Closing:**\"):",
+      "replacement": "    if False:",
+      "expect_fail": "tests/test_close_cycle.py::test_c12_closing_file_without_label_refused"
+    },
+    {
+      "name": "m2-prime-removed",
+      "why": "Disabling the prime makes the first run fail stored==live when the manifest held placeholders at the splice, reproducing today's bug. test_c13_placeholder_manifest_primes_and_closes expects rc 0 and 'CLOSE: prime OK' in the output; without the prime rc is 1.",
+      "anchor": "    if had_placeholder:",
+      "replacement": "    if False:",
+      "expect_fail": "tests/test_close_cycle.py::test_c13_placeholder_manifest_primes_and_closes"
+    },
+    {
+      "name": "m3-placeholder-condition-dropped-prime-always-runs",
+      "why": "Making the prime unconditional causes it to run even on a filled manifest, priming away a genuine cycle_check drift. test_c13b_filled_manifest_drift_still_fails expects rc 1 (stored==live FAIL); with the prime running on a filled manifest the drift is corrected and rc is 0.",
+      "anchor": "    if had_placeholder:",
+      "replacement": "    if True:",
+      "expect_fail": "tests/test_close_cycle.py::test_c13b_filled_manifest_drift_still_fails"
+    },
+    {
+      "name": "m4-condition-inverted-prime-runs-on-filled-only",
+      "why": "Inverting the condition makes the prime run only when the manifest is FILLED (no placeholders) and skip when it holds placeholders. test_c13_placeholder_manifest_primes_and_closes expects rc 0; with the condition inverted the prime is skipped on the placeholder fixture and the first run fails stored==live (rc 1).",
+      "anchor": "    if had_placeholder:",
+      "replacement": "    if not had_placeholder:",
+      "expect_fail": "tests/test_close_cycle.py::test_c13_placeholder_manifest_primes_and_closes"
+    }
+  ]
+}

@@ -6,10 +6,11 @@ Usage:
                            [--commit] [--dry-run]
 
 Steps (printed as CLOSE: <step> OK/FAIL):
-    1. closing      — replace the **Closing:** line
+    1. closing      — replace the **Closing:** line (refuses if the file does not begin with **Closing:**)
     2. baseline     — fold_check --save-baseline
     3. emit         — cycle_check --emit-manifest (captured)
     4. splice       — walks/yields/validation/coherence by key
+    4b. prime       — re-emit and re-splice once when the manifest held placeholders at the splice
     5. baseline     — fold_check --save-baseline (again)
     6. stored==live — re-emit and compare; one re-splice when only propagation_check moved
     7. battery      — cycle_check BAR_MET, plan_lint 0_FAIL,
@@ -45,6 +46,8 @@ def after_step(name):
 
 def _replace_closing_line(text, closing_text):
     """Replace the **Closing:** line. Returns (new_text, error_or_None)."""
+    if not closing_text.lstrip().startswith("**Closing:**"):
+        return None, "the closing file must begin with **Closing:** — got: " + closing_text.lstrip()[:40]
     lines = text.splitlines(keepends=True)
     found = [i for i, ln in enumerate(lines) if ln.startswith("**Closing:**")]
     if len(found) == 0:
@@ -203,6 +206,10 @@ def _run_close(draft_path, closing_text, register_path, do_commit, dry_run, git_
 
     # Step 4: splice by key
     text = draft_path.read_text(encoding="utf-8")
+    _PLACEHOLDER_RE = re.compile(
+        r"^(walks|yields|validation|coherence):\s*<[^>]*>\s*$", re.MULTILINE
+    )
+    had_placeholder = bool(_PLACEHOLDER_RE.search(text))
     new_text, err = _splice_keys(text, emit_out)
     if err:
         print(f"CLOSE: splice FAIL — {err}")
@@ -210,6 +217,25 @@ def _run_close(draft_path, closing_text, register_path, do_commit, dry_run, git_
     draft_path.write_text(new_text, encoding="utf-8")
     print("CLOSE: splice OK")
     after_step("splice")
+
+    # Step 4b: prime — re-emit and re-splice once when the manifest held placeholders at the splice
+    if had_placeholder:
+        # Refresh the fold baseline so the prime's emit sees VACUOUS (not DRIFT from the splice).
+        # This does NOT call after_step("baseline") — step 5 is the named baseline boundary.
+        run_checker("fold_check.py", "--save-baseline", str(draft_path))
+        rc, prime_out = run_checker("cycle_check.py", "--emit-manifest", str(draft_path))
+        if rc != 0:
+            print(f"CLOSE: prime FAIL — cycle_check exit {rc}")
+            return 1
+        cur_text = draft_path.read_text(encoding="utf-8")
+        prime_text, err = _splice_keys(cur_text, prime_out)
+        if err:
+            print(f"CLOSE: prime FAIL — {err}")
+            return 1
+        draft_path.write_text(prime_text, encoding="utf-8")
+        print("CLOSE: prime OK — the first emit read a placeholder manifest; re-emitted on the spliced draft")
+        after_step("prime")
+        emit_out = prime_out
 
     # Step 5: fold_check --save-baseline (again)
     rc, out = run_checker("fold_check.py", "--save-baseline", str(draft_path))
