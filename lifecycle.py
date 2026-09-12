@@ -458,10 +458,19 @@ def connect_readonly(db_path, timeout=5.0):
     happens and the file exists, falls back to a plain connection under
     PRAGMA query_only=1, which creates -shm but writes nothing else.
     Any other error, or a missing file, propagates unchanged.
+    The refusal is caught whether SQLite raises it at open or at the first read (thread 299).
     """
+    ro = None
     try:
-        return sqlite3.connect(f"file:{db_path}?mode=ro", uri=True, timeout=timeout)
+        ro = sqlite3.connect(f"file:{db_path}?mode=ro", uri=True, timeout=timeout)
+        ro.execute("PRAGMA schema_version").fetchone()
+        return ro
     except sqlite3.OperationalError as exc:
+        try:
+            if ro is not None:
+                ro.close()
+        except Exception:
+            pass
         if "unable to open database file" not in str(exc) or not os.path.exists(db_path):
             raise
     conn = sqlite3.connect(db_path, timeout=timeout)

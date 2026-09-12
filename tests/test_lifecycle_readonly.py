@@ -20,6 +20,20 @@ sys.modules["status"] = _wt_status
 import status
 
 
+class _DeferredRefusal:
+    """Stand-in connection whose first execute raises, simulating SQLite 3.43.2's deferred CANTOPEN."""
+
+    def __init__(self, message="unable to open database file"):
+        self.message = message
+        self.closed = False
+
+    def execute(self, *a, **kw):
+        raise sqlite3.OperationalError(self.message)
+
+    def close(self):
+        self.closed = True
+
+
 class TestConnectReadonly:
 
     # t1 — monkeypatched: mode=ro raises, fallback succeeds; status.query_in_flight returns rows
@@ -172,3 +186,76 @@ class TestConnectReadonly:
                     if "python3" in line and "status.py" in line and "(from `python3" not in line:
                         violations.append(f"{fpath}:{lineno}: {line.rstrip()}")
         assert violations == [], "python3 status.py found in hook files:\n" + "\n".join(violations)
+
+    # t7 — deferred refusal: mode=ro returns a stand-in that raises on first execute
+    def test_fallback_on_deferred_refusal(self, tmp_path, monkeypatch):
+        db_path = str(tmp_path / "lifecycle.db")
+        lifecycle.init_lifecycle_db(db_path)
+
+        real_connect = sqlite3.connect
+        calls = []
+        deferred = None
+
+        def wrapper(*a, **kw):
+            nonlocal deferred
+            calls.append(a[0])
+            if isinstance(a[0], str) and a[0].startswith("file:"):
+                deferred = _DeferredRefusal()
+                return deferred
+            return real_connect(*a, **kw)
+
+        monkeypatch.setattr(sqlite3, "connect", wrapper)
+
+        conn = lifecycle.connect_readonly(db_path)
+        assert deferred is not None
+        assert deferred.closed is True
+        assert len(calls) == 2
+        assert calls[0].startswith("file:")
+        assert not calls[1].startswith("file:")
+        assert conn.execute("SELECT count(*) FROM plans").fetchone() == (0,)
+        assert conn.execute("PRAGMA query_only").fetchone() == (1,)
+        conn.close()
+
+    # t8 — deferred non-refusal error propagates and the stand-in is closed
+    def test_deferred_other_error_propagates(self, tmp_path, monkeypatch):
+        db_path = str(tmp_path / "lifecycle.db")
+        lifecycle.init_lifecycle_db(db_path)
+
+        real_connect = sqlite3.connect
+        calls = []
+        deferred = None
+
+        def wrapper(*a, **kw):
+            nonlocal deferred
+            calls.append(a[0])
+            if isinstance(a[0], str) and a[0].startswith("file:"):
+                deferred = _DeferredRefusal("database is locked")
+                return deferred
+            return real_connect(*a, **kw)
+
+        monkeypatch.setattr(sqlite3, "connect", wrapper)
+
+        with pytest.raises(sqlite3.OperationalError, match="locked"):
+            lifecycle.connect_readonly(db_path)
+        assert deferred is not None
+        assert deferred.closed is True
+        assert len(calls) == 1
+
+    # t9 — status.query_in_flight reads through a deferred refusal
+    def test_status_reads_through_deferred_refusal(self, tmp_path, monkeypatch):
+        db_path = str(tmp_path / "lifecycle.db")
+        lifecycle.init_lifecycle_db(db_path)
+
+        real_connect = sqlite3.connect
+        calls = []
+
+        def wrapper(*a, **kw):
+            calls.append(a[0])
+            if isinstance(a[0], str) and a[0].startswith("file:"):
+                return _DeferredRefusal()
+            return real_connect(*a, **kw)
+
+        monkeypatch.setattr(sqlite3, "connect", wrapper)
+
+        result = status.query_in_flight(db_path)
+        assert isinstance(result, list)

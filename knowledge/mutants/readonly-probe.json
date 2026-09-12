@@ -1,0 +1,33 @@
+{
+  "target": "lifecycle.py",
+  "mutants": [
+    {
+      "name": "probe-removed",
+      "why": "removing the probe means the mode=ro connect returns the stand-in directly; the test's closed assertion fails and a fallback never runs",
+      "anchor": "        ro.execute(\"PRAGMA schema_version\").fetchone()\n        return ro",
+      "replacement": "        return ro",
+      "expect_fail": "tests/test_lifecycle_readonly.py::TestConnectReadonly::test_fallback_on_deferred_refusal"
+    },
+    {
+      "name": "close-block-removed",
+      "why": "removing the ro.close() block means the stand-in is left open; the test's deferred.closed assertion fails",
+      "anchor": "        try:\n            if ro is not None:\n                ro.close()\n        except Exception:\n            pass\n        if \"unable to open database file\" not in str(exc) or not os.path.exists(db_path):\n            raise",
+      "replacement": "        if \"unable to open database file\" not in str(exc) or not os.path.exists(db_path):\n            raise",
+      "expect_fail": "tests/test_lifecycle_readonly.py::TestConnectReadonly::test_fallback_on_deferred_refusal"
+    },
+    {
+      "name": "message-test-dropped",
+      "why": "dropping the message guard means every OperationalError falls back; the locked-error test expects a raise but gets a fallback connection instead",
+      "anchor": "        if \"unable to open database file\" not in str(exc) or not os.path.exists(db_path):\n            raise",
+      "replacement": "",
+      "expect_fail": "tests/test_lifecycle_readonly.py::TestConnectReadonly::test_deferred_other_error_propagates"
+    },
+    {
+      "name": "close-below-message-test",
+      "why": "moving the close after the message guard means a non-refusal error re-raises before close runs; the locked stand-in is left open",
+      "anchor": "        try:\n            if ro is not None:\n                ro.close()\n        except Exception:\n            pass\n        if \"unable to open database file\" not in str(exc) or not os.path.exists(db_path):\n            raise",
+      "replacement": "        if \"unable to open database file\" not in str(exc) or not os.path.exists(db_path):\n            raise\n        try:\n            if ro is not None:\n                ro.close()\n        except Exception:\n            pass",
+      "expect_fail": "tests/test_lifecycle_readonly.py::TestConnectReadonly::test_deferred_other_error_propagates"
+    }
+  ]
+}
