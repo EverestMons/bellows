@@ -1,0 +1,12 @@
+PYTHON: /Users/marklehn/Developer/bellows/.venv/bin/python
+HEAD: 9fca55c8d212254b110dd5689090c889d3168373
+TARGET: dashboard.py sha256=159c5f24dac9
+
+MUTANT class-hold-filter-dropped: KILLED — suite caught the defect
+MUTANT release-class-hold-arg-dropped: KILLED — suite caught the defect
+MUTANT nonzero-reported-as-success: KILLED — suite caught the defect
+MUTANT confirm-release-y-check-removed: KILLED — suite caught the defect
+
+LIVE-TREE UNCHANGED: dashboard.py sha256=159c5f24dac9
+
+MUTATION: 4 killed, 0 survived, 0 error
