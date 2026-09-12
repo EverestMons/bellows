@@ -1,0 +1,41 @@
+{
+  "target": "bellows.py",
+  "mutants": [
+    {
+      "name": "agent-owns-root-ignores-root",
+      "why": "_agent_owns_root delegates to _agent_loaded and ignores root; any loaded agent makes any dashboard kickstart, reproducing thread 297; t10 asserts kickstart is NOT called for a foreign root",
+      "anchor": "    r = _agent_root(label)\n    return r is not None and os.path.realpath(r) == os.path.realpath(str(root))",
+      "replacement": "    return _agent_loaded(label)",
+      "expect_fail": "tests/test_daemon_agent.py::test_t10_spawn_child_foreign_root_spawns_a_child"
+    },
+    {
+      "name": "kickstart-always-replace",
+      "why": "dropping the replace flag and always emitting -k means a kickstart that follows a free lock replaces an incumbent that does not exist, reproducing the drain race; t12 asserts -k is absent when replace=False",
+      "anchor": "    argv = [\"launchctl\", \"kickstart\"]\n    if replace:\n        argv.append(\"-k\")\n    argv.append(f\"gui/{os.getuid()}/{label}\")",
+      "replacement": "    argv = [\"launchctl\", \"kickstart\", \"-k\", f\"gui/{os.getuid()}/{label}\"]",
+      "expect_fail": "tests/test_daemon_agent.py::test_t12_kickstart_replace_flag"
+    },
+    {
+      "name": "agent-root-no-program-fallback",
+      "why": "dropping the program fallback means _agent_root returns None when the working-directory line is absent; t8 case 2 asserts the fallback derives the root from the program path",
+      "anchor": "        for line in result.stdout.splitlines():\n            _, sep, prog = line.strip().partition(\"program = \")\n            if sep:\n                prog = prog.strip()\n                if prog.endswith(\"/.venv/bin/python\"):\n                    return os.path.dirname(os.path.dirname(os.path.dirname(prog)))\n        return None",
+      "replacement": "        return None",
+      "expect_fail": "tests/test_daemon_agent.py::test_t8_agent_root_parses_working_directory"
+    },
+    {
+      "name": "spawn-child-replace-true",
+      "why": "_spawn_child passing replace=True kickstarts with -k and can kill an incumbent daemon; t11 asserts replace=False is passed when the agent owns this root",
+      "target": "dashboard.py",
+      "anchor": "            bellows._kickstart(\"com.eluvian.bellows-daemon\", replace=False)",
+      "replacement": "            bellows._kickstart(\"com.eluvian.bellows-daemon\", replace=True)",
+      "expect_fail": "tests/test_daemon_agent.py::test_t11_spawn_child_own_root_kickstarts_without_replace"
+    },
+    {
+      "name": "agent-owns-root-basename-only",
+      "why": "comparing basename rather than realpath makes a dashboard on tmp/other/bellows think it owns the agent whose root is tmp/bellows (same basename, different parent); t9 asserts the comparison is False for a different parent",
+      "anchor": "    return r is not None and os.path.realpath(r) == os.path.realpath(str(root))",
+      "replacement": "    return r is not None and os.path.basename(r) == os.path.basename(str(root))",
+      "expect_fail": "tests/test_daemon_agent.py::test_t9_agent_owns_root_compares_realpath"
+    }
+  ]
+}

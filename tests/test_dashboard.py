@@ -425,6 +425,7 @@ class TestPTYSmoke:
             # Never reach the real launchd agent from a test: _spawn_child asks the
             # GLOBAL _agent_loaded() after a per-root lock check and would
             # `launchctl kickstart -k` the machine's live daemon (thread 297).
+            # Defence in depth (#100087); the branch is proven closed by t10.
             bellows._agent_loaded = lambda *a, **k: False
             shell = CursesShell(bellows_root=Path({str(tmp_path)!r}))
             shell.run()

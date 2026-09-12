@@ -176,14 +176,48 @@ def _agent_loaded(label="com.eluvian.bellows-daemon"):
         return False
 
 
-def _kickstart(label):
-    """Kickstart the named launchd agent, replacing any running instance.
-
-    Returns (ok: bool, msg: str).
-    """
+def _agent_root(label="com.eluvian.bellows-daemon"):
+    """Return the working directory the named launchd agent runs from, or None."""
     try:
         result = subprocess.run(
-            ["launchctl", "kickstart", "-k", f"gui/{os.getuid()}/{label}"],
+            ["launchctl", "print", f"gui/{os.getuid()}/{label}"],
+            capture_output=True, text=True, timeout=5,
+        )
+        if result.returncode != 0:
+            return None
+        for line in result.stdout.splitlines():
+            _, sep, val = line.strip().partition("working directory = ")
+            if sep:
+                return val.strip()
+        for line in result.stdout.splitlines():
+            _, sep, prog = line.strip().partition("program = ")
+            if sep:
+                prog = prog.strip()
+                if prog.endswith("/.venv/bin/python"):
+                    return os.path.dirname(os.path.dirname(os.path.dirname(prog)))
+        return None
+    except Exception:
+        return None
+
+
+def _agent_owns_root(root, label="com.eluvian.bellows-daemon"):
+    """Return True if the named agent's working directory is `root`."""
+    r = _agent_root(label)
+    return r is not None and os.path.realpath(r) == os.path.realpath(str(root))
+
+
+def _kickstart(label, replace=True):
+    """Kickstart the named launchd agent.
+
+    Returns (ok: bool, msg: str). Pass replace=False when there is no incumbent.
+    """
+    argv = ["launchctl", "kickstart"]
+    if replace:
+        argv.append("-k")
+    argv.append(f"gui/{os.getuid()}/{label}")
+    try:
+        result = subprocess.run(
+            argv,
             capture_output=True, text=True, timeout=10,
         )
         if result.returncode == 0:

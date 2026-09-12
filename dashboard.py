@@ -424,8 +424,8 @@ class CursesShell:
 
     def _spawn_child(self):
         """Spawn bellows.py as a subprocess, or kickstart via the launchd agent."""
-        if bellows._agent_loaded():
-            bellows._kickstart("com.eluvian.bellows-daemon")
+        if bellows._agent_owns_root(self.bellows_root):
+            bellows._kickstart("com.eluvian.bellows-daemon", replace=False)
             self.child = None  # viewer mode — no process to own
         else:
             self.child = subprocess.Popen(
