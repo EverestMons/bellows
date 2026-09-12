@@ -1,0 +1,33 @@
+{
+  "target": "dashboard.py",
+  "mutants": [
+    {
+      "name": "class-hold-filter-dropped",
+      "why": "dropping the class: filter from class_hold_rows makes every HOLD row a target, so a stale-checkout hold offers the release key; t1 asserts only class: rows are returned",
+      "anchor": "        [r for r in deposit_rows if r.get(\"status\") == \"HOLD\" and r.get(\"reason\", \"\").startswith(\"class:\")],",
+      "replacement": "        [r for r in deposit_rows if r.get(\"status\") == \"HOLD\"],",
+      "expect_fail": "tests/test_dashboard.py::TestClassHoldRows::test_only_class_holds_sorted"
+    },
+    {
+      "name": "release-class-hold-arg-dropped",
+      "why": "dropping --release-class-hold from the argv passes the hold file to clear_plan.py bare; that re-entry path loops and never performs the release; t5 asserts the exact argv including --release-class-hold",
+      "anchor": "            \"--release-class-hold\",",
+      "replacement": "",
+      "expect_fail": "tests/test_dashboard.py::TestDoRelease::test_runs_the_same_command_with_the_target_path"
+    },
+    {
+      "name": "nonzero-reported-as-success",
+      "why": "treating a non-zero returncode as success hides the error from the CEO; t6 asserts release_note starts with 'release FAILED'",
+      "anchor": "        if result.returncode == 0:",
+      "replacement": "        if True:",
+      "expect_fail": "tests/test_dashboard.py::TestDoRelease::test_nonzero_exit_is_shown"
+    },
+    {
+      "name": "confirm-release-y-check-removed",
+      "why": "removing the y/Y test in confirm_release means any key press triggers a release without confirmation; t7 asserts that 'n' cancels and _do_release is not called",
+      "anchor": "            if key in (ord(\"y\"), ord(\"Y\")):\n                if stdscr is not None:",
+      "replacement": "            if True:\n                if stdscr is not None:",
+      "expect_fail": "tests/test_dashboard.py::TestHandleKey::test_confirm_cancels_and_l_needs_a_class_hold"
+    }
+  ]
+}

@@ -6,6 +6,7 @@ import os
 import sqlite3
 import sys
 import textwrap
+import unittest.mock
 
 import pytest
 
@@ -743,3 +744,120 @@ class TestTailSessionLog:
 
         result = dashboard.tail_session_log(log_dir)
         assert result is None
+
+
+# ---------------------------------------------------------------------------
+# Test 14: class_hold_rows selector
+# ---------------------------------------------------------------------------
+
+class TestClassHoldRows:
+    def test_only_class_holds_sorted(self):
+        rows = [
+            {"file": "ready-foo.md", "status": "READY", "reason": "", "dir": "/p"},
+            {"file": "hold-stale.md", "status": "HOLD", "reason": "stale-checkout", "dir": "/p"},
+            {"file": "hold-b.md", "status": "HOLD", "reason": "class:shop-infra", "dir": "/p"},
+            {"file": "hold-a.md", "status": "HOLD", "reason": "class:shop-infra", "dir": "/p"},
+        ]
+        result = dashboard.class_hold_rows(rows)
+        assert [r["file"] for r in result] == ["hold-a.md", "hold-b.md"]
+
+
+# ---------------------------------------------------------------------------
+# Test 15: release footer rendering
+# ---------------------------------------------------------------------------
+
+class TestReleaseFooter:
+    def _class_hold_state(self):
+        return _make_state(deposit_rows=[
+            {"file": "hold-b.md", "status": "HOLD", "reason": "class:shop-infra", "dir": "/p"},
+            {"file": "hold-a.md", "status": "HOLD", "reason": "class:shop-infra", "dir": "/p"},
+        ])
+
+    def test_offers_release_for_a_class_hold(self):
+        state = self._class_hold_state()
+        lines = _texts(dashboard.render_screen(state, 50, 120))
+        footer = lines[-1]
+        assert "l release hold-a.md" in footer
+
+    def test_no_release_key_without_a_class_hold(self):
+        state = _make_state(deposit_rows=[
+            {"file": "hold-stale.md", "status": "HOLD", "reason": "stale-checkout", "dir": "/p"},
+        ])
+        lines = _texts(dashboard.render_screen(state, 50, 120))
+        footer = lines[-1]
+        assert "l release" not in footer
+
+    def test_confirm_release_footer(self):
+        state = _make_state(
+            release_target={"file": "hold-a.md", "reason": "class:shop-infra", "dir": "/p"},
+        )
+        lines = _texts(dashboard.render_screen(state, 50, 120, mode="confirm_release"))
+        footer = lines[-1]
+        assert footer == "Release hold-a.md (class:shop-infra)? (y/n)"
+
+
+# ---------------------------------------------------------------------------
+# Test 16: _do_release method
+# ---------------------------------------------------------------------------
+
+class TestDoRelease:
+    def test_runs_the_same_command_with_the_target_path(self, tmp_path):
+        (tmp_path / "config.json").write_text("{}")
+        shell = dashboard.CursesShell(bellows_root=tmp_path)
+        row = {"file": "hold-a.md", "status": "HOLD", "reason": "class:shop-infra", "dir": str(tmp_path)}
+        mock_result = type("R", (), {"returncode": 0, "stdout": "Released class hold: a.md\nDaemon will claim within 30 seconds.\n", "stderr": ""})()
+        with unittest.mock.patch.object(dashboard.subprocess, "run", return_value=mock_result) as m:
+            shell._do_release(row)
+        call = m.call_args
+        assert call[0][0] == [
+            sys.executable,
+            str(tmp_path / "tools" / "clear_plan.py"),
+            os.path.join(str(tmp_path), "hold-a.md"),
+            "--release-class-hold",
+        ]
+        assert call[1]["cwd"] == str(tmp_path)
+        assert shell.release_note == "Released class hold: a.md"
+
+    def test_nonzero_exit_is_shown(self, tmp_path):
+        (tmp_path / "config.json").write_text("{}")
+        shell = dashboard.CursesShell(bellows_root=tmp_path)
+        row = {"file": "hold-a.md", "status": "HOLD", "reason": "class:shop-infra", "dir": str(tmp_path)}
+        err_line = "ERROR: cycle_check gate: CONTINUE (BAR_MET required) — file left held"
+        mock_result = type("R", (), {"returncode": 1, "stdout": "", "stderr": err_line + "\n"})()
+        with unittest.mock.patch.object(dashboard.subprocess, "run", return_value=mock_result):
+            shell._do_release(row)
+        assert shell.release_note.startswith("release FAILED (exit 1):")
+        assert shell.release_note.endswith(err_line)
+        state = _make_state(release_note=shell.release_note)
+        lines = _texts(dashboard.render_screen(state, 50, 120))
+        assert any(err_line in l or "FAILED" in l for l in lines[-3:-1])
+
+
+# ---------------------------------------------------------------------------
+# Test 17: _handle_key dispatch
+# ---------------------------------------------------------------------------
+
+class TestHandleKey:
+    def test_confirm_cancels_and_l_needs_a_class_hold(self, tmp_path):
+        (tmp_path / "config.json").write_text("{}")
+        shell = dashboard.CursesShell(bellows_root=tmp_path)
+        row = {"file": "hold-a.md", "status": "HOLD", "reason": "class:shop-infra", "dir": str(tmp_path)}
+
+        # In confirm_release, 'n' cancels without releasing
+        shell.mode = "confirm_release"
+        shell.release_target = row
+        with unittest.mock.patch.object(shell, "_do_release") as mock_release:
+            shell._handle_key(ord("n"), _make_state(deposit_rows=[row]))
+        assert shell.mode == "normal"
+        mock_release.assert_not_called()
+
+        # In normal, 'l' with no class hold leaves mode normal
+        shell.mode = "normal"
+        shell._handle_key(ord("l"), _make_state(deposit_rows=[]))
+        assert shell.mode == "normal"
+
+        # In normal, 'l' with a class hold sets confirm_release and target
+        shell.mode = "normal"
+        shell._handle_key(ord("l"), _make_state(deposit_rows=[row]))
+        assert shell.mode == "confirm_release"
+        assert shell.release_target == row

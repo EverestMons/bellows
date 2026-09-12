@@ -102,6 +102,18 @@ def filter_feed_lines(lines):
 
 
 # ---------------------------------------------------------------------------
+# Deposit helpers
+# ---------------------------------------------------------------------------
+
+def class_hold_rows(deposit_rows):
+    """Return deposit rows whose hold reason starts with 'class:', sorted by file."""
+    return sorted(
+        [r for r in deposit_rows if r.get("status") == "HOLD" and r.get("reason", "").startswith("class:")],
+        key=lambda r: r["file"],
+    )
+
+
+# ---------------------------------------------------------------------------
 # State assembly (pure data — no rendering)
 # ---------------------------------------------------------------------------
 
@@ -331,7 +343,8 @@ def render_screen(state, height, width, mode="normal", has_colors=False):
 
     # --- EVENT FEED (fills remaining space above footer) ---
     feed_start = len(rows)
-    feed_available = height - feed_start - 1  # -1 for footer
+    _footer_rows = 2 if state.get("release_note") else 1  # footer + optional release_note
+    feed_available = height - feed_start - _footer_rows
 
     rows.append((_fit("EVENT FEED", width), attr_feed_header))
     feed_available -= 1  # label row consumed
@@ -359,12 +372,21 @@ def render_screen(state, height, width, mode="normal", has_colors=False):
         footer = "Restart daemon? (y/n)"
     elif mode == "confirm_quit":
         footer = "Quit dashboard and stop daemon? (y/n)"
+    elif mode == "confirm_release":
+        target = state.get("release_target") or {}
+        footer = f"Release {target.get('file', '')} ({target.get('reason', '')})? (y/n)"
     else:
         daemon_up = state["child_alive"] or state["daemon_running"]
         if daemon_up:
             footer = "r restart  q quit"
         else:
             footer = "r relaunch  q quit"
+        holds = class_hold_rows(state.get("deposit_rows", []))
+        if holds:
+            footer += f"  l release {holds[0]['file']}"
+    release_note = state.get("release_note")
+    if release_note:
+        rows.append((_fit(release_note, width), 0))
     rows.append((_fit(footer, width), attr_footer))
 
     # Ensure exactly `height` rows
@@ -392,7 +414,9 @@ class CursesShell:
     def __init__(self, bellows_root=None):
         self.bellows_root = bellows_root or resolve_bellows_root()
         self.child = None
-        self.mode = "normal"  # normal | confirm_restart | confirm_quit
+        self.mode = "normal"  # normal | confirm_restart | confirm_quit | confirm_release
+        self.release_target = None
+        self.release_note = None
         self.dashboard_lock_fd = None
 
     def run(self):
@@ -499,6 +523,73 @@ class CursesShell:
             except subprocess.TimeoutExpired:
                 pass
 
+    def _do_release(self, row):
+        """Run clear_plan.py --release-class-hold for row; set release_note."""
+        cmd = [
+            sys.executable,
+            str(self.bellows_root / "tools" / "clear_plan.py"),
+            os.path.join(row["dir"], row["file"]),
+            "--release-class-hold",
+        ]
+        try:
+            result = subprocess.run(
+                cmd,
+                cwd=str(self.bellows_root),
+                capture_output=True,
+                text=True,
+                timeout=120,
+            )
+        except subprocess.TimeoutExpired:
+            self.release_note = "release FAILED (timed out after 120 s)"
+            self.release_target = None
+            self.mode = "normal"
+            return
+        if result.returncode == 0:
+            first_line = result.stdout.splitlines()[0] if result.stdout.strip() else ""
+            self.release_note = first_line
+        else:
+            lines = [l for l in (result.stderr or result.stdout).splitlines() if l.strip()]
+            last = lines[-1] if lines else ""
+            self.release_note = f"release FAILED (exit {result.returncode}): {last}"
+        self.release_target = None
+        self.mode = "normal"
+
+    def _handle_key(self, key, state, stdscr=None):
+        """Dispatch a keypress; return 'quit' to signal loop exit, else None."""
+        if self.mode == "normal":
+            if key in (ord("r"), ord("R")):
+                self.mode = "confirm_restart"
+            elif key in (ord("q"), ord("Q")):
+                self.mode = "confirm_quit"
+            elif key in (ord("l"), ord("L")):
+                holds = class_hold_rows(state.get("deposit_rows", []))
+                if holds:
+                    self.release_target = holds[0]
+                    self.mode = "confirm_release"
+        elif self.mode == "confirm_restart":
+            if key in (ord("y"), ord("Y")):
+                self._do_restart(stdscr)
+            else:
+                self.mode = "normal"
+        elif self.mode == "confirm_quit":
+            if key in (ord("y"), ord("Y")):
+                self._do_quit()
+                return "quit"
+            else:
+                self.mode = "normal"
+        elif self.mode == "confirm_release":
+            if key in (ord("y"), ord("Y")):
+                if stdscr is not None:
+                    h, w = stdscr.getmaxyx()
+                    footer_row = h - 1
+                    msg = _fit(f"Releasing {self.release_target['file']} …", w)
+                    stdscr.addstr(footer_row, 0, msg, curses.A_REVERSE)
+                    stdscr.refresh()
+                self._do_release(self.release_target)
+            else:
+                self.mode = "normal"
+        return None
+
     def _main_loop(self, stdscr):
         """Curses main loop: refresh every ~2s, handle keys."""
         curses.curs_set(0)  # hide cursor
@@ -530,6 +621,8 @@ class CursesShell:
 
             # Assemble state and render
             state = assemble_state(self.bellows_root, self.child)
+            state["release_target"] = self.release_target
+            state["release_note"] = self.release_note
             lines = render_screen(state, height, width, self.mode, self._has_colors)
 
             # Draw
@@ -556,22 +649,8 @@ class CursesShell:
                 continue
 
             # Handle key based on mode
-            if self.mode == "normal":
-                if key in (ord("r"), ord("R")):
-                    self.mode = "confirm_restart"
-                elif key in (ord("q"), ord("Q")):
-                    self.mode = "confirm_quit"
-            elif self.mode == "confirm_restart":
-                if key in (ord("y"), ord("Y")):
-                    self._do_restart(stdscr)
-                else:
-                    self.mode = "normal"
-            elif self.mode == "confirm_quit":
-                if key in (ord("y"), ord("Y")):
-                    self._do_quit()
-                    return  # exit curses
-                else:
-                    self.mode = "normal"
+            if self._handle_key(key, state, stdscr) == "quit":
+                return  # exit curses
 
 
 # ---------------------------------------------------------------------------
