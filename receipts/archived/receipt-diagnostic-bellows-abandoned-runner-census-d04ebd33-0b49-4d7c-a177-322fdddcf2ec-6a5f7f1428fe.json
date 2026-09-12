@@ -1,0 +1,8 @@
+{
+  "slug": "diagnostic-bellows-abandoned-runner-census",
+  "content_hash": "6a5f7f1428feb3b7d7a6514bf26157401d60dc30a9da75c262e9dcc95637a1b2",
+  "session_id": "d04ebd33-0b49-4d7c-a177-322fdddcf2ec",
+  "armed_at": "2026-09-11T22:27:05.066923",
+  "watcher": "gate_watcher.py spawned detached (pid 95007); log: logs/watch/diagnostic-bellows-abandoned-runner-census.md.log",
+  "attestation_boundary": "This receipt proves the watcher was ARMED at write time. It does NOT prove the watcher stayed alive. Liveness of a session-local monitor is not externally verifiable."
+}
