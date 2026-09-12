@@ -1,0 +1,9 @@
+PYTHON: /Users/marklehn/Developer/bellows/.venv/bin/python
+HEAD: 440bdbdee935c02477732a5f3b002267d531c3bc
+TARGET: tools/cycle_log_projection_census.py sha256=fd9e2328e14f
+
+MUTANT nested-fstring-restored: KILLED — suite caught the defect
+
+LIVE-TREE UNCHANGED: tools/cycle_log_projection_census.py sha256=fd9e2328e14f
+
+MUTATION: 1 killed, 0 survived, 0 error
