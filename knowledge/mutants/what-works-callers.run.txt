@@ -1,0 +1,13 @@
+PYTHON: /Users/marklehn/Developer/anvil/.venv/bin/python
+HEAD: 80f9f049deefec63981de5cba35608709d9a7c3a
+TARGET: src/what_works.py sha256=8cf643b9f7b5
+
+MUTANT module-branch-removed: KILLED — suite caught the defect
+MUTANT module-discriminator-flipped: KILLED — suite caught the defect
+MUTANT verified-guard-removed: KILLED — suite caught the defect
+MUTANT sample-slice-reduced: KILLED — suite caught the defect
+MUTANT sample-set-removed: KILLED — suite caught the defect
+
+LIVE-TREE UNCHANGED: src/what_works.py sha256=8cf643b9f7b5
+
+MUTATION: 5 killed, 0 survived, 0 error

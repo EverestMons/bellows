@@ -1,0 +1,42 @@
+{
+  "target": "src/what_works.py",
+  "mutants": [
+    {
+      "name": "module-branch-removed",
+      "why": "the module branch must emit '(module)' labels; removing it makes every caller emit 'file::name' so root-level module callers are mis-labelled and t13 catches it",
+      "anchor": "            if src_chunk_type == \"module\":\n                label = f\"{caller_file} (module)\"\n            else:\n                label = f\"{caller_file}::{caller_name}\"",
+      "replacement": "            label = f\"{caller_file}::{caller_name}\"",
+      "expect_fail": "tests/test_what_works.py::test_verified_callers_module_caller_label"
+    },
+    {
+      "name": "module-discriminator-flipped",
+      "why": "the discriminator must be '== module' not '!= module'; flipping it labels every non-module caller as '(module)' and t14 catches the wrong label on a function caller",
+      "anchor": "            if src_chunk_type == \"module\":",
+      "replacement": "            if src_chunk_type != \"module\":",
+      "expect_fail": "tests/test_what_works.py::test_entry_sample_agrees_with_count_on_method_target"
+    },
+    {
+      "name": "verified-guard-removed",
+      "why": "the import check guard must filter unverified edges; removing it counts all cross-file call edges and t6 asserts only the verified caller is counted",
+      "anchor": "        if verified:",
+      "replacement": "        if True:",
+      "expect_fail": "tests/test_what_works.py::test_verified_inbound_import_check"
+    },
+    {
+      "name": "sample-slice-reduced",
+      "why": "the sample slice must be [:3] not [:2]; reducing it silently drops the third distinct caller and t15 asserts len(sample) == 3 with four callers",
+      "target": "src/what_works.py",
+      "anchor": "    callers_list = sorted(set(row.get(\"verified_callers\", [])))[:3]",
+      "replacement": "    callers_list = sorted(set(row.get(\"verified_callers\", [])))[:2]",
+      "expect_fail": "tests/test_what_works.py::test_entry_sample_capped_at_three"
+    },
+    {
+      "name": "sample-set-removed",
+      "why": "the set() dedup must be applied before slicing; removing it keeps duplicates in the sample so a caller with two edges appears twice and t14 catches the duplicate",
+      "target": "src/what_works.py",
+      "anchor": "    callers_list = sorted(set(row.get(\"verified_callers\", [])))[:3]",
+      "replacement": "    callers_list = sorted(row.get(\"verified_callers\", []))[:3]",
+      "expect_fail": "tests/test_what_works.py::test_entry_sample_agrees_with_count_on_method_target"
+    }
+  ]
+}
