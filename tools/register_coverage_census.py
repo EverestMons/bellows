@@ -40,8 +40,6 @@ sys.path.insert(0, str(BELLOWS_ROOT / "scripts"))
 
 import walk_register_lint as wrl  # noqa: E402
 
-GOV = Path("/Users/marklehn/Developer/eluvian-governance")
-REG_DIR = GOV / "governance" / "knowledge" / "research"
 GLOB = "walk-register-*.md"
 
 # ⛔ Named by EXACT filename (walk 3, lens 1: "by name" naming nothing left an
@@ -65,11 +63,18 @@ CONTROLS = {
 
 MAX_ATTEMPTS = 3  # ⛔ BOUNDED (walk 2, lens 2). An unbounded retry is a livelock.
 
-_out = RAW.open("a", encoding="utf-8")
+_out = None
+
+
+def _reg_dir():
+    from bellows_root import resolve_governance_root
+    return resolve_governance_root() / "governance" / "knowledge" / "research"
 
 
 def a(line=""):
     """Append AS ESTABLISHED. Flushed every line — a killed run keeps its work."""
+    if _out is None:
+        raise RuntimeError("run through main() with --out")
     _out.write(line + "\n")
     _out.flush()
 
@@ -78,9 +83,11 @@ def a(line=""):
 # Population pin (Item 2b)
 # ----------------------------------------------------------------------
 def pin():
-    head = subprocess.run(["git", "-C", str(GOV), "rev-parse", "HEAD"],
+    reg = _reg_dir()
+    gov = reg.parents[2]
+    head = subprocess.run(["git", "-C", str(gov), "rev-parse", "HEAD"],
                           capture_output=True, text=True, timeout=15).stdout.strip()
-    files = sorted(p for p in REG_DIR.glob(GLOB) if p.name != SELF_REGISTER)
+    files = sorted(p for p in reg.glob(GLOB) if p.name != SELF_REGISTER)
     return head, len(files), files
 
 
@@ -316,7 +323,7 @@ def run():
         a(f"attempt {attempt}: START head={head0} files={n0} (self-excluded)")
         break
     a(f"self register EXCLUDED BY EXACT NAME: {SELF_REGISTER}")
-    a(f"  present in directory: {(REG_DIR / SELF_REGISTER).exists()}")
+    a(f"  present in directory: {(_reg_dir() /SELF_REGISTER).exists()}")
     a(f"  censused population : {n0}")
     a("")
 
@@ -330,7 +337,7 @@ def run():
     a("")
     control_ok = True
     for cname, exp in CONTROLS.items():
-        cpath = REG_DIR / cname
+        cpath = _reg_dir() /cname
         if not cpath.exists():
             a(f"  {cname}: **CONTROL FAILED — file not found**")
             control_ok = False
@@ -353,8 +360,8 @@ def run():
         a(f"      derived families        : {crec['families']}")
         a(f"      RESULT: {'PASS' if ok else '**CONTROL FAILED**'}")
         a("")
-    n_single = sum(1 for c in CONTROLS if (REG_DIR / c).exists()
-                   and measure(REG_DIR / c)[0]["n_id_tables"] == 1)
+    n_single = sum(1 for c in CONTROLS if (_reg_dir() /c).exists()
+                   and measure(_reg_dir() /c)[0]["n_id_tables"] == 1)
     n_multi = len(CONTROLS) - n_single
     a(f"  control set spans single-table ({n_single}) and multi-table ({n_multi}): "
       f"{'YES' if n_single and n_multi else '**NO — the 100%-orphan signature could hide**'}")
@@ -647,5 +654,23 @@ def run():
     return 1 if moved else 0
 
 
+def main():
+    import argparse
+    parser = argparse.ArgumentParser(
+        description="register_coverage_census — orphan-id population in walk registers")
+    parser.add_argument("--out", required=True,
+                        help="Append output to PATH "
+                             "(historical target: knowledge/qa/evidence/"
+                             "register-coverage-2026-09-04/census-raw.txt)")
+    args = parser.parse_args()
+
+    global _out
+    _out = open(args.out, "a", encoding="utf-8")
+    try:
+        sys.exit(run())
+    finally:
+        _out.close()
+
+
 if __name__ == "__main__":
-    sys.exit(run())
+    sys.exit(main())

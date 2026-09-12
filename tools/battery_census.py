@@ -34,7 +34,6 @@ sys.path.insert(0, str(SCRIPTS))
 import lens_order_check as loc
 import walk_register_lint as wrl
 
-DEFAULT_REGISTERS = Path("/Users/marklehn/Developer/eluvian-governance/governance/knowledge/research")
 DEFAULT_DB = ROOT / "lifecycle.db"
 
 BATTERY_TOOLS = [
@@ -350,15 +349,20 @@ def main():
     import argparse
 
     parser = argparse.ArgumentParser(description="Walk-register corpus census")
-    parser.add_argument("--registers", default=str(DEFAULT_REGISTERS),
-                        help="Directory containing walk-register-*.md files")
+    parser.add_argument("--registers", default=None,
+                        help="Directory containing walk-register-*.md files "
+                             "(default: governance/knowledge/research via resolver)")
     parser.add_argument("--db", default=str(DEFAULT_DB),
                         help="Path to lifecycle.db")
     parser.add_argument("--json", action="store_true",
                         help="Emit JSON array instead of TSV")
     args = parser.parse_args()
 
-    registers_dir = Path(args.registers)
+    if args.registers is None:
+        from bellows_root import resolve_governance_root
+        registers_dir = resolve_governance_root() / "governance" / "knowledge" / "research"
+    else:
+        registers_dir = Path(args.registers)
     files = sorted(registers_dir.glob("walk-register-*.md"))
 
     lifecycle_map = load_lifecycle(args.db)

@@ -1,0 +1,37 @@
+{
+  "target": "tools/register_coverage_census.py",
+  "mutants": [
+    {
+      "name": "writer-guard-removed",
+      "target": "tools/register_coverage_census.py",
+      "why": "restoring the import-time open() makes _out non-None at import; t2 finds the open() call at module level and fails",
+      "anchor": "_out = None",
+      "replacement": "_out = RAW.open(\"a\", encoding=\"utf-8\")",
+      "expect_fail": "tests/test_tools_safe_to_invoke.py::test_no_import_time_writes"
+    },
+    {
+      "name": "battery-absolute-default",
+      "target": "tools/battery_census.py",
+      "why": "restoring the old absolute --registers default puts /Users/marklehn back in the source; t1 finds the hardcoded path and fails",
+      "anchor": "    parser.add_argument(\"--registers\", default=None,",
+      "replacement": "    parser.add_argument(\"--registers\", default=\"/Users/marklehn/Developer/eluvian-governance/governance/knowledge/research\",",
+      "expect_fail": "tests/test_tools_safe_to_invoke.py::test_no_absolute_home_paths"
+    },
+    {
+      "name": "qa-steps-parse-help-crashes",
+      "target": "tools/qa_steps_parse_census.py",
+      "why": "replacing parse_args() with a hand-rolled args object means --help is not handled by argparse; the tool runs its census and emits no usage line, so t3 records it as a failure",
+      "anchor": "    args = parser.parse_args()",
+      "replacement": "    args = type(\"A\", (), {\"json\": \"--json\" in sys.argv})()",
+      "expect_fail": "tests/test_tools_safe_to_invoke.py::test_help_does_no_work"
+    },
+    {
+      "name": "projection-required-removed",
+      "target": "tools/cycle_log_projection_census.py",
+      "why": "replacing required=True with default=str(RAW) means a run with no --out argument proceeds to open the evidence file and write the census; t4 expects exit 2, gets exit 0 (or a timeout), so it records the failure",
+      "anchor": "    parser.add_argument(\"--out\", required=True,",
+      "replacement": "    parser.add_argument(\"--out\", default=str(RAW),",
+      "expect_fail": "tests/test_tools_safe_to_invoke.py::test_writers_refuse_without_out"
+    }
+  ]
+}

@@ -177,6 +177,9 @@ def survey():
 
 
 def main():
+    import argparse
+    argparse.ArgumentParser(description="cycle_log_signal_census — Cycle Log signal instrument").parse_args()
+
     recs, skipped = survey()
 
     a("=" * 78)
@@ -401,7 +404,8 @@ def main():
         # classification evidence
         base = Path(r["ref"]).name
         hits = []
-        for root in (BELLOWS_ROOT, Path("/Users/marklehn/Developer/eluvian-governance")):
+        from bellows_root import resolve_governance_root as _resolve_gov
+        for root in (BELLOWS_ROOT, _resolve_gov()):
             for dirpath, dirnames, filenames in os.walk(root):
                 if ".git" in dirpath.split(os.sep):
                     continue

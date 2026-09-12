@@ -52,7 +52,9 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 SCRIPTS = ROOT / "scripts"
-GOVERNANCE = Path("/Users/marklehn/Developer/eluvian-governance/governance/knowledge/research")
+def _governance_research():
+    from bellows_root import resolve_governance_root
+    return resolve_governance_root() / "governance" / "knowledge" / "research"
 
 sys.path.insert(0, str(SCRIPTS))
 sys.path.insert(0, str(ROOT))
@@ -372,18 +374,18 @@ def load_fold_introduced_from_registers(pop_b: list) -> dict:
     Returns: {rel_path: {"register": path, "fold_introduced_count": int,
                           "total_findings": int}}
     """
-    if not GOVERNANCE.exists():
+    if not _governance_research().exists():
         return {}
 
     result = {}
     for rel_path, shas in pop_b:
         slug = plan_slug_from_path(rel_path)
         # Find matching register
-        candidates = list(GOVERNANCE.glob(f"walk-register-{slug}*.md"))
+        candidates = list(_governance_research().glob(f"walk-register-{slug}*.md"))
         if not candidates:
             # Also try full stem name without prefix
             name_stem = Path(rel_path).stem
-            candidates = list(GOVERNANCE.glob(f"walk-register-*{name_stem}*.md"))
+            candidates = list(_governance_research().glob(f"walk-register-*{name_stem}*.md"))
         if not candidates:
             result[rel_path] = {
                 "register": None, "fold_introduced_count": 0, "total_findings": 0}

@@ -370,10 +370,15 @@ def format_report(result: dict) -> str:
 
 
 def main():
+    import argparse
+    parser = argparse.ArgumentParser(description="qa_steps_parse_census — QA step parsing census")
+    parser.add_argument("--json", action="store_true", help="Emit JSON output")
+    args = parser.parse_args()
+
     records = collect_plans()
     result = run_census(records)
 
-    if "--json" in sys.argv:
+    if args.json:
         # Serialize sets and Paths for JSON
         def default(obj):
             if isinstance(obj, set):

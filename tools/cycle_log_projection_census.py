@@ -35,8 +35,6 @@ import walk_register_lint as wrl                     # noqa: E402
 import lens_order_check as loc                       # noqa: E402
 from cycle_yields import extract_dc_blocks           # noqa: E402
 
-GOV = Path("/Users/marklehn/Developer/eluvian-governance")
-REG_DIR = GOV / "governance" / "knowledge" / "research"
 SELF_REGISTER = "walk-register-cycle-log-projection-2026-09-06.md"
 RAW = (BELLOWS / "knowledge" / "qa" / "evidence"
        / "cycle-log-projection-2026-09-06" / "census-raw.txt")
@@ -46,10 +44,17 @@ CONTROLS = {
     "executable-100017.md": {"agree": False, "missing": [4, 6]},
 }
 
-_out = RAW.open("a", encoding="utf-8")
+_out = None
+
+
+def _reg_dir():
+    from bellows_root import resolve_governance_root
+    return resolve_governance_root() / "governance" / "knowledge" / "research"
 
 
 def a(line=""):
+    if _out is None:
+        raise RuntimeError("run through main() with --out")
     _out.write(line + "\n")
     _out.flush()
 
@@ -282,7 +287,7 @@ def run():
     a("=" * 78)
     a("## ITEM 5 / Q3 — COST OF ADDING `class` TO REQUIRED_COLUMNS")
     a("=" * 78)
-    all_regs = sorted(p for p in REG_DIR.glob("walk-register-*.md")
+    all_regs = sorted(p for p in _reg_dir().glob("walk-register-*.md")
                       if p.name != SELF_REGISTER)
     have_class = []
     status_now = Counter()
@@ -415,9 +420,29 @@ def run_q4_q5():
     a("END OF RAW OUTPUT (Step 1)")
 
 
+def main():
+    import argparse
+    parser = argparse.ArgumentParser(
+        description="cycle_log_projection_census — is the Cycle Log derivable?")
+    parser.add_argument("--out", required=True,
+                        help="Append output to PATH "
+                             "(historical target: knowledge/qa/evidence/"
+                             "cycle-log-projection-2026-09-06/census-raw.txt)")
+    parser.add_argument("--part2", action="store_true",
+                        help="Run part 2 (Q4/Q5) instead of part 1")
+    args = parser.parse_args()
+
+    global _out
+    _out = open(args.out, "a", encoding="utf-8")
+    try:
+        if args.part2:
+            run_q4_q5()
+            sys.exit(0)
+        r = run()
+        sys.exit(0 if r != 2 else 2)
+    finally:
+        _out.close()
+
+
 if __name__ == "__main__":
-    if "--part2" in sys.argv:
-        run_q4_q5()
-        sys.exit(0)
-    r = run()
-    sys.exit(0 if r != 2 else 2)
+    main()
