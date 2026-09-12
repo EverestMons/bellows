@@ -1,0 +1,12 @@
+PYTHON: /Users/marklehn/Developer/bellows/.venv/bin/python
+HEAD: 47986e39bbc33001aa57e9fabbf3362f14448fac
+TARGET: lifecycle.py sha256=547feaaaceba
+
+MUTANT probe-removed: KILLED — suite caught the defect
+MUTANT close-block-removed: KILLED — suite caught the defect
+MUTANT message-test-dropped: KILLED — suite caught the defect
+MUTANT close-below-message-test: KILLED — suite caught the defect
+
+LIVE-TREE UNCHANGED: lifecycle.py sha256=547feaaaceba
+
+MUTATION: 4 killed, 0 survived, 0 error
