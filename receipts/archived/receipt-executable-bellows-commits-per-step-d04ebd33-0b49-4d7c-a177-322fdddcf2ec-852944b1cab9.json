@@ -1,0 +1,8 @@
+{
+  "slug": "executable-bellows-commits-per-step",
+  "content_hash": "852944b1cab900f7eb526e58f9fc588a89fd27a67c1d5050db3a3258424ee190",
+  "session_id": "d04ebd33-0b49-4d7c-a177-322fdddcf2ec",
+  "armed_at": "2026-09-11T17:57:23.676401",
+  "watcher": "gate_watcher.py spawned detached (pid 12874); log: logs/watch/executable-bellows-commits-per-step.md.log",
+  "attestation_boundary": "This receipt proves the watcher was ARMED at write time. It does NOT prove the watcher stayed alive. Liveness of a session-local monitor is not externally verifiable."
+}

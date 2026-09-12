@@ -1,0 +1,8 @@
+{
+  "slug": "diagnostic-bellows-action-census",
+  "content_hash": "5dbd4295c1864d0ff3dc8b0de3fe7ea6aacc3f63095f39749422f2c2ed040d75",
+  "session_id": "d04ebd33-0b49-4d7c-a177-322fdddcf2ec",
+  "armed_at": "2026-09-11T18:41:10.312374",
+  "watcher": "gate_watcher.py spawned detached (pid 59361); log: logs/watch/diagnostic-bellows-action-census.md.log",
+  "attestation_boundary": "This receipt proves the watcher was ARMED at write time. It does NOT prove the watcher stayed alive. Liveness of a session-local monitor is not externally verifiable."
+}

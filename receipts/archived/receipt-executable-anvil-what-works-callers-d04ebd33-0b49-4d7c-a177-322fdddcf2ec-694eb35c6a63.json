@@ -1,0 +1,8 @@
+{
+  "slug": "executable-anvil-what-works-callers",
+  "content_hash": "694eb35c6a63e8a9efc35f5626082ab4770822bf1198bc7c6783a3cd1fd4d25e",
+  "session_id": "d04ebd33-0b49-4d7c-a177-322fdddcf2ec",
+  "armed_at": "2026-09-11T18:56:22.181470",
+  "watcher": "gate_watcher.py spawned detached (pid 67775); log: logs/watch/executable-anvil-what-works-callers.md.log",
+  "attestation_boundary": "This receipt proves the watcher was ARMED at write time. It does NOT prove the watcher stayed alive. Liveness of a session-local monitor is not externally verifiable."
+}
