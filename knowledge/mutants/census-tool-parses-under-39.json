@@ -1,0 +1,12 @@
+{
+  "target": "tools/cycle_log_projection_census.py",
+  "mutants": [
+    {
+      "name": "nested-fstring-restored",
+      "why": "restoring the original nested f-string causes a SyntaxError under Python 3.9; t5 catches it",
+      "anchor": "        missing = exp['missing']\n        expected_text = 'AGREEING' if exp['agree'] else f\"DIVERGING, missing {missing}\"\n        a(f\"      expected       : {expected_text}\")",
+      "replacement": "        a(f\"      expected       : {'AGREEING' if exp['agree'] else f'DIVERGING, missing {exp[chr(34)+chr(34)] if False else exp['missing']}'}\")",
+      "expect_fail": "tests/test_tools_safe_to_invoke.py::test_every_module_parses_under_python39"
+    }
+  ]
+}

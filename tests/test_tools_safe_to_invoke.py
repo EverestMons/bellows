@@ -13,6 +13,8 @@ import subprocess
 import sys
 from pathlib import Path
 
+import pytest
+
 ROOT = Path(__file__).resolve().parents[1]
 
 _WRITE_NAMES = frozenset({
@@ -210,3 +212,46 @@ def test_writers_refuse_without_out(tmp_path):
     assert failures == [], "writer refusal failures:\n" + "\n".join(failures)
     after = _snapshot(roots)
     assert after == before, "knowledge/ files changed during writer refusal check"
+
+
+# ── t5 ────────────────────────────────────────────────────────────────────────
+
+def test_every_module_parses_under_python39():
+    OLD = "/usr/bin/python3"
+    if not Path(OLD).exists():
+        pytest.skip(f"{OLD} not found")
+    ver_r = subprocess.run(
+        [OLD, "-c", "import sys; print(sys.version_info[:2])"],
+        capture_output=True, text=True, timeout=10,
+    )
+    ver = ast.literal_eval(ver_r.stdout.strip())
+    if ver >= (3, 12):
+        pytest.skip(f"{OLD} reports {ver}, not below (3, 12)")
+
+    files = (
+        _py_files()
+        + sorted(ROOT.glob("*.py"))
+        + sorted(ROOT.glob("hooks/eluvian/*.py"))
+    )
+
+    script = "\n".join([
+        "import ast, sys",
+        "from pathlib import Path",
+        "ROOT = Path(sys.argv[1])",
+        "hits = []",
+        "for p in sys.argv[2:]:",
+        "    path = Path(p)",
+        "    try:",
+        "        ast.parse(path.read_text(encoding='utf-8'))",
+        "    except SyntaxError as e:",
+        "        rel = path.relative_to(ROOT)",
+        "        hits.append(f'{rel}:{e.lineno}:{e.msg}')",
+        "print('\\n'.join(hits), end='')",
+    ])
+
+    result = subprocess.run(
+        [OLD, "-c", script, str(ROOT)] + [str(f) for f in files],
+        capture_output=True, text=True, timeout=60,
+    )
+    output = result.stdout.strip()
+    assert output == "", f"Files that do not parse under {OLD}:\n{output}"

@@ -189,7 +189,9 @@ def run():
         a(f"      body walks     : {body}")
         a(f"      register walks : {reg}   rows={len(rec['rows'])}")
         a(f"      verdict        : {verdict} — {why}")
-        a(f"      expected       : {'AGREEING' if exp['agree'] else f'DIVERGING, missing {exp[chr(34)+chr(34)] if False else exp['missing']}'}")
+        missing = exp['missing']
+        expected_text = 'AGREEING' if exp['agree'] else f"DIVERGING, missing {missing}"
+        a(f"      expected       : {expected_text}")
         a(f"      RESULT: {'PASS' if ok else '**CONTROL FAILED**'}")
         a("")
     a(f"  CONTROLS OVERALL: {'PASS — proceed to the corpus' if ok_all else '**FAILED — STOP**'}")
