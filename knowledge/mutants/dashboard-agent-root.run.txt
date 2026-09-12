@@ -1,0 +1,15 @@
+PYTHON: /Users/marklehn/Developer/bellows/.venv/bin/python
+HEAD: 98acd472a2400529abd082ef36de18c6a3088007
+TARGET: bellows.py sha256=8d63d292083e
+TARGET: dashboard.py sha256=1ce942ec3cce
+
+MUTANT agent-owns-root-ignores-root: KILLED — suite caught the defect
+MUTANT kickstart-always-replace: KILLED — suite caught the defect
+MUTANT agent-root-no-program-fallback: KILLED — suite caught the defect
+MUTANT spawn-child-replace-true: KILLED — suite caught the defect
+MUTANT agent-owns-root-basename-only: KILLED — suite caught the defect
+
+LIVE-TREE UNCHANGED: bellows.py sha256=8d63d292083e
+LIVE-TREE UNCHANGED: dashboard.py sha256=1ce942ec3cce
+
+MUTATION: 5 killed, 0 survived, 0 error
