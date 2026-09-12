@@ -69,7 +69,7 @@ Path: SIGTERM drain timeout (observed twice on 2026-09-11).
 
 ## What the doc does not establish
 
-- The paths marked `inferred` in Q1 were not observed in the 2026-09-11 logs; `sigterm_drain_completes` is inferred as clean because 36 of 39 SIGTERM events left no drain-timeout line (total 39 at time of reading; Planner measured 38 at bellows `36901bd` — the extra occurred after the 31st wrap).
+- The paths marked `inferred` in Q1 were not observed in the 2026-09-11 logs; `sigterm_drain_completes` is inferred as clean because 37 of 39 [CORRECTED by the Planner at the verdict read, 2026-09-11: the step wrote 36; two of the 39 are the drain timeouts, and most of the 37 reached an idle daemon, so none of them shows a step finishing inside the drain] SIGTERM events left no drain-timeout line (total 39 at time of reading; Planner measured 38 at bellows `36901bd` — the extra occurred after the 31st wrap).
 - The model child's death on the drain's own second is two samples; the mechanism (process group, no `AbandonProcessGroup`) is read from code and the plist.
 - Phantom 90's origin is read from the record (LESSONS.md:6564), not reproduced.
 - The Air runs the same code and was not read.
