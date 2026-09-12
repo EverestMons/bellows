@@ -1,0 +1,12 @@
+PYTHON: /Users/marklehn/Developer/bellows/.venv/bin/python
+HEAD: 2f9b9b63260205bb606ee55a6c5b3f05621b0e39
+TARGET: scripts/close_cycle.py sha256=f0ee812a35c3
+
+MUTANT m1-label-refusal-removed: KILLED — suite caught the defect
+MUTANT m2-prime-removed: KILLED — suite caught the defect
+MUTANT m3-placeholder-condition-dropped-prime-always-runs: KILLED — suite caught the defect
+MUTANT m4-condition-inverted-prime-runs-on-filled-only: KILLED — suite caught the defect
+
+LIVE-TREE UNCHANGED: scripts/close_cycle.py sha256=f0ee812a35c3
+
+MUTATION: 4 killed, 0 survived, 0 error
