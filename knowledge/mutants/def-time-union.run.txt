@@ -1,0 +1,9 @@
+PYTHON: /Users/marklehn/Developer/bellows/.venv/bin/python
+HEAD: d9bf917de8889a272e5d805e05266df3c7867923
+TARGET: tools/fold_signal_census.py sha256=1d405ac82a25
+
+MUTANT m1: KILLED — suite caught the defect
+
+LIVE-TREE UNCHANGED: tools/fold_signal_census.py sha256=1d405ac82a25
+
+MUTATION: 1 killed, 0 survived, 0 error
