@@ -1,0 +1,8 @@
+{
+  "slug": "executable-bellows-def-time-union",
+  "content_hash": "042cdaeb2e3bd3431ad89e770ba80a9ac589204ed81f9b557078acfc8eb4cf40",
+  "session_id": "d04ebd33-0b49-4d7c-a177-322fdddcf2ec",
+  "armed_at": "2026-09-12T18:50:25.390782",
+  "watcher": "gate_watcher.py spawned detached (pid 3279); log: logs/watch/executable-bellows-def-time-union.md.log",
+  "attestation_boundary": "This receipt proves the watcher was ARMED at write time. It does NOT prove the watcher stayed alive. Liveness of a session-local monitor is not externally verifiable."
+}

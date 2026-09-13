@@ -1,0 +1,8 @@
+{
+  "slug": "executable-tuyere-threads-done-refuse-miss",
+  "content_hash": "51ab1bea49212ef8441fb53b69fd8ebf6e309762e8745e6e8abd5ad868b19431",
+  "session_id": "d04ebd33-0b49-4d7c-a177-322fdddcf2ec",
+  "armed_at": "2026-09-12T17:29:20.847396",
+  "watcher": "gate_watcher.py spawned detached (pid 84174); log: logs/watch/executable-tuyere-threads-done-refuse-miss.md.log",
+  "attestation_boundary": "This receipt proves the watcher was ARMED at write time. It does NOT prove the watcher stayed alive. Liveness of a session-local monitor is not externally verifiable."
+}
