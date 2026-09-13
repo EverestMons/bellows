@@ -42,6 +42,7 @@ def _make_lifecycle_db(db_path, rows):
             step_number INTEGER NOT NULL,
             status TEXT NOT NULL DEFAULT 'pending',
             step_started_at TEXT,
+            daemon_pid INTEGER,
             UNIQUE(plan_id, step_number)
         )
     """)
@@ -54,10 +55,10 @@ def _make_lifecycle_db(db_path, rows):
         )
         if r.get("status") is not None or r.get("step_number") is not None:
             conn.execute(
-                "INSERT INTO steps (plan_id, step_number, status, step_started_at) "
-                "VALUES (?, ?, ?, ?)",
+                "INSERT INTO steps (plan_id, step_number, status, step_started_at, daemon_pid) "
+                "VALUES (?, ?, ?, ?, ?)",
                 (r["id"], r.get("step_number", 1), r.get("status", "pending"),
-                 r.get("step_started_at")),
+                 r.get("step_started_at"), r.get("daemon_pid")),
             )
     conn.commit()
     conn.close()
@@ -265,3 +266,116 @@ def test_idle_guard_passes_awaiting_verdict_with_orphan(tmp_path):
     is_idle, reason = _check_idle(db_path, config)
     assert is_idle, f"idle guard should pass but got: {reason}"
     assert reason is None
+
+
+# ---------------------------------------------------------------------------
+# i-t1: running row with another daemon's pid → guard passes, SIGTERM recorded
+# ---------------------------------------------------------------------------
+
+def test_idle_guard_passes_previous_daemon_pid(tmp_path):
+    """i-t1: running step whose daemon_pid differs from holder_pid → idle guard passes."""
+    lock_path = str(tmp_path / ".bellows.lock")
+    db_path = str(tmp_path / "lifecycle.db")
+    previous_pid = os.getpid() + 9999  # a pid that is not os.getpid()
+    _make_lifecycle_db(db_path, [
+        {"id": 77, "status": "running", "step_number": 1, "daemon_pid": previous_pid,
+         "type": "executable", "target_project": "/proj", "title": "t", "total_steps": 2},
+    ])
+
+    dummy = subprocess.Popen(
+        [sys.executable, "-c",
+         "import signal, time; signal.signal(signal.SIGTERM, signal.SIG_IGN); time.sleep(60)"],
+    )
+    dummy_pid = dummy.pid
+    kill_calls = []
+    original_kill = os.kill
+
+    def tracking_kill(pid, sig):
+        kill_calls.append((pid, sig))
+        original_kill(pid, sig)
+
+    mock_lock = MagicMock()
+    acquire_count = [0]
+
+    def mock_acquire(path):
+        acquire_count[0] += 1
+        if acquire_count[0] == 1:
+            raise LockAcquireError("locked")
+        return mock_lock
+
+    try:
+        with patch("bellows._discover_holder", return_value=(dummy_pid, None)):
+            with patch("bellows._verify_identity", return_value=True):
+                with patch("bellows.os.kill", side_effect=tracking_kill):
+                    with patch("bellows.acquire_instance_lock", side_effect=mock_acquire):
+                        with patch("bellows._STOP_SIGTERM_TIMEOUT", 1):
+                            with patch("bellows._STOP_SIGKILL_TIMEOUT", 1):
+                                success, msg = stop_daemon(lock_path, db_path, {})
+    finally:
+        try:
+            dummy.kill()
+        except Exception:
+            pass
+        dummy.wait(timeout=5)
+
+    assert success
+    sigterm_sent = any(sig == signal.SIGTERM for _, sig in kill_calls)
+    assert sigterm_sent, f"SIGTERM not in kill_calls: {kill_calls}"
+
+
+# ---------------------------------------------------------------------------
+# i-t2: running row with holder's own pid → guard refuses (still busy)
+# ---------------------------------------------------------------------------
+
+def test_idle_guard_refuses_holder_own_pid(tmp_path):
+    """i-t2: running step whose daemon_pid equals holder_pid → guard refuses."""
+    lock_path = str(tmp_path / ".bellows.lock")
+    db_path = str(tmp_path / "lifecycle.db")
+    holder_pid = 55555
+
+    _make_lifecycle_db(db_path, [
+        {"id": 88, "status": "running", "step_number": 1, "daemon_pid": holder_pid,
+         "type": "executable", "target_project": "/proj", "title": "t", "total_steps": 2},
+    ])
+
+    holder = acquire_instance_lock(lock_path)
+    try:
+        with patch("bellows._discover_holder", return_value=(holder_pid, None)):
+            with patch("bellows._verify_identity", return_value=True):
+                with patch("bellows.os.kill") as mock_kill:
+                    success, msg = stop_daemon(lock_path, db_path, {})
+        assert not success
+        assert "REFUSE" in msg
+        assert "running" in msg
+        mock_kill.assert_not_called()
+    finally:
+        holder.close()
+
+
+# ---------------------------------------------------------------------------
+# i-t3: running row with NULL daemon_pid → guard refuses (today's rule)
+# ---------------------------------------------------------------------------
+
+def test_idle_guard_refuses_null_daemon_pid(tmp_path):
+    """i-t3: running step with NULL daemon_pid → guard refuses as today."""
+    lock_path = str(tmp_path / ".bellows.lock")
+    db_path = str(tmp_path / "lifecycle.db")
+    holder_pid = 66666
+
+    _make_lifecycle_db(db_path, [
+        {"id": 99, "status": "running", "step_number": 1, "daemon_pid": None,
+         "type": "executable", "target_project": "/proj", "title": "t", "total_steps": 2},
+    ])
+
+    holder = acquire_instance_lock(lock_path)
+    try:
+        with patch("bellows._discover_holder", return_value=(holder_pid, None)):
+            with patch("bellows._verify_identity", return_value=True):
+                with patch("bellows.os.kill") as mock_kill:
+                    success, msg = stop_daemon(lock_path, db_path, {})
+        assert not success
+        assert "REFUSE" in msg
+        assert "running" in msg
+        mock_kill.assert_not_called()
+    finally:
+        holder.close()

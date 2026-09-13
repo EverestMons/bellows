@@ -72,6 +72,7 @@ def _check_no_inflight(db_path):
 
 
 def _apply(db_path):
+    lifecycle.init_lifecycle_db(db_path)
     blocking = _check_no_inflight(db_path)
     if blocking:
         ids = ", ".join(str(i) for i in blocking)
@@ -87,7 +88,16 @@ def _apply(db_path):
     ).fetchall()
     conn.close()
 
-    if not targets:
+    conn = _open_ro(db_path)
+    abandoned_plans = conn.execute(
+        """SELECT DISTINCT s.plan_id
+           FROM steps s JOIN plans p ON s.plan_id = p.id
+           WHERE s.status = 'running' AND p.lifecycle_state = 'abandoned'
+           ORDER BY s.plan_id"""
+    ).fetchall()
+    conn.close()
+
+    if not targets and not abandoned_plans:
         print("No closed/awaiting_verdict rows to repair.")
         return
 
@@ -95,7 +105,15 @@ def _apply(db_path):
         n = lifecycle.mark_step_complete(plan_id, step_number, db_path=db_path)
         print(f"  plan_id={plan_id} step_number={step_number} rowcount={n}")
 
-    print(f"\nApplied: {len(targets)} row(s) flipped to complete.")
+    if targets:
+        print(f"\nApplied: {len(targets)} row(s) flipped to complete.")
+
+    for (plan_id,) in abandoned_plans:
+        n = lifecycle.mark_step_abandoned(plan_id, db_path=db_path)
+        print(f"  abandoned pass: plan_id={plan_id} rowcount={n}")
+
+    if abandoned_plans:
+        print(f"\nAbandoned pass: {len(abandoned_plans)} plan(s) cleaned.")
 
 
 def main():

@@ -86,13 +86,14 @@ def init_lifecycle_db(db_path=None):
             step_number INTEGER NOT NULL,
             role TEXT,
             status TEXT NOT NULL DEFAULT 'pending'
-                CHECK (status IN ('pending','running','awaiting_verdict','complete')),
+                CHECK (status IN ('pending','running','awaiting_verdict','complete','abandoned')),
             step_started_at TEXT,
             step_ended_at TEXT,
             cost_usd REAL,
             turns INTEGER,
             duration_s REAL,
             log_ref TEXT,
+            daemon_pid INTEGER,
             UNIQUE(plan_id, step_number)
         )
     """)
@@ -190,8 +191,122 @@ def init_lifecycle_db(db_path=None):
         ON clearances (content_hash, plan_path)
         WHERE consumed_at IS NULL
     """)
+    # Add daemon_pid column to steps if missing (apart from the rebuild migration)
+    existing_steps_cols = {row[1] for row in conn.execute("PRAGMA table_info(steps)")}
+    if "daemon_pid" not in existing_steps_cols:
+        conn.execute("ALTER TABLE steps ADD COLUMN daemon_pid INTEGER")
     conn.commit()
     conn.close()
+    _migrate_steps_abandoned(path)
+
+
+def _migrate_steps_abandoned(path):
+    """Rebuild steps table to admit 'abandoned' status. One-time; idempotent.
+
+    Skipped when DDL already contains 'abandoned'. Backs up first (daily dedup).
+    On failure: rolls back, logs WARN, returns — never raises.
+    """
+    try:
+        chk = sqlite3.connect(f"file:{path}?mode=ro", uri=True)
+        ddl_row = chk.execute(
+            "SELECT sql FROM sqlite_master WHERE type='table' AND name='steps'"
+        ).fetchone()
+        chk.close()
+        if ddl_row is None or "'abandoned'" in ddl_row[0]:
+            return
+    except Exception as e:
+        _warn(f"_migrate_steps_abandoned: cannot check DDL: {e}")
+        return
+
+    today = datetime.utcnow().strftime("%Y-%m-%d")
+    bak_path = path + f".pre-steps-abandoned-{today}.bak"
+    bak_tmp = bak_path + ".tmp"
+
+    if not os.path.exists(bak_path):
+        try:
+            src = sqlite3.connect(path)
+            dst = None
+            try:
+                dst = sqlite3.connect(bak_tmp)
+                src.backup(dst)
+                dst.close()
+                dst = None
+            except Exception:
+                if dst is not None:
+                    try:
+                        dst.close()
+                    except Exception:
+                        pass
+                if os.path.exists(bak_tmp):
+                    try:
+                        os.unlink(bak_tmp)
+                    except Exception:
+                        pass
+                src.close()
+                _warn(f"_migrate_steps_abandoned: backup failed; old schema kept, daemon starts")
+                return
+            src.close()
+            os.replace(bak_tmp, bak_path)
+        except Exception as e:
+            _warn(f"_migrate_steps_abandoned: backup failed: {e}; old schema kept, daemon starts")
+            return
+
+    conn = sqlite3.connect(path, isolation_level=None)
+    try:
+        count_before = conn.execute("SELECT count(*) FROM steps").fetchone()[0]
+        fk_before = {
+            tbl: conn.execute(f"PRAGMA foreign_key_check({tbl})").fetchall()
+            for tbl in ("steps", "commits", "deposits", "gate_events", "step_files")
+        }
+        conn.execute("PRAGMA foreign_keys=OFF")
+        conn.execute("BEGIN IMMEDIATE")
+        conn.execute("""
+            CREATE TABLE steps_new (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                plan_id INTEGER NOT NULL REFERENCES plans(id),
+                step_number INTEGER NOT NULL,
+                role TEXT,
+                status TEXT NOT NULL DEFAULT 'pending'
+                    CHECK (status IN ('pending','running','awaiting_verdict','complete','abandoned')),
+                step_started_at TEXT,
+                step_ended_at TEXT,
+                cost_usd REAL,
+                turns INTEGER,
+                duration_s REAL,
+                log_ref TEXT,
+                daemon_pid INTEGER,
+                UNIQUE(plan_id, step_number)
+            )
+        """)
+        conn.execute(
+            "INSERT INTO steps_new (id, plan_id, step_number, role, status, "
+            "step_started_at, step_ended_at, cost_usd, turns, duration_s, log_ref, daemon_pid) "
+            "SELECT id, plan_id, step_number, role, status, "
+            "step_started_at, step_ended_at, cost_usd, turns, duration_s, log_ref, daemon_pid "
+            "FROM steps"
+        )
+        conn.execute("DROP TABLE steps")
+        conn.execute("ALTER TABLE steps_new RENAME TO steps")
+        count_after = conn.execute("SELECT count(*) FROM steps").fetchone()[0]
+        if count_after != count_before:
+            raise Exception(f"count mismatch: {count_before} before, {count_after} after")
+        fk_after = {
+            tbl: conn.execute(f"PRAGMA foreign_key_check({tbl})").fetchall()
+            for tbl in ("steps", "commits", "deposits", "gate_events", "step_files")
+        }
+        for tbl in fk_before:
+            if fk_after[tbl] != fk_before[tbl]:
+                raise Exception(f"foreign_key_check mismatch for {tbl}")
+        conn.execute("COMMIT")
+    except Exception as e:
+        if conn.in_transaction:
+            try:
+                conn.execute("ROLLBACK")
+            except Exception:
+                pass
+        _warn(f"_migrate_steps_abandoned: rebuild failed: {e}; old schema kept, daemon starts")
+    finally:
+        conn.close()
 
 
 def active_plan_for_placeholder(placeholder_name, db_path=None):
@@ -415,7 +530,20 @@ def recover_half_claimed(decisions_dir, db_path=None, project_root=None,
             "FROM plans WHERE lifecycle_state = 'in_progress'"
         ).fetchall()
     for plan_id, plan_type, deposit_name, created_at, target_project in ip_rows:
-        # Age guard: skip plans younger than age_guard_seconds
+        canonical_name = f"{plan_type}-{plan_id}.md"
+        parked_path = os.path.join(decisions_dir, f"parked-{canonical_name}")
+        inprogress_path = os.path.join(decisions_dir, f"in-progress-{canonical_name}")
+        done_abandoned_path = os.path.join(decisions_dir, "Done", f"abandoned-{canonical_name}")
+
+        # Lane-file discriminator (before age guard)
+        if os.path.exists(parked_path):
+            actions.append((plan_id, "skipped_parked"))
+            continue
+        if os.path.exists(inprogress_path) or os.path.exists(done_abandoned_path):
+            actions.append((plan_id, "abandoned_runner"))
+            continue
+
+        # Today's branch unchanged: age guard, worktree check, mark abandoned
         if created_at:
             try:
                 age = (datetime.now() - datetime.fromisoformat(created_at)).total_seconds()
@@ -493,19 +621,32 @@ def _warn(msg):
 
 
 def record_step_start(plan_id, step_number, role=None, db_path=None):
-    """Insert a steps row with status='running'. Returns step_id or None."""
+    """Insert a steps row with status='running'. Returns step_id or None.
+
+    On UNIQUE conflict with a running row (parked step resume), refreshes
+    step_started_at and daemon_pid and returns the existing row's id.
+    On conflict with any other status, warns and returns None.
+    """
     try:
         path = db_path or LIFECYCLE_DB_PATH
         conn = sqlite3.connect(path)
         cur = conn.execute(
-            """INSERT INTO steps (plan_id, step_number, role, status, step_started_at)
-               VALUES (?, ?, ?, 'running', ?)""",
-            (plan_id, step_number, role, datetime.now().isoformat()),
+            """INSERT INTO steps (plan_id, step_number, role, status, step_started_at, daemon_pid)
+               VALUES (?, ?, ?, 'running', ?, ?)
+               ON CONFLICT(plan_id, step_number) DO UPDATE SET
+                   step_started_at = EXCLUDED.step_started_at,
+                   daemon_pid = EXCLUDED.daemon_pid
+               WHERE steps.status = 'running'
+               RETURNING id""",
+            (plan_id, step_number, role, datetime.now().isoformat(), os.getpid()),
         )
-        step_id = cur.lastrowid
+        row = cur.fetchone()
         conn.commit()
         conn.close()
-        return step_id
+        if row is None:
+            _warn(f"record_step_start: conflict on non-running step for plan {plan_id} step {step_number}")
+            return None
+        return row[0]
     except Exception as e:
         _warn(f"record_step_start failed for plan {plan_id} step {step_number}: {e}")
         return None
@@ -549,6 +690,27 @@ def mark_step_complete(plan_id, step_number, db_path=None):
         return n
     except Exception as e:
         _warn(f"mark_step_complete failed for plan {plan_id} step {step_number}: {e}")
+        return 0
+
+
+def mark_step_abandoned(plan_id, db_path=None):
+    """Flip all running step rows for plan_id to abandoned. Returns rowcount (0 on error)."""
+    if plan_id is None:
+        return 0
+    try:
+        path = db_path or LIFECYCLE_DB_PATH
+        conn = sqlite3.connect(path)
+        cur = conn.execute(
+            "UPDATE steps SET status = 'abandoned', step_ended_at = COALESCE(step_ended_at, ?) "
+            "WHERE plan_id = ? AND status = 'running'",
+            (datetime.now().isoformat(), plan_id),
+        )
+        n = cur.rowcount
+        conn.commit()
+        conn.close()
+        return n
+    except Exception as e:
+        _warn(f"mark_step_abandoned failed for plan {plan_id}: {e}")
         return 0
 
 

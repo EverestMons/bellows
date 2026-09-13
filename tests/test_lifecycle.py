@@ -1564,3 +1564,609 @@ class TestInvalidateSeenDedupGuard:
             handler._invalidate_seen_on_redeposit(f"/some/dir/{placeholder}")
 
         assert slug not in orchestrator._seen
+
+
+# ---------------------------------------------------------------------------
+# Helpers shared by migration/pid tests
+# ---------------------------------------------------------------------------
+
+def _build_old_steps_db(tmp_path, name="old.db"):
+    """Build a database whose steps DDL uses the OLD CHECK (no 'abandoned', no daemon_pid)."""
+    db = str(tmp_path / name)
+    conn = sqlite3.connect(db)
+    conn.execute("PRAGMA journal_mode=WAL")
+    conn.execute("""
+        CREATE TABLE IF NOT EXISTS id_sequence (
+            id INTEGER PRIMARY KEY CHECK (id = 1),
+            next_id INTEGER NOT NULL DEFAULT 1
+        )
+    """)
+    conn.execute("INSERT OR IGNORE INTO id_sequence (id, next_id) VALUES (1, 100)")
+    conn.execute("""
+        CREATE TABLE IF NOT EXISTS plans (
+            id INTEGER PRIMARY KEY,
+            type TEXT NOT NULL CHECK (type IN ('diagnostic', 'executable', 'qa')),
+            target_project TEXT NOT NULL,
+            title TEXT,
+            dispatch_mode TEXT,
+            tier TEXT,
+            lifecycle_state TEXT NOT NULL DEFAULT 'claimed'
+                CHECK (lifecycle_state IN ('claimed','in_progress','awaiting_verdict','closed','halted','abandoned')),
+            total_steps INTEGER,
+            deposit_placeholder_name TEXT,
+            created_at TEXT NOT NULL,
+            closed_at TEXT,
+            plan_doc_ref TEXT
+        )
+    """)
+    conn.execute("""
+        CREATE TABLE IF NOT EXISTS steps (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            plan_id INTEGER NOT NULL REFERENCES plans(id),
+            step_number INTEGER NOT NULL,
+            role TEXT,
+            status TEXT NOT NULL DEFAULT 'pending'
+                CHECK (status IN ('pending','running','awaiting_verdict','complete')),
+            step_started_at TEXT,
+            step_ended_at TEXT,
+            cost_usd REAL,
+            turns INTEGER,
+            duration_s REAL,
+            log_ref TEXT,
+            UNIQUE(plan_id, step_number)
+        )
+    """)
+    conn.execute("""
+        CREATE TABLE IF NOT EXISTS commits (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            step_id INTEGER NOT NULL REFERENCES steps(id),
+            repo TEXT NOT NULL,
+            sha TEXT NOT NULL,
+            message_ref TEXT
+        )
+    """)
+    conn.execute("""
+        CREATE TABLE IF NOT EXISTS deposits (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            step_id INTEGER NOT NULL REFERENCES steps(id),
+            declared_path TEXT NOT NULL,
+            type TEXT,
+            landed INTEGER NOT NULL DEFAULT 0
+        )
+    """)
+    conn.execute("""
+        CREATE TABLE IF NOT EXISTS verdicts (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            plan_id INTEGER NOT NULL REFERENCES plans(id),
+            step_number INTEGER NOT NULL,
+            outcome TEXT,
+            pause_reason_code TEXT,
+            decided_by TEXT,
+            verdict_file_ref TEXT,
+            disposition_summary TEXT
+        )
+    """)
+    conn.execute("""
+        CREATE TABLE IF NOT EXISTS gate_events (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            step_id INTEGER NOT NULL REFERENCES steps(id),
+            gate_name TEXT NOT NULL,
+            result TEXT NOT NULL CHECK (result IN ('pass', 'fail')),
+            reason_code TEXT,
+            overridden INTEGER NOT NULL DEFAULT 0,
+            override_ref TEXT
+        )
+    """)
+    conn.execute("""
+        CREATE TABLE IF NOT EXISTS step_files (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            step_id INTEGER NOT NULL REFERENCES steps(id),
+            path TEXT NOT NULL,
+            UNIQUE(step_id, path)
+        )
+    """)
+    conn.commit()
+    conn.close()
+    return db
+
+
+class TestStepsAbandonedMigration:
+    """m-t1 through m-t7: _migrate_steps_abandoned and init_lifecycle_db migration."""
+
+    def test_fresh_db_admits_abandoned_and_daemon_pid(self, tmp_path):
+        """m-t1: a fresh database admits an abandoned row and carries daemon_pid."""
+        db = str(tmp_path / "fresh.db")
+        lifecycle.init_lifecycle_db(db)
+        conn = sqlite3.connect(db)
+        ddl = conn.execute(
+            "SELECT sql FROM sqlite_master WHERE type='table' AND name='steps'"
+        ).fetchone()[0]
+        assert "'abandoned'" in ddl
+        assert "daemon_pid" in ddl
+        conn.execute(
+            "INSERT INTO plans (id, type, target_project, lifecycle_state, created_at) "
+            "VALUES (1, 'executable', '/p', 'in_progress', '2026-09-12')"
+        )
+        conn.execute(
+            "INSERT INTO steps (plan_id, step_number, status, daemon_pid) VALUES (1, 1, 'abandoned', 42)"
+        )
+        conn.commit()
+        row = conn.execute("SELECT status, daemon_pid FROM steps WHERE plan_id=1").fetchone()
+        conn.close()
+        assert row[0] == "abandoned"
+        assert row[1] == 42
+
+    def test_old_db_migrated_rows_and_backup(self, tmp_path):
+        """m-t2: old DDL database is migrated via init — DDL updated, rows kept, backup present."""
+        db = _build_old_steps_db(tmp_path, "m2.db")
+        conn = sqlite3.connect(db)
+        conn.execute(
+            "INSERT INTO plans (id, type, target_project, lifecycle_state, created_at) "
+            "VALUES (1, 'executable', '/p', 'in_progress', '2026-09-12')"
+        )
+        conn.execute("INSERT INTO steps (plan_id, step_number, status) VALUES (1, 1, 'running')")
+        step_id = conn.execute("SELECT id FROM steps WHERE plan_id=1").fetchone()[0]
+        conn.execute(
+            "INSERT INTO commits (step_id, repo, sha, message_ref) VALUES (?, 'r', 'abc', NULL)",
+            (step_id,),
+        )
+        conn.commit()
+        old_ddl = conn.execute(
+            "SELECT sql FROM sqlite_master WHERE type='table' AND name='steps'"
+        ).fetchone()[0]
+        conn.close()
+        assert "'abandoned'" not in old_ddl
+
+        lifecycle.init_lifecycle_db(db)
+
+        conn = sqlite3.connect(db)
+        new_ddl = conn.execute(
+            "SELECT sql FROM sqlite_master WHERE type='table' AND name='steps'"
+        ).fetchone()[0]
+        assert "'abandoned'" in new_ddl
+        assert "daemon_pid" in new_ddl
+        rows = conn.execute("SELECT plan_id, status, daemon_pid FROM steps").fetchall()
+        assert len(rows) == 1
+        assert rows[0][0] == 1
+        assert rows[0][1] == "running"
+        assert rows[0][2] is None  # daemon_pid NULL on old rows
+        commits = conn.execute("SELECT step_id FROM commits").fetchall()
+        assert len(commits) == 1
+        assert commits[0][0] == step_id
+        fk = conn.execute("PRAGMA foreign_key_check(steps)").fetchall()
+        assert fk == []
+        conn.close()
+
+        from datetime import timezone
+        today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+        bak_path = db + f".pre-steps-abandoned-{today}.bak"
+        assert os.path.exists(bak_path)
+        conn_bak = sqlite3.connect(bak_path)
+        bak_ddl = conn_bak.execute(
+            "SELECT sql FROM sqlite_master WHERE type='table' AND name='steps'"
+        ).fetchone()[0]
+        conn_bak.close()
+        assert "'abandoned'" not in bak_ddl
+
+    def test_second_call_no_second_backup(self, tmp_path):
+        """m-t3: a second init call on an already-migrated db writes no second backup."""
+        db = _build_old_steps_db(tmp_path, "m3.db")
+        lifecycle.init_lifecycle_db(db)
+        from datetime import timezone
+        today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+        bak_path = db + f".pre-steps-abandoned-{today}.bak"
+        assert os.path.exists(bak_path)
+        bak_mtime = os.stat(bak_path).st_mtime
+
+        import time
+        time.sleep(0.05)
+        lifecycle.init_lifecycle_db(db)
+
+        assert os.path.exists(bak_path)
+        assert os.stat(bak_path).st_mtime == bak_mtime  # unchanged
+
+    def test_failure_inside_transaction_does_not_raise(self, tmp_path):
+        """m-t4: forced failure inside transaction (pre-existing steps_new) leaves old DDL intact.
+        Also: lock held across the migration call → old DDL preserved, no raise."""
+
+        db = _build_old_steps_db(tmp_path, "m4a.db")
+        conn = sqlite3.connect(db)
+        conn.execute(
+            "INSERT INTO plans (id, type, target_project, lifecycle_state, created_at) "
+            "VALUES (1, 'executable', '/p', 'in_progress', '2026-09-12')"
+        )
+        conn.execute("INSERT INTO steps (plan_id, step_number, status) VALUES (1, 1, 'running')")
+        conn.commit()
+        conn.execute("ALTER TABLE steps ADD COLUMN daemon_pid INTEGER")
+        conn.execute("CREATE TABLE steps_new (id INTEGER PRIMARY KEY)")
+        conn.commit()
+        conn.close()
+
+        lifecycle._migrate_steps_abandoned(db)
+
+        conn = sqlite3.connect(db)
+        ddl = conn.execute(
+            "SELECT sql FROM sqlite_master WHERE type='table' AND name='steps'"
+        ).fetchone()[0]
+        count = conn.execute("SELECT count(*) FROM steps").fetchone()[0]
+        conn.close()
+        assert "'abandoned'" not in ddl
+        assert count == 1
+
+        db2 = _build_old_steps_db(tmp_path, "m4b.db")
+        conn2 = sqlite3.connect(db2)
+        conn2.execute("ALTER TABLE steps ADD COLUMN daemon_pid INTEGER")
+        conn2.commit()
+        conn2.close()
+        conn_hold = sqlite3.connect(db2, isolation_level=None)
+        conn_hold.execute("BEGIN IMMEDIATE")
+        try:
+            lifecycle._migrate_steps_abandoned(db2)
+        finally:
+            conn_hold.execute("ROLLBACK")
+            conn_hold.close()
+
+        conn2b = sqlite3.connect(db2)
+        ddl2 = conn2b.execute(
+            "SELECT sql FROM sqlite_master WHERE type='table' AND name='steps'"
+        ).fetchone()[0]
+        conn2b.close()
+        assert "'abandoned'" not in ddl2
+
+    def test_dangling_refs_kept_after_migration(self, tmp_path):
+        """m-t5: verdicts referencing missing plan left intact; gate_events referencing missing step also kept."""
+        db = _build_old_steps_db(tmp_path, "m5.db")
+        conn = sqlite3.connect(db)
+        conn.execute(
+            "INSERT INTO plans (id, type, target_project, lifecycle_state, created_at) "
+            "VALUES (1, 'executable', '/p', 'closed', '2026-09-12')"
+        )
+        conn.execute("INSERT INTO steps (plan_id, step_number, status) VALUES (1, 1, 'complete')")
+        step_id = conn.execute("SELECT id FROM steps WHERE plan_id=1").fetchone()[0]
+        conn.execute("INSERT INTO verdicts (plan_id, step_number, outcome) VALUES (999, 1, 'pass')")
+        conn.execute("INSERT INTO gate_events (step_id, gate_name, result) VALUES (999, 'g', 'pass')")
+        count_before = conn.execute("SELECT count(*) FROM steps").fetchone()[0]
+        conn.commit()
+        conn.close()
+
+        lifecycle.init_lifecycle_db(db)
+
+        conn = sqlite3.connect(db)
+        ddl = conn.execute(
+            "SELECT sql FROM sqlite_master WHERE type='table' AND name='steps'"
+        ).fetchone()[0]
+        count_after = conn.execute("SELECT count(*) FROM steps").fetchone()[0]
+        v_row = conn.execute("SELECT plan_id FROM verdicts WHERE plan_id=999").fetchone()
+        g_row = conn.execute("SELECT step_id FROM gate_events WHERE step_id=999").fetchone()
+        conn.close()
+        assert "'abandoned'" in ddl
+        assert count_after == count_before
+        assert v_row is not None
+        assert g_row is not None
+
+    def test_failed_backup_leaves_no_tmp_next_succeeds(self, tmp_path):
+        """m-t6: backup failure (directory at bak_tmp) leaves no .bak.tmp; next init call writes the .bak."""
+        db = _build_old_steps_db(tmp_path, "m6.db")
+        from datetime import timezone
+        today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+        bak_path = db + f".pre-steps-abandoned-{today}.bak"
+        bak_tmp = bak_path + ".tmp"
+
+        os.makedirs(bak_tmp, exist_ok=True)
+        lifecycle.init_lifecycle_db(db)
+
+        assert os.path.isdir(bak_tmp)
+        assert not os.path.exists(bak_path)
+
+        os.rmdir(bak_tmp)
+
+        lifecycle.init_lifecycle_db(db)
+
+        conn = sqlite3.connect(db)
+        ddl = conn.execute(
+            "SELECT sql FROM sqlite_master WHERE type='table' AND name='steps'"
+        ).fetchone()[0]
+        conn.close()
+        assert "'abandoned'" in ddl
+        assert os.path.exists(bak_path)
+
+    def test_rebuild_fails_daemon_pid_present_record_step_start_works(self, tmp_path):
+        """m-t7: rebuild fails (pre-existing steps_new) → daemon_pid present, 'abandoned' absent.
+        record_step_start still writes daemon_pid."""
+        db = _build_old_steps_db(tmp_path, "m7.db")
+        conn = sqlite3.connect(db)
+        conn.execute(
+            "INSERT INTO plans (id, type, target_project, lifecycle_state, created_at) "
+            "VALUES (1, 'executable', '/p', 'in_progress', '2026-09-12')"
+        )
+        conn.commit()
+        conn.execute("CREATE TABLE steps_new (id INTEGER PRIMARY KEY)")
+        conn.commit()
+        conn.close()
+
+        lifecycle.init_lifecycle_db(db)
+
+        conn = sqlite3.connect(db)
+        ddl = conn.execute(
+            "SELECT sql FROM sqlite_master WHERE type='table' AND name='steps'"
+        ).fetchone()[0]
+        cols = {row[1] for row in conn.execute("PRAGMA table_info(steps)")}
+        conn.close()
+        assert "'abandoned'" not in ddl
+        assert "daemon_pid" in cols
+
+        step_id = lifecycle.record_step_start(1, 1, db_path=db)
+        assert step_id is not None
+        conn = sqlite3.connect(db)
+        row = conn.execute(
+            "SELECT daemon_pid FROM steps WHERE plan_id=1 AND step_number=1"
+        ).fetchone()
+        conn.close()
+        assert row[0] == os.getpid()
+
+
+class TestMarkStepAbandoned:
+    """a-t1 to a-t3: mark_step_abandoned."""
+
+    def test_running_row_flips_to_abandoned(self, tmp_path):
+        """a-t1: a running row is flipped to abandoned, returns 1, step_ended_at set."""
+        db = str(tmp_path / "a1.db")
+        lifecycle.init_lifecycle_db(db)
+        conn = sqlite3.connect(db)
+        conn.execute(
+            "INSERT INTO plans (id, type, target_project, lifecycle_state, created_at) "
+            "VALUES (1, 'executable', '/p', 'in_progress', '2026-09-12')"
+        )
+        conn.execute(
+            "INSERT INTO steps (plan_id, step_number, status, step_started_at) "
+            "VALUES (1, 1, 'running', '2026-09-12T10:00:00')"
+        )
+        conn.commit()
+        conn.close()
+
+        n = lifecycle.mark_step_abandoned(1, db_path=db)
+        assert n == 1
+
+        conn = sqlite3.connect(db)
+        row = conn.execute("SELECT status, step_ended_at FROM steps WHERE plan_id=1").fetchone()
+        conn.close()
+        assert row[0] == "abandoned"
+        assert row[1] is not None
+
+    def test_complete_and_awaiting_rows_not_touched(self, tmp_path):
+        """a-t2: complete and awaiting_verdict rows return 0 and stay unchanged."""
+        db = str(tmp_path / "a2.db")
+        lifecycle.init_lifecycle_db(db)
+        conn = sqlite3.connect(db)
+        conn.execute(
+            "INSERT INTO plans (id, type, target_project, lifecycle_state, created_at) "
+            "VALUES (1, 'executable', '/p', 'closed', '2026-09-12')"
+        )
+        conn.execute(
+            "INSERT INTO steps (plan_id, step_number, status) VALUES (1, 1, 'complete')"
+        )
+        conn.execute(
+            "INSERT INTO steps (plan_id, step_number, status) VALUES (1, 2, 'awaiting_verdict')"
+        )
+        conn.commit()
+        conn.close()
+
+        n = lifecycle.mark_step_abandoned(1, db_path=db)
+        assert n == 0
+
+        conn = sqlite3.connect(db)
+        rows = {r[0]: r[1] for r in conn.execute("SELECT step_number, status FROM steps").fetchall()}
+        conn.close()
+        assert rows[1] == "complete"
+        assert rows[2] == "awaiting_verdict"
+
+    def test_none_plan_id_returns_zero(self):
+        """a-t3: None plan_id returns 0 immediately."""
+        n = lifecycle.mark_step_abandoned(None)
+        assert n == 0
+
+
+class TestRecordStepStartPid:
+    """p-t1 to p-t3: record_step_start records daemon_pid and handles resume."""
+
+    def test_new_row_records_daemon_pid(self, tmp_path):
+        """p-t1: a new step row records os.getpid() as daemon_pid."""
+        db = str(tmp_path / "p1.db")
+        lifecycle.init_lifecycle_db(db)
+        conn = sqlite3.connect(db)
+        conn.execute(
+            "INSERT INTO plans (id, type, target_project, lifecycle_state, created_at) "
+            "VALUES (1, 'executable', '/p', 'in_progress', '2026-09-12')"
+        )
+        conn.commit()
+        conn.close()
+
+        step_id = lifecycle.record_step_start(1, 1, db_path=db)
+        assert step_id is not None
+
+        conn = sqlite3.connect(db)
+        row = conn.execute("SELECT daemon_pid FROM steps WHERE id=?", (step_id,)).fetchone()
+        conn.close()
+        assert row[0] == os.getpid()
+
+    def test_resume_running_step_refreshes_pid(self, tmp_path):
+        """p-t2: resuming a running step refreshes daemon_pid to current process."""
+        from unittest.mock import patch
+        db = str(tmp_path / "p2.db")
+        lifecycle.init_lifecycle_db(db)
+        conn = sqlite3.connect(db)
+        conn.execute(
+            "INSERT INTO plans (id, type, target_project, lifecycle_state, created_at) "
+            "VALUES (1, 'executable', '/p', 'in_progress', '2026-09-12')"
+        )
+        conn.commit()
+        conn.close()
+
+        old_pid = os.getpid() + 5000
+        with patch("os.getpid", return_value=old_pid):
+            first_id = lifecycle.record_step_start(1, 1, db_path=db)
+        assert first_id is not None
+
+        second_id = lifecycle.record_step_start(1, 1, db_path=db)
+        assert second_id == first_id
+
+        conn = sqlite3.connect(db)
+        row = conn.execute(
+            "SELECT daemon_pid FROM steps WHERE id=?", (first_id,)
+        ).fetchone()
+        conn.close()
+        assert row[0] == os.getpid()
+
+    def test_resume_complete_row_returns_none(self, tmp_path):
+        """p-t3: a second start on a complete row returns None and leaves the row."""
+        db = str(tmp_path / "p3.db")
+        lifecycle.init_lifecycle_db(db)
+        conn = sqlite3.connect(db)
+        conn.execute(
+            "INSERT INTO plans (id, type, target_project, lifecycle_state, created_at) "
+            "VALUES (1, 'executable', '/p', 'in_progress', '2026-09-12')"
+        )
+        conn.execute(
+            "INSERT INTO steps (plan_id, step_number, status) VALUES (1, 1, 'complete')"
+        )
+        conn.commit()
+        conn.close()
+
+        result = lifecycle.record_step_start(1, 1, db_path=db)
+        assert result is None
+
+        conn = sqlite3.connect(db)
+        status = conn.execute("SELECT status FROM steps WHERE plan_id=1").fetchone()[0]
+        conn.close()
+        assert status == "complete"
+
+
+class TestAbandonedRunnerDiscriminator:
+    """d-t1 to d-t5: recover_half_claimed lane-file discriminator for in_progress arm."""
+
+    def _make_plan(self, db_path, decisions_dir, project, state="in_progress",
+                   placeholder=None, minutes_old=10):
+        from datetime import timedelta
+        pid = lifecycle.mint_and_claim(
+            "executable", str(project), "T", "bellows", "small", 1,
+            placeholder or "executable-draft.md", db_path=db_path,
+        )
+        lifecycle.mark_plan_state(pid, state, db_path=db_path)
+        old_ts = (datetime.now() - timedelta(minutes=minutes_old)).isoformat()
+        conn = sqlite3.connect(db_path)
+        conn.execute("UPDATE plans SET created_at = ? WHERE id = ?", (old_ts, pid))
+        conn.commit()
+        conn.close()
+        return pid
+
+    def test_inprogress_lane_returns_abandoned_runner(self, tmp_path):
+        """d-t1: in-progress- lane with worktree present → abandoned_runner, row stays in_progress."""
+        db = str(tmp_path / "d1.db")
+        lifecycle.init_lifecycle_db(db)
+        project = tmp_path / "proj"
+        decisions = tmp_path / "decisions"
+        decisions.mkdir()
+        project.mkdir()
+
+        pid = self._make_plan(db, decisions, project)
+        inprogress = decisions / f"in-progress-executable-{pid}.md"
+        inprogress.write_text("lane")
+        wt = project / ".bellows-worktrees" / str(pid)
+        wt.mkdir(parents=True)
+
+        actions = lifecycle.recover_half_claimed(str(decisions), db_path=db, project_root=str(project))
+        ip = [(p, a) for p, a in actions if p == pid]
+        assert ip == [(pid, "abandoned_runner")]
+
+        conn = sqlite3.connect(db)
+        state = conn.execute("SELECT lifecycle_state FROM plans WHERE id=?", (pid,)).fetchone()[0]
+        conn.close()
+        assert state == "in_progress"
+
+    def test_done_abandoned_lane_returns_abandoned_runner(self, tmp_path):
+        """d-t2: Done/abandoned- lane → abandoned_runner."""
+        db = str(tmp_path / "d2.db")
+        lifecycle.init_lifecycle_db(db)
+        project = tmp_path / "proj"
+        decisions = tmp_path / "decisions"
+        decisions.mkdir()
+        project.mkdir()
+
+        pid = self._make_plan(db, decisions, project)
+        done_dir = decisions / "Done"
+        done_dir.mkdir()
+        (done_dir / f"abandoned-executable-{pid}.md").write_text("done lane")
+
+        actions = lifecycle.recover_half_claimed(str(decisions), db_path=db, project_root=str(project))
+        ip = [(p, a) for p, a in actions if p == pid]
+        assert ip == [(pid, "abandoned_runner")]
+
+    def test_parked_lane_skipped(self, tmp_path):
+        """d-t3: parked- lane, no worktree, past age guard → skipped_parked."""
+        db = str(tmp_path / "d3.db")
+        lifecycle.init_lifecycle_db(db)
+        project = tmp_path / "proj"
+        decisions = tmp_path / "decisions"
+        decisions.mkdir()
+        project.mkdir()
+
+        pid = self._make_plan(db, decisions, project)
+        parked = decisions / f"parked-executable-{pid}.md"
+        parked.write_text("parked")
+
+        actions = lifecycle.recover_half_claimed(str(decisions), db_path=db, project_root=str(project))
+        ip = [(p, a) for p, a in actions if p == pid]
+        assert ip == [(pid, "skipped_parked")]
+
+        conn = sqlite3.connect(db)
+        state = conn.execute("SELECT lifecycle_state FROM plans WHERE id=?", (pid,)).fetchone()[0]
+        conn.close()
+        assert state == "in_progress"
+
+    def test_inprogress_lane_inside_age_guard_still_abandoned_runner(self, tmp_path):
+        """d-t4: in-progress- lane inside age guard → abandoned_runner (discriminator fires before age guard)."""
+        db = str(tmp_path / "d4.db")
+        lifecycle.init_lifecycle_db(db)
+        project = tmp_path / "proj"
+        decisions = tmp_path / "decisions"
+        decisions.mkdir()
+        project.mkdir()
+
+        pid = self._make_plan(db, decisions, project, minutes_old=0)
+        inprogress = decisions / f"in-progress-executable-{pid}.md"
+        inprogress.write_text("lane")
+
+        actions = lifecycle.recover_half_claimed(str(decisions), db_path=db, project_root=str(project))
+        ip = [(p, a) for p, a in actions if p == pid]
+        assert ip == [(pid, "abandoned_runner")]
+
+    def test_claimed_to_re_renamed_then_abandoned_runner(self, tmp_path):
+        """d-t5: claimed row with placeholder on disk → re_renamed then abandoned_runner in same pass."""
+        db = str(tmp_path / "d5.db")
+        lifecycle.init_lifecycle_db(db)
+        project = tmp_path / "proj"
+        decisions = tmp_path / "decisions"
+        decisions.mkdir()
+        project.mkdir()
+
+        from datetime import timedelta
+        pid = lifecycle.mint_and_claim(
+            "executable", str(project), "T", "bellows", "small", 1,
+            f"executable-draft-d5.md", db_path=db,
+        )
+        placeholder = decisions / f"executable-draft-d5.md"
+        placeholder.write_text("plan")
+        old_ts = (datetime.now() - timedelta(minutes=10)).isoformat()
+        conn = sqlite3.connect(db)
+        conn.execute("UPDATE plans SET created_at = ? WHERE id = ?", (old_ts, pid))
+        conn.commit()
+        conn.close()
+
+        inprogress_path = decisions / f"in-progress-executable-{pid}.md"
+
+        actions = lifecycle.recover_half_claimed(str(decisions), db_path=db, project_root=str(project))
+
+        plan_actions = [(p, a) for p, a in actions if p == pid]
+        action_names = [a for _, a in plan_actions]
+        assert "re_renamed" in action_names or "already_renamed" in action_names
+        assert "abandoned_runner" in action_names

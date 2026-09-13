@@ -1,0 +1,245 @@
+{
+  "target": "bellows.py lifecycle.py notifier.py tools/reconcile_steps.py",
+  "mutants": [
+    {
+      "name": "remove-inprogress-lane-check",
+      "why": "removing the inprogress/done_abandoned lane check means a plan with an in-progress lane file gets the today-branch path instead of abandoned_runner, so d-t1 never sees abandoned_runner returned",
+      "target": "lifecycle.py",
+      "anchor": "        if os.path.exists(inprogress_path) or os.path.exists(done_abandoned_path):\n            actions.append((plan_id, \"abandoned_runner\"))\n            continue",
+      "replacement": "        if False:",
+      "expect_fail": "tests/test_lifecycle.py::TestAbandonedRunnerDiscriminator::test_inprogress_lane_returns_abandoned_runner"
+    },
+    {
+      "name": "remove-parked-lane-check",
+      "why": "removing the parked lane check means a parked plan is not skipped and falls through to the age guard, where d-t3 expects skipped_parked but gets something else",
+      "target": "lifecycle.py",
+      "anchor": "        if os.path.exists(parked_path):\n            actions.append((plan_id, \"skipped_parked\"))\n            continue",
+      "replacement": "        if False:",
+      "expect_fail": "tests/test_lifecycle.py::TestAbandonedRunnerDiscriminator::test_parked_lane_skipped"
+    },
+    {
+      "name": "remove-running-filter-in-mark-step-abandoned",
+      "why": "removing AND status='running' from mark_step_abandoned makes it update complete and awaiting_verdict rows too; a-t2 checks those rows stay unchanged",
+      "target": "lifecycle.py",
+      "anchor": "            \"WHERE plan_id = ? AND status = 'running'\",",
+      "replacement": "            \"WHERE plan_id = ?\",",
+      "expect_fail": "tests/test_lifecycle.py::TestMarkStepAbandoned::test_complete_and_awaiting_rows_not_touched"
+    },
+    {
+      "name": "skip-steps-abandoned-migration",
+      "why": "removing the _migrate_steps_abandoned call means an existing database with old steps DDL is never rebuilt; m-t2 checks the DDL and backup are present after init",
+      "target": "lifecycle.py",
+      "anchor": "    _migrate_steps_abandoned(path)",
+      "replacement": "    pass  # migration skipped",
+      "expect_fail": "tests/test_lifecycle.py::TestStepsAbandonedMigration::test_old_db_migrated_rows_and_backup"
+    },
+    {
+      "name": "remove-live-process-refusal",
+      "why": "replacing the live_pid guard with False lets the close proceed even while a live process holds files in the worktree; c-t4 expects refused_live_process and would get closed instead",
+      "target": "bellows.py",
+      "anchor": "        if live_pid:\n            msg = f\"live process {live_pid} has open files in {wt_path}\"",
+      "replacement": "        if False:\n            msg = f\"live process {live_pid} has open files in {wt_path}\"",
+      "expect_fail": "tests/test_abandoned_runner_close.py::test_live_process_refused_then_closed"
+    },
+    {
+      "name": "remove-snapshot-call",
+      "why": "removing _snapshot_uncommitted means uncommitted files in the worktree are lost when the worktree is removed; c-t1 checks the preserved branch contains the snapshot commit",
+      "target": "bellows.py",
+      "anchor": "            _snapshot_uncommitted(wt_path, plan_id)\n        except Exception as e:\n            first_err = str(e).splitlines()[0] if str(e) else \"snapshot failed\"",
+      "replacement": "            pass\n        except Exception as e:\n            first_err = str(e).splitlines()[0] if str(e) else \"snapshot failed\"",
+      "expect_fail": "tests/test_abandoned_runner_close.py::test_preserved_branch_and_worktree_removed"
+    },
+    {
+      "name": "remove-release-call",
+      "why": "removing plan_claim.release_for_plan means the claim is never released even when this machine holds it; c-t3 asserts release is called once",
+      "target": "bellows.py",
+      "anchor": "        if can_release:\n            plan_claim.release_for_plan(\n                plan_id, \"abandon: runner lost at daemon exit (startup close)\", config, _log\n            )",
+      "replacement": "        if False:\n            plan_claim.release_for_plan(\n                plan_id, \"abandon: runner lost at daemon exit (startup close)\", config, _log\n            )",
+      "expect_fail": "tests/test_abandoned_runner_close.py::test_claim_released_and_page_sent"
+    },
+    {
+      "name": "plan-abandoned-event-default-off",
+      "why": "flipping plan_abandoned default to False means the event is disabled by default; c-t9 checks the event is enabled with an empty notifications config",
+      "target": "notifier.py",
+      "anchor": "    \"plan_abandoned\": True,",
+      "replacement": "    \"plan_abandoned\": False,",
+      "expect_fail": "tests/test_abandoned_runner_close.py::test_plan_abandoned_enabled_empty_config"
+    },
+    {
+      "name": "remove-preserve-failed-raise-on-branch-error",
+      "why": "removing the PreserveFailed raise when branch creation fails in strict mode lets the close proceed even though preservation failed; c-t10 expects refused_preserve_failed",
+      "target": "bellows.py",
+      "anchor": "                else:\n                    err = f\"failed to create preservation branch {branch_name} for worktree HEAD {wt_head}: {br_result.stderr.strip()}\"\n                    if strict:\n                        raise PreserveFailed(err)",
+      "replacement": "                else:\n                    err = f\"failed to create preservation branch {branch_name} for worktree HEAD {wt_head}: {br_result.stderr.strip()}\"\n                    if False:\n                        raise PreserveFailed(err)",
+      "expect_fail": "tests/test_abandoned_runner_close.py::test_plain_bellows_preserved_branch_refused"
+    },
+    {
+      "name": "remove-try-except-around-close-in-startup-recovery",
+      "why": "removing the try/except around _close_abandoned_runner in _run_startup_recovery means any exception from the close propagates out of the recovery; c-t12 patches mark_plan_state to raise and checks _run_startup_recovery does not raise",
+      "target": "bellows.py",
+      "anchor": "                if action == \"abandoned_runner\":\n                    try:\n                        outcome = _close_abandoned_runner(pid, decisions_path, _project_root, config)\n                        _log(\"INFO\", f\"lifecycle recovery: plan {pid} — abandoned_runner → {outcome}\")\n                    except Exception as exc:\n                        _log(\"ERROR\", f\"lifecycle recovery: plan {pid} — abandoned_runner → error: {exc}\")\n                        try:\n                            notifier.notify_plan_abandoned(\n                                f\"plan-{pid}\", plan_slug=None,\n                                detail=str(exc), closed=False,\n                            )\n                        except Exception:\n                            pass",
+      "replacement": "                if action == \"abandoned_runner\":\n                    outcome = _close_abandoned_runner(pid, decisions_path, _project_root, config)\n                    _log(\"INFO\", f\"lifecycle recovery: plan {pid} — abandoned_runner → {outcome}\")",
+      "expect_fail": "tests/test_abandoned_runner_close.py::test_mark_plan_state_raises_startup_continues"
+    },
+    {
+      "name": "remove-schema-refusal",
+      "why": "removing the refused_schema guard means the close proceeds on a database whose steps DDL lacks 'abandoned', which would fail the mark_step_abandoned write; c-t14 expects refused_schema",
+      "target": "bellows.py",
+      "anchor": "    if not has_abandoned:\n        msg = \"steps DDL lacks 'abandoned' — migration failed at startup\"\n        _log(\"ERROR\", f\"lifecycle recovery: plan {plan_id} — refused_schema: {msg}; \"\n             f\"retry with bellows.py restart\")\n        notifier.notify_plan_abandoned(canonical, plan_slug=slug, detail=msg, closed=False,\n                                       never_started=never_started)\n        return \"refused_schema\"",
+      "replacement": "    if False:\n        return \"refused_schema\"",
+      "expect_fail": "tests/test_abandoned_runner_close.py::test_refused_schema_without_abandoned_ddl"
+    },
+    {
+      "name": "bare-lsof-instead-of-absolute-path",
+      "why": "using a bare 'lsof' instead of '/usr/sbin/lsof' means under the launchd PATH (no /usr/sbin) lsof raises FileNotFoundError; c-t15 runs under that PATH and expects the child's pid returned",
+      "target": "bellows.py",
+      "anchor": "            [\"/usr/sbin/lsof\", \"-Fpn\"],",
+      "replacement": "            [\"lsof\", \"-Fpn\"],",
+      "expect_fail": "tests/test_abandoned_runner_close.py::test_live_processes_in_launchd_path_utf8_locale"
+    },
+    {
+      "name": "idle-guard-pid-test-removed",
+      "why": "replacing the daemon_pid comparison with False means a running step from a previous daemon always triggers the refusal, blocking stop; i-t1 expects the guard to pass when the step's daemon_pid differs from holder_pid",
+      "target": "bellows.py",
+      "anchor": "                    if dpid is not None and dpid != holder_pid:",
+      "replacement": "                    if False:",
+      "expect_fail": "tests/test_stop_path.py::test_idle_guard_passes_previous_daemon_pid"
+    },
+    {
+      "name": "no-realpath-in-live-processes-in",
+      "why": "using wt_path directly instead of os.path.realpath(wt_path) means a worktree under a symlinked parent doesn't match lsof's resolved paths; c-t8 expects the pid returned for a symlinked-parent worktree",
+      "target": "bellows.py",
+      "anchor": "    try:\n        real_wt = os.path.realpath(wt_path)\n    except Exception:\n        return None\n    for c in real_wt:",
+      "replacement": "    try:\n        real_wt = wt_path\n    except Exception:\n        return None\n    for c in real_wt:",
+      "expect_fail": "tests/test_abandoned_runner_close.py::test_live_processes_in_lsof_matching"
+    },
+    {
+      "name": "remove-worktree-identity-refusal",
+      "why": "replacing the identity check with False lets the close proceed on a plain directory that is not a real worktree; c-t16 expects refused_not_a_worktree when a plain directory sits at the worktree path",
+      "target": "bellows.py",
+      "anchor": "        if not identity_ok:\n            msg = f\"{wt_path} is not a registered git worktree of {project_root}\"",
+      "replacement": "        if False:\n            msg = f\"{wt_path} is not a registered git worktree of {project_root}\"",
+      "expect_fail": "tests/test_abandoned_runner_close.py::test_plain_directory_refused_not_a_worktree"
+    },
+    {
+      "name": "refusal-body-same-as-close-body",
+      "why": "replacing the refusal body with the close body (and clearing detail_key) means a refusal page looks like a close page; c-t17 asserts the NOT-closed sentence and the outcome detail_key appear only for closed=False",
+      "target": "notifier.py",
+      "anchor": "    else:\n        body = (f\"Plan: {plan_name}\\n{detail}\\nNOT closed — the plan stays in_progress with its claim held. \"\n                f\"Clear the cause, then retry with bellows.py restart.\")\n        detail_key = detail",
+      "replacement": "    else:\n        body = f\"Plan: {plan_name}\\n{detail}\\nClosed at startup. The redeposit and its release are yours.\"\n        detail_key = \"\"",
+      "expect_fail": "tests/test_abandoned_runner_close.py::test_notify_plan_abandoned_titles_and_bodies"
+    },
+    {
+      "name": "stop-daemon-no-holder-pid",
+      "why": "removing holder_pid from the _check_idle call means it defaults to None and a step from a previous daemon always triggers the refusal; i-t1 expects stop to succeed when the step's daemon_pid differs",
+      "target": "bellows.py",
+      "anchor": "    idle, reason = _check_idle(db_path, config, holder_pid=holder_pid)",
+      "replacement": "    idle, reason = _check_idle(db_path, config)",
+      "expect_fail": "tests/test_stop_path.py::test_idle_guard_passes_previous_daemon_pid"
+    },
+    {
+      "name": "remove-resume-refresh-in-record-step-start",
+      "why": "replacing DO UPDATE with DO NOTHING means a parked step resume returns None (no rows from RETURNING) instead of the existing row's id; p-t2 expects the same id returned and daemon_pid updated",
+      "target": "lifecycle.py",
+      "anchor": "               ON CONFLICT(plan_id, step_number) DO UPDATE SET\n                   step_started_at = EXCLUDED.step_started_at,\n                   daemon_pid = EXCLUDED.daemon_pid\n               WHERE steps.status = 'running'\n               RETURNING id\"\"\"",
+      "replacement": "               ON CONFLICT(plan_id, step_number) DO NOTHING\n               RETURNING id\"\"\"",
+      "expect_fail": "tests/test_lifecycle.py::TestRecordStepStartPid::test_resume_running_step_refreshes_pid"
+    },
+    {
+      "name": "restore-early-return-before-abandoned-pass",
+      "why": "restoring the early return before the abandoned pass means a database with no closed/awaiting rows exits before mark_step_abandoned runs; r-t4 has only an abandoned/running row and expects it to be flipped",
+      "target": "tools/reconcile_steps.py",
+      "anchor": "    if not targets and not abandoned_plans:",
+      "replacement": "    if not targets:",
+      "expect_fail": "tests/test_reconcile_steps.py::test_apply_abandoned_pass_no_awaiting_rows"
+    },
+    {
+      "name": "remove-rev-parse-failure-preserve-failed-raise",
+      "why": "suppressing the PreserveFailed raise when rev-parse HEAD returns non-zero in strict mode lets the close proceed with no HEAD to preserve; c-t22 expects refused_preserve_failed when rev-parse is patched to fail",
+      "target": "bellows.py",
+      "anchor": "    if wt_head_result is not None and wt_head_result.returncode != 0 and strict:\n        raise PreserveFailed(\n            f\"rev-parse HEAD returned {wt_head_result.returncode}: {wt_head_result.stderr.strip()}\"\n        )",
+      "replacement": "    if False:\n        raise PreserveFailed(\"rev-parse HEAD returned non-zero\")",
+      "expect_fail": "tests/test_abandoned_runner_close.py::test_rev_parse_head_failure_refused_preserve_failed"
+    },
+    {
+      "name": "always-release-claim",
+      "why": "replacing the claim-holder check with True means the claim is released even when held by another machine or a newer plan holds the placeholder; c-t21 expects no release in those cases",
+      "target": "bellows.py",
+      "anchor": "                if (claim_event == \"claimed\" and claim_machine == local_machine\n                        and newer_row is None):\n                    can_release = True",
+      "replacement": "                if True:\n                    can_release = True",
+      "expect_fail": "tests/test_abandoned_runner_close.py::test_claim_not_released_when_held_elsewhere"
+    },
+    {
+      "name": "verdict-slug-for-status-read",
+      "why": "using the verdict slug (plan id) instead of the claim slug (placeholder stem) for tuyere status means the status call uses a key no claim is registered under; c-t3 checks the status argv carries the placeholder stem",
+      "target": "bellows.py",
+      "anchor": "            claim_slug = placeholder[:-3] if placeholder.endswith(\".md\") else placeholder",
+      "replacement": "            claim_slug = slug",
+      "expect_fail": "tests/test_abandoned_runner_close.py::test_claim_released_and_page_sent"
+    },
+    {
+      "name": "invert-receipt-cutoff",
+      "why": "inverting the mtime comparison retires receipts written AFTER the plan was claimed and keeps older ones; c-t20 checks that only the receipt written before created_at is retired",
+      "target": "bellows.py",
+      "anchor": "                    if os.stat(str(receipt_path)).st_mtime >= before_epoch:",
+      "replacement": "                    if os.stat(str(receipt_path)).st_mtime < before_epoch:",
+      "expect_fail": "tests/test_abandoned_runner_close.py::test_receipts_cutoff"
+    },
+    {
+      "name": "remove-xnn-encoding-of-realpath",
+      "why": "returning chr(b) for all bytes instead of \\xNN for bytes >= 0x80 means a non-ASCII worktree path is not encoded to match lsof's LC_ALL=C output; c-t15 uses a non-ASCII tmp_path and expects the pid returned",
+      "target": "bellows.py",
+      "anchor": "            if b >= 0x80:\n                out.append(f\"\\\\x{b:02x}\")\n            else:\n                out.append(chr(b))",
+      "replacement": "            out.append(chr(b))",
+      "expect_fail": "tests/test_abandoned_runner_close.py::test_live_processes_in_launchd_path_utf8_locale"
+    },
+    {
+      "name": "remove-lc-all-c-pin",
+      "why": "removing the LC_ALL=C pin means lsof inherits the daemon's UTF-8 locale and prints non-ASCII path bytes raw instead of as \\xNN, breaking the match; c-t15 runs under en_US.UTF-8 and expects the pid returned",
+      "target": "bellows.py",
+      "anchor": "        env[\"LC_ALL\"] = \"C\"",
+      "replacement": "        pass  # LC_ALL pin removed",
+      "expect_fail": "tests/test_abandoned_runner_close.py::test_live_processes_in_launchd_path_utf8_locale"
+    },
+    {
+      "name": "remove-separate-add-column-daemon-pid",
+      "why": "removing the ALTER TABLE ADD COLUMN daemon_pid means an existing database without the column never gets it; m-t7 forces the rebuild to fail and then checks that record_step_start still writes a step row with daemon_pid",
+      "target": "lifecycle.py",
+      "anchor": "    if \"daemon_pid\" not in existing_steps_cols:\n        conn.execute(\"ALTER TABLE steps ADD COLUMN daemon_pid INTEGER\")",
+      "replacement": "    if False:\n        conn.execute(\"ALTER TABLE steps ADD COLUMN daemon_pid INTEGER\")",
+      "expect_fail": "tests/test_lifecycle.py::TestStepsAbandonedMigration::test_rebuild_fails_daemon_pid_present_record_step_start_works"
+    },
+    {
+      "name": "remove-tip-branch-preserve-failed-raise",
+      "why": "suppressing the PreserveFailed raise when the tip branch creation fails in strict mode lets the close proceed, losing the branch-tip commit; c-t25 patches the tip branch command to fail and expects refused_preserve_failed",
+      "target": "bellows.py",
+      "anchor": "                            else:\n                                raise PreserveFailed(\n                                    f\"failed to preserve tip branch {tip_branch}: \"\n                                    f\"{tb_result.stderr.strip()}\"\n                                )",
+      "replacement": "                            else:\n                                pass  # tip branch failure not raised",
+      "expect_fail": "tests/test_abandoned_runner_close.py::test_tip_branch_creation_fails_refused"
+    },
+    {
+      "name": "drop-daemon-pid-from-resume-upsert",
+      "why": "removing daemon_pid from the DO UPDATE SET clause means a parked step resume keeps the old daemon's pid; p-t2 reads back daemon_pid after resume and expects it to equal os.getpid()",
+      "target": "lifecycle.py",
+      "anchor": "               ON CONFLICT(plan_id, step_number) DO UPDATE SET\n                   step_started_at = EXCLUDED.step_started_at,\n                   daemon_pid = EXCLUDED.daemon_pid\n               WHERE steps.status = 'running'",
+      "replacement": "               ON CONFLICT(plan_id, step_number) DO UPDATE SET\n                   step_started_at = EXCLUDED.step_started_at\n               WHERE steps.status = 'running'",
+      "expect_fail": "tests/test_lifecycle.py::TestRecordStepStartPid::test_resume_running_step_refreshes_pid"
+    },
+    {
+      "name": "init-notifications-after-closes",
+      "why": "moving notifier.init_notifications(config) inside the loop after _close_abandoned_runner means pages fire before init; c-t7 asserts init appears first in call_order",
+      "target": "bellows.py",
+      "anchor": "    notifier.init_notifications(config)\n    for decisions_path in config.get(\"watched_projects\", []):\n        if os.path.isdir(decisions_path):",
+      "replacement": "    for decisions_path in config.get(\"watched_projects\", []):\n        notifier.init_notifications(config)\n        if os.path.isdir(decisions_path):",
+      "expect_fail": "tests/test_abandoned_runner_close.py::test_run_startup_recovery_init_before_close"
+    },
+    {
+      "name": "remove-in-transaction-guard-on-rollback",
+      "why": "removing the in_transaction guard and inner try/except means ROLLBACK runs unconditionally; when BEGIN IMMEDIATE was refused (no transaction open), 'cannot rollback - no transaction is active' escapes the outer except and the function raises instead of returning; m-t4 checks no raise",
+      "target": "lifecycle.py",
+      "anchor": "        if conn.in_transaction:\n            try:\n                conn.execute(\"ROLLBACK\")\n            except Exception:\n                pass",
+      "replacement": "        conn.execute(\"ROLLBACK\")",
+      "expect_fail": "tests/test_lifecycle.py::TestStepsAbandonedMigration::test_failure_inside_transaction_does_not_raise"
+    }
+  ]
+}

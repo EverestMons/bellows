@@ -47,6 +47,7 @@ _DEFAULT_EVENTS = {
     "plan_skipped": False,
     "queue_empty": False,
     "cycle_nudge": False,
+    "plan_abandoned": True,
 }
 
 
@@ -302,6 +303,22 @@ def notify_plan_halted(plan_name: str, plan_slug=None) -> bool:
         "plan_halted", plan_slug, "Bellows — Plan Halted",
         f"Plan: {plan_name}",
         priority=0, plan_scoped=True,
+    )
+
+
+def notify_plan_abandoned(plan_name: str, plan_slug=None, detail: str = "",
+                           closed: bool = True, never_started: bool = False) -> bool:
+    title = "Bellows — Claimed, Never Started" if never_started else "Bellows — Runner Abandoned"
+    if closed:
+        body = f"Plan: {plan_name}\n{detail}\nClosed at startup. The redeposit and its release are yours."
+        detail_key = ""
+    else:
+        body = (f"Plan: {plan_name}\n{detail}\nNOT closed — the plan stays in_progress with its claim held. "
+                f"Clear the cause, then retry with bellows.py restart.")
+        detail_key = detail
+    return notify_event(
+        "plan_abandoned", plan_slug, title, body,
+        priority=0, plan_scoped=True, detail_key=detail_key,
     )
 
 

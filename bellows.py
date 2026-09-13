@@ -10,6 +10,7 @@ import pathlib
 import re
 import signal
 import shutil
+import socket
 import sqlite3
 import subprocess
 import sys
@@ -281,12 +282,14 @@ def _verify_identity(pid):
         return False
 
 
-def _check_idle(db_path, config):
+def _check_idle(db_path, config, holder_pid=None):
     """Idle guard: refuse only when a plan row has status='running'.
 
     An awaiting_verdict or NULL status is a paused/idle daemon and does NOT block.
     Orphaned in-progress-* files (no corresponding running row) do NOT block — that
     stuck state is precisely what the operator is trying to clear.
+    When holder_pid is provided, a running step whose daemon_pid is set and differs
+    from holder_pid is skipped — it belongs to a previous daemon.
     Returns (is_idle: bool, reason: str|None).
     """
     import status as status_mod
@@ -297,6 +300,21 @@ def _check_idle(db_path, config):
     for row in rows:
         if row["status"] == "running":
             plan_id = row["id"]
+            if holder_pid is not None:
+                try:
+                    conn_ro = lifecycle.connect_readonly(db_path)
+                    dpid_row = conn_ro.execute(
+                        "SELECT daemon_pid FROM steps "
+                        "WHERE plan_id = ? AND status = 'running' "
+                        "ORDER BY step_number DESC LIMIT 1",
+                        (plan_id,),
+                    ).fetchone()
+                    conn_ro.close()
+                    dpid = dpid_row[0] if dpid_row else None
+                    if dpid is not None and dpid != holder_pid:
+                        continue
+                except Exception:
+                    pass
             return False, f"plan #{plan_id} has status='running'"
     return True, None
 
@@ -327,7 +345,7 @@ def stop_daemon(lock_path, db_path, config):
                        f"(identity guard failed)")
 
     # (4) Idle guard — refuse only on status='running'
-    idle, reason = _check_idle(db_path, config)
+    idle, reason = _check_idle(db_path, config, holder_pid=holder_pid)
     if not idle:
         return False, f"REFUSE — daemon is busy: {reason} (PID {holder_pid})"
 
@@ -535,6 +553,11 @@ class WorktreeCreationError(Exception):
     pass
 
 
+class PreserveFailed(Exception):
+    """Raised by _preserve_and_remove_stranded_worktree in strict mode on failure."""
+    pass
+
+
 class WorktreeTeardownError(Exception):
     """Raised when worktree teardown fails (e.g. merge conflict, legacy worktree)."""
     pass
@@ -554,12 +577,14 @@ import depositor
 import substrate_check  # scripts/ is on the path once depositor has imported (thread 183)
 
 
-def _retire_receipts(plan_id):
+def _retire_receipts(plan_id, before=None):
     """Move receipts for a completed/halted plan to receipts/archived/.
 
     Looks up the deposit_placeholder_name from lifecycle.db, derives the slug,
     globs matching receipt files, and filters by JSON slug equality (the glob
     alone over-matches prefix-extending slugs).
+    When before is a plan created_at ISO string, only receipts whose file mtime
+    precedes that timestamp are retired (so a redeposit's receipt is kept).
     Fail-toward-WARN: a receipts error must never break a plan close.
     """
     if not plan_id:
@@ -584,10 +609,22 @@ def _retire_receipts(plan_id):
         matches = list(receipts_dir.glob(f"receipt-{slug}-*.json"))
         if not matches:
             return
+        before_epoch = None
+        if before is not None:
+            try:
+                before_epoch = datetime.fromisoformat(before).timestamp()
+            except Exception:
+                pass
         archived.mkdir(exist_ok=True)
         for receipt_path in matches:
             if not receipt_path.is_file():
                 continue
+            if before_epoch is not None:
+                try:
+                    if os.stat(str(receipt_path)).st_mtime >= before_epoch:
+                        continue
+                except Exception:
+                    pass
             try:
                 data = json.loads(receipt_path.read_text())
                 if data.get("slug") != slug:
@@ -983,6 +1020,521 @@ def _maybe_park_session_limit(
 
     _log("EVENT", f"parked — session limit, resets_at={resets_at_raw}, resume_step={current_step}", slug=slug)
     return True
+
+
+# ---------------------------------------------------------------------------
+# Abandoned-runner close helpers (startup recovery)
+# ---------------------------------------------------------------------------
+
+def _live_processes_in(wt_path):
+    """Check for live processes with open files in or under wt_path via lsof.
+
+    Returns a pid (int) if any live process has an open file in the worktree.
+    Returns None if lsof failed, produced no output, or the worktree realpath
+    contains a byte below 0x20, DEL (0x7f), or a backslash (unmodelable by the
+    \\xNN match). Returns False when lsof ran successfully and found no match.
+    """
+    try:
+        real_wt = os.path.realpath(wt_path)
+    except Exception:
+        return None
+    for c in real_wt:
+        code = ord(c)
+        if code < 0x20 or code == 0x7f or c == '\\':
+            return None
+    def _encode(p):
+        out = []
+        for b in p.encode("utf-8"):
+            if b >= 0x80:
+                out.append(f"\\x{b:02x}")
+            else:
+                out.append(chr(b))
+        return "".join(out)
+    encoded_wt = _encode(real_wt)
+    try:
+        env = dict(os.environ)
+        env["LC_ALL"] = "C"
+        result = subprocess.run(
+            ["/usr/sbin/lsof", "-Fpn"],
+            capture_output=True, text=True, timeout=30, env=env,
+        )
+    except Exception:
+        return None
+    if not result.stdout:
+        return None
+    current_pid = None
+    found_any_p = False
+    for line in result.stdout.splitlines():
+        if line.startswith("p"):
+            try:
+                current_pid = int(line[1:])
+                found_any_p = True
+            except ValueError:
+                current_pid = None
+        elif line.startswith("n") and current_pid is not None:
+            path = line[1:]
+            if path == encoded_wt or path.startswith(encoded_wt + "/"):
+                return current_pid
+    if not found_any_p:
+        return None
+    return False
+
+
+def _snapshot_uncommitted(wt_path, plan_id):
+    """Commit any uncommitted work in the worktree. Raises on failure."""
+    result = subprocess.run(
+        ["git", "--no-pager", "-C", wt_path, "status", "--porcelain"],
+        capture_output=True, text=True, timeout=10,
+    )
+    if not result.stdout.strip():
+        return
+    add_r = subprocess.run(
+        ["git", "--no-pager", "-C", wt_path, "add", "-A"],
+        capture_output=True, text=True, timeout=30,
+    )
+    if add_r.returncode != 0:
+        first_err = add_r.stderr.strip().splitlines()[0] if add_r.stderr.strip() else "git add failed"
+        raise Exception(first_err)
+    commit_r = subprocess.run(
+        ["git", "--no-pager", "-C", wt_path, "commit", "--no-verify", "-q",
+         "-m", f"bellows: uncommitted work of abandoned plan {plan_id} (startup close)"],
+        capture_output=True, text=True, timeout=30,
+    )
+    if commit_r.returncode != 0:
+        first_err = commit_r.stderr.strip().splitlines()[0] if commit_r.stderr.strip() else "git commit failed"
+        raise Exception(first_err)
+
+
+def _preserve_and_remove_stranded_worktree(project_path, wt_path, slug, strict=False):
+    """Preserve un-landed commits from a stranded worktree, then remove it.
+
+    Returns list of bellows-preserved/<slug>-... branch names created (empty if HEAD
+    and the bellows-wt/<slug> tip are already on main).
+    strict=False: logs failures (for _create_worktree — unchanged behaviour).
+    strict=True: raises PreserveFailed before any removal on any failure (for close).
+    In strict mode also preserves the bellows-wt/<slug> tip when it differs from HEAD.
+    """
+    _log("WARN", f"⚠ stranded worktree found at {wt_path}, removing before re-creation", slug=slug)
+    kept_branches = []
+    ts = time.strftime("%Y%m%dT%H%M%SZ", time.gmtime())
+
+    try:
+        wt_head_result = subprocess.run(
+            ["git", "--no-pager", "-C", wt_path, "rev-parse", "--verify", "HEAD"],
+            capture_output=True, text=True, timeout=10,
+        )
+    except Exception as e:
+        err = f"rev-parse HEAD failed: {e}"
+        if strict:
+            raise PreserveFailed(err)
+        _log("ERROR", f"⚠ {err}", slug=slug)
+        wt_head_result = None
+
+    if wt_head_result is not None and wt_head_result.returncode != 0 and strict:
+        raise PreserveFailed(
+            f"rev-parse HEAD returned {wt_head_result.returncode}: {wt_head_result.stderr.strip()}"
+        )
+
+    if wt_head_result and wt_head_result.returncode == 0:
+        wt_head = wt_head_result.stdout.strip()
+        try:
+            ancestor_result = subprocess.run(
+                ["git", "--no-pager", "-C", project_path, "merge-base", "--is-ancestor", wt_head, "main"],
+                capture_output=True, text=True, timeout=10,
+            )
+            already_landed = (ancestor_result.returncode == 0)
+        except Exception:
+            already_landed = False
+        if not already_landed:
+            branch_name = f"bellows-preserved/{slug}-{ts}"
+            try:
+                br_result = subprocess.run(
+                    ["git", "--no-pager", "-C", project_path, "branch", branch_name, wt_head],
+                    capture_output=True, text=True, timeout=10,
+                )
+                if br_result.returncode == 0:
+                    _log("WARN", f"⚠ preserved un-landed worktree commits at {wt_head} on branch {branch_name} before stranded-cleanup", slug=slug)
+                    kept_branches.append(branch_name)
+                else:
+                    err = f"failed to create preservation branch {branch_name} for worktree HEAD {wt_head}: {br_result.stderr.strip()}"
+                    if strict:
+                        raise PreserveFailed(err)
+                    _log("ERROR", f"⚠ {err}", slug=slug)
+            except PreserveFailed:
+                raise
+            except Exception as e:
+                err = f"failed to create preservation branch {branch_name} for worktree HEAD {wt_head}: {e}"
+                if strict:
+                    raise PreserveFailed(err)
+                _log("ERROR", f"⚠ {err}", slug=slug)
+
+        if strict:
+            try:
+                tip_result = subprocess.run(
+                    ["git", "--no-pager", "-C", project_path, "rev-parse", "--verify",
+                     f"refs/heads/bellows-wt/{slug}"],
+                    capture_output=True, text=True, timeout=10,
+                )
+                if tip_result.returncode == 0:
+                    tip_sha = tip_result.stdout.strip()
+                    if tip_sha != wt_head:
+                        tip_anc = subprocess.run(
+                            ["git", "--no-pager", "-C", project_path, "merge-base",
+                             "--is-ancestor", tip_sha, "main"],
+                            capture_output=True, text=True, timeout=10,
+                        )
+                        if tip_anc.returncode != 0:
+                            tip_branch = f"bellows-preserved/{slug}-{ts}-branch"
+                            tb_result = subprocess.run(
+                                ["git", "--no-pager", "-C", project_path, "branch",
+                                 tip_branch, tip_sha],
+                                capture_output=True, text=True, timeout=10,
+                            )
+                            if tb_result.returncode == 0:
+                                kept_branches.append(tip_branch)
+                            else:
+                                raise PreserveFailed(
+                                    f"failed to preserve tip branch {tip_branch}: "
+                                    f"{tb_result.stderr.strip()}"
+                                )
+            except PreserveFailed:
+                raise
+            except Exception as e:
+                raise PreserveFailed(f"tip branch check failed: {e}")
+
+    try:
+        subprocess.run(
+            ["git", "--no-pager", "worktree", "remove", "--force", wt_path],
+            cwd=project_path, capture_output=True, text=True, timeout=10,
+        )
+    except Exception:
+        pass
+    shutil.rmtree(wt_path, ignore_errors=True)
+    try:
+        subprocess.run(
+            ["git", "--no-pager", "worktree", "prune"],
+            cwd=project_path, capture_output=True, text=True, timeout=10,
+        )
+    except Exception:
+        pass
+    try:
+        subprocess.run(
+            ["git", "--no-pager", "branch", "-D", f"bellows-wt/{slug}"],
+            cwd=project_path, capture_output=True, text=True, timeout=10,
+        )
+    except Exception:
+        pass
+
+    return kept_branches
+
+
+def _list_preserved_branches(project_root, slug):
+    """List bellows-preserved/<slug>-* branches in the repository."""
+    try:
+        result = subprocess.run(
+            ["git", "--no-pager", "branch", "--list", f"bellows-preserved/{slug}-*"],
+            cwd=project_root, capture_output=True, text=True, timeout=10,
+        )
+        return [b.strip().lstrip("* ") for b in result.stdout.strip().splitlines() if b.strip()]
+    except Exception:
+        return []
+
+
+def _close_abandoned_runner(plan_id, decisions_dir, project_root, config):
+    """Close an abandoned runner at daemon startup. Returns an outcome word.
+
+    Sequence: schema check, worktree identity, live-process guard, snapshot,
+    preserve-and-remove, lane move, cleanup, lifecycle writes, claim release,
+    record_run, page, LAST mark_plan_state → 'closed'.
+    """
+    db_path = lifecycle.LIFECYCLE_DB_PATH
+
+    conn_ro = lifecycle.connect_readonly(db_path)
+    plan_row = conn_ro.execute(
+        "SELECT type, deposit_placeholder_name, created_at, lifecycle_state "
+        "FROM plans WHERE id = ?",
+        (plan_id,),
+    ).fetchone()
+    step_row = conn_ro.execute(
+        "SELECT step_number FROM steps WHERE plan_id = ? AND status = 'running' "
+        "ORDER BY step_number DESC LIMIT 1",
+        (plan_id,),
+    ).fetchone()
+    conn_ro.close()
+
+    if plan_row is None:
+        _log("INFO", f"lifecycle recovery: plan {plan_id} — skipped_not_in_progress (no row)")
+        return "skipped_not_in_progress"
+
+    plan_type, placeholder, created_at, state = plan_row
+    step_number = step_row[0] if step_row else 0
+    never_started = (step_row is None)
+    canonical = f"{plan_type}-{plan_id}.md"
+    slug = verdict.slug_from_path(canonical)
+    wt_path = os.path.join(project_root, ".bellows-worktrees", slug)
+
+    if state != "in_progress":
+        _log("INFO", f"lifecycle recovery: plan {plan_id} — skipped_not_in_progress")
+        return "skipped_not_in_progress"
+
+    try:
+        conn_chk = lifecycle.connect_readonly(db_path)
+        ddl_row = conn_chk.execute(
+            "SELECT sql FROM sqlite_master WHERE type='table' AND name='steps'"
+        ).fetchone()
+        conn_chk.close()
+        has_abandoned = ddl_row is not None and "'abandoned'" in ddl_row[0]
+    except Exception:
+        has_abandoned = False
+
+    if not has_abandoned:
+        msg = "steps DDL lacks 'abandoned' — migration failed at startup"
+        _log("ERROR", f"lifecycle recovery: plan {plan_id} — refused_schema: {msg}; "
+             f"retry with bellows.py restart")
+        notifier.notify_plan_abandoned(canonical, plan_slug=slug, detail=msg, closed=False,
+                                       never_started=never_started)
+        return "refused_schema"
+
+    done_dir = os.path.join(decisions_dir, "Done")
+    done_path = os.path.join(done_dir, f"abandoned-{canonical}")
+    inprogress_path = os.path.join(decisions_dir, f"in-progress-{canonical}")
+
+    if os.path.exists(done_path) and os.path.exists(inprogress_path):
+        msg = f"Both Done/abandoned-{canonical} and in-progress-{canonical} exist"
+        _log("ERROR", f"lifecycle recovery: plan {plan_id} — refused_done_name_taken; "
+             f"retry with bellows.py restart")
+        notifier.notify_plan_abandoned(canonical, plan_slug=slug, detail=msg, closed=False,
+                                       never_started=never_started)
+        return "refused_done_name_taken"
+
+    wt_present = os.path.exists(wt_path)
+
+    if wt_present:
+        real_wt = os.path.realpath(wt_path)
+
+        if os.path.islink(wt_path):
+            msg = f"{wt_path} is a symlink — not a worktree"
+            _log("ERROR", f"lifecycle recovery: plan {plan_id} — refused_not_a_worktree; "
+                 f"retry with bellows.py restart")
+            notifier.notify_plan_abandoned(canonical, plan_slug=slug, detail=msg, closed=False)
+            return "refused_not_a_worktree"
+
+        identity_ok = False
+        try:
+            wl_result = subprocess.run(
+                ["git", "--no-pager", "-C", project_root, "worktree", "list", "--porcelain"],
+                capture_output=True, text=True, timeout=10,
+            )
+            worktree_reals = []
+            for line in wl_result.stdout.splitlines():
+                if line.startswith("worktree "):
+                    worktree_reals.append(os.path.realpath(line[9:].strip()))
+            if real_wt in worktree_reals:
+                top_result = subprocess.run(
+                    ["git", "--no-pager", "-C", wt_path, "rev-parse", "--show-toplevel"],
+                    capture_output=True, text=True, timeout=10,
+                )
+                if os.path.realpath(top_result.stdout.strip()) == real_wt:
+                    identity_ok = True
+        except Exception:
+            pass
+
+        if not identity_ok:
+            msg = f"{wt_path} is not a registered git worktree of {project_root}"
+            _log("ERROR", f"lifecycle recovery: plan {plan_id} — refused_not_a_worktree; "
+                 f"retry with bellows.py restart")
+            notifier.notify_plan_abandoned(canonical, plan_slug=slug, detail=msg, closed=False)
+            return "refused_not_a_worktree"
+
+        live_pid = _live_processes_in(wt_path)
+        if live_pid is None:
+            msg = f"cannot verify worktree is idle (lsof unverifiable for {wt_path})"
+            _log("ERROR", f"lifecycle recovery: plan {plan_id} — refused_unverifiable; "
+                 f"retry with bellows.py restart")
+            notifier.notify_plan_abandoned(canonical, plan_slug=slug, detail=msg, closed=False,
+                                           never_started=never_started)
+            return "refused_unverifiable"
+        if live_pid:
+            msg = f"live process {live_pid} has open files in {wt_path}"
+            _log("ERROR", f"lifecycle recovery: plan {plan_id} — refused_live_process: {msg}; "
+                 f"retry with bellows.py restart after clearing the process")
+            notifier.notify_plan_abandoned(canonical, plan_slug=slug, detail=msg, closed=False,
+                                           never_started=never_started)
+            return "refused_live_process"
+
+        try:
+            _snapshot_uncommitted(wt_path, plan_id)
+        except Exception as e:
+            first_err = str(e).splitlines()[0] if str(e) else "snapshot failed"
+            msg = f"snapshot failed: {first_err}"
+            _log("ERROR", f"lifecycle recovery: plan {plan_id} — refused_snapshot_failed; "
+                 f"retry with bellows.py restart: {first_err}")
+            notifier.notify_plan_abandoned(canonical, plan_slug=slug, detail=msg, closed=False)
+            return "refused_snapshot_failed"
+
+        try:
+            kept_branches = _preserve_and_remove_stranded_worktree(
+                project_root, wt_path, slug, strict=True
+            )
+        except PreserveFailed as e:
+            existing = _list_preserved_branches(project_root, slug)
+            detail = str(e)
+            if existing:
+                detail += f"; kept: {', '.join(existing)}"
+            _log("ERROR", f"lifecycle recovery: plan {plan_id} — refused_preserve_failed: {detail}; "
+                 f"retry with bellows.py restart")
+            notifier.notify_plan_abandoned(canonical, plan_slug=slug, detail=detail, closed=False)
+            return "refused_preserve_failed"
+    else:
+        kept_branches = []
+        branch_ref = f"refs/heads/bellows-wt/{slug}"
+        try:
+            rev_r = subprocess.run(
+                ["git", "--no-pager", "-C", project_root, "rev-parse", "--verify", branch_ref],
+                capture_output=True, text=True, timeout=10,
+            )
+            if rev_r.returncode == 0:
+                bhead = rev_r.stdout.strip()
+                anc_r = subprocess.run(
+                    ["git", "--no-pager", "-C", project_root, "merge-base",
+                     "--is-ancestor", bhead, "main"],
+                    capture_output=True, text=True, timeout=10,
+                )
+                if anc_r.returncode != 0:
+                    ts = time.strftime("%Y%m%dT%H%M%SZ", time.gmtime())
+                    pres = f"bellows-preserved/{slug}-{ts}"
+                    subprocess.run(
+                        ["git", "--no-pager", "-C", project_root, "branch", pres, bhead],
+                        capture_output=True, text=True, timeout=10, check=True,
+                    )
+                    kept_branches.append(pres)
+                subprocess.run(
+                    ["git", "--no-pager", "worktree", "prune"],
+                    cwd=project_root, capture_output=True, text=True, timeout=10,
+                )
+                subprocess.run(
+                    ["git", "--no-pager", "branch", "-D", f"bellows-wt/{slug}"],
+                    cwd=project_root, capture_output=True, text=True, timeout=10,
+                )
+        except Exception as e:
+            _log("WARN", f"lifecycle recovery: plan {plan_id} — worktree-absent branch cleanup: {e}")
+
+    if not os.path.exists(done_path):
+        os.makedirs(done_dir, exist_ok=True)
+        if os.path.exists(inprogress_path):
+            shutil.move(inprogress_path, done_path)
+
+    _delete_shadow(canonical)
+    _cleanup_verdicts_for_slug(slug)
+    lifecycle.mark_step_abandoned(plan_id)
+    _retire_receipts(plan_id, before=created_at)
+
+    claim_holder_info = ""
+    if placeholder:
+        claim_slug = placeholder[:-3] if placeholder.endswith(".md") else placeholder
+        checkout = plan_claim._tuyere_checkout()
+        can_release = False
+        if checkout:
+            local_machine = socket.gethostname()
+            try:
+                cfg_data = json.loads((checkout / "config.json").read_text())
+                local_machine = cfg_data.get("machine", local_machine)
+            except Exception:
+                pass
+            try:
+                st_result = subprocess.run(
+                    [str(checkout / ".venv" / "bin" / "python"),
+                     "-m", "tuyere.claims", "status", claim_slug],
+                    capture_output=True, text=True, timeout=10, cwd=str(checkout),
+                )
+                out = st_result.stdout.strip()
+                claim_event = ""
+                claim_machine = ""
+                for part in out.split():
+                    if part.startswith("event="):
+                        claim_event = part[6:]
+                    elif part.startswith("machine="):
+                        claim_machine = part[8:]
+                newer_row = None
+                try:
+                    conn_r2 = lifecycle.connect_readonly(db_path)
+                    newer_row = conn_r2.execute(
+                        "SELECT id FROM plans WHERE deposit_placeholder_name = ? AND id > ?",
+                        (placeholder, plan_id),
+                    ).fetchone()
+                    conn_r2.close()
+                except Exception:
+                    pass
+                if (claim_event == "claimed" and claim_machine == local_machine
+                        and newer_row is None):
+                    can_release = True
+                else:
+                    if newer_row:
+                        claim_holder_info = f"newer plan {newer_row[0]} holds the placeholder"
+                    elif claim_machine:
+                        claim_holder_info = f"claim held by machine={claim_machine}"
+                    else:
+                        claim_holder_info = "claim status unreadable"
+            except Exception as e:
+                claim_holder_info = f"claim status check failed: {e}"
+        if can_release:
+            plan_claim.release_for_plan(
+                plan_id, "abandon: runner lost at daemon exit (startup close)", config, _log
+            )
+        else:
+            _log("INFO", f"lifecycle recovery: plan {plan_id} — claim not released: "
+                 f"{claim_holder_info}")
+
+    done_ref = os.path.join("Done", f"abandoned-{canonical}")
+    record_run(DB_PATH, done_path if os.path.exists(done_path) else done_ref,
+               project_root, "", step_number, "Abandoned", 0.0, slug)
+
+    if kept_branches:
+        detail = "kept: " + ", ".join(kept_branches)
+    elif not wt_present:
+        existing_pres = _list_preserved_branches(project_root, slug)
+        detail = "kept: " + ", ".join(existing_pres) if existing_pres else "nothing un-landed"
+    else:
+        detail = "nothing un-landed"
+    if claim_holder_info:
+        detail += f"; {claim_holder_info}"
+
+    notifier.notify_plan_abandoned(canonical, plan_slug=slug, detail=detail, closed=True,
+                                   never_started=never_started)
+
+    lifecycle.mark_plan_state(plan_id, "abandoned", closed_at=datetime.now().isoformat(),
+                              plan_doc_ref=done_ref)
+    return "closed"
+
+
+def _run_startup_recovery(config):
+    """Run startup lifecycle recovery, including closing abandoned runners.
+
+    Called once from main() after init_lifecycle_db(). Initialises notifications
+    first so close pages are armed.
+    """
+    notifier.init_notifications(config)
+    for decisions_path in config.get("watched_projects", []):
+        if os.path.isdir(decisions_path):
+            _project_root = str(Path(decisions_path).parent.parent)
+            actions = lifecycle.recover_half_claimed(
+                decisions_path, project_root=_project_root,
+            )
+            for pid, action in actions:
+                _log("INFO", f"lifecycle recovery: plan {pid} — {action}")
+                if action == "abandoned_runner":
+                    try:
+                        outcome = _close_abandoned_runner(pid, decisions_path, _project_root, config)
+                        _log("INFO", f"lifecycle recovery: plan {pid} — abandoned_runner → {outcome}")
+                    except Exception as exc:
+                        _log("ERROR", f"lifecycle recovery: plan {pid} — abandoned_runner → error: {exc}")
+                        try:
+                            notifier.notify_plan_abandoned(
+                                f"plan-{pid}", plan_slug=None,
+                                detail=str(exc), closed=False,
+                            )
+                        except Exception:
+                            pass
 
 
 def run_plan(plan_path: str, config: dict, response_server: server.ResponseServer, resume_step: Optional[int] = None, bellows=None):
@@ -1732,62 +2284,7 @@ def _create_worktree(project_path: str, slug: str) -> str:
 
     # Clean stranded worktree from a prior failed dispatch (mirrors __init__ prune style)
     if os.path.exists(wt_path):
-        _log("WARN", f"⚠ stranded worktree found at {wt_path}, removing before re-creation", slug=slug)
-        # --- Gap 2a: preserve un-landed commits before stranded-cleanup ---
-        try:
-            wt_head_result = subprocess.run(
-                ["git", "--no-pager", "-C", wt_path, "rev-parse", "--verify", "HEAD"],
-                capture_output=True, text=True, timeout=10,
-            )
-        except Exception:
-            wt_head_result = None
-        if wt_head_result and wt_head_result.returncode == 0:
-            wt_head = wt_head_result.stdout.strip()
-            try:
-                ancestor_result = subprocess.run(
-                    ["git", "--no-pager", "-C", project_path, "merge-base", "--is-ancestor", wt_head, "main"],
-                    capture_output=True, text=True, timeout=10,
-                )
-                already_landed = (ancestor_result.returncode == 0)
-            except Exception:
-                already_landed = False  # fail-safe: preserve under uncertainty
-            if not already_landed:
-                ts = time.strftime("%Y%m%dT%H%M%SZ", time.gmtime())
-                branch_name = f"bellows-preserved/{slug}-{ts}"
-                try:
-                    br_result = subprocess.run(
-                        ["git", "--no-pager", "-C", project_path, "branch", branch_name, wt_head],
-                        capture_output=True, text=True, timeout=10,
-                    )
-                    if br_result.returncode == 0:
-                        _log("WARN", f"⚠ preserved un-landed worktree commits at {wt_head} on branch {branch_name} before stranded-cleanup", slug=slug)
-                    else:
-                        _log("ERROR", f"⚠ failed to create preservation branch {branch_name} for worktree HEAD {wt_head}: {br_result.stderr.strip()}", slug=slug)
-                except Exception as e:
-                    _log("ERROR", f"⚠ failed to create preservation branch {branch_name} for worktree HEAD {wt_head}: {e}", slug=slug)
-        try:
-            subprocess.run(
-                ["git", "--no-pager", "worktree", "remove", "--force", wt_path],
-                cwd=project_path, capture_output=True, text=True, timeout=10,
-            )
-        except Exception:
-            pass  # path may not be a registered worktree
-        shutil.rmtree(wt_path, ignore_errors=True)
-        try:
-            subprocess.run(
-                ["git", "--no-pager", "worktree", "prune"],
-                cwd=project_path, capture_output=True, text=True, timeout=10,
-            )
-        except Exception:
-            pass
-        # Clean up the named branch if it exists (prevents sequential-invariant failure)
-        try:
-            subprocess.run(
-                ["git", "--no-pager", "branch", "-D", f"bellows-wt/{slug}"],
-                cwd=project_path, capture_output=True, text=True, timeout=10,
-            )
-        except Exception:
-            pass  # branch may not exist (legacy detached-HEAD worktree)
+        _preserve_and_remove_stranded_worktree(project_path, wt_path, slug, strict=False)
 
     branch_name = f"bellows-wt/{re.sub(r'[^a-zA-Z0-9._/-]', '-', slug)}"
 
@@ -3731,15 +4228,6 @@ if __name__ == "__main__":
 
     migrate_db()
     lifecycle.init_lifecycle_db()
-    # Startup recovery: re-rename half-claimed plans (blueprint 2.4a)
-    for decisions_path in config.get("watched_projects", []):
-        if os.path.isdir(decisions_path):
-            _project_root = str(Path(decisions_path).parent.parent)
-            actions = lifecycle.recover_half_claimed(
-                decisions_path, project_root=_project_root,
-            )
-            for pid, action in actions:
-                _log("INFO", f"lifecycle recovery: plan {pid} — {action}")
-    notifier.init_notifications(config)
+    _run_startup_recovery(config)
     b = Bellows(config)
     b.start(_session_log_path, _log_existed)
