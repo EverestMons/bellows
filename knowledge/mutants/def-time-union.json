@@ -1,0 +1,12 @@
+{
+  "target": "tools/fold_signal_census.py",
+  "mutants": [
+    {
+      "name": "m1",
+      "why": "future import removed: definition-time union raises TypeError on Python 3.9",
+      "anchor": "\"\"\"\nfrom __future__ import annotations\n\nimport argparse",
+      "replacement": "\"\"\"\n\nimport argparse",
+      "expect_fail": "tests/test_tools_safe_to_invoke.py::test_no_def_time_union_without_future_import"
+    }
+  ]
+}

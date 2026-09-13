@@ -255,3 +255,69 @@ def test_every_module_parses_under_python39():
     )
     output = result.stdout.strip()
     assert output == "", f"Files that do not parse under {OLD}:\n{output}"
+
+
+# ── t6 ────────────────────────────────────────────────────────────────────────
+
+def _def_time_unions(path):
+    """Return 'path:line' for PEP 604 unions in def-time annotations without future import."""
+    hits = []
+    try:
+        tree = ast.parse(path.read_text(encoding="utf-8"))
+    except SyntaxError:
+        return hits
+    for node in tree.body:
+        if isinstance(node, ast.ImportFrom) and node.module == "__future__":
+            for alias in node.names:
+                if alias.name == "annotations":
+                    return hits
+
+    def _has_union(annotation):
+        for n in ast.walk(annotation):
+            if isinstance(n, ast.BinOp) and isinstance(n.op, ast.BitOr):
+                return True
+        return False
+
+    for node in ast.walk(tree):
+        if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
+            all_args = (
+                node.args.posonlyargs
+                + node.args.args
+                + node.args.kwonlyargs
+            )
+            if node.args.vararg:
+                all_args = all_args + [node.args.vararg]
+            if node.args.kwarg:
+                all_args = all_args + [node.args.kwarg]
+            for arg in all_args:
+                if arg.annotation and _has_union(arg.annotation):
+                    hits.append(f"{path}:{arg.annotation.lineno}")
+            if node.returns and _has_union(node.returns):
+                hits.append(f"{path}:{node.returns.lineno}")
+
+    def _check_stmts(stmts):
+        for stmt in stmts:
+            if isinstance(stmt, ast.AnnAssign) and _has_union(stmt.annotation):
+                hits.append(f"{path}:{stmt.annotation.lineno}")
+            elif isinstance(stmt, ast.ClassDef):
+                _check_stmts(stmt.body)
+
+    _check_stmts(tree.body)
+
+    return hits
+
+
+def test_no_def_time_union_without_future_import():
+    files = (
+        _py_files()
+        + sorted(ROOT.glob("*.py"))
+        + sorted(ROOT.glob("hooks/eluvian/*.py"))
+        + sorted((ROOT / "tests").rglob("*.py"))
+    )
+    hits = []
+    for p in files:
+        hits.extend(_def_time_unions(p))
+    assert hits == [], (
+        "Definition-time PEP 604 unions without future import:\n"
+        + "\n".join(hits)
+    )

@@ -39,6 +39,7 @@ Options:
     --json          Emit full JSON result; default emits human-readable report
     --max-pairs N   Limit to first N fold pairs (for fast iteration; default: all)
 """
+from __future__ import annotations
 
 import argparse
 import json
