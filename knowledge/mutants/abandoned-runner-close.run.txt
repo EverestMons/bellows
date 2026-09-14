@@ -1,0 +1,44 @@
+PYTHON: /Users/marklehn/Developer/bellows/.venv/bin/python
+HEAD: aa9a9ed7ba02389d29d398d6795b6d9ba3926369
+TARGET: bellows.py sha256=4dd2f50e61ab
+TARGET: lifecycle.py sha256=ca8a30743f68
+TARGET: notifier.py sha256=fc836afd54aa
+TARGET: tools/reconcile_steps.py sha256=208744717251
+
+MUTANT remove-inprogress-lane-check: KILLED — suite caught the defect
+MUTANT remove-parked-lane-check: KILLED — suite caught the defect
+MUTANT remove-running-filter-in-mark-step-abandoned: KILLED — suite caught the defect
+MUTANT skip-steps-abandoned-migration: KILLED — suite caught the defect
+MUTANT remove-live-process-refusal: KILLED — suite caught the defect
+MUTANT remove-snapshot-call: KILLED — suite caught the defect
+MUTANT remove-release-call: KILLED — suite caught the defect
+MUTANT plan-abandoned-event-default-off: KILLED — suite caught the defect
+MUTANT remove-preserve-failed-raise-on-branch-error: KILLED — suite caught the defect
+MUTANT remove-try-except-around-close-in-startup-recovery: KILLED — suite caught the defect
+MUTANT remove-schema-refusal: KILLED — suite caught the defect
+MUTANT bare-lsof-instead-of-absolute-path: KILLED — suite caught the defect
+MUTANT idle-guard-pid-test-removed: KILLED — suite caught the defect
+MUTANT no-realpath-in-live-processes-in: KILLED — suite caught the defect
+MUTANT remove-worktree-identity-refusal: KILLED — suite caught the defect
+MUTANT refusal-body-same-as-close-body: KILLED — suite caught the defect
+MUTANT stop-daemon-no-holder-pid: KILLED — suite caught the defect
+MUTANT remove-resume-refresh-in-record-step-start: KILLED — suite caught the defect
+MUTANT restore-early-return-before-abandoned-pass: KILLED — suite caught the defect
+MUTANT remove-rev-parse-failure-preserve-failed-raise: KILLED — suite caught the defect
+MUTANT always-release-claim: KILLED — suite caught the defect
+MUTANT verdict-slug-for-status-read: KILLED — suite caught the defect
+MUTANT invert-receipt-cutoff: KILLED — suite caught the defect
+MUTANT remove-xnn-encoding-of-realpath: KILLED — suite caught the defect
+MUTANT remove-lc-all-c-pin: KILLED — suite caught the defect
+MUTANT remove-separate-add-column-daemon-pid: KILLED — suite caught the defect
+MUTANT remove-tip-branch-preserve-failed-raise: KILLED — suite caught the defect
+MUTANT drop-daemon-pid-from-resume-upsert: KILLED — suite caught the defect
+MUTANT init-notifications-after-closes: KILLED — suite caught the defect
+MUTANT remove-in-transaction-guard-on-rollback: KILLED — suite caught the defect
+
+LIVE-TREE UNCHANGED: bellows.py sha256=4dd2f50e61ab
+LIVE-TREE UNCHANGED: lifecycle.py sha256=ca8a30743f68
+LIVE-TREE UNCHANGED: notifier.py sha256=fc836afd54aa
+LIVE-TREE UNCHANGED: tools/reconcile_steps.py sha256=208744717251
+
+MUTATION: 30 killed, 0 survived, 0 error
