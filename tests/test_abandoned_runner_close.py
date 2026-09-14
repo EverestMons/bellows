@@ -613,7 +613,9 @@ def test_release_failure_then_retry_closes(tmp_path, repo, decisions, db_path):
 def test_mark_plan_state_raises_startup_continues(tmp_path, repo, decisions, db_path):
     """c-t12: mark_plan_state raising → _run_startup_recovery logs error, does not re-raise."""
     import verdict as verdict_mod
-    pid, _ = _make_plan(db_path, repo, decisions)
+    # target_project must match Path(decisions).parent.parent so recover_half_claimed finds it
+    proj_root = tmp_path / "proj"
+    pid, _ = _make_plan(db_path, proj_root, decisions)
     plan_slug = verdict_mod.slug_from_path(f"executable-{pid}.md")
     _add_worktree(repo, plan_slug, extra_commit=True)
     _make_inprogress_lane(decisions, pid)
@@ -716,9 +718,7 @@ def test_live_processes_in_launchd_path_utf8_locale(tmp_path):
     try:
         time.sleep(0.3)
         result = bellows._live_processes_in(str(wt_dir))
-        assert result is not None
-        if result is not False:
-            assert isinstance(result, int)
+        assert isinstance(result, int), f"expected pid but got {result!r}"
     finally:
         sleep_proc.kill()
         sleep_proc.wait(timeout=5)
@@ -1145,13 +1145,11 @@ def test_tip_branch_creation_fails_refused(tmp_path, repo, decisions, db_path):
          patch("subprocess.run", side_effect=_fail_tip_branch):
         outcome = bellows._close_abandoned_runner(pid, str(decisions), str(repo), {})
 
-    if outcome == "refused_preserve_failed":
-        assert wt.exists()
-        branches_r = _REAL_RUN(
-            ["git", "-C", str(repo), "branch", "--list", f"bellows-preserved/{plan_slug}-*"],
-            capture_output=True, text=True,
-        )
-        kept = [b.strip().lstrip("* ") for b in branches_r.stdout.strip().splitlines() if b.strip()]
-        assert any("branch" not in b for b in kept)
-    else:
-        assert outcome == "closed"
+    assert outcome == "refused_preserve_failed"
+    assert wt.exists()
+    branches_r = _REAL_RUN(
+        ["git", "-C", str(repo), "branch", "--list", f"bellows-preserved/{plan_slug}-*"],
+        capture_output=True, text=True,
+    )
+    kept = [b.strip().lstrip("* ") for b in branches_r.stdout.strip().splitlines() if b.strip()]
+    assert any("branch" not in b for b in kept)

@@ -1,12 +1,12 @@
 {
-  "target": "bellows.py lifecycle.py notifier.py tools/reconcile_steps.py",
+  "target": "bellows.py",
   "mutants": [
     {
       "name": "remove-inprogress-lane-check",
       "why": "removing the inprogress/done_abandoned lane check means a plan with an in-progress lane file gets the today-branch path instead of abandoned_runner, so d-t1 never sees abandoned_runner returned",
       "target": "lifecycle.py",
       "anchor": "        if os.path.exists(inprogress_path) or os.path.exists(done_abandoned_path):\n            actions.append((plan_id, \"abandoned_runner\"))\n            continue",
-      "replacement": "        if False:",
+      "replacement": "        if False:\n            pass",
       "expect_fail": "tests/test_lifecycle.py::TestAbandonedRunnerDiscriminator::test_inprogress_lane_returns_abandoned_runner"
     },
     {
@@ -14,7 +14,7 @@
       "why": "removing the parked lane check means a parked plan is not skipped and falls through to the age guard, where d-t3 expects skipped_parked but gets something else",
       "target": "lifecycle.py",
       "anchor": "        if os.path.exists(parked_path):\n            actions.append((plan_id, \"skipped_parked\"))\n            continue",
-      "replacement": "        if False:",
+      "replacement": "        if False:\n            pass",
       "expect_fail": "tests/test_lifecycle.py::TestAbandonedRunnerDiscriminator::test_parked_lane_skipped"
     },
     {
@@ -43,11 +43,11 @@
     },
     {
       "name": "remove-snapshot-call",
-      "why": "removing _snapshot_uncommitted means uncommitted files in the worktree are lost when the worktree is removed; c-t1 checks the preserved branch contains the snapshot commit",
+      "why": "removing _snapshot_uncommitted means a stale index.lock no longer triggers refused_snapshot_failed; c-t24 places an index.lock and expects refused_snapshot_failed but gets closed instead",
       "target": "bellows.py",
       "anchor": "            _snapshot_uncommitted(wt_path, plan_id)\n        except Exception as e:\n            first_err = str(e).splitlines()[0] if str(e) else \"snapshot failed\"",
       "replacement": "            pass\n        except Exception as e:\n            first_err = str(e).splitlines()[0] if str(e) else \"snapshot failed\"",
-      "expect_fail": "tests/test_abandoned_runner_close.py::test_preserved_branch_and_worktree_removed"
+      "expect_fail": "tests/test_abandoned_runner_close.py::test_stale_index_lock_refused_snapshot_failed"
     },
     {
       "name": "remove-release-call",
@@ -173,8 +173,8 @@
       "name": "verdict-slug-for-status-read",
       "why": "using the verdict slug (plan id) instead of the claim slug (placeholder stem) for tuyere status means the status call uses a key no claim is registered under; c-t3 checks the status argv carries the placeholder stem",
       "target": "bellows.py",
-      "anchor": "            claim_slug = placeholder[:-3] if placeholder.endswith(\".md\") else placeholder",
-      "replacement": "            claim_slug = slug",
+      "anchor": "        claim_slug = placeholder[:-3] if placeholder.endswith(\".md\") else placeholder",
+      "replacement": "        claim_slug = slug",
       "expect_fail": "tests/test_abandoned_runner_close.py::test_claim_released_and_page_sent"
     },
     {
@@ -227,10 +227,10 @@
     },
     {
       "name": "init-notifications-after-closes",
-      "why": "moving notifier.init_notifications(config) inside the loop after _close_abandoned_runner means pages fire before init; c-t7 asserts init appears first in call_order",
+      "why": "removing notifier.init_notifications(config) entirely means pages fire without init; c-t7 asserts init appears first in call_order but it never does, so close:{id} is call_order[0]",
       "target": "bellows.py",
-      "anchor": "    notifier.init_notifications(config)\n    for decisions_path in config.get(\"watched_projects\", []):\n        if os.path.isdir(decisions_path):",
-      "replacement": "    for decisions_path in config.get(\"watched_projects\", []):\n        notifier.init_notifications(config)\n        if os.path.isdir(decisions_path):",
+      "anchor": "    notifier.init_notifications(config)\n    for decisions_path in config.get(\"watched_projects\", []):",
+      "replacement": "    for decisions_path in config.get(\"watched_projects\", []):",
       "expect_fail": "tests/test_abandoned_runner_close.py::test_run_startup_recovery_init_before_close"
     },
     {
