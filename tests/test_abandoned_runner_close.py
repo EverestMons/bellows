@@ -718,7 +718,9 @@ def test_live_processes_in_launchd_path_utf8_locale(tmp_path):
     try:
         time.sleep(0.3)
         result = bellows._live_processes_in(str(wt_dir))
-        assert isinstance(result, int), f"expected pid but got {result!r}"
+        assert isinstance(result, int) and result is not False, (
+            f"expected pid (int > 0) but got {result!r}"
+        )
     finally:
         sleep_proc.kill()
         sleep_proc.wait(timeout=5)
