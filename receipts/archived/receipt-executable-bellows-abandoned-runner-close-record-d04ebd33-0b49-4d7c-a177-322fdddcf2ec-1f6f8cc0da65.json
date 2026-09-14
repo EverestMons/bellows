@@ -1,0 +1,8 @@
+{
+  "slug": "executable-bellows-abandoned-runner-close-record",
+  "content_hash": "1f6f8cc0da65c9099d2fca75d5608469334212161c74a01c6fd0c8c2333591f7",
+  "session_id": "d04ebd33-0b49-4d7c-a177-322fdddcf2ec",
+  "armed_at": "2026-09-14T08:43:35.490700",
+  "watcher": "gate_watcher.py spawned detached (pid 15669); log: logs/watch/executable-bellows-abandoned-runner-close-record.md.log",
+  "attestation_boundary": "This receipt proves the watcher was ARMED at write time. It does NOT prove the watcher stayed alive. Liveness of a session-local monitor is not externally verifiable."
+}
