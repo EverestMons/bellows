@@ -104,7 +104,7 @@ part of this window: a strand that reached its plans row (minted, not yet
 renamed or marked) is among the plans it closes, as is the outer
 exception's hold. A claim taken before the mint, and a seam timeout after
 the CLI committed, still recover by hand:
-`tuyere.claims release <slug> --reason self-strand`. Every exit-3 decline
+`tuyere.claims release <slug> --reason self-strand` — on the machine that holds the claim; from another, with `--foreign`. Every exit-3 decline
 log carries this hint. R4a's down-only narrowing supersedes the census's
 stale-release assumption for this window. `bellows.py stop|restart` is
 no longer refused by a step a previous daemon ran: each step row records
