@@ -18,6 +18,9 @@ Edit config.json to add watched project paths and Pushover credentials.
 ## Knowledge Base
 Plans for Bellows itself live in knowledge/decisions/.
 
+## Test code
+Test code runs under pytest inside `tests/` or not at all: conftest's autouse fixtures are the environment, so no test helper is called from `python -c` or a scratch script (LESSONS 2026-09-09, thread 313).
+
 ## Claude Code upgrade cadence (manual)
 
 `DISABLE_AUTOUPDATER=1` is set inside `bellows.py` and `runner.py` via
@@ -89,16 +92,24 @@ parent on every layout; plan de-hardcode-governance-root, 2026-09-01). First can
 before mint) -> run -> completion-release (at every terminal transition).
 Down-sweep and manual release are failure lanes. Park keeps the claim (it
 auto-resumes). The outer `except` in `run_plan` deliberately holds — an
-exception is not a clean disposition and the claim stays for manual
-recovery.
+exception is not a clean disposition — and since bellows #100097 (thread
+306; CEO ruling 2026-09-13) the next daemon startup closes that plan and
+releases its claim, instead of leaving it for manual recovery.
 
 **Self-strand recovery:** a claim stranded on an UP machine (crash inside the
 claim-mint-rename window, seam timeout after the CLI committed, or
 `run_plan`'s outer exception which holds by design) declines as held on
-retry. Recovery: `tuyere.claims release <slug> --reason self-strand`.
-Every exit-3 decline log carries this hint. Auto-self-heal is deliberately
-deferred. R4a's down-only narrowing supersedes the census's stale-release
-assumption for this window.
+retry. Since bellows #100097 (thread 306) the next daemon startup closes
+part of this window: a strand that reached its plans row (minted, not yet
+renamed or marked) is among the plans it closes, as is the outer
+exception's hold. A claim taken before the mint, and a seam timeout after
+the CLI committed, still recover by hand:
+`tuyere.claims release <slug> --reason self-strand`. Every exit-3 decline
+log carries this hint. R4a's down-only narrowing supersedes the census's
+stale-release assumption for this window. `bellows.py stop|restart` is
+no longer refused by a step a previous daemon ran: each step row records
+the pid of the daemon that ran it (`daemon_pid`), and the idle guard
+skips a row whose pid differs from the lock holder's.
 
 **Stage-3 widen gate:** before ANY `watched_projects` widening, EVERY machine
 watching the shared directory must be `required`. The unsafe matrix cells
