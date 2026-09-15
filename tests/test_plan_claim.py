@@ -519,6 +519,105 @@ class TestDeclineDedupe:
 
 
 # ---------------------------------------------------------------------------
+# (5) Decline never silent (Z1–Z5)
+# ---------------------------------------------------------------------------
+
+class TestDeclineNeverSilent:
+    @pytest.fixture
+    def _setup(self, monkeypatch, tmp_path):
+        lifecycle.write_clearance("test-plan.md", "hash1", "shop-infra", "depositor")
+        tuyere = tmp_path / "tuyere"
+        (tuyere / ".venv" / "bin").mkdir(parents=True)
+        (tuyere / ".venv" / "bin" / "python").touch()
+        monkeypatch.setenv("ELUVIAN_WRAP_TUYERE", str(tuyere))
+        fake_time = [0.0]
+        monkeypatch.setattr(plan_claim, "_clock", lambda: fake_time[0], raising=False)
+        return fake_time
+
+    def test_repeat_decline_relogged_after_interval_with_count(self, monkeypatch, _setup):
+        fake_time = _setup
+        monkeypatch.setattr(subprocess, "run",
+                            MagicMock(return_value=MagicMock(returncode=3, stdout="held: test-plan\n", stderr="")))
+        config = {"plan_claim_lock": "required"}
+        plan_claim.claim_gate("test-plan.md", "hash1", config, _make_log())
+        for _ in range(9):
+            fake_time[0] += 33.0
+            log_q = _make_log()
+            plan_claim.claim_gate("test-plan.md", "hash1", config, log_q)
+            assert sum(1 for lv, _, _ in log_q.calls if lv in ("WARN", "ERROR")) == 0
+        fake_time[0] += 33.0
+        log10 = _make_log()
+        plan_claim.claim_gate("test-plan.md", "hash1", config, log10)
+        warns = [msg for lv, msg, _ in log10.calls if lv == "WARN"]
+        assert len(warns) == 1
+        assert "claim declined for test-plan" in warns[0]
+        assert "still declined: 10 rescan(s) since the first at " in warns[0]
+        assert "self-strand" in warns[0]
+
+    def test_interval_restarts_from_the_last_repeat(self, monkeypatch, _setup):
+        fake_time = _setup
+        monkeypatch.setattr(subprocess, "run",
+                            MagicMock(return_value=MagicMock(returncode=3, stdout="held: test-plan\n", stderr="")))
+        config = {"plan_claim_lock": "required"}
+        plan_claim.claim_gate("test-plan.md", "hash1", config, _make_log())
+        fake_time[0] = 300.0
+        log1 = _make_log()
+        plan_claim.claim_gate("test-plan.md", "hash1", config, log1)
+        assert any("still declined: 1 rescan(s)" in msg for _, msg, _ in log1.calls)
+        fake_time[0] = 599.0
+        log2 = _make_log()
+        plan_claim.claim_gate("test-plan.md", "hash1", config, log2)
+        assert sum(1 for lv, _, _ in log2.calls if lv in ("WARN", "ERROR")) == 0
+        fake_time[0] = 600.0
+        log3 = _make_log()
+        plan_claim.claim_gate("test-plan.md", "hash1", config, log3)
+        warns = [msg for lv, msg, _ in log3.calls if lv in ("WARN", "ERROR")]
+        assert any("still declined: 3 rescan(s)" in msg for msg in warns)
+
+    def test_repeats_inside_the_interval_stay_quiet(self, monkeypatch, _setup):
+        fake_time = _setup
+        monkeypatch.setattr(subprocess, "run",
+                            MagicMock(return_value=MagicMock(returncode=3, stdout="held: test-plan\n", stderr="")))
+        config = {"plan_claim_lock": "required"}
+        plan_claim.claim_gate("test-plan.md", "hash1", config, _make_log())
+        for t in range(33, 300, 33):
+            fake_time[0] = float(t)
+            log_q = _make_log()
+            plan_claim.claim_gate("test-plan.md", "hash1", config, log_q)
+            assert sum(1 for lv, _, _ in log_q.calls if lv in ("WARN", "ERROR")) == 0
+
+    def test_repeat_blocked_relogged_after_interval(self, monkeypatch, _setup):
+        fake_time = _setup
+        monkeypatch.setattr(subprocess, "run",
+                            MagicMock(return_value=MagicMock(returncode=5, stdout="", stderr="blocked\n")))
+        config = {"plan_claim_lock": "required"}
+        plan_claim.claim_gate("test-plan.md", "hash1", config, _make_log())
+        fake_time[0] = 300.0
+        log1 = _make_log()
+        plan_claim.claim_gate("test-plan.md", "hash1", config, log1)
+        errors = [msg for lv, msg, _ in log1.calls if lv == "ERROR"]
+        assert len(errors) == 1
+        assert "still blocked: 1 rescan(s) since the first at " in errors[0]
+
+    def test_decline_after_a_proceed_is_logged_in_full(self, monkeypatch, _setup):
+        _setup
+        monkeypatch.setattr(subprocess, "run",
+                            MagicMock(return_value=MagicMock(returncode=3, stdout="held: test-plan\n", stderr="")))
+        config = {"plan_claim_lock": "required"}
+        log1 = _make_log()
+        plan_claim.claim_gate("test-plan.md", "hash1", config, log1)
+        assert sum(1 for lv, _, _ in log1.calls if lv == "WARN") == 1
+        monkeypatch.setattr(subprocess, "run",
+                            MagicMock(return_value=MagicMock(returncode=0, stdout="claimed\n", stderr="")))
+        plan_claim.claim_gate("test-plan.md", "hash1", config, _make_log())
+        monkeypatch.setattr(subprocess, "run",
+                            MagicMock(return_value=MagicMock(returncode=3, stdout="held: test-plan\n", stderr="")))
+        log3 = _make_log()
+        plan_claim.claim_gate("test-plan.md", "hash1", config, log3)
+        assert sum(1 for lv, _, _ in log3.calls if lv == "WARN") == 1
+
+
+# ---------------------------------------------------------------------------
 # (6) Slug parity (Z11)
 # ---------------------------------------------------------------------------
 

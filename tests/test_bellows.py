@@ -5833,3 +5833,141 @@ def test_resumed_step_records_only_its_own_commits():
     assert step2_shas == {"s2"}
     assert step1_shas == {"s1a", "s1b"}
     assert total == 3
+
+
+# ---------------------------------------------------------------------------
+# ▶ started logging (Z6–Z10)
+# ---------------------------------------------------------------------------
+
+def test_declined_claim_logs_no_started():
+    with tempfile.TemporaryDirectory() as tmp:
+        decisions_dir = os.path.join(tmp, "proj", "knowledge", "decisions")
+        os.makedirs(decisions_dir)
+        plan_path = os.path.join(decisions_dir, "executable-decline-2026-09-15.md")
+        with open(plan_path, "w") as f:
+            f.write("# Decline test\n## STEP 1\nDo stuff.\n")
+        clear_plan_for_test(plan_path)
+        config = {
+            "default_model": "claude-sonnet-4-6",
+            "pushover": {"app_key": "", "user_key": ""},
+            "callback_port": 5999,
+            "step_timeout_seconds": 600,
+        }
+        log_calls = []
+        def capture_log(level, msg, **kwargs):
+            log_calls.append((level, msg))
+        with patch("bellows._log", side_effect=capture_log), \
+             patch("bellows.plan_claim.claim_gate", return_value=False), \
+             patch("bellows.validators.validate_at_claim",
+                   return_value={"rejected": False, "reject_reason": "", "warnings": []}):
+            bellows.run_plan(plan_path, config, MagicMock())
+        started = [(lv, msg) for lv, msg in log_calls if "▶ started" in msg]
+        assert started == [], f"Declined gate must not log ▶ started, got: {started}"
+
+
+def test_passing_claim_logs_started_once_after_the_mint():
+    with tempfile.TemporaryDirectory() as tmp:
+        decisions_dir = os.path.join(tmp, "proj", "knowledge", "decisions")
+        os.makedirs(decisions_dir)
+        plan_path = os.path.join(decisions_dir, "executable-started-2026-09-15.md")
+        with open(plan_path, "w") as f:
+            f.write("# Started test\n## STEP 1\nDo stuff.\n")
+        clear_plan_for_test(plan_path)
+        config = {
+            "default_model": "claude-sonnet-4-6",
+            "pushover": {"app_key": "", "user_key": ""},
+            "callback_port": 5999,
+            "step_timeout_seconds": 600,
+        }
+        log_calls = []
+        def capture_log(level, msg, **kwargs):
+            log_calls.append((level, msg))
+        with patch("bellows._log", side_effect=capture_log), \
+             patch("bellows._create_worktree",
+                   side_effect=bellows.WorktreeCreationError("test")), \
+             patch("bellows.verdict.post_verdict_request"), \
+             patch("bellows.notifier.push"), \
+             patch("bellows.validators.validate_at_claim",
+                   return_value={"rejected": False, "reject_reason": "", "warnings": []}):
+            bellows.run_plan(plan_path, config, MagicMock())
+        started_idx = [i for i, (lv, msg) in enumerate(log_calls)
+                       if lv == "EVENT" and "▶ started" in msg]
+        minted_idx = [i for i, (lv, msg) in enumerate(log_calls) if "minted id" in msg]
+        assert len(started_idx) == 1, f"Expected exactly one ▶ started, got: {started_idx}"
+        assert minted_idx, "Expected minted id to be logged"
+        assert started_idx[0] > minted_idx[0], "▶ started must come after minted id"
+
+
+def test_resumed_plan_logs_started():
+    with tempfile.TemporaryDirectory() as tmp:
+        decisions_dir = os.path.join(tmp, "proj", "knowledge", "decisions")
+        os.makedirs(decisions_dir)
+        plan_id = lifecycle.mint_and_claim(
+            "executable", os.path.join(tmp, "proj"), "Resume started test",
+            "bellows", "small", 2, "executable-resume-started-2026-09-15.md",
+        )
+        inprogress_name = f"in-progress-executable-{plan_id}.md"
+        inprogress_path = os.path.join(decisions_dir, inprogress_name)
+        with open(inprogress_path, "w") as f:
+            f.write("## STEP 1\nDo stuff.\n## STEP 2\nDo more stuff.\n")
+        config = {
+            "default_model": "claude-sonnet-4-6",
+            "pushover": {"app_key": "", "user_key": ""},
+            "callback_port": 5999,
+            "step_timeout_seconds": 600,
+        }
+        log_calls = []
+        def capture_log(level, msg, **kwargs):
+            log_calls.append((level, msg))
+        with patch("bellows._log", side_effect=capture_log), \
+             patch("bellows._create_worktree",
+                   side_effect=bellows.WorktreeCreationError("test")), \
+             patch("bellows.verdict.post_verdict_request"), \
+             patch("bellows.notifier.push"):
+            bellows.run_plan(inprogress_path, config, MagicMock(), resume_step=2)
+        started = [(lv, msg) for lv, msg in log_calls if lv == "EVENT" and "▶ started" in msg]
+        assert len(started) == 1, f"Resume path must log ▶ started once, got: {started}"
+
+
+def test_handle_new_plan_does_not_log_started():
+    with tempfile.TemporaryDirectory() as tmp:
+        decisions_dir = os.path.join(tmp, "proj", "knowledge", "decisions")
+        os.makedirs(decisions_dir)
+        config = {
+            "default_model": "claude-sonnet-4-6",
+            "pushover": {"app_key": "", "user_key": ""},
+            "callback_port": 5999,
+        }
+        b = bellows.Bellows(config)
+        plan_path = os.path.join(decisions_dir, "executable-h-test-2026-09-15.md")
+        log_calls = []
+        def capture_log(level, msg, **kwargs):
+            log_calls.append((level, msg))
+        with patch("bellows._log", side_effect=capture_log), \
+             patch.object(b, "_run_tracked"), \
+             patch("time.sleep"):
+            b.handle_new_plan(plan_path)
+        started = [(lv, msg) for lv, msg in log_calls if "▶ started" in msg]
+        assert started == [], f"handle_new_plan must not log ▶ started, got: {started}"
+
+
+def test_handle_parallel_group_does_not_log_started():
+    with tempfile.TemporaryDirectory() as tmp:
+        decisions_dir = os.path.join(tmp, "proj", "knowledge", "decisions")
+        os.makedirs(decisions_dir)
+        config = {
+            "default_model": "claude-sonnet-4-6",
+            "pushover": {"app_key": "", "user_key": ""},
+            "callback_port": 5999,
+        }
+        b = bellows.Bellows(config)
+        plan_path = os.path.join(decisions_dir, "executable-p-test-2026-09-15.md")
+        log_calls = []
+        def capture_log(level, msg, **kwargs):
+            log_calls.append((level, msg))
+        with patch("bellows._log", side_effect=capture_log), \
+             patch.object(b, "_run_tracked"), \
+             patch("time.sleep"):
+            b.handle_parallel_group([plan_path])
+        started = [(lv, msg) for lv, msg in log_calls if "▶ started" in msg]
+        assert started == [], f"handle_parallel_group must not log ▶ started, got: {started}"

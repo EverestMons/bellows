@@ -13,6 +13,7 @@ import logging
 import os
 import subprocess
 import sys
+import time
 from pathlib import Path
 
 import lifecycle
@@ -21,6 +22,8 @@ logger = logging.getLogger("bellows")
 
 _outcome_memo = {}
 _release_errored = False
+_DECLINE_REPEAT_SECS = 300  # re-log every ~9 declined rescans; cadence ~33 s (30 s rescan + 2 s stagger + tick)
+_clock = time.monotonic
 
 
 def _default_log(level, msg, **kwargs):
@@ -121,19 +124,28 @@ def claim_for_deposit(base_filename, content_hash, config, project=None):
 
 
 def claim_gate(base_filename, content_hash, config, log, project=None):
-    """Wire API: returns True to proceed, False to stop."""
+    """Wire API: returns True to proceed, False to stop. A decline or block is
+    logged in full on first occurrence and every _DECLINE_REPEAT_SECS seconds
+    thereafter (counting rescans since the first); a proceed ends the episode."""
     outcome, detail = claim_for_deposit(base_filename, content_hash, config, project)
     slug = base_filename[:-3]
 
     if outcome == "proceed":
+        _outcome_memo.pop(slug, None)
         if detail.startswith("ADVISORY-ERROR:"):
             log("WARN", f"claim lock advisory error for {slug}: {detail}", slug=slug)
         return True
 
     last = _outcome_memo.get(slug)
-    if last == outcome:
-        return False
-    _outcome_memo[slug] = outcome
+    if last is not None and last["outcome"] == outcome:
+        last["count"] += 1
+        if _clock() - last["logged_at"] < _DECLINE_REPEAT_SECS:
+            return False
+        last["logged_at"] = _clock()
+        suffix = f" — still {outcome}: {last['count']} rescan(s) since the first at {last['first'].strftime('%H:%M:%S')}"
+    else:
+        _outcome_memo[slug] = {"outcome": outcome, "count": 0, "logged_at": _clock(), "first": _dt.datetime.now()}
+        suffix = ""
 
     if outcome == "declined":
         hint = ""
@@ -147,9 +159,9 @@ def claim_gate(base_filename, content_hash, config, log, project=None):
         if detail.startswith("exit 3:") and "held: project " not in detail:
             hint = (f" — if the holder is this machine this is a stranded claim"
                     f" — recover: tuyere.claims release {slug} --reason self-strand")
-        log("WARN", f"claim declined for {slug}: {detail}{hint}", slug=slug)
+        log("WARN", f"claim declined for {slug}: {detail}{hint}{suffix}", slug=slug)
     elif outcome == "blocked":
-        log("ERROR", f"claim blocked for {slug}: {detail}", slug=slug)
+        log("ERROR", f"claim blocked for {slug}: {detail}{suffix}", slug=slug)
 
     return False
 
