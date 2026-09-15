@@ -1,0 +1,46 @@
+PYTHON: /Users/marklehn/Developer/bellows/.venv/bin/python
+HEAD: 79fb8d267c80c3820f1c03b4c3aad958d8260e0f
+TARGET: bellows.py sha256=6c2b04c6b30f
+TARGET: hooks/git/pre-commit sha256=a3b29d75254d
+TARGET: runner.py sha256=7e4e16ebf924
+TARGET: tests/conftest.py sha256=6426da6afcd5
+TARGET: tools/check_deposit.py sha256=2394e8ad32c1
+
+MUTANT m1: KILLED — suite caught the defect
+MUTANT m2: KILLED — suite caught the defect
+MUTANT m3: KILLED — suite caught the defect
+MUTANT m4: KILLED — suite caught the defect
+MUTANT m5: KILLED — suite caught the defect
+MUTANT m6: KILLED — suite caught the defect
+MUTANT m7: KILLED — suite caught the defect
+MUTANT m8: KILLED — suite caught the defect
+MUTANT m9: KILLED — suite caught the defect
+MUTANT m10: KILLED — suite caught the defect
+MUTANT m11: KILLED — suite caught the defect
+MUTANT m12: KILLED — suite caught the defect
+MUTANT m13: KILLED — suite caught the defect
+MUTANT m14: KILLED — suite caught the defect
+MUTANT m15: KILLED — suite caught the defect
+MUTANT m16: KILLED — suite caught the defect
+MUTANT m17: KILLED — suite caught the defect
+MUTANT m18: KILLED — suite caught the defect
+MUTANT m19: KILLED — suite caught the defect
+MUTANT m20: KILLED — suite caught the defect
+MUTANT m21: KILLED — suite caught the defect
+MUTANT m22: KILLED — suite caught the defect
+MUTANT m23: KILLED — suite caught the defect
+MUTANT m24: KILLED — suite caught the defect
+MUTANT m25: KILLED — suite caught the defect
+MUTANT m26: KILLED — suite caught the defect
+MUTANT m27: KILLED — suite caught the defect
+MUTANT m28: KILLED — suite caught the defect
+MUTANT m29: KILLED — suite caught the defect
+MUTANT m30: KILLED — suite caught the defect
+
+LIVE-TREE UNCHANGED: bellows.py sha256=6c2b04c6b30f
+LIVE-TREE UNCHANGED: hooks/git/pre-commit sha256=a3b29d75254d
+LIVE-TREE UNCHANGED: runner.py sha256=7e4e16ebf924
+LIVE-TREE UNCHANGED: tests/conftest.py sha256=6426da6afcd5
+LIVE-TREE UNCHANGED: tools/check_deposit.py sha256=2394e8ad32c1
+
+MUTATION: 30 killed, 0 survived, 0 error
