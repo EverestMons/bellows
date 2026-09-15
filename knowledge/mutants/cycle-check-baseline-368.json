@@ -1,0 +1,26 @@
+{
+    "target": "scripts/cycle_check.py",
+    "mutants": [
+        {
+            "name": "assert-3-sibling-only",
+            "why": "Thread 368: check_assert_3 must resolve the fold baseline through resolve_fold_baseline (the manifest's fold_baseline: line first), not just the sibling beside the plan. Reverting to sibling-only lookup means a declared absolute baseline is ignored, and t1's plan (no sibling, declared gov/ baseline) gets FAIL instead of PASS.",
+            "anchor": "    baseline_path, _declared = resolve_fold_baseline(plan_path)",
+            "replacement": "    _s = plan_path.parent / f\".{plan_path.name}.foldcheck.json\"; baseline_path = _s if _s.exists() else None",
+            "expect_fail": "tests/test_cycle_check.py::test_t368_assert_3_reads_the_declared_baseline"
+        },
+        {
+            "name": "deposit-counted-as-walk",
+            "why": "Thread 368: a deposit( commit subject is a deposit event, not a walk — restoring it to the walk-commit pattern makes git_has_context True for a log containing only a deposit( subject, causing ESCALATE:uncommitted-walk on t2's plan.",
+            "anchor": "                    pat = re.compile(r\"drafting\\(|\\[draft\\]\")  # a deposit( commit is not a walk (thread 368)",
+            "replacement": "                    pat = re.compile(r\"drafting\\(|\\[draft\\]|deposit\\(\")",
+            "expect_fail": "tests/test_cycle_check.py::test_t368_a_deposit_commit_is_not_walk_history"
+        },
+        {
+            "name": "declared-unresolvable-falls-back",
+            "why": "Thread 368: a declared fold_baseline: that does not resolve must return (None, True) — never a silent fallback to the sibling beside the plan. Replacing the None return with a sibling fallback means t3's plan (declared missing ref, sibling present) gets PASS instead of FAIL.",
+            "anchor": "        return None, True  # declared but doesn't resolve → NO_BASELINE",
+            "replacement": "        _b = plan_path.parent / f\".{plan_path.name}.foldcheck.json\"\n        return (_b, True) if _b.exists() else (None, True)",
+            "expect_fail": "tests/test_cycle_check.py::test_t368_a_declared_baseline_that_does_not_resolve_never_falls_back"
+        }
+    ]
+}

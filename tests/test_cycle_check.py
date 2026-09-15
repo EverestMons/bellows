@@ -1262,3 +1262,94 @@ def test_bar_met_downgrade_names_the_missing_key(tmp_path):
     downgrades = [w for w in warns if "downgraded to CONTINUE" in w]
     assert downgrades, f"downgrade was silent; warnings={warns}"
     assert "fold_check" in downgrades[0] and "propagation_check" in downgrades[0]
+
+
+# ---------- thread 368: baseline resolver and deposit-commit fix ----------
+
+
+def _t368_plan(tmp_path, fold_baseline_line, lane="lane"):
+    d = tmp_path / lane
+    d.mkdir(parents=True, exist_ok=True)
+    plan = d / "hold-plan.md"
+    plan.write_text(
+        "# Plan\n**dispatch_mode:** bellows\n\n## Drafting Cycle\n"
+        "- Weak spots: w1 2 folded — instruction 2 / record 0; w2 dry.\n"
+        "- Destruction: w1 dry; w2 dry.\n"
+        "- Vulnerabilities: w1 dry; w2 dry.\n"
+        "- Integration-record: w1 dry; w2 dry.\n"
+        "- ACID: w1 dry; w2 dry.\n"
+        "\n## Cycle Manifest\n"
+        "tier: T1\n"
+        "target: scripts/cycle_check.py\n"
+        "class: shop-infra\n"
+        "reads: scripts/cycle_check.py\n"
+        "writes: scripts/cycle_check.py\n"
+        "open_forks: none\n"
+        "walks: 2\n"
+        "yields: 0, 0\n"
+        "validation: cycle_check=BAR_MET, plan_lint=0_FAIL, fold_check=PASS, propagation_check=DIVERGENT:5\n"
+        "coherence: 2/2 walks have register rows\n"
+        f"fold_baseline: {fold_baseline_line}\n",
+        encoding="utf-8",
+    )
+    return plan
+
+
+def _t368_mock_log(monkeypatch, subjects):
+    def mock_run(cmd, **kw):
+        class R:
+            returncode = 0
+            stdout = "".join(f"abc123{i} {s}\n" for i, s in enumerate(subjects))
+            stderr = ""
+        return R()
+    monkeypatch.setattr(subprocess, "run", mock_run)
+
+
+def test_t368_assert_3_reads_the_declared_baseline(tmp_path, monkeypatch):
+    gov = tmp_path / "gov"
+    gov.mkdir()
+    baseline = gov / "baseline.foldcheck.json"
+    baseline.write_text("{}", encoding="utf-8")
+    plan = _t368_plan(tmp_path, str(baseline))
+    monkeypatch.setattr(cycle_check, "_find_git_root", lambda _: tmp_path)
+    _t368_mock_log(monkeypatch, ["[draft] w1 fold", "[draft] w2 dry"])
+    parsed = cycle_check.parse_block(
+        cycle_check.extract_dc_blocks(plan.read_text())[0]
+    )
+    result = cycle_check.check_assert_3(parsed, plan, True)
+    assert result == "PASS"
+    verdict, code = cycle_check.run_check(plan)
+    assert verdict not in ("ESCALATE:assert-fail:3", "ESCALATE:uncommitted-walk")
+    assert code == 0
+
+
+def test_t368_a_deposit_commit_is_not_walk_history(tmp_path, monkeypatch):
+    plan = _t368_plan(tmp_path, "<declare>")
+    sibling = plan.parent / f".{plan.name}.foldcheck.json"
+    sibling.write_text("{}", encoding="utf-8")
+    monkeypatch.setattr(cycle_check, "_find_git_root", lambda _: tmp_path)
+    _t368_mock_log(monkeypatch, ["deposit(plan): held on class:shop-infra"])
+    parsed = cycle_check.parse_block(
+        cycle_check.extract_dc_blocks(plan.read_text())[0]
+    )
+    _, uncommitted, git_has_context, _ = cycle_check.check_assert_2(parsed, plan)
+    assert git_has_context is False
+    assert uncommitted is False
+    verdict, _ = cycle_check.run_check(plan)
+    assert verdict != "ESCALATE:uncommitted-walk"
+
+
+def test_t368_a_declared_baseline_that_does_not_resolve_never_falls_back(tmp_path, monkeypatch):
+    gov = tmp_path / "gov"
+    gov.mkdir()
+    missing_ref = str(gov / "missing.foldcheck.json")
+    plan = _t368_plan(tmp_path, missing_ref)
+    sibling = plan.parent / f".{plan.name}.foldcheck.json"
+    sibling.write_text("{}", encoding="utf-8")
+    monkeypatch.setattr(cycle_check, "_find_git_root", lambda _: tmp_path)
+    _t368_mock_log(monkeypatch, ["[draft] w1 fold"])
+    parsed = cycle_check.parse_block(
+        cycle_check.extract_dc_blocks(plan.read_text())[0]
+    )
+    result = cycle_check.check_assert_3(parsed, plan, True)
+    assert result == "FAIL"

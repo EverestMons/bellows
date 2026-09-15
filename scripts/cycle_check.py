@@ -353,7 +353,7 @@ def check_assert_2(parsed, plan_path):
                 )
                 if r.returncode == 0 and r.stdout.strip():
                     commits = r.stdout.strip().splitlines()
-                    pat = re.compile(r"drafting\(|\[draft\]|deposit\(")
+                    pat = re.compile(r"drafting\(|\[draft\]")  # a deposit( commit is not a walk (thread 368)
                     walk_commits = [c for c in commits if pat.search(c)]
                     if walk_commits:
                         git_has_context = True
@@ -367,14 +367,17 @@ def check_assert_2(parsed, plan_path):
 
 
 def check_assert_3(parsed, plan_path, git_has_context):
-    """Fold happened — baseline exists. Degrades with assert #2.
-    PASS | FAIL | N/A."""
+    """Fold happened — baseline exists, where the manifest declares it (thread 368).
+    Degrades with assert #2. PASS | FAIL | N/A."""
     walk_data = parsed["walk_data"]
     any_folds = any(wd["total_folds"] > 0 for wd in walk_data.values())
     if not any_folds:
         return "N/A"
-    baseline = plan_path.parent / f".{plan_path.name}.foldcheck.json"
-    if not baseline.exists():
+    # thread 368: read the baseline through the ONE resolver — manifest's fold_baseline:
+    # line first, beside the plan only when undeclared; a declared baseline that does
+    # not resolve is None, never a silent fallback to beside-the-plan.
+    baseline_path, _declared = resolve_fold_baseline(plan_path)
+    if baseline_path is None:
         return "FAIL" if git_has_context else "N/A"
     return "PASS"
 
