@@ -1747,6 +1747,7 @@ def run_plan(plan_path: str, config: dict, response_server: server.ResponseServe
             plan_claim.release_for_plan(plan_id, "completion: zero-step skip", config, _log)
             return
         _log("INFO", f"plan has {total_steps} steps", slug=slug_for(plan_name))
+        _log("EVENT", "▶ started", slug=slug_for(plan_name))
         if total_steps > 1 and "pause_for_verdict" not in header:
             _log("WARN", f"⚠️ {total_steps}-step plan missing pause_for_verdict — plan will auto-advance without pausing at intermediate steps", slug=slug_for(plan_name))
         if model != config["default_model"]:
@@ -3456,7 +3457,6 @@ class Bellows:
         t = threading.Thread(target=self._run_tracked, args=(path,), kwargs={"resume_step": resume_step}, daemon=True)
         t.start()
         time.sleep(2)  # Stagger thread starts to avoid simultaneous claude -p auth hits
-        _log("EVENT", f"▶ started", slug=slug_for(os.path.basename(path)))
 
     def handle_parallel_group(self, paths: list):
         if self._shutting_down:
@@ -3470,7 +3470,6 @@ class Bellows:
         for t in threads:
             t.start()
             time.sleep(2)
-        _log("EVENT", f"▶ started {len(threads)} parallel threads")
 
     def _resume_parked(self, handler):
         """Resume parked plans whose resets_at_epoch has passed."""

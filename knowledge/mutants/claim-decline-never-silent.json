@@ -1,0 +1,94 @@
+{
+  "target": "plan_claim.py",
+  "mutants": [
+    {
+      "name": "repeat-never-relogged",
+      "why": "replacing the interval check with True makes every repeat return False quietly; z1 expects a re-log at 330 s but gets none",
+      "anchor": "        if _clock() - last[\"logged_at\"] < _DECLINE_REPEAT_SECS:\n            return False",
+      "replacement": "        if True:\n            return False",
+      "expect_fail": "tests/test_plan_claim.py::TestDeclineNeverSilent::test_repeat_decline_relogged_after_interval_with_count"
+    },
+    {
+      "name": "interval-zero",
+      "why": "setting _DECLINE_REPEAT_SECS=0 re-logs every repeat immediately; z3 expects all repeats inside 300 s to stay quiet but they all re-log",
+      "anchor": "_DECLINE_REPEAT_SECS = 300",
+      "replacement": "_DECLINE_REPEAT_SECS = 0",
+      "expect_fail": "tests/test_plan_claim.py::TestDeclineNeverSilent::test_repeats_inside_the_interval_stay_quiet"
+    },
+    {
+      "name": "count-not-carried",
+      "why": "hardcoding 0 in the suffix means the re-log always says '0 rescan(s)'; z1 asserts '10 rescan(s)' at 330 s",
+      "anchor": "        suffix = f\" — still {outcome}: {last['count']} rescan(s) since the first at {last['first'].strftime('%H:%M:%S')}\"",
+      "replacement": "        suffix = f\" — still {outcome}: 0 rescan(s) since the first at {last['first'].strftime('%H:%M:%S')}\"",
+      "expect_fail": "tests/test_plan_claim.py::TestDeclineNeverSilent::test_repeat_decline_relogged_after_interval_with_count"
+    },
+    {
+      "name": "count-reset-at-each-repeat",
+      "why": "resetting count to 1 on every repeat means cumulative count is never carried; z2 expects count=3 at 600 s but gets 1",
+      "anchor": "        last[\"count\"] += 1",
+      "replacement": "        last[\"count\"] = 1",
+      "expect_fail": "tests/test_plan_claim.py::TestDeclineNeverSilent::test_interval_restarts_from_the_last_repeat"
+    },
+    {
+      "name": "interval-from-first-not-last",
+      "why": "not updating logged_at means the interval is always measured from the first decline; z2 expects the t=599 repeat to stay quiet but the mutation makes it re-log (599-0=599>=300)",
+      "anchor": "        last[\"logged_at\"] = _clock()",
+      "replacement": "        pass  # m5: interval from first, not last",
+      "expect_fail": "tests/test_plan_claim.py::TestDeclineNeverSilent::test_interval_restarts_from_the_last_repeat"
+    },
+    {
+      "name": "memo-kept-across-proceed",
+      "why": "not popping the memo on proceed leaves the old decline entry; z5's second decline finds the stale entry and stays silent instead of logging in full",
+      "anchor": "        _outcome_memo.pop(slug, None)",
+      "replacement": "        pass  # m6: memo kept",
+      "expect_fail": "tests/test_plan_claim.py::TestDeclineNeverSilent::test_decline_after_a_proceed_is_logged_in_full"
+    },
+    {
+      "name": "repeat-without-hint",
+      "why": "dropping {hint} from the WARN message means the recovery hint is absent from the re-log; z1 asserts 'self-strand' is present",
+      "anchor": "        log(\"WARN\", f\"claim declined for {slug}: {detail}{hint}{suffix}\", slug=slug)",
+      "replacement": "        log(\"WARN\", f\"claim declined for {slug}: {detail}{suffix}\", slug=slug)",
+      "expect_fail": "tests/test_plan_claim.py::TestDeclineNeverSilent::test_repeat_decline_relogged_after_interval_with_count"
+    },
+    {
+      "name": "start-back-in-handle-new-plan",
+      "target": "bellows.py",
+      "why": "restoring the ▶ started log in handle_new_plan makes it log before the claim gate has decided; z9 asserts handle_new_plan does not log ▶ started",
+      "anchor": "        time.sleep(2)  # Stagger thread starts to avoid simultaneous claude -p auth hits",
+      "replacement": "        time.sleep(2)  # Stagger thread starts to avoid simultaneous claude -p auth hits\n        _log(\"EVENT\", f\"▶ started\", slug=slug_for(os.path.basename(path)))",
+      "expect_fail": "tests/test_bellows.py::test_handle_new_plan_does_not_log_started"
+    },
+    {
+      "name": "start-dropped-from-run-plan",
+      "target": "bellows.py",
+      "why": "removing the ▶ started log from run_plan means a passing fresh claim never logs it; z7 asserts exactly one ▶ started after minted id",
+      "anchor": "        _log(\"EVENT\", \"▶ started\", slug=slug_for(plan_name))\n        if total_steps > 1 and \"pause_for_verdict\" not in header:",
+      "replacement": "        if total_steps > 1 and \"pause_for_verdict\" not in header:",
+      "expect_fail": "tests/test_bellows.py::test_passing_claim_logs_started_once_after_the_mint"
+    },
+    {
+      "name": "start-ahead-of-claim-gate",
+      "target": "bellows.py",
+      "why": "logging ▶ started before the claim gate means a declined gate still emits it; z6 asserts no ▶ started on a declined gate",
+      "anchor": "            if not plan_claim.claim_gate(base_filename, content_hash, config, _log,\n                                          os.path.basename(project_path)):",
+      "replacement": "            _log(\"EVENT\", \"▶ started\", slug=slug_for(plan_name))\n            if not plan_claim.claim_gate(base_filename, content_hash, config, _log,\n                                          os.path.basename(project_path)):",
+      "expect_fail": "tests/test_bellows.py::test_declined_claim_logs_no_started"
+    },
+    {
+      "name": "start-on-fresh-claim-only",
+      "target": "bellows.py",
+      "why": "guarding ▶ started with 'not in-progress' skips it on the resume path; z8 asserts the resume path logs ▶ started once",
+      "anchor": "        _log(\"EVENT\", \"▶ started\", slug=slug_for(plan_name))\n        if total_steps > 1 and \"pause_for_verdict\" not in header:",
+      "replacement": "        if not plan_filename.startswith(\"in-progress-\"):\n            _log(\"EVENT\", \"▶ started\", slug=slug_for(plan_name))\n        if total_steps > 1 and \"pause_for_verdict\" not in header:",
+      "expect_fail": "tests/test_bellows.py::test_resumed_plan_logs_started"
+    },
+    {
+      "name": "parallel-group-start-restored",
+      "target": "bellows.py",
+      "why": "restoring ▶ started N parallel threads in handle_parallel_group means it logs before each plan's own gate has decided; z10 asserts handle_parallel_group does not log ▶ started",
+      "anchor": "            time.sleep(2)\n\n    def _resume_parked",
+      "replacement": "            time.sleep(2)\n        _log(\"EVENT\", f\"▶ started {len(threads)} parallel threads\")\n\n    def _resume_parked",
+      "expect_fail": "tests/test_bellows.py::test_handle_parallel_group_does_not_log_started"
+    }
+  ]
+}
