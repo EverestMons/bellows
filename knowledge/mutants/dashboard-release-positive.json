@@ -1,0 +1,40 @@
+{
+  "target": "dashboard.py",
+  "mutants": [
+    {
+      "name": "release-call-dropped",
+      "why": "dropping the _do_release call means y/Y in confirm_release silently does nothing; d1 asserts _do_release is called once with the target",
+      "anchor": "                self._do_release(self.release_target)",
+      "replacement": "                pass",
+      "expect_fail": "tests/test_dashboard.py::TestHandleKey::test_y_in_confirm_release_releases_the_target[y]"
+    },
+    {
+      "name": "release-first-hold-not-target",
+      "why": "releasing the first class hold the state lists (not the confirm's named target) silently operates on the wrong plan; d1's state lists hold-a.md first while the target is hold-b.md, so assert_called_once_with(row_b) fails",
+      "anchor": "                self._do_release(self.release_target)",
+      "replacement": "                self._do_release(class_hold_rows(state.get(\"deposit_rows\", []))[0])",
+      "expect_fail": "tests/test_dashboard.py::TestHandleKey::test_y_in_confirm_release_releases_the_target[y]"
+    },
+    {
+      "name": "uppercase-Y-ignored",
+      "why": "removing ord('Y') from the confirm_release check means shift-Y never triggers the release; d1[Y] asserts _do_release is called once when Y is pressed",
+      "anchor": "        elif self.mode == \"confirm_release\":\n            if key in (ord(\"y\"), ord(\"Y\")):",
+      "replacement": "        elif self.mode == \"confirm_release\":\n            if key in (ord(\"y\"),):",
+      "expect_fail": "tests/test_dashboard.py::TestHandleKey::test_y_in_confirm_release_releases_the_target[Y]"
+    },
+    {
+      "name": "release-before-footer-line",
+      "why": "running _do_release before drawing the footer means the CEO sees no file name during the (up to two-minute) release; d2 asserts call_order == ['addstr', 'refresh', 'release']",
+      "anchor": "                if stdscr is not None:\n                    h, w = stdscr.getmaxyx()\n                    footer_row = h - 1\n                    msg = _fit(f\"Releasing {self.release_target['file']} …\", w)\n                    stdscr.addstr(footer_row, 0, msg, curses.A_REVERSE)\n                    stdscr.refresh()\n                self._do_release(self.release_target)",
+      "replacement": "                self._do_release(self.release_target)\n                if stdscr is not None:\n                    h, w = stdscr.getmaxyx()\n                    footer_row = h - 1\n                    msg = _fit(f\"Releasing {self.release_target['file']} …\", w)\n                    stdscr.addstr(footer_row, 0, msg, curses.A_REVERSE)\n                    stdscr.refresh()",
+      "expect_fail": "tests/test_dashboard.py::TestHandleKey::test_release_draws_its_line_before_it_runs"
+    },
+    {
+      "name": "screen-guard-dropped",
+      "why": "removing the 'if stdscr is not None:' guard means a y/Y press without a screen crashes on None.getmaxyx(); d1 calls _handle_key with no stdscr argument, so the test errors",
+      "anchor": "                if stdscr is not None:\n                    h, w = stdscr.getmaxyx()",
+      "replacement": "                if True:\n                    h, w = stdscr.getmaxyx()",
+      "expect_fail": "tests/test_dashboard.py::TestHandleKey::test_y_in_confirm_release_releases_the_target[y]"
+    }
+  ]
+}

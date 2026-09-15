@@ -861,3 +861,38 @@ class TestHandleKey:
         shell._handle_key(ord("l"), _make_state(deposit_rows=[row]))
         assert shell.mode == "confirm_release"
         assert shell.release_target == row
+
+    @pytest.mark.parametrize("key", [ord("y"), ord("Y")], ids=["y", "Y"])
+    def test_y_in_confirm_release_releases_the_target(self, tmp_path, key):
+        (tmp_path / "config.json").write_text("{}")
+        shell = dashboard.CursesShell(bellows_root=tmp_path)
+        row_a = {"file": "hold-a.md", "status": "HOLD", "reason": "class:shop-infra", "dir": str(tmp_path)}
+        row_b = {"file": "hold-b.md", "status": "HOLD", "reason": "class:shop-infra", "dir": str(tmp_path)}
+        shell.mode = "confirm_release"
+        shell.release_target = row_b
+        with unittest.mock.patch.object(shell, "_do_release") as mock_release:
+            result = shell._handle_key(key, _make_state(deposit_rows=[row_a, row_b]))
+        mock_release.assert_called_once_with(row_b)
+        assert result is None
+
+    def test_release_draws_its_line_before_it_runs(self, tmp_path):
+        (tmp_path / "config.json").write_text("{}")
+        shell = dashboard.CursesShell(bellows_root=tmp_path)
+        row_a = {"file": "hold-a.md", "status": "HOLD", "reason": "class:shop-infra", "dir": str(tmp_path)}
+        shell.mode = "confirm_release"
+        shell.release_target = row_a
+        call_order = []
+        mock_screen = unittest.mock.MagicMock()
+        mock_screen.getmaxyx.return_value = (50, 120)
+        mock_screen.addstr.side_effect = lambda *a, **kw: call_order.append("addstr")
+        mock_screen.refresh.side_effect = lambda *a, **kw: call_order.append("refresh")
+        with unittest.mock.patch.object(
+            shell, "_do_release", side_effect=lambda *a, **kw: call_order.append("release")
+        ) as mock_release:
+            shell._handle_key(ord("y"), _make_state(deposit_rows=[row_a]), stdscr=mock_screen)
+        assert call_order == ["addstr", "refresh", "release"]
+        addstr_args = mock_screen.addstr.call_args[0]
+        assert addstr_args[0] == 49
+        assert addstr_args[1] == 0
+        assert "Releasing hold-a.md" in addstr_args[2]
+        mock_release.assert_called_once_with(row_a)
