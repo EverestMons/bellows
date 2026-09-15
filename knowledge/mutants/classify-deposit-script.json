@@ -1,0 +1,19 @@
+{
+  "target": "tools/classify_deposit.py",
+  "mutants": [
+    {
+      "name": "m1",
+      "why": "no-path-setup: _ROOT pointed at a missing directory — bellows_root import fails as in #100100's shipped state",
+      "anchor": "_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))",
+      "replacement": "_ROOT = \"/nonexistent-missing-path-9z\"",
+      "expect_fail": "tests/test_classify_deposit.py::test_c9_script_run"
+    },
+    {
+      "name": "m2",
+      "why": "root-only: scripts/ left off sys.path so cycle_check cannot import",
+      "anchor": "sys.path.insert(0, os.path.join(_ROOT, \"scripts\"))\nsys.path.insert(0, _ROOT)",
+      "replacement": "sys.path.insert(0, _ROOT)",
+      "expect_fail": "tests/test_classify_deposit.py::test_c9_script_run"
+    }
+  ]
+}

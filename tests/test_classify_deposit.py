@@ -1,6 +1,7 @@
 """Tests for tools/classify_deposit.py — read-only class check tool."""
 import importlib.util
 import json
+import os
 import pathlib
 import sqlite3
 import subprocess
@@ -239,3 +240,38 @@ def test_c8_unreadable_input(tmp_path, capsys):
         )
     assert exc3.value.code == 2
     assert "RESULT:" not in capsys.readouterr().out
+
+
+def test_c9_script_run(tmp_path):
+    """Tool starts and classifies when invoked as a script with no PYTHONPATH."""
+    gov = tmp_path / "governance"
+    gov.mkdir(exist_ok=True)
+    (gov / "COMPANY.md").write_text("# company\n")
+
+    plan = _plan_file(tmp_path, _PLAN_C1)
+    cfg = _write_config(tmp_path / "cfg.json", {})
+
+    env = {k: v for k, v in os.environ.items() if k != "PYTHONPATH"}
+    env["ELUVIAN_WRAP_ROOT"] = str(gov)
+    env["HOME"] = str(tmp_path)
+
+    result = subprocess.run(
+        [
+            sys.executable,
+            str(TOOL_PATH),
+            plan,
+            "--project-root",
+            str(BELLOWS_ROOT),
+            "--config",
+            cfg,
+        ],
+        cwd=str(tmp_path),
+        capture_output=True,
+        text=True,
+        env=env,
+    )
+
+    assert "Traceback" not in result.stderr
+    assert "writes (2) from manifest" in result.stdout
+    assert "RESULT:" in result.stdout
+    assert result.returncode in {0, 1, 3}
