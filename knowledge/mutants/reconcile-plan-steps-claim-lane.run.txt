@@ -1,0 +1,23 @@
+PYTHON: /Users/marklehn/Developer/bellows/.venv/bin/python
+HEAD: 6224e2f33c4a748fee2d842648de5da4d59663bb
+TARGET: tools/reconcile_plan.py sha256=2d80e94c42ff
+
+MUTANT running-steps-untouched: KILLED — suite caught the defect
+MUTANT running-steps-completed: KILLED — suite caught the defect
+MUTANT awaiting-steps-completed-on-every-target: KILLED — suite caught the defect
+MUTANT awaiting-steps-never-completed: KILLED — suite caught the defect
+MUTANT steps-of-every-plan: KILLED — suite caught the defect
+MUTANT release-command-dropped: KILLED — suite caught the defect
+MUTANT halt-moved-to-done: KILLED — suite caught the defect
+MUTANT abandonment-moved-to-bare-done: KILLED — suite caught the defect
+MUTANT bare-canonical-name-as-source: KILLED — suite caught the defect
+MUTANT verdict-pending-not-searched: KILLED — suite caught the defect
+MUTANT missing-file-printed-as-move: KILLED — suite caught the defect
+MUTANT destination-check-skipped: KILLED — suite caught the defect
+MUTANT steps-look-reading-no-row: KILLED — suite caught the defect
+MUTANT commit-without-pathspec: KILLED — suite caught the defect
+MUTANT commit-printed-with-nothing-to-move: KILLED — suite caught the defect
+
+LIVE-TREE UNCHANGED: tools/reconcile_plan.py sha256=2d80e94c42ff
+
+MUTATION: 15 killed, 0 survived, 0 error
