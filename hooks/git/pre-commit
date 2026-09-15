@@ -1,6 +1,5 @@
 #!/bin/sh
 # bellows pre-commit binding hook — installed via GIT_CONFIG_COUNT/core.hooksPath
-set -e
 
 toplevel="$(git rev-parse --show-toplevel)"
 
