@@ -1,0 +1,8 @@
+{
+  "slug": "executable-bellows-scope-step-fail",
+  "content_hash": "b5ca085ef63ef520be7f0f0c2de329e211c6cb1e0fefb32458f8c2ec1ac680b2",
+  "session_id": "d04ebd33-0b49-4d7c-a177-322fdddcf2ec",
+  "armed_at": "2026-09-14T19:56:12.277012",
+  "watcher": "gate_watcher.py spawned detached (pid 98549); log: logs/watch/executable-bellows-scope-step-fail.md.log",
+  "attestation_boundary": "This receipt proves the watcher was ARMED at write time. It does NOT prove the watcher stayed alive. Liveness of a session-local monitor is not externally verifiable."
+}

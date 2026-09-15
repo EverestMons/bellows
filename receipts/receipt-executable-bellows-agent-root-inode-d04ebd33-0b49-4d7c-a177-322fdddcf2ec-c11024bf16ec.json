@@ -1,0 +1,8 @@
+{
+  "slug": "executable-bellows-agent-root-inode",
+  "content_hash": "c11024bf16ec5112782c9571b8f84e679643e1635e868d4e10be71e038f14e87",
+  "session_id": "d04ebd33-0b49-4d7c-a177-322fdddcf2ec",
+  "armed_at": "2026-09-14T22:15:25.145657",
+  "watcher": "gate_watcher.py spawned detached (pid 47286); log: logs/watch/executable-bellows-agent-root-inode.md.log",
+  "attestation_boundary": "This receipt proves the watcher was ARMED at write time. It does NOT prove the watcher stayed alive. Liveness of a session-local monitor is not externally verifiable."
+}

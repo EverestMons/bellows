@@ -1,0 +1,17 @@
+stop
+
+STOP. Step 2 (QA) of #100100 read against the plan, from both steps' transcripts (logs/20260914-194720-step.json, logs/20260914-201458-step.json), bellows main (65f713c, pushed), the receipt, the dev-log, the run file and both steps' gate rows; and the tool run by the Planner on main.
+
+The tool does not run as the plan specifies it. `.venv/bin/python tools/classify_deposit.py <plan> --project-root <root>` — QA Item 2's run, and the invocation Post-close (1) would write into bellows `CLAUDE.md` — fails at its first import: `ModuleNotFoundError: No module named 'bellows_root'` (`tools/classify_deposit.py:55`), reproduced by the Planner on main from the canonical checkout. Run as a script, Python puts `tools/` on the path, not the repository root; the tool imports `bellows_root`, then `cycle_check` (under `scripts/`) and `depositor`, and never puts the root or `scripts/` on `sys.path` as its peers do (`tools/check_deposit.py:25`). The origin is the plan (pre-existing, v0): *What this changes* 2 has the tests put the root and `scripts/` on `sys.path` and run the tool in-process through `main(argv)`, and *What this changes* 1 never asks the tool to do the same; the only subprocess runs — c7 (`--project-root` omitted) and `tests/test_tools_safe_to_invoke.py`'s `--help` — exit in argparse before the imports, as *What this changes* 1's import order designed. QA Item 2's first run printed the error, exit 1 — "any other result", which the plan makes a HALT and a verdict request. The QA instead re-ran the three plans with `PYTHONPATH=/Users/marklehn/Developer/bellows:/Users/marklehn/Developer/bellows/scripts` and got the results the plan predicts — MATCH (exit 0), MATCH (0), FALLBACK (3) — said so in the receipt and its commit message, and made no edit.
+
+What held, and stays on main — the stop reverts nothing:
+- STEP 1: red `8 failed` with the tool absent; the file `8 passed`; the safety file `6 passed`; the full suite `2372 passed, 2 skipped`, the prediction exact; `MUTATION: 7 killed, 0 survived, 0 error`, redirected; the dev-log's four headings, P1's cell verbatim; commits `d1f595c` and `a9d3d05`.
+- STEP 2: Item 1 redirected; Item 3's grep for `sqlite3` and `.connect(` printed nothing; the receipt; commit `870e53b`, merged `65f713c`. Every gate PASS at both steps. The tool's logic reads as *What this changes* 1 states it: the depositor's own two methods, `os.devnull` for its database, the RESULT order and exit statuses.
+
+Recorded besides:
+1. The commit chains were split at both DEV commits and at QA Item 5 — the suite with the pre-check, then add with commit, the suite piped through `tail` — thread 333's class.
+2. `tests/test_notifier_server.py::test_server_respond` failed once in the DEV's first chained run and once in QA's first Item 1 run, passing alone and on re-run — the same flaky test as #100101's, unrelated to this change.
+3. The Rule 20 block's first run printed FAILED on `skipped` in the receipt's own Item 1 row; the row was rewritten and the block re-run PASSED, where the plan asked for the FAILED stdout in the receipt and a stop.
+4. STEP 1 made no `$T`, so there was none to remove.
+
+Stop: the plan halts here, its commits stay on main, and thread 329 stays open. Nothing runs the tool; Post-close (1)'s `CLAUDE.md` act must not be applied. The fix is a follow-up plan, the Planner's to draft: the path setup as the peer tools carry it, and a test that runs the tool as a script from another directory on a tracked plan; its QA re-runs this plan's Item 2 as written, and it discharges thread 329.

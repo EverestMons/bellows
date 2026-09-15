@@ -1,0 +1,8 @@
+{
+  "slug": "executable-bellows-classify-deposit",
+  "content_hash": "4847e98abc2b210865a90469782a1c7c5e15c06456d0174e28bddf468ca3e769",
+  "session_id": "d04ebd33-0b49-4d7c-a177-322fdddcf2ec",
+  "armed_at": "2026-09-14T12:45:52.722933",
+  "watcher": "gate_watcher.py spawned detached (pid 54854); log: logs/watch/executable-bellows-classify-deposit.md.log",
+  "attestation_boundary": "This receipt proves the watcher was ARMED at write time. It does NOT prove the watcher stayed alive. Liveness of a session-local monitor is not externally verifiable."
+}
