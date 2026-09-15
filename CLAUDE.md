@@ -132,31 +132,31 @@ The sequence, in order:
    Ordering contract from the tool's own docstring: the receipt precedes staging,
    because the daemon claims within seconds of a file becoming claimable. It also
    spawns the detached `gate_watcher`, which logs to `logs/watch/<name>.log`.
-2. **Verify BY PARSING, not by reading.** Both are **instance methods on
-   `class Depositor`**, not module functions, so instantiate one first.
-   `_parse_plan(plan_text)` takes the plan's TEXT (not its path) and returns
-   `(writes, reads, declared_class)`, in that order. Feed the **writes** —
-   and the **project root**, which is required — to `_assign_class`, then
-   confirm the result equals the manifest's declared `class:`.
+2. **Verify BY PARSING, not by reading** — run the classify tool, which drives
+   the depositor's own two methods (`_parse_plan`, then `_assign_class` over the
+   writes and the project root) and prints what they return (bellows #100102,
+   thread 329; the tool runs as a script from any directory):
 
    ```
-   w, r, dc = dep._parse_plan(plan_text)
-   print(w)                       # ⛔ look at it before trusting the answer
-   dep._assign_class(w, "/Users/marklehn/Developer/bellows")
+   .venv/bin/python tools/classify_deposit.py <plan-path> --project-root /Users/marklehn/Developer/bellows
    ```
 
-   ⛔ **Print `w`.** Two different mistakes both return `app-feature` — the
-   AUTO-CLEARING class — and neither announces itself: feeding `_assign_class`
-   the *reads* (the tuple is `writes` FIRST), and omitting the project root.
-   The second is no longer possible — `project_root` lost its `""` default on
-   2026-09-05 and a missing argument is now a TypeError (thread 138) — but the
-   tuple mis-order still yields a confident wrong class, and only looking at
-   `w` catches it.
-   ⚠️ Check the returned counts against the manifest's own declared paths: if
-   `writes` does not match, the manifest stanza did not parse and the fallback
-   (`gates._extract_plan_required_deposits`) ran — that is the 2026-09-03
-   failed-open deposit, where four writes became two and the class came out
-   `app-feature`, skipping the human release act entirely.
+   Read its `RESULT:` line: `MATCH` (exit 0) — the manifest parsed, and the
+   class the depositor assigns equals the manifest's declared `class:`;
+   `MISMATCH` (exit 1) — the declared class is not the one the writes earn:
+   fix the manifest before staging; `FALLBACK`, `UNPARSED-STANZA` or
+   `NO-DECLARED-CLASS` (exit 3) — the manifest stanza did not parse whole and
+   the fallback (`gates._extract_plan_required_deposits`) ran: that is the
+   2026-09-03 failed-open deposit, where four writes became two and the class
+   came out `app-feature` — the AUTO-CLEARING class — skipping the human
+   release act entirely. `--project-root` is required (an omitted root once
+   returned `app-feature` silently; thread 138), and from outside the
+   repository the plan path must be absolute (`plan is not a file`, exit 2).
+
+   ⛔ **Read the writes the tool prints** — `writes (N) from manifest` and the
+   numbered paths — against the manifest's own `writes:` line before trusting
+   the `RESULT:` line: a count that does not match is a stanza that did not
+   parse, whatever the class says.
 3. **Stage as `ready-<slug>.md`** in `knowledge/decisions/` (NOT the bare name —
    `depositor.evaluate()` fires only on the `ready-` prefix; `bellows.py:2421`).
 4. **Read the hold reason, not the file set.** A pipeline hold and a safety-net
