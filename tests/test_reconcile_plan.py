@@ -42,6 +42,25 @@ CREATE TABLE verdicts (
 );
 """
 
+STEPS_DDL = """
+CREATE TABLE steps (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    plan_id INTEGER NOT NULL REFERENCES plans(id),
+    step_number INTEGER NOT NULL,
+    role TEXT,
+    status TEXT NOT NULL DEFAULT 'pending'
+        CHECK (status IN ('pending','running','awaiting_verdict','complete','abandoned')),
+    step_started_at TEXT,
+    step_ended_at TEXT,
+    cost_usd REAL,
+    turns INTEGER,
+    duration_s REAL,
+    log_ref TEXT,
+    daemon_pid INTEGER,
+    UNIQUE(plan_id, step_number)
+);
+"""
+
 
 def _make_env(tmp):
     """Create a tmp subdir with lifecycle.db + verdicts/pending + verdicts/archived."""
@@ -51,6 +70,7 @@ def _make_env(tmp):
     conn = sqlite3.connect(db_path)
     conn.execute(PLANS_DDL)
     conn.execute(VERDICTS_DDL)
+    conn.execute(STEPS_DDL)
     conn.commit()
     pending = os.path.join(tmp, "verdicts", "pending")
     archived = os.path.join(tmp, "verdicts", "archived")
@@ -71,6 +91,44 @@ def _dump_table(db_path, table):
     rows = conn.execute(f"SELECT * FROM {table}").fetchall()
     conn.close()
     return rows
+
+
+def _insert_plan(conn, plan_id, state, placeholder=None, project="bellows",
+                 plan_type="executable"):
+    conn.execute(
+        "INSERT INTO plans (id, type, target_project, lifecycle_state, created_at,"
+        " deposit_placeholder_name) VALUES (?, ?, ?, ?, '2026-01-01T00:00:00Z', ?)",
+        (plan_id, plan_type, project, state, placeholder),
+    )
+    conn.commit()
+
+
+def _insert_step(conn, plan_id, step_number, status):
+    conn.execute(
+        "INSERT INTO steps (plan_id, step_number, status) VALUES (?, ?, ?)",
+        (plan_id, step_number, status),
+    )
+    conn.commit()
+
+
+def _steps(db_path, plan_id):
+    conn = sqlite3.connect(db_path)
+    rows = conn.execute(
+        "SELECT step_number, status, step_ended_at FROM steps"
+        " WHERE plan_id = ? ORDER BY step_number",
+        (plan_id,),
+    ).fetchall()
+    conn.close()
+    return rows
+
+
+def _lane(root, *filenames):
+    for fn in filenames:
+        path = os.path.join(root, "knowledge", "decisions", fn)
+        os.makedirs(os.path.dirname(path), exist_ok=True)
+        with open(path, "w") as f:
+            f.write("")
+    return root
 
 
 class TestReconcilePlan:
@@ -242,3 +300,201 @@ class TestReconcilePlan:
         plan = check_conn.execute("SELECT lifecycle_state FROM plans WHERE id = 51").fetchone()
         assert plan[0] == "abandoned"
         check_conn.close()
+
+
+class TestReconcileStepsClaimLane:
+    @pytest.mark.parametrize("state", ["closed", "halted", "abandoned"])
+    def test_running_step_abandoned_on_every_target(self, tmp_path, state):
+        db_path, conn, _, _ = _make_env(str(tmp_path))
+        _insert_plan(conn, 1, "claimed")
+        _insert_step(conn, 1, 1, "running")
+        _insert_step(conn, 1, 2, "complete")
+        conn.close()
+
+        result = _run(["1", state, "--outcome", "continue", "--summary", "test"], db_path)
+        assert result.returncode == 0
+
+        rows = _steps(db_path, 1)
+        row1 = next(r for r in rows if r[0] == 1)
+        row2 = next(r for r in rows if r[0] == 2)
+        assert row1[1] == "abandoned"
+        assert row1[2] is not None
+        assert row2[1] == "complete"
+        assert "running→abandoned 1" in result.stdout
+
+    def test_awaiting_verdict_step_completed_when_closed(self, tmp_path):
+        db_path, conn, _, _ = _make_env(str(tmp_path))
+        _insert_plan(conn, 1, "claimed")
+        _insert_step(conn, 1, 1, "awaiting_verdict")
+        conn.close()
+
+        result = _run(["1", "closed", "--outcome", "continue", "--summary", "test"], db_path)
+        assert result.returncode == 0
+
+        rows = _steps(db_path, 1)
+        assert rows[0][1] == "complete"
+        assert "awaiting_verdict→complete 1" in result.stdout
+
+    @pytest.mark.parametrize("state", ["halted", "abandoned"])
+    def test_awaiting_verdict_step_kept_when_halted_or_abandoned(self, tmp_path, state):
+        db_path, conn, _, _ = _make_env(str(tmp_path))
+        _insert_plan(conn, 1, "claimed")
+        _insert_step(conn, 1, 1, "awaiting_verdict")
+        conn.close()
+
+        result = _run(["1", state, "--outcome", "stop", "--summary", "test"], db_path)
+        assert result.returncode == 0
+
+        rows = _steps(db_path, 1)
+        assert rows[0][1] == "awaiting_verdict"
+
+    def test_other_plans_steps_untouched(self, tmp_path):
+        db_path, conn, _, _ = _make_env(str(tmp_path))
+        _insert_plan(conn, 1, "claimed")
+        _insert_plan(conn, 2, "claimed")
+        _insert_step(conn, 1, 1, "running")
+        _insert_step(conn, 2, 1, "running")
+        conn.close()
+
+        result = _run(["1", "closed", "--outcome", "continue", "--summary", "test"], db_path)
+        assert result.returncode == 0
+
+        rows2 = _steps(db_path, 2)
+        assert rows2[0][1] == "running"
+
+    @pytest.mark.parametrize("state", ["closed", "halted", "abandoned"])
+    def test_step_marks_mirror_lifecycle_writers(self, tmp_path, state):
+        import lifecycle as _lc
+
+        db1 = str(tmp_path / "db1.db")
+        db2 = str(tmp_path / "db2.db")
+        _lc.init_lifecycle_db(db1)
+        _lc.init_lifecycle_db(db2)
+
+        for db in (db1, db2):
+            c = sqlite3.connect(db)
+            c.execute(
+                "INSERT INTO plans (id, type, target_project, lifecycle_state, created_at)"
+                " VALUES (1, 'executable', 'bellows', 'claimed', '2026-01-01T00:00:00Z')"
+            )
+            c.execute(
+                "INSERT INTO steps (plan_id, step_number, status) VALUES (1, 1, 'running')"
+            )
+            if state == "closed":
+                c.execute(
+                    "INSERT INTO steps (plan_id, step_number, status)"
+                    " VALUES (1, 2, 'awaiting_verdict')"
+                )
+            c.commit()
+            c.close()
+
+        result = _run(["1", state, "--outcome", "continue", "--summary", "test"], db1)
+        assert result.returncode == 0
+
+        _lc.mark_step_abandoned(1, db_path=db2)
+        if state == "closed":
+            _lc.mark_step_complete(1, 2, db_path=db2)
+
+        rows1 = [(r[0], r[1]) for r in _steps(db1, 1)]
+        rows2 = [(r[0], r[1]) for r in _steps(db2, 1)]
+        assert rows1 == rows2
+
+    def test_prints_the_claim_release_for_the_placeholder(self, tmp_path):
+        db_path, conn, _, _ = _make_env(str(tmp_path))
+        _insert_plan(conn, 99, "claimed", placeholder="executable-99.md")
+        conn.close()
+
+        result = _run(["99", "abandoned", "--outcome", "stop", "--summary", "test"], db_path)
+        assert result.returncode == 0
+        assert 'tuyere.claims release executable-99 --reason "reconcile: abandoned"' in result.stdout
+
+    def test_no_placeholder_no_release_command(self, tmp_path):
+        db_path, conn, _, _ = _make_env(str(tmp_path))
+        _insert_plan(conn, 99, "claimed", placeholder=None)
+        conn.close()
+
+        result = _run(["99", "abandoned", "--outcome", "stop", "--summary", "test"], db_path)
+        assert result.returncode == 0
+        assert "no deposit placeholder recorded" in result.stdout
+
+    @pytest.mark.parametrize("state,destination", [
+        ("closed", "knowledge/decisions/Done/executable-99.md"),
+        ("halted", "knowledge/decisions/halted-executable-99.md"),
+        ("abandoned", "knowledge/decisions/Done/abandoned-executable-99.md"),
+    ])
+    def test_lane_move_names_the_real_source_and_the_convention(
+            self, tmp_path, state, destination):
+        db_path, conn, _, _ = _make_env(str(tmp_path))
+        root = os.path.realpath(os.path.dirname(db_path))
+        _insert_plan(conn, 99, "claimed")
+        conn.close()
+        _lane(root, "in-progress-executable-99.md")
+
+        result = _run(["99", state, "--outcome", "continue", "--summary", "test"], db_path)
+        assert result.returncode == 0
+
+        source = "knowledge/decisions/in-progress-executable-99.md"
+        assert f"git -C {root} mv {source} {destination}" in result.stdout
+        assert f"-- {source} {destination}" in result.stdout
+        assert f"git -C {root} mv knowledge/decisions/executable-99.md " not in result.stdout
+
+    def test_verdict_pending_source_located(self, tmp_path):
+        db_path, conn, _, _ = _make_env(str(tmp_path))
+        root = os.path.realpath(os.path.dirname(db_path))
+        _insert_plan(conn, 99, "claimed")
+        conn.close()
+        _lane(root, "verdict-pending-executable-99.md")
+
+        result = _run(["99", "closed", "--outcome", "continue", "--summary", "test"], db_path)
+        assert result.returncode == 0
+
+        source = "knowledge/decisions/verdict-pending-executable-99.md"
+        destination = "knowledge/decisions/Done/executable-99.md"
+        assert f"git -C {root} mv {source} {destination}" in result.stdout
+
+    def test_missing_lane_file_is_reported_not_moved(self, tmp_path):
+        db_path, conn, _, _ = _make_env(str(tmp_path))
+        _insert_plan(conn, 99, "claimed")
+        conn.close()
+
+        result = _run(["99", "closed", "--outcome", "continue", "--summary", "test"], db_path)
+        assert result.returncode == 0
+        assert "lane file NOT FOUND" in result.stdout
+        assert " mv " not in result.stdout
+        assert "commit" not in result.stdout
+
+    def test_file_already_at_the_destination(self, tmp_path):
+        db_path, conn, _, _ = _make_env(str(tmp_path))
+        root = os.path.realpath(os.path.dirname(db_path))
+        _insert_plan(conn, 99, "claimed")
+        conn.close()
+        _lane(root, "Done/executable-99.md")
+
+        result = _run(["99", "closed", "--outcome", "continue", "--summary", "test"], db_path)
+        assert result.returncode == 0
+        assert "already at" in result.stdout
+        assert " mv " not in result.stdout
+        assert "commit" not in result.stdout
+
+    def test_steps_rows_printed_before_any_write(self, tmp_path):
+        db_path, conn, _, _ = _make_env(str(tmp_path))
+        _insert_plan(conn, 1, "in_progress")
+        _insert_step(conn, 1, 1, "complete")
+        _insert_step(conn, 1, 2, "running")
+        conn.close()
+
+        result = _run(["1", "closed", "--outcome", "continue", "--summary", "test"], db_path)
+        assert result.returncode == 3
+        assert "=== Steps rows (2) ===" in result.stdout
+        assert "step 2: running" in result.stdout
+
+        rows = _steps(db_path, 1)
+        row2 = next(r for r in rows if r[0] == 2)
+        assert row2[1] == "running"
+
+        result2 = _run(["1", "closed", "--outcome", "continue", "--summary", "test",
+                        "--killed-verified"], db_path)
+        assert result2.returncode == 0
+        idx_steps = result2.stdout.index("=== Steps rows")
+        idx_tx = result2.stdout.index("=== Transaction complete")
+        assert idx_steps < idx_tx

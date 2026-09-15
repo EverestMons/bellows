@@ -1,0 +1,110 @@
+{
+  "target": "tools/reconcile_plan.py",
+  "mutants": [
+    {
+      "name": "running-steps-untouched",
+      "why": "running→abandoned must mark running steps abandoned; a never-matching WHERE leaves phantoms and y1 checks the row status",
+      "anchor": "\"WHERE plan_id = ? AND status = 'running'\",",
+      "replacement": "\"WHERE plan_id = ? AND status = 'running' AND 1 = 0\",",
+      "expect_fail": "tests/test_reconcile_plan.py::TestReconcileStepsClaimLane::test_running_step_abandoned_on_every_target[closed]"
+    },
+    {
+      "name": "running-steps-completed",
+      "why": "running steps must become abandoned, not complete; marking them complete records work the runner never finished and y1 checks the exact status",
+      "anchor": "\"UPDATE steps SET status = 'abandoned', step_ended_at = COALESCE(step_ended_at, ?) \"",
+      "replacement": "\"UPDATE steps SET status = 'complete', step_ended_at = COALESCE(step_ended_at, ?) \"",
+      "expect_fail": "tests/test_reconcile_plan.py::TestReconcileStepsClaimLane::test_running_step_abandoned_on_every_target[closed]"
+    },
+    {
+      "name": "awaiting-steps-completed-on-every-target",
+      "why": "awaiting_verdict→complete must only run on a closed target; removing the guard completes awaiting rows on halted and abandoned targets too, and y3 checks they are kept",
+      "anchor": "        if args.state == \"closed\":",
+      "replacement": "        if True:",
+      "expect_fail": "tests/test_reconcile_plan.py::TestReconcileStepsClaimLane::test_awaiting_verdict_step_kept_when_halted_or_abandoned[halted]"
+    },
+    {
+      "name": "awaiting-steps-never-completed",
+      "why": "awaiting_verdict→complete must fire on a close; a never-matching WHERE leaves awaiting rows after close and y2 checks the row becomes complete",
+      "anchor": "\"WHERE plan_id = ? AND status = 'awaiting_verdict'\",",
+      "replacement": "\"WHERE plan_id = ? AND status = 'awaiting_verdict' AND 1 = 0\",",
+      "expect_fail": "tests/test_reconcile_plan.py::TestReconcileStepsClaimLane::test_awaiting_verdict_step_completed_when_closed"
+    },
+    {
+      "name": "steps-of-every-plan",
+      "why": "the steps update must be scoped to the reconciled plan; dropping the plan_id filter marks running steps of all plans and y4 checks another plan's step is untouched",
+      "anchor": "            \"WHERE plan_id = ? AND status = 'running'\",\n            (now_local, args.plan_id))\n        abandoned_count = cur_a.rowcount",
+      "replacement": "            \"WHERE status = 'running'\",\n            (now_local,))\n        abandoned_count = cur_a.rowcount",
+      "expect_fail": "tests/test_reconcile_plan.py::TestReconcileStepsClaimLane::test_other_plans_steps_untouched"
+    },
+    {
+      "name": "release-command-dropped",
+      "why": "the tool must print the tuyere claim release command; suppressing it leaves the operator without the command and y6 checks the line is present",
+      "anchor": "        print(f\"  .venv/bin/python -m tuyere.claims release {slug}\"",
+      "replacement": "        pass  # claim-release-suppressed",
+      "expect_fail": "tests/test_reconcile_plan.py::TestReconcileStepsClaimLane::test_prints_the_claim_release_for_the_placeholder"
+    },
+    {
+      "name": "halt-moved-to-done",
+      "why": "a halted plan's lane file stays in-lane as halted-<type>-<id>.md; moving it to Done/ is the wrong destination and y8 checks the printed path",
+      "anchor": "        dest_rel = f\"knowledge/decisions/halted-{plan_type}-{args.plan_id}.md\"",
+      "replacement": "        dest_rel = f\"knowledge/decisions/Done/halted-{plan_type}-{args.plan_id}.md\"",
+      "expect_fail": "tests/test_reconcile_plan.py::TestReconcileStepsClaimLane::test_lane_move_names_the_real_source_and_the_convention[halted-knowledge/decisions/halted-executable-99.md]"
+    },
+    {
+      "name": "abandonment-moved-to-bare-done",
+      "why": "an abandoned plan must land at Done/abandoned-<type>-<id>.md; stripping the abandoned- prefix collides with the closed destination and y8 checks the full path",
+      "anchor": "        dest_rel = f\"knowledge/decisions/Done/abandoned-{plan_type}-{args.plan_id}.md\"",
+      "replacement": "        dest_rel = f\"knowledge/decisions/Done/{plan_type}-{args.plan_id}.md\"",
+      "expect_fail": "tests/test_reconcile_plan.py::TestReconcileStepsClaimLane::test_lane_move_names_the_real_source_and_the_convention[abandoned-knowledge/decisions/Done/abandoned-executable-99.md]"
+    },
+    {
+      "name": "bare-canonical-name-as-source",
+      "why": "the source in git mv must be the actual lane file (in-progress- etc.), not the bare canonical name; using the bare name fails to find the in-progress file and y8 checks the printed source",
+      "anchor": "            f\"in-progress-{plan_type}-{args.plan_id}.md\",",
+      "replacement": "            f\"{plan_type}-{args.plan_id}.md\",",
+      "expect_fail": "tests/test_reconcile_plan.py::TestReconcileStepsClaimLane::test_lane_move_names_the_real_source_and_the_convention[closed-knowledge/decisions/Done/executable-99.md]"
+    },
+    {
+      "name": "verdict-pending-not-searched",
+      "why": "verdict-pending- files are a live lane source and must be in the search list; disabling the candidate means a verdict-pending file is not found and y9 checks the mv is printed",
+      "anchor": "            f\"verdict-pending-{plan_type}-{args.plan_id}.md\",",
+      "replacement": "            f\"verdict-pending-DISABLED-{plan_type}-{args.plan_id}.md\",",
+      "expect_fail": "tests/test_reconcile_plan.py::TestReconcileStepsClaimLane::test_verdict_pending_source_located"
+    },
+    {
+      "name": "missing-file-printed-as-move",
+      "why": "when no lane file exists the tool must print NOT FOUND, not a move; printing a fake mv for a missing file gives the operator a nonexistent source and y10 checks no mv is in the output",
+      "anchor": "            print(f\"  lane file NOT FOUND under {decisions_dir} (checked: {checked});\"\n                  f\" its destination by convention is {dest_rel}\")",
+      "replacement": "            print(f\"  git -C {root} mv knowledge/decisions/{plan_type}-{args.plan_id}.md {dest_rel}\")",
+      "expect_fail": "tests/test_reconcile_plan.py::TestReconcileStepsClaimLane::test_missing_lane_file_is_reported_not_moved"
+    },
+    {
+      "name": "destination-check-skipped",
+      "why": "a file already at the destination must be reported without a move; skipping the exists check treats the already-moved file as not found and y11 checks the already-at message",
+      "anchor": "    if dest_file.exists():",
+      "replacement": "    if False:",
+      "expect_fail": "tests/test_reconcile_plan.py::TestReconcileStepsClaimLane::test_file_already_at_the_destination"
+    },
+    {
+      "name": "steps-look-reading-no-row",
+      "why": "the steps rows must be printed before any write so the operator can read them; a SELECT that never returns rows prints the wrong count and y12 checks the count and a step's status",
+      "anchor": "        \"SELECT step_number, status, step_started_at, step_ended_at FROM steps \"\n        \"WHERE plan_id = ? ORDER BY step_number\",\n        (args.plan_id,)).fetchall()",
+      "replacement": "        \"SELECT step_number, status, step_started_at, step_ended_at FROM steps WHERE 1=0 ORDER BY step_number\",\n        ()).fetchall()",
+      "expect_fail": "tests/test_reconcile_plan.py::TestReconcileStepsClaimLane::test_steps_rows_printed_before_any_write"
+    },
+    {
+      "name": "commit-without-pathspec",
+      "why": "the git commit must be scoped to the two paths so no foreign staged change is taken; a bare commit without -- pathspec is the LESSONS 2026-08-07 failure and y8 checks the pathspec is in the output",
+      "anchor": "                      f\" -- {src_rel} {dest_rel}\")",
+      "replacement": "                      f\"\")",
+      "expect_fail": "tests/test_reconcile_plan.py::TestReconcileStepsClaimLane::test_lane_move_names_the_real_source_and_the_convention[closed-knowledge/decisions/Done/executable-99.md]"
+    },
+    {
+      "name": "commit-printed-with-nothing-to-move",
+      "why": "when no lane file exists no commit must be printed; printing a commit with nothing to move suggests a nonexistent operation and y10 checks no commit is in the output",
+      "anchor": "            checked = \", \".join(candidate_names)",
+      "replacement": "            checked = \", \".join(candidate_names)\n            print(f\"  git -C {root} commit -m 'chore: {args.plan_id} {args.state}'\")",
+      "expect_fail": "tests/test_reconcile_plan.py::TestReconcileStepsClaimLane::test_missing_lane_file_is_reported_not_moved"
+    }
+  ]
+}

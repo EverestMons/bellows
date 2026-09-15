@@ -1,10 +1,12 @@
 #!/usr/bin/env python3
-"""reconcile_plan — three-surface orphan recovery in one transaction.
+"""reconcile_plan — five-surface orphan recovery in one transaction.
 
-Reconciles a plan that has become orphaned: updates the plans row,
+Reconciles a plan that has become orphaned: updates the plans row, marks
+running steps abandoned (and, on a close, awaiting_verdict steps complete),
 closes NULL-outcome verdicts, and archives pending verdict-request files.
-One transaction for the two DB updates; the pending-file archive is a
-filesystem rename.
+One transaction for all DB updates; the pending-file archive is a filesystem
+rename. Prints the tuyere claim release command and the lane-file git mv to
+perform; performs no git act and no tuyere act itself.
 
 WAL law: writes are live-correct in the -wal; NEVER checkpoint or commit
 the DBs from a Planner session. See exec-454/458.
@@ -86,6 +88,14 @@ def main(argv=None):
     for f in pending_files:
         print(f"  {f}")
 
+    step_rows = conn.execute(
+        "SELECT step_number, status, step_started_at, step_ended_at FROM steps "
+        "WHERE plan_id = ? ORDER BY step_number",
+        (args.plan_id,)).fetchall()
+    print(f"\n=== Steps rows ({len(step_rows)}) ===")
+    for row in step_rows:
+        print(f"  step {row[0]}: {row[1]} (started {row[2]}, ended {row[3]})")
+
     if plan_row["lifecycle_state"] in ("in_progress", "awaiting_verdict") and not args.killed_verified:
         print("\nREFUSED (exit 3): lifecycle_state is 'in_progress' or 'awaiting_verdict' and "
               "--killed-verified was not passed.", file=sys.stderr)
@@ -96,6 +106,8 @@ def main(argv=None):
         sys.exit(3)
 
     now_utc = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+    abandoned_count = 0
+    completed_count = 0
     try:
         conn.execute("BEGIN")
         conn.execute(
@@ -107,6 +119,18 @@ def main(argv=None):
             "disposition_summary = ? WHERE plan_id = ? AND outcome IS NULL",
             (args.outcome, args.summary, args.plan_id))
         verdict_update_count = cursor.rowcount
+        now_local = datetime.now().isoformat()
+        cur_a = conn.execute(
+            "UPDATE steps SET status = 'abandoned', step_ended_at = COALESCE(step_ended_at, ?) "
+            "WHERE plan_id = ? AND status = 'running'",
+            (now_local, args.plan_id))
+        abandoned_count = cur_a.rowcount
+        if args.state == "closed":
+            cur_c = conn.execute(
+                "UPDATE steps SET status = 'complete', step_ended_at = COALESCE(step_ended_at, ?) "
+                "WHERE plan_id = ? AND status = 'awaiting_verdict'",
+                (now_local, args.plan_id))
+            completed_count = cur_c.rowcount
         conn.commit()
     except Exception as e:
         conn.rollback()
@@ -117,6 +141,8 @@ def main(argv=None):
     print(f"\n=== Transaction complete ===")
     print(f"  plans row updated: lifecycle_state={args.state}, closed_at={now_utc}")
     print(f"  verdicts rows updated (NULL-outcome): {verdict_update_count}")
+    print(f"  steps rows updated: running→abandoned {abandoned_count},"
+          f" awaiting_verdict→complete {completed_count}")
 
     if pending_files:
         archived_dir.mkdir(parents=True, exist_ok=True)
@@ -128,16 +154,50 @@ def main(argv=None):
 
     conn.close()
 
+    placeholder = plan_row["deposit_placeholder_name"]
+    print(f"\nrelease the tuyere claim, from the tuyere checkout (exit 3 = no active claim):")
+    if placeholder:
+        slug = placeholder[:-3] if placeholder.endswith(".md") else placeholder
+        print(f"  .venv/bin/python -m tuyere.claims release {slug}"
+              f" --reason \"reconcile: {args.state}\"")
+    else:
+        print(f"  no deposit placeholder recorded — no tuyere claim to release")
+
     plan_type = plan_row["type"]
     if args.state == "halted":
-        dest_name = f"halted-{plan_type}-{args.plan_id}.md"
+        dest_rel = f"knowledge/decisions/halted-{plan_type}-{args.plan_id}.md"
+    elif args.state == "abandoned":
+        dest_rel = f"knowledge/decisions/Done/abandoned-{plan_type}-{args.plan_id}.md"
     else:
-        dest_name = f"{plan_type}-{args.plan_id}.md"
+        dest_rel = f"knowledge/decisions/Done/{plan_type}-{args.plan_id}.md"
+
+    decisions_dir = root / "knowledge" / "decisions"
+    dest_file = root / dest_rel
 
     print(f"\n=== Remaining human acts (NOT performed by this tool) ===")
-    print(f"  git mv knowledge/decisions/{plan_type}-{args.plan_id}.md "
-          f"knowledge/decisions/Done/{dest_name}")
-    print(f"  git commit -m \"chore: {args.plan_id} {args.state}\"")
+    if dest_file.exists():
+        print(f"  lane file already at {dest_rel} — nothing to move")
+    else:
+        candidate_names = [
+            f"in-progress-{plan_type}-{args.plan_id}.md",
+            f"verdict-pending-{plan_type}-{args.plan_id}.md",
+            f"parked-{plan_type}-{args.plan_id}.md",
+            f"halted-{plan_type}-{args.plan_id}.md",
+            f"{plan_type}-{args.plan_id}.md",
+        ]
+        found = [n for n in candidate_names if (decisions_dir / n).exists()]
+        if not found:
+            checked = ", ".join(candidate_names)
+            print(f"  lane file NOT FOUND under {decisions_dir} (checked: {checked});"
+                  f" its destination by convention is {dest_rel}")
+        else:
+            for src_name in found:
+                src_rel = f"knowledge/decisions/{src_name}"
+                print(f"  git -C {root} mv {src_rel} {dest_rel}")
+                print(f"  git -C {root} commit -m \"chore: {args.plan_id} {args.state}\""
+                      f" -- {src_rel} {dest_rel}")
+            if len(found) > 1:
+                print(f"  (more than one lane file matches this plan — move only the live one)")
 
 
 if __name__ == "__main__":
