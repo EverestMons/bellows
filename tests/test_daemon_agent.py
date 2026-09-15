@@ -208,8 +208,8 @@ def test_t8_agent_root_parses_working_directory(tmp_path):
 
 
 # t9 -------------------------------------------------------------------------
-def test_t9_agent_owns_root_compares_realpath(tmp_path):
-    """_agent_owns_root uses realpath comparison; same basename, different parent → False."""
+def test_t9_agent_owns_root_compares_by_inode(tmp_path, monkeypatch):
+    """_agent_owns_root compares by inode (os.path.samefile); a directory that does not exist → False; an empty agent path → False."""
     agent_dir = tmp_path / "bellows"
     agent_dir.mkdir()
     other_dir = tmp_path / "other" / "bellows"
@@ -218,6 +218,11 @@ def test_t9_agent_owns_root_compares_realpath(tmp_path):
         assert bellows._agent_owns_root(agent_dir) is True
         assert bellows._agent_owns_root(other_dir) is False
     with patch.object(bellows, "_agent_root", return_value=None):
+        assert bellows._agent_owns_root(agent_dir) is False
+    with patch.object(bellows, "_agent_root", return_value=str(tmp_path / "moved")):
+        assert bellows._agent_owns_root(agent_dir) is False
+    monkeypatch.chdir(agent_dir)
+    with patch.object(bellows, "_agent_root", return_value=""):
         assert bellows._agent_owns_root(agent_dir) is False
 
 
@@ -271,3 +276,16 @@ def test_t12_kickstart_replace_flag():
     uid = os.getuid()
     assert captured[0] == ["launchctl", "kickstart", f"gui/{uid}/L"]
     assert captured[1] == ["launchctl", "kickstart", "-k", f"gui/{uid}/L"]
+
+
+# t13 -------------------------------------------------------------------------
+def test_t13_agent_owns_root_case_variant_spelling(tmp_path):
+    """_agent_owns_root matches a case-variant spelling on a case-insensitive filesystem."""
+    agent_dir = tmp_path / "Bellows"
+    agent_dir.mkdir()
+    variant = tmp_path / "BELLOWS"
+    if not variant.exists():
+        pytest.skip("case-sensitive filesystem — variant spelling names nothing")
+    assert os.path.realpath(str(agent_dir)) != os.path.realpath(str(variant))
+    with patch.object(bellows, "_agent_root", return_value=str(variant)):
+        assert bellows._agent_owns_root(agent_dir) is True

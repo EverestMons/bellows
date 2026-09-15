@@ -1,0 +1,26 @@
+{
+  "target": "bellows.py",
+  "mutants": [
+    {
+      "name": "samefile-to-realpath-string",
+      "why": "replacing samefile with the old realpath-string comparison makes a case-variant spelling of the same directory compare as a different directory, reproducing thread 324; t13 asserts the variant matches on a case-insensitive filesystem",
+      "anchor": "        return os.path.samefile(r, str(root))",
+      "replacement": "        return os.path.realpath(r) == os.path.realpath(str(root))",
+      "expect_fail": "tests/test_daemon_agent.py::test_t13_agent_owns_root_case_variant_spelling"
+    },
+    {
+      "name": "missing-directory-raises",
+      "why": "narrowing except OSError to except TypeError lets FileNotFoundError (a subclass of OSError, not TypeError) propagate when the agent's directory no longer exists; t9 asserts _agent_owns_root returns False for a moved directory",
+      "anchor": "        return os.path.samefile(r, str(root))\n    except OSError:\n        return False",
+      "replacement": "        return os.path.samefile(r, str(root))\n    except TypeError:\n        return False",
+      "expect_fail": "tests/test_daemon_agent.py::test_t9_agent_owns_root_compares_by_inode"
+    },
+    {
+      "name": "none-test-removed",
+      "why": "removing the None guard lets os.path.samefile(None, root) raise TypeError, which is not caught by except OSError and propagates instead of returning False; t9 asserts _agent_owns_root returns False when _agent_root returns None",
+      "anchor": "    if r is None:\n        return False",
+      "replacement": "    # none-test-removed",
+      "expect_fail": "tests/test_daemon_agent.py::test_t9_agent_owns_root_compares_by_inode"
+    }
+  ]
+}

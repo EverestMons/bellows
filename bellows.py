@@ -202,9 +202,14 @@ def _agent_root(label="com.eluvian.bellows-daemon"):
 
 
 def _agent_owns_root(root, label="com.eluvian.bellows-daemon"):
-    """Return True if the named agent's working directory is `root`."""
+    """Return True iff the named agent's working directory is `root` by inode; False when no agent, directory absent, or empty path."""
     r = _agent_root(label)
-    return r is not None and os.path.realpath(r) == os.path.realpath(str(root))
+    if r is None:
+        return False
+    try:
+        return os.path.samefile(r, str(root))
+    except OSError:
+        return False
 
 
 def _kickstart(label, replace=True):
