@@ -1,0 +1,15 @@
+continue
+
+CONTINUE. Step 2 (QA) of #100102 read against the plan, from both steps' transcripts (logs/20260915-093212-step.json, 42 Bash commands, each chain's result read; logs/20260915-100858-step.json, 16), bellows main (75d15e3e, merged at the pause), the receipt, the dev-log, the run file, the suite file and both steps' gate rows.
+
+What held:
+- STEP 1: P1, P2 and P4 re-derived, no mechanism mismatch; the red line `1 failed, 8 passed` (c9's script run failing its import), the file green `9 passed`, `tests/test_tools_safe_to_invoke.py` `6 passed`, the full suite `2378 passed, 2 skipped` — each the prediction exact; `MUTATION: 2 killed, 0 survived, 0 error`, redirected; the dev-log's headings and c9's PASSED line. The change is the three path lines the peer tools carry (`_ROOT`, then `scripts/` and the root inserted at index 0) and nothing else of the tool; c9 appended after the file's last line, with `import os`; c1–c8 untouched.
+- The commits, each in one gated command — the full suite, the pre-check (with `--expect-missing` for the dev-log and the run file at the first), then a path-scoped add and commit: `16c3730e` (the tool, the test file, the manifest) and `4c1655ec` (the run file and the dev-log); QA's `e3aace7f` on the suite file's two greps and the step-2 pre-check.
+- STEP 2: the suite redirected, `2378 passed, 2 skipped`; #100100's three plans run as a script with no `PYTHONPATH`, from the worktree root and from `/tmp` — `Done/executable-100073.md` `RESULT: MATCH` exit 0, `Done/executable-100098.md` `RESULT: MATCH` exit 0, the worktree-precheck plan `RESULT: FALLBACK` exit 3, no traceback; the tool's source names neither `sqlite3` nor `.connect(`; the receipt's numstat, diff and hunk check, its three ✅ rows and the Rule 20 block's PASSED line. Every gate PASS at both steps, `scope_step` included.
+- The fix answers #100100's stop and thread 329's tool half: the classify tool runs as a script from any directory.
+
+Recorded besides:
+1. Three of the DEV's five gated chains failed on `tests/test_notifier_server.py::test_server_respond` — werkzeug's bind raising `SystemExit: 1`, then `assert None is not None` — while #100103's suites held port 15432: commands 24, 32 and 34, each `1 failed, 2377 passed, 2 skipped`. Each chain stopped before its commit; the DEV re-ran it and committed only on `2378 passed` and a passing pre-check (commands 26 and 40). The overlap was the Planner's release of two plans at once; the remaining plans run one at a time, and the test's fixed port is thread 361.
+2. The DEV counted a manifest anchor through `python3 -c` (command 19) — a read of the tool's text, not a test helper — and wrote each commit message to a `/tmp` file, the plan's `<msg-file>`, outside the worktree.
+
+Continue: the plan closes to Done; no restart is owed. Post-close (1), bellows `CLAUDE.md`'s *Depositing a plan* step 2 running this tool, is the CEO's apply act, applied by the Planner under the CEO's delegation of 2026-09-15 once this plan is Done; Post-close (2), the tool's run on the Air, is the Planner's, its `RESULT:` line pasted into `threads done 329 --commit bellows:16c3730e`.

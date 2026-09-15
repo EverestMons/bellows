@@ -1,5 +1,6 @@
 {
-  "hold_reason": "class:shop-infra",
-  "held_at": "2026-09-15T10:01:59.776701",
-  "class_assigned": "shop-infra"
+  "hold_reason": "held_pending_ceo_release",
+  "held_at": "2026-09-15T12:18:06.596891",
+  "detail": "collision cleared \u2014 awaiting CEO rename to ready-",
+  "original_reason": "class:shop-infra"
 }
