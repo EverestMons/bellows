@@ -1,0 +1,13 @@
+PYTHON: /Users/marklehn/Developer/bellows/.venv/bin/python
+HEAD: c5238c9c5bde02ceb7d0f9dbe0d55bd6b0050bb0
+TARGET: dashboard.py sha256=159c5f24dac9
+
+MUTANT release-call-dropped: KILLED — suite caught the defect
+MUTANT release-first-hold-not-target: KILLED — suite caught the defect
+MUTANT uppercase-Y-ignored: KILLED — suite caught the defect
+MUTANT release-before-footer-line: KILLED — suite caught the defect
+MUTANT screen-guard-dropped: KILLED — suite caught the defect
+
+LIVE-TREE UNCHANGED: dashboard.py sha256=159c5f24dac9
+
+MUTATION: 5 killed, 0 survived, 0 error
