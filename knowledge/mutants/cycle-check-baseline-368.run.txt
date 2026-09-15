@@ -1,0 +1,11 @@
+PYTHON: /Users/marklehn/Developer/bellows/.venv/bin/python
+HEAD: 9ef4a3d8cf057263b0b88797d10c9e0771c50eb5
+TARGET: scripts/cycle_check.py sha256=a761214ddbe6
+
+MUTANT assert-3-sibling-only: KILLED — suite caught the defect
+MUTANT deposit-counted-as-walk: KILLED — suite caught the defect
+MUTANT declared-unresolvable-falls-back: KILLED — suite caught the defect
+
+LIVE-TREE UNCHANGED: scripts/cycle_check.py sha256=a761214ddbe6
+
+MUTATION: 3 killed, 0 survived, 0 error
