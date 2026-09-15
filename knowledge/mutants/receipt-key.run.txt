@@ -1,0 +1,25 @@
+PYTHON: /Users/marklehn/Developer/bellows/.venv/bin/python
+HEAD: 4de7835b7e3c68e51412b53670227a7185c4582d
+TARGET: bellows.py sha256=f25985d68476
+TARGET: notifier.py sha256=953de1db8f65
+
+MUTANT receipt-key-ignored-by-notify-event: KILLED — suite caught the defect
+MUTANT json-slug-filter-removed: KILLED — suite caught the defect
+MUTANT receipt-slug-back-to-plain-connect: KILLED — suite caught the defect
+MUTANT final-verdict-page-drops-receipt-key: KILLED — suite caught the defect
+MUTANT intermediate-verdict-page-drops-receipt-key: KILLED — suite caught the defect
+MUTANT newest-receipt-selected-before-slug-filter: KILLED — suite caught the defect
+MUTANT plain-connect-creates-lifecycle-db: KILLED — suite caught the defect
+MUTANT notify-plan-halted-drops-receipt-key: KILLED — suite caught the defect
+MUTANT notify-plan-abandoned-drops-receipt-key: KILLED — suite caught the defect
+MUTANT notify-failure-drops-receipt-key: KILLED — suite caught the defect
+MUTANT notify-verdict-request-drops-receipt-key: KILLED — suite caught the defect
+MUTANT notify-checkout-stale-drops-receipt-key: KILLED — suite caught the defect
+MUTANT failure-page-passes-receipt-key: KILLED — suite caught the defect
+MUTANT stale-checkout-page-passes-receipt-key: KILLED — suite caught the defect
+MUTANT done-name-taken-refusal-passes-receipt-key: KILLED — suite caught the defect
+
+LIVE-TREE UNCHANGED: bellows.py sha256=f25985d68476
+LIVE-TREE UNCHANGED: notifier.py sha256=953de1db8f65
+
+MUTATION: 15 killed, 0 survived, 0 error
