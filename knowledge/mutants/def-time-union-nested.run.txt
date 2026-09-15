@@ -1,0 +1,16 @@
+PYTHON: /Users/marklehn/Developer/bellows/.venv/bin/python
+HEAD: f7969c1d61d48f6f671f4ff85f2ffcf8d2c97631
+TARGET: tests/test_tools_safe_to_invoke.py sha256=d6ab3e56267c
+
+MUTANT m1: KILLED — suite caught the defect
+MUTANT m2: KILLED — suite caught the defect
+MUTANT m3: KILLED — suite caught the defect
+MUTANT m4: KILLED — suite caught the defect
+MUTANT m5: KILLED — suite caught the defect
+MUTANT m6: KILLED — suite caught the defect
+MUTANT m7: KILLED — suite caught the defect
+MUTANT m8: KILLED — suite caught the defect
+
+LIVE-TREE UNCHANGED: tests/test_tools_safe_to_invoke.py sha256=d6ab3e56267c
+
+MUTATION: 8 killed, 0 survived, 0 error
