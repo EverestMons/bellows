@@ -1,0 +1,61 @@
+{
+  "target": "tests/test_tools_safe_to_invoke.py",
+  "mutants": [
+    {
+      "name": "m1",
+      "why": "all compound-block fields dropped from _check_stmts else branch: no if/for/while/with/try blocks read",
+      "anchor": "            else:\n                for field in (\"body\", \"orelse\", \"finalbody\"):\n                    block = getattr(stmt, field, None)\n                    if block:\n                        _check_stmts(block, evaluated)\n                for handler in getattr(stmt, \"handlers\", ()):\n                    _check_stmts(handler.body, evaluated)\n                for case in getattr(stmt, \"cases\", ()):\n                    _check_stmts(case.body, evaluated)",
+      "replacement": "            else:\n                pass",
+      "expect_fail": "tests/test_tools_safe_to_invoke.py::test_t6_reads_every_evaluated_scope[if]"
+    },
+    {
+      "name": "m2",
+      "why": "orelse field dropped from field tuple: elif/else/for-else/try-else blocks not read",
+      "anchor": "(\"body\", \"orelse\", \"finalbody\")",
+      "replacement": "(\"body\", \"finalbody\")",
+      "expect_fail": "tests/test_tools_safe_to_invoke.py::test_t6_reads_every_evaluated_scope[else]"
+    },
+    {
+      "name": "m3",
+      "why": "finalbody field dropped from field tuple: finally blocks not read",
+      "anchor": "(\"body\", \"orelse\", \"finalbody\")",
+      "replacement": "(\"body\", \"orelse\")",
+      "expect_fail": "tests/test_tools_safe_to_invoke.py::test_t6_reads_every_evaluated_scope[finally]"
+    },
+    {
+      "name": "m4",
+      "why": "handlers loop dropped: except handler bodies not read",
+      "anchor": "\n                for handler in getattr(stmt, \"handlers\", ()):\n                    _check_stmts(handler.body, evaluated)",
+      "replacement": "",
+      "expect_fail": "tests/test_tools_safe_to_invoke.py::test_t6_reads_every_evaluated_scope[except]"
+    },
+    {
+      "name": "m5",
+      "why": "cases loop dropped: match case bodies not read (killed on 3.12; match test skipped on 3.9)",
+      "anchor": "\n                for case in getattr(stmt, \"cases\", ()):\n                    _check_stmts(case.body, evaluated)",
+      "replacement": "",
+      "expect_fail": "tests/test_tools_safe_to_invoke.py::test_t6_reads_every_evaluated_scope[match]"
+    },
+    {
+      "name": "m6",
+      "why": "FunctionDef branch replaced with pass: class defined inside a function not found",
+      "anchor": "_check_stmts(stmt.body, False)",
+      "replacement": "pass",
+      "expect_fail": "tests/test_tools_safe_to_invoke.py::test_t6_reads_every_evaluated_scope[class-in-function]"
+    },
+    {
+      "name": "m7",
+      "why": "FunctionDef body called with evaluated=True: function-local annotations reported as def-time unions",
+      "anchor": "_check_stmts(stmt.body, False)",
+      "replacement": "_check_stmts(stmt.body, True)",
+      "expect_fail": "tests/test_tools_safe_to_invoke.py::test_t6_passes_over_unevaluated_scopes[function-local]"
+    },
+    {
+      "name": "m8",
+      "why": "compound block inside a function read with evaluated=True: block-in-function annotations reported",
+      "anchor": "_check_stmts(block, evaluated)",
+      "replacement": "_check_stmts(block, True)",
+      "expect_fail": "tests/test_tools_safe_to_invoke.py::test_t6_passes_over_unevaluated_scopes[block-in-function]"
+    }
+  ]
+}

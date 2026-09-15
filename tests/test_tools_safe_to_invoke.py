@@ -295,14 +295,26 @@ def _def_time_unions(path):
             if node.returns and _has_union(node.returns):
                 hits.append(f"{path}:{node.returns.lineno}")
 
-    def _check_stmts(stmts):
+    def _check_stmts(stmts, evaluated):
+        # evaluated: True at module/class scope, False inside a function body
         for stmt in stmts:
-            if isinstance(stmt, ast.AnnAssign) and _has_union(stmt.annotation):
+            if isinstance(stmt, ast.AnnAssign) and evaluated and _has_union(stmt.annotation):
                 hits.append(f"{path}:{stmt.annotation.lineno}")
             elif isinstance(stmt, ast.ClassDef):
-                _check_stmts(stmt.body)
+                _check_stmts(stmt.body, True)
+            elif isinstance(stmt, (ast.FunctionDef, ast.AsyncFunctionDef)):
+                _check_stmts(stmt.body, False)
+            else:
+                for field in ("body", "orelse", "finalbody"):
+                    block = getattr(stmt, field, None)
+                    if block:
+                        _check_stmts(block, evaluated)
+                for handler in getattr(stmt, "handlers", ()):
+                    _check_stmts(handler.body, evaluated)
+                for case in getattr(stmt, "cases", ()):
+                    _check_stmts(case.body, evaluated)
 
-    _check_stmts(tree.body)
+    _check_stmts(tree.body, True)
 
     return hits
 
@@ -321,3 +333,81 @@ def test_no_def_time_union_without_future_import():
         "Definition-time PEP 604 unions without future import:\n"
         + "\n".join(hits)
     )
+
+
+def _module(tmp_path, source):
+    p = tmp_path / "m.py"
+    p.write_text(source, encoding="utf-8")
+    return p
+
+
+@pytest.mark.parametrize("src,line", [
+    pytest.param("if True:\n    x: int | None = None\n", 2, id="if"),
+    pytest.param(
+        "if False:\n    pass\nelif True:\n    x: int | None = None\n", 4, id="elif"
+    ),
+    pytest.param(
+        "if False:\n    pass\nelse:\n    x: int | None = None\n", 4, id="else"
+    ),
+    pytest.param("for _ in []:\n    x: int | None = None\n", 2, id="for"),
+    pytest.param(
+        "for _ in []:\n    pass\nelse:\n    x: int | None = None\n", 4, id="for-else"
+    ),
+    pytest.param("while True:\n    x: int | None = None\n", 2, id="while"),
+    pytest.param("with f:\n    x: int | None = None\n", 2, id="with"),
+    pytest.param(
+        "try:\n    x: int | None = None\nexcept Exception:\n    pass\n", 2, id="try"
+    ),
+    pytest.param(
+        "try:\n    pass\nexcept Exception:\n    x: int | None = None\n", 4, id="except"
+    ),
+    pytest.param(
+        "try:\n    pass\nexcept Exception:\n    pass\nelse:\n    x: int | None = None\n",
+        6,
+        id="try-else",
+    ),
+    pytest.param(
+        "try:\n    pass\nfinally:\n    x: int | None = None\n", 4, id="finally"
+    ),
+    pytest.param(
+        "def f():\n    class C:\n        x: int | None = None\n",
+        3,
+        id="class-in-function",
+    ),
+    pytest.param(
+        "if True:\n    class C:\n        x: int | None = None\n",
+        3,
+        id="class-in-if",
+    ),
+    pytest.param(
+        "match x:\n    case _:\n        y: int | None = None\n",
+        3,
+        id="match",
+        marks=pytest.mark.skipif(
+            sys.version_info < (3, 10), reason="match needs 3.10"
+        ),
+    ),
+])
+def test_t6_reads_every_evaluated_scope(tmp_path, src, line):
+    p = _module(tmp_path, src)
+    assert f"{p}:{line}" in _def_time_unions(p)
+
+
+@pytest.mark.parametrize("src", [
+    pytest.param("def f():\n    x: int | None = None\n", id="function-local"),
+    pytest.param(
+        "def f():\n    if True:\n        x: int | None = None\n",
+        id="block-in-function",
+    ),
+    pytest.param(
+        "if True:\n    def f():\n        x: int | None = None\n",
+        id="function-in-if",
+    ),
+    pytest.param(
+        "from __future__ import annotations\nx: int | None = None\n",
+        id="future-import",
+    ),
+])
+def test_t6_passes_over_unevaluated_scopes(tmp_path, src):
+    p = _module(tmp_path, src)
+    assert _def_time_unions(p) == []
