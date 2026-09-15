@@ -1,0 +1,140 @@
+# probes-raw.txt — QA step 2, plan gate2-pt-w30-a-2026-09-15
+# Date: 2026-09-15T21:00:07Z
+
+========================================================================
+ITEM 1 — live template
+========================================================================
+
+--- git log -1 for PLANNER_TEMPLATE.md ---
+f402a9dd [100109] gate2-pt-w30-a: PLANNER_TEMPLATE v4.112 — Rules 112-115 (442, 458, 461, 443), four extensions (472, 476, 477, 498), Rule 31 rewritten (490), three sweeps (523, 589, 590)
+
+--- Task C: 30 counts ---
+### 112. Two records of one fact DIVERGE unless one is a PROJECTION of the other: 1
+### 113. A ruling: 1
+### 114. A migration to a better substrate DROPS the old one: 1
+### 115. The machine that is not working is the COLD READER: 1
+codified 2026-09-15 (Gate 2, thread 336 — PT tranche one): 5
+codified 2026-09-15 — Gate 2, thread 336, PT tranche one: 9
+**Doctrine states the OUTCOME a function produces: 1
+**A refuted REMEDY left standing in the corpus: 1
+**A step body has one reader and MANY copiers: 1
+**A lesson codified into doctrine reads as DISCHARGED: 1
+says DIRTY, never MOVED: 1
+cd ~/Developer/GitHub && git --no-pager status: 0
+### 19. The deposit is the receipt, then the: 1
+confirm the destination filename matches: 0
+Write-to-temp, receipt, then the: 1
+**(a) Write-to-temp + move.: 0
+and step prose authorizes NOTHING: 1
+file PATHS must be inlined in step bodies (scope_check requirement): 0
+on plan-required evidence files — declare the directory: 1
+the Planner override per Rule 22(d) is the correct disposition: 0
+**Version:** 4.112: 1
+**Version:** 4.111: 0
+**Last Updated:** 2026-09-15 (v4.112): 1
+| 2026-09-15 | v4.112: Gate 2, thread 336: 1
+| 2026-09-09 | v4.105: CEO act at the close of bellows plan 100052: 1
+## Lifecycle DB Read Protocol (Planner): 1
+### 110. : 1
+### 111. : 0
+### 14. : 3
+### 17. : 2
+
+--- wc -l ---
+    2558 /Users/marklehn/Developer/eluvian-governance/PLANNER_TEMPLATE.md
+
+--- porcelain ---
+(empty = clean)
+
+========================================================================
+ITEM 2 — builder: byte-identity rebuild
+========================================================================
+
+--- builder commit: c9edf8c6813b827a2ef35bbaa5ee52c5428b5177 ---
+
+--- P4 digest ---
+on-disk: 3d96ad997d9a9b06
+committed: 3d96ad997d9a9b06
+P4 MATCH
+
+--- rebuild: pre-edit blob → output (BYTE_IDENTICAL check) ---
+BUILT: /tmp/g2ptw30a-qa/PT-out.md edits=14 blocks=4 lines+43 bytes+23283 post=46/46 deltas=pinned
+builder_exit=0
+BYTE_IDENTICAL
+
+--- Refusal 1: out == in ---
+BUILDER REFUSED: out == in
+refusal1_exit=1
+
+--- Refusal 2: out under governance root ---
+BUILDER REFUSED: out is under a forbidden root /Users/marklehn/Developer/eluvian-governance (the literal governance root, or the input's git toplevel)
+refusal2_exit=1
+
+--- Refusal 3: already built ---
+BUILDER REFUSED: output tokens already present in input — already built?
+refusal3_exit=1
+
+========================================================================
+ITEM 3 — flip read-back (fresh read-only connection)
+========================================================================
+
+--- twelve rows ---
+442|implemented|codify|ceo|2026-09-15T20:49:16Z
+443|implemented|codify|ceo|2026-09-15T20:49:16Z
+458|implemented|codify|ceo|2026-09-15T20:49:16Z
+461|implemented|codify|ceo|2026-09-15T20:49:16Z
+472|implemented|codify|ceo|2026-09-15T20:49:16Z
+476|implemented|codify|ceo|2026-09-15T20:49:16Z
+477|implemented|codify|ceo|2026-09-15T20:49:16Z
+490|implemented|codify|ceo|2026-09-15T20:49:16Z
+498|implemented|codify|ceo|2026-09-15T20:49:16Z
+523|implemented|codify|ceo|2026-09-15T20:49:16Z
+589|implemented|codify|ceo|2026-09-15T20:49:16Z
+590|implemented|codify|ceo|2026-09-15T20:49:16Z
+
+--- accepted count ---
+74
+
+--- accepted at two vintages ---
+74
+
+--- implemented count ---
+345
+
+--- flip-capture.txt committed by DEV ---
+[100109] gate2-pt-w30-a: PT v4.112 + flip landed (dev log, flip capture)
+
+--- flip-capture.txt line count ---
+     590 knowledge/qa/evidence/gate2-pt-w30-a-2026-09-15/flip-capture.txt
+
+--- capture: twelve rows pre-flip state (accepted|codify) ---
+442|accepted|codify|governance_rule|planner|2026-09-02T23:54:37Z
+443|accepted|codify|governance_rule|planner|2026-09-02T23:54:37Z
+458|accepted|codify|governance_rule|planner|2026-09-02T23:54:37Z
+461|accepted|codify|governance_rule|planner|2026-09-02T23:54:37Z
+472|accepted|codify|governance_rule|planner|2026-09-13T18:27:07Z
+476|accepted|codify|governance_rule|planner|2026-09-13T18:27:07Z
+477|accepted|codify|governance_rule|planner|2026-09-13T18:27:07Z
+490|accepted|codify|governance_rule|planner|2026-09-13T18:27:07Z
+498|accepted|codify|governance_rule|planner|2026-09-13T18:27:07Z
+523|accepted|codify|governance_rule|planner|2026-09-13T18:27:07Z
+589|accepted|codify|governance_rule|planner|2026-09-13T18:27:07Z
+590|accepted|codify|governance_rule|planner|2026-09-13T18:27:07Z
+
+========================================================================
+ITEM 4 — suite drift check
+========================================================================
+
+--- P7 baseline: 2395 passed, 2 skipped — bellows main f9e35f36 ---
+--- commits on tests/ path between f9e35f36..HEAD ---
+Command: git log --oneline f9e35f36..HEAD -- tests
+9ef4a3d8 dev(cycle-check-baseline-368): two-site edit, three tests, mutation manifest [100108] thread 368
+0949c475 dev(claim-decline-never-silent): re-log declined/blocked claims after 300 s with rescan count; move ▶ started into run_plan past the gate [100107] thread 315
+37788818 fix(agent-root): compare checkout root by inode, not realpath string [100106] thread 324
+4bcde8a9 feat(precheck-binding): pass record, verify-commit hook, step binding env, conftest scrub, 25 tests, mutation manifest [100105] thread 333
+62f3287f fix(scope-step): fail a later step that commits an earlier step's declared file [100104] thread 341
+75d15e3e Merge branch 'bellows-wt/100102' [100102]
+16c3730e fix(classify-deposit): add sys.path setup so the tool runs as a script [100102] thread 329
+
+--- full suite file: knowledge/qa/evidence/gate2-pt-w30-a-2026-09-15/full-suite-gate2-pt-w30-a.txt ---
+--- see the file for the summary line and exit=0 ---
