@@ -1,0 +1,22 @@
+PYTHON: /Users/marklehn/Developer/bellows/.venv/bin/python
+HEAD: 62f3287fe698445fdd4a34b7b7e0cdee8a66fd2b
+TARGET: gates.py sha256=459362f7f7d7
+TARGET: verdict.py sha256=608389073260
+
+MUTANT m1: KILLED — suite caught the defect
+MUTANT m2: KILLED — suite caught the defect
+MUTANT m3: KILLED — suite caught the defect
+MUTANT m4: KILLED — suite caught the defect
+MUTANT m5: KILLED — suite caught the defect
+MUTANT m6: KILLED — suite caught the defect
+MUTANT m7: KILLED — suite caught the defect
+MUTANT m8: KILLED — suite caught the defect
+MUTANT m9: KILLED — suite caught the defect
+MUTANT m10: KILLED — suite caught the defect
+MUTANT m11: KILLED — suite caught the defect
+MUTANT m12: KILLED — suite caught the defect
+
+LIVE-TREE UNCHANGED: gates.py sha256=459362f7f7d7
+LIVE-TREE UNCHANGED: verdict.py sha256=608389073260
+
+MUTATION: 12 killed, 0 survived, 0 error
