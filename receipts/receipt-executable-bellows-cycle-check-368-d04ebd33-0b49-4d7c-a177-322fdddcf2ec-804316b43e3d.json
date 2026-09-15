@@ -1,0 +1,8 @@
+{
+  "slug": "executable-bellows-cycle-check-368",
+  "content_hash": "804316b43e3df40c82287bb604381f22e02cc5d809736c5349287c1132a5a571",
+  "session_id": "d04ebd33-0b49-4d7c-a177-322fdddcf2ec",
+  "armed_at": "2026-09-15T14:50:09.062790",
+  "watcher": "gate_watcher.py spawned detached (pid 58383); log: logs/watch/executable-bellows-cycle-check-368.md.log",
+  "attestation_boundary": "This receipt proves the watcher was ARMED at write time. It does NOT prove the watcher stayed alive. Liveness of a session-local monitor is not externally verifiable."
+}
