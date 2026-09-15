@@ -1,0 +1,22 @@
+PYTHON: /Users/marklehn/Developer/bellows/.venv/bin/python
+HEAD: 0949c475d54264ea43e42e6128679ef57b6485f6
+TARGET: bellows.py sha256=9ea920255475
+TARGET: plan_claim.py sha256=13f5d73f1fb5
+
+MUTANT repeat-never-relogged: KILLED — suite caught the defect
+MUTANT interval-zero: KILLED — suite caught the defect
+MUTANT count-not-carried: KILLED — suite caught the defect
+MUTANT count-reset-at-each-repeat: KILLED — suite caught the defect
+MUTANT interval-from-first-not-last: KILLED — suite caught the defect
+MUTANT memo-kept-across-proceed: KILLED — suite caught the defect
+MUTANT repeat-without-hint: KILLED — suite caught the defect
+MUTANT start-back-in-handle-new-plan: KILLED — suite caught the defect
+MUTANT start-dropped-from-run-plan: KILLED — suite caught the defect
+MUTANT start-ahead-of-claim-gate: KILLED — suite caught the defect
+MUTANT start-on-fresh-claim-only: KILLED — suite caught the defect
+MUTANT parallel-group-start-restored: KILLED — suite caught the defect
+
+LIVE-TREE UNCHANGED: bellows.py sha256=9ea920255475
+LIVE-TREE UNCHANGED: plan_claim.py sha256=13f5d73f1fb5
+
+MUTATION: 12 killed, 0 survived, 0 error
