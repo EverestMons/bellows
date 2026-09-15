@@ -1,0 +1,10 @@
+PYTHON: /Users/marklehn/Developer/bellows/.venv/bin/python
+HEAD: 16c3730e90f5c1bec836b5125ed5544746175452
+TARGET: tools/classify_deposit.py sha256=91065a6b6bce
+
+MUTANT m1: KILLED — suite caught the defect
+MUTANT m2: KILLED — suite caught the defect
+
+LIVE-TREE UNCHANGED: tools/classify_deposit.py sha256=91065a6b6bce
+
+MUTATION: 2 killed, 0 survived, 0 error
