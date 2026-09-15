@@ -235,11 +235,20 @@ def owned_by_live_session(plan_slug: str, receipts_dir=None,
         if not matches:
             return (False, "no receipt")
 
-        newest = max(matches, key=lambda p: p.stat().st_mtime)
-        try:
-            data = json.loads(newest.read_text())
-        except Exception as exc:
-            return (False, f"ownership check failed: {type(exc).__name__}")
+        slug_matches = []
+        _parse_failed = False
+        for _p in matches:
+            try:
+                _d = json.loads(_p.read_text())
+                if _d.get("slug") == plan_slug:
+                    slug_matches.append((_p, _d))
+            except Exception:
+                _parse_failed = True
+        if not slug_matches:
+            if _parse_failed:
+                return (False, "ownership check failed: receipt parse error")
+            return (False, "no receipt with matching slug")
+        newest, data = max(slug_matches, key=lambda x: x[0].stat().st_mtime)
 
         session_id = data.get("session_id")
         if not session_id:
@@ -263,7 +272,7 @@ def owned_by_live_session(plan_slug: str, receipts_dir=None,
 
 def notify_event(event: str, plan_slug, title: str, message: str,
                  priority: int = 0, plan_scoped: bool = True,
-                 detail_key: str = "") -> bool:
+                 detail_key: str = "", receipt_key=None) -> bool:
     """The ONE gate every page passes through.
 
     enabled → _event_enabled → _dedupe → (plan_scoped only) owned_by_live_session → push.
@@ -282,7 +291,8 @@ def notify_event(event: str, plan_slug, title: str, message: str,
         _log("INFO", f"notifier: {event} {plan_slug} not paged — deduped")
         return False
     if plan_scoped and plan_slug:
-        owned, why = owned_by_live_session(plan_slug)
+        ownership_key = receipt_key or plan_slug
+        owned, why = owned_by_live_session(ownership_key)
         if owned:
             _log("INFO", f"notifier: {event} {plan_slug} not paged — {why}")
             return False
@@ -303,16 +313,17 @@ def notify_plan_complete(plan_name: str, total_cost: float) -> bool:
     return True
 
 
-def notify_plan_halted(plan_name: str, plan_slug=None) -> bool:
+def notify_plan_halted(plan_name: str, plan_slug=None, receipt_key=None) -> bool:
     return notify_event(
         "plan_halted", plan_slug, "Bellows — Plan Halted",
         f"Plan: {plan_name}",
-        priority=0, plan_scoped=True,
+        priority=0, plan_scoped=True, receipt_key=receipt_key,
     )
 
 
 def notify_plan_abandoned(plan_name: str, plan_slug=None, detail: str = "",
-                           closed: bool = True, never_started: bool = False) -> bool:
+                           closed: bool = True, never_started: bool = False,
+                           receipt_key=None) -> bool:
     title = "Bellows — Claimed, Never Started" if never_started else "Bellows — Runner Abandoned"
     if closed:
         body = f"Plan: {plan_name}\n{detail}\nClosed at startup. The redeposit and its release are yours."
@@ -323,7 +334,7 @@ def notify_plan_abandoned(plan_name: str, plan_slug=None, detail: str = "",
         detail_key = detail
     return notify_event(
         "plan_abandoned", plan_slug, title, body,
-        priority=0, plan_scoped=True, detail_key=detail_key,
+        priority=0, plan_scoped=True, detail_key=detail_key, receipt_key=receipt_key,
     )
 
 
@@ -342,11 +353,11 @@ def notify_queue_empty() -> bool:
 
 
 def notify_failure(app_key: str, user_key: str, plan_name: str,
-                   step: int, error: str, plan_slug=None) -> bool:
+                   step: int, error: str, plan_slug=None, receipt_key=None) -> bool:
     return notify_event(
         "failure", plan_slug, "Bellows — Failed",
         f"Plan: {plan_name}\nStep: {step}\nError: {error}",
-        priority=1, plan_scoped=True, detail_key=str(step),
+        priority=1, plan_scoped=True, detail_key=str(step), receipt_key=receipt_key,
     )
 
 
@@ -359,7 +370,7 @@ def notify_cycle_nudge(count: int, since_ts: str) -> bool:
 
 def notify_verdict_request(app_key: str, user_key: str, plan_name: str,
                            step: int, gate_failures: list,
-                           plan_slug=None) -> bool:
+                           plan_slug=None, receipt_key=None) -> bool:
     if gate_failures:
         failure_text = ", ".join(f["gate"] for f in gate_failures)
     else:
@@ -367,7 +378,7 @@ def notify_verdict_request(app_key: str, user_key: str, plan_name: str,
     return notify_event(
         "verdict_needed", plan_slug, "Bellows — Verdict Needed",
         f"Plan: {plan_name}\nStep: {step}\nGate failures: {failure_text}",
-        priority=1, plan_scoped=True, detail_key=str(step),
+        priority=1, plan_scoped=True, detail_key=str(step), receipt_key=receipt_key,
     )
 
 
@@ -383,12 +394,12 @@ def notify_class_hold(plan_slug: str, assigned_class: str) -> bool:
     )
 
 
-def notify_checkout_stale(plan_slug: str, detail: str) -> bool:
+def notify_checkout_stale(plan_slug: str, detail: str, receipt_key=None) -> bool:
     """Page when wire point A holds a plan due to a stale checkout."""
     return notify_event(
         "checkout_stale", plan_slug, "Bellows — Hold: Stale Checkout",
         f"Plan: {plan_slug}\n{detail}",
-        priority=0, plan_scoped=True,
+        priority=0, plan_scoped=True, receipt_key=receipt_key,
     )
 
 

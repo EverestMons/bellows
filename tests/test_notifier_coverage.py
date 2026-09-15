@@ -294,6 +294,203 @@ def test_6_ownership_absent_or_broken_pages(tmp_path, monkeypatch):
 
 
 # ---------------------------------------------------------------------------
+# Tests 6a–6e: receipt_key routes the ownership check to the deposit's slug
+# ---------------------------------------------------------------------------
+
+def test_6a_receipt_key_attended_suppresses_page(tmp_path, monkeypatch):
+    """6a: receipt_key=stem + id as plan_slug → owned receipt → no push; INFO log carries id."""
+    stem = "executable-foo-2026-09-14"
+    plan_id = "100112"
+    sid = "aabbccdd11223344"
+    hash12 = "aabbccddeeff"
+
+    receipts_dir = tmp_path / "receipts"
+    receipts_dir.mkdir()
+    (receipts_dir / f"receipt-{stem}-{sid}-{hash12}.json").write_text(
+        json.dumps({"slug": stem, "session_id": sid, "armed_at": "2026-09-14T00:00:00"})
+    )
+
+    home = tmp_path / "home"
+    (home / ".claude" / "projects" / "proj").mkdir(parents=True)
+    (home / ".claude" / "projects" / "proj" / f"{sid}.jsonl").write_text('{"role":"assistant"}\n')
+    monkeypatch.setenv("HOME", str(home))
+
+    notifier.init_notifications({
+        "pushover": {"app_key": "k", "user_key": "u"},
+        "notifications": {"enabled": True, "events": {}},
+    })
+    push_calls = []
+    log_lines = []
+    monkeypatch.setattr(notifier, "push", lambda *a, **kw: push_calls.append(1) or True)
+    monkeypatch.setattr(notifier, "_log", lambda lvl, msg, **kw: log_lines.append((lvl, msg)))
+
+    with patch("bellows_root.resolve_bellows_root", return_value=tmp_path):
+        notifier.notify_event("verdict_needed", plan_id, "T", "M",
+                              plan_scoped=True, detail_key="1", receipt_key=stem)
+
+    assert len(push_calls) == 0
+    info = [m for lvl, m in log_lines if lvl == "INFO"]
+    assert any("not paged" in m and "owned by session" in m for m in info), info
+    assert any(plan_id in m for m in info), info
+
+
+def test_6b_no_receipt_key_falls_back_to_id_pages(tmp_path, monkeypatch):
+    """6b: no receipt_key → owned_by_live_session(id) → no receipt under id → push; pinned."""
+    stem = "executable-foo-2026-09-14"
+    plan_id = "100112"
+    sid = "aabbccdd11223344"
+    hash12 = "aabbccddeeff"
+
+    receipts_dir = tmp_path / "receipts"
+    receipts_dir.mkdir()
+    (receipts_dir / f"receipt-{stem}-{sid}-{hash12}.json").write_text(
+        json.dumps({"slug": stem, "session_id": sid, "armed_at": "2026-09-14T00:00:00"})
+    )
+
+    home = tmp_path / "home"
+    (home / ".claude" / "projects" / "proj").mkdir(parents=True)
+    (home / ".claude" / "projects" / "proj" / f"{sid}.jsonl").write_text('{"role":"assistant"}\n')
+    monkeypatch.setenv("HOME", str(home))
+
+    notifier.init_notifications({
+        "pushover": {"app_key": "k", "user_key": "u"},
+        "notifications": {"enabled": True, "events": {}},
+    })
+    push_calls = []
+    log_lines = []
+    monkeypatch.setattr(notifier, "push", lambda *a, **kw: push_calls.append(1) or True)
+    monkeypatch.setattr(notifier, "_log", lambda lvl, msg, **kw: log_lines.append((lvl, msg)))
+
+    with patch("bellows_root.resolve_bellows_root", return_value=tmp_path):
+        notifier.notify_event("verdict_needed", plan_id, "T", "M",
+                              plan_scoped=True, detail_key="1")
+
+    assert len(push_calls) == 1
+    info = [m for lvl, m in log_lines if lvl == "INFO"]
+    assert any("verdict_needed" in m and plan_id in m and "paged" in m and "not paged" not in m for m in info), info
+
+
+def test_6c_neighbour_receipt_slug_mismatch_pages(tmp_path, monkeypatch):
+    """6c: only a <stem>-2 receipt; JSON slug ≠ stem → no matching slug → push."""
+    stem = "executable-foo-2026-09-14"
+    stem2 = f"{stem}-2"
+    plan_id = "100112"
+    sid = "ccccdddd11223344"
+    hash12 = "ccddccddccdd"
+
+    receipts_dir = tmp_path / "receipts"
+    receipts_dir.mkdir()
+    (receipts_dir / f"receipt-{stem2}-{sid}-{hash12}.json").write_text(
+        json.dumps({"slug": stem2, "session_id": sid, "armed_at": "2026-09-14T00:00:00"})
+    )
+
+    home = tmp_path / "home"
+    (home / ".claude" / "projects" / "proj").mkdir(parents=True)
+    (home / ".claude" / "projects" / "proj" / f"{sid}.jsonl").write_text('{"role":"assistant"}\n')
+    monkeypatch.setenv("HOME", str(home))
+
+    notifier.init_notifications({
+        "pushover": {"app_key": "k", "user_key": "u"},
+        "notifications": {"enabled": True, "events": {}},
+    })
+    push_calls = []
+    monkeypatch.setattr(notifier, "push", lambda *a, **kw: push_calls.append(1) or True)
+
+    with patch("bellows_root.resolve_bellows_root", return_value=tmp_path):
+        notifier.notify_event("verdict_needed", plan_id, "T", "M",
+                              plan_scoped=True, detail_key="1", receipt_key=stem)
+
+    assert len(push_calls) == 1
+
+
+def test_6d_older_attended_receipt_wins_over_newer_neighbour(tmp_path, monkeypatch):
+    """6d: older receipt (slug=stem, attended) + newer <stem>-2 receipt → slug filter → owned, no push."""
+    stem = "executable-foo-2026-09-14"
+    stem2 = f"{stem}-2"
+    sid_attended = "aaaabbbb11112222"
+    sid_other = "ccccdddd33334444"
+    hash1 = "aaaaaaaaaaaa"
+    hash2 = "bbbbbbbbbbbb"
+
+    receipts_dir = tmp_path / "receipts"
+    receipts_dir.mkdir()
+
+    attended_file = receipts_dir / f"receipt-{stem}-{sid_attended}-{hash1}.json"
+    attended_file.write_text(json.dumps({
+        "slug": stem, "session_id": sid_attended, "armed_at": "2026-09-14T00:00:00"
+    }))
+    old_ts = time.time() - 9999
+    os.utime(str(attended_file), (old_ts, old_ts))
+
+    (receipts_dir / f"receipt-{stem2}-{sid_other}-{hash2}.json").write_text(
+        json.dumps({"slug": stem2, "session_id": sid_other, "armed_at": "2026-09-14T00:00:00"})
+    )
+
+    home = tmp_path / "home"
+    (home / ".claude" / "projects" / "proj").mkdir(parents=True)
+    (home / ".claude" / "projects" / "proj" / f"{sid_attended}.jsonl").write_text('{"role":"assistant"}\n')
+    monkeypatch.setenv("HOME", str(home))
+
+    notifier.init_notifications({
+        "pushover": {"app_key": "k", "user_key": "u"},
+        "notifications": {"enabled": True, "events": {}},
+    })
+    push_calls = []
+    monkeypatch.setattr(notifier, "push", lambda *a, **kw: push_calls.append(1) or True)
+
+    with patch("bellows_root.resolve_bellows_root", return_value=tmp_path):
+        notifier.notify_event("verdict_needed", "100112", "T", "M",
+                              plan_scoped=True, detail_key="1", receipt_key=stem)
+
+    assert len(push_calls) == 0
+
+
+@pytest.mark.parametrize("wrapper,kwargs", [
+    ("notify_plan_halted",
+     {"plan_name": "Plan", "plan_slug": "100112"}),
+    ("notify_plan_abandoned",
+     {"plan_name": "Plan", "plan_slug": "100112"}),
+    ("notify_failure",
+     {"app_key": "k", "user_key": "u", "plan_name": "Plan", "step": 1,
+      "error": "e", "plan_slug": "100112"}),
+    ("notify_verdict_request",
+     {"app_key": "k", "user_key": "u", "plan_name": "Plan", "step": 1,
+      "gate_failures": [], "plan_slug": "100112"}),
+    ("notify_checkout_stale",
+     {"plan_slug": "100112", "detail": "stale"}),
+])
+def test_6e_wrapper_passes_receipt_key_through(wrapper, kwargs, tmp_path, monkeypatch):
+    """6e: each plan-scoped wrapper passes receipt_key to notify_event → attended receipt → no push."""
+    stem = "executable-foo-2026-09-14"
+    sid = "eeeeffff11112222"
+    hash12 = "eeeeeeeeffff"
+
+    receipts_dir = tmp_path / "receipts"
+    receipts_dir.mkdir()
+    (receipts_dir / f"receipt-{stem}-{sid}-{hash12}.json").write_text(
+        json.dumps({"slug": stem, "session_id": sid, "armed_at": "2026-09-14T00:00:00"})
+    )
+
+    home = tmp_path / "home"
+    (home / ".claude" / "projects" / "proj").mkdir(parents=True)
+    (home / ".claude" / "projects" / "proj" / f"{sid}.jsonl").write_text('{"role":"assistant"}\n')
+    monkeypatch.setenv("HOME", str(home))
+
+    notifier.init_notifications({
+        "pushover": {"app_key": "k", "user_key": "u"},
+        "notifications": {"enabled": True, "events": {}},
+    })
+    push_calls = []
+    monkeypatch.setattr(notifier, "push", lambda *a, **kw: push_calls.append(1) or True)
+
+    fn = getattr(notifier, wrapper)
+    with patch("bellows_root.resolve_bellows_root", return_value=tmp_path):
+        fn(**kwargs, receipt_key=stem)
+
+    assert len(push_calls) == 0, f"{wrapper}: expected 0 pushes, got {len(push_calls)}"
+
+
+# ---------------------------------------------------------------------------
 # Test 7: Not plan-scoped skips ownership check → always pages
 # ---------------------------------------------------------------------------
 
@@ -604,6 +801,271 @@ def test_9c_push_rejected_no_checkout_stale():
     assert co_idx < cg_idx, (
         "notify_checkout_stale must appear before claim_gate in run_plan source"
     )
+
+
+# ---------------------------------------------------------------------------
+# Tests 9d–9i: _receipt_slug and verdict pages carry the deposit's stem
+# ---------------------------------------------------------------------------
+
+def test_9d_receipt_slug_reads_lifecycle_db(tmp_path, monkeypatch):
+    """9d: _receipt_slug uses lifecycle.connect_readonly; recording wrapper confirms the tmp_path DB."""
+    import lifecycle as _lc
+
+    monkeypatch.setattr(bellows, "BELLOWS_ROOT", tmp_path)
+
+    stem = "executable-foo-2026-09-14"
+    plan_id = _lc.mint_and_claim(
+        "executable", "/proj", "T", "bellows", "small", 1, f"{stem}.md",
+    )
+
+    seen_paths = []
+    real_connect = _lc.connect_readonly
+
+    def recording_connect(db_path, **kw):
+        seen_paths.append(db_path)
+        return real_connect(db_path, **kw)
+
+    monkeypatch.setattr(_lc, "connect_readonly", recording_connect)
+
+    result = bellows._receipt_slug(plan_id)
+
+    assert result == stem, f"expected {stem!r}, got {result!r}"
+    assert any(str(tmp_path / "lifecycle.db") == p for p in seen_paths), \
+        f"connect_readonly not called with {tmp_path / 'lifecycle.db'}; saw {seen_paths}"
+
+
+def test_9e_receipt_slug_missing_db_returns_none(tmp_path, monkeypatch):
+    """9e: missing lifecycle.db → _receipt_slug returns None; file not created."""
+    no_db_dir = tmp_path / "empty"
+    no_db_dir.mkdir()
+    monkeypatch.setattr(bellows, "BELLOWS_ROOT", no_db_dir)
+
+    result = bellows._receipt_slug(1)
+
+    assert result is None
+    assert not (no_db_dir / "lifecycle.db").exists()
+
+
+def test_9f_final_verdict_page_carries_receipt_key(tmp_path, monkeypatch):
+    """9f: run_plan's final verdict page calls notify_verdict_request with receipt_key=stem, plan_slug=id."""
+    from tests.conftest import clear_plan_for_test
+
+    decisions_dir = tmp_path / "proj" / "knowledge" / "decisions"
+    decisions_dir.mkdir(parents=True)
+    plan_filename = "executable-no-header-2026-04-24.md"
+    plan_path = str(decisions_dir / plan_filename)
+    with open(plan_path, "w") as f:
+        f.write("## STEP 1\nDo stuff.\n")
+    clear_plan_for_test(plan_path)
+
+    config = {
+        "default_model": "claude-sonnet-4-6",
+        "pushover": {"app_key": "", "user_key": ""},
+        "callback_port": 5999,
+        "step_timeout_seconds": 600,
+    }
+
+    verdict_kwargs = []
+
+    def capture_verdict(*a, **kw):
+        verdict_kwargs.append(kw)
+
+    with patch("bellows.BELLOWS_ROOT", tmp_path), \
+         patch("bellows.runner.run_step",
+               return_value={"session_id": "s", "is_error": False, "stop_reason": "end_turn",
+                             "result_text": "", "cost_usd": 0.01, "permission_denials": [],
+                             "receipt_status": "Complete", "ceo_flags": [], "escalate": False}), \
+         patch("bellows.gates.check",
+               return_value={"passed": True, "failures": [], "is_qa_step": False,
+                             "files_changed": [], "plan_header": {},
+                             "verdict_requested": {"requested": False, "body": None}}), \
+         patch("bellows.notifier.push"), \
+         patch("bellows.notifier.notify_verdict_request", side_effect=capture_verdict), \
+         patch("bellows.verdict.post_verdict_request"), \
+         patch("bellows.verdict.log_to_ledger"), \
+         patch("bellows._capture_git_diff", return_value=""), \
+         patch("bellows._create_worktree", return_value="/tmp/wt"), \
+         patch("bellows._teardown_worktree"), \
+         patch("bellows.record_run"), \
+         patch("bellows.validators.validate_at_claim",
+               return_value={"rejected": False, "reject_reason": "", "warnings": []}):
+        bellows.run_plan(plan_path, config, MagicMock())
+
+    assert len(verdict_kwargs) == 1, f"expected 1 verdict call, got {verdict_kwargs}"
+    kw = verdict_kwargs[0]
+    assert kw.get("receipt_key") == "executable-no-header-2026-04-24", \
+        f"receipt_key: {kw.get('receipt_key')!r}"
+    assert kw.get("plan_slug") == "1", f"plan_slug: {kw.get('plan_slug')!r}"
+
+
+def test_9g_intermediate_verdict_page_carries_receipt_key(tmp_path, monkeypatch):
+    """9g: run_plan's in-loop verdict page (gate failure) carries receipt_key=stem, plan_slug=id."""
+    from tests.conftest import clear_plan_for_test
+
+    decisions_dir = tmp_path / "proj" / "knowledge" / "decisions"
+    decisions_dir.mkdir(parents=True)
+    plan_filename = "executable-rv1-site2-2026-05-24.md"
+    plan_path = str(decisions_dir / plan_filename)
+    with open(plan_path, "w") as f:
+        f.write("## STEP 1\nDo stuff.\n## STEP 2\nMore stuff.\n")
+    clear_plan_for_test(plan_path)
+
+    config = {
+        "default_model": "claude-sonnet-4-6",
+        "pushover": {"app_key": "", "user_key": ""},
+        "callback_port": 5999,
+        "step_timeout_seconds": 600,
+    }
+
+    verdict_kwargs = []
+
+    def capture_verdict(*a, **kw):
+        verdict_kwargs.append(kw)
+
+    def failing_gates(*args, **kwargs):
+        return {"passed": False,
+                "failures": [{"gate": "test_gate", "evidence": "forced"}],
+                "is_qa_step": False, "files_changed": [],
+                "plan_header": {"auto_close": "false"},
+                "verdict_requested": {"requested": False, "body": None}}
+
+    with patch("bellows.BELLOWS_ROOT", tmp_path), \
+         patch("bellows._create_worktree", return_value="/tmp/wt"), \
+         patch("bellows._capture_git_diff", return_value=""), \
+         patch("bellows._teardown_worktree"), \
+         patch("bellows.runner.run_step",
+               return_value={"session_id": "s", "is_error": False, "stop_reason": "end_turn",
+                             "result_text": "", "cost_usd": 0.01, "permission_denials": [],
+                             "receipt_status": "Complete", "ceo_flags": [], "escalate": False}), \
+         patch("bellows.gates.check", side_effect=failing_gates), \
+         patch("bellows.notifier.notify_verdict_request", side_effect=capture_verdict), \
+         patch("bellows.notifier.push"), \
+         patch("bellows.record_run"), \
+         patch("bellows.validators.validate_at_claim",
+               return_value={"rejected": False, "reject_reason": "", "warnings": []}):
+        bellows.run_plan(plan_path, config, MagicMock())
+
+    assert len(verdict_kwargs) == 1, f"expected 1 verdict call, got {verdict_kwargs}"
+    kw = verdict_kwargs[0]
+    assert kw.get("receipt_key") == "executable-rv1-site2-2026-05-24", \
+        f"receipt_key: {kw.get('receipt_key')!r}"
+    assert kw.get("plan_slug") == "1", f"plan_slug: {kw.get('plan_slug')!r}"
+
+
+def test_9h_failure_page_after_mint_pages_when_attended(tmp_path, monkeypatch):
+    """9h: attended receipt under stem; run_step raises after mint → failure page pushes (pinned)."""
+    from tests.conftest import clear_plan_for_test
+
+    stem = "executable-no-header-2026-04-24"
+    sid = "aaaabbbb11112222"
+    hash12 = "aaaabbbbcccc"
+
+    receipts_dir = tmp_path / "receipts"
+    receipts_dir.mkdir()
+    (receipts_dir / f"receipt-{stem}-{sid}-{hash12}.json").write_text(
+        json.dumps({"slug": stem, "session_id": sid, "armed_at": "2026-09-14T00:00:00"})
+    )
+
+    home = tmp_path / "home"
+    (home / ".claude" / "projects" / "proj").mkdir(parents=True)
+    (home / ".claude" / "projects" / "proj" / f"{sid}.jsonl").write_text('{"role":"assistant"}\n')
+    monkeypatch.setenv("HOME", str(home))
+
+    with patch("bellows_root.resolve_bellows_root", return_value=tmp_path):
+        owned, why = notifier.owned_by_live_session(stem)
+    assert owned is True, f"pre-check: {why}"
+
+    decisions_dir = tmp_path / "proj" / "knowledge" / "decisions"
+    decisions_dir.mkdir(parents=True)
+    plan_path = str(decisions_dir / f"{stem}.md")
+    with open(plan_path, "w") as f:
+        f.write("## STEP 1\nDo stuff.\n")
+    clear_plan_for_test(plan_path)
+
+    config = {
+        "default_model": "claude-sonnet-4-6",
+        "pushover": {"app_key": "k", "user_key": "u"},
+        "callback_port": 5999,
+        "step_timeout_seconds": 600,
+    }
+
+    push_titles = []
+
+    with patch("bellows.BELLOWS_ROOT", tmp_path), \
+         patch("bellows_root.resolve_bellows_root", return_value=tmp_path), \
+         patch("bellows.runner.run_step", side_effect=RuntimeError("step failed")), \
+         patch("bellows._create_worktree", return_value="/tmp/wt"), \
+         patch("bellows._capture_git_diff", return_value=""), \
+         patch("bellows._teardown_worktree"), \
+         patch("bellows.record_run"), \
+         patch("bellows.notifier.push",
+               side_effect=lambda ak, uk, title, msg, **kw: push_titles.append(title) or True), \
+         patch("bellows.validators.validate_at_claim",
+               return_value={"rejected": False, "reject_reason": "", "warnings": []}):
+        bellows.run_plan(plan_path, config, MagicMock())
+
+    assert len(push_titles) == 1, f"expected 1 push, got {push_titles}"
+    assert "Failed" in push_titles[0], f"expected 'Bellows — Failed', got {push_titles[0]!r}"
+
+
+def test_9i_stale_checkout_page_pages_when_attended(tmp_path, monkeypatch):
+    """9i: attended receipt under stem; stale checkout at wire-A → push (plan_slug ≠ stem key; pinned)."""
+    from tests.conftest import clear_plan_for_test
+
+    stem = "executable-stale-co-100112"
+    sid = "bbbbcccc11112222"
+    hash12 = "bbbbccccdddd"
+
+    receipts_dir = tmp_path / "receipts"
+    receipts_dir.mkdir()
+    (receipts_dir / f"receipt-{stem}-{sid}-{hash12}.json").write_text(
+        json.dumps({"slug": stem, "session_id": sid, "armed_at": "2026-09-14T00:00:00"})
+    )
+
+    home = tmp_path / "home"
+    (home / ".claude" / "projects" / "proj").mkdir(parents=True)
+    (home / ".claude" / "projects" / "proj" / f"{sid}.jsonl").write_text('{"role":"assistant"}\n')
+    monkeypatch.setenv("HOME", str(home))
+
+    with patch("bellows_root.resolve_bellows_root", return_value=tmp_path):
+        owned, why = notifier.owned_by_live_session(stem)
+    assert owned is True, f"pre-check: {why}"
+
+    decisions_dir = tmp_path / "proj" / "knowledge" / "decisions"
+    decisions_dir.mkdir(parents=True)
+    (decisions_dir / "Done").mkdir()
+    plan_path = str(decisions_dir / f"{stem}.md")
+    with open(plan_path, "w") as f:
+        f.write("# Stale CO Test\n\n## STEP 1\ntest\n")
+    clear_plan_for_test(plan_path)
+
+    config = {
+        "default_model": "claude-sonnet-4-6",
+        "pushover": {"app_key": "k", "user_key": "u"},
+        "callback_port": 5999,
+        "step_timeout_seconds": 600,
+    }
+
+    push_titles = []
+
+    with patch("bellows.BELLOWS_ROOT", tmp_path), \
+         patch("bellows_root.resolve_bellows_root", return_value=tmp_path), \
+         patch("bellows._checkout_is_current", return_value=(False, "stale checkout: test")), \
+         patch("bellows.notifier.notify_plan_skipped"), \
+         patch("bellows.plan_claim.release_for_plan"), \
+         patch("bellows.lifecycle.mark_plan_state"), \
+         patch("bellows._retire_receipts"), \
+         patch("bellows.validators.validate_at_claim",
+               return_value={"rejected": False, "reject_reason": "", "warnings": []}), \
+         patch("bellows.plan_claim.claim_gate", return_value=True), \
+         patch("bellows.lifecycle.mint_and_claim", return_value=1), \
+         patch("bellows.notifier.push",
+               side_effect=lambda ak, uk, title, msg, **kw: push_titles.append(title) or True):
+        bellows.run_plan(plan_path, config, MagicMock())
+
+    assert len(push_titles) == 1, f"expected 1 push, got {push_titles}"
+    assert "Stale Checkout" in push_titles[0], \
+        f"expected 'Bellows — Hold: Stale Checkout', got {push_titles[0]!r}"
 
 
 # ---------------------------------------------------------------------------

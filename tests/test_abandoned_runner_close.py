@@ -1155,3 +1155,55 @@ def test_tip_branch_creation_fails_refused(tmp_path, repo, decisions, db_path):
     )
     kept = [b.strip().lstrip("* ") for b in branches_r.stdout.strip().splitlines() if b.strip()]
     assert any("branch" not in b for b in kept)
+
+
+# ---------------------------------------------------------------------------
+# c-t26: attended receipt under stem; Done name taken → push (pinned)
+# ---------------------------------------------------------------------------
+
+def test_refusal_page_pages_when_attended(tmp_path, repo, decisions, db_path, monkeypatch):
+    """c-t26: attended receipt under plan stem; Done name taken → refused_done_name_taken → push (pinned)."""
+    import verdict as verdict_mod
+
+    stem = "executable-draft"
+    sid = "ccccdddd11112222"
+    hash12 = "ccccddddeeee"
+
+    receipts_dir = tmp_path / "receipts"
+    receipts_dir.mkdir(exist_ok=True)
+    (receipts_dir / f"receipt-{stem}-{sid}-{hash12}.json").write_text(
+        json.dumps({"slug": stem, "session_id": sid, "armed_at": "2026-09-14T00:00:00"})
+    )
+
+    home = tmp_path / "home"
+    (home / ".claude" / "projects" / "proj").mkdir(parents=True)
+    (home / ".claude" / "projects" / "proj" / f"{sid}.jsonl").write_text('{"role":"assistant"}\n')
+    monkeypatch.setenv("HOME", str(home))
+
+    with patch("bellows_root.resolve_bellows_root", return_value=tmp_path):
+        owned, why = notifier.owned_by_live_session(stem)
+    assert owned is True, f"pre-check: {why}"
+
+    notifier.init_notifications({
+        "pushover": {"app_key": "k", "user_key": "u"},
+        "notifications": {"enabled": True, "events": {}},
+    })
+
+    pid, _ = _make_plan(db_path, repo, decisions, placeholder=f"{stem}.md")
+
+    done_dir = decisions / "Done"
+    done_dir.mkdir(exist_ok=True)
+    (done_dir / f"abandoned-executable-{pid}.md").write_text("conflict")
+    _make_inprogress_lane(decisions, pid)
+
+    push_titles = []
+
+    with patch("bellows_root.resolve_bellows_root", return_value=tmp_path), \
+         patch("plan_claim.release_for_plan"), \
+         patch("notifier.push",
+               side_effect=lambda ak, uk, title, msg, **kw: push_titles.append(title) or True):
+        outcome = bellows._close_abandoned_runner(pid, str(decisions), str(repo), {})
+
+    assert outcome == "refused_done_name_taken"
+    assert len(push_titles) == 1, f"expected 1 push, got {push_titles}"
+    assert "Runner Abandoned" in push_titles[0], f"got {push_titles[0]!r}"

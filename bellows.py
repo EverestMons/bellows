@@ -650,7 +650,8 @@ def _receipt_slug(plan_id) -> Optional[str]:
     if not plan_id:
         return None
     try:
-        conn = sqlite3.connect(str(BELLOWS_ROOT / "lifecycle.db"))
+        db_path = BELLOWS_ROOT / "lifecycle.db"
+        conn = lifecycle.connect_readonly(str(db_path))
         row = conn.execute(
             "SELECT deposit_placeholder_name FROM plans WHERE id = ?",
             (plan_id,),
@@ -1934,7 +1935,7 @@ def run_plan(plan_path: str, config: dict, response_server: server.ResponseServe
                     logging.getLogger("bellows").warning(f"lifecycle: failed to write awaiting_verdict for plan {plan_id}")
                 notifier.notify_verdict_request(
                     app_key, user_key, plan_name, current_step, gate_result["failures"],
-                    plan_slug=plan_slug,
+                    plan_slug=plan_slug, receipt_key=_receipt_slug(plan_id),
                 )
                 record_run(db_path, plan_path, project_path,
                            parsed.get("session_id", ""), current_step, "VerdictPending", parsed["cost_usd"], plan_slug)
@@ -2072,7 +2073,7 @@ def run_plan(plan_path: str, config: dict, response_server: server.ResponseServe
                 logging.getLogger("bellows").warning(f"lifecycle: failed to write awaiting_verdict for plan {plan_id}")
             notifier.notify_verdict_request(
                 app_key, user_key, plan_name, current_step, gate_result["failures"],
-                plan_slug=plan_slug,
+                plan_slug=plan_slug, receipt_key=_receipt_slug(plan_id),
             )
             record_run(db_path, plan_path, project_path,
                        parsed.get("session_id", ""), current_step, "VerdictPending", parsed["cost_usd"], plan_slug)

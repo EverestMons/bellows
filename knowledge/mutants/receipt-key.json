@@ -1,0 +1,117 @@
+{
+  "target": "notifier.py",
+  "mutants": [
+    {
+      "name": "receipt-key-ignored-by-notify-event",
+      "why": "ignoring receipt_key makes notify_event always use plan_slug for the ownership check; 6a passes receipt_key=stem with plan_slug=id, and the receipt is under the stem — without the key the check uses the id, finds no receipt, and pages instead of suppressing",
+      "anchor": "        ownership_key = receipt_key or plan_slug\n        owned, why = owned_by_live_session(ownership_key)",
+      "replacement": "        ownership_key = plan_slug\n        owned, why = owned_by_live_session(ownership_key)",
+      "expect_fail": "tests/test_notifier_coverage.py::test_6a_receipt_key_attended_suppresses_page"
+    },
+    {
+      "name": "json-slug-filter-removed",
+      "why": "removing the JSON slug filter makes all glob matches count; 6c has only a <stem>-2 receipt with a fresh transcript, which the glob matches (it starts with stem); without the filter the check picks it, finds the transcript, and returns owned — suppressing the push instead of paging",
+      "anchor": "                if _d.get(\"slug\") == plan_slug:\n                    slug_matches.append((_p, _d))",
+      "replacement": "                slug_matches.append((_p, _d))",
+      "expect_fail": "tests/test_notifier_coverage.py::test_6c_neighbour_receipt_slug_mismatch_pages"
+    },
+    {
+      "name": "receipt-slug-back-to-plain-connect",
+      "why": "replacing lifecycle.connect_readonly with sqlite3.connect means the recording wrapper in 9d never sees the call; 9d asserts connect_readonly was called with the tmp_path database but the assertion finds an empty seen_paths list",
+      "target": "bellows.py",
+      "anchor": "        conn = lifecycle.connect_readonly(str(db_path))",
+      "replacement": "        conn = sqlite3.connect(str(db_path))",
+      "expect_fail": "tests/test_notifier_coverage.py::test_9d_receipt_slug_reads_lifecycle_db"
+    },
+    {
+      "name": "final-verdict-page-drops-receipt-key",
+      "why": "dropping receipt_key from run_plan's final verdict page means notify_event uses plan_slug (the minted id) for the ownership check; 9f asserts receipt_key equals the placeholder stem, but without the argument it is None",
+      "target": "bellows.py",
+      "anchor": "            notifier.notify_verdict_request(\n                app_key, user_key, plan_name, current_step, gate_result[\"failures\"],\n                plan_slug=plan_slug, receipt_key=_receipt_slug(plan_id),\n            )\n            record_run(db_path, plan_path, project_path,\n                       parsed.get(\"session_id\", \"\"), current_step, \"VerdictPending\", parsed[\"cost_usd\"], plan_slug)\n            _log(\"PAUSE\", f\"⏸️ step {current_step} — waiting for CEO verdict\", slug=slug_for(plan_name))\n            return\n\n        # Auto-close",
+      "replacement": "            notifier.notify_verdict_request(\n                app_key, user_key, plan_name, current_step, gate_result[\"failures\"],\n                plan_slug=plan_slug,\n            )\n            record_run(db_path, plan_path, project_path,\n                       parsed.get(\"session_id\", \"\"), current_step, \"VerdictPending\", parsed[\"cost_usd\"], plan_slug)\n            _log(\"PAUSE\", f\"⏸️ step {current_step} — waiting for CEO verdict\", slug=slug_for(plan_name))\n            return\n\n        # Auto-close",
+      "expect_fail": "tests/test_notifier_coverage.py::test_9f_final_verdict_page_carries_receipt_key"
+    },
+    {
+      "name": "intermediate-verdict-page-drops-receipt-key",
+      "why": "dropping receipt_key from run_plan's in-loop verdict page means notify_event uses plan_slug for the check; 9g asserts receipt_key equals the placeholder stem, but without the argument it is None",
+      "target": "bellows.py",
+      "anchor": "                notifier.notify_verdict_request(\n                    app_key, user_key, plan_name, current_step, gate_result[\"failures\"],\n                    plan_slug=plan_slug, receipt_key=_receipt_slug(plan_id),\n                )\n                record_run(db_path, plan_path, project_path,\n                           parsed.get(\"session_id\", \"\"), current_step, \"VerdictPending\", parsed[\"cost_usd\"], plan_slug)\n                _log(\"PAUSE\", f\"⏸️ step {current_step} — waiting for CEO verdict\", slug=slug_for(plan_name))\n                return\n\n            # All gates passed and not QA",
+      "replacement": "                notifier.notify_verdict_request(\n                    app_key, user_key, plan_name, current_step, gate_result[\"failures\"],\n                    plan_slug=plan_slug,\n                )\n                record_run(db_path, plan_path, project_path,\n                           parsed.get(\"session_id\", \"\"), current_step, \"VerdictPending\", parsed[\"cost_usd\"], plan_slug)\n                _log(\"PAUSE\", f\"⏸️ step {current_step} — waiting for CEO verdict\", slug=slug_for(plan_name))\n                return\n\n            # All gates passed and not QA",
+      "expect_fail": "tests/test_notifier_coverage.py::test_9g_intermediate_verdict_page_carries_receipt_key"
+    },
+    {
+      "name": "newest-receipt-selected-before-slug-filter",
+      "why": "picking the newest receipt from all glob matches before the slug filter means a newer <stem>-2 receipt (no transcript) wins over an older stem receipt (attended); 6d places the older attended receipt first and the newer neighbour second — without the filter the newer one is picked, the transcript check fails, and the push goes out instead of being suppressed",
+      "anchor": "        newest, data = max(slug_matches, key=lambda x: x[0].stat().st_mtime)",
+      "replacement": "        _p_newest = max(matches, key=lambda p: p.stat().st_mtime)\n        try:\n            data = json.loads(_p_newest.read_text())\n        except Exception as exc:\n            return (False, f\"ownership check failed: {type(exc).__name__}\")\n        newest = _p_newest",
+      "expect_fail": "tests/test_notifier_coverage.py::test_6d_older_attended_receipt_wins_over_newer_neighbour"
+    },
+    {
+      "name": "plain-connect-creates-lifecycle-db",
+      "why": "sqlite3.connect creates an empty database when the path does not exist; 9e asserts the file is NOT created when _receipt_slug is called with a missing database, but a plain connect creates it",
+      "target": "bellows.py",
+      "anchor": "        conn = lifecycle.connect_readonly(str(db_path))",
+      "replacement": "        conn = sqlite3.connect(str(db_path))",
+      "expect_fail": "tests/test_notifier_coverage.py::test_9e_receipt_slug_missing_db_returns_none"
+    },
+    {
+      "name": "notify-plan-halted-drops-receipt-key",
+      "why": "dropping receipt_key from notify_plan_halted means it passes None through to notify_event; 6e[notify_plan_halted] calls the wrapper with receipt_key=stem and an attended receipt, expecting suppression — without the passthrough the ownership check uses plan_slug, finds no receipt, and pages",
+      "anchor": "    return notify_event(\n        \"plan_halted\", plan_slug, \"Bellows — Plan Halted\",\n        f\"Plan: {plan_name}\",\n        priority=0, plan_scoped=True, receipt_key=receipt_key,\n    )",
+      "replacement": "    return notify_event(\n        \"plan_halted\", plan_slug, \"Bellows — Plan Halted\",\n        f\"Plan: {plan_name}\",\n        priority=0, plan_scoped=True,\n    )",
+      "expect_fail": "tests/test_notifier_coverage.py::test_6e_wrapper_passes_receipt_key_through[notify_plan_halted-kwargs0]"
+    },
+    {
+      "name": "notify-plan-abandoned-drops-receipt-key",
+      "why": "dropping receipt_key from notify_plan_abandoned's notify_event call means the ownership check uses plan_slug; 6e[notify_plan_abandoned] passes receipt_key=stem, which matches the receipt — without the passthrough the check uses the id and pages",
+      "anchor": "    return notify_event(\n        \"plan_abandoned\", plan_slug, title, body,\n        priority=0, plan_scoped=True, detail_key=detail_key, receipt_key=receipt_key,\n    )",
+      "replacement": "    return notify_event(\n        \"plan_abandoned\", plan_slug, title, body,\n        priority=0, plan_scoped=True, detail_key=detail_key,\n    )",
+      "expect_fail": "tests/test_notifier_coverage.py::test_6e_wrapper_passes_receipt_key_through[notify_plan_abandoned-kwargs1]"
+    },
+    {
+      "name": "notify-failure-drops-receipt-key",
+      "why": "dropping receipt_key from notify_failure's notify_event call means the ownership check uses plan_slug; 6e[notify_failure] passes receipt_key=stem with an attended receipt — without the passthrough the check uses the id and pages instead of suppressing",
+      "anchor": "    return notify_event(\n        \"failure\", plan_slug, \"Bellows — Failed\",\n        f\"Plan: {plan_name}\\nStep: {step}\\nError: {error}\",\n        priority=1, plan_scoped=True, detail_key=str(step), receipt_key=receipt_key,\n    )",
+      "replacement": "    return notify_event(\n        \"failure\", plan_slug, \"Bellows — Failed\",\n        f\"Plan: {plan_name}\\nStep: {step}\\nError: {error}\",\n        priority=1, plan_scoped=True, detail_key=str(step),\n    )",
+      "expect_fail": "tests/test_notifier_coverage.py::test_6e_wrapper_passes_receipt_key_through[notify_failure-kwargs2]"
+    },
+    {
+      "name": "notify-verdict-request-drops-receipt-key",
+      "why": "dropping receipt_key from notify_verdict_request's notify_event call means the ownership check uses plan_slug; 6e[notify_verdict_request] passes receipt_key=stem with an attended receipt — without the passthrough the check uses the id and pages instead of suppressing",
+      "anchor": "    return notify_event(\n        \"verdict_needed\", plan_slug, \"Bellows — Verdict Needed\",\n        f\"Plan: {plan_name}\\nStep: {step}\\nGate failures: {failure_text}\",\n        priority=1, plan_scoped=True, detail_key=str(step), receipt_key=receipt_key,\n    )",
+      "replacement": "    return notify_event(\n        \"verdict_needed\", plan_slug, \"Bellows — Verdict Needed\",\n        f\"Plan: {plan_name}\\nStep: {step}\\nGate failures: {failure_text}\",\n        priority=1, plan_scoped=True, detail_key=str(step),\n    )",
+      "expect_fail": "tests/test_notifier_coverage.py::test_6e_wrapper_passes_receipt_key_through[notify_verdict_request-kwargs3]"
+    },
+    {
+      "name": "notify-checkout-stale-drops-receipt-key",
+      "why": "dropping receipt_key from notify_checkout_stale's notify_event call means the ownership check uses plan_slug; 6e[notify_checkout_stale] passes receipt_key=stem with an attended receipt — without the passthrough the check uses the id and pages instead of suppressing",
+      "anchor": "    return notify_event(\n        \"checkout_stale\", plan_slug, \"Bellows — Hold: Stale Checkout\",\n        f\"Plan: {plan_slug}\\n{detail}\",\n        priority=0, plan_scoped=True, receipt_key=receipt_key,\n    )",
+      "replacement": "    return notify_event(\n        \"checkout_stale\", plan_slug, \"Bellows — Hold: Stale Checkout\",\n        f\"Plan: {plan_slug}\\n{detail}\",\n        priority=0, plan_scoped=True,\n    )",
+      "expect_fail": "tests/test_notifier_coverage.py::test_6e_wrapper_passes_receipt_key_through[notify_checkout_stale-kwargs4]"
+    },
+    {
+      "name": "failure-page-passes-receipt-key",
+      "why": "adding receipt_key to run_plan's failure page routes the ownership check to the deposit's receipt; 9h sets up an attended receipt under the stem and triggers a run_step failure — with the key the check finds the receipt, returns owned, and suppresses the push that 9h asserts",
+      "target": "bellows.py",
+      "anchor": "        notifier.notify_failure(app_key, user_key, plan_name, current_step if 'current_step' in dir() else 0, str(e), plan_slug=plan_slug if 'plan_slug' in dir() else None)",
+      "replacement": "        notifier.notify_failure(app_key, user_key, plan_name, current_step if 'current_step' in dir() else 0, str(e), plan_slug=plan_slug if 'plan_slug' in dir() else None, receipt_key=_receipt_slug(plan_id) if 'plan_id' in dir() else None)",
+      "expect_fail": "tests/test_notifier_coverage.py::test_9h_failure_page_after_mint_pages_when_attended"
+    },
+    {
+      "name": "stale-checkout-page-passes-receipt-key",
+      "why": "adding receipt_key to run_plan's stale-checkout page routes the ownership check to the deposit's receipt; 9i sets up an attended receipt under the stem and triggers a stale checkout — with the key the check finds the receipt, returns owned, and suppresses the push that 9i asserts",
+      "target": "bellows.py",
+      "anchor": "                notifier.notify_checkout_stale(plan_slug, _cic_detail)",
+      "replacement": "                notifier.notify_checkout_stale(plan_slug, _cic_detail, receipt_key=base_filename[:-3] if base_filename.endswith('.md') else base_filename)",
+      "expect_fail": "tests/test_notifier_coverage.py::test_9i_stale_checkout_page_pages_when_attended"
+    },
+    {
+      "name": "done-name-taken-refusal-passes-receipt-key",
+      "why": "adding receipt_key to the done-name-taken refusal page routes the ownership check to the deposit's receipt; c-t26 sets up an attended receipt under the stem and creates both Done and in-progress lane files — with the key the check finds the receipt, returns owned, and suppresses the push that c-t26 asserts",
+      "target": "bellows.py",
+      "anchor": "        notifier.notify_plan_abandoned(canonical, plan_slug=slug, detail=msg, closed=False,\n                                       never_started=never_started)\n        return \"refused_done_name_taken\"",
+      "replacement": "        _rk = placeholder[:-3] if placeholder.endswith(\".md\") else placeholder\n        notifier.notify_plan_abandoned(canonical, plan_slug=slug, detail=msg, closed=False,\n                                       never_started=never_started, receipt_key=_rk)\n        return \"refused_done_name_taken\"",
+      "expect_fail": "tests/test_abandoned_runner_close.py::test_refusal_page_pages_when_attended"
+    }
+  ]
+}
