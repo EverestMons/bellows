@@ -1,0 +1,11 @@
+PYTHON: /Users/marklehn/Developer/bellows/.venv/bin/python
+HEAD: 3778881890760f48ae75abc3141dd5bf16fbb1f2
+TARGET: bellows.py sha256=c397adf2e957
+
+MUTANT samefile-to-realpath-string: KILLED — suite caught the defect
+MUTANT missing-directory-raises: KILLED — suite caught the defect
+MUTANT none-test-removed: KILLED — suite caught the defect
+
+LIVE-TREE UNCHANGED: bellows.py sha256=c397adf2e957
+
+MUTATION: 3 killed, 0 survived, 0 error
