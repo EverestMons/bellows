@@ -1,0 +1,90 @@
+{
+  "target": "gates.py",
+  "mutants": [
+    {
+      "name": "m1",
+      "why": "failure never appended — if earlier_only guarded to never fire, passed stays True and t2 sees no scope_step failure",
+      "anchor": "        if earlier_only:",
+      "replacement": "        if False:",
+      "expect_fail": "tests/test_scope_step.py::TestScopeStepArm::test_t2_step2_earlier_step_file_fails"
+    },
+    {
+      "name": "m2",
+      "why": "FAIL branch never taken — scope_step_fails forced empty, verdict prints PASS beside a failure; t16 asserts FAIL row",
+      "anchor": "            scope_step_fails = [f for f in gate_result.get(\"failures\", []) if f.get(\"gate\") == \"scope_step\"]",
+      "replacement": "            scope_step_fails = []",
+      "target": "verdict.py",
+      "expect_fail": "tests/test_scope_step.py::TestScopeStepFail::test_t16_table_scope_step_fail_row"
+    },
+    {
+      "name": "m3",
+      "why": "failure names only first file — join replaced by index-0; t15 expects all three named",
+      "anchor": "\"declared by an earlier step only: \" + \", \".join(earlier_only),",
+      "replacement": "\"declared by an earlier step only: \" + earlier_only[0],",
+      "expect_fail": "tests/test_scope_step.py::TestScopeStepFail::test_t15_multiple_earlier_step_files_one_failure"
+    },
+    {
+      "name": "m4",
+      "why": "own-step set built from union — _declared_paths called with all_step_texts instead of [own_step_text]; own equals union so arm never fires; t2 expects failure",
+      "anchor": "        own_files, own_prefixes, _ = _declared_paths([own_step_text], project_path)",
+      "replacement": "        own_files, own_prefixes, _ = _declared_paths(all_step_texts, project_path)",
+      "expect_fail": "tests/test_scope_step.py::TestScopeStepArm::test_t2_step2_earlier_step_file_fails"
+    },
+    {
+      "name": "m5",
+      "why": "fail dominance removed — failed_set guard replaced by if False; a union-failed file also reaches earlier_only; t3 asserts scope_step_fails == []",
+      "anchor": "            if fpath in failed_set:\n                continue",
+      "replacement": "            if False:\n                continue",
+      "expect_fail": "tests/test_scope_step.py::TestScopeStepArm::test_t3_step2_undeclared_file_fails_not_warned"
+    },
+    {
+      "name": "m6",
+      "why": "shared matcher's leading-segment file arm dropped — split arm removed from _matches_declared; a file declared with one extra leading segment is no longer matched; t18 expects passed True",
+      "anchor": "        d == fpath or (\"/\" in d and d.split(\"/\", 1)[1] == fpath)",
+      "replacement": "        d == fpath",
+      "expect_fail": "tests/test_scope_step.py::TestScopeStepFail::test_t18_leading_segment_own_step_passes"
+    },
+    {
+      "name": "m7",
+      "why": "shared set build normalization skipped — result_files set comprehension replaced by identity; absolute declared paths are never normalized to relative; t19 expects passed True",
+      "anchor": "        result_files = {\n            d[len(abs_project):] if os.path.isabs(d) and d.startswith(abs_project) else d\n            for d in result_files\n        }",
+      "replacement": "        result_files = set(result_files)",
+      "expect_fail": "tests/test_scope_step.py::TestScopeStepFail::test_t19_absolute_path_own_step_passes"
+    },
+    {
+      "name": "m8",
+      "why": "reading run without warnings list — warnings is not None guard removed; _gate_scope_check without warnings triggers the arm and appends to failures; t20 expects failures == []",
+      "anchor": "and step_number > 1 and warnings is not None:",
+      "replacement": "and step_number > 1:",
+      "expect_fail": "tests/test_scope_step.py::TestScopeStepFail::test_t20_direct_caller_no_warnings_reads_union_only"
+    },
+    {
+      "name": "m9",
+      "why": "tests/ exempted — _matches_declared check extended to skip test files; t13 changes tests/test_x.py declared only by step 1; t13 expects failure",
+      "anchor": "            if _matches_declared(fpath, own_files, own_prefixes):\n                continue",
+      "replacement": "            if _matches_declared(fpath, own_files, own_prefixes) or fpath.startswith(\"tests/\"):\n                continue",
+      "expect_fail": "tests/test_scope_step.py::TestScopeStepFail::test_t13_test_file_declared_earlier_fails"
+    },
+    {
+      "name": "m10",
+      "why": "knowledge/ exempted — earlier_only append guarded to skip knowledge/ files; t14 changes knowledge/research/notes.md declared only by step 1; t14 expects failure",
+      "anchor": "            earlier_only.append(fpath)",
+      "replacement": "            if not fpath.startswith(\"knowledge/\"):\n                earlier_only.append(fpath)",
+      "expect_fail": "tests/test_scope_step.py::TestScopeStepFail::test_t14_knowledge_file_declared_earlier_fails"
+    },
+    {
+      "name": "m11",
+      "why": "reading run on undeclared plan — declared guard removed from the per-step arm condition; legacy plans reach the arm and files declared nowhere are collected; t6 asserts scope_step_fails == []",
+      "anchor": "    if declared and step_number > 1 and warnings is not None:",
+      "replacement": "    if step_number > 1 and warnings is not None:",
+      "expect_fail": "tests/test_scope_step.py::TestScopeStepArm::test_t6_legacy_plan_no_warn"
+    },
+    {
+      "name": "m12",
+      "why": "per-step arm allowlist skip removed — SCOPE_ALLOWLIST check in per-step loop disabled; .gitkeep reaches the declared-set check, fails it, and is collected; t5 expects passed True",
+      "anchor": "            if basename in SCOPE_ALLOWLIST:\n                continue\n            if any(basename.startswith(pfx) for pfx in SCOPE_ALLOWLIST_PREFIXES):\n                continue\n            if fpath in failed_set:",
+      "replacement": "            if any(basename.startswith(pfx) for pfx in SCOPE_ALLOWLIST_PREFIXES):\n                continue\n            if fpath in failed_set:",
+      "expect_fail": "tests/test_scope_step.py::TestScopeStepArm::test_t5_allowlisted_file_neither"
+    }
+  ]
+}

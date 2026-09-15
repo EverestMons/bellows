@@ -150,13 +150,17 @@ def _build_verification_results_table(gate_result, parsed, step_number, total_st
             rows.append(f"| {display_name} | PASS | {detail} |")
             continue
         if display_name == "scope_step":
-            step_warns = [w for w in gate_result.get("warnings", []) if w.get("gate") == "scope_step"]
-            if step_warns:
-                files_list = ", ".join(w["evidence"] for w in step_warns)
-                detail = f"{len(step_warns)} file(s) declared by an earlier step only: {files_list}"
-                rows.append(f"| {display_name} | WARN | {detail} |")
+            scope_step_fails = [f for f in gate_result.get("failures", []) if f.get("gate") == "scope_step"]
+            if scope_step_fails:
+                rows.append(f"| {display_name} | FAIL | {scope_step_fails[0]['evidence']} |")
             else:
-                rows.append(f"| {display_name} | PASS | Every changed file is in this step's own Scope or Deposits |")
+                step_warns = [w for w in gate_result.get("warnings", []) if w.get("gate") == "scope_step"]
+                if step_warns:
+                    files_list = ", ".join(w["evidence"] for w in step_warns)
+                    detail = f"{len(step_warns)} file(s) declared by an earlier step only: {files_list}"
+                    rows.append(f"| {display_name} | WARN | {detail} |")
+                else:
+                    rows.append(f"| {display_name} | PASS | Every changed file is in this step's own Scope or Deposits |")
             continue
         if display_name == "rule_20_self_check":
             if failure_gate in failures_by_gate:

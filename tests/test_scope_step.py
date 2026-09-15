@@ -32,6 +32,8 @@ PLAN_TWO_STEP = """# bellows — scope-step test fixture
 > **Scope:**
 > - `gates.py`
 > - `verdict.py`
+> - `tests/test_x.py`
+> - `knowledge/research/notes.md`
 
 ## STEP 2 — DEV
 
@@ -72,9 +74,41 @@ PLAN_TEXT_LEGACY = """# bellows — executable: fixture
 > Run all tests and verify deliverables.
 """
 
+BELLOWS_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
+PLAN_T18_TWO_STEP = """# bellows — scope-step t18 fixture
+
+**Date:** 2026-09-14 | **Project:** bellows | **qa_steps:** none | **Execution:** Step 1 → Step 2
+
+## STEP 1 — DEV
+
+> Build.
+>
+> **Scope:**
+> - `knowledge/qa/evidence/r.md`
+> - `tools/x.py`
+
+## STEP 2 — DEV
+
+> Verify.
+>
+> **Scope:**
+> - `bellows/knowledge/qa/evidence/r.md`
+> - `bellows/tools/x.py`
+"""
+
+PLAN_T19_TWO_STEP = (
+    "# bellows — scope-step t19 fixture\n\n"
+    "**Date:** 2026-09-14 | **Project:** bellows | **qa_steps:** none | **Execution:** Step 1 → Step 2\n\n"
+    "## STEP 1 — DEV\n\n"
+    "> Build.\n>\n> **Scope:**\n> - `tools/y.py`\n\n"
+    "## STEP 2 — DEV\n\n"
+    "> Verify.\n>\n> **Scope:**\n> - `{root}/tools/y.py`\n"
+).format(root=BELLOWS_ROOT)
+
 
 class TestScopeStepArm:
-    """t1–t6: gate-level tests for the scope_step WARN arm in gates.check()."""
+    """t1–t6: gate-level tests for the scope_step arm in gates.check()."""
 
     def test_t1_step2_own_scope_no_warn(self):
         """t1: step 2 changing its own declared file → passed True, warnings empty."""
@@ -85,16 +119,15 @@ class TestScopeStepArm:
         assert result["passed"] is True
         assert result["warnings"] == []
 
-    def test_t2_step2_earlier_step_file_warns(self):
-        """t2: step 2 changing a file declared only in step 1 → WARN, passed still True."""
+    def test_t2_step2_earlier_step_file_fails(self):
+        """t2: step 2 changing a file declared only in step 1 → passed False, scope_step failure."""
         result = gates.check(
             _clean_parsed(), PLAN_TWO_STEP, 2, "/tmp",
             files_changed=["gates.py"],
         )
-        assert result["passed"] is True
-        scope_fails = [f for f in result["failures"] if f["gate"] == "scope_check"]
-        assert scope_fails == []
-        assert result["warnings"] == [{"gate": "scope_step", "evidence": "gates.py"}]
+        assert result["passed"] is False
+        assert result["failures"] == [{"gate": "scope_step", "evidence": "declared by an earlier step only: gates.py"}]
+        assert result["warnings"] == []
 
     def test_t3_step2_undeclared_file_fails_not_warned(self):
         """t3: step 2 changing a completely undeclared file → scope_check FAIL, no warn."""
@@ -105,6 +138,8 @@ class TestScopeStepArm:
         assert result["passed"] is False
         scope_fails = [f for f in result["failures"] if f["gate"] == "scope_check"]
         assert len(scope_fails) == 1
+        scope_step_fails = [f for f in result["failures"] if f["gate"] == "scope_step"]
+        assert scope_step_fails == []
         assert result["warnings"] == []
 
     def test_t4_step1_no_warn(self):
@@ -132,6 +167,8 @@ class TestScopeStepArm:
             files_changed=["gates.py"],
         )
         assert result["warnings"] == []
+        scope_step_fails = [f for f in result["failures"] if f["gate"] == "scope_step"]
+        assert scope_step_fails == []
 
 
 class TestScopeStepVerdict:
@@ -224,13 +261,137 @@ class TestScopeStepLedger:
 
 
 class TestScopeStepT12:
-    """t12: STEP 2 with no Scope/Deposits — warns on all earlier-step-only files."""
+    """t12: STEP 2 with no Scope/Deposits — fails on earlier-step-only files."""
 
-    def test_t12_empty_own_step_set_warns_all_union_files(self):
-        """t12: step 2 has no Scope/Deposits; changing a step-1-only file → WARN, passed True."""
+    def test_t12_empty_own_step_set_fails_on_union_files(self):
+        """t12: STEP 2 has no Scope/Deposits; changing a step-1-only file → passed False, scope_step failure."""
         result = gates.check(
             _clean_parsed(), PLAN_STEP2_NO_SCOPE, 2, "/tmp",
             files_changed=["gates.py"],
         )
+        assert result["passed"] is False
+        assert result["failures"] == [{"gate": "scope_step", "evidence": "declared by an earlier step only: gates.py"}]
+        assert result["warnings"] == []
+
+
+class TestScopeStepFail:
+    """t13–t22: scope_step FAIL arm — every kind fails; one failure per step; helpers shared."""
+
+    def test_t13_test_file_declared_earlier_fails(self):
+        """t13: step 2 changing a test file declared only in step 1 → passed False, scope_step failure."""
+        result = gates.check(
+            _clean_parsed(), PLAN_TWO_STEP, 2, "/tmp",
+            files_changed=["tests/test_x.py"],
+        )
+        assert result["passed"] is False
+        assert result["failures"] == [{"gate": "scope_step", "evidence": "declared by an earlier step only: tests/test_x.py"}]
+        assert result["warnings"] == []
+
+    def test_t14_knowledge_file_declared_earlier_fails(self):
+        """t14: step 2 changing a knowledge file declared only in step 1 → passed False, scope_step failure."""
+        result = gates.check(
+            _clean_parsed(), PLAN_TWO_STEP, 2, "/tmp",
+            files_changed=["knowledge/research/notes.md"],
+        )
+        assert result["passed"] is False
+        assert result["failures"] == [{"gate": "scope_step", "evidence": "declared by an earlier step only: knowledge/research/notes.md"}]
+        assert result["warnings"] == []
+
+    def test_t15_multiple_earlier_step_files_one_failure(self):
+        """t15: step 2 changing all three earlier-step files → ONE scope_step failure naming all."""
+        result = gates.check(
+            _clean_parsed(), PLAN_TWO_STEP, 2, "/tmp",
+            files_changed=["gates.py", "tests/test_x.py", "knowledge/research/notes.md"],
+        )
+        assert result["passed"] is False
+        assert result["failures"] == [{"gate": "scope_step", "evidence": "declared by an earlier step only: gates.py, tests/test_x.py, knowledge/research/notes.md"}]
+        assert result["warnings"] == []
+
+    def test_t16_table_scope_step_fail_row(self):
+        """t16: verdict table with scope_step failure → FAIL row, scope_check still PASS."""
+        gate_result = {
+            "failures": [{"gate": "scope_step", "evidence": "declared by an earlier step only: gates.py"}],
+            "passed": False,
+            "is_qa_step": False,
+            "files_changed": ["gates.py"],
+            "warnings": [],
+        }
+        table = verdict._build_verification_results_table(gate_result, {}, 2, 2)
+        assert "| scope_step | FAIL | declared by an earlier step only: gates.py |" in table
+        assert "| scope_check | PASS |" in table
+
+    def test_t17_ledger_scope_step_fail_row(self):
+        """t17: record_gate_events with scope_step failure → exactly one scope_step row, fail."""
+        pid = lifecycle.mint_and_claim("executable", "/proj", "T", "bellows", "small", 1, "d.md")
+        step_id = lifecycle.record_step_start(pid, 1)
+        gate_result = {
+            "failures": [{"gate": "scope_step", "evidence": "declared by an earlier step only: gates.py"}],
+            "passed": False,
+            "warnings": [],
+        }
+        lifecycle.record_gate_events(step_id, gate_result)
+        conn = sqlite3.connect(lifecycle.LIFECYCLE_DB_PATH)
+        rows = conn.execute(
+            "SELECT result, reason_code FROM gate_events WHERE step_id = ? AND gate_name = 'scope_step'",
+            (step_id,),
+        ).fetchall()
+        conn.close()
+        assert rows == [("fail", "declared by an earlier step only: gates.py")]
+
+    def test_t18_leading_segment_own_step_passes(self):
+        """t18: step 2 declares files with one extra leading segment; changing them is own: passed True."""
+        result = gates.check(
+            _clean_parsed(), PLAN_T18_TWO_STEP, 2, "/tmp",
+            files_changed=["knowledge/qa/evidence/r.md", "tools/x.py"],
+        )
         assert result["passed"] is True
-        assert result["warnings"] == [{"gate": "scope_step", "evidence": "gates.py"}]
+        assert result["failures"] == []
+
+    def test_t19_absolute_path_own_step_passes(self):
+        """t19: step 2 declares tools/y.py by absolute path; after normalization it matches: passed True."""
+        result = gates.check(
+            _clean_parsed(), PLAN_T19_TWO_STEP, 2, BELLOWS_ROOT,
+            files_changed=["tools/y.py"],
+        )
+        assert result["passed"] is True
+        assert result["failures"] == []
+
+    def test_t20_direct_caller_no_warnings_reads_union_only(self):
+        """t20: _gate_scope_check without warnings → union-only, no scope_step failure."""
+        failures = []
+        gates._gate_scope_check(PLAN_TWO_STEP, 2, ["gates.py"], failures)
+        assert failures == []
+
+    def test_t21_recorded_100061_step2_scope_step_fails(self):
+        """t21: recorded step 100061 step 2 changes scripts/close_cycle.py declared only by step 1."""
+        plan_path = os.path.join(BELLOWS_ROOT, "knowledge/decisions/Done/executable-100061.md")
+        with open(plan_path, encoding="utf-8") as f:
+            plan_text = f.read()
+        files = [
+            "knowledge/qa/evidence/close-cycle-tool-qa-evidence-2026-09-09.md",
+            "knowledge/qa/evidence/close-cycle-tool-suite-2026-09-09.txt",
+            "scripts/close_cycle.py",
+        ]
+        failures = []
+        gates._gate_scope_check(plan_text, 2, files, failures, project_path=BELLOWS_ROOT, warnings=[])
+        assert failures == [{"gate": "scope_step", "evidence": "declared by an earlier step only: scripts/close_cycle.py"}]
+
+    def test_t22_recorded_100037_step2_scope_check_and_scope_step(self):
+        """t22: recorded step 100037 step 2 has undeclared tests + manifest declared only by step 1."""
+        plan_path = os.path.join(BELLOWS_ROOT, "knowledge/decisions/Done/executable-100037.md")
+        with open(plan_path, encoding="utf-8") as f:
+            plan_text = f.read()
+        files = [
+            "knowledge/mutants/close-failopen-defaults.json",
+            "knowledge/qa/evidence/close-failopen-defaults-2026-09-04/probes-raw.txt",
+            "knowledge/qa/evidence/close-failopen-defaults-2026-09-04/pytest_full.txt",
+            "knowledge/qa/evidence/close-failopen-defaults-2026-09-04/qa-receipt.md",
+            "tests/test_depositor_receipts.py",
+            "tests/test_wrap_receipts.py",
+        ]
+        failures = []
+        gates._gate_scope_check(plan_text, 2, files, failures, project_path=BELLOWS_ROOT, warnings=[])
+        assert len(failures) == 2
+        assert failures[0]["gate"] == "scope_check"
+        assert failures[0]["evidence"].startswith("out-of-scope files: tests/test_depositor_receipts.py, tests/test_wrap_receipts.py")
+        assert failures[1] == {"gate": "scope_step", "evidence": "declared by an earlier step only: knowledge/mutants/close-failopen-defaults.json"}

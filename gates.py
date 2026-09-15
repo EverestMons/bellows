@@ -1126,6 +1126,59 @@ def _extract_deposits_block_paths(step_text):
     return []
 
 
+def _declared_paths(step_texts, project_path=None):
+    """Return (files, prefixes, scope_declared) for the given list of step texts.
+
+    scope_declared is True only when at least one Scope block declares a path
+    (a Deposits-only plan stays in legacy mode).  files and prefixes are the
+    normalized Scope union Deposits union ready for _matches_declared.
+    """
+    scope_files_raw = set()
+    scope_prefixes_raw = set()
+    for st in step_texts:
+        files, prefixes = _extract_plan_scope(st)
+        scope_files_raw.update(files)
+        scope_prefixes_raw.update(prefixes)
+    scope_declared = bool(scope_files_raw or scope_prefixes_raw)
+
+    result_files = set(scope_files_raw)
+    result_prefixes = set(scope_prefixes_raw)
+    for st in step_texts:
+        for p in _extract_deposits_block_paths(st):
+            if p.endswith("/"):
+                result_prefixes.add(p)
+            else:
+                result_files.add(p)
+
+    if project_path:
+        abs_project = os.path.abspath(project_path) + os.sep
+        result_files = {
+            d[len(abs_project):] if os.path.isabs(d) and d.startswith(abs_project) else d
+            for d in result_files
+        }
+        result_prefixes = {
+            p[len(abs_project):] if os.path.isabs(p) and p.startswith(abs_project) else p
+            for p in result_prefixes
+        }
+    return result_files, result_prefixes, scope_declared
+
+
+def _matches_declared(fpath, files, prefixes):
+    """Return True if fpath is covered by the declared files or prefixes set."""
+    file_match = any(
+        d == fpath or ("/" in d and d.split("/", 1)[1] == fpath)
+        for d in files
+    )
+    if file_match:
+        return True
+    return any(
+        fpath.startswith(p) or (
+            "/" in p.rstrip("/") and fpath.startswith(p.split("/", 1)[1])
+        )
+        for p in prefixes
+    )
+
+
 def _gate_scope_check(plan_text, step_number, files_changed, failures, project_path=None, warnings=None):
     if not files_changed:
         return
@@ -1140,38 +1193,7 @@ def _gate_scope_check(plan_text, step_number, files_changed, failures, project_p
         return
     union_text = "\n".join(all_step_texts)
 
-    # `declared` is determined from Scope blocks ONLY — a plan with a Deposits
-    # block but no Scope block stays in legacy prose-arm mode (P3, f25).
-    scope_files_raw = set()
-    scope_prefixes_raw = set()
-    for st in all_step_texts:
-        files, prefixes = _extract_plan_scope(st)
-        scope_files_raw.update(files)
-        scope_prefixes_raw.update(prefixes)
-
-    declared = bool(scope_files_raw or scope_prefixes_raw)
-
-    # Full declared set: Scope blocks ∪ Deposits blocks (block/inline only)
-    declared_files = set(scope_files_raw)
-    declared_prefixes = set(scope_prefixes_raw)
-    for st in all_step_texts:
-        for p in _extract_deposits_block_paths(st):
-            if p.endswith("/"):
-                declared_prefixes.add(p)
-            else:
-                declared_files.add(p)
-
-    # Normalize absolute declared entries to project-relative form (P14)
-    if project_path:
-        abs_project = os.path.abspath(project_path) + os.sep
-        declared_files = {
-            d[len(abs_project):] if os.path.isabs(d) and d.startswith(abs_project) else d
-            for d in declared_files
-        }
-        declared_prefixes = {
-            p[len(abs_project):] if os.path.isabs(p) and p.startswith(abs_project) else p
-            for p in declared_prefixes
-        }
+    declared_files, declared_prefixes, declared = _declared_paths(all_step_texts, project_path)
 
     # Retain current step text for evidence display
     step_text = _extract_step_text(plan_text, step_number) or ""
@@ -1188,19 +1210,7 @@ def _gate_scope_check(plan_text, step_number, files_changed, failures, project_p
             # Declared-mode: only declared paths clear — Scope ∪ Deposits,
             # exact or with ONE extra leading segment on the declared side.
             # The basename arm is deleted — nothing floats on the changed side.
-            file_match = any(
-                d == fpath or ("/" in d and d.split("/", 1)[1] == fpath)
-                for d in declared_files
-            )
-            if file_match:
-                continue
-            prefix_match = any(
-                fpath.startswith(p) or (
-                    "/" in p.rstrip("/") and fpath.startswith(p.split("/", 1)[1])
-                )
-                for p in declared_prefixes
-            )
-            if prefix_match:
+            if _matches_declared(fpath, declared_files, declared_prefixes):
                 continue
         else:
             # Legacy prose-mention and ancestor-directory arms (undeclared plans)
@@ -1230,30 +1240,13 @@ def _gate_scope_check(plan_text, step_number, files_changed, failures, project_p
             "evidence": f"out-of-scope files: {', '.join(out_of_scope)} | plan step context: {context}{scope_note}",
         })
 
-    # Per-step reading: when declared and step > 1, name every union-cleared file
-    # that is not in THIS step's own Scope/Deposits. Never warns on allowlisted or
-    # union-failed files. passed is computed from failures alone (unchanged).
+    # Per-step reading: a later step's changed file declared only by an earlier
+    # step fails the step as scope_step, whatever its kind (thread 341).
     if declared and step_number > 1 and warnings is not None:
         own_step_text = _extract_step_text(plan_text, step_number) or ""
-        own_files_raw, own_prefixes_raw = _extract_plan_scope(own_step_text)
-        own_files = set(own_files_raw)
-        own_prefixes = set(own_prefixes_raw)
-        for p in _extract_deposits_block_paths(own_step_text):
-            if p.endswith("/"):
-                own_prefixes.add(p)
-            else:
-                own_files.add(p)
-        if project_path:
-            abs_project = os.path.abspath(project_path) + os.sep
-            own_files = {
-                d[len(abs_project):] if os.path.isabs(d) and d.startswith(abs_project) else d
-                for d in own_files
-            }
-            own_prefixes = {
-                p[len(abs_project):] if os.path.isabs(p) and p.startswith(abs_project) else p
-                for p in own_prefixes
-            }
+        own_files, own_prefixes, _ = _declared_paths([own_step_text], project_path)
         failed_set = set(out_of_scope)
+        earlier_only = []
         for fpath in files_changed:
             basename = os.path.basename(fpath)
             if basename in SCOPE_ALLOWLIST:
@@ -1262,21 +1255,14 @@ def _gate_scope_check(plan_text, step_number, files_changed, failures, project_p
                 continue
             if fpath in failed_set:
                 continue
-            file_match = any(
-                d == fpath or ("/" in d and d.split("/", 1)[1] == fpath)
-                for d in own_files
-            )
-            if file_match:
+            if _matches_declared(fpath, own_files, own_prefixes):
                 continue
-            prefix_match = any(
-                fpath.startswith(p) or (
-                    "/" in p.rstrip("/") and fpath.startswith(p.split("/", 1)[1])
-                )
-                for p in own_prefixes
-            )
-            if prefix_match:
-                continue
-            warnings.append({"gate": "scope_step", "evidence": fpath})
+            earlier_only.append(fpath)
+        if earlier_only:
+            failures.append({
+                "gate": "scope_step",
+                "evidence": "declared by an earlier step only: " + ", ".join(earlier_only),
+            })
 
 
 _TEST_NODE_RE = re.compile(

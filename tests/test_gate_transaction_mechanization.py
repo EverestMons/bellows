@@ -27,7 +27,7 @@ STANDARD_GATES = [
     # plan 100052: two new gates added after mutation_result
     "qa_nodes_match_suite",
     "dev_log_declared_text",
-    # plan 100074: scope_step warn arm — pass row always, reason_code carries earlier-step-only paths
+    # plan 100074/100104: scope_step — one row per step, pass or fail
     "scope_step",
 ]
 
