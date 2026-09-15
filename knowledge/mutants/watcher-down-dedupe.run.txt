@@ -1,0 +1,11 @@
+PYTHON: /Users/marklehn/Developer/bellows/.venv/bin/python
+HEAD: ae0df7fa85af9791a6fb7df22928abdd152eeb66
+TARGET: notifier.py sha256=e6eeff87fa19
+
+MUTANT machine-dropped-from-key: KILLED — suite caught the defect
+MUTANT live-row-clears-all-machines: KILLED — suite caught the defect
+MUTANT live-row-clears-nothing: KILLED — suite caught the defect
+
+LIVE-TREE UNCHANGED: notifier.py sha256=e6eeff87fa19
+
+MUTATION: 3 killed, 0 survived, 0 error
