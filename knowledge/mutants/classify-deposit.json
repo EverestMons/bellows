@@ -1,0 +1,54 @@
+{
+  "target": "tools/classify_deposit.py",
+  "mutants": [
+    {
+      "name": "m1",
+      "why": "tuple mis-order: reads passed to _assign_class instead of writes; read paths alone assign read-only",
+      "anchor": "dep._assign_class(writes, args.project_root)",
+      "replacement": "dep._assign_class(reads, args.project_root)",
+      "expect_fail": "tests/test_classify_deposit.py::test_c1_match"
+    },
+    {
+      "name": "m2",
+      "why": "MISMATCH exit code changed from 1 to 0; MISMATCH silently becomes success",
+      "anchor": "    if declared_class != assigned_class:\n        print(\"RESULT: MISMATCH\")\n        return 1",
+      "replacement": "    if declared_class != assigned_class:\n        print(\"RESULT: MISMATCH\")\n        return 0",
+      "expect_fail": "tests/test_classify_deposit.py::test_c2_mismatch"
+    },
+    {
+      "name": "m3",
+      "why": "fallback flag always False; FALLBACK branch never fires even when writes come from fallback",
+      "anchor": "    writes_from_fallback = not writes_from_manifest",
+      "replacement": "    writes_from_fallback = False",
+      "expect_fail": "tests/test_classify_deposit.py::test_c3_fallback"
+    },
+    {
+      "name": "m4",
+      "why": "unparsed-line scan always returns empty; UNPARSED-STANZA branch never fires",
+      "anchor": "    unparsed_lines = _find_unparsed_stanza_lines(plan_text)",
+      "replacement": "    unparsed_lines = []",
+      "expect_fail": "tests/test_classify_deposit.py::test_c4_unparsed_stanza"
+    },
+    {
+      "name": "m5",
+      "why": "loaded config dropped; constructor always gets empty config, shop_infra_projects extension ignored",
+      "anchor": "        config=config_data,",
+      "replacement": "        config={},",
+      "expect_fail": "tests/test_classify_deposit.py::test_c6_config"
+    },
+    {
+      "name": "m6",
+      "why": "plan-path guard removed; a missing plan raises FileNotFoundError traceback (exit 1) instead of argparse error (exit 2)",
+      "anchor": "    if not os.path.isfile(args.plan):\n        parser.error(f\"plan is not a file: {args.plan}\")\n\n    import bellows_root",
+      "replacement": "    import bellows_root",
+      "expect_fail": "tests/test_classify_deposit.py::test_c8_unreadable_input"
+    },
+    {
+      "name": "m7",
+      "why": "named-config guard removed; a missing --config file is silently read as {}, the run goes on to a RESULT: line instead of exit 2",
+      "anchor": "        if not os.path.isfile(args.config):\n            parser.error(f\"--config is not a file: {args.config}\")\n        try:\n            with open(args.config) as f:\n                config_data = json.load(f)\n        except json.JSONDecodeError as exc:\n            parser.error(f\"--config is not valid JSON: {exc}\")\n        if not isinstance(config_data, dict):\n            parser.error(f\"--config is not a JSON object: {args.config}\")",
+      "replacement": "        try:\n            with open(args.config) as f:\n                config_data = json.load(f)\n        except (json.JSONDecodeError, FileNotFoundError):\n            config_data = {}\n        if not isinstance(config_data, dict):\n            parser.error(f\"--config is not a JSON object: {args.config}\")",
+      "expect_fail": "tests/test_classify_deposit.py::test_c8_unreadable_input"
+    }
+  ]
+}
