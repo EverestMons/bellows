@@ -6,6 +6,15 @@ from pathlib import Path
 import pytest
 
 
+@pytest.fixture(autouse=True)
+def _scrub_binding_env(monkeypatch):
+    for key in list(os.environ):
+        if key in ("GIT_CONFIG_COUNT", "BELLOWS_PRECHECK_WT", "BELLOWS_PRECHECK_PLAN",
+                   "BELLOWS_PRECHECK_STEP", "BELLOWS_PYTHON") or \
+           key.startswith("GIT_CONFIG_KEY_") or key.startswith("GIT_CONFIG_VALUE_"):
+            monkeypatch.delenv(key, raising=False)
+
+
 def clear_plan_for_test(path, db_path=None):
     import lifecycle
     raw_bytes = Path(path).read_bytes()

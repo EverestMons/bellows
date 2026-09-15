@@ -196,6 +196,7 @@ def run_step(
     timeout: int = 300,
     plan_slug: Optional[str] = None,
     step_num: Optional[int] = None,
+    extra_env: Optional[dict] = None,
     _retry_attempted: bool = False,  # internal retry guard — do NOT pass externally
 ) -> dict:
     cmd = [
@@ -221,7 +222,7 @@ def run_step(
             stderr=subprocess.PIPE,
             text=True,
             cwd=project_path,
-            env={**os.environ, "BELLOWS_DISPATCH": "1"},
+            env={**os.environ, "BELLOWS_DISPATCH": "1", **(extra_env or {})},
         )
     except Exception as e:
         _write_log(log_path, {
@@ -340,7 +341,7 @@ def run_step(
             _log("INFO", f"runner: transient failure detected ({transient_hit!r} in stderr); retrying once in 5s (step {step_num})", slug=plan_slug)
             time.sleep(5)
             _log("INFO", f"runner: retry dispatch starting (step {step_num})", slug=plan_slug)
-            return run_step(prompt, project_path, model, session_id, allowed_tools, timeout, plan_slug, step_num, _retry_attempted=True)
+            return run_step(prompt, project_path, model, session_id, allowed_tools, timeout, plan_slug, step_num, extra_env, _retry_attempted=True)
 
         # Exit-1 rate-limit park detection: scan stdout stream for five_hour cap event
         exit1_sl = _check_exit1_rate_limit(result_stdout, plan_slug)

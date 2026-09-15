@@ -1,0 +1,229 @@
+{
+  "target": "tools/check_deposit.py",
+  "mutants": [
+    {
+      "name": "m1",
+      "why": "a failing run keeps the record",
+      "anchor": "            _remove_record(wt_path)\n            return 1",
+      "replacement": "            return 1",
+      "expect_fail": "tests/test_precheck_binding.py::TestB2FailingRunRemovesRecord::test_b2"
+    },
+    {
+      "name": "m2",
+      "why": "the record omits untracked files",
+      "anchor": "for path in dict.fromkeys(diff_paths + untracked_paths):",
+      "replacement": "for path in dict.fromkeys(diff_paths):",
+      "expect_fail": "tests/test_precheck_binding.py::TestB1RecordOnCleanRun::test_b1"
+    },
+    {
+      "name": "m3",
+      "why": "the check reads a path's presence, not its content",
+      "anchor": "            elif rec_files[path] != blob:",
+      "replacement": "            elif False:",
+      "expect_fail": "tests/test_precheck_binding.py::TestB5EditedPathRefused::test_b5"
+    },
+    {
+      "name": "m4",
+      "why": "an unread path not refused by name",
+      "anchor": "            if path not in rec_files:",
+      "replacement": "            if False:",
+      "expect_fail": "tests/test_precheck_binding.py::TestB6UnreadPathRefused::test_b6"
+    },
+    {
+      "name": "m5",
+      "why": "another lane's or step's record accepted",
+      "anchor": "    if (record is None\n            or record.get(\"plan\") != plan_basename\n            or record.get(\"step\") != step):",
+      "replacement": "    if (record is None):",
+      "expect_fail": "tests/test_precheck_binding.py::TestB7WrongStepRecordRefused::test_b7"
+    },
+    {
+      "name": "m6",
+      "why": "no record lets the commit through",
+      "anchor": "    if (record is None\n            or record.get(\"plan\") != plan_basename\n            or record.get(\"step\") != step):\n        refused_reasons.append(",
+      "replacement": "    if (record is not None\n            and record.get(\"plan\") != plan_basename\n            and record.get(\"step\") != step):\n        refused_reasons.append(",
+      "expect_fail": "tests/test_precheck_binding.py::TestB3CommitRefusedNoRecord::test_b3"
+    },
+    {
+      "name": "m7",
+      "why": "the hook checks every repository",
+      "target": "hooks/git/pre-commit",
+      "anchor": "if [ \"$toplevel\" = \"$BELLOWS_PRECHECK_WT\" ]; then",
+      "replacement": "if true; then",
+      "expect_fail": "tests/test_precheck_binding.py::TestB8OtherRepoGoesThrough::test_b8"
+    },
+    {
+      "name": "m8",
+      "why": "the repository's own pre-commit no longer runs",
+      "target": "hooks/git/pre-commit",
+      "anchor": "    exec \"$repo_hook\"",
+      "replacement": "    exit 0  # m8: chain suppressed",
+      "expect_fail": "tests/test_precheck_binding.py::TestB9RepoOwnHookRuns::test_b9"
+    },
+    {
+      "name": "m9",
+      "why": "the agent's environment loses extra_env",
+      "target": "runner.py",
+      "anchor": "            env={**os.environ, \"BELLOWS_DISPATCH\": \"1\", **(extra_env or {})},",
+      "replacement": "            env={**os.environ, \"BELLOWS_DISPATCH\": \"1\"},",
+      "expect_fail": "tests/test_precheck_binding.py::TestB12ExtraEnvReachesAgent::test_b12"
+    },
+    {
+      "name": "m10",
+      "why": "every step bound",
+      "target": "bellows.py",
+      "anchor": "    if \"check_deposit.py\" not in step_text:",
+      "replacement": "    if False:",
+      "expect_fail": "tests/test_precheck_binding.py::TestB13PreCheckEnvReturnsRightKeys::test_b13"
+    },
+    {
+      "name": "m11",
+      "why": "a git older than 2.31 bound anyway",
+      "target": "bellows.py",
+      "anchor": "    if _git_version() < (2, 31):",
+      "replacement": "    if False:",
+      "expect_fail": "tests/test_precheck_binding.py::TestB14EmptyEnvForOldGitAndNonLinkedWt::test_b14"
+    },
+    {
+      "name": "m12",
+      "why": "the entry written at index 0 over existing ones",
+      "target": "bellows.py",
+      "anchor": "    n = existing_count",
+      "replacement": "    n = 0",
+      "expect_fail": "tests/test_precheck_binding.py::TestB15EntryAppendedAfterExisting::test_b15"
+    },
+    {
+      "name": "m13",
+      "why": "the hook ignores a refusal",
+      "target": "hooks/git/pre-commit",
+      "anchor": "    if [ $rc -ne 0 ]; then\n        exit 1\n    fi",
+      "replacement": "    : # m13: refusal ignored",
+      "expect_fail": "tests/test_precheck_binding.py::TestB3CommitRefusedNoRecord::test_b3"
+    },
+    {
+      "name": "m14",
+      "why": "the record written in the common git dir",
+      "anchor": "[\"git\", \"rev-parse\", \"--absolute-git-dir\"], cwd=wt_path,",
+      "replacement": "[\"git\", \"rev-parse\", \"--path-format=absolute\", \"--git-common-dir\"], cwd=wt_path,",
+      "expect_fail": "tests/test_precheck_binding.py::TestB1RecordOnCleanRun::test_b1"
+    },
+    {
+      "name": "m15",
+      "why": "the hook lets a bound step commit in its repository's main checkout",
+      "target": "hooks/git/pre-commit",
+      "anchor": "    if [ -n \"$common_dir\" ] && [ \"$our_common_dir\" = \"$common_dir\" ] && [ \"$our_abs_git\" = \"$common_dir\" ]; then",
+      "replacement": "    if false; then",
+      "expect_fail": "tests/test_precheck_binding.py::TestB17MainCheckoutRefused::test_b17"
+    },
+    {
+      "name": "m16",
+      "why": "the refusal's command without the stage flag",
+      "anchor": "    if absent:\n        cmd_parts.append(\"--expect-missing\")\n        for a in absent:\n            cmd_parts.append(shlex.quote(a))",
+      "replacement": "    if False:\n        cmd_parts.append(\"--expect-missing\")\n        for a in absent:\n            cmd_parts.append(shlex.quote(a))",
+      "expect_fail": "tests/test_precheck_binding.py::TestB16SpacedPathsAndStageFlag::test_b16"
+    },
+    {
+      "name": "m17",
+      "why": "the first dispatch of a run, and every resume, unbound",
+      "target": "bellows.py",
+      "anchor": "                                  step_num=current_step,\n                                  extra_env=_precheck_env(plan_text, current_step, wt_path, inprogress_path, slug_for(plan_name)))",
+      "replacement": "                                  step_num=current_step,\n                                  extra_env=None)",
+      "expect_fail": "tests/test_precheck_binding.py::TestB18RunPlanPassesBindingPerStep::test_b18"
+    },
+    {
+      "name": "m18",
+      "why": "a continuing step bound as the step before it",
+      "target": "bellows.py",
+      "anchor": "                extra_env=_precheck_env(plan_text, current_step + 1, wt_path, inprogress_path, slug_for(plan_name)),",
+      "replacement": "                extra_env=_precheck_env(plan_text, current_step, wt_path, inprogress_path, slug_for(plan_name)),",
+      "expect_fail": "tests/test_precheck_binding.py::TestB18RunPlanPassesBindingPerStep::test_b18"
+    },
+    {
+      "name": "m19",
+      "why": "the retry drops the binding",
+      "target": "runner.py",
+      "anchor": "            return run_step(prompt, project_path, model, session_id, allowed_tools, timeout, plan_slug, step_num, extra_env, _retry_attempted=True)",
+      "replacement": "            return run_step(prompt, project_path, model, session_id, allowed_tools, timeout, plan_slug, step_num, _retry_attempted=True)",
+      "expect_fail": "tests/test_precheck_binding.py::TestB19RetryCarriesExtraEnv::test_b19"
+    },
+    {
+      "name": "m20",
+      "why": "a symlink recorded by what it points at",
+      "anchor": "    if os.path.islink(abs_path):\n        target = os.readlink(abs_path)\n        return subprocess.check_output(\n            [\"git\", \"hash-object\", \"--stdin\"],\n            input=target.encode(), stderr=subprocess.DEVNULL,\n        ).decode().strip()\n    return subprocess.check_output(\n        [\"git\", \"hash-object\", \"--\", abs_path], stderr=subprocess.DEVNULL,\n    ).decode().strip()",
+      "replacement": "    return subprocess.check_output(\n        [\"git\", \"hash-object\", \"--\", abs_path], stderr=subprocess.DEVNULL,\n    ).decode().strip()",
+      "expect_fail": "tests/test_precheck_binding.py::TestB20SymlinkRecordedByTargetPath::test_b20"
+    },
+    {
+      "name": "m21",
+      "why": "the gates resolved against the caller's directory",
+      "anchor": "        os.chdir(wt_path)",
+      "replacement": "        pass  # m21: no chdir",
+      "expect_fail": "tests/test_precheck_binding.py::TestB21CallerDirRestoredAfterCheck::test_b21"
+    },
+    {
+      "name": "m22",
+      "why": "the refusal leaves a failing run file out, neither removed nor named",
+      "anchor": "        if _is_run_file_failing(abs_dep):\n            rm_lines.append(f\"rm -f {shlex.quote(abs_dep)}\")\n            if dep not in absent:\n                absent.append(dep)",
+      "replacement": "        if False:\n            rm_lines.append(f\"rm -f {shlex.quote(abs_dep)}\")\n            if dep not in absent:\n                absent.append(dep)",
+      "expect_fail": "tests/test_precheck_binding.py::TestB22MutationSurvivorRefusalAndRecovery::test_b22"
+    },
+    {
+      "name": "m23",
+      "why": "the linked-worktree check removed",
+      "target": "bellows.py",
+      "anchor": "    if not os.path.isfile(os.path.join(wt_path, \".git\")):",
+      "replacement": "    if False:",
+      "expect_fail": "tests/test_precheck_binding.py::TestB14EmptyEnvForOldGitAndNonLinkedWt::test_b14"
+    },
+    {
+      "name": "m24",
+      "why": "every present run file treated as failing, a clean one included",
+      "anchor": "    for line in content.splitlines():\n        m = re.match(\n            r\"MUTATION:\\s*\\d+\\s*killed,\\s*(\\d+)\\s*survived,\\s*(\\d+)\\s*error\", line\n        )\n        if m:\n            return int(m.group(1)) > 0 or int(m.group(2)) > 0\n    return True",
+      "replacement": "    return True",
+      "expect_fail": "tests/test_precheck_binding.py::TestB22MutationSurvivorRefusalAndRecovery::test_b22"
+    },
+    {
+      "name": "m25",
+      "why": "the scrub made a no-op",
+      "target": "tests/conftest.py",
+      "anchor": "    for key in list(os.environ):\n        if key in (\"GIT_CONFIG_COUNT\", \"BELLOWS_PRECHECK_WT\", \"BELLOWS_PRECHECK_PLAN\",\n                   \"BELLOWS_PRECHECK_STEP\", \"BELLOWS_PYTHON\") or \\\n           key.startswith(\"GIT_CONFIG_KEY_\") or key.startswith(\"GIT_CONFIG_VALUE_\"):\n            monkeypatch.delenv(key, raising=False)",
+      "replacement": "    pass  # m25: scrub disabled",
+      "expect_fail": "tests/test_precheck_binding.py::TestB23ScrubFromOutside::test_b23"
+    },
+    {
+      "name": "m26",
+      "why": "the removal's path printed unquoted",
+      "anchor": "            rm_lines.append(f\"rm -f {shlex.quote(abs_dep)}\")",
+      "replacement": "            rm_lines.append(f\"rm -f {abs_dep}\")",
+      "expect_fail": "tests/test_precheck_binding.py::TestB22MutationSurvivorRefusalAndRecovery::test_b22"
+    },
+    {
+      "name": "m27",
+      "why": "core.hooksPath read raw, a ~ form taken as relative",
+      "target": "hooks/git/pre-commit",
+      "anchor": "hooks_path=\"$(env -u GIT_CONFIG_COUNT git config --type=path --get core.hooksPath 2>/dev/null)\"",
+      "replacement": "hooks_path=\"$(env -u GIT_CONFIG_COUNT git config --get core.hooksPath 2>/dev/null)\"",
+      "expect_fail": "tests/test_precheck_binding.py::TestB9RepoOwnHookRuns::test_b9"
+    },
+    {
+      "name": "m28",
+      "why": "the staged blob read through a pathspec, --literal-pathspecs dropped",
+      "anchor": "                [\"git\", \"--literal-pathspecs\", \"ls-files\", \"-s\", \"-z\", \"--\", path],",
+      "replacement": "                [\"git\", \"ls-files\", \"-s\", \"-z\", \"--\", path],",
+      "expect_fail": "tests/test_precheck_binding.py::TestB25LiteralPathspecForGlob::test_b25"
+    },
+    {
+      "name": "m29",
+      "why": "the --wt directory check removed",
+      "anchor": "        if not os.path.isdir(wt_path):\n            print(f\"--wt is not a directory: {wt_path}\", file=sys.stderr)\n            return 2",
+      "replacement": "        pass  # m29: no directory check",
+      "expect_fail": "tests/test_precheck_binding.py::TestB24WtNotDirectory::test_b24"
+    },
+    {
+      "name": "m30",
+      "why": "the --expect-missing paths printed unquoted",
+      "anchor": "            cmd_parts.append(shlex.quote(a))",
+      "replacement": "            cmd_parts.append(a)",
+      "expect_fail": "tests/test_precheck_binding.py::TestB16SpacedPathsAndStageFlag::test_b16"
+    }
+  ]
+}

@@ -1,0 +1,48 @@
+#!/bin/sh
+# bellows pre-commit binding hook — installed via GIT_CONFIG_COUNT/core.hooksPath
+set -e
+
+toplevel="$(git rev-parse --show-toplevel)"
+
+if [ "$toplevel" = "$BELLOWS_PRECHECK_WT" ]; then
+    # This is the bound worktree — verify commit against pre-check record
+    "$BELLOWS_PYTHON" "$(dirname "$0")/../../tools/check_deposit.py" \
+        "$BELLOWS_PRECHECK_PLAN" "$BELLOWS_PRECHECK_STEP" \
+        --wt "$toplevel" --verify-commit
+    rc=$?
+    if [ $rc -ne 0 ]; then
+        exit 1
+    fi
+else
+    # Check if this is the main checkout of the bound worktree's repository
+    common_dir="$(env -u GIT_DIR -u GIT_WORK_TREE -u GIT_INDEX_FILE git -C "$BELLOWS_PRECHECK_WT" rev-parse --path-format=absolute --git-common-dir 2>/dev/null)" || true
+    our_common_dir="$(git rev-parse --path-format=absolute --git-common-dir 2>/dev/null)" || true
+    our_abs_git="$(git rev-parse --path-format=absolute --absolute-git-dir 2>/dev/null)" || true
+
+    if [ -n "$common_dir" ] && [ "$our_common_dir" = "$common_dir" ] && [ "$our_abs_git" = "$common_dir" ]; then
+        wt_toplevel="$(env -u GIT_DIR -u GIT_WORK_TREE -u GIT_INDEX_FILE git -C "$BELLOWS_PRECHECK_WT" rev-parse --show-toplevel 2>/dev/null)" || wt_toplevel="$BELLOWS_PRECHECK_WT"
+        echo "REFUSED $toplevel is the main checkout of the bound worktree's repository; the step commits in $wt_toplevel" >&2
+        exit 1
+    fi
+    # Another repository — check nothing
+fi
+
+# Chain the repository's own pre-commit hook
+hooks_path="$(env -u GIT_CONFIG_COUNT git config --type=path --get core.hooksPath 2>/dev/null)" || true
+if [ -z "$hooks_path" ]; then
+    hooks_path="$(git rev-parse --git-common-dir)/hooks"
+fi
+
+# Resolve a relative hooks_path against toplevel
+case "$hooks_path" in
+    /*) : ;;
+    *) hooks_path="$toplevel/$hooks_path" ;;
+esac
+
+repo_hook="$hooks_path/pre-commit"
+
+if [ -x "$repo_hook" ] && [ "$(realpath "$repo_hook" 2>/dev/null || echo "$repo_hook")" != "$(realpath "$0" 2>/dev/null || echo "$0")" ]; then
+    exec "$repo_hook"
+fi
+
+exit 0

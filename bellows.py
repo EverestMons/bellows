@@ -1794,7 +1794,8 @@ def run_plan(plan_path: str, config: dict, response_server: server.ResponseServe
                                   timeout=config.get("step_inactivity_timeout_seconds",
                                                      config.get("step_timeout_seconds", 300)),
                                   plan_slug=slug_for(plan_name),
-                                  step_num=current_step)
+                                  step_num=current_step,
+                                  extra_env=_precheck_env(plan_text, current_step, wt_path, inprogress_path, slug_for(plan_name)))
         parsed["_step_number"] = current_step
         parsed["_agent"] = extract_agent(parsed.get("result_text", ""))
 
@@ -1955,6 +1956,7 @@ def run_plan(plan_path: str, config: dict, response_server: server.ResponseServe
                                    config.get("step_timeout_seconds", 300)),
                 plan_slug=slug_for(plan_name),
                 step_num=current_step + 1,
+                extra_env=_precheck_env(plan_text, current_step + 1, wt_path, inprogress_path, slug_for(plan_name)),
             )
             current_step += 1
             parsed["_step_number"] = current_step
@@ -2316,6 +2318,60 @@ def _create_worktree(project_path: str, slug: str) -> str:
         raise WorktreeCreationError(f"worktree creation timed out for {slug}: {e}") from e
     except OSError as e:
         raise WorktreeCreationError(f"worktree creation OS error for {slug}: {e}") from e
+
+
+def _git_version():
+    """Return (major, minor) tuple of the installed git version, or (0, 0) on failure."""
+    try:
+        out = subprocess.check_output(
+            ["git", "--version"], stderr=subprocess.DEVNULL
+        ).decode().strip()
+        m = re.search(r"(\d+)\.(\d+)", out)
+        if m:
+            return (int(m.group(1)), int(m.group(2)))
+    except Exception:
+        pass
+    return (0, 0)
+
+
+def _precheck_env(plan_text, step, wt_path, lane_path, slug=None):
+    """Return binding env dict for a step naming check_deposit.py, or {} otherwise."""
+    if _git_version() < (2, 31):
+        _log("WARN", f"git predates 2.31; step {step} runs unbound", slug=slug)
+        return {}
+
+    if not os.path.isfile(os.path.join(wt_path, ".git")):
+        return {}
+
+    step_text = gates._extract_step_text(plan_text, step) or ""
+    if "check_deposit.py" not in step_text:
+        return {}
+
+    try:
+        wt_toplevel = subprocess.check_output(
+            ["git", "rev-parse", "--show-toplevel"], cwd=wt_path, stderr=subprocess.DEVNULL,
+        ).decode().strip()
+    except Exception:
+        return {}
+
+    hooks_dir = str(BELLOWS_ROOT / "hooks" / "git")
+
+    existing_count = int(os.environ.get("GIT_CONFIG_COUNT", "0"))
+    n = existing_count
+
+    env = {}
+    for i in range(existing_count):
+        env[f"GIT_CONFIG_KEY_{i}"] = os.environ.get(f"GIT_CONFIG_KEY_{i}", "")
+        env[f"GIT_CONFIG_VALUE_{i}"] = os.environ.get(f"GIT_CONFIG_VALUE_{i}", "")
+
+    env[f"GIT_CONFIG_KEY_{n}"] = "core.hooksPath"
+    env[f"GIT_CONFIG_VALUE_{n}"] = hooks_dir
+    env["GIT_CONFIG_COUNT"] = str(n + 1)
+    env["BELLOWS_PRECHECK_WT"] = wt_toplevel
+    env["BELLOWS_PRECHECK_PLAN"] = str(lane_path)
+    env["BELLOWS_PRECHECK_STEP"] = str(step)
+    env["BELLOWS_PYTHON"] = sys.executable
+    return env
 
 
 def _auto_stage_deposits(plan_text, plan_header, project_path, wt_path, slug, plan_id=None):
