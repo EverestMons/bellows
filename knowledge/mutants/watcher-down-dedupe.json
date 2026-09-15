@@ -1,0 +1,26 @@
+{
+    "target": "notifier.py",
+    "mutants": [
+        {
+            "name": "machine-dropped-from-key",
+            "why": "notify_watcher_down must include the watched machine in the detail key so two machines stale at once each page independently; dropping the machine reverts the key to status-only and the second machine's page is swallowed by the first's dedupe entry",
+            "anchor": "        priority=1, plan_scoped=False, detail_key=f\"{machine}:{status}\",",
+            "replacement": "        priority=1, plan_scoped=False, detail_key=status,",
+            "expect_fail": "tests/test_notifier_coverage.py::test_8c_watcher_down_two_machines_stale"
+        },
+        {
+            "name": "live-row-clears-all-machines",
+            "why": "mark_machine_live must only clear the named machine's dedupe key; clearing all watcher_down keys means a live machine's poll row re-arms every stale machine's dedupe and the stale machine pages on every poll instead of once per episode",
+            "anchor": "        if k[:3] == (hostname, \"-\", \"watcher_down\") and k[3].rsplit(\":\", 1)[0] == machine:",
+            "replacement": "        if k[:3] == (hostname, \"-\", \"watcher_down\"):",
+            "expect_fail": "tests/test_notifier_coverage.py::test_8a_watcher_down_stale_plus_live_stale_first"
+        },
+        {
+            "name": "live-row-clears-nothing",
+            "why": "mark_machine_live must remove the matched key from _dedupe_memo so a new stale episode pages once; replacing pop with get reads the value but leaves the entry intact and the second episode is silently eaten",
+            "anchor": "            _dedupe_memo.pop(k, None)",
+            "replacement": "            _dedupe_memo.get(k, None)",
+            "expect_fail": "tests/test_notifier_coverage.py::test_8d_watcher_down_mark_live_new_episode"
+        }
+    ]
+}

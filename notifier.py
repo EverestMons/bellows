@@ -200,10 +200,15 @@ def _dedupe(key: tuple) -> bool:
 
 
 def mark_machine_live(machine: str) -> None:
-    """Clear the watcher_down dedupe so a new stale episode pages once."""
+    """Clear the watcher_down dedupe for this machine so a new stale episode pages once.
+
+    The key form is (paging_host, "-", "watcher_down", "<machine>:<status>").
+    Only keys whose detail field names this machine are removed; other machines'
+    keys are left so their dedupe windows are unaffected.
+    """
     hostname = socket.gethostname()
     for k in list(_dedupe_memo.keys()):
-        if k[:3] == (hostname, "-", "watcher_down"):
+        if k[:3] == (hostname, "-", "watcher_down") and k[3].rsplit(":", 1)[0] == machine:
             _dedupe_memo.pop(k, None)
 
 
@@ -400,11 +405,13 @@ def notify_watcher_down(machine: str, status: str, age_seconds: float) -> bool:
     """Page when tuyere's liveness poll finds a watcher stale or down.
 
     Every page passes through the one gate (notify_event). mark_machine_live()
-    clears the dedupe so each new stale episode pages exactly once.
+    clears the dedupe for the named machine so each new stale episode pages
+    exactly once per machine. The detail key is "<machine>:<status>" so two
+    machines stale at once each page independently.
     """
     return notify_event(
         "watcher_down", None,
         f"Bellows — Watcher {status.title()}",
         f"Machine: {machine}\nStatus: {status}\nAge: {int(age_seconds)}s",
-        priority=1, plan_scoped=False, detail_key=status,
+        priority=1, plan_scoped=False, detail_key=f"{machine}:{status}",
     )

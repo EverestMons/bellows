@@ -382,7 +382,126 @@ def test_8_watcher_down_episodes(monkeypatch):
     )
     assert notify_event_calls[0]["event"] == "watcher_down"
     assert notify_event_calls[0]["plan_scoped"] is False
-    assert notify_event_calls[0]["detail_key"] == "stale"
+    assert notify_event_calls[0]["detail_key"] == "air:stale"
+
+
+# ---------------------------------------------------------------------------
+# Tests 8a–8e: per-machine dedupe isolation (watcher_down)
+# ---------------------------------------------------------------------------
+
+def test_8a_watcher_down_stale_plus_live_stale_first(monkeypatch):
+    """air stale then mini live (stale row first) over two polls → one page."""
+    push_calls = []
+    monkeypatch.setattr(notifier, "push", lambda *a, **kw: push_calls.append(1) or True)
+    notifier.init_notifications({
+        "pushover": {"app_key": "k", "user_key": "u"},
+        "notifications": {"enabled": True, "events": {}, "dedupe_window_seconds": 3600},
+    })
+
+    # Poll 1: stale row first, then live row
+    notifier.notify_watcher_down("air", "stale", 300)
+    notifier.mark_machine_live("mini")
+    # Poll 2: same order
+    notifier.notify_watcher_down("air", "stale", 610)
+    notifier.mark_machine_live("mini")
+    assert len(push_calls) == 1
+
+
+def test_8b_watcher_down_stale_plus_live_live_first(monkeypatch):
+    """mini live then air stale (live row first) over two polls → one page."""
+    push_calls = []
+    monkeypatch.setattr(notifier, "push", lambda *a, **kw: push_calls.append(1) or True)
+    notifier.init_notifications({
+        "pushover": {"app_key": "k", "user_key": "u"},
+        "notifications": {"enabled": True, "events": {}, "dedupe_window_seconds": 3600},
+    })
+
+    # Poll 1: live row first, then stale row
+    notifier.mark_machine_live("mini")
+    notifier.notify_watcher_down("air", "stale", 300)
+    # Poll 2: same order
+    notifier.mark_machine_live("mini")
+    notifier.notify_watcher_down("air", "stale", 610)
+    assert len(push_calls) == 1
+
+
+def test_8c_watcher_down_two_machines_stale(monkeypatch):
+    """air and mini both stale over two polls → two pages (one per machine)."""
+    push_calls = []
+    monkeypatch.setattr(notifier, "push", lambda *a, **kw: push_calls.append(1) or True)
+    notifier.init_notifications({
+        "pushover": {"app_key": "k", "user_key": "u"},
+        "notifications": {"enabled": True, "events": {}, "dedupe_window_seconds": 3600},
+    })
+
+    # Poll 1: both stale
+    notifier.notify_watcher_down("air", "stale", 300)
+    notifier.notify_watcher_down("mini", "stale", 300)
+    # Poll 2: both stale — each deduped by its own key
+    notifier.notify_watcher_down("air", "stale", 610)
+    notifier.notify_watcher_down("mini", "stale", 610)
+    assert len(push_calls) == 2
+
+
+def test_8d_watcher_down_mark_live_new_episode(monkeypatch):
+    """Both stale → 2 pages; mark air live; both stale again → 3 pages (air new, mini deduped)."""
+    push_calls = []
+    monkeypatch.setattr(notifier, "push", lambda *a, **kw: push_calls.append(1) or True)
+    notifier.init_notifications({
+        "pushover": {"app_key": "k", "user_key": "u"},
+        "notifications": {"enabled": True, "events": {}, "dedupe_window_seconds": 3600},
+    })
+
+    # Phase 1: both stale → two pages
+    notifier.notify_watcher_down("air", "stale", 300)
+    notifier.notify_watcher_down("mini", "stale", 300)
+    assert len(push_calls) == 2
+    # air goes live → clears air's key only
+    notifier.mark_machine_live("air")
+    # Phase 2: both stale → air new episode (page 3), mini still deduped
+    notifier.notify_watcher_down("air", "stale", 600)
+    notifier.notify_watcher_down("mini", "stale", 600)
+    assert len(push_calls) == 3
+
+
+def test_8e_liveness_poll_two_polls_one_page(monkeypatch, tmp_path):
+    """_poll_liveness: [air stale, mini live] over two polls (clock reset each) → one page."""
+    push_calls = []
+    monkeypatch.setattr(notifier, "push", lambda *a, **kw: push_calls.append(1) or True)
+    notifier.init_notifications({
+        "pushover": {"app_key": "k", "user_key": "u"},
+        "notifications": {"enabled": True, "events": {}, "dedupe_window_seconds": 3600},
+    })
+
+    liveness_json = json.dumps([
+        {"machine": "air", "status": "stale", "age_seconds": 900, "heartbeat_only": True},
+        {"machine": "mini", "status": "live", "age_seconds": 10, "heartbeat_only": True},
+    ])
+
+    mock_result = MagicMock()
+    mock_result.returncode = 0
+    mock_result.stdout = liveness_json
+
+    checkout = tmp_path / "tuyere"
+    checkout.mkdir()
+    (checkout / ".venv" / "bin").mkdir(parents=True)
+    (checkout / ".venv" / "bin" / "python").write_text("#!/usr/bin/env python3")
+
+    def mock_run(cmd, **kwargs):
+        return mock_result
+
+    with patch("bellows.server.ResponseServer"), \
+         patch("bellows.depositor.Depositor"), \
+         patch("bellows.plan_claim._tuyere_checkout", return_value=checkout), \
+         patch("bellows.subprocess.run", side_effect=mock_run):
+        b = bellows.Bellows({"callback_port": 9999, "watched_projects": [],
+                              "liveness_poll_seconds": 300})
+        b._liveness_last_poll = 0.0
+        b._poll_liveness()  # poll 1
+        b._liveness_last_poll = 0.0  # reset clock so poll 2 runs
+        b._poll_liveness()  # poll 2
+
+    assert len(push_calls) == 1
 
 
 # ---------------------------------------------------------------------------
