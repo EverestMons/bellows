@@ -17,6 +17,12 @@ Re-derived lines (worktree `100115`, base `e9e435f3`):
 
 Red (base, unedited): `35 failed, 28 passed in 12.25s`
 
+Green (worktree `100115`, all items): `2520 passed, 2 skipped in 248.26s`
+
+Green (test_worktree.py only, item 2 scope): `63 passed in <subset>`
+
+Green (test_abandoned_runner_close.py, item 2 scope): included in the 2520 total above
+
 ## Shadow cache (before, after)
 
 Listing taken before Item 2's first run (`ls -la /Users/marklehn/Developer/bellows/.bellows-cache`):
