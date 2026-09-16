@@ -1,0 +1,57 @@
+PYTHON: /Users/marklehn/Developer/bellows/.venv/bin/python
+HEAD: b7e4f0e75964716f811b478f5614d6fbbe084e86
+TARGET: bellows.py sha256=3730f0205f2f
+
+MUTANT m1-identity-check-removed: KILLED — suite caught the defect
+MUTANT m2-identity-verdict-ignored: KILLED — suite caught the defect
+MUTANT m3-not-own-warn-removed: KILLED — suite caught the defect
+MUTANT m4-tip-strict-only: KILLED — suite caught the defect
+MUTANT m5-tip-check-needs-head-read: KILLED — suite caught the defect
+MUTANT m6-tip-on-main-kept: KILLED — suite caught the defect
+MUTANT m7-identity-by-raw-string: KILLED — suite caught the defect
+MUTANT m8-strict-tip-failure-not-raised: KILLED — suite caught the defect
+MUTANT m9-registration-read-removed: KILLED — suite caught the defect
+MUTANT m10-tip-success-warn-removed: KILLED — suite caught the defect
+MUTANT m11-symlink-check-removed: KILLED — suite caught the defect
+MUTANT m12-identity-by-realpath-string: KILLED — suite caught the defect
+MUTANT m13-registration-read-through-symlink: KILLED — suite caught the defect
+MUTANT m14-registered-head-taken-for-branch-entry: KILLED — suite caught the defect
+MUTANT m15-registration-matched-by-realpath-string: KILLED — suite caught the defect
+MUTANT m16-head-read-raises-stop-removed: KILLED — suite caught the defect
+MUTANT m17-head-read-nonzero-stop-removed: KILLED — suite caught the defect
+MUTANT m18-porcelain-raises-stop-removed: KILLED — suite caught the defect
+MUTANT m19-porcelain-nonzero-not-raised: KILLED — suite caught the defect
+MUTANT m20-head-branch-raises-stop-removed: KILLED — suite caught the defect
+MUTANT m21-head-branch-nonzero-stop-removed: KILLED — suite caught the defect
+MUTANT m22-tip-branch-stop-removed: KILLED — suite caught the defect
+MUTANT m23-head-branch-stop-without-raise: KILLED — suite caught the defect
+MUTANT m24-stop-returns-instead-of-raising: KILLED — suite caught the defect
+MUTANT m25-head-branch-reraise-guard-removed: KILLED — suite caught the defect
+MUTANT m26-tip-reraise-guard-removed: KILLED — suite caught the defect
+MUTANT m27-left-as-found-dropped-from-log: KILLED — suite caught the defect
+MUTANT m28-nothing-was-removed-dropped: KILLED — suite caught the defect
+MUTANT m29-unreadable-registration-read-as-none: KILLED — suite caught the defect
+MUTANT m30-tip-check-exception-swallowed: KILLED — suite caught the defect
+MUTANT m31-removal-lexists-check-removed: KILLED — suite caught the defect
+MUTANT m32-removal-stop-logged-not-raised: KILLED — suite caught the defect
+MUTANT m33-symlink-handed-to-worktree-remove: KILLED — suite caught the defect
+MUTANT m34-symlink-case-generic-instruction: KILLED — suite caught the defect
+MUTANT m35-kept-clause-dropped: KILLED — suite caught the defect
+MUTANT m36-entry-test-back-to-exists: KILLED — suite caught the defect
+MUTANT m37-pause-posted-step-back-to-1: KILLED — suite caught the defect
+MUTANT m38-pause-recorded-step-back-to-1: KILLED — suite caught the defect
+MUTANT m39-symlink-subject-dropped: KILLED — suite caught the defect
+MUTANT m40-tip-existed-always-true: KILLED — suite caught the defect
+MUTANT m41-branch-d-result-always-success: KILLED — suite caught the defect
+MUTANT m42-failed-lookup-read-as-own: KILLED — suite caught the defect
+MUTANT m43-final-step-precondition-guard-removed: KILLED — suite caught the defect
+MUTANT m44-final-step-branch-never-taken: KILLED — suite caught the defect
+MUTANT m45-request-unlinked-after-dispatch: KILLED — suite caught the defect
+MUTANT m46-foreign-repo-check-removed: KILLED — suite caught the defect
+MUTANT m47-foreign-repo-stop-returns: KILLED — suite caught the defect
+MUTANT m48-git-file-gitdir-check-removed: KILLED — suite caught the defect
+MUTANT m49-dot-git-symlink-not-foreign: KILLED — suite caught the defect
+
+LIVE-TREE UNCHANGED: bellows.py sha256=3730f0205f2f
+
+MUTATION: 49 killed, 0 survived, 0 error

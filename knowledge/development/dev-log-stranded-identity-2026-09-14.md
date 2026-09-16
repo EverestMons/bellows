@@ -54,6 +54,31 @@ bcb472c18a09be064c3a930150fb7cf1dc7c4d32d50aa3a1eed44a92013314f9  /Users/markleh
 79dab0b0bfeab45cf16755b3f60152d54a0c9dfa8593fa9791a92d9fc1f8f2cd  /Users/marklehn/Developer/bellows/.bellows-cache/executable-regression-slug-collision-2026-05-01.md.pristine
 ```
 
+Listing taken after Item 5's run (`ls -la /Users/marklehn/Developer/bellows/.bellows-cache`):
+
+```
+total 344
+drwxr-xr-x@  8 marklehn  staff     256 Sep 16 09:42 .
+drwxr-xr-x@ 52 marklehn  staff    1664 Sep 16 09:42 ..
+-rw-r--r--@  1 marklehn  staff      20 Sep 11 16:31 executable-1.md.pristine
+-rw-r--r--@  1 marklehn  staff      65 Sep  8 16:13 executable-100044.md.pristine
+-rw-r--r--   1 marklehn  staff   25555 Sep 11 15:07 executable-100081.md.pristine
+-rw-r--r--   1 marklehn  staff   25555 Sep 11 16:01 executable-100082.md.pristine
+-rw-r--r--   1 marklehn  staff  103322 Sep 16 09:42 executable-100118.md.pristine
+-rw-r--r--@  1 marklehn  staff      45 Sep 11 16:30 executable-regression-slug-collision-2026-05-01.md.pristine
+```
+
+SHA-256 digests (after):
+
+```
+983fb5930b8062efc9b1a436c1937018677dffcaa34359a8c5fd60fb71af3364  /Users/marklehn/Developer/bellows/.bellows-cache/executable-1.md.pristine
+773dfd7150577991eb2ab5952debf64cbf03eff38504966ca5b16e5a30f85855  /Users/marklehn/Developer/bellows/.bellows-cache/executable-100044.md.pristine
+b5f11219d824c6d0eb8ff22001ce786b26b77bc36cc30ebce697280ff624932f  /Users/marklehn/Developer/bellows/.bellows-cache/executable-100081.md.pristine
+b5f11219d824c6d0eb8ff22001ce786b26b77bc36cc30ebce697280ff624932f  /Users/marklehn/Developer/bellows/.bellows-cache/executable-100082.md.pristine
+7b85d6c9af2e80233de1a563be97a8f12322b28f9c849024d4f62a9a27c6a43a  /Users/marklehn/Developer/bellows/.bellows-cache/executable-100118.md.pristine
+79dab0b0bfeab45cf16755b3f60152d54a0c9dfa8593fa9791a92d9fc1f8f2cd  /Users/marklehn/Developer/bellows/.bellows-cache/executable-regression-slug-collision-2026-05-01.md.pristine
+```
+
 ## Recovered work verified
 
 Patch sha256 prefix: `8d049be6e8e60a91` (714 lines, 35,571 bytes). Applied clean on `b8c1d694`. `git diff --numstat` → `339	78	bellows.py` and `54	23	tests/test_worktree.py` exactly. All test_worktree.py hunks at or after old line 1809, none at or above 1074. `git diff -- verdict.py` empty. `git status --porcelain -- knowledge/mutants/` empty.
@@ -101,7 +126,7 @@ tests/test_worktree.py::test_stranded_clone_of_the_project_left_intact PASSED [1
 
 ## Mutation run
 
-the run's last line is pasted below, after Item 5's run
+`MUTATION: 49 killed, 0 survived, 0 error`
 
 ## Recovered manifest verified
 
