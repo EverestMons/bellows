@@ -1,0 +1,8 @@
+{
+  "slug": "executable-bellows-stranded-identity-c",
+  "content_hash": "bb402dfbde806d31465804b5990d7d1583ba24dd46b6d9fd3ec88e2fadfe4991",
+  "session_id": "d04ebd33-0b49-4d7c-a177-322fdddcf2ec",
+  "armed_at": "2026-09-15T22:52:08.287405",
+  "watcher": "gate_watcher.py spawned detached (pid 46712); log: logs/watch/executable-bellows-stranded-identity-c.md.log",
+  "attestation_boundary": "This receipt proves the watcher was ARMED at write time. It does NOT prove the watcher stayed alive. Liveness of a session-local monitor is not externally verifiable."
+}

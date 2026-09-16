@@ -1,0 +1,8 @@
+{
+  "slug": "executable-gate2-pt-w30-c3",
+  "content_hash": "258e8193a0229cba489c1d7e64473d17c7d8dbe66c28fdd4baa2943209addd25",
+  "session_id": "d04ebd33-0b49-4d7c-a177-322fdddcf2ec",
+  "armed_at": "2026-09-16T10:59:10.964249",
+  "watcher": "gate_watcher.py spawned detached (pid 3478); log: logs/watch/executable-gate2-pt-w30-c3.md.log",
+  "attestation_boundary": "This receipt proves the watcher was ARMED at write time. It does NOT prove the watcher stayed alive. Liveness of a session-local monitor is not externally verifiable."
+}
