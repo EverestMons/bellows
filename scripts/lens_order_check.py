@@ -98,8 +98,14 @@ def commit_record(plan_path, repo, source="plan"):
     """
     try:
         rel = os.path.relpath(str(plan_path), str(repo))
+        # --follow only for the PLAN, which the pipeline renames (drafts/<p>.md ->
+        # <p>.md -> Done/<p>.md). A register is never renamed, and --follow on a file
+        # git rename-DETECTS from another (a register begun as a copy of an earlier
+        # one) returns only its creation commit under --reverse — measured 2026-09-16
+        # (git 2.55.0): 1 row where the plain log has 6, and the record read NO-RECORD.
+        follow = ["--follow"] if source == "plan" else []
         out = subprocess.run(
-            ["git", "-C", str(repo), "log", "--follow", "--reverse",
+            ["git", "-C", str(repo), "log", *follow, "--reverse",
              "--format=%H%x09%cI%x09%s", "--", rel],
             capture_output=True, text=True, timeout=60,
         )
