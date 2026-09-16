@@ -1,0 +1,111 @@
+QA probes — gate2-pt-w30-e-2026-09-16
+
+=== Item 1: live template commit ===
+0f5c34bd [100121] gate2-pt-w30-e: PLANNER_TEMPLATE v4.117 — three extensions (447+517+527+546, 459+497+573+456, 582), Rule 118 (576+581)
+
+=== Item 1: Task C counts (30 probes, in A3 order) ===
+probe: /usr/bin/grep -cF -- '### 118. The interpreter is a PIN'         → 1
+probe: /usr/bin/grep -cF -- '**Rule 118 — the interpreter is a PIN'     → 1
+probe: /usr/bin/grep -cF -- '*Source: proposal 505, entry 497 (2026-09-06), codified 2026-09-16 (Gate 2, thread 336 — PT tranche four)*' → 1
+probe: /usr/bin/grep -cF -- '*Source: proposal 434, entry 426 (2026-08-31), codified 2026-09-02 (Gate 2, cycle W=28 PT tranche one)*' → 1
+probe: /usr/bin/grep -cF -- '**The dispatch environment has four more axes the process tree does not name' → 1
+probe: /usr/bin/grep -cF -- '**A restart is proven by the process'"'"'s own facts and a canary through the changed path' → 1
+probe: /usr/bin/grep -cF -- '**A liveness test reads a signal the death REMOVES' → 1
+probe: /usr/bin/grep -cF -- 'codified 2026-09-16 — Gate 2, thread 336, PT tranche five' → 3
+probe: /usr/bin/grep -cF -- 'codified 2026-09-16 (Gate 2, thread 336 — PT tranche five)' → 1
+probe: /usr/bin/grep -cF -- '**Version:** 4.117' → 1
+probe: /usr/bin/grep -cF -- '**Version:** 4.116' → 0
+probe: /usr/bin/grep -cF -- '**Last Updated:** 2026-09-16 (v4.117)' → 1
+probe: /usr/bin/grep -cF -- '**Last Updated:** 2026-09-16 (v4.116)' → 0
+probe: /usr/bin/grep -cF -- '| 2026-09-16 | v4.117: Gate 2, thread 336' → 1
+probe: /usr/bin/grep -cF -- '| 2026-09-16 | v4.116: Gate 2, thread 336' → 1
+probe: /usr/bin/grep -cF -- '| 2026-09-16 | v4.115: Gate 2, thread 336' → 1
+probe: /usr/bin/grep -cF -- '| 2026-09-16 | v4.114: CEO act at the close of bellows plan 100118' → 1
+probe: /usr/bin/grep -cF -- '| 2026-09-15 | v4.113: Gate 2, thread 336' → 1
+probe: /usr/bin/grep -cF -- '| 2026-09-15 | v4.112: Gate 2, thread 336' → 1
+probe: /usr/bin/grep -cF -- '## Lifecycle DB Read Protocol (Planner)' → 1
+probe: /usr/bin/grep -cF -- '### Restart Discipline' → 1
+probe: /usr/bin/grep -cF -- '### Dispatch Path Rules' → 1
+probe: /usr/bin/grep -cF -- '### 55. ' → 1
+probe: /usr/bin/grep -cF -- '### 56. ' → 1
+probe: /usr/bin/grep -cF -- '### 105. ' → 1
+probe: /usr/bin/grep -cF -- '### 106. ' → 1
+probe: /usr/bin/grep -cF -- '### 116. ' → 1
+probe: /usr/bin/grep -cF -- '### 117. ' → 1
+probe: /usr/bin/grep -cF -- '### 14. ' → 3
+probe: /usr/bin/grep -cF -- '### 17. ' → 2
+All 30 counts match pins in A3.
+
+=== Item 1: wc -l ===
+2639 /Users/marklehn/Developer/eluvian-governance/PLANNER_TEMPLATE.md
+
+=== Item 1: porcelain (PLANNER_TEMPLATE.md and g2ptw30e-flip.sql) ===
+(empty — clean)
+
+=== Item 2: QA byte-identity rebuild ===
+pre-edit blob extracted from commit parent: 0f5c34bd90dd138da434c575244ad6a8152f0690^
+BUILT: /tmp/g2ptw30e-qa/PT-out.md edits=7 blocks=1 lines+15 bytes+12798 post=30/30 deltas=pinned
+builder_exit=0
+BYTE_IDENTICAL
+
+=== Item 2: P4 builder digest ===
+on-disk:  cba5026c71ba6f99
+blob at builder's own commit (668fcaf035eab5472d894221af72f77fb3154873): cba5026c71ba6f99
+MATCH
+
+=== Item 2: three refusals ===
+Refusal 1 (out == in):
+  BUILDER REFUSED: out == in
+  exit=1
+Refusal 2 (under forbidden root):
+  BUILDER REFUSED: out is under a forbidden root /Users/marklehn/Developer/eluvian-governance (the literal governance root, or the input's git toplevel)
+  exit=1
+Refusal 3 (already built):
+  BUILDER REFUSED: output tokens already present in input — already built?
+  exit=1
+
+=== Item 3: flip read back (fresh read-only connection) ===
+
+eleven rows:
+447|implemented|codify|ceo|2026-09-16T19:12:15Z
+456|implemented|codify|ceo|2026-09-16T19:12:15Z
+459|implemented|codify|ceo|2026-09-16T19:12:15Z
+497|implemented|codify|ceo|2026-09-16T19:12:15Z
+517|implemented|codify|ceo|2026-09-16T19:12:15Z
+527|implemented|codify|ceo|2026-09-16T19:12:15Z
+546|implemented|codify|ceo|2026-09-16T19:12:15Z
+573|implemented|codify|ceo|2026-09-16T19:12:15Z
+576|implemented|codify|ceo|2026-09-16T19:12:15Z
+581|implemented|codify|ceo|2026-09-16T19:12:15Z
+582|implemented|codify|ceo|2026-09-16T19:12:15Z
+all 11: implemented|codify|ceo|2026-09-16T19:12:15Z (outside the two vintages)
+
+accepted count: 25
+accepted still at the two vintages: 25 (all 25 remaining accepted rows carry vintage stamps)
+implemented count: 394
+
+flip-capture.txt line count: 590
+capture's eleven rows for the flipped ids (pre-flip state):
+447|accepted|codify|governance_rule|planner|2026-09-02T23:54:37Z
+456|accepted|codify|governance_rule|planner|2026-09-02T23:54:37Z
+459|accepted|codify|governance_rule|planner|2026-09-02T23:54:37Z
+497|accepted|codify|governance_rule|planner|2026-09-13T18:27:07Z
+517|accepted|codify|structural|planner|2026-09-13T18:27:07Z
+527|accepted|codify|structural|planner|2026-09-13T18:27:07Z
+546|accepted|codify|governance_rule|planner|2026-09-13T18:27:07Z
+573|accepted|codify|governance_rule|planner|2026-09-13T18:27:07Z
+576|accepted|codify|governance_rule|planner|2026-09-13T18:27:07Z
+581|accepted|codify|governance_rule|planner|2026-09-13T18:27:07Z
+582|accepted|codify|governance_rule|planner|2026-09-13T18:27:07Z
+all eleven read accepted|codify in the capture (pre-flip state confirmed)
+
+flip-capture committed by DEV:
+git log -1 --format=%s -- knowledge/qa/evidence/gate2-pt-w30-e-2026-09-16/flip-capture.txt
+→ [100121] gate2-pt-w30-e: PT v4.117 + flip landed (dev log, flip capture)
+
+=== Item 4: drift probe ===
+git log --format=%h 4431bc3a..HEAD -- tests
+(empty — no test changes since P7)
+
+=== Item 4: suite result ===
+See full-suite-gate2-pt-w30-e.txt. Suite expectation: P7. exit=0.
