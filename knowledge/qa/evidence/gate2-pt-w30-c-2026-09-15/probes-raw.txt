@@ -1,0 +1,97 @@
+## Item 1 — live template
+
+Command: git -C "$GOV" log --oneline -1 -- PLANNER_TEMPLATE.md
+8daabb22 [100119] gate2-pt-w30-c: PLANNER_TEMPLATE v4.115 — five extensions (453, 544+462+500, 463+464+480, 520+559, 583), Rule 116 (509)
+
+Task C counts (27 probes):
+### 116. One contract, ONE parser, every consumer calls it: 1
+**Rule 116 — one contract, ONE parser: 1
+*Source: proposal 443, entry 435 (2026-09-01), codified 2026-09-15 (Gate 2, thread 336 — PT tranche one)*: 1
+**An edit surface is enumerated from the CALLEE's definition: 1
+**A shared list's consumers are enumerated by member name AND by EFFECT: 1
+**A recalled fact is checked before it is offered: 1
+**A vocabulary that looks one value short resolves through its EXISTING states first: 1
+**A log whose lines carry times without dates: 1
+codified 2026-09-16 — Gate 2, thread 336, PT tranche three: 5
+codified 2026-09-16 (Gate 2, thread 336 — PT tranche three): 1
+**Version:** 4.115: 1
+**Version:** 4.114: 0
+**Last Updated:** 2026-09-16 (v4.115): 1
+**Last Updated:** 2026-09-16 (v4.114): 0
+| 2026-09-16 | v4.115: Gate 2, thread 336: 1
+| 2026-09-16 | v4.114: CEO act at the close of bellows plan 100118: 1
+| 2026-09-15 | v4.113: Gate 2, thread 336: 1
+| 2026-09-15 | v4.112: Gate 2, thread 336: 1
+## Lifecycle DB Read Protocol (Planner): 1
+### 38. : 1
+### 45. : 1
+### 59. : 1
+### 81. : 1
+### 40. : 1
+### 115. : 1
+### 14. : 3
+### 17. : 2
+
+wc -l: 2601
+
+Porcelain (PLANNER_TEMPLATE.md and g2ptw30c-flip.sql): EMPTY
+
+## Item 2 — builder byte-identity
+
+C=8daabb223ddc5e8112a59c1d2cc47e8accfe96a4
+BUILT: /tmp/g2ptw30c-qa/PT-out.md edits=9 blocks=1 lines+19 bytes+14712 post=35/35 deltas=pinned
+builder_exit=0
+BYTE_IDENTICAL
+
+P4 on-disk: 5d6f66518e21c84b
+P4 blob at BC=bfe58149aeb9f92bd7201c964884363929e28144: 5d6f66518e21c84b
+
+Refusals:
+1. out == in: BUILDER REFUSED: out == in; exit=1
+2. under forbidden root ($GOV): BUILDER REFUSED: out is under a forbidden root /Users/marklehn/Developer/eluvian-governance (the literal governance root, or the input's git toplevel); exit=1
+3. already built: BUILDER REFUSED: output tokens already present in input — already built?; exit=1
+
+## Item 3 — flip read-back (fresh read-only)
+
+11 rows:
+453|implemented|codify|ceo|2026-09-16T16:01:18Z
+462|implemented|codify|ceo|2026-09-16T16:01:18Z
+463|implemented|codify|ceo|2026-09-16T16:01:18Z
+464|implemented|codify|ceo|2026-09-16T16:01:18Z
+480|implemented|codify|ceo|2026-09-16T16:01:18Z
+500|implemented|codify|ceo|2026-09-16T16:01:18Z
+509|implemented|codify|ceo|2026-09-16T16:01:18Z
+520|implemented|codify|ceo|2026-09-16T16:01:18Z
+544|implemented|codify|ceo|2026-09-16T16:01:18Z
+559|implemented|codify|ceo|2026-09-16T16:01:18Z
+583|implemented|codify|ceo|2026-09-16T16:01:18Z
+
+accepted: 51
+accepted at vintages (2026-09-02T23:54:37Z or 2026-09-13T18:27:07Z): 51
+implemented: 368
+
+flip-capture.txt: 590 lines
+62 lines matching |accepted|codify| (pre-flip state of all 62 accepted rows)
+
+11 capture rows for flipped ids (pre-flip):
+453|accepted|codify|governance_rule|planner|2026-09-02T23:54:37Z
+462|accepted|codify|governance_rule|planner|2026-09-02T23:54:37Z
+463|accepted|codify|governance_rule|planner|2026-09-02T23:54:37Z
+464|accepted|codify|governance_rule|planner|2026-09-02T23:54:37Z
+480|accepted|codify|governance_rule|planner|2026-09-13T18:27:07Z
+500|accepted|codify|governance_rule|planner|2026-09-13T18:27:07Z
+509|accepted|codify|governance_rule|planner|2026-09-13T18:27:07Z
+520|accepted|codify|governance_rule|planner|2026-09-13T18:27:07Z
+544|accepted|codify|governance_rule|planner|2026-09-13T18:27:07Z
+559|accepted|codify|governance_rule|planner|2026-09-13T18:27:07Z
+583|accepted|codify|governance_rule|planner|2026-09-13T18:27:07Z
+
+Capture committed at: [100119] gate2-pt-w30-c: PT v4.115 + flip landed (dev log, flip capture)
+
+## Item 4 — full suite
+
+Drift probe: git log --format=%h 7da2d8df..HEAD -- tests
+dc17a673
+
+Suite file: full-suite-gate2-pt-w30-c.txt; exit=0
+P7 is the expectation; the gate reads failures, not the pass count
