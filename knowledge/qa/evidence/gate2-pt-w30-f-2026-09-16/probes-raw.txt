@@ -1,0 +1,150 @@
+QA raw probe output — gate2-pt-w30-f-2026-09-16 — Step 2
+Worktree: /Users/marklehn/Developer/bellows/.bellows-worktrees/100122
+GOV: /Users/marklehn/Developer/eluvian-governance
+DB: /Users/marklehn/Developer/forge_lessons/lessons-forge.db
+
+=======================================================================
+ITEM 1 — The live template
+=======================================================================
+
+--- Governance commit ---
+3d2dbaf5 [100122] gate2-pt-w30-f: PLANNER_TEMPLATE v4.118 — six extensions (474, 538, 489, 513, 567, 587), Rules 119 (444) and 120 (518) — the last PT tranche
+
+--- Task C counts (47 probes, all as pinned in A3) ---
+### 119. A check on a single-home store carries the home in its contract: 1
+### 120. The visibility of a bookkeeping failure is a property of WHERE it is written: 1
+**Rule 119 — a single-home store's check carries the home**: 1
+**Rule 120 — a failure the operator must act on is written where a gate looks**: 1
+codified 2026-09-16 (Gate 2, thread 336 — PT tranche six): 2
+codified 2026-09-16 — Gate 2, thread 336, PT tranche six: 6
+**A precondition read before the re-entry ladder never depends on state the plan's own steps move: 1
+**A QA step ASSEMBLES pinned fixtures — it never designs them: 1
+**Size a divergence by the exact-file intersection of the two `--name-only` sets: 1
+**The evidence an instrument repair owes names the real artifact whose verdict the repair should move: 1
+**A table's key is only as fine as the context that wrote it: 1
+**A copy of live state includes the process that took it: 1
+**Version:** 4.118: 1
+**Version:** 4.117: 0
+**Last Updated:** 2026-09-16 (v4.118): 1
+**Last Updated:** 2026-09-16 (v4.117): 0
+| 2026-09-16 | v4.118: Gate 2, thread 336: 1
+| 2026-09-16 | v4.117: Gate 2, thread 336: 1
+| 2026-09-16 | v4.116: Gate 2, thread 336: 1
+| 2026-09-16 | v4.115: Gate 2, thread 336: 1
+| 2026-09-16 | v4.114: CEO act at the close of bellows plan 100118: 1
+| 2026-09-15 | v4.113: Gate 2, thread 336: 1
+| 2026-09-15 | v4.112: Gate 2, thread 336: 1
+## Lifecycle DB Read Protocol (Planner): 1
+**Canonical queries.**: 1
+### pause_for_verdict Header Field: 1
+**Net-zero-cost failures still warrant correction.**: 1
+### The self-repair exemption: 1
+### 35. : 1
+### 56. : 1
+### 57. : 1
+### 84. : 1
+### 85. : 1
+### 99. : 1
+### 105. : 1
+### 118. : 1
+### 119. : 1
+### 120. : 1
+### 121. : 0
+#### 11. : 1
+#### 12. : 1
+#### 15. : 1
+#### 16. : 0
+### 14. : 3
+### 17. : 2
+Source: proposal 78, lesson 2026-05-27: 1
+*Source: proposals 576 and 581, entries 568 and 573 (2026-09-11, 2026-09-12), codified 2026-09-16 (Gate 2, thread 336 — PT tranche five)*: 1
+
+--- wc -l ---
+2668 /Users/marklehn/Developer/eluvian-governance/PLANNER_TEMPLATE.md
+
+--- git status --porcelain (EMPTY = clean) ---
+[empty]
+
+=======================================================================
+ITEM 2 — Builder byte-identity (second pair of hands)
+=======================================================================
+
+--- Setup ---
+rm -rf /tmp/g2ptw30f-qa; mkdir -p /tmp/g2ptw30f-qa
+C=$(git -C "$GOV" log -1 --format=%H -- PLANNER_TEMPLATE.md)
+Template commit: 3d2dbaf56610e19df977dd7a1c7a12bc39a6f566
+git -C "$GOV" show "$C^:PLANNER_TEMPLATE.md" > /tmp/g2ptw30f-qa/PT-pre.md
+
+--- Builder run ---
+python3 "$B" /tmp/g2ptw30f-qa/PT-pre.md /tmp/g2ptw30f-qa/PT-out.md
+BUILT: /tmp/g2ptw30f-qa/PT-out.md edits=10 blocks=1 lines+29 bytes+14485 post=47/47 deltas=pinned
+builder_exit=0
+
+--- cmp check ---
+BYTE_IDENTICAL
+
+--- P4 builder digest (on-disk == blob at own commit) ---
+On-disk: a03e802789dd5462
+Builder commit: 59c2ec28f0db51b8627df7b41d3a78ee666d994f
+Blob: a03e802789dd5462
+
+--- Three refusals ---
+Refusal 1 (out == in): BUILDER REFUSED: out == in [exit=1]
+Refusal 2 (under forbidden root): BUILDER REFUSED: out is under a forbidden root /Users/marklehn/Developer/eluvian-governance (the literal governance root, or the input's git toplevel) [exit=1]
+Refusal 3 (already built): BUILDER REFUSED: output tokens already present in input — already built? [exit=1]
+
+=======================================================================
+ITEM 3 — Flip read-back (fresh read-only connection)
+=======================================================================
+
+--- The eight flipped rows ---
+444|implemented|codify|ceo|2026-09-16T20:07:10Z
+474|implemented|codify|ceo|2026-09-16T20:07:10Z
+489|implemented|codify|ceo|2026-09-16T20:07:10Z
+513|implemented|codify|ceo|2026-09-16T20:07:10Z
+518|implemented|codify|ceo|2026-09-16T20:07:10Z
+538|implemented|codify|ceo|2026-09-16T20:07:10Z
+567|implemented|codify|ceo|2026-09-16T20:07:10Z
+587|implemented|codify|ceo|2026-09-16T20:07:10Z
+(All stamps = 2026-09-16T20:07:10Z — outside the two vintage stamps)
+
+--- accepted count ---
+17
+
+--- accepted rows at vintage stamps ---
+17
+(All 17 remaining accepted rows sit at the two vintage stamps)
+
+--- implemented count ---
+402
+
+--- flip-capture.txt line count ---
+590
+
+--- capture's eight rows (pre-flip = accepted|codify) ---
+444|accepted|codify|governance_rule|planner|2026-09-02T23:54:37Z
+474|accepted|codify|governance_rule|planner|2026-09-13T18:27:07Z
+489|accepted|codify|governance_rule|planner|2026-09-13T18:27:07Z
+513|accepted|codify|instrumentation|planner|2026-09-13T18:27:07Z
+518|accepted|codify|governance_rule|planner|2026-09-13T18:27:07Z
+538|accepted|codify|governance_rule|planner|2026-09-13T18:27:07Z
+567|accepted|codify|governance_rule|planner|2026-09-13T18:27:07Z
+587|accepted|codify|governance_rule|planner|2026-09-13T18:27:07Z
+
+--- flip-capture.txt committed by DEV ---
+git log -1 --format=%s -- knowledge/qa/evidence/gate2-pt-w30-f-2026-09-16/flip-capture.txt
+[100122] gate2-pt-w30-f: PT v4.118 + flip landed (dev log, flip capture)
+
+=======================================================================
+ITEM 4 — Full suite
+=======================================================================
+
+--- Suite file ---
+full-suite-gate2-pt-w30-f.txt (see suite file for full output)
+exit=0
+Summary: 2524 passed, 2 skipped, 9 warnings in 270.31s (0:04:30)
+(P7 expectation — counts match)
+
+--- Drift probe ---
+Command: git log --format=%h 7fdc06cb..HEAD -- tests
+Result: [empty — no drift; tests unchanged since P7 anchor 7fdc06cb]
