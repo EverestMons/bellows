@@ -23,6 +23,10 @@ Green (test_worktree.py only, item 2 scope): `63 passed in <subset>`
 
 Green (test_abandoned_runner_close.py, item 2 scope): included in the 2520 total above
 
+Green (worktree `100117`, patch applied — test_worktree.py): `63 passed in 14.51s`
+Green (worktree `100117`, patch applied — four neighbour files): `323 passed in 115.75s`
+Green (worktree `100117`, patch applied — full suite): `2520 passed, 2 skipped in 266.27s`
+
 ## Shadow cache (before, after)
 
 Listing taken before Item 2's first run (`ls -la /Users/marklehn/Developer/bellows/.bellows-cache`):
@@ -49,3 +53,31 @@ b5f11219d824c6d0eb8ff22001ce786b26b77bc36cc30ebce697280ff624932f  /Users/markleh
 bcb472c18a09be064c3a930150fb7cf1dc7c4d32d50aa3a1eed44a92013314f9  /Users/marklehn/Developer/bellows/.bellows-cache/executable-100115.md.pristine
 79dab0b0bfeab45cf16755b3f60152d54a0c9dfa8593fa9791a92d9fc1f8f2cd  /Users/marklehn/Developer/bellows/.bellows-cache/executable-regression-slug-collision-2026-05-01.md.pristine
 ```
+
+## Recovered work verified
+
+Patch sha256 prefix: `8d049be6e8e60a91` (714 lines, 35,571 bytes). Applied clean on `b8c1d694`. `git diff --numstat` → `339	78	bellows.py` and `54	23	tests/test_worktree.py` exactly. All test_worktree.py hunks at or after old line 1809, none at or above 1074. `git diff -- verdict.py` empty. `git status --porcelain -- knowledge/mutants/` empty.
+
+**MUST-PRESERVE verification (bellows.py lines after patch):**
+
+- ⛔ Strict mode unchanged — `if strict:` branches in helper at :1292–1306 (HEAD read directly), :1359–1360, :1367–1369 (HEAD branch raises PreserveFailed), :1408–1410, :1413–1416 (tip check raises PreserveFailed); removal block at :1419 guards with `if not is_symlink_path:` regardless of mode; strict caller guard at :1561 unchanged; test_abandoned_runner_close.py untouched (`git diff -- tests/test_abandoned_runner_close.py` empty).
+- ⛔ No HEAD read through a path not proven its own — identity proof at :1248–1268 (`os.path.samefile(toplevel, wt_path)` by inode, any `OSError` or non-zero reads as not own); `elif is_own:` gate at :1307 means HEAD only read through `git -C wt_path` when proven own; not-own non-symlink reads registered HEAD from project (`_registered_detached_head_for`) at :1322–1327; symlink leaves `wt_head=None` (:1328).
+- ⛔ Repository of its own stops before any read — `_foreign_dot_git` at :1115–1158 checks `.git` is-symlink (:1125–1126), is-dir (:1127–1128), or is-file whose gitdir is not this project's (:1130–1158); called at :1229–1244 before identity proof, HEAD read, tip check, and removal; raises `WorktreeCreationError` immediately; symlink path skipped (foreign check runs only `if not is_symlink_path:` (:1229)).
+- ⛔ Failed save removes nothing, raises from inside helper — `_save_stop` at :1278–1290 raises `WorktreeCreationError`; removal block at :1419 only reached when no `_save_stop` raised; re-raise guards at :1362–1363 and :1411–1412 keep a WorktreeCreationError raised inside a try from being caught and re-wrapped; `_create_worktree`'s entry-test call at :2541–2542 has no `try` around it, so the raise exits before `worktree add`.
+- ⛔ Symlink never handed to `git worktree remove` — removal block guarded by `if not is_symlink_path:` (:1419); symlink takes the removal-stop path if `os.path.lexists(wt_path)` (:1447–1477) with symlink reason and `unlink` act; `_create_worktree` entry test is `os.path.lexists` (:2541) so dangling symlinks reach the helper.
+- ⛔ Path not cleared stops after commits kept — removal stop at :1447–1477: commits kept in `kept_branches` before removal; `os.path.lexists(wt_path)` checked after removal; raises `WorktreeCreationError` with the kept branches named.
+- ⛔ Stop pauses at step dispatched, continue retries it — `_wce_step = resume_step if resume_step is not None else 1` at :2025; `post_verdict_request(..., _wce_step, ...)` at :2026; `record_verdict_request(plan_id, _wce_step, ...)` at :2029; final-step branch `if step_number >= total_steps_c and not precondition_failure_from_request:` at :4249; consumer early unlink at :4294–4296 before `handle_new_plan` at :4297; post-loop unlink dropped.
+- ⛔ Tip kept whenever off main and differs from HEAD kept, in both modes — tip block at :1371–1416 not gated on `strict`; checks `wt_head is None or tip_sha != wt_head` (:1382) and `not tip_already_landed` (:1392).
+- ⛔ Every existing test passes unedited — `63 passed` in test_worktree.py (all hunks below :1809); `323 passed` four neighbour files; `2520 passed, 2 skipped` full suite.
+- ⛔ Test code under pytest inside tests/ — no test helper called from python -c or scratch script.
+- ⛔ Every daemon-entry-point test on its own root — x18, x22, x23, x24: `monkeypatch.setattr(bellows, "BELLOWS_ROOT", bellows_root)` and `monkeypatch.setattr(bellows, "SHADOW_CACHE_DIR", shadow_cache)` with `shadow_cache = bellows_root / ".bellows-cache"` under `tmp_path`.
+
+**Seven test fixes:**
+
+- x15: fixture now patches `shutil.rmtree` via `_block_rmtree` (blocks rmtree on wt_path) and `subprocess.run` blocks `git worktree remove --force` on wt_path — spec: *a directory the removal could only partly clear (a read-only subdirectory)*
+- x18: branch assertion changed to `bellows-wt/<slug>` still present after failed save (spec: *a failed save removes nothing*); request glob uses `verdict-request-{plan_id}-step-2.md` (spec: *verdict-request-<id>-step-2.md*, the plan's own name)
+- x20: `bellows-wt/<slug>` created in a separate worktree `other_wt` so `wt_path` is free for symlink placement — spec: *a symlink to a worktree elsewhere that has `bellows-wt/<slug>` checked out*
+- x22: request glob uses `f"verdict-request-{plan_id}-step-{resume_step}.md"` (without "executable-" prefix) — spec: *verdict-request-<id>-step-N.md*
+- x23: request glob uses `f"verdict-request-{plan_id}-step-1.md"` (without "executable-" prefix) — spec: *verdict-request-<id>-step-N.md*
+- x24: `_counted_run_plan` kwarg is `bellows=None` matching `run_plan`'s signature; `threading.Event` `plan_ran` awaited after `_consume_verdicts` so re-dispatch completes before assertion — spec: *the consumer unlinks before it dispatches*; request glob uses `f"verdict-request-{plan_id}-step-2.md"`
+- x26: `tempfile.mktemp(suffix="-ext-gitdir")` returns a non-existent path (as `git clone --separate-git-dir` requires) — spec: *a `git clone --separate-git-dir` of the project at the path (its `.git` a FILE pointing outside…)*

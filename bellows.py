@@ -8,6 +8,7 @@ from logging.handlers import RotatingFileHandler
 import os
 import pathlib
 import re
+import shlex
 import signal
 import shutil
 import socket
@@ -1111,111 +1112,319 @@ def _snapshot_uncommitted(wt_path, plan_id):
         raise Exception(first_err)
 
 
+def _foreign_dot_git(project_path, wt_path):
+    """Check if wt_path holds a repository of its own — not this project's linked worktree.
+
+    Returns (True, shape_description) if foreign, (False, None) if not.
+    A path with no .git is not foreign; caller handles identity proof.
+    Only call when wt_path is not a symlink itself.
+    """
+    dot_git = os.path.join(wt_path, ".git")
+    if not os.path.lexists(dot_git):
+        return False, None
+    if os.path.islink(dot_git):
+        return True, "a .git symlink"
+    if os.path.isdir(dot_git):
+        return True, "a .git directory"
+    # Regular .git file — check if gitdir points to this project's worktrees/
+    try:
+        with open(dot_git, "r") as f:
+            content = f.read()
+        gitdir_line = next(
+            (ln for ln in content.splitlines() if ln.startswith("gitdir:")), None
+        )
+        if gitdir_line is None:
+            return True, "a .git file whose gitdir is not this project's"
+        gitdir = gitdir_line[len("gitdir:"):].strip()
+        if not os.path.isabs(gitdir):
+            gitdir = os.path.normpath(os.path.join(wt_path, gitdir))
+        else:
+            gitdir = os.path.normpath(gitdir)
+        gitdir_parent = os.path.dirname(gitdir)
+        worktrees_dir = os.path.join(project_path, ".git", "worktrees")
+        if os.path.isdir(worktrees_dir):
+            try:
+                if os.path.samefile(gitdir_parent, worktrees_dir):
+                    return False, None
+                return True, "a .git file whose gitdir is not this project's"
+            except OSError:
+                return True, "a .git file whose gitdir is not this project's"
+        else:
+            # worktrees/ pruned; compare by realpath (Rule 97 exception for absent path)
+            if os.path.realpath(gitdir_parent) == os.path.realpath(worktrees_dir):
+                return False, None
+            return True, "a .git file whose gitdir is not this project's"
+    except Exception:
+        return True, "a .git file whose gitdir is not this project's"
+
+
+def _registered_detached_head_for(project_path, wt_path):
+    """Read the detached HEAD from the project's worktree registration for wt_path.
+
+    Returns the HEAD SHA if an entry for wt_path is found and is detached, else None.
+    Raises RuntimeError on subprocess failure.
+    """
+    r = subprocess.run(
+        ["git", "--no-pager", "worktree", "list", "--porcelain"],
+        cwd=project_path, capture_output=True, text=True, timeout=10,
+    )
+    if r.returncode != 0:
+        raise RuntimeError(
+            f"worktree list --porcelain returned {r.returncode}: {r.stderr.strip()}"
+        )
+    entries = []
+    current = {}
+    for line in r.stdout.splitlines():
+        if not line.strip():
+            if current:
+                entries.append(current)
+                current = {}
+        elif line.startswith("worktree "):
+            current["worktree"] = line[len("worktree "):].strip()
+        elif line.startswith("HEAD "):
+            current["HEAD"] = line[len("HEAD "):].strip()
+        elif line == "detached":
+            current["detached"] = True
+        elif line.startswith("branch "):
+            current["branch"] = line[len("branch "):].strip()
+    if current:
+        entries.append(current)
+    for entry in entries:
+        ep = entry.get("worktree", "")
+        if not ep:
+            continue
+        matched = False
+        if os.path.exists(ep) and os.path.exists(wt_path):
+            try:
+                matched = os.path.samefile(ep, wt_path)
+            except OSError:
+                matched = (ep == wt_path)
+        elif ep == wt_path:
+            matched = True
+        if matched and entry.get("detached"):
+            return entry.get("HEAD")
+    return None
+
+
 def _preserve_and_remove_stranded_worktree(project_path, wt_path, slug, strict=False):
     """Preserve un-landed commits from a stranded worktree, then remove it.
 
     Returns list of bellows-preserved/<slug>-... branch names created (empty if HEAD
     and the bellows-wt/<slug> tip are already on main).
-    strict=False: logs failures (for _create_worktree — unchanged behaviour).
+    strict=False: raises WorktreeCreationError on any failure (for _create_worktree).
+      Adds: foreign-repo check, identity proof, registered-HEAD read, symlink guard,
+      tip preservation (both modes), and removal stop.
     strict=True: raises PreserveFailed before any removal on any failure (for close).
-    In strict mode also preserves the bellows-wt/<slug> tip when it differs from HEAD.
+      Unchanged from prior behaviour; tip preserved when it differs from HEAD.
     """
     _log("WARN", f"⚠ stranded worktree found at {wt_path}, removing before re-creation", slug=slug)
     kept_branches = []
     ts = time.strftime("%Y%m%dT%H%M%SZ", time.gmtime())
+    is_symlink_path = os.path.islink(wt_path)
 
-    try:
-        wt_head_result = subprocess.run(
-            ["git", "--no-pager", "-C", wt_path, "rev-parse", "--verify", "HEAD"],
-            capture_output=True, text=True, timeout=10,
-        )
-    except Exception as e:
-        err = f"rev-parse HEAD failed: {e}"
-        if strict:
-            raise PreserveFailed(err)
-        _log("ERROR", f"⚠ {err}", slug=slug)
-        wt_head_result = None
+    # ---- Non-strict preamble: foreign-repo check and identity proof ----
+    is_own = False  # whether the path proved to be this project's own linked worktree
+    if not strict:
+        # Foreign-repo check (runs only when path itself is not a symlink)
+        if not is_symlink_path:
+            is_foreign, foreign_shape = _foreign_dot_git(project_path, wt_path)
+            if is_foreign:
+                what = f"the path at {wt_path}"
+                err_msg = (
+                    f"stranded path {wt_path} is a repository of its own ({foreign_shape}), "
+                    f"not this project's linked worktree; nothing was read through it and "
+                    f"nothing was removed — {what} as found; "
+                    f"move or remove the repository by hand, then re-dispatch"
+                )
+                _log("ERROR",
+                     f"⚠ stranded path {wt_path} is a repository of its own ({foreign_shape}), "
+                     f"not this project's linked worktree; stopped before any read through it "
+                     f"and before any removal — {what} left as found",
+                     slug=slug)
+                raise WorktreeCreationError(err_msg)
 
-    if wt_head_result is not None and wt_head_result.returncode != 0 and strict:
-        raise PreserveFailed(
-            f"rev-parse HEAD returned {wt_head_result.returncode}: {wt_head_result.stderr.strip()}"
-        )
+        # Identity proof (only for non-symlink paths)
+        not_own_reason = None
+        if not is_symlink_path:
+            try:
+                tl = subprocess.run(
+                    ["git", "--no-pager", "-C", wt_path, "rev-parse", "--show-toplevel"],
+                    capture_output=True, text=True, timeout=10,
+                )
+                if tl.returncode != 0:
+                    not_own_reason = "git finds no repository there"
+                else:
+                    toplevel = tl.stdout.strip()
+                    try:
+                        is_own = os.path.samefile(toplevel, wt_path)
+                        if not is_own:
+                            not_own_reason = f"git resolves it to {toplevel}"
+                    except OSError:
+                        not_own_reason = f"git resolves it to {toplevel}"
+            except Exception:
+                not_own_reason = "git finds no repository there"
+        else:
+            not_own_reason = "it is a symlink"
 
-    if wt_head_result and wt_head_result.returncode == 0:
+        if not is_own:
+            _log("WARN",
+                 f"⚠ {wt_path} is not its own repository ({not_own_reason}); "
+                 f"its HEAD is not read through it, and bellows-wt/{slug}'s tip is checked by name",
+                 slug=slug)
+
+    # ---- HEAD read ----
+    wt_head = None
+
+    def _save_stop(reason):
+        subject = "the symlink" if is_symlink_path else "the path"
+        kept_c = (f"; its commits so far are kept on {', '.join(kept_branches)}"
+                  if kept_branches
+                  else f" (any previously preserved commits: bellows-preserved/{slug}-*)")
+        msg = (f"stranded worktree at {wt_path} could not be saved ({reason}); "
+               f"nothing was removed — {subject} left as found{kept_c}; "
+               f"save what you need and remove {subject} by hand, "
+               f"or clear the cause, then re-dispatch")
+        _log("ERROR",
+             f"⚠ stranded worktree at {wt_path} could not be saved ({reason}); left as found",
+             slug=slug)
+        raise WorktreeCreationError(msg)
+
+    if strict:
+        # Strict: read HEAD directly (unchanged)
+        try:
+            wt_head_result = subprocess.run(
+                ["git", "--no-pager", "-C", wt_path, "rev-parse", "--verify", "HEAD"],
+                capture_output=True, text=True, timeout=10,
+            )
+        except Exception as e:
+            raise PreserveFailed(f"rev-parse HEAD failed: {e}")
+        if wt_head_result.returncode != 0:
+            raise PreserveFailed(
+                f"rev-parse HEAD returned {wt_head_result.returncode}: "
+                f"{wt_head_result.stderr.strip()}"
+            )
         wt_head = wt_head_result.stdout.strip()
+    elif is_own:
+        # Non-strict, proven own: read HEAD directly; any failure stops the dispatch
+        try:
+            wt_head_result = subprocess.run(
+                ["git", "--no-pager", "-C", wt_path, "rev-parse", "--verify", "HEAD"],
+                capture_output=True, text=True, timeout=10,
+            )
+        except Exception as e:
+            _save_stop(f"HEAD unreadable: {e}")
+        if wt_head_result.returncode != 0:
+            _save_stop(
+                f"rev-parse HEAD returned {wt_head_result.returncode}: "
+                f"{wt_head_result.stderr.strip()}"
+            )
+        wt_head = wt_head_result.stdout.strip()
+    elif not is_symlink_path:
+        # Non-strict, not own, not symlink: read registered detached HEAD from project
+        try:
+            wt_head = _registered_detached_head_for(project_path, wt_path)
+        except Exception as e:
+            _save_stop(f"worktree list --porcelain failed: {e}")
+    # else: is_symlink_path and not strict → wt_head = None (no HEAD read through symlink)
+
+    # ---- HEAD branch (preserve if off main) ----
+    if wt_head is not None:
         try:
             ancestor_result = subprocess.run(
-                ["git", "--no-pager", "-C", project_path, "merge-base", "--is-ancestor", wt_head, "main"],
+                ["git", "--no-pager", "-C", project_path, "merge-base",
+                 "--is-ancestor", wt_head, "main"],
                 capture_output=True, text=True, timeout=10,
             )
             already_landed = (ancestor_result.returncode == 0)
         except Exception:
             already_landed = False
         if not already_landed:
-            branch_name = f"bellows-preserved/{slug}-{ts}"
+            safe_slug = slug.replace("-branch", "")
+            head_branch_name = f"bellows-preserved/{safe_slug}-{ts}"
             try:
                 br_result = subprocess.run(
-                    ["git", "--no-pager", "-C", project_path, "branch", branch_name, wt_head],
+                    ["git", "--no-pager", "-C", project_path, "branch",
+                     head_branch_name, wt_head],
                     capture_output=True, text=True, timeout=10,
                 )
                 if br_result.returncode == 0:
-                    _log("WARN", f"⚠ preserved un-landed worktree commits at {wt_head} on branch {branch_name} before stranded-cleanup", slug=slug)
-                    kept_branches.append(branch_name)
+                    _log("WARN",
+                         f"⚠ preserved un-landed worktree commits at {wt_head} "
+                         f"on branch {head_branch_name} before stranded-cleanup",
+                         slug=slug)
+                    kept_branches.append(head_branch_name)
                 else:
-                    err = f"failed to create preservation branch {branch_name} for worktree HEAD {wt_head}: {br_result.stderr.strip()}"
+                    err = (f"failed to create preservation branch {head_branch_name} "
+                           f"for worktree HEAD {wt_head}: {br_result.stderr.strip()}")
                     if strict:
                         raise PreserveFailed(err)
-                    _log("ERROR", f"⚠ {err}", slug=slug)
-            except PreserveFailed:
+                    _save_stop(err)
+            except (PreserveFailed, WorktreeCreationError):
                 raise
             except Exception as e:
-                err = f"failed to create preservation branch {branch_name} for worktree HEAD {wt_head}: {e}"
+                err = (f"failed to create preservation branch {head_branch_name} "
+                       f"for worktree HEAD {wt_head}: {e}")
                 if strict:
                     raise PreserveFailed(err)
-                _log("ERROR", f"⚠ {err}", slug=slug)
+                _save_stop(err)
 
-        if strict:
-            try:
-                tip_result = subprocess.run(
-                    ["git", "--no-pager", "-C", project_path, "rev-parse", "--verify",
-                     f"refs/heads/bellows-wt/{slug}"],
-                    capture_output=True, text=True, timeout=10,
-                )
-                if tip_result.returncode == 0:
-                    tip_sha = tip_result.stdout.strip()
-                    if tip_sha != wt_head:
-                        tip_anc = subprocess.run(
-                            ["git", "--no-pager", "-C", project_path, "merge-base",
-                             "--is-ancestor", tip_sha, "main"],
-                            capture_output=True, text=True, timeout=10,
-                        )
-                        if tip_anc.returncode != 0:
-                            tip_branch = f"bellows-preserved/{slug}-{ts}-branch"
-                            tb_result = subprocess.run(
-                                ["git", "--no-pager", "-C", project_path, "branch",
-                                 tip_branch, tip_sha],
-                                capture_output=True, text=True, timeout=10,
-                            )
-                            if tb_result.returncode == 0:
-                                kept_branches.append(tip_branch)
-                            else:
-                                raise PreserveFailed(
-                                    f"failed to preserve tip branch {tip_branch}: "
-                                    f"{tb_result.stderr.strip()}"
-                                )
-            except PreserveFailed:
-                raise
-            except Exception as e:
-                raise PreserveFailed(f"tip branch check failed: {e}")
-
+    # ---- Tip in BOTH modes ----
+    tip_existed = False
     try:
-        subprocess.run(
-            ["git", "--no-pager", "worktree", "remove", "--force", wt_path],
-            cwd=project_path, capture_output=True, text=True, timeout=10,
+        tip_result = subprocess.run(
+            ["git", "--no-pager", "-C", project_path, "rev-parse", "--verify",
+             f"refs/heads/bellows-wt/{slug}"],
+            capture_output=True, text=True, timeout=10,
         )
-    except Exception:
-        pass
-    shutil.rmtree(wt_path, ignore_errors=True)
+        tip_existed = (tip_result.returncode == 0)
+        if tip_existed:
+            tip_sha = tip_result.stdout.strip()
+            if wt_head is None or tip_sha != wt_head:
+                try:
+                    tip_anc = subprocess.run(
+                        ["git", "--no-pager", "-C", project_path, "merge-base",
+                         "--is-ancestor", tip_sha, "main"],
+                        capture_output=True, text=True, timeout=10,
+                    )
+                    tip_already_landed = (tip_anc.returncode == 0)
+                except Exception:
+                    tip_already_landed = False
+                if not tip_already_landed:
+                    tip_branch = f"bellows-preserved/{slug}-{ts}-branch"
+                    tb_result = subprocess.run(
+                        ["git", "--no-pager", "-C", project_path, "branch",
+                         tip_branch, tip_sha],
+                        capture_output=True, text=True, timeout=10,
+                    )
+                    if tb_result.returncode == 0:
+                        _log("WARN",
+                             f"⚠ preserved bellows-wt/{slug} tip {tip_sha} "
+                             f"on branch {tip_branch} before stranded-cleanup",
+                             slug=slug)
+                        kept_branches.append(tip_branch)
+                    else:
+                        err = (f"failed to preserve tip branch {tip_branch}: "
+                               f"{tb_result.stderr.strip()}")
+                        if strict:
+                            raise PreserveFailed(err)
+                        _save_stop(err)
+    except (PreserveFailed, WorktreeCreationError):
+        raise
+    except Exception as e:
+        if strict:
+            raise PreserveFailed(f"tip branch check failed: {e}")
+        _save_stop(f"tip branch check failed: {e}")
+
+    # ---- Removal (symlink guard: never hand a symlink to git worktree remove) ----
+    if not is_symlink_path:
+        try:
+            subprocess.run(
+                ["git", "--no-pager", "worktree", "remove", "--force", wt_path],
+                cwd=project_path, capture_output=True, text=True, timeout=10,
+            )
+        except Exception:
+            pass
+        shutil.rmtree(wt_path, ignore_errors=True)
     try:
         subprocess.run(
             ["git", "--no-pager", "worktree", "prune"],
@@ -1223,13 +1432,49 @@ def _preserve_and_remove_stranded_worktree(project_path, wt_path, slug, strict=F
         )
     except Exception:
         pass
+
+    branch_d_success = False
     try:
-        subprocess.run(
+        bd = subprocess.run(
             ["git", "--no-pager", "branch", "-D", f"bellows-wt/{slug}"],
             cwd=project_path, capture_output=True, text=True, timeout=10,
         )
+        branch_d_success = (bd.returncode == 0)
     except Exception:
         pass
+
+    # ---- Removal stop (non-strict: path not cleared stops the dispatch) ----
+    if not strict and os.path.lexists(wt_path):
+        if is_symlink_path:
+            reason = ("it is a symlink, left in place: "
+                      "git worktree remove would follow it to its target")
+        else:
+            reason = "still present after git worktree remove and rmtree, possibly in part"
+        if branch_d_success:
+            branch_clause = f" and bellows-wt/{slug} is deleted"
+        elif tip_existed:
+            branch_clause = f" and bellows-wt/{slug} could not be deleted"
+        else:
+            branch_clause = ""
+        wt_q = shlex.quote(str(wt_path))
+        wt_slash_q = shlex.quote(str(wt_path) + "/")
+        if is_symlink_path:
+            act = (f"remove the symlink itself with: unlink {wt_q} "
+                   f"(never rm -rf {wt_slash_q}, which deletes what it points to)")
+            if tip_existed and not branch_d_success:
+                act += ", and the branch by hand"
+        else:
+            act = "remove the path by hand"
+            if tip_existed and not branch_d_success:
+                act += " and the branch by hand"
+        kept_c = (f"; its commits so far are kept on {', '.join(kept_branches)}"
+                  if kept_branches else "; none of its commits needed keeping")
+        msg = (f"stranded worktree at {wt_path} could not be removed ({reason})"
+               f"{kept_c}{branch_clause}; {act}, then re-dispatch")
+        _log("ERROR",
+             f"⚠ stranded worktree at {wt_path} could not be removed ({reason})",
+             slug=slug)
+        raise WorktreeCreationError(msg)
 
     return kept_branches
 
@@ -1777,10 +2022,11 @@ def run_plan(plan_path: str, config: dict, response_server: server.ResponseServe
             if os.path.exists(inprogress_path):
                 shutil.move(inprogress_path, verdict_pending_path)
             # Precondition-failure signal (item #5, 2026-05-24): worktree creation failed → step never ran → consumer must retry, not advance.
-            _vr_path = verdict.post_verdict_request(plan_path, project_path, 1, log_path, gate_result,
+            _wce_step = resume_step if resume_step is not None else 1
+            _vr_path = verdict.post_verdict_request(plan_path, project_path, _wce_step, log_path, gate_result,
                                          pause_reason="gate_failure", total_steps=total_steps, step_text=plan_text,
                                          precondition_failure=True)
-            lifecycle.record_verdict_request(plan_id, 1, pause_reason_code="gate_failure", verdict_file_ref=_vr_path)
+            lifecycle.record_verdict_request(plan_id, _wce_step, pause_reason_code="gate_failure", verdict_file_ref=_vr_path)
             try:
                 lifecycle.mark_plan_state(plan_id, "awaiting_verdict")
             except Exception:
@@ -2292,7 +2538,7 @@ def _create_worktree(project_path: str, slug: str) -> str:
     os.makedirs(parent_dir, exist_ok=True)
 
     # Clean stranded worktree from a prior failed dispatch (mirrors __init__ prune style)
-    if os.path.exists(wt_path):
+    if os.path.lexists(wt_path):
         _preserve_and_remove_stranded_worktree(project_path, wt_path, slug, strict=False)
 
     branch_name = f"bellows-wt/{re.sub(r'[^a-zA-Z0-9._/-]', '-', slug)}"
@@ -3821,6 +4067,17 @@ class Bellows:
                 except Exception:
                     pass
 
+    @staticmethod
+    def _normalize_plan_pname(pname):
+        """Strip all state/type prefixes from a verdict-pending filename for legacy matching."""
+        base = pname
+        if base.endswith(".md"):
+            base = base[:-3]
+        for prefix in ("verdict-pending-", "in-progress-", "executable-", "diagnostic-", "qa-"):
+            if base.startswith(prefix):
+                base = base[len(prefix):]
+        return base
+
     def _consume_verdicts(self):
         """Scan verdicts/resolved/ for verdict files and act on them."""
         pending_dir = BELLOWS_ROOT / "verdicts" / "pending"
@@ -3853,7 +4110,9 @@ class Bellows:
                 if lookup_slug.startswith(prefix):
                     lookup_slug = lookup_slug[len(prefix):]
                     break
-            pending_req_file = BELLOWS_ROOT / "verdicts" / "pending" / f"verdict-request-{lookup_slug}-step-{step_number}.md"
+            _prf_primary = BELLOWS_ROOT / "verdicts" / "pending" / f"verdict-request-{plan_slug}-step-{step_number}.md"
+            _prf_legacy = BELLOWS_ROOT / "verdicts" / "pending" / f"verdict-request-{lookup_slug}-step-{step_number}.md"
+            pending_req_file = _prf_primary if _prf_primary.exists() else _prf_legacy
             scoped_decisions_path = None
             total_steps_from_request = None
             pause_reason_code_from_request = None
@@ -3913,7 +4172,9 @@ class Bellows:
                 if not os.path.isdir(decisions_path):
                     continue
                 for pname in os.listdir(decisions_path):
-                    if pname.startswith("verdict-pending-") and verdict.slug_from_path(pname) == lookup_slug:
+                    if pname.startswith("verdict-pending-") and (
+                            pname == f"verdict-pending-{plan_slug}.md"
+                            or self._normalize_plan_pname(pname) == lookup_slug):
                         plan_matched = True
                         full_plan_path = os.path.join(decisions_path, pname)
                         original_name = pname.replace("verdict-pending-", "", 1)
@@ -3985,7 +4246,7 @@ class Bellows:
                             # Fires only when extract_total_steps() returned 0 (no headers).
                             if total_steps_c == 0 and is_diag:
                                 total_steps_c = 1
-                            if step_number >= total_steps_c:
+                            if step_number >= total_steps_c and not precondition_failure_from_request:
                                 # Final step — continue verdict means proceed to Done
                                 verdict.log_to_ledger(full_plan_path, step_number, gate_result,
                                                       "continue-to-done",
@@ -4030,6 +4291,9 @@ class Bellows:
                                     lifecycle.mark_plan_state(_lc_plan_id, "in_progress")
                                 except Exception:
                                     logging.getLogger("bellows").warning(f"lifecycle: failed to restore in_progress for plan {_lc_plan_id}")
+                                _retry_pending = BELLOWS_ROOT / "verdicts" / "pending" / f"verdict-request-{plan_slug}-step-{step_number}.md"
+                                if _retry_pending.exists():
+                                    _retry_pending.unlink()
                                 self.handle_new_plan(inprogress_path, resume_step=next_step)
                         else:
                             verdict.log_to_ledger(full_plan_path, step_number, gate_result, v, reason,
@@ -4056,9 +4320,6 @@ class Bellows:
 
             if plan_matched:
                 if not _rejected:
-                    pending_file = BELLOWS_ROOT / "verdicts" / "pending" / f"verdict-request-{cleanup_slug}-step-{step_number}.md"
-                    if pending_file.exists():
-                        pending_file.unlink()
                     processed_path = resolved_dir / f"processed-{fname}"
                     shutil.move(str(resolved_dir / fname), str(processed_path))
                 _warned_no_match.discard(fname)

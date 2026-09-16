@@ -1807,14 +1807,35 @@ def test_stranded_partly_removable_directory_stops_before_worktree_add(git_repo)
 
     worktree_add_called = []
     real_run = _REAL_SUBPROCESS_RUN
+    real_rmtree = shutil.rmtree
 
     def _track(cmd, **kw):
-        if isinstance(cmd, list) and "worktree" in cmd and "add" in cmd:
+        cmd_list = list(cmd) if not isinstance(cmd, str) else cmd.split()
+        if isinstance(cmd, list) and "worktree" in cmd_list and "add" in cmd_list:
             worktree_add_called.append(list(cmd))
+        # Block git worktree remove --force <wt_path> to simulate non-removability
+        if ("worktree" in cmd_list and "remove" in cmd_list and "--force" in cmd_list):
+            try:
+                if any(os.path.samefile(str(a), str(wt_path)) for a in cmd_list
+                       if os.path.exists(str(a))):
+                    r = MagicMock()
+                    r.returncode = 1; r.stdout = ""; r.stderr = "injected"
+                    return r
+            except OSError:
+                pass
         return real_run(cmd, **kw)
+
+    def _block_rmtree(path, *a, **kw):
+        try:
+            is_wt = os.path.samefile(str(path), str(wt_path))
+        except OSError:
+            is_wt = False
+        if not is_wt:
+            real_rmtree(path, *a, **kw)
 
     try:
         with patch("bellows.subprocess.run", side_effect=_track), \
+             patch("bellows.shutil.rmtree", side_effect=_block_rmtree), \
              patch("time.sleep"):
             with pytest.raises(WorktreeCreationError) as exc_info:
                 _create_worktree(git_repo, slug)
@@ -2084,7 +2105,7 @@ def test_stranded_stop_on_resumed_dispatch_pauses_at_the_dispatched_step(
 
     # Verdict-request must be at step 2
     pending_dir = _pl.Path(verdict_mod.VERDICTS_DIR) / "pending"
-    req_files = list(pending_dir.glob(f"verdict-request-executable-{plan_id}-step-2.md"))
+    req_files = list(pending_dir.glob(f"verdict-request-{plan_id}-step-2.md"))
     assert req_files, (
         f"verdict-request at step 2 expected; pending/: "
         f"{list(pending_dir.iterdir()) if pending_dir.exists() else 'missing'}"
@@ -2098,9 +2119,9 @@ def test_stranded_stop_on_resumed_dispatch_pauses_at_the_dispatched_step(
     vp_files = list(decisions_dir.glob(f"verdict-pending-executable-{plan_id}.md"))
     assert vp_files, f"Plan must be in verdict-pending- lane: {list(decisions_dir.iterdir())}"
 
-    # bellows-wt/<slug> must NOT have been created
-    assert _get_branch_tip(git_repo, f"bellows-wt/{plan_slug}") is None, \
-        "bellows-wt/<slug> must not be created after a failed save"
+    # bellows-wt/<slug> must still be intact — the failed save aborted before branch deletion
+    assert _get_branch_tip(git_repo, f"bellows-wt/{plan_slug}") is not None, \
+        "bellows-wt/<slug> must still exist: failed save must not delete it"
 
     # Lifecycle verdict row at step 2
     import sqlite3
@@ -2170,8 +2191,12 @@ def test_stranded_symlink_removal_stop_branch_not_deletable(git_repo):
     os.makedirs(wt_dir, exist_ok=True)
     wt_path = os.path.join(wt_dir, slug)
 
-    # Create bellows-wt/<slug> with un-landed commits
-    other_wt = _create_worktree(git_repo, slug)
+    # Create bellows-wt/<slug> with un-landed commits in a SEPARATE worktree path
+    # (not at wt_path) so wt_path is free for the symlink placement below
+    other_wt = os.path.join(wt_dir, f"{slug}-other")
+    subprocess.run(
+        ["git", "worktree", "add", other_wt, "-b", f"bellows-wt/{slug}", "HEAD"],
+        cwd=git_repo, capture_output=True, text=True, check=True)
     with open(os.path.join(other_wt, "x20_work.txt"), "w") as f:
         f.write("x20 work\n")
     subprocess.run(["git", "add", "x20_work.txt"], cwd=other_wt,
@@ -2181,8 +2206,7 @@ def test_stranded_symlink_removal_stop_branch_not_deletable(git_repo):
     tip = subprocess.run(["git", "rev-parse", "HEAD"], cwd=other_wt,
                          capture_output=True, text=True).stdout.strip()
 
-    # Place a symlink at wt_path pointing to another location (not the live worktree)
-    # The symlink points to a temp dir (the branch IS checked out in other_wt still)
+    # Place a symlink at wt_path pointing to a temp dir (branch IS checked out in other_wt)
     target = tempfile.mkdtemp()
     os.symlink(target, wt_path)
 
@@ -2334,7 +2358,7 @@ def test_stranded_stop_at_final_step_continue_retries_the_step(
     # Find the verdict-request file
     pending_dir = _pl.Path(verdict_mod.VERDICTS_DIR) / "pending"
     req_files = list(pending_dir.glob(
-        f"verdict-request-executable-{plan_id}-step-{resume_step}.md"))
+        f"verdict-request-{plan_id}-step-{resume_step}.md"))
     assert req_files, f"Verdict-request at step {resume_step} must exist"
 
     # Set up a 'continue' verdict in resolved/
@@ -2422,7 +2446,7 @@ def test_final_step_gate_failure_continue_still_closes_to_done(tmp_path, git_rep
     vp_path.write_text(plan_content)
 
     pending_dir = _pl.Path(verdict_mod.VERDICTS_DIR) / "pending"
-    req_file = pending_dir / f"verdict-request-executable-{plan_id}-step-1.md"
+    req_file = pending_dir / f"verdict-request-{plan_id}-step-1.md"
     req_file.write_text(
         f"# Verdict Request\n"
         f"**Plan:** {vp_path}\n"
@@ -2506,7 +2530,7 @@ def test_stranded_stop_retry_reposts_the_request_the_consumer_keeps(
     vp_files = list(decisions_dir.glob(f"verdict-pending-executable-{plan_id}.md"))
     assert vp_files, "Plan must be in verdict-pending-"
     pending_dir = _pl.Path(verdict_mod.VERDICTS_DIR) / "pending"
-    req_files = list(pending_dir.glob(f"verdict-request-executable-{plan_id}-step-2.md"))
+    req_files = list(pending_dir.glob(f"verdict-request-{plan_id}-step-2.md"))
     assert req_files, "Verdict-request at step 2 must exist"
 
     # Set up a 'continue' verdict
@@ -2523,19 +2547,24 @@ def test_stranded_stop_retry_reposts_the_request_the_consumer_keeps(
 
     stop_count = [0]
     original_run_plan = bellows.run_plan
+    plan_ran = threading.Event()
 
-    def _counted_run_plan(path, cfg, srv, resume_step=None, bellows_inst=None):
+    def _counted_run_plan(path, cfg, srv, resume_step=None, bellows=None):
         stop_count[0] += 1
         if stop_count[0] > 2:
+            plan_ran.set()
             return  # safety valve
-        with patch("bellows.subprocess.run",
-                   side_effect=_inject_porcelain_fail(subprocess.TimeoutExpired([], 10))), \
-             patch("bellows.runner.run_step"), \
-             patch("bellows.record_run"), \
-             patch("bellows.notifier.push"), \
-             patch("bellows.plan_claim.release_for_plan"), \
-             patch("time.sleep"):
-            original_run_plan(path, cfg, srv, resume_step=resume_step, bellows=bellows_inst)
+        try:
+            with patch("bellows.subprocess.run",
+                       side_effect=_inject_porcelain_fail(subprocess.TimeoutExpired([], 10))), \
+                 patch("bellows.runner.run_step"), \
+                 patch("bellows.record_run"), \
+                 patch("bellows.notifier.push"), \
+                 patch("bellows.plan_claim.release_for_plan"), \
+                 patch("time.sleep"):
+                original_run_plan(path, cfg, srv, resume_step=resume_step, bellows=bellows)
+        finally:
+            plan_ran.set()
 
     with patch("bellows.BELLOWS_ROOT", bellows_root), \
          patch("bellows.SHADOW_CACHE_DIR", shadow_cache), \
@@ -2546,8 +2575,10 @@ def test_stranded_stop_retry_reposts_the_request_the_consumer_keeps(
          patch("bellows.run_plan", side_effect=_counted_run_plan):
         b._consume_verdicts()
 
+    plan_ran.wait(timeout=5)  # wait for the re-dispatched run to complete
+
     # After the consumer's pass: the re-dispatch's NEW stop request must be in pending/
-    req_after = list(pending_dir.glob(f"verdict-request-executable-{plan_id}-step-2.md"))
+    req_after = list(pending_dir.glob(f"verdict-request-{plan_id}-step-2.md"))
     assert req_after, (
         f"The second stop's request must be in pending after the consumer's pass: "
         f"{list(pending_dir.iterdir()) if pending_dir.exists() else '[]'}"
@@ -2604,7 +2635,7 @@ def test_stranded_separate_git_dir_clone_left_intact(git_repo):
     wt_dir = os.path.join(git_repo, ".bellows-worktrees")
     os.makedirs(wt_dir, exist_ok=True)
     wt_path = os.path.join(wt_dir, slug)
-    ext_gitdir = tempfile.mkdtemp(suffix="-ext-gitdir")
+    ext_gitdir = tempfile.mktemp(suffix="-ext-gitdir")  # non-existent path required by git
 
     try:
         subprocess.run(
