@@ -1196,7 +1196,7 @@ def test_stranded_plain_directory_preserves_branch_tip(git_repo):
 # --- x2: checkout HEAD NOT preserved when path is plain directory -------------
 
 def test_stranded_plain_directory_does_not_preserve_checkout_head(git_repo):
-    """x2: only the tip is preserved, not the checkout (main) HEAD."""
+    """x2: only the tip is preserved, not the checkout (main) HEAD; HEAD is never read through path."""
     slug = "x2-no-checkout-slug"
     main_head = subprocess.run(["git", "rev-parse", "main"], cwd=git_repo,
                                 capture_output=True, text=True).stdout.strip()
@@ -1204,8 +1204,28 @@ def test_stranded_plain_directory_does_not_preserve_checkout_head(git_repo):
     assert tip != main_head, "precondition: tip must differ from main"
     _drop_git_file(wt_path)
 
-    new_wt = _create_worktree(git_repo, slug)
+    wt_str = os.path.abspath(str(wt_path))
+
+    def _fail_head_through_wt(cmd, **kw):
+        cmd_list = [str(c) for c in (list(cmd) if not isinstance(cmd, str) else cmd.split())]
+        if ("rev-parse" in cmd_list and "--verify" in cmd_list and "HEAD" in cmd_list
+                and wt_str in cmd_list):
+            r = MagicMock()
+            r.returncode = 128
+            r.stdout = ""
+            r.stderr = "not a git repository"
+            return r
+        return _REAL_SUBPROCESS_RUN(cmd, **kw)
+
+    with patch("bellows.subprocess.run", side_effect=_fail_head_through_wt), \
+         patch("bellows._log") as mock_log, \
+         patch("time.sleep"):
+        new_wt = _create_worktree(git_repo, slug)
+
     try:
+        warn_msgs = [str(c) for c in mock_log.call_args_list if "WARN" in str(c)]
+        assert any("not its own" in m for m in warn_msgs), \
+            f"Expected WARN naming path as not its own: {warn_msgs}"
         branches = _list_preserved(git_repo, slug)
         # No branch should point at main's HEAD
         for b in branches:
@@ -1330,14 +1350,18 @@ def test_stranded_symlink_to_checkout_head_neither_read_nor_preserved(git_repo):
     os.symlink(git_repo, wt_path)
 
     called_with_wt = []
+    porcelain_calls = []
     real_run = _REAL_SUBPROCESS_RUN
 
     def _track_git_minus_c(cmd, **kw):
-        if isinstance(cmd, list) and len(cmd) >= 4 and cmd[0] == "git" and "-C" in cmd:
-            idx = cmd.index("-C")
-            cwd_arg = cmd[idx + 1]
-            if os.path.abspath(cwd_arg) == os.path.abspath(wt_path):
-                called_with_wt.append(list(cmd))
+        if isinstance(cmd, list):
+            if len(cmd) >= 4 and cmd[0] == "git" and "-C" in cmd:
+                idx = cmd.index("-C")
+                cwd_arg = cmd[idx + 1]
+                if os.path.abspath(cwd_arg) == os.path.abspath(wt_path):
+                    called_with_wt.append(list(cmd))
+            if "worktree" in cmd and "list" in cmd and "--porcelain" in cmd:
+                porcelain_calls.append(list(cmd))
         return real_run(cmd, **kw)
 
     with patch("bellows.subprocess.run", side_effect=_track_git_minus_c), \
@@ -1347,6 +1371,8 @@ def test_stranded_symlink_to_checkout_head_neither_read_nor_preserved(git_repo):
 
     assert not called_with_wt, \
         f"No git -C <wt_path> commands should run: {called_with_wt}"
+    assert not porcelain_calls, \
+        f"worktree list --porcelain must not run for a symlink path: {porcelain_calls}"
     assert os.path.islink(wt_path), "Symlink must still be there (not removed)"
     assert tip is not None
     br_tip = _get_branch_tip(git_repo, f"bellows-wt/{slug}")
@@ -1434,10 +1460,12 @@ def test_stranded_failed_tip_preservation_stops_before_removal(git_repo):
     assert _get_branch_tip(git_repo, f"bellows-wt/{slug}") == tip_sha, \
         "bellows-wt/<slug> branch must still exist"
 
-    # Check ERROR was logged with "left as found"
+    # Check ERROR was logged with "left as found" — exactly once (no double _save_stop)
     err_calls = [str(c) for c in mock_log.call_args_list if "ERROR" in str(c)]
     assert any("left as found" in c for c in err_calls), \
         f"Expected ERROR logged with 'left as found': {err_calls}"
+    assert len(err_calls) == 1, \
+        f"Exactly one ERROR must be logged (re-raise guard must not double-stop): {err_calls}"
 
     # Clean up
     subprocess.run(["git", "branch", "-D", f"bellows-wt/{slug}"],
@@ -1524,21 +1552,23 @@ def test_stranded_own_worktree_through_case_variant_path(git_repo):
     assert os.path.exists(wt_path_upper), "Precondition: upper-case path must exist on case-insensitive fs"
 
     with patch("bellows._log") as mock_log:
-        new_wt = _create_worktree(git_repo, slug)
+        bellows._preserve_and_remove_stranded_worktree(
+            git_repo, _pl.Path(wt_path_upper), slug)
 
-    try:
-        warn_msgs = [str(c) for c in mock_log.call_args_list if "WARN" in str(c)]
-        assert not any("not its own" in m for m in warn_msgs), \
-            f"Should NOT warn 'not its own' for case variant: {warn_msgs}"
-        preserved = _list_preserved(git_repo, slug)
-        ts_branches = [b for b in preserved if not b.endswith("-branch")]
-        assert ts_branches, f"Detached HEAD must be preserved for own worktree: {preserved}"
-    finally:
-        subprocess.run(["git", "worktree", "remove", "--force", new_wt],
-                       cwd=git_repo, capture_output=True, text=True)
-        for b in _list_preserved(git_repo, slug):
-            subprocess.run(["git", "branch", "-D", b], cwd=git_repo,
-                           capture_output=True, text=True)
+    warn_msgs = [str(c) for c in mock_log.call_args_list if "WARN" in str(c)]
+    assert not any("not its own" in m for m in warn_msgs), \
+        f"Should NOT warn 'not its own' for case variant: {warn_msgs}"
+    preserved = _list_preserved(git_repo, slug)
+    ts_branches = [b for b in preserved if not b.endswith("-branch")]
+    assert ts_branches, f"Detached HEAD must be preserved for own worktree: {preserved}"
+
+    subprocess.run(["git", "worktree", "prune"], cwd=git_repo, capture_output=True, text=True)
+    new_wt = _create_worktree(git_repo, slug)
+    subprocess.run(["git", "worktree", "remove", "--force", new_wt],
+                   cwd=git_repo, capture_output=True, text=True)
+    for b in _list_preserved(git_repo, slug):
+        subprocess.run(["git", "branch", "-D", b], cwd=git_repo,
+                       capture_output=True, text=True)
 
 
 # --- x11: failed-save stops before removal (7 parametrized cases) -------------
@@ -1622,16 +1652,22 @@ def test_stranded_failed_save_stops_before_removal(git_repo, case_id):
     assert "left as found" in err_msg or "nothing was removed" in err_msg, \
         f"[{case_id}] Error must note nothing removed: {err_msg}"
 
+    if case_id == "head-read-nonzero":
+        assert "rev-parse HEAD returned" in err_msg, \
+            f"[{case_id}] Error must name the failing rev-parse: {err_msg}"
+
     # Directory must still exist (nothing removed)
     assert os.path.isdir(wt_path), f"[{case_id}] Directory must still exist"
     # bellows-wt/<slug> must be unchanged
     assert _get_branch_tip(git_repo, f"bellows-wt/{slug}") == initial_tip, \
         f"[{case_id}] bellows-wt/<slug> must be unchanged"
 
-    # ERROR must have been logged with "left as found"
+    # ERROR must have been logged with "left as found" — exactly once
     err_logs = [str(c) for c in mock_log.call_args_list if "ERROR" in str(c)]
     assert any("left as found" in e for e in err_logs), \
         f"[{case_id}] Expected ERROR with 'left as found': {err_logs}"
+    assert len(err_logs) == 1, \
+        f"[{case_id}] Exactly one ERROR must be logged (re-raise guard must not double-stop): {err_logs}"
 
     # For tip-check-raises: the HEAD branch was created before the stop — name it in message
     if case_id == "tip-check-raises":
@@ -1667,20 +1703,23 @@ def test_stranded_registered_detached_head_through_case_variant_path(git_repo):
                                capture_output=True, text=True).stdout.strip()
     _drop_git_file(wt_path)
 
+    bellows._preserve_and_remove_stranded_worktree(
+        git_repo, _pl.Path(wt_path_upper), slug)
+
+    preserved = _list_preserved(git_repo, slug)
+    ts_branches = [b for b in preserved if not b.endswith("-branch")]
+    assert ts_branches, f"Detached HEAD must be preserved: {preserved}"
+    head_sha = _get_branch_tip(git_repo, ts_branches[0])
+    assert head_sha == det_head, \
+        f"Registration matched by inode — HEAD {det_head} must be preserved"
+
+    subprocess.run(["git", "worktree", "prune"], cwd=git_repo, capture_output=True, text=True)
     new_wt = _create_worktree(git_repo, slug)
-    try:
-        preserved = _list_preserved(git_repo, slug)
-        ts_branches = [b for b in preserved if not b.endswith("-branch")]
-        assert ts_branches, f"Detached HEAD must be preserved: {preserved}"
-        head_sha = _get_branch_tip(git_repo, ts_branches[0])
-        assert head_sha == det_head, \
-            f"Registration matched by inode — HEAD {det_head} must be preserved"
-    finally:
-        subprocess.run(["git", "worktree", "remove", "--force", new_wt],
-                       cwd=git_repo, capture_output=True, text=True)
-        for b in _list_preserved(git_repo, slug):
-            subprocess.run(["git", "branch", "-D", b], cwd=git_repo,
-                           capture_output=True, text=True)
+    subprocess.run(["git", "worktree", "remove", "--force", new_wt],
+                   cwd=git_repo, capture_output=True, text=True)
+    for b in _list_preserved(git_repo, slug):
+        subprocess.run(["git", "branch", "-D", b], cwd=git_repo,
+                       capture_output=True, text=True)
 
 
 # --- x13: failed save raises before worktree_add -----------------------------
@@ -1753,9 +1792,11 @@ def test_stranded_unremovable_symlink_stops_before_worktree_add(git_repo):
                    capture_output=True, text=True, check=True)
     subprocess.run(["git", "checkout", "main"], cwd=git_repo, capture_output=True, text=True)
     tip = _get_branch_tip(git_repo, f"bellows-wt/{slug}")
-    # Place a symlink (to a temp dir — "unremovable" in the sense that remove is wrong)
+    # Place a DANGLING symlink (target removed) so os.path.exists returns False
+    # but os.path.lexists returns True — distinguishes m31's lexists→exists mutation
     target_dir = tempfile.mkdtemp()
     os.symlink(target_dir, wt_path)
+    shutil.rmtree(target_dir)
 
     worktree_add_called = []
     real_run = _REAL_SUBPROCESS_RUN
@@ -1771,8 +1812,8 @@ def test_stranded_unremovable_symlink_stops_before_worktree_add(git_repo):
             _create_worktree(git_repo, slug)
 
     err_msg = str(exc_info.value)
-    assert "symlink" in err_msg or "unlink" in err_msg, \
-        f"Error must mention symlink: {err_msg}"
+    assert "unlink" in err_msg, \
+        f"Error must give unlink act (not just 'symlink' in reason): {err_msg}"
     assert not worktree_add_called, "git worktree add must NOT run"
     assert os.path.islink(wt_path), "Symlink must still be there"
     # Tip must be preserved on a -branch
@@ -1782,15 +1823,59 @@ def test_stranded_unremovable_symlink_stops_before_worktree_add(git_repo):
     # bellows-wt/<slug> deleted after its tip was kept
     assert _get_branch_tip(git_repo, f"bellows-wt/{slug}") is None, \
         "bellows-wt/<slug> must be deleted"
-    # Clean up and verify second create works
+    # Clean up and verify second create works (target_dir already removed to make dangling)
     os.unlink(wt_path)
-    shutil.rmtree(target_dir, ignore_errors=True)
     for b in _list_preserved(git_repo, slug):
         subprocess.run(["git", "branch", "-D", b], cwd=git_repo, capture_output=True, text=True)
     new_wt = _create_worktree(git_repo, slug)
     assert os.path.isdir(new_wt)
     subprocess.run(["git", "worktree", "remove", "--force", new_wt],
                    cwd=git_repo, capture_output=True, text=True)
+
+
+# --- x14b: symlink save-fail subject is 'the symlink' (kills m39) -----------
+
+def test_stranded_symlink_save_fail_names_the_symlink(git_repo):
+    """x14b: when tip preservation fails for a symlink path, message uses 'the symlink' not 'the path'."""
+    slug = "x14b-sym-save-fail"
+    wt_dir = os.path.join(git_repo, ".bellows-worktrees")
+    os.makedirs(wt_dir, exist_ok=True)
+    wt_path = os.path.join(wt_dir, slug)
+    subprocess.run(["git", "checkout", "-b", f"bellows-wt/{slug}"],
+                   cwd=git_repo, capture_output=True, text=True)
+    with open(os.path.join(git_repo, "x14b_work.txt"), "w") as f:
+        f.write("x14b work\n")
+    subprocess.run(["git", "add", "x14b_work.txt"], cwd=git_repo, capture_output=True, text=True)
+    subprocess.run(["git", "commit", "-m", "x14b unlanded"], cwd=git_repo,
+                   capture_output=True, text=True, check=True)
+    subprocess.run(["git", "checkout", "main"], cwd=git_repo, capture_output=True, text=True)
+    os.symlink(git_repo, wt_path)
+
+    def _fail_tip_branch(cmd, **kw):
+        if (isinstance(cmd, list) and "branch" in cmd and
+                any("bellows-preserved" in str(a) and "-branch" in str(a) for a in cmd)):
+            r = MagicMock()
+            r.returncode = 1
+            r.stdout = ""
+            r.stderr = "injected: cannot create tip branch"
+            return r
+        return _REAL_SUBPROCESS_RUN(cmd, **kw)
+
+    with patch("bellows.subprocess.run", side_effect=_fail_tip_branch), \
+         patch("time.sleep"):
+        with pytest.raises(WorktreeCreationError) as exc_info:
+            _create_worktree(git_repo, slug)
+
+    err_msg = str(exc_info.value)
+    assert "the symlink left as found" in err_msg, \
+        f"Save stop for symlink path must use 'the symlink' as subject: {err_msg}"
+    assert os.path.islink(wt_path), "Symlink must still be there"
+
+    os.unlink(wt_path)
+    subprocess.run(["git", "branch", "-D", f"bellows-wt/{slug}"],
+                   cwd=git_repo, capture_output=True, text=True)
+    for b in _list_preserved(git_repo, slug):
+        subprocess.run(["git", "branch", "-D", b], cwd=git_repo, capture_output=True, text=True)
 
 
 # --- x15: partly-removable directory stops before worktree_add ---------------
@@ -2161,9 +2246,6 @@ def test_stranded_symlink_failed_save_names_the_symlink_and_unlink(git_repo, cas
     err_msg = str(exc_info.value)
     assert "symlink" in err_msg, f"[{case_id}] Error must mention symlink: {err_msg}"
     assert "unlink" in err_msg, f"[{case_id}] Error must give unlink act: {err_msg}"
-    # No "its registration" — the symlink has no registration (samefile follows the link)
-    # Message gives 'the symlink', not 'the path and its registration'
-    assert "symlink" in err_msg.lower(), f"[{case_id}] Must name 'the symlink': {err_msg}"
     assert os.path.islink(wt_path), f"[{case_id}] Symlink must still be there"
 
     if case_id == "link-to-live-worktree":
@@ -2219,9 +2301,9 @@ def test_stranded_symlink_removal_stop_branch_not_deletable(git_repo):
     preserved = _list_preserved(git_repo, slug)
     assert any(_get_branch_tip(git_repo, b) == tip for b in preserved), \
         f"Tip must be preserved: {preserved}"
-    # Message must say branch COULD NOT be deleted (since it's checked out in other_wt)
-    # (or that it IS deleted — depends on whether git refuses)
-    # Key: message must accurately reflect what happened with the branch
+    # Branch checked out in other_wt — git branch -d refuses, message must say so
+    assert f"bellows-wt/{slug} could not be deleted" in err_msg, \
+        f"Message must name the undeletable branch: {err_msg}"
     assert os.path.islink(wt_path), "Symlink must still be there"
     assert os.path.isdir(other_wt), "Live worktree must be intact"
 
@@ -2535,7 +2617,7 @@ def test_stranded_stop_retry_reposts_the_request_the_consumer_keeps(
 
     # Set up a 'continue' verdict
     resolved_dir = _pl.Path(verdict_mod.VERDICTS_DIR) / "resolved"
-    verdict_fname = f"verdict-executable-{plan_id}-step-2.md"
+    verdict_fname = f"verdict-{plan_id}-step-2.md"  # the id-native name tools/issue_verdict.py writes
     (resolved_dir / verdict_fname).write_text("continue\nApproved.")
 
     # Phase 2: use the REAL handle_new_plan so the re-dispatch actually runs
@@ -2566,16 +2648,21 @@ def test_stranded_stop_retry_reposts_the_request_the_consumer_keeps(
         finally:
             plan_ran.set()
 
+    def _sync_handle_new_plan(self, path, resume_step=None):
+        bellows.run_plan(path, self.config, self.response_server,
+                         resume_step=resume_step, bellows=self)
+
     with patch("bellows.BELLOWS_ROOT", bellows_root), \
          patch("bellows.SHADOW_CACHE_DIR", shadow_cache), \
          patch("bellows.verdict.log_to_ledger"), \
          patch("bellows.notifier.push"), \
          patch("bellows.plan_claim.release_for_plan"), \
          patch("bellows.plan_claim.enqueue_thread_reviews"), \
+         patch.object(bellows.Bellows, "handle_new_plan", _sync_handle_new_plan), \
          patch("bellows.run_plan", side_effect=_counted_run_plan):
         b._consume_verdicts()
 
-    plan_ran.wait(timeout=5)  # wait for the re-dispatched run to complete
+    plan_ran.wait(timeout=5)  # plan_ran already set synchronously; safety for slow runs
 
     # After the consumer's pass: the re-dispatch's NEW stop request must be in pending/
     req_after = list(pending_dir.glob(f"verdict-request-{plan_id}-step-2.md"))
@@ -2668,6 +2755,29 @@ def test_stranded_separate_git_dir_clone_left_intact(git_repo):
     finally:
         shutil.rmtree(wt_path, ignore_errors=True)
         shutil.rmtree(ext_gitdir, ignore_errors=True)
+
+
+def test_stranded_dot_git_file_no_gitdir_line_is_foreign(git_repo):
+    """x26b: a plain directory with a .git FILE that has no 'gitdir:' line — treated as foreign."""
+    slug = "x26b-no-gitdir-line"
+    wt_dir = os.path.join(git_repo, ".bellows-worktrees")
+    os.makedirs(wt_dir, exist_ok=True)
+    wt_path = os.path.join(wt_dir, slug)
+    os.makedirs(wt_path)
+    # Write a .git FILE with no gitdir: line (e.g. a bare content or empty)
+    dot_git = os.path.join(wt_path, ".git")
+    with open(dot_git, "w") as f:
+        f.write("# not a real gitdir pointer\n")
+
+    with patch("time.sleep"):
+        with pytest.raises(WorktreeCreationError) as exc_info:
+            _create_worktree(git_repo, slug)
+
+    err_msg = str(exc_info.value)
+    assert "repository of its own" in err_msg or ".git file" in err_msg, \
+        f"Error must name the shape for no-gitdir-line .git file: {err_msg}"
+
+    shutil.rmtree(wt_path, ignore_errors=True)
 
 
 # --- x27: .git symlink stops before any read ---------------------------------

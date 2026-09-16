@@ -81,3 +81,46 @@ Patch sha256 prefix: `8d049be6e8e60a91` (714 lines, 35,571 bytes). Applied clean
 - x23: request glob uses `f"verdict-request-{plan_id}-step-1.md"` (without "executable-" prefix) — spec: *verdict-request-<id>-step-N.md*
 - x24: `_counted_run_plan` kwarg is `bellows=None` matching `run_plan`'s signature; `threading.Event` `plan_ran` awaited after `_consume_verdicts` so re-dispatch completes before assertion — spec: *the consumer unlinks before it dispatches*; request glob uses `f"verdict-request-{plan_id}-step-2.md"`
 - x26: `tempfile.mktemp(suffix="-ext-gitdir")` returns a non-existent path (as `git clone --separate-git-dir` requires) — spec: *a `git clone --separate-git-dir` of the project at the path (its `.git` a FILE pointing outside…)*
+
+## The cleanup observed (x1, x7, x13, x16, x18, x22, x24, x25)
+
+Nine PASSED lines from `/Users/marklehn/Developer/bellows/.venv/bin/python -m pytest -v` over the node ids (x22 has two cases):
+
+```
+tests/test_worktree.py::test_stranded_plain_directory_preserves_branch_tip PASSED [ 11%]
+tests/test_worktree.py::test_stranded_plain_directory_registered_detached_head_preserved PASSED [ 22%]
+tests/test_worktree.py::test_stranded_failed_save_raises_before_worktree_add PASSED [ 33%]
+tests/test_worktree.py::test_stranded_symlink_to_live_worktree_leaves_the_target_intact PASSED [ 44%]
+tests/test_worktree.py::test_stranded_stop_on_resumed_dispatch_pauses_at_the_dispatched_step PASSED [ 55%]
+tests/test_worktree.py::test_stranded_stop_at_final_step_continue_retries_the_step[two-step-final] PASSED [ 66%]
+tests/test_worktree.py::test_stranded_stop_at_final_step_continue_retries_the_step[one-step] PASSED [ 77%]
+tests/test_worktree.py::test_stranded_stop_retry_reposts_the_request_the_consumer_keeps PASSED [ 88%]
+tests/test_worktree.py::test_stranded_clone_of_the_project_left_intact PASSED [100%]
+============================== 9 passed in 2.20s ===============================
+```
+
+## Mutation run
+
+the run's last line is pasted below, after Item 5's run
+
+## Recovered manifest verified
+
+**(a) Manifest — 49 entries, target `bellows.py`:**
+Each `anchor` matches committed `bellows.py` exactly once — loop over all 49 anchors with `grep -c -F` prints `1` for every entry. Distinct `expect_fail` node ids: 33. All `expect_fail` values are node ids of this plan's tests (`tests/test_worktree.py`) or `tests/test_abandoned_runner_close.py::test_tip_branch_creation_fails_refused` (c-t25).
+
+**(b) Test changes:**
+
+Two new test functions added by the recovery (not in the base `d1ac5cdb`):
+- `test_stranded_symlink_save_fail_names_the_symlink` — kills m39 (the failed-save stop's symlink act dropped). Added between x14 and x15.
+- `test_stranded_dot_git_file_no_gitdir_line_is_foreign` — kills m48 (any `.git` file accepted, the gitdir check removed). Added between x26 and x27.
+
+Strengthened test (newly kills a mutant):
+- x24 (`test_stranded_stop_retry_reposts_the_request_the_consumer_keeps`) — verdict fixture renamed from `verdict-executable-{id}-step-2.md` (legacy) to `verdict-{id}-step-2.md` (id-native), killing m45 (request unlinked after dispatch). Under the legacy name the consumer regex `^verdict-(.+)-step-(\d+)\.md$` gave `plan_slug = "executable-24"` and the pre-dispatch unlink targeted non-existent `verdict-request-executable-24-step-2.md`, making the second stop's request invisible to the unlink; m45 survived. With the renamed fixture, `plan_slug = "24"` and the unlink targets `verdict-request-24-step-2.md` — the actual pending request — so the second stop's request survives the consumer's pass and the second `continue` is taken.
+
+**x24's verdict fixture:**
+- Fixture value: `verdict-{plan_id}-step-2.md` (the name `tools/issue_verdict.py:104` writes: `f"verdict-{matched_slug}-step-{step}.md"`; on this checkout: `verdicts/resolved/processed-verdict-100117-step-2.md`).
+- Consumer regex `^verdict-(.+)-step-(\d+)\.md$` on `verdict-24-step-2.md` → `plan_slug = "24"`.
+- Pre-dispatch unlink targets `verdict-request-24-step-2.md` = the pending request file — the second stop's request survives.
+- Under legacy form `verdict-executable-24-step-2.md`: `plan_slug = "executable-24"`, unlink targets non-existent `verdict-request-executable-24-step-2.md` — unlink is a no-op, second stop overwrites the request, second `continue` is refused. m45 survived this way.
+
+**(c) Production files:** `git diff -- bellows.py verdict.py` empty — no production file changes in this step.

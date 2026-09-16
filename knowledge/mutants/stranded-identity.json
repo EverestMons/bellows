@@ -2,347 +2,347 @@
   "target": "bellows.py",
   "mutants": [
     {
-      "name": "m1-foreign-check-removed",
-      "why": "removing the foreign-repo check lets _preserve_and_remove_stranded_worktree read through a foreign repository's HEAD and attempt to remove it; x15 relies on the error being raised before any removal",
-      "anchor": "foreign_shape = _foreign_dot_git(project_path, wt_path)\n                if foreign_shape is not None:",
-      "replacement": "foreign_shape = None\n                if foreign_shape is not None:",
-      "expect_fail": "tests/test_worktree.py::test_foreign_repo_at_wt_path_raises_wce"
-    },
-    {
-      "name": "m2-identity-check-removed",
-      "why": "removing the identity check makes HEAD always read through the path, even for plain directories where git has no repository; x2 fails because plain-dir HEAD read silently succeeds or raises instead of correctly returning None",
-      "anchor": "if os.path.samefile(top_r.stdout.strip(), wt_path):\n                        not_own_reason = None\n                    else:\n                        not_own_reason = f\"git resolves it to {top_r.stdout.strip()}\"",
-      "replacement": "not_own_reason = None",
+      "name": "m1-identity-check-removed",
+      "why": "setting is_own=True always makes HEAD read through any non-symlink path; for a plain directory git resolves to the canonical checkout HEAD",
+      "anchor": "is_own = os.path.samefile(toplevel, wt_path)",
+      "replacement": "is_own = True  # MUTANT: identity check removed",
       "expect_fail": "tests/test_worktree.py::test_stranded_plain_directory_does_not_preserve_checkout_head"
     },
     {
-      "name": "m3-is-own-always-true",
-      "why": "forcing is_own=True means the registered-detached-HEAD path is never taken; x14 has a worktree whose .git file is removed so identity fails, and depends on the fallback to registered HEAD",
-      "anchor": "is_own = (not_own_reason is None)",
-      "replacement": "is_own = True",
-      "expect_fail": "tests/test_worktree.py::test_registered_detached_head_preserved_via_create_worktree"
-    },
-    {
-      "name": "m4-symlink-wt-not-detected",
-      "why": "not setting is_symlink_wt makes the code try to read through a symlink as if it were a directory; x3 relies on the symlink flag to skip the HEAD read and trigger the removal-stop path",
-      "anchor": "is_symlink_wt = os.path.islink(wt_path)",
-      "replacement": "is_symlink_wt = False",
-      "expect_fail": "tests/test_worktree.py::test_stranded_dangling_symlink_raises_wce_with_unlink_hint"
-    },
-    {
-      "name": "m5-foreign-check-skips-lexists",
-      "why": "checking os.path.exists instead of os.path.lexists for git_at misses symlink .git files and could skip the foreign check; x17 has a .git symlink that lexists returns True for",
-      "anchor": "if os.path.lexists(git_at):",
-      "replacement": "if os.path.exists(git_at):",
-      "expect_fail": "tests/test_worktree.py::test_foreign_dot_git_symlink_inside_wt_raises_wce"
-    },
-    {
-      "name": "m6-wce-not-raised-on-foreign",
-      "why": "replacing the raise with a log means the foreign repo is not blocked; x15 expects WorktreeCreationError to be raised",
-      "anchor": "raise WorktreeCreationError(\n                        f\"stranded path {wt_path} is a repository of its own ({foreign_shape}), \"",
-      "replacement": "_log(\"WARN\", f\"foreign repo at {wt_path}: {foreign_shape}\")",
-      "expect_fail": "tests/test_worktree.py::test_foreign_repo_at_wt_path_raises_wce"
-    },
-    {
-      "name": "m7-identity-warn-removed",
-      "why": "removing the identity WARN log means x17's assertion about the log message fails",
-      "anchor": "_log(\"WARN\",\n                 f\"⚠ {wt_path} is not its own repository ({not_own_reason}); \"",
-      "replacement": "pass  # MUTANT: identity warn suppressed",
-      "expect_fail": "tests/test_worktree.py::test_identity_not_own_logs_warn_for_plain_directory"
-    },
-    {
-      "name": "m8-registered-head-not-read",
-      "why": "not reading the registered detached HEAD when not own means wt_head stays None; x14 has a registered detached HEAD that should be preserved",
-      "anchor": "wt_head = _registered_detached_head(reg_r.stdout, wt_path)",
-      "replacement": "wt_head = None  # MUTANT: registered HEAD not read",
-      "expect_fail": "tests/test_worktree.py::test_registered_detached_head_preserved_via_create_worktree"
-    },
-    {
-      "name": "m9-save-failed-logs-but-no-raise",
-      "why": "removing the raise from _raise_save_failed means branch creation failures only log; x25 expects WorktreeCreationError to be raised when branch creation fails",
-      "anchor": "raise WorktreeCreationError(err_wce)",
-      "replacement": "_log(\"ERROR\", err_wce)  # MUTANT: no raise",
-      "expect_fail": "tests/test_worktree.py::test_branch_creation_failure_raises_wce_not_just_logs"
-    },
-    {
-      "name": "m10-tip-not-preserved-in-non-strict",
-      "why": "removing tip preservation from non-strict mode means x1's off-main tip is not saved when HEAD is None",
-      "anchor": "tip_result = subprocess.run(\n                [\"git\", \"--no-pager\", \"-C\", project_path, \"rev-parse\", \"--verify\", \"-q\",\n                 f\"refs/heads/bellows-wt/{slug}\"],",
-      "replacement": "tip_result = type('R', (), {'returncode': 1, 'stdout': '', 'stderr': ''})()  # MUTANT: tip not found",
-      "expect_fail": "tests/test_worktree.py::test_stranded_plain_directory_preserves_branch_tip"
-    },
-    {
-      "name": "m11-tip-on-main-still-preserved",
-      "why": "removing the ancestor check means an on-main tip creates a -branch unnecessarily; x22 expects no branches when tip is already on main",
-      "anchor": "if tip_anc.returncode != 0:\n                        tip_branch = f\"bellows-preserved/{slug}-{ts}-branch\"",
-      "replacement": "if True:  # MUTANT: always preserve tip\n                        tip_branch = f\"bellows-preserved/{slug}-{ts}-branch\"",
-      "expect_fail": "tests/test_worktree.py::test_tip_not_preserved_when_already_on_main"
-    },
-    {
-      "name": "m12-tip-head-equality-skipped",
-      "why": "removing the tip != wt_head check means the HEAD commit is double-preserved as a -branch even when tip == HEAD",
-      "anchor": "if tip_sha != wt_head:  # wt_head may be None",
-      "replacement": "if True:  # MUTANT: always check tip",
-      "expect_fail": "tests/test_worktree.py::test_tip_not_preserved_when_already_on_main"
-    },
-    {
-      "name": "m13-tip-warn-not-logged",
-      "why": "removing the WARN log for a preserved off-main tip means x1 cannot confirm the tip was preserved via log",
-      "anchor": "_log(\"WARN\",\n                                 f\"⚠ bellows-wt/{slug} tip {tip_sha} differs from HEAD \"",
-      "replacement": "pass  # MUTANT: tip warn suppressed",
-      "expect_fail": "tests/test_worktree.py::test_stranded_plain_directory_preserves_branch_tip"
-    },
-    {
-      "name": "m14-symlink-guard-removed",
-      "why": "removing the symlink guard passes symlinks to git worktree remove, which follows the link and may destroy the target; x4 relies on the guard to trigger the removal-stop path for a symlink pointing to a real dir",
-      "anchor": "if not os.path.islink(wt_path):\n        try:\n            subprocess.run(\n                [\"git\", \"--no-pager\", \"worktree\", \"remove\", \"--force\", wt_path],",
-      "replacement": "try:\n            subprocess.run(\n                [\"git\", \"--no-pager\", \"worktree\", \"remove\", \"--force\", wt_path],",
-      "expect_fail": "tests/test_worktree.py::test_stranded_symlink_to_dir_raises_wce"
-    },
-    {
-      "name": "m15-removal-check-uses-exists-not-lexists",
-      "why": "using os.path.exists instead of os.path.lexists for the removal check misses dangling symlinks left in place; x24 relies on lexists to detect the dangling symlink after removal",
-      "anchor": "if not strict and os.path.lexists(wt_path):",
-      "replacement": "if not strict and os.path.exists(wt_path):",
-      "expect_fail": "tests/test_worktree.py::test_lexists_entry_detects_dangling_symlink"
-    },
-    {
-      "name": "m16-removal-stop-not-raised",
-      "why": "removing the raise at removal stop means the function returns successfully even with the symlink still in place; x23 expects WorktreeCreationError to be raised",
-      "anchor": "err = (f\"stranded worktree at {wt_path} could not be removed ({reason}); \"\n               f\"{commits_clause}{bc}; {act}, then re-dispatch\")\n        _log(\"ERROR\", f\"⚠ {err}\", slug=slug)\n        raise WorktreeCreationError(err)",
-      "replacement": "_log(\"ERROR\", f\"⚠ removal stop at {wt_path}: {reason}\")",
-      "expect_fail": "tests/test_worktree.py::test_removal_stop_symlink_has_correct_message"
-    },
-    {
-      "name": "m17-create-worktree-uses-exists-not-lexists",
-      "why": "using os.path.exists in _create_worktree misses dangling symlinks; x24 relies on lexists to trigger stranded-cleanup for a dangling symlink",
-      "anchor": "if os.path.lexists(wt_path):\n        _preserve_and_remove_stranded_worktree(project_path, wt_path, slug, strict=False)",
-      "replacement": "if os.path.exists(wt_path):\n        _preserve_and_remove_stranded_worktree(project_path, wt_path, slug, strict=False)",
-      "expect_fail": "tests/test_worktree.py::test_lexists_entry_detects_dangling_symlink"
-    },
-    {
-      "name": "m18-run-plan-uses-hardcoded-step-1",
-      "why": "reverting to hardcoded 1 means a resume_step=2 worktree failure posts verdict at step 1 instead of 2; x27 fails because captured step_number == 1",
-      "anchor": "_failed_step = resume_step if resume_step is not None else 1",
-      "replacement": "_failed_step = 1  # MUTANT: hardcoded",
-      "expect_fail": "tests/test_worktree.py::test_run_plan_posts_verdict_at_resume_step"
-    },
-    {
-      "name": "m19-foreign-dot-git-symlink-missed",
-      "why": "not checking islink for .git means a .git symlink is treated as absent; x8 (foreign_dot_git_shapes/.git symlink case) fails because None is returned instead of 'a .git symlink'",
-      "anchor": "if os.path.islink(git_at):\n        return \"a .git symlink\"",
-      "replacement": "if False:  # MUTANT: symlink not checked\n        return \"a .git symlink\"",
-      "expect_fail": "tests/test_worktree.py::test_foreign_dot_git_shapes[<lambda>-a .git symlink]"
-    },
-    {
-      "name": "m20-foreign-dot-git-dir-missed",
-      "why": "not checking isdir for .git means a .git directory is treated as absent; the directory case fails",
-      "anchor": "if os.path.isdir(git_at):\n        return \"a .git directory\"",
-      "replacement": "if False:  # MUTANT: dir not checked\n        return \"a .git directory\"",
-      "expect_fail": "tests/test_worktree.py::test_foreign_dot_git_shapes[<lambda>-a .git directory]"
-    },
-    {
-      "name": "m21-foreign-dot-git-wrong-project-returns-none",
-      "why": "always returning None from _foreign_dot_git means wrong-project .git files are treated as own; x6 expects 'a .git file whose gitdir is not this project's'",
-      "anchor": "return \"a .git file whose gitdir is not this project's\"\n    return None  # No .git at all — not foreign",
-      "replacement": "return None  # MUTANT: file always treated as own\n    return None  # No .git at all — not foreign",
-      "expect_fail": "tests/test_worktree.py::test_foreign_dot_git_shapes[<lambda>-a .git file whose gitdir is not this project's]"
-    },
-    {
-      "name": "m22-own-project-worktree-wrongly-foreign",
-      "why": "returning a non-None shape for any .git file means own project worktrees are rejected; x9 uses a real worktree and expects None",
-      "anchor": "if os.path.samefile(parent_of_gitdir, worktrees_dir):\n                    return None  # this project's own linked worktree",
-      "replacement": "if False:  # MUTANT: never treats as own\n                    return None  # this project's own linked worktree",
-      "expect_fail": "tests/test_worktree.py::test_foreign_dot_git_returns_none_for_own_project_worktree"
-    },
-    {
-      "name": "m23-registered-head-detached-flag-ignored",
-      "why": "not checking the 'detached' line means non-detached entries also match; x10 (worktree-two is not detached) would incorrectly return cafebabe instead of None",
-      "anchor": "elif line == \"detached\":\n                is_detached = True",
-      "replacement": "elif line == \"detached\":\n                pass  # MUTANT: detached ignored",
-      "expect_fail": "tests/test_worktree.py::test_registered_detached_head_parser[/path/to/worktree-two-None]"
-    },
-    {
-      "name": "m24-registered-head-returns-first-not-matching",
-      "why": "returning the first HEAD sha found regardless of path match means the wrong sha is returned; x10 would return abc123main for worktree-two",
-      "anchor": "if matched:\n                return head_sha",
-      "replacement": "if chunk_wt:\n                return head_sha  # MUTANT: returns first sha",
-      "expect_fail": "tests/test_worktree.py::test_registered_detached_head_parser[/path/to/worktree-two-None]"
-    },
-    {
-      "name": "m25-stranded-what-exists-skips-directory-part",
-      "why": "not appending 'the directory' when lexists is True means x18 (all-three) misses the first part",
-      "anchor": "if os.path.lexists(wt_path):\n        parts.append(\"the symlink\" if is_symlink_wt else \"the directory\")",
-      "replacement": "if False:  # MUTANT: directory/symlink not checked",
-      "expect_fail": "tests/test_worktree.py::test_stranded_what_exists_all_three_parts"
-    },
-    {
-      "name": "m26-stranded-what-exists-registration-not-checked",
-      "why": "not checking registration means x18 (all-three) misses 'its registration'",
-      "anchor": "if not is_symlink_wt:\n        try:\n            rr = subprocess.run(\n                [\"git\", \"--no-pager\", \"-C\", project_path, \"worktree\", \"list\", \"--porcelain\"],",
-      "replacement": "if False:  # MUTANT: registration check skipped",
-      "expect_fail": "tests/test_worktree.py::test_stranded_what_exists_all_three_parts"
-    },
-    {
-      "name": "m27-stranded-what-exists-branch-not-checked",
-      "why": "not appending the branch name means x18 (all-three) misses 'bellows-wt/slug'",
-      "anchor": "if br.returncode == 0:\n            parts.append(f\"bellows-wt/{slug}\")",
-      "replacement": "if False:  # MUTANT: branch not checked",
-      "expect_fail": "tests/test_worktree.py::test_stranded_what_exists_all_three_parts"
-    },
-    {
-      "name": "m28-stranded-what-exists-symlink-includes-registration",
-      "why": "removing the is_symlink_wt guard means symlink paths check for registration (which would follow the link); x21 expects 'its registration' to be absent for symlinks",
-      "anchor": "if not is_symlink_wt:\n        try:\n            rr = subprocess.run(",
-      "replacement": "if True:  # MUTANT: always check registration\n        try:\n            rr = subprocess.run(",
-      "expect_fail": "tests/test_worktree.py::test_stranded_what_exists_symlink_omits_registration"
-    },
-    {
-      "name": "m29-stranded-what-exists-symlink-says-directory",
-      "why": "always appending 'the directory' even for symlinks means x21 shows 'the directory' instead of 'the symlink'",
-      "anchor": "parts.append(\"the symlink\" if is_symlink_wt else \"the directory\")",
-      "replacement": "parts.append(\"the directory\")  # MUTANT: always directory",
-      "expect_fail": "tests/test_worktree.py::test_stranded_what_exists_symlink_omits_registration"
-    },
-    {
-      "name": "m30-save-failed-count-word-wrong",
-      "why": "always using 'it' regardless of part count means x19 (2-parts=both, 3-parts=all three) fails",
-      "anchor": "remove_what = [\"it\", \"both\", \"all three\"][min(n - 1, 2)] if n > 0 else \"it\"",
-      "replacement": "remove_what = \"it\"  # MUTANT: always 'it'",
-      "expect_fail": "tests/test_worktree.py::test_save_failed_message_uses_correct_count_word[2-remove both by hand]"
-    },
-    {
-      "name": "m31-save-failed-symlink-no-unlink-hint",
-      "why": "omitting the unlink hint from the symlink save-failed message means x20 assertion fails",
-      "anchor": "act = f\"remove the symlink itself with: unlink {q} (never rm -rf {qs}, which deletes what it points to)\"",
-      "replacement": "act = f\"remove the symlink by hand\"  # MUTANT: no unlink command",
-      "expect_fail": "tests/test_worktree.py::test_save_failed_symlink_has_unlink_hint"
-    },
-    {
-      "name": "m32-removal-stop-symlink-no-unlink-hint",
-      "why": "omitting the unlink hint from the removal-stop message means x23 assertion fails",
-      "anchor": "act = (f\"remove the symlink itself with: unlink {q} \"\n                   f\"(never rm -rf {qs}, which deletes what it points to)\")",
-      "replacement": "act = f\"remove the symlink by hand\"  # MUTANT: no unlink command",
-      "expect_fail": "tests/test_worktree.py::test_removal_stop_symlink_has_correct_message"
-    },
-    {
-      "name": "m33-removal-stop-uses-is-symlink-not-islink",
-      "why": "using is_symlink_wt from the pre-removal check instead of checking os.path.islink again at removal-stop time could be wrong if the path changed; but more importantly, using a wrong flag corrupts the message",
-      "anchor": "if os.path.islink(wt_path):\n            reason = (\"it is a symlink, left in place: \"",
-      "replacement": "if False:  # MUTANT: never treats remaining path as symlink\n            reason = (\"it is a symlink, left in place: \"",
-      "expect_fail": "tests/test_worktree.py::test_removal_stop_symlink_has_correct_message"
-    },
-    {
-      "name": "m34-save-failed-error-log-suppressed",
-      "why": "removing the ERROR log from _raise_save_failed means failures are silent at the log level; x25 verifies that a branch creation failure is raised, but the error log is part of the API contract",
-      "anchor": "_log(\"ERROR\", f\"⚠ stranded worktree at {wt_path} could not be saved ({reason}); \"\n         f\"nothing was removed — {what_exists} left as found\", slug=slug)",
-      "replacement": "pass  # MUTANT: error log suppressed",
-      "expect_fail": "tests/test_worktree.py::test_branch_creation_failure_raises_wce_not_just_logs"
-    },
-    {
-      "name": "m35-strict-mode-not-guarded-in-head-read",
-      "why": "removing the strict branch in HEAD read means strict mode uses the non-strict path, which raises WorktreeCreationError instead of PreserveFailed on failure; x26 expects PreserveFailed",
-      "anchor": "if strict:\n        try:\n            wt_head_result = subprocess.run(\n                [\"git\", \"--no-pager\", \"-C\", wt_path, \"rev-parse\", \"--verify\", \"HEAD\"],",
-      "replacement": "if False:  # MUTANT: strict never reads HEAD its way\n        try:\n            wt_head_result = subprocess.run(\n                [\"git\", \"--no-pager\", \"-C\", wt_path, \"rev-parse\", \"--verify\", \"HEAD\"],",
-      "expect_fail": "tests/test_worktree.py::test_strict_mode_raises_preserve_failed_not_wce"
-    },
-    {
-      "name": "m36-non-strict-head-read-failure-logs-not-raises",
-      "why": "the old non-strict behavior logged failures instead of raising; x25 relies on the new behavior where HEAD read failure raises WorktreeCreationError",
-      "anchor": "except Exception as e:\n            _raise_save_failed(project_path, wt_path, slug, is_symlink_wt, kept_branches,\n                               f\"rev-parse HEAD failed: {e}\")",
-      "replacement": "except Exception as e:\n            _log(\"ERROR\", f\"rev-parse HEAD failed: {e}\")  # MUTANT: log not raise",
-      "expect_fail": "tests/test_worktree.py::test_branch_creation_failure_raises_wce_not_just_logs"
-    },
-    {
-      "name": "m37-not-own-but-reads-through-path",
-      "why": "reading HEAD through the path even when not own means the identity proof has no effect on behavior; x2 (plain directory) would fail if it erroneously reads HEAD from the plain dir and preserves it",
-      "anchor": "elif is_own:\n        # Non-strict, proven own: read through path, raise WorktreeCreationError on failure",
-      "replacement": "elif True:  # MUTANT: always reads through path",
+      "name": "m2-identity-verdict-ignored",
+      "why": "replacing elif is_own with elif not is_symlink_path causes HEAD to always be read through a non-symlink path regardless of identity verdict",
+      "anchor": "    elif is_own:\n        # Non-strict, proven own: read HEAD directly; any failure stops the dispatch",
+      "replacement": "    elif not is_symlink_path:  # MUTANT: identity verdict ignored\n        # Non-strict: always read HEAD if not symlink",
       "expect_fail": "tests/test_worktree.py::test_stranded_plain_directory_does_not_preserve_checkout_head"
     },
     {
-      "name": "m38-foreign-error-log-omits-shape",
-      "why": "omitting the shape from the foreign-repo ERROR log means x15's message assertion fails",
-      "anchor": "f\"⚠ stranded path {wt_path} is a repository of its own ({foreign_shape}), \"",
-      "replacement": "f\"⚠ stranded path {wt_path} is a foreign repository, \"",
-      "expect_fail": "tests/test_worktree.py::test_foreign_repo_at_wt_path_raises_wce"
+      "name": "m3-not-own-warn-removed",
+      "why": "removing the not-own WARN means x4 finds no WARN naming the path as 'not its own repository'",
+      "anchor": "        if not is_own:\n            _log(\"WARN\",\n                 f\"⚠ {wt_path} is not its own repository ({not_own_reason}); \"\n                 f\"its HEAD is not read through it, and bellows-wt/{slug}'s tip is checked by name\",\n                 slug=slug)",
+      "replacement": "        if not is_own:\n            pass  # MUTANT: not-own WARN removed",
+      "expect_fail": "tests/test_worktree.py::test_stranded_plain_directory_warn_names_path"
     },
     {
-      "name": "m39-foreign-wce-message-wrong-verb",
-      "why": "using 'deleted' instead of 'removed' in the foreign-repo error message means the 'move or remove' assertion fails",
-      "anchor": "f\"move or remove the repository by hand, then re-dispatch\"",
-      "replacement": "f\"delete the repository by hand, then re-dispatch\"  # MUTANT: wrong verb",
-      "expect_fail": "tests/test_worktree.py::test_foreign_repo_at_wt_path_raises_wce"
+      "name": "m4-tip-strict-only",
+      "why": "gating tip preservation on strict=True means non-strict dispatches never preserve the tip; x1 (plain directory, non-strict) gets no -branch preservation",
+      "anchor": "        tip_existed = (tip_result.returncode == 0)\n        if tip_existed:",
+      "replacement": "        tip_existed = (tip_result.returncode == 0)\n        if tip_existed and strict:  # MUTANT: tip strict only",
+      "expect_fail": "tests/test_worktree.py::test_stranded_plain_directory_preserves_branch_tip"
     },
     {
-      "name": "m40-wt-path-what-exists-uses-exists-not-lexists",
-      "why": "using os.path.exists in _stranded_what_exists misses dangling symlinks; x21 has a dangling symlink that should appear as 'the symlink'",
-      "anchor": "if os.path.lexists(wt_path):\n        parts.append(\"the symlink\" if is_symlink_wt else \"the directory\")",
-      "replacement": "if os.path.exists(wt_path):  # MUTANT: lexists→exists\n        parts.append(\"the symlink\" if is_symlink_wt else \"the directory\")",
-      "expect_fail": "tests/test_worktree.py::test_stranded_what_exists_symlink_omits_registration"
+      "name": "m5-tip-check-needs-head-read",
+      "why": "requiring wt_head is not None to enter tip preservation means wt_head=None (plain directory, no registered detached HEAD) skips the tip check entirely; x1 gets no tip branch",
+      "anchor": "            if wt_head is None or tip_sha != wt_head:",
+      "replacement": "            if wt_head is not None and tip_sha != wt_head:  # MUTANT: needs HEAD read",
+      "expect_fail": "tests/test_worktree.py::test_stranded_plain_directory_preserves_branch_tip"
     },
     {
-      "name": "m41-foreign-dot-git-reads-wrong-line",
-      "why": "reading 'worktree:' instead of 'gitdir:' means the gitdir is never extracted and every .git file is treated as foreign; x9 (own project worktree) would fail",
-      "anchor": "if line.startswith(\"gitdir:\"):\n                gitdir = line[7:].strip()",
-      "replacement": "if line.startswith(\"xgitdir:\"):  # MUTANT: wrong prefix\n                gitdir = line[8:].strip()",
-      "expect_fail": "tests/test_worktree.py::test_foreign_dot_git_returns_none_for_own_project_worktree"
+      "name": "m6-tip-on-main-kept",
+      "why": "making tip_already_landed always False preserves the tip even when it is already on main; x3 asserts no preservation branch when the tip is on main",
+      "anchor": "                    tip_already_landed = (tip_anc.returncode == 0)",
+      "replacement": "                    tip_already_landed = False  # MUTANT: always preserve tip",
+      "expect_fail": "tests/test_worktree.py::test_stranded_plain_directory_tip_on_main_not_preserved"
     },
     {
-      "name": "m42-gitdir-parent-compared-to-gitdir-not-worktrees",
-      "why": "comparing parent_of_gitdir to the .git directory itself (not the worktrees/ subdirectory) means own worktrees are always foreign; x9 fails",
-      "anchor": "worktrees_dir = os.path.join(project_path, \".git\", \"worktrees\")",
-      "replacement": "worktrees_dir = os.path.join(project_path, \".git\")  # MUTANT: wrong dir",
-      "expect_fail": "tests/test_worktree.py::test_foreign_dot_git_returns_none_for_own_project_worktree"
+      "name": "m7-identity-by-raw-string",
+      "why": "string comparison of toplevel vs wt_path fails for case-variant spellings; on case-insensitive FS the upper-case path gives a different string even though samefile matches by inode",
+      "anchor": "                    try:\n                        is_own = os.path.samefile(toplevel, wt_path)\n                        if not is_own:\n                            not_own_reason = f\"git resolves it to {toplevel}\"",
+      "replacement": "                    try:\n                        is_own = (toplevel == str(wt_path))  # MUTANT: raw string\n                        if not is_own:\n                            not_own_reason = f\"git resolves it to {toplevel}\"",
+      "expect_fail": "tests/test_worktree.py::test_stranded_own_worktree_through_case_variant_path"
     },
     {
-      "name": "m43-registered-head-not-returned",
-      "why": "not returning the matched sha means _registered_detached_head always returns None; x14 fails because no preservation branch is created for the detached HEAD",
-      "anchor": "if matched:\n                return head_sha",
-      "replacement": "if matched:\n                pass  # MUTANT: sha not returned",
-      "expect_fail": "tests/test_worktree.py::test_registered_detached_head_preserved_via_create_worktree"
+      "name": "m8-strict-tip-failure-not-raised",
+      "why": "removing the strict raise for tip branch failure lets the strict caller see no PreserveFailed; c-t25 expects PreserveFailed when tip branch creation fails under strict mode",
+      "anchor": "                    else:\n                        err = (f\"failed to preserve tip branch {tip_branch}: \"\n                               f\"{tb_result.stderr.strip()}\")\n                        if strict:\n                            raise PreserveFailed(err)\n                        _save_stop(err)",
+      "replacement": "                    else:\n                        err = (f\"failed to preserve tip branch {tip_branch}: \"\n                               f\"{tb_result.stderr.strip()}\")\n                        if strict:\n                            pass  # MUTANT: strict raise removed\n                        _save_stop(err)",
+      "expect_fail": "tests/test_abandoned_runner_close.py::test_tip_branch_creation_fails_refused"
     },
     {
-      "name": "m44-head-preservation-skips-non-landed",
-      "why": "inverting the already_landed check means only landed commits create preservation branches; x14 depends on un-landed commit being preserved",
-      "anchor": "if not already_landed:",
-      "replacement": "if already_landed:  # MUTANT: inverted",
-      "expect_fail": "tests/test_worktree.py::test_registered_detached_head_preserved_via_create_worktree"
+      "name": "m9-registration-read-removed",
+      "why": "returning None always for the registered HEAD means wt_head stays None for a not-own non-symlink path; x7 expects a ts-branch preservation from the registered detached HEAD",
+      "anchor": "        wt_head = _registered_detached_head_for(project_path, wt_path)",
+      "replacement": "        wt_head = None  # MUTANT: registration read removed",
+      "expect_fail": "tests/test_worktree.py::test_stranded_plain_directory_registered_detached_head_preserved"
     },
     {
-      "name": "m45-tip-preserved-without-checking-tip-neq-head",
-      "why": "removing the tip != wt_head guard creates a -branch even when tip == wt_head (already in the HEAD branch); test for this: when tip == HEAD == off-main, we'd create two branches",
-      "anchor": "if tip_sha != wt_head:  # wt_head may be None\n                    tip_anc = subprocess.run(",
-      "replacement": "if True:  # MUTANT: always check tip against main\n                    tip_anc = subprocess.run(",
-      "expect_fail": "tests/test_worktree.py::test_tip_not_preserved_when_already_on_main"
+      "name": "m10-tip-success-warn-removed",
+      "why": "removing the WARN that names the preservation branch means x1 finds no WARN containing 'bellows-preserved'",
+      "anchor": "                        _log(\"WARN\",\n                             f\"⚠ preserved bellows-wt/{slug} tip {tip_sha} \"\n                             f\"on branch {tip_branch} before stranded-cleanup\",\n                             slug=slug)",
+      "replacement": "                        pass  # MUTANT: tip success WARN removed",
+      "expect_fail": "tests/test_worktree.py::test_stranded_plain_directory_preserves_branch_tip"
     },
     {
-      "name": "m46-precondition-consumer-does-not-unlink-pending",
-      "why": "removing the pending_file.unlink() before handle_new_plan means the second continue picks up the old pending file; x27 via consumer tests that file is cleared before retry",
-      "anchor": "if precondition_failure_from_request:\n                                    next_step = step_number\n                                    _log(\"EVENT\", f\"verdict continue — retrying step {step_number} (precondition failure)\", slug=slug_for(original_name))\n                                    pending_file = BELLOWS_ROOT / \"verdicts\" / \"pending\" / f\"verdict-request-{cleanup_slug}-step-{step_number}.md\"\n                                    if pending_file.exists():\n                                        pending_file.unlink()",
-      "replacement": "if precondition_failure_from_request:\n                                    next_step = step_number\n                                    _log(\"EVENT\", f\"verdict continue — retrying step {step_number} (precondition failure)\", slug=slug_for(original_name))",
-      "expect_fail": "tests/test_worktree.py::test_run_plan_posts_verdict_at_resume_step"
+      "name": "m11-symlink-check-removed",
+      "why": "with is_symlink_path always False, a symlink at wt_path enters the identity proof which runs git -C wt_path; x6 asserts no git -C wt_path commands run for a symlink",
+      "anchor": "    is_symlink_path = os.path.islink(wt_path)",
+      "replacement": "    is_symlink_path = False  # MUTANT: symlink check removed",
+      "expect_fail": "tests/test_worktree.py::test_stranded_symlink_to_checkout_head_neither_read_nor_preserved"
     },
     {
-      "name": "m47-final-step-ignores-precondition",
-      "why": "removing 'and not precondition_failure_from_request' means a precondition failure on the final step routes to Done instead of retrying the step; the consumer sends the plan to Done when it should wait for a re-run",
-      "anchor": "if step_number >= total_steps_c and not precondition_failure_from_request:",
-      "replacement": "if step_number >= total_steps_c:  # MUTANT: precondition ignored",
-      "expect_fail": "tests/test_worktree.py::test_run_plan_posts_verdict_at_resume_step"
+      "name": "m12-identity-by-realpath-string",
+      "why": "using realpath string comparison fails for case-variant spellings on macOS since realpath preserves input spelling; samefile checks by inode so case variants match",
+      "anchor": "                        is_own = os.path.samefile(toplevel, wt_path)",
+      "replacement": "                        is_own = (os.path.realpath(toplevel) == os.path.realpath(str(wt_path)))  # MUTANT: realpath string",
+      "expect_fail": "tests/test_worktree.py::test_stranded_own_worktree_through_case_variant_path"
     },
     {
-      "name": "m48-post-verdict-request-step-zero",
-      "why": "using 0 for step_number in post_verdict_request means x27 fails because captured step_number == 0 not 2",
-      "anchor": "_vr_path = verdict.post_verdict_request(plan_path, project_path, _failed_step, log_path, gate_result,",
-      "replacement": "_vr_path = verdict.post_verdict_request(plan_path, project_path, 0, log_path, gate_result,  # MUTANT: zero step",
-      "expect_fail": "tests/test_worktree.py::test_run_plan_posts_verdict_at_resume_step"
+      "name": "m13-registration-read-through-symlink",
+      "why": "removing the not-is_symlink_path guard runs the registered HEAD read for symlinks too; x6 uses a symlink to the checkout whose registration entry has a non-detached HEAD, changing what wt_head is set to and breaking the symlink-path invariants",
+      "anchor": "    elif not is_symlink_path:\n        # Non-strict, not own, not symlink: read registered detached HEAD from project",
+      "replacement": "    elif True:  # MUTANT: registration read through symlink too\n        # Non-strict: always read registered detached HEAD",
+      "expect_fail": "tests/test_worktree.py::test_stranded_symlink_to_checkout_head_neither_read_nor_preserved"
     },
     {
-      "name": "m49-foreign-wce-omits-as-found",
-      "why": "omitting 'as found' from the foreign-repo WCE message means the 'as found' assertion in x15 fails",
-      "anchor": "f\"nothing was removed — {we} as found; \"",
-      "replacement": "f\"nothing was removed — {we}; \"  # MUTANT: omits 'as found'",
-      "expect_fail": "tests/test_worktree.py::test_foreign_repo_at_wt_path_raises_wce"
+      "name": "m14-registered-head-taken-for-branch-entry",
+      "why": "removing the detached guard returns a non-None HEAD for any matching entry even when on a branch; a plain directory with branch checkout gets wt_head set, then a HEAD branch may be created that x1's assertion does not expect",
+      "anchor": "        if matched and entry.get(\"detached\"):",
+      "replacement": "        if matched:  # MUTANT: detached guard removed",
+      "expect_fail": "tests/test_worktree.py::test_stranded_plain_directory_preserves_branch_tip"
+    },
+    {
+      "name": "m15-registration-matched-by-realpath-string",
+      "why": "using realpath string comparison fails for case-variant paths on macOS; x12 verifies the detached HEAD is found via inode match (samefile) for a case-variant path",
+      "anchor": "        if os.path.exists(ep) and os.path.exists(wt_path):\n            try:\n                matched = os.path.samefile(ep, wt_path)\n            except OSError:\n                matched = (ep == wt_path)",
+      "replacement": "        if os.path.exists(ep) and os.path.exists(wt_path):\n            try:\n                matched = (os.path.realpath(ep) == os.path.realpath(str(wt_path)))  # MUTANT: realpath\n            except OSError:\n                matched = (ep == wt_path)",
+      "expect_fail": "tests/test_worktree.py::test_stranded_registered_detached_head_through_case_variant_path"
+    },
+    {
+      "name": "m16-head-read-raises-stop-removed",
+      "why": "replacing save_stop with wt_head=None for HEAD unreadable exception means the dispatch continues; x11[head-read-raises] expects WorktreeCreationError to be raised",
+      "anchor": "            _save_stop(f\"HEAD unreadable: {e}\")",
+      "replacement": "            wt_head = None  # MUTANT: head-read-raises stop removed",
+      "expect_fail": "tests/test_worktree.py::test_stranded_failed_save_stops_before_removal[head-read-raises]"
+    },
+    {
+      "name": "m17-head-read-nonzero-stop-removed",
+      "why": "replacing save_stop with wt_head=None for nonzero rev-parse HEAD means the dispatch continues; x11[head-read-nonzero] expects WorktreeCreationError",
+      "anchor": "        if wt_head_result.returncode != 0:\n            _save_stop(\n                f\"rev-parse HEAD returned {wt_head_result.returncode}: \"\n                f\"{wt_head_result.stderr.strip()}\"\n            )",
+      "replacement": "        if wt_head_result.returncode != 0:\n            wt_head = None  # MUTANT: head-read-nonzero stop removed",
+      "expect_fail": "tests/test_worktree.py::test_stranded_failed_save_stops_before_removal[head-read-nonzero]"
+    },
+    {
+      "name": "m18-porcelain-raises-stop-removed",
+      "why": "replacing save_stop with wt_head=None for porcelain exception means the dispatch continues; x11[porcelain-raises] expects WorktreeCreationError when worktree list raises",
+      "anchor": "            _save_stop(f\"worktree list --porcelain failed: {e}\")",
+      "replacement": "            wt_head = None  # MUTANT: porcelain-raises stop removed",
+      "expect_fail": "tests/test_worktree.py::test_stranded_failed_save_stops_before_removal[porcelain-raises]"
+    },
+    {
+      "name": "m19-porcelain-nonzero-not-raised",
+      "why": "making _registered_detached_head_for return None on nonzero returncode instead of raising means the caller's save_stop is never reached; x11[porcelain-nonzero] expects WorktreeCreationError",
+      "anchor": "    if r.returncode != 0:\n        raise RuntimeError(\n            f\"worktree list --porcelain returned {r.returncode}: {r.stderr.strip()}\"\n        )",
+      "replacement": "    if r.returncode != 0:\n        return None  # MUTANT: porcelain-nonzero not raised",
+      "expect_fail": "tests/test_worktree.py::test_stranded_failed_save_stops_before_removal[porcelain-nonzero]"
+    },
+    {
+      "name": "m20-head-branch-raises-stop-removed",
+      "why": "removing save_stop from the HEAD branch except-Exception handler means head-branch-raises exception is swallowed; x11[head-branch-raises] expects WorktreeCreationError",
+      "anchor": "                if strict:\n                    raise PreserveFailed(err)\n                _save_stop(err)\n\n    # ---- Tip in BOTH modes ----",
+      "replacement": "                if strict:\n                    raise PreserveFailed(err)\n                pass  # MUTANT: head-branch-raises stop removed\n\n    # ---- Tip in BOTH modes ----",
+      "expect_fail": "tests/test_worktree.py::test_stranded_failed_save_stops_before_removal[head-branch-raises]"
+    },
+    {
+      "name": "m21-head-branch-nonzero-stop-removed",
+      "why": "removing save_stop from the HEAD branch else block means nonzero returncode falls through to the tip and removal blocks; x11[head-branch-nonzero] expects WorktreeCreationError",
+      "anchor": "                    if strict:\n                        raise PreserveFailed(err)\n                    _save_stop(err)\n            except (PreserveFailed, WorktreeCreationError):",
+      "replacement": "                    if strict:\n                        raise PreserveFailed(err)\n                    pass  # MUTANT: head-branch-nonzero stop removed\n            except (PreserveFailed, WorktreeCreationError):",
+      "expect_fail": "tests/test_worktree.py::test_stranded_failed_save_stops_before_removal[head-branch-nonzero]"
+    },
+    {
+      "name": "m22-tip-branch-stop-removed",
+      "why": "removing save_stop from the tip else block (tb_result nonzero) means the tip failure falls through; removal runs and deletes the path and branch; x8 asserts the path and branch still exist after a failed save",
+      "anchor": "                        if strict:\n                            raise PreserveFailed(err)\n                        _save_stop(err)\n    except (PreserveFailed, WorktreeCreationError):",
+      "replacement": "                        if strict:\n                            raise PreserveFailed(err)\n                        pass  # MUTANT: tip-branch stop removed\n    except (PreserveFailed, WorktreeCreationError):",
+      "expect_fail": "tests/test_worktree.py::test_stranded_failed_tip_preservation_stops_before_removal"
+    },
+    {
+      "name": "m23-head-branch-stop-without-raise",
+      "why": "removing the save_stop from the HEAD branch else block (nonzero); for the raises case the exception is caught by its except handler which still calls save_stop, so head-branch-raises still raises but head-branch-nonzero falls through; x11[head-branch-nonzero] expects WorktreeCreationError",
+      "anchor": "                    if strict:\n                        raise PreserveFailed(err)\n                    _save_stop(err)\n            except (PreserveFailed, WorktreeCreationError):\n                raise\n            except Exception as e:\n                err = (f\"failed to create preservation branch {head_branch_name} \"",
+      "replacement": "                    if strict:\n                        raise PreserveFailed(err)\n                    # MUTANT: head branch stop without raise\n            except (PreserveFailed, WorktreeCreationError):\n                raise\n            except Exception as e:\n                err = (f\"failed to create preservation branch {head_branch_name} \"",
+      "expect_fail": "tests/test_worktree.py::test_stranded_failed_save_stops_before_removal[head-branch-nonzero]"
+    },
+    {
+      "name": "m24-stop-returns-instead-of-raising",
+      "why": "changing _save_stop to return instead of raise means the dispatch continues past any failed save; x13 asserts git worktree add is NOT called after a failed save",
+      "anchor": "        raise WorktreeCreationError(msg)\n\n    if strict:\n        # Strict: read HEAD directly (unchanged)",
+      "replacement": "        return  # MUTANT: stop returns instead of raising\n\n    if strict:\n        # Strict: read HEAD directly (unchanged)",
+      "expect_fail": "tests/test_worktree.py::test_stranded_failed_save_raises_before_worktree_add"
+    },
+    {
+      "name": "m25-head-branch-reraise-guard-removed",
+      "why": "removing the PreserveFailed/WorktreeCreationError re-raise guard in the HEAD branch try means a WCE from save_stop is caught by except Exception and save_stop is called again with a message that changes what x11[head-branch-nonzero] sees",
+      "anchor": "            except (PreserveFailed, WorktreeCreationError):\n                raise\n            except Exception as e:\n                err = (f\"failed to create preservation branch {head_branch_name} \"",
+      "replacement": "            except Exception as e:\n                err = (f\"failed to create preservation branch {head_branch_name} \"",
+      "expect_fail": "tests/test_worktree.py::test_stranded_failed_save_stops_before_removal[head-branch-nonzero]"
+    },
+    {
+      "name": "m26-tip-reraise-guard-removed",
+      "why": "removing the PreserveFailed/WorktreeCreationError re-raise guard in the tip try means a WCE from the tip stop is caught by except Exception and save_stop is called again; x8's path and branch are still present but the double-stop may change message assertions",
+      "anchor": "    except (PreserveFailed, WorktreeCreationError):\n        raise\n    except Exception as e:\n        if strict:\n            raise PreserveFailed(f\"tip branch check failed: {e}\")",
+      "replacement": "    except Exception as e:\n        if strict:\n            raise PreserveFailed(f\"tip branch check failed: {e}\")  # MUTANT: reraise guard removed",
+      "expect_fail": "tests/test_worktree.py::test_stranded_failed_tip_preservation_stops_before_removal"
+    },
+    {
+      "name": "m27-left-as-found-dropped-from-log",
+      "why": "removing 'left as found' from the ERROR log message breaks x8's assertion that an ERROR log call contains 'left as found'",
+      "anchor": "             f\"⚠ stranded worktree at {wt_path} could not be saved ({reason}); left as found\",",
+      "replacement": "             f\"⚠ stranded worktree at {wt_path} could not be saved ({reason}); stopped\",  # MUTANT",
+      "expect_fail": "tests/test_worktree.py::test_stranded_failed_tip_preservation_stops_before_removal"
+    },
+    {
+      "name": "m28-nothing-was-removed-dropped",
+      "why": "removing both 'nothing was removed' and 'left as found' from the WCE message breaks x8's assertion that at least one of these phrases appears",
+      "anchor": "               f\"nothing was removed — {subject} left as found{kept_c}; \"",
+      "replacement": "               f\"dispatch stopped — {subject}{kept_c}; \"  # MUTANT",
+      "expect_fail": "tests/test_worktree.py::test_stranded_failed_tip_preservation_stops_before_removal"
+    },
+    {
+      "name": "m29-unreadable-registration-read-as-none",
+      "why": "_registered_detached_head_for returns None on nonzero returncode instead of raising RuntimeError; the caller's save_stop is never called; x11[porcelain-nonzero] expects WorktreeCreationError",
+      "anchor": "        raise RuntimeError(\n            f\"worktree list --porcelain returned {r.returncode}: {r.stderr.strip()}\"\n        )",
+      "replacement": "        return None  # MUTANT: unreadable registration read as none",
+      "expect_fail": "tests/test_worktree.py::test_stranded_failed_save_stops_before_removal[porcelain-nonzero]"
+    },
+    {
+      "name": "m30-tip-check-exception-swallowed",
+      "why": "removing save_stop from the outer except-Exception handler for the tip block means a tip-check exception is swallowed; x11[tip-check-raises] expects WorktreeCreationError and 'bellows-preserved' in the message",
+      "anchor": "        _save_stop(f\"tip branch check failed: {e}\")",
+      "replacement": "        pass  # MUTANT: tip check exception swallowed",
+      "expect_fail": "tests/test_worktree.py::test_stranded_failed_save_stops_before_removal[tip-check-raises]"
+    },
+    {
+      "name": "m31-removal-lexists-check-removed",
+      "why": "replacing the removal stop's os.path.lexists with os.path.exists means dangling symlinks bypass the removal stop; x14 uses a symlink where os.path.lexists is needed to detect the path",
+      "anchor": "    if not strict and os.path.lexists(wt_path):",
+      "replacement": "    if not strict and os.path.exists(wt_path):  # MUTANT: lexists replaced with exists",
+      "expect_fail": "tests/test_worktree.py::test_stranded_unremovable_symlink_stops_before_worktree_add"
+    },
+    {
+      "name": "m32-removal-stop-logged-not-raised",
+      "why": "returning instead of raising in the removal stop means the dispatch continues past a path that could not be removed; x14 expects WorktreeCreationError when removal fails",
+      "anchor": "        raise WorktreeCreationError(msg)\n\n    return kept_branches",
+      "replacement": "        return kept_branches  # MUTANT: removal stop returns\n\n    return kept_branches",
+      "expect_fail": "tests/test_worktree.py::test_stranded_unremovable_symlink_stops_before_worktree_add"
+    },
+    {
+      "name": "m33-symlink-handed-to-worktree-remove",
+      "why": "removing the symlink guard means git worktree remove --force is called with the symlink path; x16 verifies the live target worktree is left intact",
+      "anchor": "    if not is_symlink_path:\n        try:\n            subprocess.run(\n                [\"git\", \"--no-pager\", \"worktree\", \"remove\", \"--force\", wt_path],",
+      "replacement": "    if True:  # MUTANT: symlink guard removed\n        try:\n            subprocess.run(\n                [\"git\", \"--no-pager\", \"worktree\", \"remove\", \"--force\", wt_path],",
+      "expect_fail": "tests/test_worktree.py::test_stranded_symlink_to_live_worktree_leaves_the_target_intact"
+    },
+    {
+      "name": "m34-symlink-case-generic-instruction",
+      "why": "replacing the symlink-specific unlink instruction with a generic message means 'unlink' is absent; x14 asserts 'symlink' or 'unlink' in the error message for symlink stops",
+      "anchor": "            act = (f\"remove the symlink itself with: unlink {wt_q} \"\n                   f\"(never rm -rf {wt_slash_q}, which deletes what it points to)\")",
+      "replacement": "            act = f\"remove the path by hand\"  # MUTANT: symlink instruction generic",
+      "expect_fail": "tests/test_worktree.py::test_stranded_unremovable_symlink_stops_before_worktree_add"
+    },
+    {
+      "name": "m35-kept-clause-dropped",
+      "why": "replacing kept_c with empty string in save_stop means the message never names kept branches; x11[tip-check-raises] asserts 'bellows-preserved' in the message because a HEAD branch was created before the stop",
+      "anchor": "        kept_c = (f\"; its commits so far are kept on {', '.join(kept_branches)}\"\n                  if kept_branches\n                  else f\" (any previously preserved commits: bellows-preserved/{slug}-*)\")",
+      "replacement": "        kept_c = \"\"  # MUTANT: kept clause dropped",
+      "expect_fail": "tests/test_worktree.py::test_stranded_failed_save_stops_before_removal[tip-check-raises]"
+    },
+    {
+      "name": "m36-entry-test-back-to-exists",
+      "why": "changing os.path.lexists back to os.path.exists in _create_worktree means dangling symlinks bypass the helper entirely; x17 verifies dangling symlinks do reach the helper",
+      "anchor": "    if os.path.lexists(wt_path):\n        _preserve_and_remove_stranded_worktree(project_path, wt_path, slug, strict=False)",
+      "replacement": "    if os.path.exists(wt_path):  # MUTANT: entry test back to exists\n        _preserve_and_remove_stranded_worktree(project_path, wt_path, slug, strict=False)",
+      "expect_fail": "tests/test_worktree.py::test_stranded_dangling_symlink_reaches_the_helper"
+    },
+    {
+      "name": "m37-pause-posted-step-back-to-1",
+      "why": "hardcoding the posted step to 1 means a resumed dispatch at step 2 posts a verdict-request at step 1 instead of step 2; x18 asserts the request is at the dispatched step (2)",
+      "anchor": "            _wce_step = resume_step if resume_step is not None else 1\n            _vr_path = verdict.post_verdict_request(plan_path, project_path, _wce_step,",
+      "replacement": "            _wce_step = 1  # MUTANT: posted step back to 1\n            _vr_path = verdict.post_verdict_request(plan_path, project_path, _wce_step,",
+      "expect_fail": "tests/test_worktree.py::test_stranded_stop_on_resumed_dispatch_pauses_at_the_dispatched_step"
+    },
+    {
+      "name": "m38-pause-recorded-step-back-to-1",
+      "why": "hardcoding the lifecycle recorded step to 1 means the lifecycle row is at step 1 instead of the dispatched step; x18 asserts the lifecycle row is at step 2",
+      "anchor": "            lifecycle.record_verdict_request(plan_id, _wce_step, pause_reason_code=\"gate_failure\", verdict_file_ref=_vr_path)",
+      "replacement": "            lifecycle.record_verdict_request(plan_id, 1, pause_reason_code=\"gate_failure\", verdict_file_ref=_vr_path)  # MUTANT: recorded step back to 1",
+      "expect_fail": "tests/test_worktree.py::test_stranded_stop_on_resumed_dispatch_pauses_at_the_dispatched_step"
+    },
+    {
+      "name": "m39-symlink-subject-dropped",
+      "why": "always using 'the path' as subject means a symlink-path save_stop says 'the path left as found' instead of 'the symlink left as found'; x14b triggers the save stop for a symlink (tip branch creation fails) and asserts the specific phrase",
+      "anchor": "        subject = \"the symlink\" if is_symlink_path else \"the path\"",
+      "replacement": "        subject = \"the path\"  # MUTANT: symlink subject dropped",
+      "expect_fail": "tests/test_worktree.py::test_stranded_symlink_save_fail_names_the_symlink"
+    },
+    {
+      "name": "m40-tip-existed-always-true",
+      "why": "setting tip_existed=True always causes the tip block to run even when bellows-wt/<slug> does not exist; for a symlink stop with no tip branch the tip_sha is empty, git branch fails, _save_stop is called without 'unlink' in the message; x19[link-to-checkout] asserts 'unlink' in the error message",
+      "anchor": "        tip_existed = (tip_result.returncode == 0)",
+      "replacement": "        tip_existed = True  # MUTANT: tip always existed",
+      "expect_fail": "tests/test_worktree.py::test_stranded_symlink_failed_save_names_the_symlink_and_unlink[link-to-checkout]"
+    },
+    {
+      "name": "m41-branch-d-result-always-success",
+      "why": "treating the branch -D result as always succeeded means branch_d_success=True even when the delete failed (branch checked out elsewhere); x20 asserts the message accurately reflects that the branch could not be deleted",
+      "anchor": "        branch_d_success = (bd.returncode == 0)",
+      "replacement": "        branch_d_success = True  # MUTANT: -D result always success",
+      "expect_fail": "tests/test_worktree.py::test_stranded_symlink_removal_stop_branch_not_deletable"
+    },
+    {
+      "name": "m42-failed-lookup-read-as-own",
+      "why": "treating a failed show-toplevel as is_own=True means a path whose identity lookup raises gets HEAD read through git -C wt_path; x21 asserts HEAD is NOT read through the path when the lookup fails",
+      "anchor": "            except Exception:\n                not_own_reason = \"git finds no repository there\"\n        else:\n            not_own_reason = \"it is a symlink\"",
+      "replacement": "            except Exception:\n                is_own = True  # MUTANT: failed lookup read as own\n        else:\n            not_own_reason = \"it is a symlink\"",
+      "expect_fail": "tests/test_worktree.py::test_stranded_failed_identity_lookup_reads_as_not_own"
+    },
+    {
+      "name": "m43-final-step-precondition-guard-removed",
+      "why": "removing the not-precondition_failure_from_request guard means a precondition-failure at the final step goes to Done instead of retrying; x22[two-step-final] asserts the plan is NOT closed to Done",
+      "anchor": "                            if step_number >= total_steps_c and not precondition_failure_from_request:",
+      "replacement": "                            if step_number >= total_steps_c:  # MUTANT: precondition guard removed",
+      "expect_fail": "tests/test_worktree.py::test_stranded_stop_at_final_step_continue_retries_the_step[two-step-final]"
+    },
+    {
+      "name": "m44-final-step-branch-never-taken",
+      "why": "making the final-step condition always False means a continue verdict on a final step always retries instead of closing to Done; x23 asserts the plan IS closed to Done",
+      "anchor": "                            if step_number >= total_steps_c and not precondition_failure_from_request:\n                                # Final step — continue verdict means proceed to Done",
+      "replacement": "                            if False:  # MUTANT: final-step branch never taken\n                                # Final step — never proceeds to Done",
+      "expect_fail": "tests/test_worktree.py::test_final_step_gate_failure_continue_still_closes_to_done"
+    },
+    {
+      "name": "m45-request-unlinked-after-dispatch",
+      "why": "moving the verdict-request unlink to after handle_new_plan means the re-dispatched run_plan re-posts the request but then the post-dispatch unlink deletes it; x24 asserts the second stop's request survives",
+      "anchor": "                                _retry_pending = BELLOWS_ROOT / \"verdicts\" / \"pending\" / f\"verdict-request-{plan_slug}-step-{step_number}.md\"\n                                if _retry_pending.exists():\n                                    _retry_pending.unlink()\n                                self.handle_new_plan(inprogress_path, resume_step=next_step)",
+      "replacement": "                                _retry_pending = BELLOWS_ROOT / \"verdicts\" / \"pending\" / f\"verdict-request-{plan_slug}-step-{step_number}.md\"\n                                self.handle_new_plan(inprogress_path, resume_step=next_step)\n                                if _retry_pending.exists():  # MUTANT: unlink after dispatch\n                                    _retry_pending.unlink()",
+      "expect_fail": "tests/test_worktree.py::test_stranded_stop_retry_reposts_the_request_the_consumer_keeps"
+    },
+    {
+      "name": "m46-foreign-repo-check-removed",
+      "why": "removing the foreign-repo check means a clone of the project at wt_path proceeds as a stranded worktree; the identity proof and HEAD read run through the clone, and eventual removal may delete clone files; x25 asserts the clone is left intact",
+      "anchor": "        if not is_symlink_path:\n            is_foreign, foreign_shape = _foreign_dot_git(project_path, wt_path)\n            if is_foreign:",
+      "replacement": "        if not is_symlink_path:\n            is_foreign, foreign_shape = False, None  # MUTANT: foreign check removed\n            if is_foreign:",
+      "expect_fail": "tests/test_worktree.py::test_stranded_clone_of_the_project_left_intact"
+    },
+    {
+      "name": "m47-foreign-repo-stop-returns",
+      "why": "changing the foreign-repo raise to return means the dispatch continues past a nested repository; x9 expects WorktreeCreationError and asserts no git -C wt_path commands ran",
+      "anchor": "                raise WorktreeCreationError(err_msg)",
+      "replacement": "                return kept_branches  # MUTANT: foreign stop returns",
+      "expect_fail": "tests/test_worktree.py::test_stranded_nested_repository_stops_before_any_read_or_removal"
+    },
+    {
+      "name": "m48-git-file-gitdir-check-removed",
+      "why": "returning False when gitdir line is None means a .git file with no 'gitdir:' line is accepted as not-foreign; a directory with such a hand-crafted .git file must still be detected as foreign; x26b (not x26 which always has gitdir:) expects WorktreeCreationError",
+      "anchor": "        if gitdir_line is None:\n            return True, \"a .git file whose gitdir is not this project's\"",
+      "replacement": "        if gitdir_line is None:\n            return False, None  # MUTANT: gitdir check removed",
+      "expect_fail": "tests/test_worktree.py::test_stranded_dot_git_file_no_gitdir_line_is_foreign"
+    },
+    {
+      "name": "m49-dot-git-symlink-not-foreign",
+      "why": "removing the islink check means a .git symlink is not detected as foreign; x27 uses a directory whose .git symlinks to another worktree's .git file and expects WorktreeCreationError with no git -C bad_wt commands",
+      "anchor": "    if os.path.islink(dot_git):\n        return True, \"a .git symlink\"",
+      "replacement": "    if False:  # MUTANT: .git symlink not foreign\n        return True, \"a .git symlink\"",
+      "expect_fail": "tests/test_worktree.py::test_stranded_dot_git_symlink_stops_before_any_read"
     }
   ]
 }
