@@ -1,0 +1,8 @@
+{
+  "slug": "diagnostic-tuyere-seat-return-pipeline",
+  "content_hash": "b01f1e2c7f9566b1e5509b0920ae6428d997747efb4de18b364d3205de4e5b42",
+  "session_id": "d04ebd33-0b49-4d7c-a177-322fdddcf2ec",
+  "armed_at": "2026-09-16T17:30:19.903877",
+  "watcher": "gate_watcher.py spawned detached (pid 86927); log: logs/watch/diagnostic-tuyere-seat-return-pipeline.md.log",
+  "attestation_boundary": "This receipt proves the watcher was ARMED at write time. It does NOT prove the watcher stayed alive. Liveness of a session-local monitor is not externally verifiable."
+}
