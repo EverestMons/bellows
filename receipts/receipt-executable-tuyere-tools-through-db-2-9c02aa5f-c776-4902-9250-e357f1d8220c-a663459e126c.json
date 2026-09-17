@@ -1,0 +1,8 @@
+{
+  "slug": "executable-tuyere-tools-through-db-2",
+  "content_hash": "a663459e126c8dec015d495d903a4a9499386a15eb54f10122fdb466e7dc6943",
+  "session_id": "9c02aa5f-c776-4902-9250-e357f1d8220c",
+  "armed_at": "2026-09-17T03:41:03.058121",
+  "watcher": "gate_watcher.py spawned detached (pid 25736); log: logs/watch/executable-tuyere-tools-through-db-2.md.log",
+  "attestation_boundary": "This receipt proves the watcher was ARMED at write time. It does NOT prove the watcher stayed alive. Liveness of a session-local monitor is not externally verifiable."
+}
