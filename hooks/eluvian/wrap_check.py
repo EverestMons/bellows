@@ -260,12 +260,20 @@ def check(session_id: str | None = None, caller: str = "stop") -> list[str]:
     r_ahead = unpushed_count(ROOT)
     if r_ahead:
         fails.append(f"[3/root] {r_ahead} commit(s) not pushed — push governance root.")
-    # 3b: the MOST-SKIPPED step. Force an explicit affirmation in today's baton.
+    # 3b: the MOST-SKIPPED step. The lock (caller "stop") forces an explicit
+    # affirmation in the baton, keyed on THIS session's id. The SessionStart debt
+    # path has NO 3b arm (thread 53, CEO 2026-09-17): a sweep line dated today
+    # says nothing about whether a prior session left work unwrapped, so the arm
+    # read the first session of every day, and every session past midnight, as
+    # debt. The debt path reports the repo state the other arms read. A stop
+    # without a session id keeps the date fallback.
     try:
         baton_text = BATON.read_text(errors="replace") if BATON.exists() else ""
     except Exception:
         baton_text = ""
-    if caller == "debt" or not session_id:
+    if caller == "debt":
+        pass
+    elif not session_id:
         swept_ok = any(
             line.strip().lstrip(">").strip().lower().startswith("lessons-swept:")
             and today in line

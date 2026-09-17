@@ -149,6 +149,11 @@ class TestNeverSuppressPositivePrint:
         _init_lifecycle_db(db_path)
         memory = tmp_path / "memory2"
         memory.mkdir()
+        # A real debt arm: an uncommitted file in the memory repo. Since thread 53
+        # the debt path has no 3b arm, so a baton without a sweep line no longer
+        # makes the fails list non-empty on its own.
+        subprocess.run(["git", "init", "-q", str(memory)], check=True)
+        (memory / "note.txt").write_text("uncommitted\n")
 
         baton = root / "shop_next_session.md"
         baton.write_text("no swept line here\n")

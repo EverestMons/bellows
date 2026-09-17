@@ -119,19 +119,39 @@ def test_no_sid_date_fallback_miss(wc_env):
     assert TODAY in found[0]
 
 
-# --- Arm 5: debt-caller date-fallback (hit and miss) ---
+# --- Arm 5: the debt caller has NO 3b arm (thread 53, CEO 2026-09-17) ---
+#     A sweep line's date says nothing about whether a prior session left work
+#     unwrapped, so the debt path reports repo state only. A stop with no session
+#     id keeps its date fallback (Arm 4).
 
-def test_debt_caller_date_fallback_hit(wc_env):
+def test_debt_caller_today_foreign_line_no_3b(wc_env):
     _write_baton(wc_env, f"Lessons-swept: {TODAY} [sid: {FOREIGN_PREFIX}] — none\n")
     fails = wc_env.check(session_id=SID, caller="debt")
     assert _3b_fails(fails) == []
 
 
-def test_debt_caller_date_fallback_miss(wc_env):
+def test_debt_caller_stale_line_no_3b(wc_env):
     _write_baton(wc_env, "Lessons-swept: 2020-01-01 — none\n")
     fails = wc_env.check(session_id=SID, caller="debt")
-    found = _3b_fails(fails)
-    assert len(found) == 1
+    assert _3b_fails(fails) == []
+
+
+def test_debt_caller_no_sweep_line_no_3b(wc_env):
+    _write_baton(wc_env, "Some baton content with no sweep lines.\n")
+    fails = wc_env.check(session_id=SID, caller="debt")
+    assert _3b_fails(fails) == []
+
+
+def test_debt_caller_without_sid_no_3b(wc_env):
+    _write_baton(wc_env, "Lessons-swept: 2020-01-01 — none\n")
+    fails = wc_env.check(session_id=None, caller="debt")
+    assert _3b_fails(fails) == []
+
+
+def test_debt_caller_clean_tree_reports_no_debt(wc_env):
+    _write_baton(wc_env, f"Lessons-swept: 2020-01-01 [sid: {FOREIGN_PREFIX}] — none\n")
+    fails = wc_env.check(session_id=SID, caller="debt")
+    assert fails == []
 
 
 # --- Blockquote-prefix fix (SESSION 63 fixture) ---

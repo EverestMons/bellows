@@ -94,7 +94,8 @@ done-on-another-machine-and-not-pulled (measured 2026-08-24).
    **Then add a line to `shop_next_session.md`:**
    `Lessons-swept: <today's date> [sid: <first-8-of-session-id>] — <one-line delta, or 'none'>`
    (the stop-hook lock verifies the NEWEST such line carries THIS session's id;
-   the debt hook checks for today's date. Your session prefix is the first 8
+   the debt hook does not read this line — since thread 53 it reports only the
+   repo state a wrap leaves behind. Your session prefix is the first 8
    characters of the session UUID — visible in `hooks.log` or receipt filenames).
    **Law:** never start a baton line with a bare `Lessons-swept:` except the
    affirmation itself — format examples in prose must be backticked.

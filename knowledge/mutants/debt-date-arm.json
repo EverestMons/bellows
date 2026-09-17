@@ -1,0 +1,26 @@
+{
+  "target": "hooks/eluvian/wrap_check.py",
+  "mutants": [
+    {
+      "name": "date-arm-restored",
+      "why": "restoring the pre-plan condition sends the debt caller back through the date-keyed arm; a stale sweep line then fails 3b on the debt path",
+      "anchor": "    if caller == \"debt\":\n        pass\n    elif not session_id:",
+      "replacement": "    if caller == \"debt\" or not session_id:",
+      "expect_fail": "tests/test_wrap_3b_keyed.py::test_debt_caller_stale_line_no_3b"
+    },
+    {
+      "name": "skip-widened-to-sidless-stop",
+      "why": "widening the skip to a stop with no session id removes the lock's date fallback; a stale sweep line then passes 3b on that path",
+      "anchor": "    if caller == \"debt\":\n        pass\n",
+      "replacement": "    if caller == \"debt\" or not session_id:\n        pass\n",
+      "expect_fail": "tests/test_wrap_3b_keyed.py::test_no_sid_date_fallback_miss"
+    },
+    {
+      "name": "debt-routed-to-sid-arm",
+      "why": "dropping the debt branch sends a debt call that carries a session id into the session-keyed arm, which fails on another session's sweep line",
+      "anchor": "    if caller == \"debt\":\n        pass\n    elif not session_id:",
+      "replacement": "    if not session_id:",
+      "expect_fail": "tests/test_wrap_3b_keyed.py::test_debt_caller_today_foreign_line_no_3b"
+    }
+  ]
+}
