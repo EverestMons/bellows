@@ -1,0 +1,26 @@
+=== RUN 1
+[2r/receipts] SKIPPED — lifecycle.db not readable for clearance cross-check.
+[2r/receipts] SKIPPED (blocking arm) — no session_id provided; receipt check requires session context.
+wrap_check: OK — all four repos wrapped.
+=== EXIT 1: 0
+=== RUN 2
+[2r/receipts] SKIPPED — lifecycle.db not readable for clearance cross-check.
+[2r/receipts] SKIPPED (blocking arm) — no session_id provided; receipt check requires session context.
+SESSION WRAP INCOMPLETE — the following steps are not verifiably done:
+
+  ✗ [3b/lessons] No `Lessons-swept: 2026-09-17` line in the baton. Do the 3b transferable-lessons sweep AS ITS OWN ACT (distinct from the arc note), then add a `Lessons-swept: 2026-09-17 [sid: <session-prefix-8>] — <delta, or 'none'>` line to shop_next_session.md and commit.
+
+Complete these, then this lock clears automatically.
+=== EXIT 2: 1
+=== RUN 3
+[2r/receipts] SKIPPED — lifecycle.db not readable for clearance cross-check.
+[2r/receipts] OK — no deposits in this session (session dddddddd-fixture-stop-sid).
+SESSION WRAP INCOMPLETE — the following steps are not verifiably done:
+
+  ✗ [3b/lessons] The newest Lessons-swept: line belongs to session aaaaaaaa, not this session (dddddddd). Do the 3b transferable-lessons sweep AS ITS OWN ACT (distinct from the arc note), then add a `Lessons-swept: 2026-09-17 [sid: dddddddd] — <delta, or 'none'>` line to shop_next_session.md and commit.
+
+Complete these, then this lock clears automatically.
+=== EXIT 3: 1
+=== RUN 4
+{}
+=== EXIT 4: 0
