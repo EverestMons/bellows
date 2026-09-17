@@ -1,0 +1,11 @@
+PYTHON: /Users/marklehn/Developer/bellows/.venv/bin/python
+HEAD: 95bb7a2e5551ac21eb0aaf3ca3437fdadb65c1d8
+TARGET: hooks/eluvian/wrap_check.py sha256=14ce7156a5d4
+
+MUTANT date-arm-restored: KILLED — suite caught the defect
+MUTANT skip-widened-to-sidless-stop: KILLED — suite caught the defect
+MUTANT debt-routed-to-sid-arm: KILLED — suite caught the defect
+
+LIVE-TREE UNCHANGED: hooks/eluvian/wrap_check.py sha256=14ce7156a5d4
+
+MUTATION: 3 killed, 0 survived, 0 error
