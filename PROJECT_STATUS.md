@@ -4,6 +4,9 @@
 ## Status: Phase 1 Complete — Live (daemon running, all 10 watched paths active)
 
 ## Completed
+### Plan 100126
+**bellows #100126 (thread 53, 2026-09-17):** `wrap_check.check` caller `"debt"` no longer reads the sweep line. The `if caller == "debt" or not session_id:` branch is split into `if caller == "debt": pass` / `elif not session_id:` — the date arm is removed and the sid-less Stop's date fallback is preserved. Seven paths across two DEV commits: `hooks/eluvian/wrap_check.py`, `hooks/commands/wrap.md`, `tests/test_wrap_3b_keyed.py` (three tests added for Arm 5: `test_debt_caller_stale_line_no_3b`, `test_debt_caller_no_sweep_line_no_3b`, `test_debt_caller_without_sid_no_3b`), `tests/test_wrap_r2_registry.py`, `knowledge/mutants/debt-date-arm.json`, `knowledge/development/dev-log-debt-date-arm-2026-09-17.md`, `knowledge/mutants/debt-date-arm.run.txt`. UNWRAPPED SESSION DEBT DETECTED envelope count falls 1→0 on the fixture's clean tree; hook empty `{}` rises 0→1. Suite: 2527 passed, 3 mutants killed.
+
 ### Plan 335 — D5's collector (closed 2026-08-10)
 `scripts/cycle_yields.py` + `tests/test_cycle_yields.py`. D5 was adopted 2026-08-09 and never built, so specimen 1 was hand-collected over a session; every cycle that CLOSES now flows in automatically. Suite 928 → **960 passed**. Two findings outrank the pass: the fold-origin split is **absent from the machine-readable record entirely (0 of 61)** — the two plans that "have" it carry it as narrative prose, which a file-level grep reports as present — and **194 of 536 block-derived rows (36%) are UNPARSEABLE because the corpus is dialectal**, carrying three Cycle Log forms (FORWARD 47). The tool reports them rather than skipping; a skip would have made the corpus look 36% cleaner than it is.
 
