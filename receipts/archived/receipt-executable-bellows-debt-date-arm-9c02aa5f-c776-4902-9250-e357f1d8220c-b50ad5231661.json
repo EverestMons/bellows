@@ -1,0 +1,8 @@
+{
+  "slug": "executable-bellows-debt-date-arm",
+  "content_hash": "b50ad523166151b5d34ede9e9e7ff91050090aae640e7a025628df58fb8685ca",
+  "session_id": "9c02aa5f-c776-4902-9250-e357f1d8220c",
+  "armed_at": "2026-09-17T17:02:50.497466",
+  "watcher": "gate_watcher.py spawned detached (pid 40721); log: logs/watch/executable-bellows-debt-date-arm.md.log",
+  "attestation_boundary": "This receipt proves the watcher was ARMED at write time. It does NOT prove the watcher stayed alive. Liveness of a session-local monitor is not externally verifiable."
+}
