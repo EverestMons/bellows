@@ -114,7 +114,9 @@ done-on-another-machine-and-not-pulled (measured 2026-08-24).
 3. **Governance root** (`$ELUVIAN_WRAP_ROOT`) — refresh the baton
    (`shop_next_session.md`: preserve carried threads, add this arc's ships, demote
    prior ones — append your OWN session block only; never rewrite another
-   machine's blocks), `git add bellows` to bump the submodule gitlink, commit
+   machine's blocks), for each stale tracked gitlink the `[3/root]` arm named run
+   `git update-index --cacheinfo 160000,<published sha>,<path>` to bump it to its
+   published tip (works on either layout — initialized or uninitialized), commit
 3c. **Carried items → tuyere threads** (GOVERNANCE §5b in the tuyere repo) —
    enter this session's carried/deferred items as threads so the mutable
    to-do state lives in the database, not the baton:
@@ -125,8 +127,8 @@ done-on-another-machine-and-not-pulled (measured 2026-08-24).
    carried items there as prose too, but the thread row is the tracked copy.
    No tuyere checkout on this machine → record in the baton alone, as before.
    (`docs: session wrap <date> — … refresh baton, bump bellows`), then push.
-   On the mini the submodule dirs are uninitialized — bump the gitlink with
-   `git update-index --cacheinfo 160000,<bellows-HEAD-sha>,bellows` instead.
+   On both layouts use `git update-index --cacheinfo 160000,<published sha>,<path>`
+   with the sha the arm names — never a local HEAD, which can be unpushed.
 4. **Memory repo** (`$ELUVIAN_WRAP_MEMORY`) — if any memories changed, commit
    them + `MEMORY.md` and push. Skip if untouched. On the mini this points at
    the auto-memory dir, which is not a git repo — write memories there but the
