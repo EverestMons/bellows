@@ -145,6 +145,15 @@ def wc_env(monkeypatch, tmp_path):
     monkeypatch.setenv("ELUVIAN_WRAP_ROOT", str(root))
     monkeypatch.setenv("ELUVIAN_WRAP_MEMORY", str(memory))
 
+    # The venv is rooted at the main checkout, so sys.path has the main checkout
+    # before this worktree.  Both have a hooks/eluvian/wrap_check.py; the namespace
+    # package merges their paths and the main copy wins.  Fix: prepend the worktree
+    # and evict the cached (wrong) namespace package entries so the fresh import
+    # walks sys.path from the front and finds the worktree's module first.
+    import sys
+    monkeypatch.syspath_prepend(str(BELLOWS_ROOT))
+    for _k in ("hooks", "hooks.eluvian", "hooks.eluvian.wrap_check"):
+        monkeypatch.delitem(sys.modules, _k, raising=False)
     import hooks.eluvian.wrap_check as wc
     monkeypatch.setattr(wc, "ROOT", root)
     monkeypatch.setattr(wc, "BELLOWS", bellows)
