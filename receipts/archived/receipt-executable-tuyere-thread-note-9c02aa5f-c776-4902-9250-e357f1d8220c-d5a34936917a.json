@@ -1,0 +1,8 @@
+{
+  "slug": "executable-tuyere-thread-note",
+  "content_hash": "d5a34936917a3bcdfbcc231d48059abb9d4538ab1e508cfbfb28e598150ebe5a",
+  "session_id": "9c02aa5f-c776-4902-9250-e357f1d8220c",
+  "armed_at": "2026-09-17T22:26:50.439538",
+  "watcher": "gate_watcher.py spawned detached (pid 92096); log: logs/watch/executable-tuyere-thread-note.md.log",
+  "attestation_boundary": "This receipt proves the watcher was ARMED at write time. It does NOT prove the watcher stayed alive. Liveness of a session-local monitor is not externally verifiable."
+}
