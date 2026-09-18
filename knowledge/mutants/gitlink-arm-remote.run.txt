@@ -1,5 +1,5 @@
 PYTHON: /Users/marklehn/Developer/bellows/.venv/bin/python
-HEAD: b7115d3964b9ac779678e12da18ca0ee2f26dcbd
+HEAD: 25aff325393b35232a3d682bf6a31a06c630668c
 TARGET: hooks/eluvian/wrap_check.py sha256=d3c536b83bc9
 
 MUTANT stale-reads-as-pass: KILLED — suite caught the defect
