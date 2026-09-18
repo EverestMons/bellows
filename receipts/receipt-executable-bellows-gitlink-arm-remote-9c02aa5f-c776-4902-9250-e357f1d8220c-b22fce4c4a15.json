@@ -1,0 +1,8 @@
+{
+  "slug": "executable-bellows-gitlink-arm-remote",
+  "content_hash": "b22fce4c4a153c68e244af5f4ff94f7e2be67158b0aad04c68b2484c302df837",
+  "session_id": "9c02aa5f-c776-4902-9250-e357f1d8220c",
+  "armed_at": "2026-09-18T10:40:27.922325",
+  "watcher": "gate_watcher.py spawned detached (pid 19096); log: logs/watch/executable-bellows-gitlink-arm-remote.md.log",
+  "attestation_boundary": "This receipt proves the watcher was ARMED at write time. It does NOT prove the watcher stayed alive. Liveness of a session-local monitor is not externally verifiable."
+}
