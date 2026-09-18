@@ -21,7 +21,7 @@ the memory repo (a git repo on the shop machine; a plain directory on the mini).
      (the mini is the SERVER and runs the live daemon since 2026-09-02 — RUNNING is the
      deliberate state there; a shop machine with no daemon reports STOPPED as such, not
      as a failure; MACHINE_SETUP §0)
-   - **wrap debt** — run `python3 <bellows>/hooks/eluvian/wrap_check.py` READ-ONLY (report its output, arm nothing)
+   - **wrap debt** — run `python3 <bellows>/hooks/eluvian/wrap_check.py "" debt` READ-ONLY (report its output, arm nothing) — the DEBT caller, as the SessionStart hook runs it. A bare run takes the lock's sid-less path, whose date-keyed 3b arm still reads the first session of every day as debt; the debt caller lost that arm in #100126 (thread 53), so this reports the repo state a wrap leaves behind and nothing else.
    - **parked arcs** — report every line containing `⏸`, `PARKED`, or `RESUME AT` from the head of `$ELUVIAN_WRAP_ROOT/shop_next_session.md`
 
 4. **Recite AND assert the system wiring** (the map goes in the report so every machine's session starts from the same picture; each assert is a real check, not a recollection):
