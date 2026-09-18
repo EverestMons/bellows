@@ -23,7 +23,7 @@ Exit codes:
 Ritual reference: eluvian-session-wrap-ritual memory. Four repos:
   1. project repos  — untracked knowledge/decisions/Done/ plan files committed
   2. bellows        — verdicts/resolved/ committed AND pushed
-  3. governance root— baton refreshed+committed, bellows gitlink bumped, 3b done
+  3. governance root— baton refreshed+committed, every tracked submodule gitlink current, 3b done
   4. memory repo    — committed AND pushed (if touched)
 """
 from __future__ import annotations
@@ -35,6 +35,7 @@ import re
 import sqlite3
 import subprocess
 import sys
+from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime as dt
 from pathlib import Path
 
@@ -111,6 +112,79 @@ def unpushed_count(repo: Path) -> int | None:
     try:
         return int(n)
     except ValueError:
+        return None
+
+
+# SSH transport options for _published_tip: bounded connect, non-interactive.
+# ConnectTimeout=3 caps the per-host tcp handshake; BatchMode=yes prevents
+# ssh from prompting (passphrase, unknown host key), which would hang the hook.
+_GIT_SSH = "ssh -o ConnectTimeout=3 -o BatchMode=yes"
+
+
+def _tracked_gitlinks(root: Path) -> list[tuple[str, str]]:
+    """Return (path, sha) pairs for every gitlink tracked in root.
+
+    Takes the UNION of the index (git ls-files -s) and HEAD (git ls-tree HEAD)
+    so that staged additions (index only) and staged removals (HEAD only) are
+    both included.  Index sha wins for paths present in both.
+    """
+    result: dict[str, str] = {}
+    # HEAD first so the index (staged state) wins on overlap
+    head_out = git(root, "ls-tree", "HEAD")
+    for line in head_out.splitlines():
+        if "\t" not in line:
+            continue
+        meta, path = line.split("\t", 1)
+        parts = meta.split()
+        if parts[0] == "160000":
+            result[path] = parts[2]
+    idx_out = git(root, "ls-files", "-s")
+    for line in idx_out.splitlines():
+        if "\t" not in line:
+            continue
+        meta, path = line.split("\t", 1)
+        parts = meta.split()
+        if parts[0] == "160000":
+            result[path] = parts[1]
+    return list(result.items())
+
+
+def _submodule_url(root: Path, path: str) -> str | None:
+    """Return the URL for the gitlink at `path` by searching .gitmodules by path value.
+
+    Sections are keyed by submodule NAME, which only defaults to the path — a
+    submodule added with --name has a different section key, so
+    `submodule.<path>.url` fails on it.  We search all sections for the one
+    whose `path` value matches, then return its `url`.
+    """
+    out = git(root, "config", "-f", ".gitmodules", "--get-regexp",
+              r"^submodule\..*\.path$")
+    if not out:
+        return None
+    for line in out.splitlines():
+        key, value = line.split(None, 1)
+        if value.strip() == path:
+            # key is "submodule.<name>.path" → section is "submodule.<name>"
+            section = key.rsplit(".path", 1)[0]
+            url = git(root, "config", "-f", ".gitmodules", f"{section}.url")
+            return url if url else None
+    return None
+
+
+def _published_tip(url: str) -> str | None:
+    """Read the HEAD sha of `url` via git ls-remote.  Returns None on any failure."""
+    try:
+        env = os.environ.copy()
+        env["GIT_SSH_COMMAND"] = _GIT_SSH
+        r = subprocess.run(
+            ["git", "ls-remote", url, "HEAD"],
+            capture_output=True, text=True, timeout=10, env=env,
+        )
+        if r.returncode != 0 or not r.stdout.strip():
+            return None
+        sha = r.stdout.split("\t")[0].strip()
+        return sha if len(sha) == 40 else None
+    except Exception:
         return None
 
 
@@ -253,10 +327,47 @@ def check(session_id: str | None = None, caller: str = "stop") -> list[str]:
     baton_dirty = porcelain(ROOT, "shop_next_session.md")
     if baton_dirty:
         fails.append("[3/root] shop_next_session.md is uncommitted — commit the refreshed baton.")
-    # bellows gitlink must be committed (not a dangling submodule bump)
-    gitlink_dirty = porcelain(ROOT, "bellows")
-    if gitlink_dirty:
-        fails.append("[3/root] bellows gitlink is uncommitted — `git add bellows` and commit the bump.")
+    # every tracked submodule gitlink must be current and committed
+    try:
+        _pending: list[tuple[str, str, str]] = []  # (path, recorded_sha, url)
+        for _gl_path, _gl_sha in _tracked_gitlinks(ROOT):
+            _status = porcelain(ROOT, _gl_path)
+            if _status:
+                _staged_col = _status[0][0]
+                if _staged_col != " ":
+                    _change = {"M": "bump", "A": "addition", "D": "removal"}.get(
+                        _staged_col, f"staged change ({_staged_col})")
+                    fails.append(
+                        f"[3/root] {_gl_path} has an uncommitted {_change} — "
+                        f"commit or revert it before wrapping.")
+                    continue
+            _url = _submodule_url(ROOT, _gl_path)
+            if _url is None:
+                fails.append(
+                    f"[3/root] {_gl_path} has no .gitmodules entry — "
+                    f"add one before wrapping.")
+                continue
+            _pending.append((_gl_path, _gl_sha, _url))
+
+        def _read_one(item: tuple[str, str, str]) -> tuple[str, str, str | None]:
+            _p, _s, _u = item
+            return _p, _s, _published_tip(_u)
+
+        with ThreadPoolExecutor(max_workers=len(_pending) or 1) as _pool:
+            _tip_results = list(_pool.map(_read_one, _pending))
+
+        for _gl_path, _gl_sha, _tip in _tip_results:
+            if _tip is None:
+                print(f"[3/root] WARN (advisory): {_gl_path} — "
+                      f"published tip unreadable; gitlink not judged.")
+            elif _tip != _gl_sha:
+                fails.append(
+                    f"[3/root] {_gl_path} gitlink is stale — "
+                    f"{_gl_sha[:8]} recorded, {_tip} published; "
+                    f"bump it to that sha and commit.")
+    except Exception as _exc:
+        print(f"[3/root] WARN (advisory): gitlink arm error — {_exc}; "
+              f"any gitlink not already reported above was not judged.")
     r_ahead = unpushed_count(ROOT)
     if r_ahead:
         fails.append(f"[3/root] {r_ahead} commit(s) not pushed — push governance root.")

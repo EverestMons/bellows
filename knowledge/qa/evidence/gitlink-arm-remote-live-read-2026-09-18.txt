@@ -1,0 +1,44 @@
+# QA evidence — live read (Observer K, non-vacuity proof) — plan 100128 (2026-09-18)
+#
+# Setup: cloned /Users/marklehn/Developer/eluvian-governance to a scratch dir,
+# pointed anvil's gitlink at synthetic sha 1111111111111111111111111111111111111111
+# (committed, not staged), then ran the checker under env -i.
+#
+# TIP (from git ls-remote on anvil's origin): cfd6fd923ce3f269509433baccc40a2d584cff6f
+#
+# Assertions (all pass):
+#   - Exactly ONE [3/root] stale line, naming anvil
+#   - Published sha in the line equals TIP (cfd6fd923ce3f269509433baccc40a2d584cff6f)
+#   - NO stale line for bellows or lessons-forge
+#   - NO "published tip unreadable" advisory
+#
+# Command:
+#   git clone -q /Users/marklehn/Developer/eluvian-governance "$SCRATCH/gov"
+#   TIP=$(git ls-remote "$(git -C "$SCRATCH/gov" config -f .gitmodules submodule.anvil.url)" HEAD | cut -f1)
+#   git -C "$SCRATCH/gov" update-index --cacheinfo "160000,1111111111111111111111111111111111111111,anvil"
+#   git -c user.name=test -c user.email=t@t -C "$SCRATCH/gov" commit -qm "positive control: anvil gitlink not at its published tip"
+#   env -i HOME="$HOME" PATH=/usr/bin:/bin ELUVIAN_WRAP_ROOT="$SCRATCH/gov" /usr/bin/python3 hooks/eluvian/wrap_check.py "" debt
+
+=== env -i live read output ===
+[2r/receipts] SKIPPED — receipts directory absent.
+[R2/registry] wrap(s) recorded today per the shared registry:
+  [76] Marks-Mac-mini.local — 9c02aa5f-c776-4902-9250-e357f1d8220c wrapped at 2026-09-18 10:47:41
+— if this machine's tree is stale, fetch first: the debt reported BELOW may be another machine's already-satisfied state (scope law). Genuine local debt still stands.
+SESSION WRAP INCOMPLETE — the following steps are not verifiably done:
+
+  ✗ [1/project] governance: 1 commit(s) not pushed — push governance.
+  ✗ [2/bellows] 1 commit(s) not pushed — push bellows.
+  ✗ [3/root] anvil gitlink is stale — 11111111 recorded, cfd6fd923ce3f269509433baccc40a2d584cff6f published; bump it to that sha and commit.
+  ✗ [3/root] 1 commit(s) not pushed — push governance root.
+
+Complete these, then this lock clears automatically.
+Exit: 1
+
+=== Assertion verification ===
+TIP=cfd6fd923ce3f269509433baccc40a2d584cff6f
+[3/root] stale line present: YES — "anvil gitlink is stale — 11111111 recorded, cfd6fd923ce3f269509433baccc40a2d584cff6f published"
+Published sha equals TIP: YES — both are cfd6fd923ce3f269509433baccc40a2d584cff6f
+No stale for bellows: YES
+No stale for lessons-forge: YES
+No "published tip unreadable" advisory: YES
+Non-vacuity proof: PASSED — arm read the real published tip from the remote inside env -i

@@ -1,0 +1,75 @@
+{
+  "target": "hooks/eluvian/wrap_check.py",
+  "mutants": [
+    {
+      "name": "stale-reads-as-pass",
+      "why": "dropping the stale branch means a pointer whose published tip differs from the gitlink silently passes; the wrap gate never fires for a drifted submodule",
+      "anchor": "            elif _tip != _gl_sha:\n                fails.append(\n                    f\"[3/root] {_gl_path} gitlink is stale — \"\n                    f\"{_gl_sha[:8]} recorded, {_tip} published; \"\n                    f\"bump it to that sha and commit.\")",
+      "replacement": "            elif _tip != _gl_sha:\n                pass",
+      "expect_fail": "tests/test_wrap_gitlink_arm.py::test_stale_pointer_fails"
+    },
+    {
+      "name": "unreadable-reads-as-stale",
+      "why": "treating a None tip as differing from the gitlink makes every unreadable remote a false stale, blocking wraps when a host is offline",
+      "anchor": "            if _tip is None:\n                print(f\"[3/root] WARN (advisory): {_gl_path} — \"\n                      f\"published tip unreadable; gitlink not judged.\")\n            elif _tip != _gl_sha:",
+      "replacement": "            if _tip is not None and _tip != _gl_sha:\n                pass\n            if _tip is None or _tip != _gl_sha:",
+      "expect_fail": "tests/test_wrap_gitlink_arm.py::test_unreadable_remote_passes_with_advisory"
+    },
+    {
+      "name": "one-source-enumeration",
+      "why": "using only the index drops staged removals (present in HEAD but not in index); a removal staged and not committed would never be reported",
+      "anchor": "    # HEAD first so the index (staged state) wins on overlap\n    head_out = git(root, \"ls-tree\", \"HEAD\")\n    for line in head_out.splitlines():\n        if \"\\t\" not in line:\n            continue\n        meta, path = line.split(\"\\t\", 1)\n        parts = meta.split()\n        if parts[0] == \"160000\":\n            result[path] = parts[2]",
+      "replacement": "    # HEAD dropped — index only (misses staged removals)",
+      "expect_fail": "tests/test_wrap_gitlink_arm.py::test_uncommitted_change_reports_once"
+    },
+    {
+      "name": "missing-entry-skipped",
+      "why": "skipping a path with no .gitmodules entry instead of failing exempts that submodule permanently — it can drift indefinitely without the arm noticing",
+      "anchor": "            _url = _submodule_url(ROOT, _gl_path)\n            if _url is None:\n                fails.append(\n                    f\"[3/root] {_gl_path} has no .gitmodules entry — \"\n                    f\"add one before wrapping.\")\n                continue",
+      "replacement": "            _url = _submodule_url(ROOT, _gl_path)\n            if _url is None:\n                continue",
+      "expect_fail": "tests/test_wrap_gitlink_arm.py::test_missing_gitmodules_entry_fails"
+    },
+    {
+      "name": "early-return",
+      "why": "returning after the first stale result means a second simultaneously stale submodule is never reported; only the first one triggers a fail",
+      "anchor": "            elif _tip != _gl_sha:\n                fails.append(\n                    f\"[3/root] {_gl_path} gitlink is stale — \"\n                    f\"{_gl_sha[:8]} recorded, {_tip} published; \"\n                    f\"bump it to that sha and commit.\")",
+      "replacement": "            elif _tip != _gl_sha:\n                fails.append(\n                    f\"[3/root] {_gl_path} gitlink is stale — \"\n                    f\"{_gl_sha[:8]} recorded, {_tip} published; \"\n                    f\"bump it to that sha and commit.\")\n                return fails",
+      "expect_fail": "tests/test_wrap_gitlink_arm.py::test_two_stale_submodules_both_named"
+    },
+    {
+      "name": "sequential-reads",
+      "why": "replacing the thread pool with a plain loop makes tip reads sequential; three 0.5-s reads take 1.5 s, failing the <1.0-s concurrency assertion",
+      "anchor": "        with ThreadPoolExecutor(max_workers=len(_pending) or 1) as _pool:\n            _tip_results = list(_pool.map(_read_one, _pending))",
+      "replacement": "        _tip_results = [_read_one(item) for item in _pending]",
+      "expect_fail": "tests/test_wrap_gitlink_arm.py::test_remote_reads_are_bounded_and_batch"
+    },
+    {
+      "name": "interactive-ssh",
+      "why": "dropping BatchMode=yes allows ssh to prompt interactively; an unknown host key would hang the hook indefinitely",
+      "anchor": "_GIT_SSH = \"ssh -o ConnectTimeout=3 -o BatchMode=yes\"",
+      "replacement": "_GIT_SSH = \"ssh -o ConnectTimeout=3\"",
+      "expect_fail": "tests/test_wrap_gitlink_arm.py::test_remote_reads_are_bounded_and_batch"
+    },
+    {
+      "name": "unguarded-arm",
+      "why": "removing the try/except means any exception in the arm propagates out of check(); main() catches it and exits 0, discarding the advisory — a silent total bypass of the wrap gate",
+      "anchor": "    # every tracked submodule gitlink must be current and committed\n    try:",
+      "replacement": "    # every tracked submodule gitlink must be current and committed\n    if True:",
+      "expect_fail": "tests/test_wrap_gitlink_arm.py::test_arm_failure_is_confined_to_the_arm"
+    },
+    {
+      "name": "short-circuit-on-unstaged",
+      "why": "short-circuiting on any non-empty porcelain line (instead of only staged changes) makes the arm treat an initialized submodule's worktree advance (' M') as an uncommitted change, producing a false fail on the Air",
+      "anchor": "                if _staged_col != \" \":",
+      "replacement": "                if _status:",
+      "expect_fail": "tests/test_wrap_gitlink_arm.py::test_uncommitted_change_reports_once"
+    },
+    {
+      "name": "url-keyed-by-path",
+      "why": "looking up submodule.<path>.url fails when the .gitmodules section name differs from the path (e.g. added with --name), reporting a false missing-entry fail for a submodule that IS registered",
+      "anchor": "            section = key.rsplit(\".path\", 1)[0]\n            url = git(root, \"config\", \"-f\", \".gitmodules\", f\"{section}.url\")",
+      "replacement": "            url = git(root, \"config\", \"-f\", \".gitmodules\", f\"submodule.{path}.url\")",
+      "expect_fail": "tests/test_wrap_gitlink_arm.py::test_enumeration_is_derived_not_listed"
+    }
+  ]
+}
