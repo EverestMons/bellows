@@ -1,0 +1,18 @@
+PYTHON: /Users/marklehn/Developer/bellows/.venv/bin/python
+HEAD: b7115d3964b9ac779678e12da18ca0ee2f26dcbd
+TARGET: hooks/eluvian/wrap_check.py sha256=d3c536b83bc9
+
+MUTANT stale-reads-as-pass: KILLED — suite caught the defect
+MUTANT unreadable-reads-as-stale: KILLED — suite caught the defect
+MUTANT one-source-enumeration: KILLED — suite caught the defect
+MUTANT missing-entry-skipped: KILLED — suite caught the defect
+MUTANT early-return: KILLED — suite caught the defect
+MUTANT sequential-reads: KILLED — suite caught the defect
+MUTANT interactive-ssh: KILLED — suite caught the defect
+MUTANT unguarded-arm: KILLED — suite caught the defect
+MUTANT short-circuit-on-unstaged: KILLED — suite caught the defect
+MUTANT url-keyed-by-path: KILLED — suite caught the defect
+
+LIVE-TREE UNCHANGED: hooks/eluvian/wrap_check.py sha256=d3c536b83bc9
+
+MUTATION: 10 killed, 0 survived, 0 error
