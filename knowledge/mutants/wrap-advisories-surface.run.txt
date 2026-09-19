@@ -1,0 +1,33 @@
+PYTHON: /Users/marklehn/Developer/bellows/.venv/bin/python
+HEAD: 8b442718cd377b6e7010dd31bd9a7d5640482f81
+TARGET: hooks/eluvian/_common.py sha256=5d8303e1a5e6
+TARGET: hooks/eluvian/wrap_debt_hook.py sha256=a68dd7ba19df
+TARGET: hooks/eluvian/wrap_stop_hook.py sha256=d1a7f7e20b50
+
+MUTANT debt-pass-discards: KILLED — suite caught the defect
+MUTANT advisory-pass-logs-twice: KILLED — suite caught the defect
+MUTANT stderr-selected: KILLED — suite caught the defect
+MUTANT debt-pass-branch-raises: KILLED — suite caught the defect
+MUTANT debt-path-composed-as-advisory: KILLED — suite caught the defect
+MUTANT new-names-imported-by-name: KILLED — suite caught the defect
+MUTANT stop-pass-discards: KILLED — suite caught the defect
+MUTANT stop-message-blocks: KILLED — suite caught the defect
+MUTANT stop-message-as-context: KILLED — suite caught the defect
+MUTANT unarmed-runs-checker: KILLED — suite caught the defect
+MUTANT no-disarm-on-advisory-pass: KILLED — suite caught the defect
+MUTANT advisory-pass-drops-disarm-record: KILLED — suite caught the defect
+MUTANT allowlist-by-spelling: KILLED — suite caught the defect
+MUTANT ok-prefix-too-broad: KILLED — suite caught the defect
+MUTANT ok-prefix-too-narrow: KILLED — suite caught the defect
+MUTANT crash-header-asserts-clean: KILLED — suite caught the defect
+MUTANT header-asserts-nothing-owed: KILLED — suite caught the defect
+MUTANT crash-header-directs-wrap: KILLED — suite caught the defect
+MUTANT crash-branch-needs-3.10: KILLED — suite caught the defect
+MUTANT crash-message-carries-both-headers: KILLED — suite caught the defect
+MUTANT skipped-read-as-ok: KILLED — suite caught the defect
+
+LIVE-TREE UNCHANGED: hooks/eluvian/_common.py sha256=5d8303e1a5e6
+LIVE-TREE UNCHANGED: hooks/eluvian/wrap_debt_hook.py sha256=a68dd7ba19df
+LIVE-TREE UNCHANGED: hooks/eluvian/wrap_stop_hook.py sha256=d1a7f7e20b50
+
+MUTATION: 21 killed, 0 survived, 0 error
