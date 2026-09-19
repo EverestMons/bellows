@@ -1,0 +1,3 @@
+continue
+
+CEO verdict 2026-09-19: continue — keep the change (thread 427, SURFACE ALL). Review: every gate PASS; the three hooks' diff is the plan's Item 2 at every point; QA's six rows hold — suite 2537 → 2549 passed, 0 failed; the twelve nodes alone; MUTATION 21 killed, 0 survived, 0 error; the live run surfaced exactly its checker's non-OK lines through both real hooks — and Rule 20 PASSED. The verdict item's live check passed on the mini: with a planted memory orphan, this Planner session's /wrap showed the stop hook's `systemMessage` in the desktop app's Code tab, confirmed by the CEO; the probe file removed. Discharges thread 427. Record: governance 60be37bb (the walk register's verdict review).
