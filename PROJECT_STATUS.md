@@ -4,6 +4,10 @@
 ## Status: Phase 1 Complete — Live (daemon running, all 10 watched paths active)
 
 ## Completed
+### Plan 100129
+Both wrap hooks now surface a passing check's non-OK lines: `hooks/eluvian/_common.py` gained `advisory_lines()` (deny-list selector) and `compose_advisory_message()` (header composer); `wrap_debt_hook.py` emits those lines as session context on a clean pass; `wrap_stop_hook.py` emits them as a `systemMessage` on an armed pass, still allowing the stop. Twelve tests added in `tests/test_wrap_advisory_surface.py`; 21 mutants killed; live run confirmed both hooks surface the planted advisory and the receipts-arm unreadable-database line under the ordinary header, with OK lines absent.
+Exactly four evidence files committed, porcelain clean, toplevel confirmed. Step 2 is complete.
+
 ### Plan 100126
 **bellows #100126 (thread 53, 2026-09-17):** `wrap_check.check` caller `"debt"` no longer reads the sweep line. The `if caller == "debt" or not session_id:` branch is split into `if caller == "debt": pass` / `elif not session_id:` — the date arm is removed and the sid-less Stop's date fallback is preserved. Seven paths across two DEV commits: `hooks/eluvian/wrap_check.py`, `hooks/commands/wrap.md`, `tests/test_wrap_3b_keyed.py` (three tests added for Arm 5: `test_debt_caller_stale_line_no_3b`, `test_debt_caller_no_sweep_line_no_3b`, `test_debt_caller_without_sid_no_3b`), `tests/test_wrap_r2_registry.py`, `knowledge/mutants/debt-date-arm.json`, `knowledge/development/dev-log-debt-date-arm-2026-09-17.md`, `knowledge/mutants/debt-date-arm.run.txt`. UNWRAPPED SESSION DEBT DETECTED envelope count falls 1→0 on the fixture's clean tree; hook empty `{}` rises 0→1. Suite: 2527 passed, 3 mutants killed.
 
