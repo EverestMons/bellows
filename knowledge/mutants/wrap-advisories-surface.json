@@ -1,0 +1,164 @@
+{
+  "target": "hooks/eluvian/_common.py",
+  "mutants": [
+    {
+      "name": "debt-pass-discards",
+      "why": "reverting the pass branch to unconditional emit(None) silences advisory lines; case A asserts additionalContext carries the two non-OK lines",
+      "target": "hooks/eluvian/wrap_debt_hook.py",
+      "anchor": "        lines = _common.advisory_lines(res.stdout)\n        if lines:\n            emit(_common.compose_advisory_message(lines))\n        else:\n            emit(None)",
+      "replacement": "        emit(None)",
+      "expect_fail": "tests/test_wrap_advisory_surface.py::test_debt_hook_surfaces_advisories_on_pass"
+    },
+    {
+      "name": "advisory-pass-logs-twice",
+      "why": "writing a second log line when advisory lines exist causes two entries; case A asserts exactly one clean sid= log line",
+      "target": "hooks/eluvian/wrap_debt_hook.py",
+      "anchor": "        hooklog(\"SessionStart\", f\"clean sid={session_id}\")\n        lines = _common.advisory_lines(res.stdout)",
+      "replacement": "        hooklog(\"SessionStart\", f\"clean sid={session_id}\")\n        lines = _common.advisory_lines(res.stdout)\n        if lines:\n            hooklog(\"SessionStart\", f\"clean sid={session_id}\")",
+      "expect_fail": "tests/test_wrap_advisory_surface.py::test_debt_hook_surfaces_advisories_on_pass"
+    },
+    {
+      "name": "stderr-selected",
+      "why": "feeding res.stderr to advisory_lines instead of res.stdout means the non-OK stdout lines are ignored; case A asserts additionalContext carries the non-OK lines",
+      "target": "hooks/eluvian/wrap_debt_hook.py",
+      "anchor": "        lines = _common.advisory_lines(res.stdout)",
+      "replacement": "        lines = _common.advisory_lines(res.stderr)",
+      "expect_fail": "tests/test_wrap_advisory_surface.py::test_debt_hook_surfaces_advisories_on_pass"
+    },
+    {
+      "name": "debt-pass-branch-raises",
+      "why": "raising before the log line causes the outer except to swallow the error printing {}; the log is empty; case C asserts exactly one clean sid= log line",
+      "target": "hooks/eluvian/wrap_debt_hook.py",
+      "anchor": "    if res.returncode == 0:\n        hooklog(\"SessionStart\", f\"clean sid={session_id}\")",
+      "replacement": "    if res.returncode == 0:\n        raise RuntimeError(\"debt-pass-branch-raises mutant\")\n        hooklog(\"SessionStart\", f\"clean sid={session_id}\")",
+      "expect_fail": "tests/test_wrap_advisory_surface.py::test_debt_hook_clean_pass_emits_nothing"
+    },
+    {
+      "name": "debt-path-composed-as-advisory",
+      "why": "composing the debt message with compose_advisory_message changes the format; case D asserts ctx == _compose_debt_message(stdout) and the debt header prefix",
+      "target": "hooks/eluvian/wrap_debt_hook.py",
+      "anchor": "    emit(_compose_debt_message(checklist))",
+      "replacement": "    emit(_common.compose_advisory_message([checklist]))",
+      "expect_fail": "tests/test_wrap_advisory_surface.py::test_debt_hook_debt_path_unchanged"
+    },
+    {
+      "name": "new-names-imported-by-name",
+      "why": "adding advisory_lines to the from-import line triggers ImportError when sys.modules['_common'] lacks the name; case M asserts the hook loads successfully beside a stale module",
+      "target": "hooks/eluvian/wrap_debt_hook.py",
+      "anchor": "from _common import _log_path, hooklog, emit, _VALID_SESSION_ID",
+      "replacement": "from _common import _log_path, hooklog, emit, _VALID_SESSION_ID, advisory_lines",
+      "expect_fail": "tests/test_wrap_advisory_surface.py::test_hooks_load_beside_a_stale_common"
+    },
+    {
+      "name": "stop-pass-discards",
+      "why": "reverting the pass branch to unconditional allow() silences advisory lines in the stop hook; case B asserts systemMessage carries the non-OK lines",
+      "target": "hooks/eluvian/wrap_stop_hook.py",
+      "anchor": "        lines = _common.advisory_lines(res.stdout)\n        if lines:\n            allow(_common.compose_advisory_message(lines))\n        else:\n            allow()",
+      "replacement": "        allow()",
+      "expect_fail": "tests/test_wrap_advisory_surface.py::test_stop_hook_armed_pass_shows_message_and_disarms"
+    },
+    {
+      "name": "stop-message-blocks",
+      "why": "using decision/reason instead of systemMessage makes the allow a block; case B asserts set(out.keys()) == {'systemMessage'}",
+      "target": "hooks/eluvian/wrap_stop_hook.py",
+      "anchor": "    if message:\n        print(json.dumps({\"systemMessage\": message}))",
+      "replacement": "    if message:\n        print(json.dumps({\"decision\": \"block\", \"reason\": message}))",
+      "expect_fail": "tests/test_wrap_advisory_surface.py::test_stop_hook_armed_pass_shows_message_and_disarms"
+    },
+    {
+      "name": "stop-message-as-context",
+      "why": "using hookSpecificOutput.additionalContext instead of systemMessage routes the message to context not the user; case B asserts set(out.keys()) == {'systemMessage'}",
+      "target": "hooks/eluvian/wrap_stop_hook.py",
+      "anchor": "        print(json.dumps({\"systemMessage\": message}))\n    else:\n        print(\"{}\")",
+      "replacement": "        print(json.dumps({\"hookSpecificOutput\": {\"hookEventName\": \"Stop\", \"additionalContext\": message}}))\n    else:\n        print(\"{}\")",
+      "expect_fail": "tests/test_wrap_advisory_surface.py::test_stop_hook_armed_pass_shows_message_and_disarms"
+    },
+    {
+      "name": "unarmed-runs-checker",
+      "why": "removing the unarmed early allow means the hook always proceeds to the checker; case F asserts the checker does NOT run when unarmed",
+      "target": "hooks/eluvian/wrap_stop_hook.py",
+      "anchor": "    if not all_sents:\n        hooklog(\"Stop\", f\"unarmed-allow sid={log_sid}\")\n        allow()",
+      "replacement": "    # unarmed guard removed",
+      "expect_fail": "tests/test_wrap_advisory_surface.py::test_stop_hook_unarmed_never_runs_checker"
+    },
+    {
+      "name": "no-disarm-on-advisory-pass",
+      "why": "skipping the unlink when advisory lines exist means the sentinel persists; case B asserts not sentinel.exists()",
+      "target": "hooks/eluvian/wrap_stop_hook.py",
+      "anchor": "        # UNLINK-ONLY-MINE\n        try:\n            own.unlink()\n        except FileNotFoundError:\n            pass",
+      "replacement": "        if not _common.advisory_lines(res.stdout):\n            # UNLINK-ONLY-MINE\n            try:\n                own.unlink()\n            except FileNotFoundError:\n                pass",
+      "expect_fail": "tests/test_wrap_advisory_surface.py::test_stop_hook_armed_pass_shows_message_and_disarms"
+    },
+    {
+      "name": "advisory-pass-drops-disarm-record",
+      "why": "skipping the hooklog line when advisory lines exist means the log is empty; case B asserts exactly one armed-pass-disarm log line",
+      "target": "hooks/eluvian/wrap_stop_hook.py",
+      "anchor": "        hooklog(\"Stop\", f\"armed-pass-disarm sid={log_sid}\")\n        lines = _common.advisory_lines(res.stdout)",
+      "replacement": "        lines = _common.advisory_lines(res.stdout)\n        if not lines:\n            hooklog(\"Stop\", f\"armed-pass-disarm sid={log_sid}\")",
+      "expect_fail": "tests/test_wrap_advisory_surface.py::test_stop_hook_armed_pass_shows_message_and_disarms"
+    },
+    {
+      "name": "allowlist-by-spelling",
+      "why": "replacing the deny-list with an allow-list that matches only 'WARN (advisory)' silences any non-OK line not containing that substring; case A's WARNING: line is not kept",
+      "anchor": "        if any(stripped.lstrip().startswith(p) for p in _OK_PREFIXES):",
+      "replacement": "        if \"WARN (advisory)\" not in stripped:",
+      "expect_fail": "tests/test_wrap_advisory_surface.py::test_debt_hook_surfaces_advisories_on_pass"
+    },
+    {
+      "name": "ok-prefix-too-broad",
+      "why": "shortening the first prefix to 'wrap_check:' excludes the crash line; case H asserts the UNVERIFIED header is present in the crash message",
+      "anchor": "\"wrap_check: OK\"",
+      "replacement": "\"wrap_check:\"",
+      "expect_fail": "tests/test_wrap_advisory_surface.py::test_crash_line_is_surfaced_by_both_hooks"
+    },
+    {
+      "name": "ok-prefix-too-narrow",
+      "why": "lengthening both prefixes means 'wrap_check: OK' (P6 short form) no longer matches; case C asserts emit({}) and case H asserts advisory_lines('wrap_check: OK') == []",
+      "anchor": "_OK_PREFIXES = (\"wrap_check: OK\", \"[2r/receipts] OK\")",
+      "replacement": "_OK_PREFIXES = (\"wrap_check: OK — all four repos wrapped.\", \"[2r/receipts] OK — \")",
+      "expect_fail": "tests/test_wrap_advisory_surface.py::test_debt_hook_clean_pass_emits_nothing"
+    },
+    {
+      "name": "crash-header-asserts-clean",
+      "why": "replacing the crash condition with False means the UNVERIFIED header is never used; case H asserts unverified_header != ordinary_header",
+      "anchor": "    has_crash = any(\n        ln.lstrip().startswith(\"wrap_check: internal error\") for ln in lines\n    )\n    if has_crash:",
+      "replacement": "    if False:",
+      "expect_fail": "tests/test_wrap_advisory_surface.py::test_crash_line_is_surfaced_by_both_hooks"
+    },
+    {
+      "name": "header-asserts-nothing-owed",
+      "why": "inserting 'nothing is owed' into the ordinary header violates the header constraint; case A asserts 'nothing is owed' not in header.lower()",
+      "anchor": "            \"output — warnings or checks it could not complete. What each \"",
+      "replacement": "            \"output — warnings or checks it could not complete. What each (nothing is owed). \"",
+      "expect_fail": "tests/test_wrap_advisory_surface.py::test_debt_hook_surfaces_advisories_on_pass"
+    },
+    {
+      "name": "crash-header-directs-wrap",
+      "why": "adding '/wrap' to the UNVERIFIED header violates the constraint that the header never directs a wrap; case H asserts '/wrap' not in unverified_header.lower()",
+      "anchor": "            \"crash was discarded. Lines it printed (thread 427):\"",
+      "replacement": "            \"crash was discarded. Run /wrap to check. Lines it printed (thread 427):\"",
+      "expect_fail": "tests/test_wrap_advisory_surface.py::test_crash_line_is_surfaced_by_both_hooks"
+    },
+    {
+      "name": "crash-branch-needs-3.10",
+      "why": "inserting a match statement (Python 3.10+ syntax) causes a SyntaxError under /usr/bin/python3 (3.9.6); case I sub-case 9 asserts crash surfacing under the harness interpreter",
+      "anchor": "    if has_crash:\n        header = (",
+      "replacement": "    if has_crash:\n        match len(lines):\n            case _:\n                pass\n        header = (",
+      "expect_fail": "tests/test_wrap_advisory_surface.py::test_hooks_surface_under_harness_interpreter"
+    },
+    {
+      "name": "crash-message-carries-both-headers",
+      "why": "prepending the ordinary header text to the UNVERIFIED header means ordinary_header.strip() appears in the crash message; case H asserts ordinary_header.strip() not in ctx_debt",
+      "anchor": "            \"⚠️ WRAP CHECK CRASHED AND PASSED OPEN — the wrap state is \"",
+      "replacement": "            \"The wrap check passed (exit 0). The lines below are additional output — warnings or checks it could not complete. What each names was NOT verified (thread 427):\\n⚠️ WRAP CHECK CRASHED AND PASSED OPEN — the wrap state is \"",
+      "expect_fail": "tests/test_wrap_advisory_surface.py::test_crash_line_is_surfaced_by_both_hooks"
+    },
+    {
+      "name": "skipped-read-as-ok",
+      "why": "adding '[2r/receipts] SKIPPED' to the deny-list silences the four SKIPPED print sites which are measured; case H asserts the dropped set equals exactly the three OK-prefix sites",
+      "anchor": "\"[2r/receipts] OK\")",
+      "replacement": "\"[2r/receipts] OK\", \"[2r/receipts] SKIPPED\")",
+      "expect_fail": "tests/test_wrap_advisory_surface.py::test_selector_drops_exactly_the_ok_lines"
+    }
+  ]
+}

@@ -9,7 +9,9 @@ debt at the top of the new session as a directive to resolve it before new work 
 closing the one gap the Stop-hook lock structurally cannot (a terminal closed
 without ever arming a wrap).
 
-Signal-only when clean: emits nothing, so a fresh session isn't nagged.
+Signal-only when every line the checker printed is OK — then it emits
+nothing, so a fresh session is not nagged; a pass that printed anything
+else emits those lines (thread 427).
 FAIL-OPEN: any error stays silent rather than injecting noise.
 """
 from __future__ import annotations
@@ -24,6 +26,7 @@ from pathlib import Path
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from _common import _log_path, hooklog, emit, _VALID_SESSION_ID
+import _common  # attribute form — new functions reached at call time (thread 243)
 
 CHECK = Path(__file__).with_name("wrap_check.py")
 
@@ -88,7 +91,11 @@ def main():
 
     if res.returncode == 0:
         hooklog("SessionStart", f"clean sid={session_id}")
-        emit(None)
+        lines = _common.advisory_lines(res.stdout)
+        if lines:
+            emit(_common.compose_advisory_message(lines))
+        else:
+            emit(None)
 
     hooklog("SessionStart", f"DEBT-injected sid={session_id}")
     checklist = (res.stdout or "").strip()

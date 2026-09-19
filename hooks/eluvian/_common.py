@@ -2,7 +2,7 @@
 Shared helpers for the Eluvian harness hooks (hooks/eluvian/).
 
 Contains: _DEFAULT_LOG, _VALID_SESSION_ID, _default_root, _log_path, hooklog,
-emit, _validate_session_id.
+emit, _validate_session_id, _OK_PREFIXES, advisory_lines, compose_advisory_message.
 
 Imported by every hook through its own directory (via sys.path.insert before
 the import). A hook that needs a helper adds it here, never inline.
@@ -71,3 +71,56 @@ def _validate_session_id(raw_id):
     if not raw_id or not _VALID_SESSION_ID.match(raw_id):
         return None
     return raw_id
+
+
+# Deny-list: lines whose leading text begins with one of these prefixes are OK
+# status lines and are excluded from advisory surfacing (thread 427).
+# A deny-list fails loud — a new print site surfaces by default; an allow-list
+# would fail silent, which is the defect this module exists to end.
+_OK_PREFIXES = ("wrap_check: OK", "[2r/receipts] OK")
+
+
+def advisory_lines(checker_stdout: str) -> list:
+    """Return non-blank, right-stripped lines from checker_stdout that are not OK.
+
+    A line is OK when its text with leading whitespace removed begins with one
+    of _OK_PREFIXES.  None or '' yields [].  The deny-list means a print site
+    added later surfaces by default (thread 427).
+    """
+    if not checker_stdout:
+        return []
+    result = []
+    for line in checker_stdout.splitlines():
+        stripped = line.rstrip()
+        if not stripped.strip():
+            continue
+        if any(stripped.lstrip().startswith(p) for p in _OK_PREFIXES):
+            continue
+        result.append(stripped)
+    return result
+
+
+def compose_advisory_message(lines: list) -> str:
+    """Compose a message from non-OK lines a passing checker printed (thread 427).
+
+    When any line begins with the crash prefix the wrap state is UNVERIFIED —
+    the checker passed open after an internal error, so any failure it had
+    found before the crash was discarded.  The header never says 'debt' and
+    never directs a /wrap (plan 100129 item 2(b)).
+    """
+    has_crash = any(
+        ln.lstrip().startswith("wrap_check: internal error") for ln in lines
+    )
+    if has_crash:
+        header = (
+            "⚠️ WRAP CHECK CRASHED AND PASSED OPEN — the wrap state is "
+            "UNVERIFIED. Its verdict is UNKNOWN: any failure it found before the "
+            "crash was discarded. Lines it printed (thread 427):"
+        )
+    else:
+        header = (
+            "The wrap check passed (exit 0). The lines below are additional "
+            "output — warnings or checks it could not complete. What each "
+            "names was NOT verified (thread 427):"
+        )
+    return "\n".join([header] + lines)

@@ -33,6 +33,7 @@ from pathlib import Path
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from _common import _default_root, _log_path, hooklog, _validate_session_id
+import _common  # attribute form — new functions reached at call time (thread 243)
 
 _DEFAULT_ROOT = _default_root()
 CHECK = Path(__file__).with_name("wrap_check.py")
@@ -45,8 +46,11 @@ def _wrap_root():
     return Path(os.environ.get("ELUVIAN_WRAP_ROOT") or str(_DEFAULT_ROOT))
 
 
-def allow():
-    print("{}")
+def allow(message=None):
+    if message:
+        print(json.dumps({"systemMessage": message}))
+    else:
+        print("{}")
     sys.exit(0)
 
 
@@ -207,7 +211,11 @@ def main():
             except FileNotFoundError:
                 pass
         hooklog("Stop", f"armed-pass-disarm sid={log_sid}")
-        allow()
+        lines = _common.advisory_lines(res.stdout)
+        if lines:
+            allow(_common.compose_advisory_message(lines))
+        else:
+            allow()
 
     hooklog("Stop", f"armed-BLOCK sid={log_sid}")
     reason = (res.stdout or "").strip() or "Session wrap is incomplete."
