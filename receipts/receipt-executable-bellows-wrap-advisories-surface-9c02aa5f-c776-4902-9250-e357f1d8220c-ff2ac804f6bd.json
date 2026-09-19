@@ -1,0 +1,8 @@
+{
+  "slug": "executable-bellows-wrap-advisories-surface",
+  "content_hash": "ff2ac804f6bd596fdf24d61b4adb9a63e85a46c46481850dd03ed82ca4d088fe",
+  "session_id": "9c02aa5f-c776-4902-9250-e357f1d8220c",
+  "armed_at": "2026-09-18T22:11:03.437126",
+  "watcher": "gate_watcher.py spawned detached (pid 18309); log: logs/watch/executable-bellows-wrap-advisories-surface.md.log",
+  "attestation_boundary": "This receipt proves the watcher was ARMED at write time. It does NOT prove the watcher stayed alive. Liveness of a session-local monitor is not externally verifiable."
+}
