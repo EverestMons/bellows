@@ -1,0 +1,132 @@
+============================= test session starts ==============================
+platform darwin -- Python 3.12.14, pytest-9.1.1, pluggy-1.6.0 -- /Users/marklehn/Developer/bellows/.venv/bin/python
+cachedir: .pytest_cache
+rootdir: /Users/marklehn/Developer/bellows/.bellows-worktrees/100129
+plugins: anyio-4.14.2
+collecting ... collected 1 item
+
+tests/test_wrap_advisory_surface.py::test_selector_drops_exactly_the_ok_lines PASSED [100%]
+
+============================== 1 passed in 0.15s ===============================
+---
+============================= test session starts ==============================
+platform darwin -- Python 3.12.14, pytest-9.1.1, pluggy-1.6.0 -- /Users/marklehn/Developer/bellows/.venv/bin/python
+cachedir: .pytest_cache
+rootdir: /Users/marklehn/Developer/bellows/.bellows-worktrees/100129
+plugins: anyio-4.14.2
+collecting ... collected 1 item
+
+tests/test_wrap_advisory_surface.py::test_debt_hook_surfaces_advisories_on_pass PASSED [100%]
+
+============================== 1 passed in 2.20s ===============================
+---
+============================= test session starts ==============================
+platform darwin -- Python 3.12.14, pytest-9.1.1, pluggy-1.6.0 -- /Users/marklehn/Developer/bellows/.venv/bin/python
+cachedir: .pytest_cache
+rootdir: /Users/marklehn/Developer/bellows/.bellows-worktrees/100129
+plugins: anyio-4.14.2
+collecting ... collected 1 item
+
+tests/test_wrap_advisory_surface.py::test_debt_hook_clean_pass_emits_nothing PASSED [100%]
+
+============================== 1 passed in 0.16s ===============================
+---
+============================= test session starts ==============================
+platform darwin -- Python 3.12.14, pytest-9.1.1, pluggy-1.6.0 -- /Users/marklehn/Developer/bellows/.venv/bin/python
+cachedir: .pytest_cache
+rootdir: /Users/marklehn/Developer/bellows/.bellows-worktrees/100129
+plugins: anyio-4.14.2
+collecting ... collected 1 item
+
+tests/test_wrap_advisory_surface.py::test_debt_hook_debt_path_unchanged PASSED [100%]
+
+============================== 1 passed in 0.16s ===============================
+---
+============================= test session starts ==============================
+platform darwin -- Python 3.12.14, pytest-9.1.1, pluggy-1.6.0 -- /Users/marklehn/Developer/bellows/.venv/bin/python
+cachedir: .pytest_cache
+rootdir: /Users/marklehn/Developer/bellows/.bellows-worktrees/100129
+plugins: anyio-4.14.2
+collecting ... collected 1 item
+
+tests/test_wrap_advisory_surface.py::test_stop_hook_armed_pass_shows_message_and_disarms PASSED [100%]
+
+============================== 1 passed in 0.16s ===============================
+---
+============================= test session starts ==============================
+platform darwin -- Python 3.12.14, pytest-9.1.1, pluggy-1.6.0 -- /Users/marklehn/Developer/bellows/.venv/bin/python
+cachedir: .pytest_cache
+rootdir: /Users/marklehn/Developer/bellows/.bellows-worktrees/100129
+plugins: anyio-4.14.2
+collecting ... collected 1 item
+
+tests/test_wrap_advisory_surface.py::test_stop_hook_armed_clean_pass_unchanged PASSED [100%]
+
+============================== 1 passed in 0.16s ===============================
+---
+============================= test session starts ==============================
+platform darwin -- Python 3.12.14, pytest-9.1.1, pluggy-1.6.0 -- /Users/marklehn/Developer/bellows/.venv/bin/python
+cachedir: .pytest_cache
+rootdir: /Users/marklehn/Developer/bellows/.bellows-worktrees/100129
+plugins: anyio-4.14.2
+collecting ... collected 1 item
+
+tests/test_wrap_advisory_surface.py::test_stop_hook_block_path_unchanged PASSED [100%]
+
+============================== 1 passed in 0.16s ===============================
+---
+============================= test session starts ==============================
+platform darwin -- Python 3.12.14, pytest-9.1.1, pluggy-1.6.0 -- /Users/marklehn/Developer/bellows/.venv/bin/python
+cachedir: .pytest_cache
+rootdir: /Users/marklehn/Developer/bellows/.bellows-worktrees/100129
+plugins: anyio-4.14.2
+collecting ... collected 1 item
+
+tests/test_wrap_advisory_surface.py::test_stop_hook_unarmed_never_runs_checker PASSED [100%]
+
+============================== 1 passed in 0.18s ===============================
+---
+============================= test session starts ==============================
+platform darwin -- Python 3.12.14, pytest-9.1.1, pluggy-1.6.0 -- /Users/marklehn/Developer/bellows/.venv/bin/python
+cachedir: .pytest_cache
+rootdir: /Users/marklehn/Developer/bellows/.bellows-worktrees/100129
+plugins: anyio-4.14.2
+collecting ... collected 1 item
+
+tests/test_wrap_advisory_surface.py::test_crash_line_is_surfaced_by_both_hooks PASSED [100%]
+
+============================== 1 passed in 0.28s ===============================
+---
+============================= test session starts ==============================
+platform darwin -- Python 3.12.14, pytest-9.1.1, pluggy-1.6.0 -- /Users/marklehn/Developer/bellows/.venv/bin/python
+cachedir: .pytest_cache
+rootdir: /Users/marklehn/Developer/bellows/.bellows-worktrees/100129
+plugins: anyio-4.14.2
+collecting ... collected 1 item
+
+tests/test_wrap_advisory_surface.py::test_hooks_surface_under_harness_interpreter PASSED [100%]
+
+============================== 1 passed in 0.38s ===============================
+---
+============================= test session starts ==============================
+platform darwin -- Python 3.12.14, pytest-9.1.1, pluggy-1.6.0 -- /Users/marklehn/Developer/bellows/.venv/bin/python
+cachedir: .pytest_cache
+rootdir: /Users/marklehn/Developer/bellows/.bellows-worktrees/100129
+plugins: anyio-4.14.2
+collecting ... collected 1 item
+
+tests/test_wrap_advisory_surface.py::test_new_code_fails_open PASSED     [100%]
+
+============================== 1 passed in 0.24s ===============================
+---
+============================= test session starts ==============================
+platform darwin -- Python 3.12.14, pytest-9.1.1, pluggy-1.6.0 -- /Users/marklehn/Developer/bellows/.venv/bin/python
+cachedir: .pytest_cache
+rootdir: /Users/marklehn/Developer/bellows/.bellows-worktrees/100129
+plugins: anyio-4.14.2
+collecting ... collected 1 item
+
+tests/test_wrap_advisory_surface.py::test_hooks_load_beside_a_stale_common PASSED [100%]
+
+============================== 1 passed in 0.11s ===============================
+---

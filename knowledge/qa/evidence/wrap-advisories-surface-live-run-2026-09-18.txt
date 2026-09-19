@@ -1,0 +1,25 @@
+SCRATCH=/var/folders/mw/px9gvxzx2qv582qhwbzv8m940000gn/T/tmp.mG5gguNlni
+=== checker (debt) ===
+[4/memory] WARN (advisory): 1 entr(ies) not referenced from MEMORY.md or any section file: planted-orphan.md
+[2r/receipts] SKIPPED — lifecycle.db not readable for clearance cross-check.
+[2r/receipts] OK — no deposits in this session (session qa-live-run).
+wrap_check: OK — all four repos wrapped.
+checker exit=0
+=== debt hook ===
+{"hookSpecificOutput": {"hookEventName": "SessionStart", "additionalContext": "The wrap check passed (exit\u00a00). The lines below are additional output \u2014 warnings or checks it could not complete. What each names was NOT verified (thread\u00a0427):\n[4/memory] WARN (advisory): 1 entr(ies) not referenced from MEMORY.md or any section file: planted-orphan.md\n[2r/receipts] SKIPPED \u2014 lifecycle.db not readable for clearance cross-check."}}
+
+hook exit=0
+=== checker (stop) ===
+[4/memory] WARN (advisory): 1 entr(ies) not referenced from MEMORY.md or any section file: planted-orphan.md
+[2r/receipts] SKIPPED — lifecycle.db not readable for clearance cross-check.
+[2r/receipts] OK — no deposits in this session (session qa-live-run).
+wrap_check: OK — all four repos wrapped.
+checker exit=0
+=== stop hook ===
+{"systemMessage": "The wrap check passed (exit\u00a00). The lines below are additional output \u2014 warnings or checks it could not complete. What each names was NOT verified (thread\u00a0427):\n[4/memory] WARN (advisory): 1 entr(ies) not referenced from MEMORY.md or any section file: planted-orphan.md\n[2r/receipts] SKIPPED \u2014 lifecycle.db not readable for clearance cross-check."}
+
+hook exit=0
+0
+=== hooks.log ===
+SessionStart	clean sid=qa-live-run
+Stop	armed-pass-disarm sid=qa-live-run
